@@ -1,3 +1,7 @@
 **/res*
 **.vscode/
+**__pycache__/
 *.pos
+Area*.csv
+duplicationInformation.csv
+Materials.csv
