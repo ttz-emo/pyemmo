@@ -2,6 +2,8 @@
 **.vscode/
 **__pycache__/
 *.pos
+*.asv
 Area*.csv
 duplicationInformation.csv
 Materials.csv
+
