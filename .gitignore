@@ -1,5 +1,6 @@
 **/res*
 **.vscode/
+**venv*/
 **__pycache__/
 *.pos
 *.asv
