@@ -7,5 +7,6 @@
 Area*.csv
 duplicationInformation.csv
 Materials.csv
-
+/build
+/dist
 Software_V2/workingDirectory/testPlot.png
