@@ -5,6 +5,8 @@
 *.pos
 *.asv
 Area*.csv
+test*.pro
+test*.geo
 duplicationInformation.csv
 Materials.csv
 
