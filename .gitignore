@@ -10,6 +10,8 @@ test*.pro
 test*.geo
 duplicationInformation.csv
 Materials.csv
+defaultFileInfo.mat
+
 
 **/build
 **/dist
