@@ -4,6 +4,7 @@
 **__pycache__/
 *.pos
 *.asv
+PathSettings_*.m
 Area*.csv
 test*.pro
 test*.geo
