@@ -8,6 +8,7 @@ PathSettings_*.m
 Area*.csv
 test*.pro
 test*.geo
+test*.json
 duplicationInformation.csv
 Materials.csv
 defaultFileInfo.mat
