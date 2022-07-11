@@ -6,6 +6,8 @@
 *.pre
 *.res
 *.asv
+*.zip
+*.7z
 PathSettings_*.m
 Area*.csv
 test*.pro
