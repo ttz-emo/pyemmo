@@ -5,6 +5,8 @@
 *.pos
 *.pre
 *.res
+*.msh
+*.db
 *.asv
 *.zip
 *.7z
