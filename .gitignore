@@ -24,5 +24,6 @@ defaultFileInfo.mat
 **/_*
 **/areaCSV
 
-
+# specific files to ignore
 Software_V2/workingDirectory/testPlot.png
+PyDraft/workingDirectory/testPosImport/VergleichEisenverlustberechnungAnsysOnelab.mat
