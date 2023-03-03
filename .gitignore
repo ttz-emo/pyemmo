@@ -19,11 +19,8 @@ duplicationInformation.csv
 Materials.csv
 defaultFileInfo.mat
 
-
-**/build
-**/_*
-**/areaCSV
+# Dont track doc build
+PyDraft/doc/_build/
 
 # specific files to ignore
-Software_V2/workingDirectory/testPlot.png
 PyDraft/workingDirectory/testPosImport/VergleichEisenverlustberechnungAnsysOnelab.mat
