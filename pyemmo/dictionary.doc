@@ -1,0 +1,21 @@
+/*! \mainpage PyDraft 2.0
+
+PyDraft ist eine API zur Ansteuerung des FEM-Programms ONELAB, welches beim Berechnen von elektrischen Maschinen in Einsatz kommt. 
+Der objektorientierte Aufbau PyDrafts soll klare festgelegte Beziehungen und Zugriffe definieren. 
+Dadurch sollen Ergänzungen von Programmenteilen (Module) erleichtert werden.
+
+\image html C:\Users\koenig\Desktop\PyDraft2.0\Doku\image_Doku\titel.png
+*/
+
+//-----------------------------------------------------------
+
+/*! \page dict Maschinen-Dictionary
+Um eine Maschinenobjekt mit Hilfe des PyDrafts-Baukasten zu erzeugen, werden Dictionaries, die die Maschinengrößen definieren benötigt.
+Jedes Objekt benötigt hierbei seine spezifische Paramter. 
+Eine Übersicht aller Maschinen-Objekte und die benötigten Parameter werden im nachfolgenden aufgelistet:
+
+
+Aufbau des Dictionary mit 13 Keys:
+  - Key 1: name
+  - Key 2: symmetrieFaktor
+*/

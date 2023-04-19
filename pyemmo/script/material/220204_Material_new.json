@@ -1,0 +1,3234 @@
+[
+    {
+        "BHCurve": "NL",
+        "ID": 1,
+        "Name": "Alnico5",
+        "conductivity": 2128000.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 2,
+        "Name": "Alnico9",
+        "conductivity": 2000000.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 3,
+        "Name": "Ceramic5",
+        "conductivity": 0.0001,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 4,
+        "Name": "Ceramic8D",
+        "conductivity": 0.0001,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 5,
+        "Name": "M250_35A_0050Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 6,
+        "Name": "M250_35A_0060Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 7,
+        "Name": "M270_50A_0050Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 8,
+        "Name": "M270_50A_0060Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 9,
+        "Name": "M270_50A_0100Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 10,
+        "Name": "M270_50A_0200Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 11,
+        "Name": "M270_50A_0400Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 12,
+        "Name": "M270_50A_0500Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 13,
+        "Name": "M270_50A_050Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 14,
+        "Name": "M330_35AP_0050Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 15,
+        "Name": "M330_35AP_0060Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 16,
+        "Name": "M330_35AP_0400Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 17,
+        "Name": "M330_35AP_0500Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 18,
+        "Name": "M330_35AP_1000Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 19,
+        "Name": "M330_35A_0050Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 20,
+        "Name": "M330_35A_0060Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 21,
+        "Name": "M330_35A_0100Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 22,
+        "Name": "M330_35A_0200Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 23,
+        "Name": "M330_35A_0400Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 24,
+        "Name": "M330_35A_0500Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 25,
+        "Name": "M330_35A_050Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 26,
+        "Name": "M330_35A_060Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 27,
+        "Name": "M330_35A_100Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 28,
+        "Name": "M330_35A_200Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 29,
+        "Name": "M330_50AP_0050Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 30,
+        "Name": "M330_50AP_0060Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 31,
+        "Name": "M330_50AP_0100Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 32,
+        "Name": "M330_50AP_0200Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 33,
+        "Name": "M330_50AP_050Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 34,
+        "Name": "M330_50AP_060Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 35,
+        "Name": "M330_50AP_100Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 36,
+        "Name": "M330_50A_0050Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 37,
+        "Name": "M330_50A_0060Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 38,
+        "Name": "M330_50A_0100Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 39,
+        "Name": "M330_50A_0200Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 40,
+        "Name": "M330_50A_0400Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 41,
+        "Name": "M330_50A_0500Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 42,
+        "Name": "M330_50A_050Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 43,
+        "Name": "M330_50A_060Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 44,
+        "Name": "M330_50A_1000Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 45,
+        "Name": "M330_50A_100Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 46,
+        "Name": "M400_50A_0050Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 47,
+        "Name": "M400_50A_0060Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 48,
+        "Name": "M400_50A_0100Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 49,
+        "Name": "M400_50A_0200Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 50,
+        "Name": "M400_50A_050Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 51,
+        "Name": "M400_50A_060Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 52,
+        "Name": "M400_50A_100Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 53,
+        "Name": "M400_50A_200Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 54,
+        "Name": "M470_50A_0050Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 55,
+        "Name": "M470_50A_0060Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 56,
+        "Name": "M470_50A_0100Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 57,
+        "Name": "M470_50A_0200Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 58,
+        "Name": "M470_50A_0400Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 59,
+        "Name": "M470_50A_0500Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 60,
+        "Name": "M470_65A_0050Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 61,
+        "Name": "M470_65A_0100Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 62,
+        "Name": "M470_65A_0200Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 63,
+        "Name": "M470_65A_0400Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 64,
+        "Name": "M470_65A_0500Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 65,
+        "Name": "M530_50A_0050Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 66,
+        "Name": "M530_50A_0060Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 67,
+        "Name": "M530_50A_0100Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 68,
+        "Name": "M530_50A_0200Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 69,
+        "Name": "M530_50A_0400Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 70,
+        "Name": "M530_50A_0500Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 71,
+        "Name": "M530_50A_050Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 72,
+        "Name": "M530_50A_100Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 73,
+        "Name": "M530_50A_200Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 74,
+        "Name": "M530_50A_400Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 75,
+        "Name": "M530_50A_500Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 76,
+        "Name": "M700_50A_0050Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 77,
+        "Name": "M700_50A_0100Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 78,
+        "Name": "M700_50A_0200Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 79,
+        "Name": "M700_50A_0400Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 80,
+        "Name": "M700_50A_0500Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 81,
+        "Name": "M700_50A_050Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 82,
+        "Name": "M700_50A_100Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 83,
+        "Name": "M700_50A_200Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 84,
+        "Name": "M700_50A_400Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 85,
+        "Name": "M700_50A_500Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 86,
+        "Name": "M800_65A_0050Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 87,
+        "Name": "M800_65A_050Hz",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 88,
+        "Name": "NdFe30",
+        "conductivity": 625000.0,
+        "relPermeability": 1.0445730167132,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 89,
+        "Name": "NdFe35",
+        "conductivity": 625000.0,
+        "relPermeability": 1.0997785406,
+        "remanence": 1.23000000140598
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 90,
+        "Name": "SmCo24",
+        "conductivity": 1111111.0,
+        "relPermeability": 1.06313817927575,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 91,
+        "Name": "SmCo28",
+        "conductivity": 1111111.0,
+        "relPermeability": 1.03838895916414,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 92,
+        "Name": "Solder_Alloy_99C_Sn_0.7Cu",
+        "conductivity": 7540000.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 93,
+        "Name": "Solder_Castin_TM_Sn_2.5Ag_0.8Cu_0.5Sb",
+        "conductivity": 8250000.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 94,
+        "Name": "Solder_Ecosol_TSC_Sn_3.8Ag_0.7Cu",
+        "conductivity": 7540000.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 95,
+        "Name": "Solder_Lead_Free_Sn_3.5Ag",
+        "conductivity": 8120000.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 96,
+        "Name": "Solder_Lead_Free_Sn_3.5Ag_0.7Cu",
+        "conductivity": 7540000.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 97,
+        "Name": "Tantalum_Nitride",
+        "conductivity": 7400.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 98,
+        "Name": "VACODYM_3230_020C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 99,
+        "Name": "VACODYM_3230_060C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 100,
+        "Name": "VACODYM_3230_080C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 101,
+        "Name": "VACODYM_3230_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 102,
+        "Name": "VACODYM_3230_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 103,
+        "Name": "VACODYM_3230_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 104,
+        "Name": "VACODYM_3230_180C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 105,
+        "Name": "VACODYM_3230_20C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 106,
+        "Name": "VACODYM_3230_210C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 107,
+        "Name": "VACODYM_3230_60C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 108,
+        "Name": "VACODYM_3230_80C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 109,
+        "Name": "VACODYM_3625_020C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 110,
+        "Name": "VACODYM_3625_060C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 111,
+        "Name": "VACODYM_3625_080C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 112,
+        "Name": "VACODYM_3625_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 113,
+        "Name": "VACODYM_3625_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 114,
+        "Name": "VACODYM_3625_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 115,
+        "Name": "VACODYM_3625_180C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 116,
+        "Name": "VACODYM_3625_20C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 117,
+        "Name": "VACODYM_3625_60C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 118,
+        "Name": "VACODYM_3625_80C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 119,
+        "Name": "VACODYM_4020_020C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 120,
+        "Name": "VACODYM_4020_060C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 121,
+        "Name": "VACODYM_4020_080C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 122,
+        "Name": "VACODYM_4020_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 123,
+        "Name": "VACODYM_4020_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 124,
+        "Name": "VACODYM_4020_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 125,
+        "Name": "VACODYM_4020_20C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 126,
+        "Name": "VACODYM_4020_60C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 127,
+        "Name": "VACODYM_4020_80C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 128,
+        "Name": "VACODYM_633AP_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 129,
+        "Name": "VACODYM_633AP_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 130,
+        "Name": "VACODYM_633AP_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 131,
+        "Name": "VACODYM_633AP_20C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 132,
+        "Name": "VACODYM_633AP_60C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 133,
+        "Name": "VACODYM_633AP_80C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 134,
+        "Name": "VACODYM_633TP_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 135,
+        "Name": "VACODYM_633TP_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 136,
+        "Name": "VACODYM_633TP_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 137,
+        "Name": "VACODYM_633TP_20C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 138,
+        "Name": "VACODYM_633TP_60C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 139,
+        "Name": "VACODYM_633TP_80C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 140,
+        "Name": "VACODYM_655AP_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 141,
+        "Name": "VACODYM_655AP_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 142,
+        "Name": "VACODYM_655AP_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 143,
+        "Name": "VACODYM_655AP_180C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 144,
+        "Name": "VACODYM_655AP_20C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 145,
+        "Name": "VACODYM_655AP_60C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 146,
+        "Name": "VACODYM_655AP_80C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 147,
+        "Name": "VACODYM_655TP_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 148,
+        "Name": "VACODYM_655TP_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 149,
+        "Name": "VACODYM_655TP_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 150,
+        "Name": "VACODYM_655TP_180C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 151,
+        "Name": "VACODYM_655TP_20C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 152,
+        "Name": "VACODYM_655TP_60C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 153,
+        "Name": "VACODYM_655TP_80C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 154,
+        "Name": "VACODYM_669AP_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 155,
+        "Name": "VACODYM_669AP_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 156,
+        "Name": "VACODYM_669AP_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 157,
+        "Name": "VACODYM_669AP_180C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 158,
+        "Name": "VACODYM_669AP_20C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 159,
+        "Name": "VACODYM_669AP_210C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 160,
+        "Name": "VACODYM_669AP_60C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 161,
+        "Name": "VACODYM_669AP_80C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 162,
+        "Name": "VACODYM_669TP_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 163,
+        "Name": "VACODYM_669TP_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 164,
+        "Name": "VACODYM_669TP_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 165,
+        "Name": "VACODYM_669TP_180C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 166,
+        "Name": "VACODYM_669TP_20C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 167,
+        "Name": "VACODYM_669TP_210C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 168,
+        "Name": "VACODYM_669TP_60C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 169,
+        "Name": "VACODYM_669TP_80C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 170,
+        "Name": "VACODYM_677AP_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 171,
+        "Name": "VACODYM_677AP_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 172,
+        "Name": "VACODYM_677AP_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 173,
+        "Name": "VACODYM_677AP_180C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 174,
+        "Name": "VACODYM_677AP_20C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 175,
+        "Name": "VACODYM_677AP_210C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 176,
+        "Name": "VACODYM_677AP_60C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 177,
+        "Name": "VACODYM_677AP_80C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 178,
+        "Name": "VACODYM_677TP_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 179,
+        "Name": "VACODYM_677TP_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 180,
+        "Name": "VACODYM_677TP_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 181,
+        "Name": "VACODYM_677TP_180C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 182,
+        "Name": "VACODYM_677TP_20C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 183,
+        "Name": "VACODYM_677TP_210C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 184,
+        "Name": "VACODYM_677TP_60C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 185,
+        "Name": "VACODYM_677TP_80C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 186,
+        "Name": "VACODYM_688AP_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 187,
+        "Name": "VACODYM_688AP_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 188,
+        "Name": "VACODYM_688AP_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 189,
+        "Name": "VACODYM_688AP_180C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 190,
+        "Name": "VACODYM_688AP_20C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 191,
+        "Name": "VACODYM_688AP_210C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 192,
+        "Name": "VACODYM_688AP_240C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 193,
+        "Name": "VACODYM_688AP_60C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 194,
+        "Name": "VACODYM_688AP_80C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 195,
+        "Name": "VACODYM_688TP_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 196,
+        "Name": "VACODYM_688TP_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 197,
+        "Name": "VACODYM_688TP_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 198,
+        "Name": "VACODYM_688TP_180C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 199,
+        "Name": "VACODYM_688TP_20C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 200,
+        "Name": "VACODYM_688TP_210C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 201,
+        "Name": "VACODYM_688TP_240C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 202,
+        "Name": "VACODYM_688TP_60C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 203,
+        "Name": "VACODYM_688TP_80C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 204,
+        "Name": "VACODYM_764AP_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 205,
+        "Name": "VACODYM_764AP_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 206,
+        "Name": "VACODYM_764AP_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 207,
+        "Name": "VACODYM_764AP_20C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 208,
+        "Name": "VACODYM_764AP_60C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 209,
+        "Name": "VACODYM_764AP_80C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 210,
+        "Name": "VACODYM_764TP_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 211,
+        "Name": "VACODYM_764TP_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 212,
+        "Name": "VACODYM_764TP_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 213,
+        "Name": "VACODYM_764TP_20C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 214,
+        "Name": "VACODYM_764TP_60C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 215,
+        "Name": "VACODYM_764TP_80C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 216,
+        "Name": "VACODYM_776AP_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 217,
+        "Name": "VACODYM_776AP_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 218,
+        "Name": "VACODYM_776AP_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 219,
+        "Name": "VACODYM_776AP_180C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 220,
+        "Name": "VACODYM_776AP_20C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 221,
+        "Name": "VACODYM_776AP_60C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 222,
+        "Name": "VACODYM_776AP_80C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 223,
+        "Name": "VACODYM_776TP_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 224,
+        "Name": "VACODYM_776TP_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 225,
+        "Name": "VACODYM_776TP_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 226,
+        "Name": "VACODYM_776TP_180C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 227,
+        "Name": "VACODYM_776TP_20C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 228,
+        "Name": "VACODYM_776TP_60C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 229,
+        "Name": "VACODYM_776TP_80C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 230,
+        "Name": "VACODYM_776_AP_020C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 231,
+        "Name": "VACODYM_776_AP_060C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 232,
+        "Name": "VACODYM_776_AP_080C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 233,
+        "Name": "VACODYM_776_AP_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 234,
+        "Name": "VACODYM_776_AP_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 235,
+        "Name": "VACODYM_776_AP_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 236,
+        "Name": "VACODYM_776_AP_180C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 237,
+        "Name": "VACODYM_776_TP_020C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 238,
+        "Name": "VACODYM_776_TP_060C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 239,
+        "Name": "VACODYM_776_TP_080C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 240,
+        "Name": "VACODYM_776_TP_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 241,
+        "Name": "VACODYM_776_TP_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 242,
+        "Name": "VACODYM_776_TP_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 243,
+        "Name": "VACODYM_776_TP_180C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 244,
+        "Name": "VACODYM_787AP_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 245,
+        "Name": "VACODYM_787AP_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 246,
+        "Name": "VACODYM_787AP_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 247,
+        "Name": "VACODYM_787AP_180C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 248,
+        "Name": "VACODYM_787AP_20C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 249,
+        "Name": "VACODYM_787AP_60C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 250,
+        "Name": "VACODYM_787AP_80C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 251,
+        "Name": "VACODYM_787TP_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 252,
+        "Name": "VACODYM_787TP_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 253,
+        "Name": "VACODYM_787TP_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 254,
+        "Name": "VACODYM_787TP_180C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 255,
+        "Name": "VACODYM_787TP_20C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 256,
+        "Name": "VACODYM_787TP_60C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 257,
+        "Name": "VACODYM_787TP_80C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 258,
+        "Name": "VACODYM_837AP_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 259,
+        "Name": "VACODYM_837AP_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 260,
+        "Name": "VACODYM_837AP_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 261,
+        "Name": "VACODYM_837AP_20C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 262,
+        "Name": "VACODYM_837AP_60C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 263,
+        "Name": "VACODYM_837AP_80C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 264,
+        "Name": "VACODYM_837TP_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 265,
+        "Name": "VACODYM_837TP_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 266,
+        "Name": "VACODYM_837TP_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 267,
+        "Name": "VACODYM_837TP_20C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 268,
+        "Name": "VACODYM_837TP_60C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 269,
+        "Name": "VACODYM_837TP_80C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 270,
+        "Name": "VACODYM_854AP_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 271,
+        "Name": "VACODYM_854AP_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 272,
+        "Name": "VACODYM_854AP_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 273,
+        "Name": "VACODYM_854AP_180C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 274,
+        "Name": "VACODYM_854AP_20C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 275,
+        "Name": "VACODYM_854AP_60C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 276,
+        "Name": "VACODYM_854AP_80C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 277,
+        "Name": "VACODYM_854TP_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 278,
+        "Name": "VACODYM_854TP_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 279,
+        "Name": "VACODYM_854TP_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 280,
+        "Name": "VACODYM_854TP_180C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 281,
+        "Name": "VACODYM_854TP_20C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 282,
+        "Name": "VACODYM_854TP_60C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 283,
+        "Name": "VACODYM_854TP_80C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 284,
+        "Name": "VACODYM_854_AP_020C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 285,
+        "Name": "VACODYM_854_AP_060C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 286,
+        "Name": "VACODYM_854_AP_080C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 287,
+        "Name": "VACODYM_854_AP_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 288,
+        "Name": "VACODYM_854_AP_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 289,
+        "Name": "VACODYM_854_AP_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 290,
+        "Name": "VACODYM_854_AP_180C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 291,
+        "Name": "VACODYM_854_TP_020C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 292,
+        "Name": "VACODYM_854_TP_060C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 293,
+        "Name": "VACODYM_854_TP_080C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 294,
+        "Name": "VACODYM_854_TP_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 295,
+        "Name": "VACODYM_854_TP_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 296,
+        "Name": "VACODYM_854_TP_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 297,
+        "Name": "VACODYM_854_TP_180C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 298,
+        "Name": "VACODYM_863AP_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 299,
+        "Name": "VACODYM_863AP_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 300,
+        "Name": "VACODYM_863AP_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 301,
+        "Name": "VACODYM_863AP_180C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 302,
+        "Name": "VACODYM_863AP_20C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 303,
+        "Name": "VACODYM_863AP_210C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 304,
+        "Name": "VACODYM_863AP_60C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 305,
+        "Name": "VACODYM_863AP_80C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 306,
+        "Name": "VACODYM_863TP_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 307,
+        "Name": "VACODYM_863TP_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 308,
+        "Name": "VACODYM_863TP_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 309,
+        "Name": "VACODYM_863TP_180C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 310,
+        "Name": "VACODYM_863TP_20C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 311,
+        "Name": "VACODYM_863TP_210C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 312,
+        "Name": "VACODYM_863TP_60C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 313,
+        "Name": "VACODYM_863TP_80C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 314,
+        "Name": "VACODYM_872AP_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 315,
+        "Name": "VACODYM_872AP_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 316,
+        "Name": "VACODYM_872AP_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 317,
+        "Name": "VACODYM_872AP_180C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 318,
+        "Name": "VACODYM_872AP_20C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 319,
+        "Name": "VACODYM_872AP_210C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 320,
+        "Name": "VACODYM_872AP_60C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 321,
+        "Name": "VACODYM_872AP_80C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 322,
+        "Name": "VACODYM_872TP_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 323,
+        "Name": "VACODYM_872TP_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 324,
+        "Name": "VACODYM_872TP_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 325,
+        "Name": "VACODYM_872TP_180C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 326,
+        "Name": "VACODYM_872TP_20C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 327,
+        "Name": "VACODYM_872TP_210C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 328,
+        "Name": "VACODYM_872TP_60C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 329,
+        "Name": "VACODYM_872TP_80C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 330,
+        "Name": "VACODYM_881AP_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 331,
+        "Name": "VACODYM_881AP_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 332,
+        "Name": "VACODYM_881AP_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 333,
+        "Name": "VACODYM_881AP_180C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 334,
+        "Name": "VACODYM_881AP_20C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 335,
+        "Name": "VACODYM_881AP_210C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 336,
+        "Name": "VACODYM_881AP_60C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 337,
+        "Name": "VACODYM_881AP_80C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 338,
+        "Name": "VACODYM_881TP_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 339,
+        "Name": "VACODYM_881TP_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 340,
+        "Name": "VACODYM_881TP_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 341,
+        "Name": "VACODYM_881TP_180C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 342,
+        "Name": "VACODYM_881TP_210C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 343,
+        "Name": "VACODYM_881TP_60C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 344,
+        "Name": "VACODYM_881TP_80C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 345,
+        "Name": "VACODYM_890AP_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 346,
+        "Name": "VACODYM_890AP_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 347,
+        "Name": "VACODYM_890AP_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 348,
+        "Name": "VACODYM_890AP_180C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 349,
+        "Name": "VACODYM_890AP_20C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 350,
+        "Name": "VACODYM_890AP_210C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 351,
+        "Name": "VACODYM_890AP_240C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 352,
+        "Name": "VACODYM_890AP_60C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 353,
+        "Name": "VACODYM_890AP_80C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 354,
+        "Name": "VACODYM_890TP_100C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 355,
+        "Name": "VACODYM_890TP_120C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 356,
+        "Name": "VACODYM_890TP_150C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 357,
+        "Name": "VACODYM_890TP_180C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 358,
+        "Name": "VACODYM_890TP_20C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 359,
+        "Name": "VACODYM_890TP_240C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 360,
+        "Name": "VACODYM_890TP_60C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 361,
+        "Name": "VACODYM_890TP_80C",
+        "conductivity": 0.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 362,
+        "Name": "air",
+        "conductivity": 0.0,
+        "relPermeability": 1.0000004,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 363,
+        "Name": "aluminum",
+        "conductivity": 38000000.0,
+        "relPermeability": 1.000021,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 364,
+        "Name": "aluminum_EC",
+        "conductivity": 36000000.0,
+        "relPermeability": 1.000021,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 365,
+        "Name": "aluminum_no2_EC",
+        "conductivity": 33000000.0,
+        "relPermeability": 1.000021,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 366,
+        "Name": "bakelite",
+        "conductivity": 1e-09,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 367,
+        "Name": "beryllium",
+        "conductivity": 25000000.0,
+        "relPermeability": 1.00000079,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 368,
+        "Name": "brass",
+        "conductivity": 15000000.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 369,
+        "Name": "bronze",
+        "conductivity": 10000000.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 370,
+        "Name": "cast_iron",
+        "conductivity": 1500000.0,
+        "relPermeability": 60.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 371,
+        "Name": "chromium",
+        "conductivity": 7600000.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 372,
+        "Name": "cobalt",
+        "conductivity": 10000000.0,
+        "relPermeability": 250.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 373,
+        "Name": "conformal_coat",
+        "conductivity": 0.0,
+        "relPermeability": 1.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 374,
+        "Name": "copper",
+        "conductivity": 58000000.0,
+        "relPermeability": 0.999991,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 375,
+        "Name": "ferrite",
+        "conductivity": 0.01,
+        "relPermeability": 1000.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 376,
+        "Name": "gold",
+        "conductivity": 41000000.0,
+        "relPermeability": 0.99996,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 377,
+        "Name": "graphite",
+        "conductivity": 70000.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 378,
+        "Name": "indium",
+        "conductivity": 6440000.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 379,
+        "Name": "iron",
+        "conductivity": 10300000.0,
+        "relPermeability": 4000.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 380,
+        "Name": "lead",
+        "conductivity": 5000000.0,
+        "relPermeability": 0.999983,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 381,
+        "Name": "magnesium",
+        "conductivity": 22500000.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 382,
+        "Name": "molybdenum",
+        "conductivity": 17600000.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 383,
+        "Name": "mu_metal",
+        "conductivity": 1610000.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 384,
+        "Name": "nickel",
+        "conductivity": 14500000.0,
+        "relPermeability": 600.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 385,
+        "Name": "palladium",
+        "conductivity": 9300000.0,
+        "relPermeability": 1.00082,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 386,
+        "Name": "pec",
+        "conductivity": 1e+30,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 387,
+        "Name": "perfect_conductor",
+        "conductivity": 1e+30,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 388,
+        "Name": "platinum",
+        "conductivity": 9300000.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 389,
+        "Name": "rhodium",
+        "conductivity": 22200000.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 390,
+        "Name": "rubber_hard",
+        "conductivity": 1e-15,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 391,
+        "Name": "silver",
+        "conductivity": 61000000.0,
+        "relPermeability": 0.99998,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 392,
+        "Name": "solder",
+        "conductivity": 7000000.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 393,
+        "Name": "steel_1008",
+        "conductivity": 2000000.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "NL",
+        "ID": 394,
+        "Name": "steel_1010",
+        "conductivity": 2000000.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 395,
+        "Name": "steel_stainless",
+        "conductivity": 1100000.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 396,
+        "Name": "tantalum",
+        "conductivity": 6300000.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 397,
+        "Name": "tin",
+        "conductivity": 8670000.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 398,
+        "Name": "titanium",
+        "conductivity": 1820000.0,
+        "relPermeability": 1.00018,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 399,
+        "Name": "tungsten",
+        "conductivity": 18200000.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 400,
+        "Name": "water_distilled",
+        "conductivity": 0.0002,
+        "relPermeability": 0.999991,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 401,
+        "Name": "water_fresh",
+        "conductivity": 0.01,
+        "relPermeability": 0.999991,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 402,
+        "Name": "water_sea",
+        "conductivity": 4.0,
+        "relPermeability": 0.999991,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 403,
+        "Name": "zinc",
+        "conductivity": 16700000.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    },
+    {
+        "BHCurve": "Linear",
+        "ID": 404,
+        "Name": "zirconium",
+        "conductivity": 24400000.0,
+        "relPermeability": 0.0,
+        "remanence": "no information"
+    }
+]
