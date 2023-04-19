@@ -20,5 +20,9 @@ defaultFileInfo.mat
 # Dont track doc build
 PyDraft/doc/_build/
 
+# exclude uml diagrams folder except for createUML.py
+PyDraft/doc/UML_Diagrams/*
+!PyDraft/doc/UML_Diagrams/createUML.py
+
 # specific files to ignore
 PyDraft/workingDirectory/testPosImport/VergleichEisenverlustberechnungAnsysOnelab.mat
