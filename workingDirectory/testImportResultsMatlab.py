@@ -1,0 +1,46 @@
+from sys import path
+from os.path import abspath, join, dirname
+from matplotlib.pyplot import plot, show
+from matplotlib import pyplot as plt
+
+try:
+    rootname = abspath(join(dirname(__file__), ".."))
+except:
+    rootname = "c:\\Users\\ganser\\AppData\\Local\\Programs\\PyDraft_git\\Software_V2"
+    print(f"Could not determine root. Setting it manually to '{rootname}'")
+print(f'rootname is "{rootname}"')
+path.append(rootname)
+
+from pydraft.functions.importResults import plotTimeTableDat, readTimeTableDat, splitData
+from pydraft.definitions import RESULT_DIR, MAIN_DIR
+
+simDir = join(r"C:\Users\ganser\AppData\Local\Programs\PyDraft_git\Software_V2\Results\matlab", "res_Test_Looplines_IPM_1FE1051_modMagnet.em4")
+# TORQUE
+plotTimeTableDat(join(simDir, "Ts.dat"),"Torque in Nm", title="Torque of IPM_1FE1051_modMagnet", savefig=True)
+# time, torque = readTimeTableDat()
+# # SPLIT SIM-DATA
+# nbrSims, timeArray, torqueArray = splitData(time, torque)
+# # PLOT TORQUE
+# for sim in range(nbrSims):
+#     fig, ax = plt.subplots()
+#     fig.set_dpi(300)
+#     ax.plot(timeArray[sim], torqueArray[sim])
+#     # show()
+#     # ax.set_aspect("equal", adjustable="box")
+#     fig.axes[0].set_ylim(
+#         bottom=min(torqueArray[sim]) * (1.1 if min(torqueArray[sim]) < 0 else 0.9),
+#         top=max(torqueArray[sim]) * 1.1,
+#     )
+#     # ax.autoscale()
+
+# PLOT INDUCED VOLTAGE
+time = dict()
+indVoltage = dict()
+fig, ax = plt.subplots()
+fig.set_dpi(300)
+for phase in "ABC":
+    time[phase], indVoltage[phase] = readTimeTableDat(
+        join(simDir, "InducedVoltage" + phase + ".dat")
+    )
+    ax.plot(time[phase], indVoltage[phase])
+show()

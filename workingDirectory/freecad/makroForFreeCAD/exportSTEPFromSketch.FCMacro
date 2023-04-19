@@ -1,0 +1,67 @@
+import FreeCAD
+import Draft
+import ImportGui
+
+sketchRotorBlech = []
+sketchMagnet = []
+sketchRotorLuft = []
+sketchRotorLuftSpalt = []
+
+symFactor = int(len(App.ActiveDocument.Objects)/4)
+
+for i in range(0, len(App.ActiveDocument.Objects)):
+    for i2 in range(1, symFactor+1):
+        if App.ActiveDocument.Objects[i].Label == "sketch_Rotorblech_" + str(i2):
+            sketchRotorBlech.append(App.ActiveDocument.Objects[i])
+        elif App.ActiveDocument.Objects[i].Label == "sketch_Magnet_" + str(i2):
+            sketchMagnet.append(App.ActiveDocument.Objects[i])
+        elif App.ActiveDocument.Objects[i].Label == "sketch_Rotorluft_" + str(i2):
+            sketchRotorLuft.append(App.ActiveDocument.Objects[i])
+        elif App.ActiveDocument.Objects[i].Label == "sketch_RotorLuftspalt_" + str(i2):
+            sketchRotorLuftSpalt.append(App.ActiveDocument.Objects[i])
+
+surRotorBlech = []
+surMagnet = []
+surRotorLuft = []
+surRotorLuftspalt = []
+
+for i in range(0, 2):
+    sketch_Rotorblech2 = FreeCAD.ActiveDocument.copyObject(sketchRotorBlech[i])
+    line_blech = Draft.downgrade(sketch_Rotorblech2, delete = True)
+    wire_blech = Draft.upgrade(line_blech[0], delete = True)
+    surface_blech = Draft.upgrade(wire_blech[0], delete = True)
+    surface_blech[0][0].Label = "Surface_Rotorblech_" + str(i+1)
+    surRotorBlech.append(surface_blech[0][0])
+
+for i in range(0, 0):
+    sketch_Magnet2 = FreeCAD.ActiveDocument.copyObject(sketchMagnet[i])
+    line_magnet = Draft.downgrade(sketch_Magnet2, delete = True)
+    wire_magnet = Draft.upgrade(line_magnet[0], delete = True)
+    surface_magnet = Draft.upgrade(wire_magnet[0], delete = True)
+    surface_magnet[0][0].Label = "Surface_Magnet_" + str(i+1)
+    surMagnet.append(surface_magnet[0][0])
+
+for i in range(0, 0):
+    sketch_Luft2 = FreeCAD.ActiveDocument.copyObject(sketchRotorLuft[i])
+    line_Luft = Draft.downgrade(sketch_Luft2, delete = True)
+    wire_Luft = Draft.upgrade(line_Luft[0], delete = True)
+    surface_Luft = Draft.upgrade(wire_Luft[0], delete = True)
+    surface_Luft[0][0].Label = "Surface_RotorLuft_" + str(i+1)
+    surRotorLuft.append(surface_Luft[0][0].Label)
+
+for i in range(0, 0):
+    sketch_Luftspalt2 = FreeCAD.ActiveDocument.copyObject(sketchRotorLuftSpalt[i])
+    line_Luftspalt = Draft.downgrade(sketch_Luftspalt2, delete = True)
+    wire_Luftspalt = Draft.upgrade(line_Luftspalt[0], delete = True)
+    surface_Luftspalt = Draft.upgrade(wire_Luftspalt[0], delete = True)
+    surface_Luftspalt[0][0].Label = "Surface_RotorLuftSpalt_" + str(i+1)
+    surRotorLuftspalt.append(surface_Luftspalt[0][0].Label)
+
+__objs__=[surRotorBlech[0], surRotorBlech[1]]
+ImportGui.export(__objs__,u"C:/Users/koenig/Desktop/FreeCAD/pmsm/pmsm02.step")
+del __objs__
+
+App.ActiveDocument.removeObject(surRotorBlech[0].Name)
+App.ActiveDocument.removeObject(surRotorBlech[1].Name)
+
+FreeCAD.ActiveDocument.recompute()

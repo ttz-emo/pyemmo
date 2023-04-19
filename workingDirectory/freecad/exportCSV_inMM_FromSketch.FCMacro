@@ -1,0 +1,58 @@
+import FreeCAD
+import Part
+
+geoObject = App.ActiveDocument.Objects
+
+geoArray = [['Name', 'AnfP_x', 'AnfP_y', 'AnfP_z', 'EndP_x', 'EndP_y', 'EndP_z', 'RundP_x', 'RundP_y', 'RundP_z', 'Type']]
+
+for listLine in geoObject:
+    for line in listLine.Geometry:
+        #Variablen neu initialisieren, um fehlerhafte Information zu vermeiden!
+        name = listLine.Label
+        AnfP_x = -1000000
+        AnfP_y = -1000000
+        AnfP_z = -1000000
+        EndP_x = -1000000
+        EndP_y = -1000000
+        EndP_z = -1000000
+        RundP_x = -1000000
+        RundP_y = -1000000
+        RundP_z = -1000000
+        Type = 'Fehler erkannt! For-Schleife in exportMATFROMSketch.FCMacro überprüfen'
+        
+        if type(line) == Part.ArcOfCircle:
+            c = line.Center
+            RundP_x = c[0]*1e-3
+            RundP_y = c[1]*1e-3
+            RundP_z = c[2]*1e-3
+            Type = 'Arc'
+        else:
+            RundP_x = 'Nan'
+            RundP_y = 'Nan'
+            RundP_z = 'Nan'
+            Type = 'Line'
+
+        p1 = line.StartPoint
+        p2 = line.EndPoint
+        AnfP_x = p1[0]*1e-3
+        AnfP_y = p1[1]*1e-3
+        AnfP_z = p1[2]*1e-3
+        EndP_x = p2[0]*1e-3
+        EndP_y = p2[1]*1e-3
+        EndP_z = p2[2]*1e-3
+
+        geoArray.append([name, AnfP_x, AnfP_y, AnfP_z, EndP_x, EndP_y, EndP_z, RundP_x, RundP_y, RundP_z, Type])
+
+
+csvFile = open('lineTable.csv', 'w')
+for line in geoArray:
+    for i in range(0, len(line)-1):
+        csvFile.write(str(line[i]))
+        csvFile.write(',')
+    csvFile.write(line[len(line)-1])
+    csvFile.write('\n')
+
+csvFile.close()
+    
+
+FreeCAD.ActiveDocument.recompute()

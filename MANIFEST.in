@@ -1,0 +1,22 @@
+graft pydraft
+
+include pydraft/script/material/Material_new.db
+
+prune tests
+prune workingDirectory
+prune Results
+prune */.vscode
+prune */__pycache__
+prune pydraft/script/__pycache__
+prune pydraft/api/__pycache__
+prune pydraft/functions/__pycache__
+prune .egg-info
+
+global-exclude *.py[cod]
+
+exclude pydraft/dictionary.doc
+exclude pydraft/script/material/Material_old.db
+exclude pydraft/script/material/220204_Material_new.json
+
+# Exclude Material_new.db for smaller package file
+# exclude pydraft/script/material/Material_new.db
