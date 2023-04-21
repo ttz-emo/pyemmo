@@ -7,14 +7,14 @@ Geometry and Material package
 .. toctree::
    :maxdepth: 1
 
-   pydraft.script.geometry
-   pydraft.script.material
+   pyemmo.script.geometry
+   pyemmo.script.material
 
 
 Script module
 -------------
 
-.. automodule:: pydraft.script.script
+.. automodule:: pyemmo.script.script
    :members:
    :undoc-members:
    :show-inheritance:
@@ -37,7 +37,7 @@ To get the current system offset, the cosine phase of the MMF wave whose order i
 
 For the simple 12-2 winding in the example picture this would be the wave with order :math:`\nu = 1` and results in a offset of -105° (electrical = mechanical angle, because number of pole pairs is 1).
 Rotating the system by this angle alignes the wave with the first slot center (definition by SWAT-EM). 
-Since the model in PyDraft by definition allways starts with a tooth center on the x-axis we need to further rotate by half a slot pitch (in electrical degrees: :math:`-\frac{1}{2} \frac{360°}{Q} \cdot pp`).
+Since the model in PyEMMO by definition allways starts with a tooth center on the x-axis we need to further rotate by half a slot pitch (in electrical degrees: :math:`-\frac{1}{2} \frac{360°}{Q} \cdot pp`).
 In the example this would result in :math:`-\frac{1}{2} \frac{360°}{12} \cdot 1 = -15°`.
 Now the system would be align with the x-axis.
 To align it with the first pole (which must be a north pole by this definition), the system must be shifted by +90° electrical, which results in the final dq-system offset angle:
@@ -79,7 +79,7 @@ Written in code the rotation direction check looks like:
    else:
        simuParamDict.SYM.FLAG_CHANGE_ROT_DIR = 0
 
-.. .. automodule:: pydraft.script
+.. .. automodule:: pyemmo.script
 ..    :members:
 ..    :undoc-members:
 ..    :show-inheritance:

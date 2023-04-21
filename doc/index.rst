@@ -1,6 +1,6 @@
-Welcome to the PyDraft documentation!
+Welcome to the PyEMMO documentation!
 =====================================
-**PyDraft** is a Python based interface for generating finite element models of electrical machines in `Onelab <https://www.onelab.info/>`_.
+**PyEMMO** is a Python based interface for generating finite element models of electrical machines in `Onelab <https://www.onelab.info/>`_.
 
 .. note::
 
@@ -12,7 +12,7 @@ Welcome to the PyDraft documentation!
    
    source/usage
    
-   source/pydraft
+   source/PyEMMO
    
 Indices and tables
 ==================

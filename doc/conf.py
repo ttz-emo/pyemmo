@@ -7,7 +7,7 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = "PyDraft"
+project = "PyEMMO"
 copyright = "2022, TTZ-EMO AG-EM"
 author = "TTZ-EMO AG-EM"
 

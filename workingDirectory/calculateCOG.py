@@ -1,6 +1,6 @@
 #%%
 import setPath
-from pydraft import Point, Line, Surface
+from pyemmo import Point, Line, Surface
 import matplotlib.pyplot as plt
 
 P1 = Point('P1', 0.11, 0.21, 0, 1)

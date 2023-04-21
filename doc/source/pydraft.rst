@@ -1,50 +1,50 @@
-PyDraft packages
+PyEMMO packages
 ================
 
 Global parameters
 -----------------
 
-Some global PyDraft parameters:
+Some global PyEMMO parameters:
 
-.. automodule:: pydraft.definitions
+.. automodule:: pyemmo.definitions
    :members:
    :undoc-members:
    :show-inheritance:
 
-PyDraft Subpackages
+PyEMMO Subpackages
 -------------------
 
 .. toctree::
    :maxdepth: 2
 
-   pydraft.api
-   pydraft.functions
-   pydraft.script
+   pyemmo.api
+   pyemmo.functions
+   pyemmo.script
 
 .. Submodules
 .. ----------
 
-.. pydraft.default\_config\_dict module
+.. pyemmo.default\_config\_dict module
 .. ------------------------------------
 
-.. .. automodule:: pydraft.default_config_dict
+.. .. automodule:: pyemmo.default_config_dict
 ..    :members:
 ..    :undoc-members:
 ..    :show-inheritance:
 
-.. pydraft.version module
+.. pyemmo.version module
 .. ----------------------
 
-.. .. automodule:: pydraft.version
+.. .. automodule:: pyemmo.version
 ..    :members:
 ..    :undoc-members:
 ..    :show-inheritance:
 
-.. TODO: calcPhaseangleStarvoltageCorr()-override in Doku erwähnen (ist hier in pydraft.__init__)... Kapitel zu Drehrichtungsbestimmung!
+.. TODO: calcPhaseangleStarvoltageCorr()-override in Doku erwähnen (ist hier in pyemmo.__init__)... Kapitel zu Drehrichtungsbestimmung!
 .. Module contents
 .. ---------------
 
-.. .. automodule:: pydraft
+.. .. automodule:: pyemmo
 ..    :members:
 ..    :undoc-members:
 ..    :show-inheritance:

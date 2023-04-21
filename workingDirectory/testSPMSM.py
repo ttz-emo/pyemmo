@@ -6,23 +6,23 @@ import sys
 from numpy import rad2deg, where
 
 try:
-    from pydraft.script.script import Script
+    from pyemmo.script.script import Script
 except:
     try:
         rootname = path.abspath(path.join(path.dirname(__file__), ".."))
     except:
-        rootname = "c:\\Users\\ganser\\AppData\\Local\\Programs\\PyDraft_git\\PyDraft"
+        rootname = "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\pyemmo"
         print(f"Could not determine root. Setting it manually to '{rootname}'")
     print(f'rootname is "{rootname}"')
     sys.path.append(rootname)
-    from pydraft.script.script import Script
-from pydraft.definitions import RESULT_DIR, MAIN_DIR
-from pydraft.script.geometry.point import Point
-from pydraft.script.geometry.line import Line
-from pydraft.script.material.material import Material
-from pydraft.script.geometry.machineSPMSM import MachineSPMSM
+    from pyemmo.script.script import Script
+from pyemmo.definitions import RESULT_DIR, MAIN_DIR
+from pyemmo.script.geometry.point import Point
+from pyemmo.script.geometry.line import Line
+from pyemmo.script.material.electricalSteel import Material, ElectricalSteel
+from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
 from swat_em import datamodel, analyse
-from pydraft import calcPhaseangleStarvoltageCorr
+from pyemmo import calcPhaseangleStarvoltageCorr
 
 analyse.calc_phaseangle_starvoltage = calcPhaseangleStarvoltageCorr
 import math
@@ -32,9 +32,13 @@ import math
 PBohrung = Point("mittelPunktBohrung", 0, 0, 0, 5e-3)
 
 # Material aus Datenbank laden
-steel_1010 = Material()
+steel_1010 = ElectricalSteel(
+    sheetThickness=1e-3,
+    lossParams=(0.0, 0.0, 0.0),
+    referenceFrequency=0,
+    referenceFluxDensity=0,
+)
 steel_1010.loadMatFromDataBase("Material_new.db", "steel_1010")
-steel_1010.setSheetThickness(5e-4)
 ndFe35 = Material()
 ndFe35.loadMatFromDataBase("Material_new.db", "NdFe35")
 # ndFe35.setRemanence(0.01) # switch "off" remanence
@@ -178,7 +182,7 @@ SPMSM.setFunctionMesh("linear", 8)
 SPMSM.plot()
 # SPMSM.createMachineDomains -> MachineAllType function
 #%%
-resDir = r"C:\Users\ganser\AppData\Local\Programs\PyDraft_git\PyDraft\Results\Baukasten"
+resDir = r"C:\Users\ganser\AppData\Local\Programs\pyemmo\Results\Baukasten"
 modelDir = path.abspath(path.join(resDir, "Test_SPMSM"))
 if not isdir(modelDir):
     mkdir(modelDir)
@@ -200,8 +204,8 @@ myScript = Script(
     machine=SPMSM,
 )
 myScript.generateScript()
-from pydraft.functions.runOnelab import createCmdCommand
-from pydraft.functions.importResults import plotAllDat
+from pyemmo.functions.runOnelab import createCmdCommand
+from pyemmo.functions.importResults import plotAllDat
 import os
 
 os.system(

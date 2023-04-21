@@ -5,8 +5,8 @@ try:
     from .point import Point
     from .line import Line
 except ImportError:
-    from pydraft.script.geometry.point import Point
-    from pydraft.script.geometry.line import Line
+    from pyemmo.script.geometry.point import Point
+    from pyemmo.script.geometry.line import Line
 
 ###
 # Eine Instanz der Unterklasse Spilne ist ein Polynomzug, zwischen beliebig vielen Punkten (Objekte der Klasse Point) im dreidimensionalen Raum.
@@ -14,7 +14,7 @@ except ImportError:
 #
 #   Beispiel:
 #
-#       import pydraft as pyd
+#       import pyemmo as pyd
 #       P0 = pyd.Point('p0', 0, 0, 0, 0.3)
 #       P1 = pyd.Point('p1', 1, 0, 0, 0.3)
 #       P2 = pyd.Point('p2', 1, 1, 0, 0.3)

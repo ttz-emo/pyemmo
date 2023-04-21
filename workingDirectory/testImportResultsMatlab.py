@@ -6,15 +6,15 @@ from matplotlib import pyplot as plt
 try:
     rootname = abspath(join(dirname(__file__), ".."))
 except:
-    rootname = "c:\\Users\\ganser\\AppData\\Local\\Programs\\PyDraft_git\\Software_V2"
+    rootname = "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\Software_V2"
     print(f"Could not determine root. Setting it manually to '{rootname}'")
 print(f'rootname is "{rootname}"')
 path.append(rootname)
 
-from pydraft.functions.importResults import plotTimeTableDat, readTimeTableDat, splitData
-from pydraft.definitions import RESULT_DIR, MAIN_DIR
+from pyemmo.functions.importResults import plotTimeTableDat, readTimeTableDat, splitData
+from pyemmo.definitions import RESULT_DIR, MAIN_DIR
 
-simDir = join(r"C:\Users\ganser\AppData\Local\Programs\PyDraft_git\Software_V2\Results\matlab", "res_Test_Looplines_IPM_1FE1051_modMagnet.em4")
+simDir = join(r"C:\Users\ganser\AppData\Local\Programs\pyemmo\Results\matlab", ...) # FIXME: CREATE TESTFILE DIRECTORY
 # TORQUE
 plotTimeTableDat(join(simDir, "Ts.dat"),"Torque in Nm", title="Torque of IPM_1FE1051_modMagnet", savefig=True)
 # time, torque = readTimeTableDat()

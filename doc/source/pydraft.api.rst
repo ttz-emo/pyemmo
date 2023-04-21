@@ -1,13 +1,13 @@
 api package
 ===========
 
-This section is about the PyDraft API (Application Programming Interface).
+This section is about the PyEMMO API (Application Programming Interface).
 It's working with two `JSON <https://de.wikipedia.org/wiki/JavaScript_Object_Notation>`_ formatted files, giving the geometry and the additional machine information.
 You can call the API via the command line using the following command:
 
 .. code:: shell
 
-   $ python -m pydraft.api.json /path/to/geo.json /path/to/machineInfo.json
+   $ python -m pyemmo.api.json /path/to/geo.json /path/to/machineInfo.json
 
 
 Command-line Interface
@@ -16,7 +16,7 @@ Command-line Interface
 .. role:: bash(code)
    :language: bash
 
-You can call :bash:`python -m pydraft.api.json -h` to get the following information about the command line options:
+You can call :bash:`python -m pyemmo.api.json -h` to get the following information about the command line options:
 
 .. You MUST add a empty line between the 'code-block' directive and the actual code you want to display.
 .. using the code-block-"role" without syntax highlighting (-> "text")
@@ -39,8 +39,8 @@ You can call :bash:`python -m pydraft.api.json -h` to get the following informat
 
 The arguments `gmsh`, `getdp`, `mod` and `res` are optional. If you don't specify the paths for Gmsh or GetDP, the program will try to find them in the system path. 
 The default path for the model result files (`mod` path) is a new folder in the user directory created at install time. 
-For Windows this will be something like :file:`C:/Users/USER_NAME/AppData/Roaming/pydraft/Results`. 
-By default the results directory for the simulation results will be stored in the same folder as the onelab simulation files created by PyDraft. The folder name defaults to :file:`/res_MODEL_NAME`. 
+For Windows this will be something like :file:`C:/Users/USER_NAME/AppData/Roaming/pyemmo/Results`. 
+By default the results directory for the simulation results will be stored in the same folder as the onelab simulation files created by PyEMMO. The folder name defaults to :file:`/res_MODEL_NAME`. 
 
 .. _table-label:
 
@@ -147,7 +147,7 @@ There can be more infos like the copper fill factor or the stator resistance, wh
 json module
 -------------------
 
-.. automodule:: pydraft.api.json
+.. automodule:: pyemmo.api.json
    :members:
    :undoc-members:
    :show-inheritance:
@@ -155,7 +155,7 @@ json module
 importJSON module
 -----------------
 
-.. automodule:: pydraft.api.importJSON
+.. automodule:: pyemmo.api.importJSON
    :members:
    :undoc-members:
    :show-inheritance:
@@ -163,7 +163,7 @@ importJSON module
 modelJSON module
 ----------------
 
-.. automodule:: pydraft.api.modelJSON
+.. automodule:: pyemmo.api.modelJSON
    :members:
    :undoc-members:
    :show-inheritance:
@@ -171,7 +171,7 @@ modelJSON module
 SurfaceJSON module
 ------------------
 
-.. automodule:: pydraft.api.SurfaceJSON
+.. automodule:: pyemmo.api.SurfaceJSON
    :members:
    :undoc-members:
    :show-inheritance:
@@ -179,7 +179,7 @@ SurfaceJSON module
 boundaryJSON module
 -------------------
 
-.. automodule:: pydraft.api.boundaryJSON
+.. automodule:: pyemmo.api.boundaryJSON
    :members:
    :undoc-members:
    :show-inheritance:
@@ -187,7 +187,7 @@ boundaryJSON module
 .. Module contents
 .. ---------------
 
-.. .. automodule:: pydraft.api
+.. .. automodule:: pyemmo.api
 ..    :members:
 ..    :undoc-members:
 ..    :show-inheritance:

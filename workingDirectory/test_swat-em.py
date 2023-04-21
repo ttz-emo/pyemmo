@@ -64,7 +64,7 @@ def genWindLayout_swat(windingList: List[str], Qs: int, onePole=False) -> List[L
 # wdg1.plot_layout(filename=".\test_swat-em_layout.png", res=[800,600], show=True)
 # wdg1.plot_windingfactor(filename=".\test_swat-em_windFactor.png", res=[800,600], show=True)
 #%% WICKLUNG 2: VERTEILT
-from pydraft.api.emma_onelab import genWindLayout_swat
+from pyemmo.api.json import genWindLayout_swat
 windList = ['+u','+u','+u','+u','+u','+u','-v','-v','-v','-v','-v','-v','+w','+w','+w','+w','+w','+w']
 # windList = ['+u','+u','+u','+u','+u','+u','-w','-w','-w','-w','-w','-w','+v','+v','+v','+v','+v','+v']
 # windListMod = [[[-3,-6,-9,-12], [1,4,7,10]], [[-1,-4,-7,-10], [2,5,8,11]], [[-2,-5,-8,-11],[3,6,9,12]]] # winding configuration import from matlab

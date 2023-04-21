@@ -6,37 +6,37 @@ import sys
 from numpy import rad2deg, where, gcd
 
 try:
-    from pydraft.script.script import Script
+    from pyemmo.script.script import Script
 except:
     try:
         rootname = path.abspath(path.join(path.dirname(__file__), ".."))
     except:
         rootname = (
-            "c:\\Users\\ganser\\AppData\\Local\\Programs\\PyDraft_git\\Software_V2"
+            "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\Software_V2"
         )
         print(f"Could not determine root. Setting it manually to '{rootname}'")
     print(f'rootname is "{rootname}"')
     sys.path.append(rootname)
-    from pydraft.script.script import Script
-from pydraft.definitions import RESULT_DIR
-from pydraft.script.geometry.point import Point
-from pydraft.script.geometry.line import Line
-from pydraft.script.material.material import Material
-from pydraft.script.geometry.machineSPMSM import MachineSPMSM
+    from pyemmo.script.script import Script
+from pyemmo.definitions import RESULT_DIR
+from pyemmo.script.geometry.point import Point
+from pyemmo.script.geometry.line import Line
+from pyemmo.script.material.electricalSteel import Material, ElectricalSteel
+from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
 from swat_em import datamodel, analyse
-from pydraft import calc_phaseangle_starvoltageV2
 
-analyse.calc_phaseangle_starvoltage = calc_phaseangle_starvoltageV2
-import math
-
-#%%
+# %%
 
 PBohrung = Point("mittelPunktBohrung", 0, 0, 0, 5e-3)
 
 # Material aus Datenbank laden
-steel_1010 = Material()
+steel_1010 = ElectricalSteel(
+    sheetThickness=1e-3,
+    lossParams=(0, 0, 0),
+    referenceFluxDensity=0,
+    referenceFrequency=0,
+)
 steel_1010.loadMatFromDataBase("Material_new.db", "steel_1010")
-steel_1010.setSheetThickness(5e-4)
 ndFe35 = Material()
 ndFe35.loadMatFromDataBase("Material_new.db", "NdFe35")
 # ndFe35.setRemanence(0.01) # switch "off" remanence
@@ -86,8 +86,8 @@ polteilung = 2 * pi / nbrPoles
 rotor.addMagnetParameter(
     {
         "h_M": 7e-3,
-        "angularWidth_i": polteilung/2*0.9,
-        "angularWidth_a": polteilung/2*0.8,
+        "angularWidth_i": polteilung / 2 * 0.9,
+        "angularWidth_a": polteilung / 2 * 0.8,
         "magnetisationDirection": [1, -1, 1, -1, 1, -1, 1, -1],
         "magnetisationType": "radial",
         "material": ndFe35,
@@ -97,7 +97,7 @@ rotor.addMagnetParameter(
 rotor.addAirGapParameter({"width": 3e-3, "material": air})
 rotor.createRotor()
 rotor.plot()
-#%%
+# %%
 winding = datamodel()
 winding.genwdg(Q=nbrSlots, P=nbrPoles, m=3, layers=2, turns=23)
 stator = SPMSM.addStatorToMachine("sheet01_standard", "slotForm_01", winding)
@@ -112,18 +112,18 @@ stator.addLaminationParameter(
         "machineCentrePoint": PBohrung,
     }
 )
-rWedge = rsi + (4+7)*1e-3
-rSlot = rsi + (4+20)*1e-3
+rWedge = rsi + (4 + 7) * 1e-3
+rSlot = rsi + (4 + 20) * 1e-3
 rNutschlitz = rsi + 4e-3
 hSlot = 20e-3
 stator.addSlotParameter(
     {
-        "w_SlotOP": nutteilung/2*rNutschlitz*0.1,
-        "h_SlotOP": hSlot*0.08,
-        "w_Wedge": nutteilung*rWedge*0.5,
-        "h_Wedge": hSlot*0.15,
+        "w_SlotOP": nutteilung / 2 * rNutschlitz * 0.1,
+        "h_SlotOP": hSlot * 0.08,
+        "w_Wedge": nutteilung * rWedge * 0.5,
+        "h_Wedge": hSlot * 0.15,
         "h_Slot": hSlot,
-        "w_Slot": nutteilung/2*rSlot*0.6,
+        "w_Slot": nutteilung / 2 * rSlot * 0.6,
         "material": copper,
         "meshLength": 3e-3,
         "slot_OPAir": True,
@@ -132,12 +132,12 @@ stator.addSlotParameter(
 stator.addAirGapParameter({"width": 3e-3, "material": air})
 stator.createStator()
 stator.plot()
-#%% Create Machine
+# %% Create Machine
 SPMSM.createMachineDomains()
 SPMSM.setFunctionMesh("linear", 8)
 SPMSM.plot()
 # SPMSM.createMachineDomains -> MachineAllType function
-#%% calc angle offset
+# %% calc angle offset
 dAxisAngle = polteilung / 2 * nbrPolePairs  # center angle of north pole -> d-Axis
 print(f"d-Axis (rotor north pole) angle (elec): {rad2deg(dAxisAngle)}°")
 nu, amp, angle = SPMSM.getStator().winding.get_MMF_harmonics()
@@ -145,9 +145,9 @@ nu, amp, angle = SPMSM.getStator().winding.get_MMF_harmonics()
 phiS = float(angle[where(nu == nbrPolePairs)])  # rad elec
 
 print(f"Stator north pole angle (elec): {rad2deg(phiS)}°")
-qAxisAngle = rad2deg(dAxisAngle) + 90 # deg elec
+qAxisAngle = rad2deg(dAxisAngle) + 90  # deg elec
 print(f"q-Axis angle (elec): {(qAxisAngle)}°")
-dqOffset = rad2deg(nutteilung/2*nbrPolePairs) - rad2deg(phiS)  # deg elec
+dqOffset = rad2deg(nutteilung / 2 * nbrPolePairs) - rad2deg(phiS)  # deg elec
 from swat_em import analyse
 
 phi, MMK, theta = analyse.calc_MMK(
@@ -162,8 +162,8 @@ phi, MMK, theta = analyse.calc_MMK(
 durchflutungNut0 = theta[0]
 print(f"Durchflutung in erster Nut: {durchflutungNut0}")
 print(f"Offset angle for dq transformation: {(dqOffset)}°")
-stator.winding.plot_MMK(filename=".\test_MMF.png", res=[800,600], show=True)
-#%%
+stator.winding.plot_MMK(filename=".\test_MMF.png", res=[800, 600], show=True)
+# %%
 modelDir = path.abspath(path.join(RESULT_DIR, "Test_SPMSM"))
 if not isdir(modelDir):
     mkdir(modelDir)
@@ -185,8 +185,8 @@ myScript = Script(
     machine=SPMSM,
 )
 myScript.generateScript()
-from pydraft.functions.runOnelab import createCmdCommand, findGmsh, findGetDP
-from pydraft.functions.importResults import plotAllDat
+from pyemmo.functions.runOnelab import createCmdCommand, findGmsh, findGetDP
+from pyemmo.functions.importResults import plotAllDat
 import os
 
 os.system(

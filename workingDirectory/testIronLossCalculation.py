@@ -8,12 +8,12 @@ import subprocess
 from typing import List
 import logging
 from matplotlib import pyplot as plt
-from pydraft.definitions import ROOT_DIR, RESULT_DIR
+from pyemmo.definitions import ROOT_DIR, RESULT_DIR
 
-# from pydraft.functions import importResults as imp
-from pydraft.functions import runOnelab
-from pydraft.functions import calcIronLoss
-from pydraft.api import emma_onelab
+# from pyemmo.functions import importResults as imp
+from pyemmo.functions import runOnelab
+from pyemmo.functions import calcIronLoss
+from pyemmo.api import json
 
 
 def log_subprocess_output(pipe: subprocess.PIPE):
@@ -22,7 +22,7 @@ def log_subprocess_output(pipe: subprocess.PIPE):
 
 
 # %% init simulations
-# RESULT_DIR = r"C:\Users\ganser\AppData\Roaming\pydraft\Results"
+# RESULT_DIR = r"C:\Users\ganser\AppData\Roaming\pyemmo\Results"
 gmshPath = r"C:\Users\ganser\AppData\Local\Programs\onelab-Windows64-230206\gmsh.exe"
 getdpPath = r"C:\Users\ganser\AppData\Local\Programs\onelab-Windows64-230206\getdp.exe"
 
@@ -31,13 +31,13 @@ paramFile = os.path.join(RESULT_DIR, "Test_1FE1051-4HF11_TherCom_param.geo")
 proFile = os.path.join(RESULT_DIR, "Test_1FE1051-4HF11_TherCom.pro")
 calFile = os.path.join(RESULT_DIR, "machine_magstadyn_a.pro")
 if not os.path.exists(proFile):
-    emma_onelab.main(
-        geo=r"C:\Users\ganser\AppData\Local\Programs\PyDraft_git\PyDraft\Results\matlab\Test_1FE1051-4HF11_TherCom\Test_1FE1051-4HF11_TherCom.json",
-        extInfo=r"C:\Users\ganser\AppData\Local\Programs\PyDraft_git\PyDraft\Results\matlab\Test_1FE1051-4HF11_TherCom\simuInfo.json",
+    json.main(
+        geo=r"C:\Users\ganser\AppData\Local\Programs\pyemmo_git\pyemmo\Results\matlab\Test_1FE1051-4HF11_TherCom\Test_1FE1051-4HF11_TherCom.json",
+        extInfo=r"C:\Users\ganser\AppData\Local\Programs\pyemmo_git\pyemmo\Results\matlab\Test_1FE1051-4HF11_TherCom\simuInfo.json",
         model=RESULT_DIR,
     )
 RES_DIR = (
-    r"C:\Users\ganser\AppData\Roaming\pydraft\Results\res_Test_1FE1051-4HF11_TherCom"
+    r"C:\Users\ganser\AppData\Roaming\pyemmo\Results\res_Test_1FE1051-4HF11_TherCom"
 )
 if not os.path.isdir(RES_DIR):
     os.mkdir(RES_DIR)

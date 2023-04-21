@@ -5,26 +5,26 @@ from os.path import abspath, dirname, join, normpath, realpath, isdir
 from matplotlib import font_manager
 
 ROOT_DIR = normpath(abspath(join(dirname(__file__), ".."))).replace("\\", "/")
-"""Path: ROOT_DIR is "PyDraft" root development directory with "dist", "doc", "pydraft",
+"""Path: ROOT_DIR is "pyemmo" root development directory with "dist", "doc", "pyemmo",
 "tests" and "workingDirectory" as subdirs. """
 
 # Further import
 try:
     from .functions.init_environment import get_config_dict
-    from pydraft import USER_DIR
+    from pyemmo import USER_DIR
 except ImportError:
     # Add root dir to python path
     sys.path.insert(0, ROOT_DIR)
-    exec("from pydraft.functions.init_environment import get_config_dict")
-    exec("from pydraft import PACKAGE_NAME, USER_DIR")
+    exec("from pyemmo.functions.init_environment import get_config_dict")
+    exec("from pyemmo import PACKAGE_NAME, USER_DIR")
 
-MAIN_DIR = dirname(realpath(__file__)).replace("\\", "/")  # main dir is pydraft
-"""Path: MAIN_DIR is "pydraft" main package directory with "script", "functions" and
+MAIN_DIR = dirname(realpath(__file__)).replace("\\", "/")  # main dir is pyemmo
+"""Path: MAIN_DIR is "pyemmo" main package directory with "script", "functions" and
 "api" as subpackages """
 
 RESULT_DIR = join(USER_DIR, "Results").replace("\\", "/")
-r"""Path: RESULT_DIR is "pydraft" default result directory to store model files and simulation results.
-For Windows this is something like: 'C:\\Users\\Username\\AppData\\Roaming\\PyDraft\\Results' """
+r"""Path: RESULT_DIR is "pyemmo" default result directory to store model files and simulation results.
+For Windows this is something like: 'C:\\Users\\Username\\AppData\\Roaming\\pyemmo\\Results' """
 if not isdir(RESULT_DIR):
     mkdir(RESULT_DIR)
 TEST_DIR = join(MAIN_DIR, "tests").replace("\\", "/")

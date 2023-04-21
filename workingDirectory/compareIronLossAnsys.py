@@ -8,7 +8,7 @@ from matplotlib import cm
 import scipy.io as sio
 
 # %% import ansys data
-ansysResPath = r"C:\Users\ganser\AppData\Roaming\pydraft\Results\230301_EisenverlustkennfeldAnsys.csv"
+ansysResPath = r"C:\Users\ganser\AppData\Roaming\pyemmo\Results\230301_EisenverlustkennfeldAnsys.csv"
 ansysResults = pandas.read_csv(ansysResPath)
 for key in ansysResults.keys():
     if "offset_deg" in key:
@@ -38,7 +38,7 @@ sio.savemat(
 # %%
 # Load onelab results
 RES_DIR = (
-    r"C:\Users\ganser\AppData\Roaming\pydraft\Results\res_Test_1FE1051-4HF11_TherCom"
+    r"C:\Users\ganser\AppData\Roaming\pyemmo\Results\res_Test_1FE1051-4HF11_TherCom"
 )
 coreLossOnelab = np.load(os.path.join(RES_DIR, "ironLossData.npy"))
 # coreLossOnelabMatFile = os.path.join(RES_DIR, "230301_ironLossDataOnelab.mat")

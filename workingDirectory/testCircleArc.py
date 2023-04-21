@@ -2,14 +2,14 @@
 from os.path import abspath, dirname, join
 from sys import path
 from matplotlib import pyplot as plt
-from pydraft.script.geometry.circleArc import CircleArc
-from pydraft.script.geometry.point import Point
+from pyemmo.script.geometry.circleArc import CircleArc
+from pyemmo.script.geometry.point import Point
 
 # try:
 print(f"__file__ is {__file__}")
 rootname = abspath(join(dirname(__file__), ".."))
 # except:
-#     rootname = "c:\\Users\\ganser\\AppData\\Local\\Programs\\PyDraft_git\\Software_V2"
+#     rootname = "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\Software_V2"
 # print(f"Could not determine root. Setting it manually to '{rootname}'")
 # print(f'rootname is "{rootname}"')
 

@@ -23,7 +23,7 @@ class PhysicalElement:
         material : Material
 
     Beispiel:
-        from pydraft import *\n
+        from pyemmo import *\n
         P1 = Point('P1', 0, 0, 0, 1)\n
         P2 = Point('P2', 1, 0, 0, 1)\n
         P3 = Point('P3', 1, 1, 0, 1)\n

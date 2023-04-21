@@ -1,6 +1,6 @@
 """Module for Class Domain"""
 from typing import List, Union, TYPE_CHECKING
-from pydraft.script.geometry.physicalElement import PhysicalElement
+from pyemmo.script.geometry.physicalElement import PhysicalElement
 
 if TYPE_CHECKING:
     from ..script import Script

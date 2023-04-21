@@ -33,8 +33,8 @@ def createLine(
     startPoint: Point,
     endPoint: Point,
 ) -> Union[Line, CircleArc, Spline]:
-    """This function creates a PyDraft line object from a given line dict. See
-    :func:`getSurfaceLineList() <pydraft.api.modelJSON.getSurfaceLineList>` for more infos
+    """This function creates a pyemmo line object from a given line dict. See
+    :func:`getSurfaceLineList() <pyemmo.api.modelJSON.getSurfaceLineList>` for more infos
     about the line dict contents.
     Mesh length, start point, end point and potentially center point have been created before.
 
@@ -109,7 +109,7 @@ def getSurfaceLineList(
 ) -> List[Line]:
     """
     This function takes a list of dicts with surface-line-information (lineloop structure)
-    and generates a list of PyDraft :class:`Line <pydraft.script.geometry.line.Line>` objects
+    and generates a list of pyemmo :class:`Line <pyemmo.script.geometry.line.Line>` objects
     from that.
 
     If mesh length (meshLen) is given in meters, the mesh settings of the points itself will be
@@ -305,7 +305,7 @@ def importMachineGeometry(geometryFile: str) -> Dict[str, SurfaceAPI]:
 
 def createSurfaceDict(surfList: List[SurfaceAPI]) -> Dict[str, SurfaceAPI]:
     """creates a Dict of SurfaceAPI objects from a List of SurfaceAPI (see
-    :func:`importMachineGeometry() <pydraft.api.modelJSON.importMachineGeometry>`).
+    :func:`importMachineGeometry() <pyemmo.api.modelJSON.importMachineGeometry>`).
     The dict-keys are the surface IDs (short names/abbriviations of the surface name).
 
     Args:

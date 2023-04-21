@@ -247,7 +247,7 @@ def createMBAux(
 ) -> List[MovingBand]:
     """
     createMBAux creates the outer Movingband lines of the rotor and add them to
-    PyDraft-Movingband objects depended on symmetry
+    pyemmo-Movingband objects depended on symmetry
 
     Args:
         symFaktor (int): Symmetry factor.
@@ -286,7 +286,7 @@ def createMB(
     segmentSurfDict: Dict[str, SurfaceAPI], symFactor: int, material: Material = air
 ) -> Tuple[MovingBand, MovingBand, Union[List[MovingBand], None]]:
     """
-    createMB generates all PyDraft Movingband objects needed for a simulation.
+    createMB generates all pyemmo Movingband objects needed for a simulation.
 
     Args:
         segmentSurfDict (Dict[str, SurfaceAPI]): Segment Surface dict with short IDs (IdExt)

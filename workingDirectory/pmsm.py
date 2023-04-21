@@ -1,22 +1,22 @@
 from setPath import pathRes
-import pydraft as pyd
+import pyemmo as emmo
 import math
 
-myScript = pyd.Script('pmsm', pathRes)
+myScript = emmo.Script('pmsm', pathRes)
 
 #       Rotorparameter (ausgedacht!)
-PBohrung = pyd.Point('mittelPunktBohrung', 0, 0, 0, 5e-3)
+PBohrung = emmo.Point('mittelPunktBohrung', 0, 0, 0, 5e-3)
 modellR = 8
 modellS = 12
 
 #Material aus Datenbank laden
-steel1010 = pyd.Material()
+steel1010 = emmo.Material()
 steel1010.loadMatFromDataBase('Material.db', 'steel1010')
-ndFe35 = pyd.Material()
+ndFe35 = emmo.Material()
 ndFe35.loadMatFromDataBase('Material.db', 'ndFe35')
-air = pyd.Material()
+air = emmo.Material()
 air.loadMatFromDataBase('Material.db', 'air')
-copper = pyd.Material()
+copper = emmo.Material()
 copper.loadMatFromDataBase('Material.db', 'copper')
 
 motorPMSM_struct = {
@@ -137,7 +137,7 @@ motorPMSM_struct = {
                         }
     }
 
-pmsm = pyd.Machine(motorPMSM_struct)
+pmsm = emmo.Machine(motorPMSM_struct)
 pmsm.addToScript(myScript)
 
 myScript.generateScript()

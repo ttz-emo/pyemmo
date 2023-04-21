@@ -1,4 +1,4 @@
-"""PyDraft Script module"""
+"""pyemmo Script module"""
 
 # make all annotations strings, to avoid import errors in type checking case
 from __future__ import annotations
@@ -19,7 +19,7 @@ from pygetdp.postoperation import PostopItem
 from ..definitions import DEFAULT_GEO_TOL, MAIN_DIR
 from ..functions.cleanName import cleanName
 
-# global domain dict to connect existing PyDraft Domains with domains for magstatdyn
+# global domain dict to connect existing pyemmo Domains with domains for magstatdyn
 from . import (
     boundaryDomainDict,
     default_param_dict,
@@ -78,7 +78,7 @@ class Script(object):
                     - 0: static (default)
                     - 1: transient
 
-            machine (Machine): pydraft machine object for geometry and geometic parameters.
+            machine (Machine): pyemmo machine object for geometry and geometic parameters.
                 Defaults to None.
             resultsPath (str, optional): path, where the simulation results should be stored.
                 Defaults to a folder in scriptPath with name "res_{scriptName}".
@@ -760,7 +760,7 @@ class Script(object):
 
         The IDs of the curve objects (lines) forming a closed loop must be in the correct
         order so the end point of the first line is the start point of the second line and
-        so on. See :func:`_checkLoop <pydraft.script.script.Script._checkLoop>` function for more
+        so on. See :func:`_checkLoop <pyemmo.script.script.Script._checkLoop>` function for more
         information.
 
         The gmsh-code for a curve loop looks like:
@@ -797,9 +797,9 @@ class Script(object):
         The resulting code is stored in the internal :code:`Script` variables:
 
         - curve code -> :code:`Script.curveCode` (see :func:`addCurve
-          <pydraft.script.script.Script._addCurve>`)
+          <pyemmo.script.script.Script._addCurve>`)
         - curve loop code -> :code:`Script.areaCode` (see :func:`_addLoopCode
-          <pydraft.script.script.Script._addLoopCode>`)
+          <pyemmo.script.script.Script._addLoopCode>`)
         - surface code -> :code:`Script.areaCode`
 
         Args:
@@ -1178,8 +1178,8 @@ class Script(object):
 
         This calls:
 
-            - :func:`addSurface() <pydraft.script.script.Script.addSurface>` and :func:`addCurve() <pydraft.script.script.Script._addCurve>`
-            - :func:`addMaterial() <pydraft.script.script.Script._addMaterial>` if Material is not defined yet
+            - :func:`addSurface() <pyemmo.script.script.Script.addSurface>` and :func:`addCurve() <pyemmo.script.script.Script._addCurve>`
+            - :func:`addMaterial() <pyemmo.script.script.Script._addMaterial>` if Material is not defined yet
             - addMagnetization() (radial, parallel or tangential) if Physical is a Magnet
 
         Args:
@@ -1972,7 +1972,7 @@ class Script(object):
 
         # write file content to new file
         with open(paramFilePath, "w", encoding="utf-8") as file:
-            # also add versionStr to identify pydraft version
+            # also add versionStr to identify pyemmo version
             file.write(versionStr)
             file.write(paramFileCode)
 

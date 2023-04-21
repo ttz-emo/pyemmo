@@ -5,10 +5,10 @@ import numpy as np
 from numpy.linalg import norm
 import math
 from matplotlib import pyplot as plt
-from pydraft.functions.importResults import importPos
+from pyemmo.functions.importResults import importPos
 
-bRadFilePath = r"C:\Users\ganser\AppData\Local\Programs\PyDraft_git\PyDraft\workingDirectory\testPosImport\res\brad.pos"
-# filepathRotor = r"C:\Users\ganser\AppData\Local\Programs\PyDraft_git\PyDraft\workingDirectory\testPosImport\res\brad.pos"
+bRadFilePath = r"C:\Users\ganser\AppData\Local\Programs\pyemmo\workingDirectory\testPosImport\res\brad.pos"
+# filepathRotor = r"C:\Users\ganser\AppData\Local\Programs\pyemmo_git\pyemmo\workingDirectory\testPosImport\res\brad.pos"
 filepath = [bRadFilePath]
 # with open(filepath) as posFile:
 #     header = posFile.readline()
@@ -54,7 +54,7 @@ try:
 except OSError:
     print("Failed for file ", dataFilePath)
 
-dataFilePath = r"C:\Users\ganser\AppData\Local\Programs\PyDraft_git\PyDraft\workingDirectory\testPosImport\res\dBdt_stator.pos"
+dataFilePath = r"C:\Users\ganser\AppData\Local\Programs\pyemmo_git\pyemmo\workingDirectory\testPosImport\res\dBdt_stator.pos"
 try:
     time, data = importPos(dataFilePath)
 except OSError:

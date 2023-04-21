@@ -4,8 +4,8 @@ import sys, os
 import numpy as np
 import time as clockTime
 from matplotlib import pyplot as plt
-from pydraft.definitions import ROOT_DIR
-from pydraft.functions.calcIronLoss import writeSimple
+from pyemmo.definitions import ROOT_DIR
+from pyemmo.functions.calcIronLoss import writeSimple
 
 #%%
 tstart = clockTime.time()

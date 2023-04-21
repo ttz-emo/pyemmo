@@ -1,17 +1,17 @@
 #%% Imports and stuff
 from setPath import pathRes
-import pydraft as pyd
-from pydraft.api.emma_onelab import *
+import pyemmo as emmo
+from pyemmo.api.json import *
 from os.path import abspath, join
 
 
 import subprocess
 
 #%%
-PyDraftPath = r"C:\Users\ganser\AppData\Local\Programs\PyDraft_git\Software_V2"
-rootname = PyDraftPath
+pyemmoPath = r"C:\Users\ganser\AppData\Local\Programs\pyemmo_git\Software_V2"
+rootname = pyemmoPath
 # rootname = abspath(join(dirname(__file__), ".."))
-myScript = pyd.Script("siemensTestMachine", pathRes)
+myScript = emmo.Script("siemensTestMachine", pathRes)
 Path2CSV = join(
     abspath(join(rootname, "..")), r"Siemens\Looplines_TTZMitLuftspalt\areaCSV"
 )

@@ -4,22 +4,22 @@ from os import path
 import sys
 
 try:
-    from pydraft.script.script import Script
+    from pyemmo.script.script import Script
 except:
     try:
         rootname = path.abspath(path.join(path.dirname(__file__), ".."))
     except:
-        rootname = "c:\\Users\\ganser\\AppData\\Local\\Programs\\PyDraft_git\\PyDraft"
+        rootname = "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\pyemmo"
         print(f"Could not determine root. Setting it manually to '{rootname}'")
     print(f'rootname is "{rootname}"')
     sys.path.append(rootname)
-    from pydraft.script.script import Script
+    from pyemmo.script.script import Script
 
-from pydraft.script.geometry.point import Point
-from pydraft.script.material import ElectricalSteel, Material
-from pydraft.script.geometry.machineIPMSM import MachineIPMSM
-from pydraft.functions import runOnelab
-from pydraft.definitions import ROOT_DIR
+from pyemmo.script.geometry.point import Point
+from pyemmo.script.material import ElectricalSteel, Material
+from pyemmo.script.geometry.machineIPMSM import MachineIPMSM
+from pyemmo.functions import runOnelab
+from pyemmo.definitions import ROOT_DIR
 import math
 import subprocess
 from swat_em import datamodel
@@ -172,7 +172,7 @@ command = runOnelab.createCmdCommand(
 )
 subprocess.run(command, check=False)
 # %%
-# from pydraft.functions import importResults
+# from pyemmo.functions import importResults
 # importResults.plotAllDat(testIPMSM_Script.getResultsPath())
 
 # %%

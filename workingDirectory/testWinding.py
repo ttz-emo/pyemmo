@@ -4,23 +4,23 @@ from os import mkdir, path
 import sys
 
 try:
-    from pydraft.script.script import Script
+    from pyemmo.script.script import Script
 except:
     try:
         rootname = path.abspath(path.join(path.dirname(__file__), ".."))
     except:
         rootname = (
-            "c:\\Users\\ganser\\AppData\\Local\\Programs\\PyDraft_git\\Software_V2"
+            "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\Software_V2"
         )
         print(f"Could not determine root. Setting it manually to '{rootname}'")
     print(f'rootname is "{rootname}"')
     sys.path.append(rootname)
-    from pydraft.script.script import Script
-from pydraft.definitions import RESULT_DIR
-from pydraft.script.geometry.point import Point
-from pydraft.script.geometry.line import Line
-from pydraft.script.material.material import Material
-from pydraft.script.geometry.machineSPMSM import MachineSPMSM
+    from pyemmo.script.script import Script
+from pyemmo.definitions import RESULT_DIR
+from pyemmo.script.geometry.point import Point
+from pyemmo.script.geometry.line import Line
+from pyemmo.script.material.electricalSteel import Material, ElectricalSteel
+from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
 import math
 
 #%%
@@ -28,9 +28,13 @@ import math
 PBohrung = Point("mittelPunktBohrung", 0, 0, 0, 5e-3)
 
 # Material aus Datenbank laden
-steel_1010 = Material()
+steel_1010 = ElectricalSteel(
+    sheetThickness=1e-3,
+    lossParams=(0.0, 0.0, 0.0),
+    referenceFrequency=0,
+    referenceFluxDensity=0,
+)
 steel_1010.loadMatFromDataBase("Material_new.db", "steel_1010")
-steel_1010.setSheetThickness(5e-4)
 ndFe35 = Material()
 ndFe35.loadMatFromDataBase("Material_new.db", "NdFe35")
 # ndFe35.setRemanence(0.01)
@@ -93,8 +97,6 @@ rotor.createRotor()
 rotor.plot()
 #%%
 from swat_em import datamodel,analyse
-from pydraft import calc_phaseangle_starvoltageV2 
-analyse.calc_phaseangle_starvoltage = calc_phaseangle_starvoltageV2
 # generate winding and add to stator
 myWinding = datamodel()
 myWinding.genwdg(Q=nbrSlots, P=int(nbrPoles / 2), m=3, layers=2, turns=30)
@@ -153,8 +155,8 @@ myScript = Script(
 )
 myScript.generateScript()
 #%%
-from pydraft.functions.runOnelab import createCmdCommand, findGmsh, findGetDP
-from pydraft.functions.importResults import plotAllDat
+from pyemmo.functions.runOnelab import createCmdCommand, findGmsh, findGetDP
+from pyemmo.functions.importResults import plotAllDat
 import os
 
 os.system(

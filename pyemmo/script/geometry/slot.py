@@ -1,7 +1,7 @@
 from typing import Dict, List, Literal, Tuple, Union
-from pydraft.script.geometry.line import Line
-from pydraft.script.geometry.surface import Surface
-from pydraft.script.material.material import Material
+from pyemmo.script.geometry.line import Line
+from pyemmo.script.geometry.surface import Surface
+from pyemmo.script.material.material import Material
 from .physicalElement import PhysicalElement
 from .. import colorDict
 from math import degrees

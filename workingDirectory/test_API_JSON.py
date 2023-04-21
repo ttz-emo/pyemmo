@@ -2,28 +2,28 @@
 from sys import path
 from os.path import abspath, dirname, isdir, isfile, join, normpath, realpath
 
-# Add Software_V2 to Path so pydraft can be found
+# Add Software_V2 to Path so pyemmo can be found
 # This must be done since this is a script (not really a module) and we cannot guarante where it will run from
 #   If it will be run as a module (from command line) __file__ will be the actual file path
 #   But if its run cellwise, like in an interactive pyhton (IPython) shell, __file__ variable will not exist and we have to add the path manually
 try:
     rootname = abspath(join(dirname(__file__), ".."))
 except:
-    rootname = "c:\\Users\\ganser\\AppData\\Local\\Programs\\PyDraft_git\\Software_V2"
+    rootname = "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\Software_V2"
     print(f"Could not determine root. Setting it manually to '{rootname}'")
 print(f'rootname is "{rootname}"')
 path.append(rootname)
 #%%
-from pydraft.definitions import RESULT_DIR, MAIN_DIR
-from pydraft.script.script import Script
-from pydraft.script.geometry.primaryLine import PrimaryLine
-from pydraft.script.geometry.slaveLine import SlaveLine
-from pydraft.script.geometry.limitLine import LimitLine
-from pydraft.script.geometry.rotor import Rotor
-from pydraft.script.geometry.stator import Stator
-from pydraft.script.geometry.machineAllType import MachineAllType
-from pydraft.api.emma_onelab import *
-from pydraft.functions.runOnelab import findGmsh, mergeAllGeoFiles
+from pyemmo.definitions import RESULT_DIR, MAIN_DIR
+from pyemmo.script.script import Script
+from pyemmo.script.geometry.primaryLine import PrimaryLine
+from pyemmo.script.geometry.slaveLine import SlaveLine
+from pyemmo.script.geometry.limitLine import LimitLine
+from pyemmo.script.geometry.rotor import Rotor
+from pyemmo.script.geometry.stator import Stator
+from pyemmo.script.geometry.machineAllType import MachineAllType
+from pyemmo.api.json import *
+from pyemmo.functions.runOnelab import findGmsh, mergeAllGeoFiles
 import subprocess
 from matplotlib import pyplot as plt
 import gmsh
@@ -155,7 +155,7 @@ else:
 # machineSiemens = MachineAllType(
 #     rotor=RotorSiemens,
 #     stator=StatorSiemens,
-#     name=f"Machine from emma_onelab interface ({modelName})",
+#     name=f"Machine from json interface ({modelName})",
 #     nbrPolePairs=nbrPolePair,
 #     symmetryFactor=symFactor,
 # )
@@ -364,7 +364,7 @@ else:
 # #     [gmshExe, join(rootname, r"resultDirectory\\" + scriptName + ".geo"),], shell=True,
 # # )
 # #%% PRINT ALL BOUNDARYS IN ONE SESSION
-# # from pydraft.functions.runOnelab import mergeAllGeoFiles
+# # from pyemmo.functions.runOnelab import mergeAllGeoFiles
 # # mergeAllGeoFiles(RESULT_DIR, gmshExe)
 
 # #%% Test createBoundary function:

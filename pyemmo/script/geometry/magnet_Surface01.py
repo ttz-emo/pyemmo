@@ -40,9 +40,9 @@ class Magnet_Surface01(Magnet):
         angularWidth_i (float): Inner angular width
         angularWidth_a (float): Outer angular width
         magnetisationDirection (Literial[-1,1]): see definition in Class 
-            :class:`~pydraft.script.geometry.magnet.Magnet`
+            :class:`~pyemmo.script.geometry.magnet.Magnet`
         magnetisationType (str): see definition in Class 
-            :class:`~pydraft.script.geometry.magnet.Magnet`
+            :class:`~pyemmo.script.geometry.magnet.Magnet`
         material (Material): Material of magnet.
         meshLength (float): 
 

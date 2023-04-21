@@ -21,7 +21,7 @@ class Line(Transformable):
     Klasse Point) im dreidimensionalen Raum.
 
     Beispiel:
-        import pydraft as pyd\n
+        import pyemmo as pyd\n
         P1 = pyd.Point('p1', 0, 0, 0, 0.3)\n
         P2 = pyd.Point('p2', 1, 0, 0, 0.3)\n
         L1 = pyd.Line('l1', P1, P2)\n

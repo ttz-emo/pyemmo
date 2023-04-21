@@ -9,12 +9,12 @@ from matplotlib import pyplot as plt
 try:
     rootDir = abspath(join(dirname(__file__), ".."))
 except:
-    rootDir = "c:\\Users\\ganser\\AppData\\Local\\Programs\\PyDraft_git\\Software_V2"
+    rootDir = "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\Software_V2"
     print(f"Could not determine root. Setting it manually to '{rootDir}'")
 print(f'rootname is "{rootDir}"')
 path.append(rootDir)
 
-from pydraft.functions.importResults import (
+from pyemmo.functions.importResults import (
     plotTimeTableDat,
     readTimeTableDat,
     splitData,

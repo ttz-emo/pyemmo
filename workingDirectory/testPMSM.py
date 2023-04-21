@@ -4,27 +4,27 @@ import subprocess
 import math
 from swat_em.datamodel import datamodel
 
-from pydraft.script.geometry.point import Point
-from pydraft.script.geometry.surface import Surface
-from pydraft.script.geometry.circleArc import CircleArc
-from pydraft.script.geometry.line import Line
-from pydraft.script.material.material import Material
-from pydraft.script.geometry.magnet import Magnet
-from pydraft.script.geometry.airGap import AirGap
-from pydraft.script.geometry.rotorLamination import RotorLamination
-from pydraft.script.geometry.movingBand import MovingBand
-from pydraft.script.geometry.airArea import AirArea
-from pydraft.script.geometry.primaryLine import PrimaryLine
-from pydraft.script.geometry.slaveLine import SlaveLine
-from pydraft.script.geometry.limitLine import LimitLine
-from pydraft.script.geometry.statorLamination import StatorLamination
-from pydraft.script.geometry.slot import Slot
-from pydraft.script.geometry.stator import Stator
-from pydraft.script.geometry.rotor import Rotor
-from pydraft.script.geometry.machineAllType import MachineAllType
-from pydraft.script.script import Script
-from pydraft.definitions import RESULT_DIR
-from pydraft.functions.runOnelab import createCmdCommand
+from pyemmo.script.geometry.point import Point
+from pyemmo.script.geometry.surface import Surface
+from pyemmo.script.geometry.circleArc import CircleArc
+from pyemmo.script.geometry.line import Line
+from pyemmo.script.material.material import Material
+from pyemmo.script.geometry.magnet import Magnet
+from pyemmo.script.geometry.airGap import AirGap
+from pyemmo.script.geometry.rotorLamination import RotorLamination
+from pyemmo.script.geometry.movingBand import MovingBand
+from pyemmo.script.geometry.airArea import AirArea
+from pyemmo.script.geometry.primaryLine import PrimaryLine
+from pyemmo.script.geometry.slaveLine import SlaveLine
+from pyemmo.script.geometry.limitLine import LimitLine
+from pyemmo.script.geometry.statorLamination import StatorLamination
+from pyemmo.script.geometry.slot import Slot
+from pyemmo.script.geometry.stator import Stator
+from pyemmo.script.geometry.rotor import Rotor
+from pyemmo.script.geometry.machineAllType import MachineAllType
+from pyemmo.script.script import Script
+from pyemmo.definitions import RESULT_DIR
+from pyemmo.functions.runOnelab import createCmdCommand
 
 #######################################################
 #           Koordinatensystem aufbauen

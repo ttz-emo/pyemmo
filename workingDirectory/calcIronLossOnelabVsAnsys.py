@@ -11,18 +11,18 @@ import scipy.io as sio
 import concurrent.futures
 from matplotlib import pyplot as plt
 import pandas
-from pydraft.definitions import ROOT_DIR, RESULT_DIR
+from pyemmo.definitions import ROOT_DIR, RESULT_DIR
 
 if ROOT_DIR not in sys.path:
     sys.path.append(ROOT_DIR)
 
-# from pydraft.functions import importResults as imp
-from pydraft.functions import runOnelab
-from pydraft.functions import calcIronLoss
-from pydraft.api import json
+# from pyemmo.functions import importResults as imp
+from pyemmo.functions import runOnelab
+from pyemmo.functions import calcIronLoss
+from pyemmo.api import json
 
 RES_DIR = (
-    r"C:\Users\ganser\AppData\Roaming\pydraft\Results\res_Test_1FE1051-4HF11_TherCom"
+    r"C:\Users\ganser\AppData\Roaming\pyemmo\Results\res_Test_1FE1051-4HF11_TherCom"
     # + datetime.date.today().isoformat()
 )
 
@@ -99,7 +99,7 @@ def runCalcforCurrent(stromdq):
 # %%
 if __name__ == "__main__":
     # init simulations
-    # RESULT_DIR = r"C:\Users\ganser\AppData\Roaming\pydraft\Results"
+    # RESULT_DIR = r"C:\Users\ganser\AppData\Roaming\pyemmo\Results"
     geoFile = os.path.join(RESULT_DIR, "Test_1FE1051-4HF11_TherCom.geo")
     mshFile = os.path.join(RESULT_DIR, "Test_1FE1051-4HF11_TherCom.msh")
     paramFile = os.path.join(RESULT_DIR, "Test_1FE1051-4HF11_TherCom_param.geo")
@@ -107,8 +107,8 @@ if __name__ == "__main__":
     proFile = os.path.join(RESULT_DIR, "Test_1FE1051-4HF11_TherCom.pro")
     if not os.path.exists(proFile):
         json.main(
-            geo=r"C:\Users\ganser\AppData\Local\Programs\PyDraft_git\PyDraft\Results\matlab\Test_1FE1051-4HF11_TherCom\Test_1FE1051-4HF11_TherCom.json",
-            extInfo=r"C:\Users\ganser\AppData\Local\Programs\PyDraft_git\PyDraft\Results\matlab\Test_1FE1051-4HF11_TherCom\simuInfo.json",
+            geo=r"C:\Users\ganser\AppData\Local\Programs\pyemmo_git\pyemmo\Results\matlab\Test_1FE1051-4HF11_TherCom\Test_1FE1051-4HF11_TherCom.json",
+            extInfo=r"C:\Users\ganser\AppData\Local\Programs\pyemmo_git\pyemmo\Results\matlab\Test_1FE1051-4HF11_TherCom\simuInfo.json",
             model=RESULT_DIR,
         )
     if not os.path.isdir(RES_DIR):
@@ -119,7 +119,7 @@ if __name__ == "__main__":
         subprocess.run(meshCommand)
     
     ## simulation parameters
-    ansysResPath = r"C:\Users\ganser\AppData\Roaming\pydraft\Results\230301_EisenverlustkennfeldAnsys.csv"
+    ansysResPath = r"C:\Users\ganser\AppData\Roaming\pyemmo\Results\230301_EisenverlustkennfeldAnsys.csv"
     ansysResults = pandas.read_csv(ansysResPath)
     for key in ansysResults.keys():
         if "offset_deg" in key:

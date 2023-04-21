@@ -12,15 +12,15 @@ import subprocess
 # import logging
 import concurrent.futures
 from matplotlib import pyplot as plt
-from pydraft.definitions import ROOT_DIR, RESULT_DIR
+from pyemmo.definitions import ROOT_DIR, RESULT_DIR
 
 if ROOT_DIR not in sys.path:
     sys.path.append(ROOT_DIR)
 
-# from pydraft.functions import importResults as imp
-from pydraft.functions import runOnelab
-from pydraft.functions import calcIronLoss
-from pydraft.api import json
+# from pyemmo.functions import importResults as imp
+from pyemmo.functions import runOnelab
+from pyemmo.functions import calcIronLoss
+from pyemmo.api import json
 
 #%%
 def runCalcforCurrent(stromdq):
@@ -36,7 +36,7 @@ def runCalcforCurrent(stromdq):
         "Flag_PrintFields": 0,
         "Flag_Debug": 0,
     }
-    RES_DIR = r"C:\Users\ganser\AppData\Roaming\pydraft\Results\res_Test_1FE1051-4HF11_TherCom"
+    RES_DIR = r"C:\Users\ganser\AppData\Roaming\pyemmo\Results\res_Test_1FE1051-4HF11_TherCom"
     # gmshPath = (
     #     r"C:\Users\ganser\AppData\Local\Programs\onelab-Windows64-230206\gmsh.exe"
     # )
@@ -75,18 +75,18 @@ def runCalcforCurrent(stromdq):
 
 if __name__ == "__main__":
     # init simulations
-    # RESULT_DIR = r"C:\Users\ganser\AppData\Roaming\pydraft\Results"
+    # RESULT_DIR = r"C:\Users\ganser\AppData\Roaming\pyemmo\Results"
     geoFile = os.path.join(RESULT_DIR, "Test_1FE1051-4HF11_TherCom.geo")
     paramFile = os.path.join(RESULT_DIR, "Test_1FE1051-4HF11_TherCom_param.geo")
     calFile = os.path.join(RESULT_DIR, "machine_magstadyn_a.pro")
     proFile = os.path.join(RESULT_DIR, "Test_1FE1051-4HF11_TherCom.pro")
     if not os.path.exists(proFile):
         json.main(
-            geo=r"C:\Users\ganser\AppData\Local\Programs\PyDraft_git\PyDraft\Results\matlab\Test_1FE1051-4HF11_TherCom\Test_1FE1051-4HF11_TherCom.json",
-            extInfo=r"C:\Users\ganser\AppData\Local\Programs\PyDraft_git\PyDraft\Results\matlab\Test_1FE1051-4HF11_TherCom\simuInfo.json",
+            geo=r"C:\Users\ganser\AppData\Local\Programs\pyemmo_git\pyemmo\Results\matlab\Test_1FE1051-4HF11_TherCom\Test_1FE1051-4HF11_TherCom.json",
+            extInfo=r"C:\Users\ganser\AppData\Local\Programs\pyemmo_git\pyemmo\Results\matlab\Test_1FE1051-4HF11_TherCom\simuInfo.json",
             model=RESULT_DIR,
         )
-    RES_DIR = r"C:\Users\ganser\AppData\Roaming\pydraft\Results\res_Test_1FE1051-4HF11_TherCom"
+    RES_DIR = r"C:\Users\ganser\AppData\Roaming\pyemmo\Results\res_Test_1FE1051-4HF11_TherCom"
 
     # simulation parameters
     nI = 10
@@ -118,7 +118,7 @@ if __name__ == "__main__":
     # ax.plot_surface(t, e, np.linalg.norm(bData, axis=2))
 
     # load loss data
-    RES_DIR = r"C:\Users\ganser\AppData\Roaming\pydraft\Results\res_Test_1FE1051-4HF11_TherCom"
+    RES_DIR = r"C:\Users\ganser\AppData\Roaming\pyemmo\Results\res_Test_1FE1051-4HF11_TherCom"
 
     ironLossResFile = os.path.join(RES_DIR, "ironLossData.npy")
     ironLossArray = np.load(ironLossResFile)

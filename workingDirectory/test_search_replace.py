@@ -6,25 +6,25 @@ from os import getcwd
 from os.path import abspath, dirname, isdir, isfile, join, normpath, realpath
 from typing import List
 
-# Add Software_V2 to Path so pydraft can be found
+# Add Software_V2 to Path so pyemmo can be found
 # This must be done since this is a script (not really a module) and we cannot guarante where it will run from
 #   If it will be run as a module (from command line) __file__ will be the actual file path
 #   But if its run cellwise, like in an interactive pyhton (IPython) shell, __file__ variable will not exist and we have to add the path manually
 try:
     rootname = abspath(join(dirname(__file__), ".."))
 except:
-    rootname = "c:\\Users\\ganser\\AppData\\Local\\Programs\\PyDraft_git\\Software_V2"
+    rootname = "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\Software_V2"
     print(f"Could not determine root. Setting it manually to '{rootname}'")
 print(f'rootname is "{rootname}"')
 path.append(rootname)
 #%%
-from pydraft.definitions import RESULT_DIR, MAIN_DIR
-from pydraft.script import Script
+from pyemmo.definitions import RESULT_DIR, MAIN_DIR
+from pyemmo.script import Script
 import time
 
 # template file names
-parameterTempFileName = join(rootname, "pydraft", "script", "parameters_template.pro")
-machineTempFileName = join(rootname, "pydraft", "script", "machine_template.pro") 
+parameterTempFileName = join(rootname, "pyemmo", "script", "parameters_template.pro")
+machineTempFileName = join(rootname, "pyemmo", "script", "machine_template.pro") 
 # script file names
 machineFile = join(rootname, "workingDirectory", "test_machine_copy.pro")
 paramFile = join(rootname, "workingDirectory", "test_machine_parameters_copy.pro")

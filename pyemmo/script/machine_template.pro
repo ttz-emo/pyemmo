@@ -1,4 +1,4 @@
-// This script has initally be written by Diogo Pinto and is adapted for the use with PyDraft by Max Ganser
+// This script has initally be written by Diogo Pinto and is adapted for the use with pyemmo by Max Ganser
 
 Include PARAMETER_FILE
 

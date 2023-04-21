@@ -1,6 +1,6 @@
 from typing import List
 
-from pydraft.script.geometry.physicalElement import PhysicalElement
+from pyemmo.script.geometry.physicalElement import PhysicalElement
 from .domain import Domain
 from .stator import Stator, datamodel
 from .statorLamination import StatorLamination

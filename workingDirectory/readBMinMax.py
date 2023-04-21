@@ -3,10 +3,10 @@ import json
 import gmsh
 from typing import List, Union
 import sys, os
-from pydraft.definitions import ROOT_DIR
+from pyemmo.definitions import ROOT_DIR
 import numpy as np
 from matplotlib import pyplot as plt
-from pydraft.functions.calcIronLoss import writeSimple
+from pyemmo.functions.calcIronLoss import writeSimple
 
 #%%
 gmsh.initialize(sys.argv)

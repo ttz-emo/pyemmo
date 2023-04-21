@@ -21,8 +21,8 @@ class CircleArc(Line):
 
     .. code::
 
-        from pydraft.script.geometry.point import Point
-        from pydraft.script.geometry.point import CircleArc
+        from pyemmo.script.geometry.point import Point
+        from pyemmo.script.geometry.point import CircleArc
         C = Point('c', 0, 0, 0, 0.3)
         P1 = Point('p1', 1, 0, 0, 0.3)
         P2 = Point('p2', 0, 1, 0, 0.3)

@@ -20,11 +20,11 @@ except ImportError:  # Install setuptools if needed
 # First post release of the release 1.1.0 : 1.1.0.post1
 
 # get version from version.py file in package,
-#  because we need to access the version number from pydraft.script
-with open("pydraft/version.py", encoding="utf-8") as versionFile:
+#  because we need to access the version number from pyemmo.script
+with open("pyemmo/version.py", encoding="utf-8") as versionFile:
     exec(versionFile.read())
-# from .pydraft.version import __version__
-PYDRAFT_VERSION = __version__ # # pylint: disable=locally-disabled, undefined-variable
+# from .pyemmo.version import __version__
+PYEMMO_VERSION = __version__ # # pylint: disable=locally-disabled, undefined-variable
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
@@ -45,11 +45,11 @@ install_requires = [
 ]
 
 setuptools.setup(
-    name="pydraft",
-    version=PYDRAFT_VERSION,
+    name="pyemmo",
+    version=PYEMMO_VERSION,
     author="AG-EM TTZ-EMO",
-    author_email="max.ganser@fhws.de",
-    description="PyDraft is a interface for the open-source FEM software Onelab",
+    author_email="max.ganser@thws.de",
+    description="PyEMMO is a interface for modeling electrical machines in the open-source FEA software Onelab",
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=setuptools.find_packages(
@@ -60,12 +60,12 @@ setuptools.setup(
     package_data={},
     include_package_data=True,
     # data_files=[
-    #     ("", ["pydraft/script/default_color_dict.json"]),
+    #     ("", ["pyemmo/script/default_color_dict.json"]),
     #     (
     #         "",
     #         [
-    #             "pydraft/script/material/Material_new.db",
-    #             "pydraft/script/material/Material_old.db",
+    #             "pyemmo/script/material/Material_new.db",
+    #             "pyemmo/script/material/Material_old.db",
     #         ],
     #     ),
     # ],

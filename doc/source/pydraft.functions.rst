@@ -5,7 +5,7 @@ functions package
 CleanName module
 ----------------
 
-.. automodule:: pydraft.functions.cleanName
+.. automodule:: pyemmo.functions.cleanName
    :members:
    :undoc-members:
    :show-inheritance:
@@ -13,7 +13,7 @@ CleanName module
 ImportResults module
 --------------------
 
-.. automodule:: pydraft.functions.importResults
+.. automodule:: pyemmo.functions.importResults
    :members:
    :undoc-members:
    :show-inheritance:
@@ -22,7 +22,7 @@ ImportResults module
 .. Init\_environment module
 .. ------------------------
 
-.. .. automodule:: pydraft.functions.init_environment
+.. .. automodule:: pyemmo.functions.init_environment
 ..    :members:
 ..    :undoc-members:
 ..    :show-inheritance:
@@ -30,15 +30,15 @@ ImportResults module
 Plot module
 -----------
 
-.. automodule:: pydraft.functions.plot
+.. automodule:: pyemmo.functions.plot
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. pydraft.functions.punkteAusStructExtrahieren module
+.. pyemmo.functions.punkteAusStructExtrahieren module
 .. ---------------------------------------------------
 
-.. .. automodule:: pydraft.functions.punkteAusStructExtrahieren
+.. .. automodule:: pyemmo.functions.punkteAusStructExtrahieren
 ..    :members:
 ..    :undoc-members:
 ..    :show-inheritance:
@@ -46,15 +46,15 @@ Plot module
 RunOnelab module
 ----------------
 
-.. automodule:: pydraft.functions.runOnelab
+.. automodule:: pyemmo.functions.runOnelab
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. pydraft.functions.xml2pyDraft module
+.. pyemmo.functions.xml2pyemmo module
 .. ------------------------------------
 
-.. .. automodule:: pydraft.functions.xml2pyDraft
+.. .. automodule:: pyemmo.functions.xml2pyemmo
 ..    :members:
 ..    :undoc-members:
 ..    :show-inheritance:
@@ -63,7 +63,7 @@ RunOnelab module
 .. Module contents
 .. ---------------
 
-.. .. automodule:: pydraft.functions
+.. .. automodule:: pyemmo.functions
 ..    :members:
 ..    :undoc-members:
 ..    :show-inheritance:

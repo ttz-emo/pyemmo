@@ -27,7 +27,7 @@ from .SurfaceJSON import SurfaceAPI
 def createMachine(
     segmentSurfDict: Dict[str, SurfaceAPI], extendedInfo: dict
 ) -> Tuple[MachineAllType, Dict[str, List[SurfaceAPI]]]:
-    """create a PyDraft Machine object from a list of surfaces forming one machine segment
+    """create a pyemmo Machine object from a list of surfaces forming one machine segment
     (imported from matlab).
 
     Args:
@@ -114,7 +114,7 @@ def createMeshSizeGUICode(machineSurfDict: Dict[str, List[SurfaceAPI]]):
     Create the gmsh fomatted code to set the mesh size of the machine surfaces via the GUI.
 
     The names of the sufaces are defined in the `apiNameDict` (defined globally in
-    pydraft.api.init), which links the IdExt value of a SurfaceAPI object to a real name in the
+    pyemmo.api.init), which links the IdExt value of a SurfaceAPI object to a real name in the
     GUI. The order of the IdExt in that dict matters since it defines which mesh size the
     intersection points between two surfaces should get.
 
@@ -307,15 +307,15 @@ def main(
     Program sequence:
         1. Check that both json files are given and gmsh is installed. Import the geo segments and
            the additional machine information.
-        2. Create a PyDraft Machine-object by rotating and duplicating the given surface segments
-           with :func:`createMachine() <pydraft.api.json.createMachine>`
-        3. Create a PyDraft Script-object with the Machine and the simulation parameters.
+        2. Create a pyemmo Machine-object by rotating and duplicating the given surface segments
+           with :func:`createMachine() <pyemmo.api.json.createMachine>`
+        3. Create a pyemmo Script-object with the Machine and the simulation parameters.
         4. Add additional code for the API specific B-field PostOperation (on line evaluation) and
            the surface mesh size setting via the GUI.
         5. Create the .geo and .pro script files by calling :meth:`Script.generateScript()
-           <pydraft.script.script.Script.generateScript>`
+           <pyemmo.script.script.Script.generateScript>`
         6. Create command line call for gmsh/getdp with :func:`createCmdCommand()
-           <pydraft.functions.runOnelab.createCmdCommand>` and start with :code:`subprocess.run`
+           <pyemmo.functions.runOnelab.createCmdCommand>` and start with :code:`subprocess.run`
 
 
     Args:

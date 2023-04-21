@@ -1,10 +1,10 @@
 # %%
 from numpy import pi
 from typing import List
-from pydraft.script.geometry.point import Point
-from pydraft.script.geometry.line import Line
-from pydraft.script.geometry.circleArc import CircleArc
-from pydraft.script.geometry.surface import Surface
+from pyemmo.script.geometry.point import Point
+from pyemmo.script.geometry.line import Line
+from pyemmo.script.geometry.circleArc import CircleArc
+from pyemmo.script.geometry.surface import Surface
 
 import matplotlib.pyplot as plt
 

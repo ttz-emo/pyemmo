@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 #
 #   Beispiel:
 #
-#       from pydraft import *
+#       from pyemmo import *
 #       P1 = Point('P1', 0, 0, 0, 1)
 #       P2 = Point('P2', 1, 0, 0, 1)
 #       P3 = Point('P3', 1, 1, 0, 1)

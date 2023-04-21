@@ -1,7 +1,7 @@
-pydraft
+PyEMMO
 =======
 
 .. toctree::
    :maxdepth: 4
 
-   pydraft
+   pyemmo

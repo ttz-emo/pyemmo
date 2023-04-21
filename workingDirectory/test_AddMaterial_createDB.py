@@ -5,19 +5,19 @@ from os.path import abspath, join, dirname
 try:
     rootname = abspath(join(dirname(__file__), ".."))
 except:
-    rootname = "c:\\Users\\ganser\\AppData\\Local\\Programs\\PyDraft_git\\Software_V2"
+    rootname = "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\Software_V2"
     # print(f"Could not determine root. Setting it manually to '{rootname}'")
 print(f'rootname is "{rootname}"')
 path.append(rootname)
 #%% test database
-from pydraft.script.material import materialManagement
-from pydraft.functions import xml2pyDraft
-from pydraft.definitions import ROOT_DIR
+from pyemmo.script.material import materialManagement
+from pyemmo.functions import xml2pyemmo
+from pyemmo.definitions import ROOT_DIR
 
 
 dataBaseName = "Material_new.db"
 
-# matArray = xml2pyDraft.getMaterialArray(join(ROOT_DIR, "pydraft\\script\\material", ))
+# matArray = xml2pyemmo.getMaterialArray(join(ROOT_DIR, "pyemmo\\script\\material", ))
 #%%
 for mat in matArray:
     try:

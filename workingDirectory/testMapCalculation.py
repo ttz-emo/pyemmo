@@ -4,24 +4,24 @@ from os import path
 import sys
 
 try:
-    from pydraft.script.script import Script
+    from pyemmo.script.script import Script
 except:
     try:
         rootname = path.abspath(path.join(path.dirname(__file__), ".."))
     except:
         rootname = (
-            "c:\\Users\\ganser\\AppData\\Local\\Programs\\PyDraft_git\\Software_V2"
+            "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\Software_V2"
         )
         print(f"Could not determine root. Setting it manually to '{rootname}'")
     print(f'rootname is "{rootname}"')
     sys.path.append(rootname)
 
-    from pydraft.script.script import Script
+    from pyemmo.script.script import Script
 
-from pydraft.script.geometry.point import Point
-from pydraft.script.material.material import Material
-from pydraft.script.geometry.machineIPMSM import MachineIPMSM
-from pydraft.functions import runOnelab
+from pyemmo.script.geometry.point import Point
+from pyemmo.script.material.material import Material
+from pyemmo.script.geometry.machineIPMSM import MachineIPMSM
+from pyemmo.functions import runOnelab
 import math
 import subprocess
 
@@ -161,7 +161,7 @@ pmsm1.createMachineDomains()
 # myScript = Script("Test_IPMSM", abspath(join(RESULT_DIR,"TestIPMSM")))
 testIPMSM_Script = Script(
     name="Test_IPMSM",
-    scriptPath=r"C:\Users\ganser\AppData\Local\Programs\PyDraft_git\Software_V2\Results\TestIPMSM",
+    scriptPath=r"C:\Users\ganser\AppData\Local\Programs\pyemmo_git\Software_V2\Results\TestIPMSM",
     simuParams={
         "init_rotor_pos": 0,
         "angle_increment": 1,
@@ -189,7 +189,7 @@ command = runOnelab.createCmdCommand(
 )
 subprocess.run(command)
 # %%
-# from pydraft.functions import importResults
+# from pyemmo.functions import importResults
 # importResults.plotAllDat(testIPMSM_Script.getResultsPath())
 
 # %% calculate iq vector

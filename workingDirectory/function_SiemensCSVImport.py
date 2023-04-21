@@ -1,5 +1,5 @@
 import pandas
-import pydraft as pyd
+import pyemmo as emmo
 
 def getDataFrameFromCSV(pathCSV):
     try:
@@ -24,9 +24,9 @@ def getMagnetSurfaces(dataFrame, name, mL = 1e-3):
         y_P2 = dataFrame['EpY'][i]
         z_P2 = dataFrame['EpZ'][i]
 
-        #PyDraft-Objekte erzeugen
-        P1 = pyd.Point('', x_P1, y_P1, z_P1, mL)
-        P2 = pyd.Point('', x_P2, y_P2, z_P2, mL)
+        #pyemmo-Objekte erzeugen
+        P1 = emmo.Point('', x_P1, y_P1, z_P1, mL)
+        P2 = emmo.Point('', x_P2, y_P2, z_P2, mL)
         P1.setName('p_' + str(P1.getID()))
         P2.setName('p_' + str(P2.getID()))
 
@@ -37,14 +37,14 @@ def getMagnetSurfaces(dataFrame, name, mL = 1e-3):
             z_M = dataFrame['MpZ'][i]
 
             #Mittelpunkt erzeugen
-            PM = pyd.Point('', x_M, y_M, z_M, mL)
+            PM = emmo.Point('', x_M, y_M, z_M, mL)
             PM.setName('p_' + str(PM.getID()))
 
-            l = pyd.CircleArc('', P1, PM, P2)
+            l = emmo.CircleArc('', P1, PM, P2)
             l.setName('Arc_' + str(l.getID()))
         
         elif dataFrame['Typ'][i] == 'Line':
-            l = pyd.Line('', P1, P2)
+            l = emmo.Line('', P1, P2)
             l.setName('Line_' + str(l.getID()))
         
         else:
@@ -77,9 +77,9 @@ def getSurfaceLineList(dataFrame, mL = 1e-3):
         y_P2 = dataFrame['EpY'][i]
         z_P2 = dataFrame['EpZ'][i]
 
-        #PyDraft-Objekte erzeugen
-        P1 = pyd.Point('', x_P1, y_P1, z_P1, mL)
-        P2 = pyd.Point('', x_P2, y_P2, z_P2, mL)
+        #pyemmo-Objekte erzeugen
+        P1 = emmo.Point('', x_P1, y_P1, z_P1, mL)
+        P2 = emmo.Point('', x_P2, y_P2, z_P2, mL)
         P1.setName('p_' + str(P1.getID()))
         P2.setName('p_' + str(P2.getID()))
 
@@ -90,14 +90,14 @@ def getSurfaceLineList(dataFrame, mL = 1e-3):
             z_M = dataFrame['MpZ'][i]
 
             #Mittelpunkt erzeugen
-            MP = pyd.Point('', x_M, y_M, z_M, mL)
+            MP = emmo.Point('', x_M, y_M, z_M, mL)
             MP.setName('p_' + str(MP.getID()))
 
-            line = pyd.CircleArc('', P1, MP, P2)
+            line = emmo.CircleArc('', P1, MP, P2)
             line.setName('Arc_' + str(line.getID()))
         
         elif dataFrame['Typ'][i] == 'Line':
-            line = pyd.Line('', P1, P2)
+            line = emmo.Line('', P1, P2)
             line.setName('Line_' + str(line.getID()))
         
         else:
@@ -110,7 +110,7 @@ def getSurfaceLineList(dataFrame, mL = 1e-3):
 
 def createSurface(lineList: list, name: str):
     if isinstance(lineList, list):
-        surf = pyd.Surface(name, lineList)
+        surf = emmo.Surface(name, lineList)
     else:
         Warning("Parameter \"lineList\" is not Type List. Surface could not be created!")
         surf = None

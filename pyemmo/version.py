@@ -1,4 +1,4 @@
-"""This module only contains the PyDraft package version"""
+"""This module only contains the pyemmo package version"""
 # /!\ Increase the number before a release
 # See https://www.python.org/dev/peps/pep-0440/
 # Examples :

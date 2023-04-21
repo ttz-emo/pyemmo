@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Init of pydraft package. Overloads the function calc_phaseangle_starvoltageV2
+"""Init of pyemmo package. Overloads the function calc_phaseangle_starvoltageV2
 of site-package swat-em, because there is a mistake in the original implementation."""
 import os
 import platform
@@ -8,7 +8,7 @@ from typing import List, Literal
 from swat_em import analyse
 import numpy as np
 
-PACKAGE_NAME = "pydraft"
+PACKAGE_NAME = "pyemmo"
 # User folder (to store machine/materials/config)
 if platform.system() == "Windows":
     USER_DIR = os.path.join(os.environ["APPDATA"], PACKAGE_NAME)

@@ -16,7 +16,7 @@ def save_config_dict(config_dict):
     """
     # dynamic import to avoid loop
     module = __import__(
-        "pydraft.definitions",
+        "pyemmo.definitions",
         globals=globals(),
         locals=locals(),
         fromlist=["CONF_PATH"],
@@ -31,7 +31,7 @@ def init_user_dir():
     """Initialize the USER DIR with the default files"""
     # dynamic import to avoid loop
     module = __import__(
-        "pydraft.definitions",
+        "pyemmo.definitions",
         globals=globals(),
         locals=locals(),
         fromlist=["USER_DIR", "MAIN_DIR"],
@@ -62,7 +62,7 @@ def update_user_dir():
     """Initialize the USER DIR with the default files"""
     # dynamic import to avoid loop
     module = __import__(
-        "pydraft.definitions",
+        "pyemmo.definitions",
         globals=globals(),
         locals=locals(),
         fromlist=["USER_DIR", "MAIN_DIR"],
@@ -92,7 +92,7 @@ def init_config_dict():
     """Create the default config dict and save it in USER_DIR"""
     # dynamic import to avoid loop
     module = __import__(
-        "pydraft.definitions",
+        "pyemmo.definitions",
         globals=globals(),
         locals=locals(),
         fromlist=["USER_DIR", "CONF_PATH"],
@@ -116,9 +116,9 @@ def get_config_dict():
     config_dict: dict
         dictionary gather the parameters of the software
     """
-    # dynamic import to avoid loop (pydraft.definitions calls get_config_dict() function!!!)
+    # dynamic import to avoid loop (pyemmo.definitions calls get_config_dict() function!!!)
     module = __import__(
-        "pydraft.definitions",
+        "pyemmo.definitions",
         globals=globals(),
         locals=locals(),
         fromlist=["USER_DIR", "CONF_PATH", "DEFAULT_FONT", "DEFAULT_COLOR_MAP"],

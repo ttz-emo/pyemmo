@@ -1,3 +1,3 @@
 import subprocess
 
-subprocess.run([r'python.exe', r'C:\Users\ganser\AppData\Local\Programs\PyDraft_git\PyDraft\workingDirectory\csvImport.py'], shell = True)
+subprocess.run([r'python.exe', r'C:\Users\ganser\AppData\Local\Programs\pyemmo_git\pyemmo\workingDirectory\csvImport.py'], shell = True)

@@ -4,29 +4,29 @@ Material package
 Submodules
 ----------
 
-pydraft.script.material.material module
+pyemmo.script.material.material module
 ---------------------------------------
 
-.. automodule:: pydraft.script.material.material
+.. automodule:: pyemmo.script.material.material
    :members:
    :undoc-members:
    :show-inheritance:
 
 
 
-pydraft.script.material.electricalSteel module
+pyemmo.script.material.electricalSteel module
 ----------------------------------------------
 
-.. automodule:: pydraft.script.material.electricalSteel
+.. automodule:: pyemmo.script.material.electricalSteel
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-pydraft.script.material.materialManagement module
+pyemmo.script.material.materialManagement module
 -------------------------------------------------
 
-.. automodule:: pydraft.script.material.materialManagement
+.. automodule:: pyemmo.script.material.materialManagement
    :members:
    :undoc-members:
    :show-inheritance:
@@ -34,7 +34,7 @@ pydraft.script.material.materialManagement module
 Module contents
 ---------------
 
-.. automodule:: pydraft.script.material
+.. automodule:: pyemmo.script.material
    :members:
    :undoc-members:
    :show-inheritance:

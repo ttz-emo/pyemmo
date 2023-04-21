@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 #
 #   Beispiel:
 #
-#       import pydraft as pyd
+#       import pyemmo as pyd
 #       P1 = pyd.Point(name = 'P1', x = 0.0, y = 1.0, z = 0.0, meshLength = 0.3)
 ###
 class Point(Transformable):
@@ -27,7 +27,7 @@ class Point(Transformable):
     Eine Instanz der Klasse Point ist ein Punkt im dreidimensionalen Raum.
 
     Beispiel:
-        import pydraft as pyd
+        import pyemmo as pyd
         P1 = pyd.Point(name = 'P1', x = 0.0, y = 1.0, z = 0.0, meshLength = 0.3)
     """
 

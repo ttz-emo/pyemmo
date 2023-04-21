@@ -83,8 +83,8 @@ rotorDomainDict = {
     "airGap": "Rotor_Airgap",
     "limit": "Surf_bn0",
 }
-# additional line for pydraft version in geo and pro files
-versionStr = f"// This script was created with PyDraft (Version {__version__}"
+# additional line for pyemmo version in geo and pro files
+versionStr = f"// This script was created with pyemmo (Version {__version__}"
 # if git module is available, sha is the commit hash. Then add that too
 if sha:
     versionStr += f", git {sha[0:6]}"

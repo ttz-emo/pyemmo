@@ -1,4 +1,4 @@
-"""This script creates a mind map of the PyDraft package structure"""
+"""This script creates a mind map of the pyemmo package structure"""
 #%%
 import os
 import io
@@ -13,7 +13,7 @@ mindFile = os.path.join(WORKING_DIR, "testMind.png")
 graph = pydot.Dot(graph_type="graph", rankdir="UD")
 
 # add first layer of package structure 
-root = "PyDraft"
+root = "pyemmo"
 geoPkg = "geometry"
 packages = ["api", "functions", geoPkg , "script", "material"]
 for package in packages:

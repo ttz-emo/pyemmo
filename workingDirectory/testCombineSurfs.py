@@ -6,20 +6,20 @@ from numpy import deg2rad
 try:
     rootname = abspath(join(dirname(__file__), ".."))
 except:
-    rootname = "c:\\Users\\ganser\\AppData\\Local\\Programs\\PyDraft_git\\Software_V2"
+    rootname = "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\Software_V2"
     # print(f"Could not determine root. Setting it manually to '{rootname}'")
 print(f'rootname is "{rootname}"')
 path.append(rootname)
 #%%
-import pydraft as pyd
-from pydraft.definitions import RESULT_DIR
-from pydraft.script.script import Script
-from pydraft.script.geometry.point import Point
-from pydraft.script.geometry.line import Line
-from pydraft.script.geometry.circleArc import CircleArc
-from pydraft.script.geometry.spline import Spline
-from pydraft.script.geometry.surface import Surface
-from pydraft.functions.runOnelab import createCmdCommand
+import pyemmo as emmo
+from pyemmo.definitions import RESULT_DIR
+from pyemmo.script.script import Script
+from pyemmo.script.geometry.point import Point
+from pyemmo.script.geometry.line import Line
+from pyemmo.script.geometry.circleArc import CircleArc
+from pyemmo.script.geometry.spline import Spline
+from pyemmo.script.geometry.surface import Surface
+from pyemmo.functions.runOnelab import createCmdCommand
 from subprocess import run
 
 #%%
@@ -97,3 +97,4 @@ surf6 = surf4.combine(surf5)
 surf6.addToScript(myScript)
 myScript.generateScript(mode=1)  # only geo file
 run(createCmdCommand(onelabFile=myScript.getGeoFilePath(), useGUI=True))
+#%%

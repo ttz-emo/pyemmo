@@ -2,7 +2,7 @@ from ctypes import Union
 from types import SimpleNamespace
 from typing import Dict
 
-from pydraft.script.geometry.machineAllType import MachineAllType
+from pyemmo.script.geometry.machineAllType import MachineAllType
 from ..script import default_param_dict
 from ..script import Script
 from .domain import Domain

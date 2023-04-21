@@ -233,7 +233,7 @@ def getMagTemperature(extendedInfo: dict) -> Union[float, None]:
 def getSimuParams(extendedInfo: dict) -> Dict[str, float]:
     """
     Return the simulation parameter dictionary needed for script class. See class :class:`Script
-    <pydraft.script.script.Script>` for details about the simulation dict.
+    <pyemmo.script.script.Script>` for details about the simulation dict.
     """
     idq = getCurrentdq(extendedInfo)
     endPos = extendedInfo["endPos"]
@@ -344,7 +344,7 @@ def getFlagCalcIronLoss(extendedInfo: dict) -> bool:
 
 
 def createMaterial(matDict: Dict[str, Dict[Literal["wert"], Any]]) -> Material:
-    """create a pydraft material object based on matDict format
+    """create a pyemmo material object based on matDict format
 
     Args:
         matDict (Dict[str,Dict[Literal["wert"], Any]]): material dict extracted from matlab api side.

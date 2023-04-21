@@ -4,306 +4,306 @@ Geometry package
 Submodules
 ----------
 
-pydraft.script.geometry.airArea module
+pyemmo.script.geometry.airArea module
 --------------------------------------
 
-.. automodule:: pydraft.script.geometry.airArea
+.. automodule:: pyemmo.script.geometry.airArea
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.airGap module
+pyemmo.script.geometry.airGap module
 -------------------------------------
 
-.. automodule:: pydraft.script.geometry.airGap
+.. automodule:: pyemmo.script.geometry.airGap
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.allMagnetParamDict module
+pyemmo.script.geometry.allMagnetParamDict module
 -------------------------------------------------
 
-.. automodule:: pydraft.script.geometry.allMagnetParamDict
+.. automodule:: pyemmo.script.geometry.allMagnetParamDict
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.circleArc module
+pyemmo.script.geometry.circleArc module
 ----------------------------------------
 
-.. automodule:: pydraft.script.geometry.circleArc
+.. automodule:: pyemmo.script.geometry.circleArc
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.domain module
+pyemmo.script.geometry.domain module
 -------------------------------------
 
-.. automodule:: pydraft.script.geometry.domain
+.. automodule:: pyemmo.script.geometry.domain
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.limitLine module
+pyemmo.script.geometry.limitLine module
 ----------------------------------------
 
-.. automodule:: pydraft.script.geometry.limitLine
+.. automodule:: pyemmo.script.geometry.limitLine
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.line module
+pyemmo.script.geometry.line module
 -----------------------------------
 
-.. automodule:: pydraft.script.geometry.line
+.. automodule:: pyemmo.script.geometry.line
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.machine module
+pyemmo.script.geometry.machine module
 --------------------------------------
 
-.. automodule:: pydraft.script.geometry.machine
+.. automodule:: pyemmo.script.geometry.machine
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.machineAllType module
+pyemmo.script.geometry.machineAllType module
 ---------------------------------------------
 
-.. automodule:: pydraft.script.geometry.machineAllType
+.. automodule:: pyemmo.script.geometry.machineAllType
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.machineIPMSM module
+pyemmo.script.geometry.machineIPMSM module
 -------------------------------------------
 
-.. automodule:: pydraft.script.geometry.machineIPMSM
+.. automodule:: pyemmo.script.geometry.machineIPMSM
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.machineSPMSM module
+pyemmo.script.geometry.machineSPMSM module
 -------------------------------------------
 
-.. automodule:: pydraft.script.geometry.machineSPMSM
+.. automodule:: pyemmo.script.geometry.machineSPMSM
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.magnet module
+pyemmo.script.geometry.magnet module
 -------------------------------------
 
-.. automodule:: pydraft.script.geometry.magnet
+.. automodule:: pyemmo.script.geometry.magnet
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.magnet\_Slot01 module
+pyemmo.script.geometry.magnet\_Slot01 module
 ---------------------------------------------
 
-.. automodule:: pydraft.script.geometry.magnet_Slot01
+.. automodule:: pyemmo.script.geometry.magnet_Slot01
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.magnet\_Surface01 module
+pyemmo.script.geometry.magnet\_Surface01 module
 ------------------------------------------------
 
-.. automodule:: pydraft.script.geometry.magnet_Surface01
+.. automodule:: pyemmo.script.geometry.magnet_Surface01
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.magnet\_Surface02 module
+pyemmo.script.geometry.magnet\_Surface02 module
 ------------------------------------------------
 
-.. automodule:: pydraft.script.geometry.magnet_Surface02
+.. automodule:: pyemmo.script.geometry.magnet_Surface02
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.magnet\_Surface03 module
+pyemmo.script.geometry.magnet\_Surface03 module
 ------------------------------------------------
 
-.. automodule:: pydraft.script.geometry.magnet_Surface03
+.. automodule:: pyemmo.script.geometry.magnet_Surface03
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.movingBand module
+pyemmo.script.geometry.movingBand module
 -----------------------------------------
 
-.. automodule:: pydraft.script.geometry.movingBand
+.. automodule:: pyemmo.script.geometry.movingBand
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.physicalElement module
+pyemmo.script.geometry.physicalElement module
 ----------------------------------------------
 
-.. automodule:: pydraft.script.geometry.physicalElement
+.. automodule:: pyemmo.script.geometry.physicalElement
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.point module
+pyemmo.script.geometry.point module
 ------------------------------------
 
-.. automodule:: pydraft.script.geometry.point
+.. automodule:: pyemmo.script.geometry.point
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.primaryLine module
+pyemmo.script.geometry.primaryLine module
 ------------------------------------------
 
-.. automodule:: pydraft.script.geometry.primaryLine
+.. automodule:: pyemmo.script.geometry.primaryLine
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.rotor module
+pyemmo.script.geometry.rotor module
 ------------------------------------
 
-.. automodule:: pydraft.script.geometry.rotor
+.. automodule:: pyemmo.script.geometry.rotor
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.rotorIPMSM module
+pyemmo.script.geometry.rotorIPMSM module
 -----------------------------------------
 
-.. automodule:: pydraft.script.geometry.rotorIPMSM
+.. automodule:: pyemmo.script.geometry.rotorIPMSM
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.rotorLamination module
+pyemmo.script.geometry.rotorLamination module
 ----------------------------------------------
 
-.. automodule:: pydraft.script.geometry.rotorLamination
+.. automodule:: pyemmo.script.geometry.rotorLamination
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.rotorLamination\_Sheet01\_Standard module
+pyemmo.script.geometry.rotorLamination\_Sheet01\_Standard module
 -----------------------------------------------------------------
 
-.. automodule:: pydraft.script.geometry.rotorLamination_Sheet01_Standard
+.. automodule:: pyemmo.script.geometry.rotorLamination_Sheet01_Standard
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.rotorSPMSM module
+pyemmo.script.geometry.rotorSPMSM module
 -----------------------------------------
 
-.. automodule:: pydraft.script.geometry.rotorSPMSM
+.. automodule:: pyemmo.script.geometry.rotorSPMSM
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.slaveLine module
+pyemmo.script.geometry.slaveLine module
 ----------------------------------------
 
-.. automodule:: pydraft.script.geometry.slaveLine
+.. automodule:: pyemmo.script.geometry.slaveLine
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.slot module
+pyemmo.script.geometry.slot module
 -----------------------------------
 
-.. automodule:: pydraft.script.geometry.slot
+.. automodule:: pyemmo.script.geometry.slot
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.slot\_Form01 module
+pyemmo.script.geometry.slot\_Form01 module
 -------------------------------------------
 
-.. automodule:: pydraft.script.geometry.slot_Form01
+.. automodule:: pyemmo.script.geometry.slot_Form01
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.slot\_Form02 module
+pyemmo.script.geometry.slot\_Form02 module
 -------------------------------------------
 
-.. automodule:: pydraft.script.geometry.slot_Form02
+.. automodule:: pyemmo.script.geometry.slot_Form02
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.slot\_Form03 module
+pyemmo.script.geometry.slot\_Form03 module
 -------------------------------------------
 
-.. automodule:: pydraft.script.geometry.slot_Form03
+.. automodule:: pyemmo.script.geometry.slot_Form03
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.spline module
+pyemmo.script.geometry.spline module
 -------------------------------------
 
-.. automodule:: pydraft.script.geometry.spline
+.. automodule:: pyemmo.script.geometry.spline
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.stator module
+pyemmo.script.geometry.stator module
 -------------------------------------
 
-.. automodule:: pydraft.script.geometry.stator
+.. automodule:: pyemmo.script.geometry.stator
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.statorLamination module
+pyemmo.script.geometry.statorLamination module
 -----------------------------------------------
 
-.. automodule:: pydraft.script.geometry.statorLamination
+.. automodule:: pyemmo.script.geometry.statorLamination
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.statorLamination\_Sheet01\_Standard module
+pyemmo.script.geometry.statorLamination\_Sheet01\_Standard module
 ------------------------------------------------------------------
 
-.. automodule:: pydraft.script.geometry.statorLamination_Sheet01_Standard
+.. automodule:: pyemmo.script.geometry.statorLamination_Sheet01_Standard
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.statorSPMSM module
+pyemmo.script.geometry.statorSPMSM module
 ------------------------------------------
 
-.. automodule:: pydraft.script.geometry.statorSPMSM
+.. automodule:: pyemmo.script.geometry.statorSPMSM
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.stepToArea module
+pyemmo.script.geometry.stepToArea module
 -----------------------------------------
 
-.. automodule:: pydraft.script.geometry.stepToArea
+.. automodule:: pyemmo.script.geometry.stepToArea
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.surface module
+pyemmo.script.geometry.surface module
 --------------------------------------
 
-.. automodule:: pydraft.script.geometry.surface
+.. automodule:: pyemmo.script.geometry.surface
    :members:
    :undoc-members:
    :show-inheritance:
 
-pydraft.script.geometry.transformable module
+pyemmo.script.geometry.transformable module
 --------------------------------------------
 
-.. automodule:: pydraft.script.geometry.transformable
+.. automodule:: pyemmo.script.geometry.transformable
    :members:
    :undoc-members:
    :show-inheritance:
@@ -311,7 +311,7 @@ pydraft.script.geometry.transformable module
 Module contents
 ---------------
 
-.. automodule:: pydraft.script.geometry
+.. automodule:: pyemmo.script.geometry
    :members:
    :undoc-members:
    :show-inheritance:

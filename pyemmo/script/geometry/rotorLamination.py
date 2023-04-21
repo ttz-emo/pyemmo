@@ -1,6 +1,6 @@
 from typing import List
 
-from pydraft.script.material.material import Material
+from pyemmo.script.material.material import Material
 from .surface import Surface
 from .physicalElement import PhysicalElement
 from .. import colorDict
@@ -10,7 +10,7 @@ import math
 # Eine Instanz der RotorLamination ist das Blechpaket des Rotors. Eine beliebige Geometrie kann mit der Klasse RotorLamination definiert werden.
 # Diese Klasse sollte nur im Expertenmodus angewandt werden.
 # Dies kann beispielsweise beim Import und Weiterverarbeitung von Step-Dateien geschehen.
-# Eine einfachere Anwendung bietet der Maschinenbaukasten von PyDraft.
+# Eine einfachere Anwendung bietet der Maschinenbaukasten von pyemmo.
 # \image html RotorBlech.png
 ###
 

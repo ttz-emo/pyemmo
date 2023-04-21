@@ -3,13 +3,13 @@ from random import random
 from typing import Dict, List, Union
 
 from numpy import equal
-from pydraft.definitions import RESULT_DIR
-from pydraft.script.script import Script
-from pydraft.script.geometry.point import Point
-from pydraft.script.geometry.line import Line
-from pydraft.script.geometry.circleArc import CircleArc
-from pydraft.script.geometry.surface import Surface
-from pydraft.script.material.material import Material
+from pyemmo.definitions import RESULT_DIR
+from pyemmo.script.script import Script
+from pyemmo.script.geometry.point import Point
+from pyemmo.script.geometry.line import Line
+from pyemmo.script.geometry.circleArc import CircleArc
+from pyemmo.script.geometry.surface import Surface
+from pyemmo.script.material.material import Material
 import pandas
 import math
 from os.path import join, abspath
@@ -29,7 +29,7 @@ defSimParamDict = {
 }
 myScript = Script(name="csv_Geo", scriptPath=RESULT_DIR, simuParams=defSimParamDict)
 fc_dir = (
-    r"C:\Users\ganser\AppData\Local\Programs\PyDraft_git\FreeCAD\pmsm"  # FreeCAD folder
+    r"C:\Users\ganser\AppData\Local\Programs\pyemmo\workingDirectory\freecad"  # FreeCAD folder
 )
 csvFilename = "lineTable.csv"
 myDataFrame = pandas.read_csv(abspath(join(fc_dir, csvFilename)))
@@ -47,7 +47,7 @@ ndFe35.loadMatFromDataBase("Material_new.db", "NdFe35")
 air = Material()
 air.loadMatFromDataBase("Material_new.db", "air")
 
-# %% Alle Rohdaten auslesen und PyDraft-Objekte erzeugen
+# %% Alle Rohdaten auslesen und pyemmo-Objekte erzeugen
 surfDict: Dict[str, List[Union[Line, CircleArc]]] = {}
 for i in range(0, len(myDataFrame)):
     startPoint = Point(
@@ -93,7 +93,7 @@ for i in range(0, len(myDataFrame)):
     else:
         surfDict[surfName] = [actLine]
 # %% Line plot
-from pydraft.functions.plot import plot
+from pyemmo.functions.plot import plot
 from matplotlib import pyplot
 
 fig, ax = pyplot.subplots()
@@ -142,12 +142,12 @@ for surf in surfList:
         print("Unknown surface name to set mesh length")
 
 # %% Dummy Objekte zum befüllen
-from pydraft.script.geometry.rotorLamination import RotorLamination
-from pydraft.script.geometry.magnet import Magnet
-from pydraft.script.geometry.airGap import AirGap
-from pydraft.script.geometry.airArea import AirArea
-from pydraft.script.geometry.domain import Domain
-from pydraft.functions import runOnelab
+from pyemmo.script.geometry.rotorLamination import RotorLamination
+from pyemmo.script.geometry.magnet import Magnet
+from pyemmo.script.geometry.airGap import AirGap
+from pyemmo.script.geometry.airArea import AirArea
+from pyemmo.script.geometry.domain import Domain
+from pyemmo.functions import runOnelab
 
 allPhysical = []
 for surf in surfList:

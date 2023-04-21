@@ -81,8 +81,8 @@ class ElectricalSteel(Material):
         These parameters will be used in the iron loss calculation routine. For more information about the calculation method
         see `Lin u. a., „A Dynamic Core Loss Model for Soft Ferromagnetic and Power Ferrite Materials in Transient Finite
         Element Analysis“ <https://ieeexplore.ieee.org/document/1284663>`_. Make sure to also define the :attr:`reference
-        frequency <pydraft.script.material.electricalSteel.ElectricalSteel.referenceFrequency>` in Hz and the
-        :attr:`reference flux density <pydraft.script.material.electricalSteel.ElectricalSteel.referenceFluxDensity>`
+        frequency <pyemmo.script.material.electricalSteel.ElectricalSteel.referenceFrequency>` in Hz and the
+        :attr:`reference flux density <pyemmo.script.material.electricalSteel.ElectricalSteel.referenceFluxDensity>`
 
         Returns:
             Tuple[float,float,float]: Iron loss parameters for hysteresis, eddy current and excess losses
@@ -112,7 +112,7 @@ class ElectricalSteel(Material):
 
     @property
     def referenceFrequency(self) -> Union[float, int]:
-        """Reference frequency for given loss parameters in Hz. See :attr:`lossParams <pydraft.script.material.electricalSteel.ElectricalSteel.lossParams>`
+        """Reference frequency for given loss parameters in Hz. See :attr:`lossParams <pyemmo.script.material.electricalSteel.ElectricalSteel.lossParams>`
 
         Returns:
             Union[float, int]: Reference frequency in Hz
@@ -134,7 +134,7 @@ class ElectricalSteel(Material):
     @property
     def referenceFluxDensity(self) -> Union[float, int]:
         """Reference flux density for given loss parameters in T. See
-        :attr:`lossParams <pydraft.script.material.electricalSteel.ElectricalSteel.lossParams>` for more details.
+        :attr:`lossParams <pyemmo.script.material.electricalSteel.ElectricalSteel.lossParams>` for more details.
 
         Returns:
             Union[float, int]: Reference flux density in T
