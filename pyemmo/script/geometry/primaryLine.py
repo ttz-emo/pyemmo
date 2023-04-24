@@ -24,6 +24,7 @@ class PrimaryLine(PhysicalElement):
             geometricalElement (List[Transformable])
             material (Material, optional): Defaults to None.
         """
+        # FIXME: Material hat keinen Einfluss... Sollte standardmaeßig auf None gesetzt werden
         super().__init__(
             name=name, material=material, geometricalElement=geometricalElement
         )
