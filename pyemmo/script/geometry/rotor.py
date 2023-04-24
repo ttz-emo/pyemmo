@@ -86,10 +86,11 @@ class Rotor:
         if isinstance(physicalElementsList, List):
             self._physicalElements = physicalElementsList
             # pylint: disable=locally-disabled,  pointless-statement
-            self._createDomainForRotor  # recreate domains for rotor with new elements
+            self._createDomainForRotor()  # recreate domains for rotor with new elements
             return None
         if isinstance(physicalElementsList, PhysicalElement):
             self._physicalElements = [physicalElementsList]
+            self._createDomainForRotor()  # recreate domains for rotor with new elements
             return None
         raise TypeError(f"physicalElementList- type: {type(physicalElementsList)}.")
 
@@ -100,7 +101,7 @@ class Rotor:
                 if physicalElem not in self._physicalElements:
                     self._physicalElements.append(physicalElem)
             # pylint: disable=locally-disabled,  pointless-statement
-            self._createDomainForRotor  # recreate domains for rotor with new elements
+            self._createDomainForRotor()  # recreate domains for rotor with new elements
         else:
             raise ValueError("'physicalElementList' was not type list!")
 
