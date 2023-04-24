@@ -40,7 +40,7 @@ class Rotor:
         """
         Constructor of class Rotor
         Args:
-            physicalElements(List[PhysicalElement])
+            physicalElements (List[PhysicalElement]): List of PhysicalElement objects defining geometry and materials.
             name (str): Defaults to "".
             axLen (float): Active axial length of stator lamination in [m]. Defaults to 1.0
 
