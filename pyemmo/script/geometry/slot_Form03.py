@@ -16,7 +16,7 @@ class Slot_Form03(Slot):
             geometricalElement=list(),
             material=machineDict["material"],
         )
-        self._name = "Slot_Form03_" + str(self._ID)
+        self._name = "Slot_Form03_" + str(self.id)
         self._createGeometry()
 
     def _createGeometry(self):
