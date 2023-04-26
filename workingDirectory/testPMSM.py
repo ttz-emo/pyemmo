@@ -44,7 +44,8 @@ PBohrung = Point("mittelPunktBohrung", 0, 0, 0, 5e-3)
 
 # Material aus Datenbank laden
 steel_1010 = Material()
-steel_1010.loadMatFromDataBase("Material_new.db", "M330_50AP_050Hz")
+# steel_1010.loadMatFromDataBase("Material_new.db", "M330_50AP_050Hz") # bug in material bh curve
+steel_1010.loadMatFromDataBase("Material_new.db", "steel_1010")
 ndFe35 = Material()
 ndFe35.loadMatFromDataBase("Material_new.db", "NdFe35")
 air = Material()
@@ -60,6 +61,7 @@ symFactor = 4
 
 def createRotorPMSM():
     airGapAll = 37e-3 - 33.3e-3 - 2.9e-3
+    # Erzeugung der Punkte
     mRotor = Point("mRotor", 0, 0, 0, 0.1)
     mPolshape = Point("mPolshape", 33.3e-3 - 15e-3, 0, 0, 0.005)
     mPolshape.rotateZ(mRotor, math.pi / 8)
@@ -84,6 +86,7 @@ def createRotorPMSM():
     ddCR2 = ddCR1.duplicate()
     ddCR2.rotateZ(mRotor, math.pi / 8)
 
+    # Erzeugung der Linien
     dLR1 = CircleArc("dLR1", dR1, mRotor, dR2)
     dLR2 = Line("dLR2", dR1, dR3)
     dLR3 = CircleArc("dLR3", dR3, mRotor, dR4)
@@ -101,6 +104,7 @@ def createRotorPMSM():
     dLdC2 = Line("dLdC2", ddCR2, dM2)
     dLdC3 = Line("dLdC3", ddCR1, dR3)
 
+    # Erzeugung der Flächen
     s_RotorBlech_01 = Surface("s_RotorBlech", [dLR1, dLR5, dLR6, dLR4, dLR3, dLR2])
     s_Magnet_01 = Surface("s_Magnet", [dLR6, dLRM2, dLRM3, dLRM1])
     s_Container_01 = Surface(
@@ -116,8 +120,9 @@ def createRotorPMSM():
     innerLimit = [dLR1]
 
     hP1 = dR2.duplicate()
-    hL = Line("hL", PBohrung, hP1)
+    hL = Line("hL", PBohrung, hP1)  # Hilfslinie für mirror-Befehl
 
+    # Duplizieren und Rotieren der Segmente für Teilmodell
     for i in range(0, 3):
         s_Rot = s_RotorBlech[len(s_RotorBlech) - 1].mirror(PBohrung, ez, hL)
         s_RotorBlech.append(s_Rot)
@@ -137,6 +142,7 @@ def createRotorPMSM():
         iL.rotateZ(mRotor, math.pi / 8)
         innerLimit.append(iL)
 
+    # Movingband Linien und Definition
     mbRotorAux = []
     for i2 in range(1, 4):
         mbR_allAux = []
@@ -144,21 +150,32 @@ def createRotorPMSM():
             mbAux = mb.duplicate()
             mbAux.rotateZ(mRotor, i2 * math.pi / 2)
             mbR_allAux.append(mbAux)
-        mbR_Aux = MovingBand("", mbR_allAux, air, True)
+        # outer part of the moving band
+        mbR_Aux = MovingBand("", mbR_allAux, air, auxiliary=True)
         mbR_Aux.setName("mbRotor_" + str(mbR_Aux.id))
         mbRotorAux.append(mbR_Aux)
 
-    rotorBlech = RotorLamination("rotorBlech", s_RotorBlech, steel_1010)
-    magnet1 = Magnet("magnet_Nord", s_Magnet[0:2], ndFe35, 1, "radial")
+    # Definition der PhysicalElements
+    rotorBlech = RotorLamination(
+        name="rotorBlech", geometricalElement=s_RotorBlech, material=steel_1010
+    )
+    magnet1 = Magnet(
+        name="magnet_Nord",
+        geoElements=s_Magnet[0:2],
+        material=ndFe35,
+        magDirection=1,
+        magType="radial",
+    )
     magnet2 = Magnet("magnet_Sued", s_Magnet[2:4], ndFe35, -1, "radial")
-    luft = AirArea("luft", s_Container, air)
+    luft = AirArea(name="luft", geometricalElement=s_Container, material=air)
     luftspalt = AirGap("luftspalt", s_Luftspalt, air)
     masterR = PrimaryLine("masterR", [dLR2, dLdB3, dLdC3])
+    # Prime-Linien duplizieren und Rotieren
     slave_R = [dLR2.duplicate(), dLdB3.duplicate(), dLdC3.duplicate()]
     for sR in slave_R:
         sR.rotateZ(mRotor, math.pi / 2)
     slaveR = SlaveLine("slaveR", slave_R)
-    mbRotor = MovingBand("mbRotor", mbR_all, air)
+    mbRotor = MovingBand(name="mbRotor", geometricalElement=mbR_all, material=air)
     phy_innerLimit = LimitLine("innerLimitRotor", innerLimit)
 
     return Rotor(
@@ -300,8 +317,10 @@ def createStatorPMSM():
     phy_slave = SlaveLine("slaveS", slaveLine)
     phy_outerLimit = LimitLine("outerLimitStator", outerLine)
 
+    # create SWAT-EM winding obj.
     winding = datamodel()
     winding.genwdg(Q=nbrSlots, P=nbrPoles, m=3, layers=2, turns=12)
+    
     return Stator(
         nbrSlots=nbrSlots,
         physicalElements=[
