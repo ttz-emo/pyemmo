@@ -17,7 +17,7 @@ class Slot_Form02(Slot):
             geometricalElement=list(),
             material=machineDict["material"],
         )
-        self._name = "Slot_Form02_" + str(self._ID)
+        self._name = "Slot_Form02_" + str(self.id)
         self._createGeometry()
 
     def _createGeometry(self):
@@ -76,6 +76,7 @@ class Slot_Form02(Slot):
 
         # Bei jedem Baukasten muss diese Definition identisch sein
         self._geometricalElement = [surfaceSlotOP, surfaceSlot]
+        self._innerLinePart = [lS1]
         self._airDockingLine = [lS1]
         self._airDockingPoint = [pS1]
         self._laminationDockingLine = [lS3, lS5, lS6, lS7]
@@ -87,6 +88,9 @@ class Slot_Form02(Slot):
 
     def getairDockingLine(self):
         return self._airDockingLine
+    
+    def getInnerLinePart(self):
+        return self._innerLinePart
 
     def getairDockingPoint(self):
         return self._airDockingPoint
