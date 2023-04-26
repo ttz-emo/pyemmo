@@ -54,7 +54,7 @@ class Slot(PhysicalElement):
                     f"Physical element type 'Slot' should only contain Surface  Elements but got type Line!"
                 )
         # Material der Wicklung
-        self.material = material
+        self.material = material # FIXME: redefinition of material. Allready defined in pe!
         self.windDirection = windingDir  # set winding direction
         self.phase = phase  # set phase angle
         self.nbrTurns = nbrTurns  # set number of winding turns
