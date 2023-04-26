@@ -1,13 +1,17 @@
+"""Test module for spmsm toolkit machine model"""
 # %%
-from cmath import pi
-from genericpath import isdir
+import os
 from os import mkdir, path
 import sys
-from numpy import rad2deg, where
+
+# from pyemmo.functions.importResults import plotAllDat
+# from numpy import rad2deg, where
+from swat_em import datamodel
+import math
 
 try:
     from pyemmo.script.script import Script
-except:
+except ImportError:
     try:
         rootname = path.abspath(path.join(path.dirname(__file__), ".."))
     except:
@@ -16,18 +20,16 @@ except:
     print(f'rootname is "{rootname}"')
     sys.path.append(rootname)
     from pyemmo.script.script import Script
-from pyemmo.definitions import RESULT_DIR, MAIN_DIR
+
+# from pyemmo.definitions import RESULT_DIR, MAIN_DIR
 from pyemmo.script.geometry.point import Point
-from pyemmo.script.geometry.line import Line
+
+# from pyemmo.script.geometry.line import Line
 from pyemmo.script.material.electricalSteel import Material, ElectricalSteel
 from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
-from swat_em import datamodel, analyse
-from pyemmo import calcPhaseangleStarvoltageCorr
+from pyemmo.functions.runOnelab import createCmdCommand
 
-analyse.calc_phaseangle_starvoltage = calcPhaseangleStarvoltageCorr
-import math
-
-#%%
+# %%
 
 PBohrung = Point("mittelPunktBohrung", 0, 0, 0, 5e-3)
 
@@ -70,11 +72,85 @@ simuSPMSMDict = {
     "output": {"b": True, "az": True, "js": True},
 }
 
-#%% Maschine aus dem Baukasten parametrisieren
+# %% Maschine aus dem Baukasten parametrisieren
 SPMSM = MachineSPMSM(simuSPMSMDict)
+magType = 0  # 0: magnet01_surface, 1: magnet02_surface
+if magType == 0:
+    # Magnet Surface 01
+    rotor = SPMSM.addRotorToMachine("sheet01_standard", "magnet01_surface")
+    rotor.addLaminationParameter(
+        {
+            "r_We": 20e-3,
+            "r_R": 55e-3,
+            "meshLength": 3e-3,
+            "material": steel_1010,
+            "machineCentrePoint": PBohrung,
+        }
+    )
+    rotor.addMagnetParameter(
+        {
+            "h_M": 7e-3,
+            "angularWidth_i": math.pi / 10,
+            "angularWidth_a": math.pi / 12,
+            "magnetisationDirection": [1, -1, 1, -1, 1, -1, 1, -1],
+            "magnetisationType": "radial",
+            "material": ndFe35,
+            "meshLength": 3e-3,
+        }
+    )
+    # End:      Magnet Surface 01
+elif magType == 1:
+    # Start:    Magnet Surface 02
+    rotor = SPMSM.addRotorToMachine("sheet01_standard", "magnet02_surface")
+    rotor.addLaminationParameter(
+        {
+            "r_We": 20e-3,
+            "r_R": 55e-3,
+            "meshLength": 3e-3,
+            "material": steel_1010,
+            "machineCentrePoint": PBohrung,
+        }
+    )
+    rotor.addMagnetParameter(
+        {
+            # "h_M": 7e-3,
+            "h_M": 4e-3,
+            # "w_Mag": 30e-3,
+            "w_Mag": 20e-3,
+            "r_Mag": 25e-3,
+            "magnetisationDirection": [1, -1, 1, -1, 1, -1, 1, -1],
+            "magnetisationType": "radial",
+            "material": ndFe35,
+            "meshLength": 3e-3,
+        }
+    )
+    # End:      Magnet Surface 02
+elif magType == 2:
+    # Start:    Magnet Surface 03 -> BUG!
+    rotor = SPMSM.addRotorToMachine("sheet01_standard", "magnet03_surface")
+    rotor.addLaminationParameter(
+        {
+            "r_We": 20e-3,
+            "r_R": 55e-3,
+            "meshLength": 3e-3,
+            "material": steel_1010,
+            "machineCentrePoint": PBohrung,
+        }
+    )
+    rotor.addMagnetParameter(
+        {
+            "h_M": 7e-3,
+            "w_Mag": 30e-3,
+            "magnetisationDirection": [1, -1, 1, -1, 1, -1, 1, -1],
+            "magnetisationType": "radial",
+            "material": ndFe35,
+            "meshLength": 3e-3,
+        }
+    )
+    # End:      Magnet Surface 03
+else:
+    raise ValueError("Wrong number for rotor type!")
 
-# # Magnet Surface 01
-# rotor = SPMSM.addRotorToMachine("sheet01_standard", "magnet01_surface")
 # rotor.addLaminationParameter(
 #     {
 #         "r_We": 20e-3,
@@ -84,107 +160,86 @@ SPMSM = MachineSPMSM(simuSPMSMDict)
 #         "machineCentrePoint": PBohrung,
 #     }
 # )
-# rotor.addMagnetParameter(
-#     {
-#         "h_M": 7e-3,
-#         "angularWidth_i": math.pi / 10,
-#         "angularWidth_a": math.pi / 12,
-#         "magnetisationDirection": [1, -1, 1, -1, 1, -1, 1, -1],
-#         "magnetisationType": "radial",
-#         "material": ndFe35,
-#         "meshLength": 3e-3,
-#     }
-# )
-# # End:      Magnet Surface 01
-
-# Start:    Magnet Surface 02
-rotor = SPMSM.addRotorToMachine("sheet01_standard", "magnet02_surface")
-rotor.addLaminationParameter(
-    {
-        "r_We": 20e-3,
-        "r_R": 55e-3,
-        "meshLength": 3e-3,
-        "material": steel_1010,
-        "machineCentrePoint": PBohrung,
-    }
-)
-rotor.addMagnetParameter(
-    {
-        "h_M": 7e-3,
-        "w_Mag": 30e-3,
-        "r_Mag": 25e-3,
-        "magnetisationDirection": [1, -1, 1, -1, 1, -1, 1, -1],
-        "magnetisationType": "radial",
-        "material": ndFe35,
-        "meshLength": 3e-3,
-    }
-)
-# End:      Magnet Surface 02
-
-# # Start:    Magnet Surface 03 -> BUG!
-# rotor = SPMSM.addRotorToMachine("sheet01_standard", "magnet03_surface")
-# rotor.addLaminationParameter(
-#     {
-#         "r_We": 20e-3,
-#         "r_R": 55e-3,
-#         "meshLength": 3e-3,
-#         "material": steel_1010,
-#         "machineCentrePoint": PBohrung,
-#     }
-# )
-# rotor.addMagnetParameter(
-#     {
-#         "h_M": 7e-3,
-#         "w_Mag": 30e-3,
-#         "magnetisationDirection": [1, -1, 1, -1, 1, -1, 1, -1],
-#         "magnetisationType": "radial",
-#         "material": ndFe35,
-#         "meshLength": 3e-3,
-#     }
-# )
-# # End:      Magnet Surface 03
-lAirgap = 5e-3
+lAirgap = 3e-3
 rotor.addAirGapParameter({"width": lAirgap, "material": air})
 rotor.createRotor()
 rotor.plot()
-#%%
+# %%
 winding = datamodel()
 winding.genwdg(Q=nbrSlots, P=nbrPoles, m=3, layers=2, turns=23)
-stator = SPMSM.addStatorToMachine("sheet01_standard", "slotForm_01", winding)
-stator.addLaminationParameter(
-    {
-        "r_S_i": 65e-3,
-        "r_S_a": 100e-3,
-        "meshLength": 3e-3,
-        "material": steel_1010,
-        "machineCentrePoint": PBohrung,
-    }
-)
-stator.addSlotParameter(
-    {
-        "w_SlotOP": 4e-3,
-        "h_SlotOP": 4e-3,
-        "w_Wedge": 20e-3,
-        "h_Wedge": 7e-3,
-        "h_Slot": 20e-3,
-        "w_Slot": 14e-3,
-        "material": copper,
-        "meshLength": 3e-3,
-        "slot_OPAir": True,
-    }
-)
+SLOT_TYPE = 1
+if SLOT_TYPE == 0:
+    stator = SPMSM.addStatorToMachine("sheet01_standard", "slotForm_01", winding)
+    stator.addLaminationParameter(
+        {
+            "r_S_i": 65e-3,
+            "r_S_a": 100e-3,
+            "meshLength": 3e-3,
+            "material": steel_1010,
+            "machineCentrePoint": PBohrung,
+        }
+    )
+    stator.addSlotParameter(
+        {
+            "w_SlotOP": 4e-3,
+            "h_SlotOP": 4e-3,
+            "w_Wedge": 20e-3,
+            "h_Wedge": 7e-3,
+            "h_Slot": 20e-3,
+            "w_Slot": 14e-3,
+            "material": copper,
+            "meshLength": 3e-3,
+            "slot_OPAir": True,
+        }
+    )
+elif SLOT_TYPE == 1:
+    stator = SPMSM.addStatorToMachine("sheet01_standard", "slotForm_03", winding)
+    stator.addLaminationParameter(
+        {
+            "r_S_i": 65e-3,
+            "r_S_a": 100e-3,
+            "meshLength": 3e-3,
+            "material": steel_1010,
+            "machineCentrePoint": PBohrung,
+        }
+    )
+    stator.addSlotParameter(
+        {
+            "meshLength": 3e-3,
+            "w_SlotOP": 4e-3,
+            "h_SlotOP": 4e-3,
+            "h_Wedge": 5e-3,
+            "w_Wedge": 22e-3,
+            "h_Slot": 15e-3,
+            "r_Slot": 14e-3,
+            "slot_OPAir": True,
+            "material": copper,
+        }
+    )
+else:
+    raise ValueError("Wrong number for slot type!")
+
+# stator.addLaminationParameter(
+#     {
+#         "r_S_i": 65e-3,
+#         "r_S_a": 100e-3,
+#         "meshLength": 3e-3,
+#         "material": steel_1010,
+#         "machineCentrePoint": PBohrung,
+#     }
+# )
 stator.addAirGapParameter({"width": lAirgap, "material": air})
 stator.createStator()
 stator.plot()
-#%% Create Machine
+# %% Create Machine
 SPMSM.createMachineDomains()
 SPMSM.setFunctionMesh("linear", 8)
 SPMSM.plot()
 # SPMSM.createMachineDomains -> MachineAllType function
-#%%
+# %%
 resDir = r"C:\Users\ganser\AppData\Local\Programs\pyemmo\Results\Baukasten"
 modelDir = path.abspath(path.join(resDir, "Test_SPMSM"))
-if not isdir(modelDir):
+if not path.isdir(modelDir):
     mkdir(modelDir)
 
 myScript = Script(
@@ -204,9 +259,6 @@ myScript = Script(
     machine=SPMSM,
 )
 myScript.generateScript()
-from pyemmo.functions.runOnelab import createCmdCommand
-from pyemmo.functions.importResults import plotAllDat
-import os
 
 os.system(
     createCmdCommand(
