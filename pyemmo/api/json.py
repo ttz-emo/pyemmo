@@ -269,7 +269,7 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
                 Name=f'"{quantity} (Yoke)"',
             )
 
-    ## Add rotor and stator b-field export for iron loss calculation
+    ## 4. Add rotor and stator b-field export for iron loss calculation
     if importJSON.getFlagCalcIronLoss(extendedInfo):
         rotorIronPhysicalID = [
             str(phys.id) for phys in machine.getRotor()._domainLam.physicals
@@ -291,6 +291,29 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
             File=join("CAT_RESDIR", "b_stator.pos"),
             Name='"b (stator)"',
         )
+
+    # 5. PM Eddy current loss
+    if machine._domainM.physicals:
+        # if there are magnets
+        allMagConducting = True
+        for magnet in machine._domainM.physicals:
+            if magnet.getMaterial().getConductivity() is None:
+                allMagConducting = False
+                logging.warning(
+                    "Unable to calculate magnet losses, due to missing el. conductivity in %s.",
+                    magnet.getName(),
+                )
+                break
+        if allMagConducting:
+            script.addPostOperation(
+                "JouleLosses[Rotor_Magnets]",
+                "GetMagnetLosses",
+                OnGlobal="",
+                Format="TimeTable",
+                File=join("CAT_RESDIR", "Pv_eddy_Mag.dat"),
+                # Name='"p (stator)"',
+            )
+            script.simulationParameters.SYM.CALC_MAGNET_LOSSES = 1
 
 
 # ======================================== START MAIN FUNCTION =====================================
@@ -427,7 +450,8 @@ def main(
             )
         else:
             logging.warning(
-                "Onelab call issued the following warnings: \n\t%s", calcInfo.stderr.replace("\n", "\n\t")
+                "Onelab call issued the following warnings: \n\t%s",
+                calcInfo.stderr.replace("\n", "\n\t"),
             )
     # iron loss post processing:
     resPath = apiScript.getResultsPath()
@@ -515,7 +539,6 @@ def main(
             # )
     # close log file handler!
     jsonLogFileHandler.close()
-
 
     ###########################################################################################
     ################ Plot Results for Debugging ##################
