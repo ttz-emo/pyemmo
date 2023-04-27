@@ -106,7 +106,7 @@ class Rotor:
             raise ValueError("'physicalElementList' was not type list!")
 
     ###Automatische Zuweisung der PhysicalElemente zu den passenden Domainen.
-    def _createDomainForRotor(self):
+    def _createDomainForRotor(self) -> None:
         allPhy = self.sortPhysicals()
 
         ###DomainC beinhaltet alle Physical Elements, die leitend sind.
