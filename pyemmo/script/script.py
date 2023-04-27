@@ -74,7 +74,8 @@ class Script(object):
                 optional:
 
                 - "park_angle_offset" - offset angle for park-transformation in elec °
-                - "nbrParallePaths", - number of parallel winding paths
+                - "nbrParallePaths" - number of parallel winding paths
+                - "calcMagnetLosses" - flag to calculate eddy current losses in PMs
                 - "analysis_type"
 
                     - 0: static (default)
@@ -183,6 +184,10 @@ class Script(object):
             if "nbrParallePaths" in simuParams.keys():
                 self.simulationParameters.SYM.NBR_PARALLEL_PATHS = simuParams[
                     "nbrParallePaths"
+                ]
+            if "calcMagnetLosses" in simuParams.keys():
+                self.simulationParameters.SYM.CALC_MAGNET_LOSSES = simuParams[
+                    "calcMagnetLosses"
                 ]
             if "magTemp" in simuParams.keys():
                 self.simulationParameters.MAT.TEMP_MAG = simuParams["magTemp"]
@@ -1039,7 +1044,7 @@ class Script(object):
                         Domain(domainDict[domainName], physicalsDict[domainName])
                     )
                 else:
-                    # FIXME: ADD MACHINE SIDE TO DOMAIN NAME   
+                    # FIXME: ADD MACHINE SIDE TO DOMAIN NAME
                     logging.debug(
                         f"There were no physical elements in domain '{domainName}'."
                     )
@@ -1859,6 +1864,7 @@ class Script(object):
         #   FLAG_NL
         #   FLAG_CHANGE_ROT_DIR
         flagCalcNL = 0
+        hasMagnets = False
         # flag_readonly = 0
         for domain in machine.getDomains():
             for physicalElement in domain.physicals:
@@ -1867,7 +1873,12 @@ class Script(object):
                     if not mat.isLinear():
                         flagCalcNL = 1
                         break  # if one BH curve is found, we can stop the loop
+                    if isinstance(physicalElement, Magnet):
+                        hasMagnets = True
         simuParamDict.SYM.FLAG_NL = flagCalcNL
+        if not hasMagnets:
+            # if there where no magnet physical elements, set flag to false, even if its set to true...
+            simuParamDict.SYM.CALC_MAGNET_LOSSES = 0
 
         # machine.getStator().winding.plot_star('plot_star.png',None,False,True)
         if machine.getStator().winding.get_windingfactor_el()[1][0, 0] < 0:
