@@ -348,8 +348,12 @@ def main(
     #         f"Given json file(s) did not exist! Check '{args.geo}' or '{args.extInfo}'."
     #     )
     #     raise FileNotFoundError(msg)
-    elif isinstance(geo, dict):
+    elif isinstance(geo, list):
+        # FIXME: The object format would be a list of surface dicts (See json.load() function).
+        # Maybe we should think about a dict of dicts or something. The output must be like in
+        # modelJSON.importMachineGeometry() -> Dict[`IdExt`, SurfaceAPI] 
         segmentSurfDict = geo
+        raise RuntimeError("Calling JSON-API without json file not possible right now.")
     else:
         raise TypeError()
 
