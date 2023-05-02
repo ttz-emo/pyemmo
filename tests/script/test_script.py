@@ -1,5 +1,5 @@
 import unittest
-from pydraft.script.script import Script
+from pyemmo.script.script import Script
 
 
 class TestScript(unittest.TestCase):

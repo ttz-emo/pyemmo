@@ -320,7 +320,7 @@ def createStatorPMSM():
     # create SWAT-EM winding obj.
     winding = datamodel()
     winding.genwdg(Q=nbrSlots, P=nbrPoles, m=3, layers=2, turns=12)
-    
+
     return Stator(
         nbrSlots=nbrSlots,
         physicalElements=[

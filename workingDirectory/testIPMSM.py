@@ -81,9 +81,9 @@ rotor1.addLaminationParameter(
 )
 rotor1.addMagnetParameter(
     {
-        "h_Mag": 9e-3,
+        "h_Mag": 7e-3,
         "w_Mag": 4e-3,
-        "d_Slot": 0.3e-3,
+        "d_Slot": 1e-3,
         "magnetisationDirection": [1, -1, 1, -1, 1, -1, 1, -1],
         "magnetisationType": "tangential",
         "material": ndFe35,
