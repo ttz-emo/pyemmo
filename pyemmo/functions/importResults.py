@@ -167,10 +167,11 @@ def plotAllDat(dirPath: str) -> None:
     if path.isdir(dirPath):
         # if the folder for results exists
         for file in os.listdir(dirPath):
+            filePath = os.path.join(dirPath, file)
             filename, fileExt = path.splitext(file)
-            if fileExt == ".dat" and os.stat(file).st_size != 0:
+            if fileExt == ".dat" and os.stat(filePath).st_size != 0:
                 plotTimeTableDat(
-                    path.abspath(path.join(dirPath, file)),
+                    path.abspath(filePath),
                     filename,
                     title=filename,
                     savefig=True,
