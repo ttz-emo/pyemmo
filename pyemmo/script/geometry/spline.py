@@ -247,6 +247,12 @@ class Spline(Line):
                     f"Tried to remove Point '{point.name}' from controll points of Spline '{self.name}', but point was not found in controll point list."
                 )
             )
+        
+    def getPoints(self) -> List["Point"]:
+        points = []
+        points.extend(super().getPoints())
+        points.extend(self.getControlPoints())
+        return points
 
     def getType(self) -> Literal["Spline"]:
         """Mit getType() wird ein Identifier der Klasse als String zurück gegeben.
