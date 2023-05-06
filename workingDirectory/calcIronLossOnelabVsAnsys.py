@@ -107,8 +107,8 @@ if __name__ == "__main__":
     proFile = os.path.join(RESULT_DIR, "Test_1FE1051-4HF11_TherCom.pro")
     if not os.path.exists(proFile):
         json.main(
-            geo=r"C:\Users\ganser\AppData\Local\Programs\pyemmo_git\pyemmo\Results\matlab\Test_1FE1051-4HF11_TherCom\Test_1FE1051-4HF11_TherCom.json",
-            extInfo=r"C:\Users\ganser\AppData\Local\Programs\pyemmo_git\pyemmo\Results\matlab\Test_1FE1051-4HF11_TherCom\simuInfo.json",
+            geo=r"C:\Users\ganser\AppData\Local\Programs\pyemmo\Results\matlab\Test_1FE1051-4HF11_TherCom\Test_1FE1051-4HF11_TherCom.json",
+            extInfo=r"C:\Users\ganser\AppData\Local\Programs\pyemmo\Results\matlab\Test_1FE1051-4HF11_TherCom\simuInfo.json",
             model=RESULT_DIR,
         )
     if not os.path.isdir(RES_DIR):
