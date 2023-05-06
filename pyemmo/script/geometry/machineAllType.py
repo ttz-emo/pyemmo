@@ -4,11 +4,12 @@ from types import SimpleNamespace
 from typing import Dict, List, Literal, Union
 
 from .physicalElement import PhysicalElement
-from .line import Line
+from .surface import Surface, Point, Line
 from .domain import Domain
 from .rotor import Rotor
 from .stator import Stator
 from ...script import default_param_dict
+
 
 ###
 # Eine Instanz der Klasse MachineAllType beschreibt eine elektrische Maschine im dreidimensionalen Raum.
@@ -312,7 +313,14 @@ class MachineAllType(object):
             raise (ValueError(mssg))
         for physical in self.getPhysicalElements():
             for geo in physical.geometricalElement:
-                for point in geo.getPoints():
+                points: List[Point] = []
+                if isinstance(geo, Surface):
+                    for curve in geo.getCurve():
+                        points.extend(curve.getPoints())
+                # All curves should belong to a surface...
+                # else:
+                #     points.extend(geo.getPoints())
+                for point in points:
                     rP = point.getRadius()
                     if functionType == "linear":
                         if rP < rMb:
@@ -322,7 +330,7 @@ class MachineAllType(object):
                             pMeshSize = (a2 * rP + b2) * basisMeshsize
                     elif functionType == "quad":
                         # faktor = 4770*rP**2 - 430 * rP + 10 # poly 2 fit
-                        faktor = (a * rP ** 2 + b * rP + c) + 1
+                        faktor = (a * rP**2 + b * rP + c) + 1
                         faktor = 1 if faktor < 1 else faktor
                         pMeshSize = faktor * basisMeshsize
                     point.setMeshLength(pMeshSize)
