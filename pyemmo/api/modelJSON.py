@@ -760,7 +760,14 @@ def genWindLayoutSwatEM(
     FIXME: the number of slot sides per slot is assumed to be 2 allways.
 
     Args:
-        windingList (List[str]): Motor model winding layout (with symmetry) generated from matlab
+        windingList (List[str]): Motor model winding layout (with symmetry) from json model info
+            file, formatted as list of strings. For every slot, the sign of winding direction and the
+            phase id (u,v or w) should be given. This should look something like:
+
+            .. code ::
+
+                "winding": ["+u","+u","-v","-v","+w","+w"]
+    
         Qs (int): Total number of stator slots
         onePole (bool, optional): Flag if winding layout is only given for one pole, so the winding
             direction has to be reversed every time. Defaults to False.

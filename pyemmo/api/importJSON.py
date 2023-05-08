@@ -260,7 +260,7 @@ def getModelName(extendedInfo: dict) -> str:
     """Return the model name from the extended info dict
 
     Args:
-        extendedInfo (dict): dict from matlab side of api containing
+        extendedInfo (dict): dict from json model info file containing
         additional information for the simulation
 
     Raises:
@@ -347,11 +347,12 @@ def createMaterial(matDict: Dict[str, Dict[Literal["wert"], Any]]) -> Material:
     """create a pyemmo material object based on matDict format
 
     Args:
-        matDict (Dict[str,Dict[Literal["wert"], Any]]): material dict extracted from matlab api side.
+        matDict (Dict[str,Dict[Literal["wert"], Any]]): material dict.
 
     Returns:
         Material: Material object generated from Matlab dict.
     """
+    # TODO: Edit Material dict to match representation of Material class
     name = matDict["name"]["wert"]
     if isAir(name):
         return air
@@ -435,6 +436,7 @@ def createMaterial(matDict: Dict[str, Dict[Literal["wert"], Any]]) -> Material:
 def createSteelMaterial(
     materialDict, name, conductivity, permeability, bhCurve, density, sheetThickness
 ) -> ElectricalSteel:
+# TODO: add docstring
     emDict: dict = materialDict["elektromagnetik"]
     try:
         lossParams = []

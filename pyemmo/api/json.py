@@ -28,7 +28,7 @@ def createMachine(
     segmentSurfDict: Dict[str, SurfaceAPI], extendedInfo: dict
 ) -> Tuple[MachineAllType, Dict[str, List[SurfaceAPI]]]:
     """create a pyemmo Machine object from a list of surfaces forming one machine segment
-    (imported from matlab).
+    (imported from json file).
 
     Args:
         segmentSurfDict (Dict[str, SurfaceAPI]): dict of surfaces forming one machine segment

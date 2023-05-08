@@ -12,7 +12,7 @@ Welcome to the PyEMMO documentation!
    
    source/usage
    
-   source/PyEMMO
+   source/pyemmo
    
 Indices and tables
 ==================
