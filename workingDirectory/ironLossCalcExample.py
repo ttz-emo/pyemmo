@@ -307,6 +307,7 @@ def ironLossInteractive(
     ax.bar_label(bars, fmt="%.4f")
     # plt.bar(freqs, amp[:,elemId],10) # full spectrum
 
+    # plot b field of element over time
     fig, axs = plt.subplots(2, 1)
     axs[0].plot(time, B_Data[:, elemId, 0], label="x-comp")
     axs[1].plot(time, B_Data[:, elemId, 1], label="y-comp")
@@ -317,13 +318,26 @@ def ironLossInteractive(
     print(
         f"Mittelwert Zeitverlauf Element {elemId}: {np.mean(B_Data[:,elemId,[0,1]],axis=0)}"
     )
-    # Amplituden der Ordnungen:
-    for i, freq in enumerate(freqs):
-        print(f"Amplitude f={np.round(freq)} für Element {elemId}: {amp[i,elemId]}")
 
-    phFreq = np.linalg.norm(
-        np.sum(sigma_h * freqs * (amp.transpose() ** 2), axis=2), axis=0
+    fig, ax = plt.subplots()
+    bars = ax.bar(
+        freqs[1:] / freqs[1],
+        np.linalg.norm(np.mean(amp[1:, :, :], axis=1), axis=1),
+        3,
     )
+    ax.set_title("Mean Hysteresis loss (over elements)")
+    ax.set_ylabel("Loss Density [W/m³]")
+    ax.set_xlabel("Harmonic")
+    # # bars = plt.bar(freqs[1:], amp[1:,elemId,2],10) # 1: because skiping DC-part to see main harmonics
+    # ax.bar_label(bars, fmt="%.1e")
+
+    # Field plot in gmsh
+    # norm of x,y,z components over the sum of all frequencies
+    # phFreq = np.linalg.norm(
+    #     np.sum(sigma_h * freqs * (amp.transpose() ** 2), axis=2), axis=0
+    # )
+    # norm of xyz comp.
+    phFreq = np.linalg.norm(sigma_h * freqs * (amp.transpose() ** 2), axis=0)
     pHFreqView = gmsh.view.add("Hystersis Loss (FFT) [W/m³]")  # get tag of new view
     gmsh.view.addHomogeneousModelData(
         tag=pHFreqView,
@@ -331,9 +345,26 @@ def ironLossInteractive(
         modelName=model,
         dataType="ElementData",
         tags=btags,
-        data=phFreq,
+        data=np.sum(phFreq, axis=1),
         time=0,
     )
+    # plot loss density over frequency
+    pHFreqView2 = gmsh.view.add(
+        f"Hystersis Loss (FFT) harmonic (f0={freqs[1]:.1f}) [W/m³]"
+    )  # get tag of new view
+    for i, freq in enumerate(freqs):
+        gmsh.view.addHomogeneousModelData(
+            tag=pHFreqView2,
+            step=i,
+            modelName=model,
+            dataType="ElementData",
+            tags=btags,
+            data=phFreq[:, i],
+            time=freq / freqs[1],  # /(1/time[-1]), # time harmonic
+        )
+    # 0: none, 1: time series, 2: harmonic data, 3: automatic, 4: step data, 5: multi-step data,
+    # 6: real eigenvalues, 7: complex eigenvalues
+    gmsh.view.option.setNumber(pHFreqView2, "ShowTime", 2)
     # plot mean Value of time domain hysteresis losses for comparison
     pHMeanView = gmsh.view.add(
         "Hystersis Loss (Time Domain, mean) [W/m³]"
@@ -523,8 +554,8 @@ if __name__ == "__main__":
     #     raise ValueError(
     #         f"Given B field ('b_rotor.pos' or 'b_stator.pos') file ('{initFilePath}') not found!"
     #     )
-    # RES_DIR = "C:/temp"
-    RES_DIR = r"C:\Users\ganser\Documents\PyDraft\Austausch Siemens\230321_DebugEisenverlusteReluktanz\Results\res__1PH8138_7xD0_Reluktanz"
+    RES_DIR = "C:/temp"
+    # RES_DIR = r"C:\Users\ganser\Documents\PyDraft\Austausch Siemens\230321_DebugEisenverlusteReluktanz\Results\res__1PH8138_7xD0_Reluktanz"
     gmsh.initialize()
     resDict = {}
     for side in ["rotor", "stator"]:

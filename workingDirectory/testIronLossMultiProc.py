@@ -118,8 +118,7 @@ if __name__ == "__main__":
     # ax.plot_surface(t, e, np.linalg.norm(bData, axis=2))
 
     # load loss data
-    RES_DIR = r"C:\Users\ganser\AppData\Roaming\pyemmo\Results\res_Test_1FE1051-4HF11_TherCom"
-
+    RES_DIR = r"C:\Users\ganser\AppData\Roaming\pyemmo\Results\res_Test_1FE1051_4HF11_TherCom"
     ironLossResFile = os.path.join(RES_DIR, "ironLossData.npy")
     ironLossArray = np.load(ironLossResFile)
     currentAngleFile = os.path.join(RES_DIR, "currentAngle.npy")

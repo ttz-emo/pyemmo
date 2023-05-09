@@ -39,22 +39,28 @@ def main(
     ## calculate hysteresis losses
     hystLossFactor = lossFactor["hyst"]  # hysteresis loss factor
     # beta = 2  # hysteresis loss exponent
-
-    magB = (bmax - bmin) / 2  # magnitude of B
-    magH = 1 / np.pi * hystLossFactor * magB  # magnitude of H
-    hystLossField = np.abs(magH[:, 0] * dBdt[:, :, 0]) + np.abs(
-        magH[:, 1] * dBdt[:, :, 1]
-    )
-    # mean iron loss per element over all timesteps
-    # meanHystLossField = np.mean(hystLossField, axis=0)
-    time = time[0:-1]
-    hystLoss = integrateField(np.array(hystLossField), time, elementTags)
-    assert (
-        hystLoss.size == nbrTimeSteps
-    ), f"Integration should result in {nbrTimeSteps} values!"
+    # calculate element wise fft of b-field
+    amp = np.abs(np.fft.rfft(bFieldData[:-1, :, :], axis=0))
+    # FIXME: Make sure nbrFreqs is equal to only one side of the spectrum
+    # maybe check signal length before fft...
+    nbrFreqs = int(np.round((nbrTimeSteps - 1) / 2))
+    # to get correct amplitude regarding the specific frequencies, the amplitudes
+    # must be corrected by 1/nbrFreqs and DC-part by 1/(2*nbrFreqs) because its value
+    # is doubled since its part of the positive and negative side of the spectrum.
+    # Since I defined the number of frequencies to be only for the one sided spectrum,
+    # we have to double the value for amp[0] and use only nbrFreqs for amp[1:]
+    amp = np.concatenate(([amp[0] / nbrFreqs / 2], amp[1:] / (nbrFreqs)), axis=0)
+    tStep = time[1]
+    freqs = np.fft.fftfreq(nbrTimeSteps - 1, tStep)[
+        : nbrFreqs + 1
+    ]  # +1 because DC-signal
+    # norm of xyz comp. -> hystLossField has shape (nbrElements, nbrFreqs)
+    hystLossField = np.linalg.norm(
+        hystLossFactor * freqs * (amp.transpose() ** 2), axis=0
+    )   
+    hystLoss = integrateField(np.sum(hystLossField, axis=1)[np.newaxis,:], [0.0], elementTags)
     # skip first value, because its 0:
-    hystLoss = hystLoss[1:] * symFactor * axialLength  # correct values
-    ironLoss["hyst"] = hystLoss
+    ironLoss["hyst"] = hystLoss[1:] * symFactor * axialLength  # correct values
 
     ## Calculate eddy current losses
     eddyLossFactor = lossFactor["eddy"]  # loss parameter
@@ -67,6 +73,7 @@ def main(
     )
     # meanEddyLossField = np.mean(eddyLossField, axis=0)
     # eddyLoss = integrateField(np.array([meanEddyLossField]), [time[0]], elementTags)
+    time = time[0:-1]
     eddyLoss = integrateField(np.array(eddyLossField), time, elementTags)
     assert (
         eddyLoss.size == nbrTimeSteps
