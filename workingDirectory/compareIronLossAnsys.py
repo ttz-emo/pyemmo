@@ -8,7 +8,7 @@ from matplotlib import cm
 import scipy.io as sio
 
 # %% import ansys data
-ansysResPath = r"C:\Users\ganser\AppData\Roaming\pyemmo\Results\230301_EisenverlustkennfeldAnsys.csv"
+ansysResPath = r"H:\Workstation (Austausch)\EisenverlustberechnungVergleich\230223_EisenverlustkennfeldAnsys.csv"
 ansysResults = pandas.read_csv(ansysResPath)
 for key in ansysResults.keys():
     if "offset_deg" in key:

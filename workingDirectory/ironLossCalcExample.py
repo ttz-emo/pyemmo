@@ -660,29 +660,29 @@ if __name__ == "__main__":
     #         f"Given B field ('b_rotor.pos' or 'b_stator.pos') file ('{initFilePath}') not found!"
     #     )
 
-    # lossParams = (172.04, 1.047, 0)
+    lossParams = (172.04, 1.047, 0)
     # RES_DIR = r"C:\TEMP\res_Id=0_Iq=0_1000rpm"
     # elemId = {
     #     "rotor": 1637,
     #     "stator": 4574,
     # }
-    # RES_DIR = "C:/temp"
-    # elemId = {
-    #     "rotor": 1642,
-    #     "stator": 4573,
-    # }
+    RES_DIR = "C:/temp"
+    elemId = {
+        "rotor": 1642,
+        "stator": 4573,
+    }
 
-    lossParams = (165.9694, 1.0529, 0)
+    # lossParams = (165.9694, 1.0529, 0)
     # RES_DIR = r"C:\Users\ganser\Documents\PyDraft\Austausch Siemens\230321_DebugEisenverlusteReluktanz\Results\res__1PH8138_7xD0_Reluktanz"
     # elemId = {
     #     "rotor": 16259,
     #     "stator": 40503,
     # }
-    RES_DIR = r"C:\Users\ganser\Documents\PyDraft\Austausch Siemens\230321_DebugEisenverlusteReluktanz\Results\res__1PH8138_7xD0_Reluktanz_182Steps"
-    elemId = {
-        "rotor": 12803,
-        "stator": 27545,
-    }
+    # RES_DIR = r"C:\Users\ganser\Documents\PyDraft\Austausch Siemens\230321_DebugEisenverlusteReluktanz\Results\res__1PH8138_7xD0_Reluktanz_182Steps"
+    # elemId = {
+    #     "rotor": 12803,
+    #     "stator": 27545,
+    # }
     gmsh.initialize()
     resDict = {}
     for side in ["rotor", "stator"]:
