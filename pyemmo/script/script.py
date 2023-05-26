@@ -2022,11 +2022,13 @@ class Script(object):
         postOperation = self.getPostOperation()
         if postOperation.items:  # if there are Items in PostOperation
             # add the code for the compute command including the post operations
+            # TODO: Add option for "-bin" case (user setting)
+            
             computeCommandCode = (
-                """DefineConstant[\n\tC_ = {"-solve Analysis -v 99 -v2"""  # -bin
+                """DefineConstant[\n\tC_ = {"-solve Analysis -v 99 -v2 -pos """
             )
             for postOpName in self.getPostOperationNames():
-                computeCommandCode += " -pos " + postOpName
+                computeCommandCode += postOpName + " "
             computeCommandCode += (
                 """ ", Name "GetDP/9ComputeCommand", Visible Flag_Debug}\n];\n"""
             )
