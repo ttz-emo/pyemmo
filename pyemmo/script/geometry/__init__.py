@@ -29,4 +29,4 @@ domainDict = {
 
 physicalsDict = {"Rotor_MB_Line": "Rotor_Bnd_MB"}
 
-defaultCenterPoint = Point("default center point", 0, 0, 0, 1)
+defaultCenterPoint = Point("default center point", 0.0, 0.0, 0.0, 1)
