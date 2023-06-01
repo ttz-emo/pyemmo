@@ -67,7 +67,7 @@ for surface in MaschineSurfList:
 #     material=None,
 #     auxiliary=False
 # )
-# #TODO: Append MB_inner to RotorPhysicals
+# Append MB_inner to RotorPhysicals
 
 # # Generate Script with moving band lines (for testing)
 # scriptName="TestMovinbandGeneration"
