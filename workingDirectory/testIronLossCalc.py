@@ -18,7 +18,7 @@ resDir = r"C:\temp"
 axLen = 0.05
 symFactor = 4
 
-# resDir = r"C:\Users\ganser\Documents\PyDraft\Austausch Siemens\230321_DebugEisenverlusteReluktanz\Results\res__1PH8138_7xD0_Reluktanz_182Steps"
+# resDir = r"C:\Users\ganser\Documents\PyEMMO\Austausch Siemens\230321_DebugEisenverlusteReluktanz\Results\res__1PH8138_7xD0_Reluktanz_182Steps"
 # lossParams = {"hyst": 165.9694, "eddy": 1.0529, "exc": 0.0}
 # axLen = 0.31
 # symFactor = 4
