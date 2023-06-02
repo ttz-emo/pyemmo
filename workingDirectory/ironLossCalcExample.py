@@ -221,11 +221,15 @@ def ironLossInteractive(
             tStep = time[1]
             freqs = np.abs(np.fft.fftfreq(NBR_STEPS - 1, tStep)[: nbrFreqs + 1])
 
+            # find phi0 by fft
             for elem in range(nbrElements):
                 # FIXME: Assume that freq. of max. amplitude is the same for x and y comp.
                 #   -> norm                                         +1 because skipping DC
                 fMaxInd = np.linalg.norm(amp[1:, elem, :], axis=1).argmax() + 1
                 phi0 = phase[fMaxInd, :, :]
+            # find phi0 by detecting zero points
+            zero_crossings = np.where(np.diff(np.sign(B_Data),axis=0))[0]
+            
 
             # fMaxIndex equals order of that spectral part
             phi = np.linspace(
@@ -238,7 +242,6 @@ def ironLossInteractive(
 
     # Plot Bm and Hm over element number
     fig, axes = plt.subplots(nrows=2, ncols=1)
-
     ax1 = axes[0]
     ax1.plot(time, bMeanFree[:, elemId, 0])
     ax1.set_xlabel("time in s")
