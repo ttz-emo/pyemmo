@@ -3,7 +3,7 @@ import json
 from math import ceil
 from typing import Dict, List, Literal, Tuple, Union
 
-from numpy import pi, sign, ndarray
+from numpy import pi, sign, array
 from numpy.linalg import norm
 from swat_em import datamodel
 
@@ -60,8 +60,8 @@ def createLine(
         mpName = lineDict["MpName"]
         if mpName in ("MP", "M1") and (
             norm(
-                ndarray(globalCenterPoint.getCoordinate())
-                - ndarray(
+                array(globalCenterPoint.getCoordinate())
+                - array(
                     (
                         lineDict["MpX"],
                         lineDict["MpY"],
