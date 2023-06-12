@@ -5,6 +5,8 @@ import os
 import platform
 from os.path import isdir
 from typing import List, Literal
+import logging
+import datetime
 from swat_em import analyse
 import numpy as np
 
@@ -19,6 +21,22 @@ else:
 # generate user dir if not exists
 if not isdir(USER_DIR):
     os.mkdir(USER_DIR)
+
+# init root logger:
+# global logging format
+logFmt = logging.Formatter("%(levelname)-7s: %(message)s")
+globalLogFileHandler = logging.FileHandler(
+    filename=os.path.join(USER_DIR, "pydraft.log"), encoding="utf-8"
+)
+globalLogFileHandler.setFormatter(logFmt)
+rootLogger = logging.getLogger()
+rootLogger.addHandler(globalLogFileHandler)
+# logging.basicConfig()
+logging.info(
+    "PyDraft started on %s %s",
+    datetime.date.today(),
+    datetime.datetime.now().strftime("%H:%M:%S"),
+)
 
 
 def calcPhaseangleStarvoltageCorr(volVecList):
@@ -63,6 +81,7 @@ def calcPhaseangleStarvoltageCorr(volVecList):
                 angle += 360.0
             phaseangle[-1].append(angle)
     return phaseangle, sequence
+
 
 # Overload bug in swat_em.analyse package
 analyse.calc_phaseangle_starvoltage = calcPhaseangleStarvoltageCorr

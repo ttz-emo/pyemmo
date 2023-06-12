@@ -3,7 +3,8 @@ import json
 from math import ceil
 from typing import Dict, List, Literal, Tuple, Union
 
-from numpy import pi, sign
+from numpy import pi, sign, array
+from numpy.linalg import norm
 from swat_em import datamodel
 
 from ..script.geometry.airArea import AirArea
@@ -20,6 +21,7 @@ from ..script.geometry.statorLamination import StatorLamination
 from ..script.geometry.surface import Surface
 from ..script.geometry.transformable import Transformable
 from ..script.material.material import Material
+from ..definitions import DEFAULT_GEO_TOL
 from . import importJSON, globalCenterPoint
 from .SurfaceJSON import SurfaceAPI
 
@@ -56,13 +58,19 @@ def createLine(
     if lineType == "Arc":
         # determine Centerpoint
         mpName = lineDict["MpName"]
-        if "MP" in mpName:
+        if mpName in ("MP", "M1") and (
+            norm(
+                array(globalCenterPoint.getCoordinate())
+                - array(
+                    (
+                        lineDict["MpX"],
+                        lineDict["MpY"],
+                        lineDict["MpZ"],
+                    )
+                )
+            ) < DEFAULT_GEO_TOL
+        ):
             # the point is the global center point
-            assert globalCenterPoint.getCoordinate() == (
-                lineDict["MpX"],
-                lineDict["MpY"],
-                lineDict["MpZ"],
-            ), f"In line {lineName} the given center point '{mpName}' coordinates where not (0,0,0)"
             centerPoint = globalCenterPoint
         else:  # Point is not CenterPoint (0,0,0)
             # import coordinates of Centerpoint for THIS arc
@@ -195,12 +203,12 @@ def getSurfaceLineList(
             # of this line (==last line in curve loop)
             startPoint = pointList[-1]
             assert startPoint.getCoordinate() == coordsP1, (
-                f"Start point ({startPoint.name}) of last line {lineDict['LineName']}"
+                f"Start point ({startPoint.name}) of last line {lineDict['LineName']} "
                 "is NOT endpoint of previous line. Check line loop!"
             )
             endPoint = pointList[0]
             assert endPoint.getCoordinate() == coordsP2, (
-                f"End point ({endPoint.name}) of last line ('{lineDict['LineName']}')"
+                f"End point ({endPoint.name}) of last line ('{lineDict['LineName']}') "
                 "in line loop is NOT startpoint of first line. Check line loop!"
             )
         else:
@@ -208,7 +216,7 @@ def getSurfaceLineList(
             startPoint = pointList[-1]
             # make sure the coordinates are correct
             assert startPoint.getCoordinate() == coordsP1, (
-                f"End point ({startPoint.name}) of last line in line loop is NOT"
+                f"End point ({startPoint.name}) of last line in line loop is NOT "
                 f"startpoint of this line ('{lineDict['LineName']}'). Check line loop!"
             )
             endPoint = Point(
@@ -257,7 +265,7 @@ def createAPISurf(areaDict: dict) -> SurfaceAPI:
         )
     except Exception as exce:
         raise RuntimeError(
-            f"""Failed to generate API surface for '{areaDict["Name"]}' due to following error:"""
+            f"""Failed to generate API surface for '{areaDict["Name"]}' due to following error: {exce.args[0]}"""
         ) from exce
     return surf
 
@@ -760,14 +768,7 @@ def genWindLayoutSwatEM(
     FIXME: the number of slot sides per slot is assumed to be 2 allways.
 
     Args:
-        windingList (List[str]): Motor model winding layout (with symmetry) from json model info
-            file, formatted as list of strings. For every slot, the sign of winding direction and the
-            phase id (u,v or w) should be given. This should look something like:
-
-            .. code ::
-
-                "winding": ["+u","+u","-v","-v","+w","+w"]
-    
+        windingList (List[str]): Motor model winding layout (with symmetry) generated from matlab
         Qs (int): Total number of stator slots
         onePole (bool, optional): Flag if winding layout is only given for one pole, so the winding
             direction has to be reversed every time. Defaults to False.

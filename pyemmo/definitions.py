@@ -2,6 +2,7 @@
 import sys
 from os import mkdir
 from os.path import abspath, dirname, join, normpath, realpath, isdir
+import logging
 from matplotlib import font_manager
 
 ROOT_DIR = normpath(abspath(join(dirname(__file__), ".."))).replace("\\", "/")
@@ -41,3 +42,4 @@ config_dict = get_config_dict()
 
 # default absolute geometric tolerance to check wheter points or distances are equal.
 DEFAULT_GEO_TOL = 1e-7  # in [m]
+logging.debug("Default geometric tolerance is set to %f meter.",DEFAULT_GEO_TOL)

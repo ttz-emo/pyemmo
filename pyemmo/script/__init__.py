@@ -43,6 +43,7 @@ default_param_dict.SYM = SimpleNamespace(
         "ANALYSIS_TYPE": 1,  # optional; 0: static, 1: transient
         "FLAG_CHANGE_ROT_DIR": 0,
         "NBR_PARALLEL_PATHS": 1,
+        "CALC_MAGNET_LOSSES": 0,
     }
 )
 default_param_dict.MAT = SimpleNamespace(

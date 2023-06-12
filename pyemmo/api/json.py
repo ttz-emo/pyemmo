@@ -1,13 +1,16 @@
 """This is the main module of the json api to create a machine model in Onelab."""
 # import debugpy
 # debugpy.debug_this_thread()
+import os
 import subprocess
-import warnings
-from argparse import ArgumentParser
+import argparse
 from os import mkdir
 from os.path import isdir, isfile, join
 from typing import Dict, List, Tuple
-
+import logging
+import datetime
+from . import logger, ch
+from .. import logFmt
 from ..definitions import RESULT_DIR
 from ..functions import runOnelab, calcIronLoss
 from ..script.geometry.machineAllType import MachineAllType
@@ -28,7 +31,7 @@ def createMachine(
     segmentSurfDict: Dict[str, SurfaceAPI], extendedInfo: dict
 ) -> Tuple[MachineAllType, Dict[str, List[SurfaceAPI]]]:
     """create a pyemmo Machine object from a list of surfaces forming one machine segment
-    (imported from json file).
+    (imported from matlab).
 
     Args:
         segmentSurfDict (Dict[str, SurfaceAPI]): dict of surfaces forming one machine segment
@@ -266,7 +269,7 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
                 Name=f'"{quantity} (Yoke)"',
             )
 
-    ## Add rotor and stator b-field export for iron loss calculation
+    ## 4. Add rotor and stator b-field export for iron loss calculation
     if importJSON.getFlagCalcIronLoss(extendedInfo):
         rotorIronPhysicalID = [
             str(phys.id) for phys in machine.getRotor()._domainLam.physicals
@@ -288,6 +291,29 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
             File=join("CAT_RESDIR", "b_stator.pos"),
             Name='"b (stator)"',
         )
+
+    # 5. PM Eddy current loss
+    if machine._domainM.physicals:
+        # if there are magnets
+        allMagConducting = True
+        for magnet in machine._domainM.physicals:
+            if magnet.getMaterial().getConductivity() is None:
+                allMagConducting = False
+                logging.warning(
+                    "Unable to calculate magnet losses, due to missing el. conductivity in %s.",
+                    magnet.getName(),
+                )
+                break
+        if allMagConducting:
+            script.addPostOperation(
+                "JouleLosses[Rotor_Magnets]",
+                "GetMagnetLosses",
+                OnGlobal="",
+                Format="TimeTable",
+                File=join("CAT_RESDIR", "Pv_eddy_Mag.dat"),
+                # Name='"p (stator)"',
+            )
+            script.simulationParameters.SYM.CALC_MAGNET_LOSSES = 1
 
 
 # ======================================== START MAIN FUNCTION =====================================
@@ -328,10 +354,25 @@ def main(
         results (str, optional): Folder path to store the simulation results.
             Defaults to "modelDir/res_ModelName"
     """
-    print("running main() of json-api.")
+    # create dir for model files if it doesnt exist
+    if not isdir(model):
+        mkdir(model)
+    # Set logging path to model dir
+    jsonLogFileHandler = logging.FileHandler(
+        filename=os.path.join(model, "pydraft_jsonAPI.log"), mode="w", encoding="utf-8"
+    )
+    jsonLogFileHandler.setLevel(logger.getEffectiveLevel())
+    jsonLogFileHandler.setFormatter(logFmt)
+    logger.addHandler(jsonLogFileHandler)
+    logging.info(
+        "PyDraft JSON-API started on %s %s",
+        datetime.date.today(),
+        datetime.datetime.now().strftime("%H:%M:%S"),
+    )
     # check if gmsh was provided
     if not gmsh:
         # if gmsh was not provided, try to find it:
+        logger.debug("Gmsh path not given. Trying to find Gmsh...")
         gmsh = runOnelab.findGmsh()
     else:
         # if gmsh was given by the user, check that its valid
@@ -342,20 +383,12 @@ def main(
     if isfile(geo):
         # import the segment machine geometry
         segmentSurfDict = modelJSON.importMachineGeometry(geo)
-    # else:
-    #     # print()
-    #     msg = (
-    #         f"Given json file(s) did not exist! Check '{args.geo}' or '{args.extInfo}'."
-    #     )
-    #     raise FileNotFoundError(msg)
-    elif isinstance(geo, list):
-        # FIXME: The object format would be a list of surface dicts (See json.load() function).
-        # Maybe we should think about a dict of dicts or something. The output must be like in
-        # modelJSON.importMachineGeometry() -> Dict[`IdExt`, SurfaceAPI] 
+    elif isinstance(geo, dict):
         segmentSurfDict = geo
-        raise RuntimeError("Calling JSON-API without json file not possible right now.")
     else:
-        raise TypeError()
+        raise TypeError(
+            f"Geometry file has to be type 'File' or 'dict', not {type(geo)}"
+        )
 
     # addition information
     if isfile(extInfo):
@@ -364,16 +397,15 @@ def main(
     elif isinstance(extInfo, dict):
         extendedInfo = extInfo
     else:
-        raise TypeError()
+        raise TypeError(
+            f"Model information file has to be type 'File' or 'dict', not {type(extInfo)}"
+        )
 
     # generate the machine geometry
     machine, machineSurfDict = createMachine(segmentSurfDict, extendedInfo)
-    # create dir for model files if it doesnt exist
-    if not isdir(model):
-        mkdir(model)
     # get the simulation pareameters
     simulationParameters = importJSON.getSimuParams(extendedInfo=extendedInfo)
-    # generate the script
+    logger.info("Generating the Script object in JSON API.")
     apiScript = Script(
         name=importJSON.getModelName(extendedInfo),
         scriptPath=model,
@@ -403,11 +435,24 @@ def main(
         getdpPath=getdp,
         useGUI=importJSON.getFlagOpenGui(extendedInfo),
     )
-    # print(f"cmd command is:\n{command}")
-    calcInfo = subprocess.run(command, capture_output=True, text=True, check=False)
-    print(f"StdOut:\n{calcInfo.stdout}")
-    print(f"StdErr:\n{calcInfo.stderr}")
-
+    logging.debug("CMD command is: '%s'", command)
+    calcInfo = subprocess.run(
+        command,
+        capture_output=not importJSON.getFlagOpenGui(extendedInfo),
+        text=True,
+        check=False,
+    )
+    # print(f"StdOut:\n{calcInfo.stdout}")
+    if calcInfo.stderr:
+        if "error" in calcInfo.stderr.lower():
+            logging.error(
+                "Onelab call issued the following errors: %s", calcInfo.stderr
+            )
+        else:
+            logging.warning(
+                "Onelab call issued the following warnings: \n\t%s",
+                calcInfo.stderr.replace("\n", "\n\t"),
+            )
     # iron loss post processing:
     resPath = apiScript.getResultsPath()
     # check if resPath exists -> simulation has been run.
@@ -427,8 +472,9 @@ def main(
         if 360 / nbrPolePairs > calcAngle:
             # make sure at least one electrical period has been simulated
             # pylint: disable=locally-disabled,  line-too-long
-            warnings.warn(
-                f"IRON LOSS CALCULATION: Simulated rotation ({calcAngle}°) might be smaller than one electrical period! Iron loss calculation is only valid if at least one electrical period is simulated."
+            logger.warning(
+                "IRON LOSS CALCULATION: Simulated rotation (%.3f°) might be smaller than one electrical period! Iron loss calculation is only valid if at least one electrical period is simulated.",
+                calcAngle,
             )
         rotorMat = machine.getRotor()._domainLam.physicals[0].getMaterial()
         statorMat = machine.getStator()._domainLam.physicals[0].getMaterial()
@@ -481,9 +527,9 @@ def main(
                 join(resPath, "Pv_exc_S.dat"), time, ironLossS["exc"]
             )
         else:
-            warnings.warn(
-                "IRON LOSS CALCULATION: B field results file 'b_rotor.pos' or 'b_stator.pos' not found in "
-                + resPath
+            logger.warning(
+                "IRON LOSS CALCULATION: B field results file 'b_rotor.pos' or 'b_stator.pos' not found in '%s'",
+                resPath,
             )
             # raise (
             #     FileNotFoundError(
@@ -491,6 +537,8 @@ def main(
             #         + resPath
             #     )
             # )
+    # close log file handler!
+    jsonLogFileHandler.close()
 
     ###########################################################################################
     ################ Plot Results for Debugging ##################
@@ -513,7 +561,7 @@ def main(
 
 if __name__ == "__main__":
     # 1. Check that all argvs are valid!
-    parser = ArgumentParser(
+    parser = argparse.ArgumentParser(
         description="Process Motor-JSON files to generate a Onelab Simulation."
     )
     parser.add_argument(
@@ -548,7 +596,32 @@ if __name__ == "__main__":
         default="",
     )
 
+    parser.add_argument(
+        "--log",
+        help="logging level for execution. Options are: error, warning, info, debug. default is warning",
+        type=str,
+        default="WARNING",
+    )
+
+    parser.add_argument(
+        "-v",
+        help="set execution to verbose. Verbosity level equals logging level.",
+        action=argparse.BooleanOptionalAction,
+    )
+
     args = parser.parse_args()
+
+    # remove commandline handler if verbose
+    if args.v:
+        logger.removeHandler(ch)
+
+    # set log level
+    loglevel = args.log
+    logLevelNum = getattr(logging, loglevel.upper(), None)
+    if not isinstance(logLevelNum, int):
+        raise ValueError(f"Invalid log level: {loglevel}")
+    logger.setLevel(logLevelNum)
+
     main(
         geo=args.geo,
         extInfo=args.extInfo,

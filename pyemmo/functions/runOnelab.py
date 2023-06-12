@@ -2,6 +2,7 @@ import sys
 from os import listdir, walk
 from os.path import abspath, expanduser, isdir, isfile, join, normpath, splitext
 from typing import Dict, Union, List
+import logging
 from shutil import which
 import subprocess
 from argparse import ArgumentParser
@@ -40,27 +41,29 @@ def findExe(exeName: str, verbosity: bool = True) -> str:
     Returns:
         str: filepath to the executable
     """
-    executableName, extension = splitext(exeName)
+    executableName, _ = splitext(exeName)
     # first opion: try to find gmsh with "which"
     exePath = which(executableName)
     if not exePath:
         if verbosity:
-            print(
-                f"Could not find {executableName} from command line. Trying to find {executableName} in python-path..."
+            logging.debug(
+                "Could not find %s from command line. Trying to find it in python-path...",
+                executableName,
             )
         # second option: try to find gmsh in python path. (Should work since gmsh module is installed!)
-        for p in sys.path:
-            if isdir(p):
-                for f in listdir(p):
-                    if f == f"{executableName}.exe":
-                        exePath = join(p, f)
+        for path in sys.path:
+            if isdir(path):
+                for fileList in listdir(path):
+                    if fileList == f"{executableName}.exe":
+                        exePath = join(path, fileList)
                         if verbosity:
-                            print(f"Found {executableName} in '{exePath}'!")
+                            logging.debug("Found %s in '%s'!", executableName, exePath)
                         return exePath
         if not exePath:
             if verbosity:
-                print(
-                    f"{executableName} was not found in 'path' Variable. Trying to find {executableName} in user home directory. This can take some time!"
+                logging.debug(
+                    "%s was not found in 'path' Variable. Trying to find it in user home directory. This can take some time!",
+                    executableName,
                 )
             # third option: try to find {executableName} in user/local/programs and subfolders. Takes time to iterate through all files
             if sys.platform.startswith("win32"):
@@ -70,19 +73,23 @@ def findExe(exeName: str, verbosity: bool = True) -> str:
                 )
                 # try to find {executableName} in user programm path
                 if isdir(userProgDir):
-                    for root, dirs, files in walk(userProgDir):
+                    for root, _, files in walk(userProgDir):
                         if files == f"{executableName}.exe":
                             if verbosity:
-                                print(f"Found {executableName} in '{root}'! :)")
+                                logging.debug(
+                                    "Found %s in '%s'! :)", executableName, root
+                                )
                             return join(root, f"{executableName}.exe")
                     # if exe was not found in home dir
                     if verbosity:
-                        print(
-                            f"{executableName} could not be found in home program folder: {userProgDir}"
+                        logging.debug(
+                            "%s could not be found in home program folder '%s'",
+                            executableName,
+                            userProgDir,
                         )
                 else:
                     if verbosity:
-                        print("Can't find home directory.")
+                        logging.debug("Can't find home directory.")
             else:
                 raise SystemError(
                     f"sys.platform is {sys.platform}, not 'win32'.  Could not find home directory"
@@ -93,7 +100,7 @@ def findExe(exeName: str, verbosity: bool = True) -> str:
                 )
     else:
         if verbosity:
-            print(f"Found {executableName} in '{exePath}'!")
+            logging.debug("Found %s in '%s'!", executableName, exePath)
         return exePath
 
 

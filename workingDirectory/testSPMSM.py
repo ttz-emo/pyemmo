@@ -255,6 +255,7 @@ myScript = Script(
         "park_angle_offset": None,  # calc angle from machine layout
         "analysis_type": 0,
         "magTemp": 20,
+        "calcMagnetLosses": 1,
     },
     machine=SPMSM,
 )

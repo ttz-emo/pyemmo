@@ -4,7 +4,9 @@
 from __future__ import annotations
 import os
 import re
-import warnings
+
+# import warnings
+import logging
 from math import pi
 from os.path import abspath, join
 from types import SimpleNamespace
@@ -72,7 +74,8 @@ class Script(object):
                 optional:
 
                 - "park_angle_offset" - offset angle for park-transformation in elec °
-                - "nbrParallePaths", - number of parallel winding paths
+                - "nbrParallePaths" - number of parallel winding paths
+                - "calcMagnetLosses" - flag to calculate eddy current losses in PMs
                 - "analysis_type"
 
                     - 0: static (default)
@@ -186,6 +189,10 @@ class Script(object):
             if "nbrParallePaths" in simuParams.keys():
                 self.simulationParameters.SYM.NBR_PARALLEL_PATHS = simuParams[
                     "nbrParallePaths"
+                ]
+            if "calcMagnetLosses" in simuParams.keys():
+                self.simulationParameters.SYM.CALC_MAGNET_LOSSES = simuParams[
+                    "calcMagnetLosses"
                 ]
             if "magTemp" in simuParams.keys():
                 self.simulationParameters.MAT.TEMP_MAG = simuParams["magTemp"]
@@ -403,7 +410,7 @@ class Script(object):
             self.idedentPoints.append(point)
             return identicalPoint
         # point was allready drawn
-        print(f"Point '{point.name}' has allready been added to the script.")
+        logging.debug(f"Point '%s' has allready been added to the script.", point.name)
         return None
 
     def _testPoint(
@@ -1042,7 +1049,10 @@ class Script(object):
                         Domain(domainDict[domainName], physicalsDict[domainName])
                     )
                 else:
-                    print(f"There were no physical elements in domain '{domainName}'.")
+                    # FIXME: ADD MACHINE SIDE TO DOMAIN NAME
+                    logging.debug(
+                        f"There were no physical elements in domain '{domainName}'."
+                    )
         return domainList
 
     def _createWindingDomains(
@@ -1535,28 +1545,25 @@ class Script(object):
                             for geoElem in physical.geometricalElement:
                                 meshCompCode += str(geoElem.id) + ","
                         else:
-                            warnMsg = (
+                            logging.warning(
                                 f'Creation of "Compound Mesh" for domain "{regionName}" failed, '
                                 f'because "{physical.getName()}" has only one surface.'
                             )
-                            warnings.warn(warnMsg)
                             return ""
                     else:
-                        warnMsg = (
+                        logging.warning(
                             f'Creation of "Compound Mesh" for domain "{regionName}" failed, '
                             f'because "{physical.getName()}" is not a surface.'
                         )
-                        warnings.warn(warnMsg)
                         return ""
                 else:
                     # domain/region has different materials -> no compound surface
                     # or is not geo type surface
-                    warnMsg = (
+                    logging.warning(
                         f"Creation of 'Compound Mesh' for domain '{regionName}' failed, "
                         f"because materials of '{physList[0].getName()}' and "
                         f"'{physical.getName()}' don't match."
                     )
-                    warnings.warn(warnMsg)
                     return ""
 
             # make sure there is code
@@ -1827,11 +1834,11 @@ class Script(object):
             geoScript.write(meshModCode)
             geoScript.write(movingGeoCode)
 
-        print(
+        logging.debug(
             f"I found {self.nbrIdedentPoints} identical points. "
             f"There are {len(self.pointArray)} points in the model."
         )
-        print(
+        logging.debug(
             f"I found {self.nbrIdedentLines} identical lines."
             f"There are {len(self.getCurveList())} lines in the model."
         )
@@ -1862,6 +1869,7 @@ class Script(object):
         #   FLAG_NL
         #   FLAG_CHANGE_ROT_DIR
         flagCalcNL = 0
+        hasMagnets = False
         # flag_readonly = 0
         for domain in machine.getDomains():
             for physicalElement in domain.physicals:
@@ -1870,7 +1878,12 @@ class Script(object):
                     if not mat.isLinear():
                         flagCalcNL = 1
                         break  # if one BH curve is found, we can stop the loop
+                    if isinstance(physicalElement, Magnet):
+                        hasMagnets = True
         simuParamDict.SYM.FLAG_NL = flagCalcNL
+        if not hasMagnets:
+            # if there where no magnet physical elements, set flag to false, even if its set to true...
+            simuParamDict.SYM.CALC_MAGNET_LOSSES = 0
 
         # machine.getStator().winding.plot_star('plot_star.png',None,False,True)
         if machine.getStator().winding.get_windingfactor_el()[1][0, 0] < 0:
@@ -1918,7 +1931,7 @@ class Script(object):
                 mag: Magnet = mag
                 magnetisations.append(mag.getMagnetisationType() == "tangential")
             if any(magnetisations):
-                warnings.warn(
+                logging.warning(
                     "Tangential magnetization detected! Dq-offset calculation is invalid"
                 )
                 dqOffset = 0
@@ -2030,10 +2043,10 @@ class Script(object):
             # TODO: Add option for "-bin" case (user setting)
 
             computeCommandCode = (
-                """DefineConstant[\n\tC_ = {"-solve Analysis -v 99 -v2 -pos """
+                """DefineConstant[\n\tC_ = {"-solve Analysis -v 99 -v2"""  # -bin
             )
             for postOpName in self.getPostOperationNames():
-                computeCommandCode += postOpName + " "
+                computeCommandCode += " -pos " + postOpName
             computeCommandCode += (
                 """ ", Name "GetDP/9ComputeCommand", Visible Flag_Debug}\n];\n"""
             )

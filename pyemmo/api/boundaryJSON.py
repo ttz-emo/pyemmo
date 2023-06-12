@@ -1,5 +1,4 @@
 """This module creates the boundary physical elements for models created via the json-api"""
-import warnings
 from typing import Dict, List, Tuple, Union
 from numpy import pi
 
@@ -14,6 +13,7 @@ from ..script.geometry.movingBand import MovingBand
 from ..script.geometry.physicalElement import PhysicalElement
 from ..script.geometry.slaveLine import SlaveLine
 from ..script.material.material import Material
+from . import logger as jsonLogger
 from . import (
     InnerLimitLineDict,
     OuterLimitLineDict,
@@ -160,7 +160,7 @@ def findLines(
         area for area in segmentSurfDict.values() if (surfID == area.getIdExt())
     ]
     if not areaOfSurfID:  # SurfID not in Surface Dict
-        warnings.warn(f"Surface ID '{surfID}' not found in machine surface list.")
+        jsonLogger.warning(f"Surface ID '{surfID}' not found in machine surface list.")
         return None, None
     if len(areaOfSurfID) != 1:
         # there should only be one area in the list "areaOfSurfID"
@@ -430,11 +430,9 @@ def createBoundaries(
         else:
             movingBandMaterial: Material = segmentSurfDict["StLu2"].getMaterial()
     except KeyError:
-        msg = (
-            'Stator-Airgap Surface-ID was not "StLu","StLu1" or "StLu2".'
-            "Can't determine Airgap material! Using air instead."
+        jsonLogger.warning(
+            """Stator-Airgap Surface-ID was not "StLu","StLu1" or "StLu2". Can't determine Airgap material! Using air instead."""
         )
-        warnings.warn(msg)
         movingBandMaterial = air
     except Exception as exept:
         raise exept

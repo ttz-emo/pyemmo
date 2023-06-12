@@ -260,7 +260,7 @@ def getModelName(extendedInfo: dict) -> str:
     """Return the model name from the extended info dict
 
     Args:
-        extendedInfo (dict): dict from json model info file containing
+        extendedInfo (dict): dict from matlab side of api containing
         additional information for the simulation
 
     Raises:
@@ -347,12 +347,11 @@ def createMaterial(matDict: Dict[str, Dict[Literal["wert"], Any]]) -> Material:
     """create a pyemmo material object based on matDict format
 
     Args:
-        matDict (Dict[str,Dict[Literal["wert"], Any]]): material dict.
+        matDict (Dict[str,Dict[Literal["wert"], Any]]): material dict extracted from matlab api side.
 
     Returns:
         Material: Material object generated from Matlab dict.
     """
-    # TODO: Edit Material dict to match representation of Material class
     name = matDict["name"]["wert"]
     if isAir(name):
         return air
@@ -436,13 +435,13 @@ def createMaterial(matDict: Dict[str, Dict[Literal["wert"], Any]]) -> Material:
 def createSteelMaterial(
     materialDict, name, conductivity, permeability, bhCurve, density, sheetThickness
 ) -> ElectricalSteel:
-# TODO: add docstring
     emDict: dict = materialDict["elektromagnetik"]
     try:
         lossParams = []
         for lossChar in ("h", "w", "z"):
             lossParam = emDict["sigma_" + lossChar]["wert"]
             if not isinstance(lossParam, float):
+                # TODO: Add warning
                 lossParams.append(0)
             else:
                 lossParams.append(lossParam)
@@ -457,7 +456,7 @@ def createSteelMaterial(
         refInd = emDict["bez_ind"]["wert"]
     except KeyError as keyErr:
         raise KeyError(
-            "Missing reference induction from material dict for material " + name
+            f"Missing reference induction from material dict for material '{name}'."
         ) from keyErr
     except Exception as exc:
         raise exc

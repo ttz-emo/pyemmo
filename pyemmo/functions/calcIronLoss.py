@@ -285,3 +285,50 @@ def adaptIronLossParams(
     lossParams[1] = lossParams[1] * dens / ((freq * ind) ** 2)
     lossParams[2] = lossParams[2] * dens / ((freq * ind) ** 1.5)
     # return lossParams
+
+def calcTimeDerivative(fieldFile: Union[str, os.PathLike]):
+    """calculate time derivative and save to file
+
+    Args:
+        fieldFile (Union[str, os.PathLike]): pos results file
+    """
+    finGmsh = False  # determine if gmsh should be closed at the end
+    if not gmsh.isInitialized():
+        gmsh.initialize()
+        finGmsh = True
+
+    elementTags, time, fieldData = importPos(fieldFile)
+    nbrTimeSteps = len(time)
+
+    # init derivative of B
+    dFdt = np.zeros((nbrTimeSteps - 1, fieldData.shape[1], fieldData.shape[2]))
+
+    # loop through time step
+    for step in range(1, nbrTimeSteps):
+        dFdt[step - 1] = (fieldData[step] - fieldData[step - 1]) / (
+            time[step] - time[step - 1]
+        )
+    
+    # save as new
+    model = gmsh.model.getCurrent()  # or just get current model...
+    divView = gmsh.view.add("derivative")  # get tag of new view
+    for step in range(len(time) - 1):
+        gmsh.view.addModelData(
+            tag=divView,
+            step=step + 1,
+            modelName=model,
+            dataType="ElementData",
+            tags=elementTags,
+            data=dFdt[step, :],
+            time=time[step],
+        )
+
+    # save p_hyst-field to file:
+    dtFilepath = os.path.join(
+        os.path.dirname(fieldFile), f"Dt_{os.path.basename(fieldFile)}"
+    )
+    gmsh.view.write(divView, dtFilepath)
+
+    if finGmsh:
+        gmsh.finalize()
+    

@@ -149,7 +149,7 @@ DefineConstant[
                 Name StrCat[INPUT_ANA_SETTINGS, "Calc Eddy Current losses in laminations"],
                 Visible Flag_ExpertMode && Flag_AnalysisType},
     
-    Flag_EC_Magnets = {0,
+    Flag_EC_Magnets = {CALC_MAGNET_LOSSES,
         Name StrCat[INPUT_ANA_SETTINGS, "Eddy Current in Magnets (2D)"],
         Visible Flag_ExpertMode,
         Choices{0, 1},
