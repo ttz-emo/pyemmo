@@ -41,3 +41,16 @@ def cleanName(instanceName: str) -> str:
                 )
             )
     return newName
+
+def isValidFilename(fileName: str) -> bool:
+    """check if filename is a valid Windows filename to use.
+
+    Args:
+        fileName (str): Given filename.
+
+    Returns:
+        bool: True if filename is valid, otherwise False.
+    """
+    if re.search(r'[^A-Za-z0-9_\-\\]',fileName):
+        return False
+    return True
