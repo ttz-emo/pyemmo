@@ -17,7 +17,7 @@ from pygetdp.postoperation import PostopItem
 
 
 from ..definitions import DEFAULT_GEO_TOL, MAIN_DIR
-from ..functions.cleanName import cleanName
+from ..functions.cleanName import cleanName, isValidFilename
 
 # global domain dict to connect existing pyemmo Domains with domains for magstatdyn
 from . import (
@@ -105,7 +105,12 @@ class Script(object):
             }
         """
         ###Name des Skriptes
-        self.name = cleanName(name)
+        if isValidFilename(name):
+            self.name = name
+        else:
+            raise ValueError(
+                f"Script name has invalid format! Make sure the Script name can be used as a filename! ('{name}')"
+            )
         ### directory to save the model files
         self.scriptPath = scriptPath
         ### directory to save simulation results
@@ -2023,7 +2028,7 @@ class Script(object):
         if postOperation.items:  # if there are Items in PostOperation
             # add the code for the compute command including the post operations
             # TODO: Add option for "-bin" case (user setting)
-            
+
             computeCommandCode = (
                 """DefineConstant[\n\tC_ = {"-solve Analysis -v 99 -v2 -pos """
             )
