@@ -45,6 +45,12 @@ def cleanName(instanceName: str) -> str:
 def isValidFilename(fileName: str) -> bool:
     """check if filename is a valid Windows filename to use.
 
+    Valid characters are:
+        
+        - letters (A-Za-z)
+        - numbers (0-9)
+        - underscore (_), hyphen (-), back-slash (\\\)
+
     Args:
         fileName (str): Given filename.
 
