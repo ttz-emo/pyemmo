@@ -546,6 +546,7 @@ FunctionSpace {
   { Name Hregion_u_Mag_2D ; Type Form1P ;
     BasisFunction {
       // The BF_RegionZ defines one Function per Region!
+      // So e.g. all nodes of one magnet (=Region) have the same potential 'ur'
       { Name sr ; NameOfCoef ur ; Function BF_RegionZ ;
         Support DomainC ; Entity DomainC ; }
     }
