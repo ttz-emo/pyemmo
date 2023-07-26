@@ -385,8 +385,8 @@ def createMaterial(matDict: Dict[str, Dict[Literal["wert"], Any]]) -> Material:
                     bhCurve = zeros((nbrBasePoints, 2))
                     for i, hbArray in enumerate(bhDict["wert"]):
                         bhCurve[i] = [hbArray[1], hbArray[0]]
-                else:
-                    raise ValueError(f"BH-Curve of Material '{name}' is empty!")
+                # else:
+                    # raise ValueError(f"BH-Curve of Material '{name}' is empty!")
             elif "kl_1" in bhDict.keys():
                 ...  # TODO: add temperatur depended BH curve to material
             else:
@@ -395,7 +395,7 @@ def createMaterial(matDict: Dict[str, Dict[Literal["wert"], Any]]) -> Material:
                     f"Keys are {bhDict.keys()}"
                 )
                 raise KeyError(msg)
-        else:
+        if bhCurve is None:
             # check that there is a magnetic property
             if not permeability:
                 msg = (
