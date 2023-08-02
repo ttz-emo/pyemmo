@@ -82,13 +82,16 @@ class MachineSPMSM(MachineAllType):
     #
     #   Beispiel:
     #
-    #       pmsm1 = pyd.MachineSPMSM(simuSPMSMDict)
+    #       pmsm1 = MachineSPMSM(simuSPMSMDict)
     #       rotor1 = pmsm1.addRotorToMachine('sheet01_standard', 'magnet01_surface')
-    #       rotor1.addLaminationParameter({'r_We' : 20e-3,
-    #           'r_R' : 55e-3,
-    #           'meshLength' : 3e-3,
-    #           'material' : steel_1010,
-    #           'machineCentrePoint' : PBohrung})
+    #       rotor1.addLaminationParameter(
+    #           {
+    #               'r_We' : 20e-3,
+    #               'r_R' : 55e-3,
+    #               'meshLength' : 3e-3,
+    #               'material' : steel_1010,
+    #               'machineCentrePoint' : PBohrung
+    #           })
     #       rotor1.addMagnetParameter({'h_M' : 7e-3,
     #           'angularWidth_i' : math.pi/10,
     #           'angularWidth_a' : math.pi/12,
