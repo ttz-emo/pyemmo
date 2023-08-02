@@ -56,20 +56,20 @@ drehzahl = 1000
 fel = drehzahl / 60 * nbrPolePairs
 simuSPMSMDict = {
     "analysisParameter": {
-        "freq": drehzahl / 60,
+        # "freq": drehzahl / 60,
         "symmetryFactor": 4,
         "nbrPolesTotal": nbrPoles,
         "nbrSlotTotal": nbrSlots,
-        "timeMax": 1
-        / 67,  # Winkel/wr 2*math.pi / (2 * math.pi * 67) = 1/67 für ganzen mech. Winkel mit f = 67 Hz
-        "timeStep": 1
-        / (
-            180 * 67 * 2
-        ),  # Ein Grad pro Step -> math.pi/180/(2*math.pi*67) = 1/(180*2*67)
-        "analysisType": "timedomain",  #'timedomain', #'static'
+        # "timeMax": 1
+        # / 67,  # Winkel/wr 2*math.pi / (2 * math.pi * 67) = 1/67 für ganzen mech. Winkel mit f = 67 Hz
+        # "timeStep": 1
+        # / (
+        #     180 * 67 * 2
+        # ),  # Ein Grad pro Step -> math.pi/180/(2*math.pi*67) = 1/(180*2*67)
+        # "analysisType": "timedomain",  #'timedomain', #'static'
         "startPosition": 0,
     },
-    "output": {"b": True, "az": True, "js": True},
+    # "output": {"b": True, "az": True, "js": True},
 }
 
 # %% Maschine aus dem Baukasten parametrisieren
