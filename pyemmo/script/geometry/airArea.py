@@ -28,7 +28,7 @@ class AirArea(PhysicalElement):
     def __init__(
         self,
         name: str,
-        geometricalElement: List[Union[Surface, Line, CircleArc, Spline]],
+        geometricalElement: List[Surface],
         material: Material = None,
     ):
         """AirArea is any area defined with material air except from the Airgap surface

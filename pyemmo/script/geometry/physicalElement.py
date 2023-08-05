@@ -49,9 +49,11 @@ class PhysicalElement:
         # the physical element type can be used to identify physical elements
         self._physicalElementType = "PhysicalElement"
 
-        self._name = name
-        self.geometricalElement = geometricalElement
-        self._material = material
+        self._name: str = name
+        self.geometricalElement: List[
+            Union[Surface, Line, CircleArc, Spline]
+        ] = geometricalElement
+        self._material: Material = material
         if phyID is None:
             # pylint: disable=locally-disabled, invalid-name
             self.id = self._getNewID()
@@ -104,7 +106,7 @@ class PhysicalElement:
     @geometricalElement.setter
     def geometricalElement(self, geometricalElement: Union[List[Surface], List[Line]]):
         """setter of geo elements"""
-        self._geometricalElement = geometricalElement
+        self._geometricalElement: Union[List[Surface], List[Line]] = geometricalElement
         # run element type funtion to ensure there are not lines AND surfaces
         self.getGeoElementType()
 
