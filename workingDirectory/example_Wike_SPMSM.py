@@ -1,4 +1,4 @@
-"""Test module for spmsm toolkit machine model"""
+"""Example module for SPMSM toolkit machine model for Wike³ 2023"""
 # %%
 import os
 from os import mkdir, path
@@ -22,6 +22,8 @@ except ImportError:
     from pyemmo.script.script import Script
 
 from pyemmo.script.geometry.point import Point
+from pyemmo.script.geometry.circleArc import CircleArc
+from pyemmo.script.geometry.surface import Surface
 from pyemmo.script.material.electricalSteel import Material, ElectricalSteel
 from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
 from pyemmo.functions.runOnelab import createCmdCommand
@@ -59,6 +61,7 @@ simulationDict = {
 }
 
 # %% Rotor aus dem Baukasten parametrisieren
+from pyemmo.script.geometry.rotorLamination_Sheet01_Standard import RotorLamination_Sheet01_Standard
 from pyemmo.script.geometry.magnet_Surface01 import Magnet_Surface01
 from pyemmo.script.geometry.rotorSPMSM import RotorSPMSM
 
@@ -69,7 +72,7 @@ rotor = SPMSM.addRotorToMachine("sheet01_standard", "magnet01_surface")
 rotor.addLaminationParameter(
     {
         "r_We": 20e-3,  # Wellenradius
-        "r_R": 55e-3,  # Rotor-Außenradius
+        "r_R": 56e-3,  # Rotor-Außenradius
         "meshLength": 3e-3,
         "material": steel_1010,
         "machineCentrePoint": PBohrung,
@@ -77,7 +80,7 @@ rotor.addLaminationParameter(
 )
 rotor.addMagnetParameter(
     {
-        "h_M": 7e-3,  # Magnethöhe
+        "h_M": 5e-3,  # Magnethöhe
         "angularWidth_i": math.pi / 10,  # Winkel innen
         "angularWidth_a": math.pi / 12,  # Winkel außen
         "magnetisationDirection": [1, -1, 1, -1, 1, -1, 1, -1],
@@ -91,7 +94,19 @@ rotor.addMagnetParameter(
 lAirgap = 3e-3
 rotor.addAirGapParameter({"width": lAirgap, "material": air})
 rotor.createRotor()
-rotor.plot()
+# rHole = 0.5e-3
+# for physical in rotor._domainNL.physicals:
+#     for surface in physical.geometricalElement:
+#         cog = surface.calcCOG()
+#         p1 = cog.duplicate()
+#         p1.translate(-rHole,0,0)
+#         p2 = cog.duplicate()
+#         p2.translate(rHole,0,0)
+#         arc1 = CircleArc("c1",p1,cog,p2)
+#         arc2 = CircleArc("c2",p2, cog, p1)
+#         circSurf = Surface("s1",[arc1,arc2])
+#         surface.cutOut(circSurf)
+rotor.plot(symFactor=4)
 # %% Stator aus dem Baukasten parametrieren
 winding = datamodel()  # SWAT-EM Wicklung
 winding.genwdg(Q=nbrSlots, P=nbrPoles, m=3, layers=2, turns=23)
@@ -99,7 +114,7 @@ winding.genwdg(Q=nbrSlots, P=nbrPoles, m=3, layers=2, turns=23)
 stator = SPMSM.addStatorToMachine("sheet01_standard", "slotForm_03", winding)
 stator.addLaminationParameter(
     {
-        "r_S_i": 65e-3,
+        "r_S_i": 64e-3,
         "r_S_a": 100e-3,
         "meshLength": 3e-3,
         "material": steel_1010,
@@ -135,7 +150,7 @@ if not path.isdir(modelDir):
     mkdir(modelDir)
 
 myScript = Script(
-    name="Test_SPMSM_Baukasten",
+    name="Test_SPMSM_Baukasten_Wike3",
     scriptPath=modelDir,
     simuParams={
         "init_rotor_pos": 0,
