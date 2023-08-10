@@ -53,8 +53,15 @@ class Material(object):
     def __eq__(self, __o: object) -> bool:
         if isinstance(__o, self.__class__):
             # check BH is equal:
-            bhComp = self.getBH() == __o.getBH()
-            # comparison with empty array returns a bool
+            try:
+                #FIXME: Maybe check shapes before...
+                # if comparison results in ValueError, shapes could not be broadcasted
+                bhComp = self.getBH() == __o.getBH()
+            except ValueError:
+                # comparison with empty array returns a ValueError
+                return False
+            except Exception as exce:
+                raise exce
             if not isinstance(bhComp, bool):
                 # comparison with not empty array returns ndarray with dtype:bool
                 if isinstance(bhComp, numpy.ndarray):
@@ -179,7 +186,7 @@ class Material(object):
         if self._BH.ndim < 3:
             # pylint: disable=locally-disabled,  line-too-long
             warnings.warn(
-                f"Tried to access the BH-curve for temperatur {temperature}°C, but there is only one BH-curve specified!",
+                f"Tried to access the BH-curve for temperature {temperature}°C, but there is only one BH-curve specified!",
                 UserWarning,
             )
             return self._BH
