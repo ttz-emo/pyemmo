@@ -72,7 +72,7 @@ apiNameDict = {
     "Lpl": "Loch (Polluecke)",
     "Mag": "Magnet",
     "RoCu": "Rotor-Nut",
-    "RoNuS": "Rotor-Nutschitz",
+    "RoNuS": "Rotor-Nutschlitz",
     "RoNuL": "Rotor-Nutschlitzluft",
     "Pol": "Rotorblech",
     "RoNut": "Rotorblech",
