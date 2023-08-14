@@ -541,12 +541,13 @@ def main(
                 "IRON LOSS CALCULATION: B field results file 'b_rotor.pos' or 'b_stator.pos' not found in '%s'",
                 resPath,
             )
-            # raise (
-            #     FileNotFoundError(
-            #         "IRON LOSS CALCULATION: B field results file 'b_rotor.pos' or 'b_stator.pos' not found in "
-            #         + resPath
-            #     )
-            # )
+    if (
+        importJSON.getFlagCalcIronLoss(extendedInfo)
+        and simulationParameters["analysis_type"] == 0  # static simulation
+    ):
+        logger.warning(
+            "IRON LOSS CALCULATION: Iron loss calculation cannot be done for static simulation!",
+        )
     # close log file handler!
     jsonLogFileHandler.close()
 
