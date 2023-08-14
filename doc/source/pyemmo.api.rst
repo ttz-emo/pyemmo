@@ -103,7 +103,10 @@ By default the results directory for the simulation results will be stored in th
    | flag_openGUI    | open Gmsh GUI after model   | bool            |
    |                 | generation                  |                 |
    +-----------------+-----------------------------+-----------------+
-
+..   | flag_openGUI    | open Gmsh GUI after model   | bool            |
+..   |                 | generation                  |                 |
+..   +-----------------+-----------------------------+-----------------+
+.. TODO: Update simulation parameters automatically
 
 .. +-----------------+-----------------------------+-----------------+
 .. | cuFillFactor    | copper fill symFactor       | float           |
