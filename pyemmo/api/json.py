@@ -13,7 +13,7 @@ import datetime
 from . import logger, ch
 from .. import logFmt
 from ..definitions import RESULT_DIR
-from ..functions import runOnelab, calcIronLoss
+from ..functions import runOnelab, calcIronLoss, importResults
 from ..script.geometry.machineAllType import MachineAllType
 from ..script.geometry.rotor import Rotor
 from ..script.geometry.stator import Stator
@@ -551,23 +551,23 @@ def main(
     # close log file handler!
     jsonLogFileHandler.close()
 
-    ###########################################################################################
-    ################ Plot Results for Debugging ##################
-    # resPath = apiScript.getResultsPath()
-    # if isdir(resPath):
-    #     # if the folder for results exists
-    #     for file in listdir(resPath):
-    #         filename, fileExt = splitext(file)
-    #         if fileExt == ".dat":
-    #             importResults.plotTimeTableDat(
-    #                 abspath(join(resPath, file)),
-    #                 filename,
-    #                 title=filename,
-    #                 savefig=True,
-    #                 showfig=False,
-    #                 savePath=None,
-    #             )
-    ###########################################################################################
+    # Plot Results for Debugging
+    if logger.getEffectiveLevel() <= 10:
+        resPath = apiScript.getResultsPath()
+        if isdir(resPath):
+            # if the folder for results exists
+            importResults.plt.set_loglevel(level="info") # avoid matplotlib debug infos
+            for file in os.listdir(resPath):
+                filename, fileExt = os.path.splitext(file)
+                if fileExt == ".dat":
+                    importResults.plotTimeTableDat(
+                        os.path.abspath(join(resPath, file)),
+                        filename,
+                        title=filename,
+                        savefig=True,
+                        showfig=False,
+                        savePath=None,
+                    )
 
 
 if __name__ == "__main__":
