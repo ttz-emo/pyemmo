@@ -361,13 +361,13 @@ def main(
         mkdir(model)
     # Set logging path to model dir
     jsonLogFileHandler = logging.FileHandler(
-        filename=os.path.join(model, "pydraft_jsonAPI.log"), mode="w", encoding="utf-8"
+        filename=os.path.join(model, "pyemmo_jsonAPI.log"), mode="w", encoding="utf-8"
     )
     jsonLogFileHandler.setLevel(logger.getEffectiveLevel())
     jsonLogFileHandler.setFormatter(logFmt)
     logger.addHandler(jsonLogFileHandler)
     logging.info(
-        "PyDraft JSON-API started on %s %s",
+        "PyEMMO JSON-API started on %s %s",
         datetime.date.today(),
         datetime.datetime.now().strftime("%H:%M:%S"),
     )
