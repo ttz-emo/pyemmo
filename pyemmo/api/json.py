@@ -8,6 +8,7 @@ from os import mkdir
 from os.path import isdir, isfile, join
 from typing import Dict, List, Tuple
 import logging
+import json
 import datetime
 from . import logger, ch
 from .. import logFmt
@@ -343,6 +344,7 @@ def main(
         6. Create command line call for gmsh/getdp with :func:`createCmdCommand()
            <pyemmo.functions.runOnelab.createCmdCommand>` and start with :code:`subprocess.run`
 
+    TODO: Update docstring - main also accepts list of surface dicts instead of filename
 
     Args:
         geo (str): File path to JSON formatted geometry file.
@@ -381,14 +383,22 @@ def main(
 
     # get geometry
     if isfile(geo):
-        # import the segment machine geometry
-        segmentSurfDict = modelJSON.importMachineGeometry(geo)
-    elif isinstance(geo, dict):
-        segmentSurfDict = geo
+        # import the segment surface list from the json file
+        try:
+            with open(geo, encoding="utf-8") as jsonFile:
+                machineGeoList = json.load(jsonFile)
+        except FileNotFoundError as fnfe:
+            raise fnfe
+        except Exception as exept:
+            raise exept
+    elif isinstance(geo, list):
+        machineGeoList = geo
     else:
         raise TypeError(
             f"Geometry file has to be type 'File' or 'dict', not {type(geo)}"
         )
+    # create dict with surface api (segment) objects from the surface list
+    segmentSurfDict = modelJSON.importMachineGeometry(machineGeoList)
 
     # addition information
     if isfile(extInfo):
