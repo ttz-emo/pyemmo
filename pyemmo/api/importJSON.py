@@ -72,9 +72,15 @@ def getCurrentdq(extendedInfo: dict) -> Tuple[float]:
             "Identifier 'id' and/or 'iq' missing from extended Information dict!"
         )
 
+#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
-def getWindingList(extendedInfo: dict) -> List[str]:
+
+def getWindingList(extendedInfo: dict) -> List[int]: # changed 'List[str]' to 'List[int]'
     """
+    ToDo: Test if this function might be unnessesary
+    
     Get the winding list from the extended info dict.
     The winding list looks like:
 
@@ -93,9 +99,41 @@ def getWindingList(extendedInfo: dict) -> List[str]:
     if not windKey in extendedInfo.keys():
         raise KeyError("Missing winding information from extended info.")
     else:
-        windList: List[str] = extendedInfo[windKey]
+        # windList: List[str] = extendedInfo[windKey]
+        windList: List[int] = extendedInfo[windKey]
     return windList
 
+#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+
+def getWindingSWATList(extendedInfo: dict) -> List[int]: # changed 'List[str]' to 'List[int]'
+    """
+    Get the windingSWAT list from the extended info dict.
+    The winding list looks like:
+
+        [[[phase_u1], [phase_u2]], [[phase_v1], [phase_v2]], [[phase_w1], [phase_w2]]]
+
+    Args:
+        extendedInfo (dict): dict with simulation infos
+
+    Raises:
+        KeyError: if "winding" key not in extendedInfo
+
+    Returns:
+        List[str]: winding list with elements "<+,-><u,v,w>"
+    """
+    windKey = "wickSWAT"
+    if not windKey in extendedInfo.keys():
+        raise KeyError("Missing wickSWAT information from extended info.")
+    else:
+        # windList: List[str] = extendedInfo[windKey]
+        windList: List[int] = extendedInfo[windKey]
+    return windList
+
+#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
 def getNbrOfTurns(extendedInfo: dict) -> float:
     """
