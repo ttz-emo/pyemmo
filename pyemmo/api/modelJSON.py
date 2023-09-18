@@ -666,6 +666,7 @@ def phase2color(
         raise ValueError(
             f'Phase ID "{phaseChar}" is not uvw! Can not determine phase angle!'
         )
+        
     raise ValueError(f'Phase ID "{phaseChar}"is not a single character!', phaseChar)
 
 
@@ -707,25 +708,27 @@ def getSlotInfo(slotSurfName: str) -> Tuple[int, int]:
 def getSlotPhase(windSWATList, segmentNbr, slotSide) -> Slot:
     # ToDo: slotSide berücksichtigen -> Zweischichtwicklung, Zahnspulenwicklung oder Einschichtwicklung
     for phaseIndex, phaseList in enumerate(windSWATList):
-        for slotSideList in phaseList:
-            for slotNumber in slotSideList:
-                if abs(slotNumber)==segmentNbr+1:
-                    if phaseIndex == 0:
-                        phase = "u"
-                    elif phaseIndex == 1:
-                        phase = "v"
-                    elif phaseIndex == 2:
-                        phase = "w"
-                    else:
-                        raise ValueError("PhaseIndex not 0, 1 or 2.")
+        # for slotSideList in phaseList:
+        for slotNumber in phaseList[slotSide-1]:
+            if abs(slotNumber)==segmentNbr+1:
+                if phaseIndex == 0:
+                    phase = "u"
+                elif phaseIndex == 1:
+                    phase = "v"
+                elif phaseIndex == 2:
+                    phase = "w"
+                else:
+                    raise ValueError("PhaseIndex not 0, 1 or 2.")
+                
+                if sign(slotNumber) == 1:
+                    cDir = "p"
+                else:
+                    cDir = "n"
                     
-                    if sign(slotNumber) == 1:
-                        cDir = "p"
-                    else:
-                        cDir = "n"
-                        
-                    print(f"phaseIndex: {phaseIndex}| phaseList: {phaseList}| cDir: {cDir}| slotNumber: {slotNumber}| phase: {phase}")
-                    return cDir, phase
+                print("===== =====")
+                print(f"slotNumber: {slotNumber} || phase: {phase} || phaseList: {phaseList}")
+                # print(f"phaseIndex: {phaseIndex}| phaseList: {phaseList}| cDir: {cDir}| slotNumber: {slotNumber}| phase: {phase}")
+                return cDir, phase
     raise RuntimeError("Could not determine phase index by slot number.")
                 
 def createSlot(surf: SurfaceAPI, material: Material, extendedInfo: dict) -> Slot:
@@ -744,6 +747,8 @@ def createSlot(surf: SurfaceAPI, material: Material, extendedInfo: dict) -> Slot
 
     slotSide, segmentNbr = getSlotInfo(surf.getIdExt()) 
     windSWATList = importJSON.getWindingSWATList(extendedInfo)
+    # slotSide is set 0 or 1 where the naming of slotSide is 1 or 2
+    slotSide = slotSide - 1
     cDir, phase = getSlotPhase(windSWATList, segmentNbr, slotSide)
     slotName = surf.getIdExt() + "_" + phase.upper() + cDir
 
@@ -751,6 +756,7 @@ def createSlot(surf: SurfaceAPI, material: Material, extendedInfo: dict) -> Slot
         name=slotName, geometricalElement=[surf], material=material
     )  # create slot without winding information, because winding is set by stator
     surf.setMeshColor(phase2color(phase))
+    print(f"phase: {phase} | phase2color: {phase2color(phase)}")
     return slot
 
 
