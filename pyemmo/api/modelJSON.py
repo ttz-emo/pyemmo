@@ -690,7 +690,7 @@ def getSlotInfo(slotSurfName: str) -> Tuple[int, int]:
     if "StCu" in slotSurfName:
         # split up the surface name to get Slot side (0 odr 1) and segmentNbr (n)
         [slotSide, segmentNbr] = slotSurfName.lstrip("StCu").split("_")
-        # if both stings are numbers
+        # if both strings are numbers
         if slotSide.isdecimal() and segmentNbr.isdecimal():
             if float(slotSide).is_integer() and float(segmentNbr).is_integer():
                 return int(slotSide), int(segmentNbr)  # return the int value
@@ -704,7 +704,30 @@ def getSlotInfo(slotSurfName: str) -> Tuple[int, int]:
     msg = f'Slot identifier "StCu" was not in Surfacename: {slotSurfName}'
     raise ValueError(msg)
 
-
+def getSlotPhase(windSWATList, segmentNbr, slotSide) -> Slot:
+    # ToDo: slotSide berücksichtigen -> Zweischichtwicklung, Zahnspulenwicklung oder Einschichtwicklung
+    for phaseIndex, phaseList in enumerate(windSWATList):
+        for slotSideList in phaseList:
+            for slotNumber in slotSideList:
+                if abs(slotNumber)==segmentNbr+1:
+                    if phaseIndex == 0:
+                        phase = "u"
+                    elif phaseIndex == 1:
+                        phase = "v"
+                    elif phaseIndex == 2:
+                        phase = "w"
+                    else:
+                        raise ValueError("PhaseIndex not 0, 1 or 2.")
+                    
+                    if sign(slotNumber) == 1:
+                        cDir = "p"
+                    else:
+                        cDir = "n"
+                        
+                    print(f"phaseIndex: {phaseIndex}| phaseList: {phaseList}| cDir: {cDir}| slotNumber: {slotNumber}| phase: {phase}")
+                    return cDir, phase
+    raise RuntimeError("Could not determine phase index by slot number.")
+                
 def createSlot(surf: SurfaceAPI, material: Material, extendedInfo: dict) -> Slot:
     """create a Physical Element of type Slot.
 
@@ -718,13 +741,12 @@ def createSlot(surf: SurfaceAPI, material: Material, extendedInfo: dict) -> Slot
     Returns:
         Slot: Slot object generated from the above information.
     """
-    slotSide, segmentNbr = getSlotInfo(surf.getIdExt())
-    windList = importJSON.getWindingList(extendedInfo)
-    # modulo operation to repeat the winding sequence
-    windIndex = (2 * segmentNbr + slotSide % 2) % (len(windList))  # + 1)
-    cDir = windList[windIndex][0]  # Current direction ('+' or '-')
-    phase = windList[windIndex][1]  # Phase ID (U,V,W)
-    slotName = surf.getIdExt() + "_" + phase.upper() + ("p" if cDir == "+" else "n")
+
+    slotSide, segmentNbr = getSlotInfo(surf.getIdExt()) 
+    windSWATList = importJSON.getWindingSWATList(extendedInfo)
+    cDir, phase = getSlotPhase(windSWATList, segmentNbr, slotSide)
+    slotName = surf.getIdExt() + "_" + phase.upper() + cDir
+
     slot = Slot(
         name=slotName, geometricalElement=[surf], material=material
     )  # create slot without winding information, because winding is set by stator
@@ -742,25 +764,19 @@ def createWinding(extendedInfo: dict) -> datamodel:
     Returns:
         datamodel: swat_em.datamodel object of winding.
     """
-    winding = datamodel()
+    swatemWinding = datamodel()
     nbrSlots = importJSON.getNbrSlots(extendedInfo)
     nbrPolePairs = importJSON.getNbrPolePairs(extendedInfo)
-    winding.set_machinedata(Q=nbrSlots, p=nbrPolePairs, m=3)
-    # get winding layout from json file
-    windList = importJSON.getWindingList(extendedInfo)
-    symFactor = importJSON.getSymFactor(extendedInfo)
-    # format winding layout for swat_em
-    windLayout = genWindLayoutSwatEM(
-        windList, nbrSlots, bool((2 * nbrPolePairs / symFactor) % 2)
-    )
-    # print(windLayout)
-    winding.set_phases(S=windLayout, turns=(importJSON.getNbrOfTurns(extendedInfo)))
-    winding.analyse_wdg()  # analyse winding to make sure its valid and all parameters are set
-    return winding
+    swatemWinding.set_machinedata(Q=nbrSlots, p=nbrPolePairs, m=3)
+    windLayout = importJSON.getWindingSWATList(extendedInfo)
+    print(windLayout)
+    swatemWinding.set_phases(S=windLayout, turns=(importJSON.getNbrOfTurns(extendedInfo)))
+    swatemWinding.analyse_wdg()  # analyse winding to make sure its valid and all parameters are set
+    return swatemWinding
 
 
-def genWindLayoutSwatEM(
-    windingList: List[str], nbrSlots: int, onePole=False
+def genWindLayoutSwatEM(extendedInfo: dict,
+    # windingList: List[str], nbrSlots: int, onePole=False
 ) -> List[List[int]]:
     """generate winding layout for `swat_em <https://swat-em.readthedocs.io/en/latest/#>`__
     winding object (:class:`datamodel`)
@@ -778,59 +794,7 @@ def genWindLayoutSwatEM(
         `this <https://swat-em.readthedocs.io/en/latest/reference.html#swat_em.datamodel.datamodel.set_phases>`__
         SWAT-EM method for more details)
     """
-    # windType = "integer" if windingList[0::2]==windingList[1::2] else "fractional"
-    # winding type is not of intrest because there will allways be 2 slot sides in one slot,
-    # even if its a interger winding
-
-    # FIXME: "number of slot sides" should be considered, instead of setting it to two by default
-    nbrSlotsInList = len(windingList) / 2
-    # number of times to repeat the winding sequence to get the values for all slots:
-    nbrRepeat = nbrSlots / nbrSlotsInList
-    if (
-        nbrRepeat.is_integer() and nbrSlotsInList.is_integer()
-    ):  # set them to int because swat_em-layout and range function only take int
-        nbrRepeat = int(nbrRepeat)
-        nbrSlotsInList = int(nbrSlotsInList)
-    # if windType == "fractional":
-    # winding layout with slot numbers like:
-    # [Phase1[[upper slot side],[lower slot side]],Phase2[[...],[...]],Phase3[[...],[...]]]
-    windLayout = [[[], []], [[], []], [[], []]]
-    for segment in range(nbrRepeat):
-        offset = segment * nbrSlotsInList  # slot number offset for repetition
-        if onePole:
-            # if there is only one pole in the model, then reverse winding direction for second
-            # pole segment
-            signChange = -1 if segment % 2 else 1
-        else:
-            signChange = 1
-        for slotID, phaseID in enumerate(windingList):
-            phaseID = phaseID.replace("u", "1")
-            phaseID = phaseID.replace("v", "2")
-            phaseID = phaseID.replace("w", "3")
-            phaseNum = abs(int(phaseID)) - 1  # 0,1 or 2 for m=3 winding
-            # actual slot number from 0...nbrSlots(=Qs)
-            slotNum = int(ceil((slotID + 1) / 2) + offset)
-            slotSide = (slotID) % 2  # 0 or 1 for left or right/upper or lower slot side
-            # +1 or -1 direction of winding turns
-            windDir = signChange * int(sign(int(phaseID)))
-            windLayout[phaseNum][slotSide].append(windDir * slotNum)
-    # elif windType == "integer":
-    #     windLayout = [[],[],[]]
-    #     for segment in range(nbrRepeat):
-    #         offset = segment*nbrSlotsInList
-    #         if onePole:
-    #             signChange = (-1 if segment%2 else 1)
-    #         for slotID, phaseID in enumerate(windingList):
-    #             if slotID%2==0:
-    #                 phaseID = phaseID.replace("u","1")
-    #                 phaseID = phaseID.replace("v","2")
-    #                 phaseID = phaseID.replace("w","3")
-    #                 phaseNum = abs(int(phaseID))-1
-    #                 slotNum = int(ceil((slotID+1)/2)+offset)
-    #                 windDir = signChange*sign(int(phaseID))
-    #                 windLayout[phaseNum].append(windDir*slotNum)
-    # else:
-    #     raise(ValueError("Winding type is not 'integer' or 'factional'"))
+    windLayout = importJSON.getWindingSWATList(extendedInfo)
     return windLayout
 
 
