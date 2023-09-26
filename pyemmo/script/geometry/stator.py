@@ -216,7 +216,7 @@ class Stator(object):
         (layout, strLayout, colorLayout) = self.winding.get_layers()
         for slotPos, slot in enumerate(self.getSlots()):
             if self.winding.get_num_layers() == 2:
-                layer = slotPos % 2  # alternate layers
+                layer = (slotPos+1) % 2  # alternate layers
                 slotIDLayout = int(
                     slotPos / 2 + (((-1) ** slotPos) - 1) / 4
                 )  # create row like: 0,0,1,1,2,2,3,3,...
