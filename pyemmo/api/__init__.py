@@ -13,8 +13,8 @@ logger.addHandler(ch)
 try:
     air = Material()
     air.loadMatFromDataBase("Material_new.db", "air")
-    air.setName("Air")
-    air.setDensity(1.2041)
+    air.name = "Air"
+    air.density = 1.2041
 except FileNotFoundError:
     air = Material(
         name="Air",

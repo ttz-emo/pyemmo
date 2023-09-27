@@ -27,7 +27,7 @@ class Slot_Form01(Slot):
         angle_slotOP = math.atan2(self._machineDict["w_SlotOP"], dockingLength)
 
         PCentre = self._machineDict["machineCentrePoint"]
-        coordCentre = PCentre.getCoordinate()
+        coordCentre = PCentre.coordinate
         angleStart = self._machineDict["startPosition"]
 
         # Konstuktion der Punkte an der x-Achse
@@ -83,17 +83,22 @@ class Slot_Form01(Slot):
         self._laminationDockingPoint = [pS6]
         self._betweenLinePart = [lS8, lS2]
 
-    def getBetweenLinePart(self):
+    @property
+    def betweenLinePart(self):
         return self._betweenLinePart
 
-    def getInnerLinePart(self):
+    @property
+    def innerLinePart(self):
         return self._innerLinePart
 
-    def getairDockingPoint(self):
+    @property
+    def airDockingPoint(self):
         return self._airDockingPoint
 
-    def getLaminationDockingLine(self):
+    @property
+    def laminationDockingLine(self):
         return self._laminationDockingLine
 
-    def getLaminationDockingPoint(self):
+    @property
+    def laminationDockingPoint(self):
         return self._laminationDockingPoint

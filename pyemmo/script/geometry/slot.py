@@ -14,7 +14,18 @@ from numpy import mean
 # \image html slot.png
 ###
 class Slot(PhysicalElement):
-    """Class Slot"""
+    """Class Slot
+
+    Args:
+        PhysicalElement (_type_): _description_
+
+    Raises:
+        TypeError: _description_
+        ValueError: _description_
+
+    Returns:
+        _type_: _description_
+    """
 
     def __init__(
         self,
@@ -49,7 +60,7 @@ class Slot(PhysicalElement):
         self._physicalElementType = "Slot"  # the physical element type can be used to identify physical elements
         ###Liste aus Flächen (Objekte der Klasse Surface).
         if self.geometricalElement:  # if list is not empty
-            if self.getGeoElementType() == Line:
+            if self.geoElementType == Line:
                 raise TypeError(
                     f"Physical element type 'Slot' should only contain Surface  Elements but got type Line!"
                 )
@@ -63,12 +74,20 @@ class Slot(PhysicalElement):
 
     @property
     def windDirection(self) -> Union[Literal[1], Literal[-1]]:
-        """Getter of winding direction"""
+        """Getter of winding direction
+
+        Returns:
+            _type_: _description_
+        """
         return self._windDirection
 
     @windDirection.setter
     def windDirection(self, windDir: Union[Literal[1], Literal[-1]]) -> None:
-        """Setter of winding direction. Can be +1 or -1."""
+        """Setter of winding direction. Can be +1 or -1.
+
+        Args:
+            windDir (Union[Literal[1], Literal[): _description_
+        """
         if windDir in (1, -1):
             self._windDirection = windDir
         else:
@@ -76,12 +95,20 @@ class Slot(PhysicalElement):
 
     @property
     def phase(self) -> float:
-        """Getter of phase angle"""
+        """Getter of phase angle
+
+        Returns:
+            float: _description_
+        """
         return self._phase
 
     @phase.setter
     def phase(self, phaseAngle: float) -> None:
-        """Setter of phase angle [radians]"""
+        """Setter of phase angle [radians]
+
+        Args:
+            phaseAngle (float): _description_
+        """
         if isinstance(phaseAngle, (int, float)):
             self._phase = phaseAngle
         else:
@@ -89,12 +116,20 @@ class Slot(PhysicalElement):
 
     @property
     def nbrTurns(self) -> int:
-        """Getter of number of winding turns in face attribute"""
+        """Getter of number of winding turns in face attribute
+
+        Returns:
+            int: _description_
+        """
         return self._nbrTurns
 
     @nbrTurns.setter
     def nbrTurns(self, nbrTurnsInFace: int) -> None:
-        """Setter of number of wires in face attribute"""
+        """Setter of number of wires in face attribute
+
+        Args:
+            nbrTurnsInFace (int): _description_
+        """
         if isinstance(nbrTurnsInFace, int):
             self._nbrTurns = nbrTurnsInFace
         elif isinstance(nbrTurnsInFace, float):
@@ -134,10 +169,11 @@ class Slot(PhysicalElement):
             return phase
 
     def getRadialPosition(self) -> Tuple[float, float]:
-        """get the radial position of the slot.
-        This usefull when sorting the slots in circumfederal direction
+        """get the radial position of the slot.\n
+        This is useful when sorting the slots in circumfederal direction
 
-        Returns
+        Returns:
+            Tuple[float, float]: _description_
             float: Angle of the center of the slots surface(s) in radians
             float: Radius of the center of the slots surface(s) in m
         """
@@ -146,5 +182,5 @@ class Slot(PhysicalElement):
         for surf in self.geometricalElement:
             centerPoint = surf.calcCOG()
             phiList.append(centerPoint.getAngleToX())
-            radList.append(centerPoint.getRadius())
+            radList.append(centerPoint.radius)
         return (mean(phiList), mean(radList))

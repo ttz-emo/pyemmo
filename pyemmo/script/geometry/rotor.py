@@ -20,8 +20,7 @@ from ...definitions import DEFAULT_GEO_TOL
 # Oberflächenmagnete) benutzen und die dazugehörige Klasse RotorSPMSM verwenden.
 ###
 class Rotor:
-    """
-    Eine Instanz der Klasse Rotor beschreibt den Rotor eine elektrische Maschine im
+    """    Eine Instanz der Klasse Rotor beschreibt den Rotor eine elektrische Maschine im
     dreidimensionalen Raum. Diese Klasse wird in Verbindung mit der Klasse machineAllType
     verwendet. Um welchen Typ Maschine es sich handelt, definiert der Nutzer selbst, durch die
     Definition seiner Physical Elements. Diese Klasse sollte man nur verwenden, wenn die Geometrie
@@ -29,7 +28,17 @@ class Rotor:
     ist die Spezifizierung der Maschine zunächst sinnvoll. Hierfür sollte man deshalb spezifische
     Klassen bspw. machineSPMSM (für Oberflächenmagnete) benutzen und die dazugehörige Klasse
     RotorSPMSM verwenden.
+
+    Raises:
+        TypeError: _description_
+        TypeError: _description_
+        ValueError: _description_
+        Exception: _description_
+
+    Returns:
+        _type_: _description_
     """
+
 
     def __init__(
         self,
@@ -55,21 +64,47 @@ class Rotor:
 
         self._createDomainForRotor()  # create rotor domains
 
-    def getName(self) -> str:
-        """Getter of rotor name"""
+    @property
+    def name(self) -> str:
+        """Getter of rotor name
+
+        Returns:
+            str: _name
+        """
         return self._name
 
-    def setName(self, name: str) -> None:
-        """Setter of rotor name"""
+    @name.setter
+    def name(self, name: str) -> None:
+        """Setter of rotor name
+
+        Args:
+            name (str): _name
+        """
+
         if isinstance(name, str):
             self._name = name
 
-    def getAxialLength(self) -> float:
-        """Getter of rotor axLen [m]"""
+    @property
+    def axialLength(self) -> float:
+        """Getter of rotor axLen [m]
+
+        Returns:
+            float: _axLen
+        """
+        
         return self._axLen
 
-    def setAxialLength(self, axLen: Union[float, int]) -> None:
-        """Setter of rotor axial length axLen [m]"""
+    @axialLength.setter
+    def axialLength(self, axLen: Union[float, int]) -> None:
+        """Setter of rotor axial length axLen [m]
+
+        Args:
+            axLen (Union[float, int]): _description_
+
+        Raises:
+            TypeError: _description_
+        """
+
         if isinstance(axLen, (float, int)):
             self._axLen = axLen
         else:
@@ -77,12 +112,30 @@ class Rotor:
                 f"Given axial length axLen was not numeric but {type(axLen)}."
             )
 
-    def getPhysicalElements(self) -> List[PhysicalElement]:
-        """Getter of PhysicalElements-list"""
+    @property
+    def physicalElements(self) -> List[PhysicalElement]:
+        """Getter of PhysicalElements-list
+
+        Returns:
+            List[PhysicalElement]: _physicalElements
+        """
+        
         return self._physicalElements
 
-    def setPhysicalElements(self, physicalElementsList: List[PhysicalElement]) -> None:
-        """Setter of PhysicalElements-List"""
+    @physicalElements.setter
+    def physicalElements(self, physicalElementsList: List[PhysicalElement]) -> None:
+        """Setter of PhysicalElements-List
+
+        Args:
+            physicalElementsList (List[PhysicalElement]): _description_
+
+        Raises:
+            TypeError: _description_
+
+        Returns:
+            _type_: _description_
+        """
+        
         if isinstance(physicalElementsList, List):
             self._physicalElements = physicalElementsList
             # pylint: disable=locally-disabled,  pointless-statement
@@ -197,14 +250,14 @@ class Rotor:
         primaryLines = []  # Teilmodell primarykante
         slaveLines = []  # Teilmodell Slavekante
         limitLines = []  # Randlinien ohne Primär- und Sekundärkanten
-        for physElem in self.getPhysicalElements():
-            geoType = physElem.getGeoElementType()
+        for physElem in self.physicalElements:
+            geoType = physElem.geoElementType
             if geoType == Surface:
                 # domainC, domainL & domainNL
-                material = physElem.getMaterial()
+                material = physElem.material
                 if material:
                     # if conductivity not None add to domainC
-                    if material.getConductivity():
+                    if material.conductivity:
                         domainC.append(physElem)
                     else:
                         domainCC.append(physElem)
@@ -217,13 +270,13 @@ class Rotor:
                     if isinstance(material, ElectricalSteel):
                         domainLam.append(physElem)
                 else:
-                    physName = physElem.getName()
+                    physName = physElem.name
                     raise Exception(
                         f"No Material defined: ({physName})", f"Material is {material}"
                     )
 
                 # domainM zuweisen
-                if physElem.getType() == "Magnet":
+                if physElem.type == "Magnet":
                     magnet: Magnet = physElem
                     domainM.append(magnet)
                     # remove magnet from C or CC because assignment is done by getdp
@@ -234,16 +287,16 @@ class Rotor:
                     continue
 
                 # domainS zuweisen
-                if physElem.getType() == "Slot":
+                if physElem.type == "Slot":
                     domainS.append(physElem)
                     continue
 
                 # airgap
-                if physElem.getType() == "AirGap":
+                if physElem.type == "AirGap":
                     domainAirgap.append(physElem)
 
                 # Stator lamination if not allready defined
-                if physElem.getType() == "Lamination":
+                if physElem.type == "Lamination":
                     # pE could allready been added due to material
                     if physElem not in domainLam:
                         domainLam.append(physElem)
@@ -254,23 +307,23 @@ class Rotor:
             ## GEOTYPE LINE:
             elif geoType == Line:
                 # MB zuweisen
-                if physElem.getType() == "MovingBand":
+                if physElem.type == "MovingBand":
                     allMbLines.append(physElem)
-                    if physElem.isAuxiliary():
+                    if physElem.auxiliary:
                         movingBandAux.append(physElem)
 
                     domainMoving.append(physElem)
                     continue  # continue after because it cant be any other physicalElement type
 
-                if physElem.getType() == "PrimaryLine":
+                if physElem.type == "PrimaryLine":
                     primaryLines.append(physElem)
                     continue
 
-                if physElem.getType() == "SlaveLine":
+                if physElem.type == "SlaveLine":
                     slaveLines.append(physElem)
                     continue
 
-                if physElem.getType() == "LimitLine":
+                if physElem.type == "LimitLine":
                     limitLines.append(physElem)
 
         sortedPhy = {
@@ -293,12 +346,18 @@ class Rotor:
 
         return sortedPhy
 
-    def getMovingBand(self) -> List[MovingBand]:
-        """get the MovingBand physical elements"""
+    @property
+    def movingBand(self) -> List[MovingBand]:
+        """Getter of MovingBand physical elements
+
+        Returns:
+            List[MovingBand]: _description_
+        """
         domainMB = self._mb
         return domainMB.physicals
 
-    def getMovingBandRadius(self) -> float:
+    @property
+    def movingBandRadius(self) -> float:
         """determine the moving band radius.
         This is done by checking the radius of all moving band PhysicalElements for equality.
 
@@ -309,7 +368,7 @@ class Rotor:
             ValueError: If there are no moving band objects.
             ValueError: If radius of different moving band arcs is not equal.
         """
-        physicalMBList = self.getMovingBand()
+        physicalMBList = self.movingBand
         if physicalMBList:
             mbRadius = physicalMBList[0].radius
             for physicalMB in physicalMBList:
@@ -318,7 +377,7 @@ class Rotor:
                         ValueError(
                             "Moving band got arc objects with different Radius:\n"
                             + f"Radius MB_0: {mbRadius}\n"
-                            + f"Radius {physicalMB.getName()}: {physicalMB.radius}\n"
+                            + f"Radius {physicalMB.name}: {physicalMB.radius}\n"
                         )
                     )
             return mbRadius
@@ -362,11 +421,11 @@ class Rotor:
             fig.set_dpi(300)
             axis.set_aspect("equal", adjustable="box")
         kwargs["fig"] = fig
-        for phys in self.getPhysicalElements():
+        for phys in self.physicalElements:
             for geoElem in phys.geometricalElement:
                 geoElem.plot(**kwargs)
         if symFactor:
-            radius = self.getMovingBandRadius()
+            radius = self.movingBandRadius
             if symFactor == 4:
                 lim = -0.01 * radius
                 axis.set_xlim(left=lim)

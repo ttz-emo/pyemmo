@@ -159,26 +159,26 @@ class RotorSPMSM(Rotor):
         self._createDuplicate()
         self._createConstraintLine()
         if (
-            self._physicalElements[1].getMagnetisationType() == "parallel"
-            or self._physicalElements[1].getMagnetisationType() == "tangential"
+            self._physicalElements[1].magnetisationType == "parallel"
+            or self._physicalElements[1].magnetisationType == "tangential"
         ):
             allAngle = self._calculateAngleForParallelMagnet()
             allMag = self.getAllMagnet()
             for i in range(0, len(allMag)):
-                allMag[i].setMagnetisationVectorAngle(allAngle[i])
+                allMag[i].magnetisationVectorAngle(allAngle[i])
         self._createDomainForRotor()
 
     ###Die Methode _calculateAngleForParallelMagnet wird nur bei der parallelen oder tangentialen Magnetisierung verwendet. Diese Funktion berechnet den Winkel des Magnetisierungs-Richtungs-Vektors.
     def _calculateAngleForParallelMagnet(self):
         Magnet1 = self._physicalElements[1]
-        dockingPointM = Magnet1.getLaminationDockingPoint()[0].duplicate()
-        coordDPM = dockingPointM.getCoordinate()
+        dockingPointM = Magnet1.laminationDockingPoint[0].duplicate()
+        coordDPM = dockingPointM.coordinate
         angleParallel1 = math.atan2(coordDPM[1], coordDPM[0])
         allAngleParallel = [angleParallel1]
         alpha = self._angleGeoParts * 2
         for i in range(1, int(self._nbrGeoParts / 2)):
             dockingPointM.rotateZ(self._laminationDict["machineCentrePoint"], alpha)
-            coordDPM = dockingPointM.getCoordinate()
+            coordDPM = dockingPointM.coordinate
             angle = math.atan2(coordDPM[1], coordDPM[0])
             allAngleParallel.append(angle)
         return allAngleParallel
@@ -192,64 +192,64 @@ class RotorSPMSM(Rotor):
         allLamL2 = []
 
         for i1 in range(0, len(Magnet1._innerLinePart)):
-            magL1 = {"MagnetLine": Magnet1.getInnerLinePart()[i1]}
-            p1 = Magnet1.getInnerLinePart()[i1].startPoint
-            p2 = Magnet1.getInnerLinePart()[i1].endPoint
+            magL1 = {"MagnetLine": Magnet1.innerLinePart[i1]}
+            p1 = Magnet1.innerLinePart[i1].startPoint
+            p2 = Magnet1.innerLinePart[i1].endPoint
             magL1["p1"] = p1
             magL1["p2"] = p2
             allMagL.append(magL1)
 
         for i2 in range(0, len(RotorSheet1._outerLinePart)):
-            lamL1 = {"LaminationLine": RotorSheet1.getOuterLinePart()[i2]}
-            p1 = RotorSheet1.getOuterLinePart()[i2].startPoint
-            p2 = RotorSheet1.getOuterLinePart()[i2].endPoint
+            lamL1 = {"LaminationLine": RotorSheet1.outerLinePart[i2]}
+            p1 = RotorSheet1.outerLinePart[i2].startPoint
+            p2 = RotorSheet1.outerLinePart[i2].endPoint
             lamL1["p1"] = p1
             lamL1["p2"] = p2
             allLamL.append(lamL1)
 
         for i3 in range(0, len(RotorSheet1._betweenLinePart)):
-            lamL1 = {"LaminationLine": RotorSheet1.getBetweenLinePart()[i2]}
-            p1 = RotorSheet1.getBetweenLinePart()[i2].startPoint
-            p2 = RotorSheet1.getBetweenLinePart()[i2].endPoint
+            lamL1 = {"LaminationLine": RotorSheet1.betweenLinePart[i2]}
+            p1 = RotorSheet1.betweenLinePart[i2].startPoint
+            p2 = RotorSheet1.betweenLinePart[i2].endPoint
             lamL1["p1"] = p1
             lamL1["p2"] = p2
             allLamL2.append(lamL1)
 
-        dockingPointM = Magnet1.getLaminationDockingPoint()[0]
+        dockingPointM = Magnet1.laminationDockingPoint[0]
         # prüfen welcher Punkt in allMagL der DockingPoint ist! -> Momentan allMagL darf nur ein Element besitzen -> Ansonsten hier eine For-Schleife einrichten.
-        if allMagL[0]["p1"].getCoordinate() == dockingPointM.getCoordinate():
+        if allMagL[0]["p1"].coordinate == dockingPointM.coordinate:
             changePointM = allMagL[0]["p2"]
-        elif allMagL[0]["p2"].getCoordinate() == dockingPointM.getCoordinate():
+        elif allMagL[0]["p2"].coordinate == dockingPointM.coordinate:
             changePointM = allMagL[0]["p1"]
 
         # Punkt von Lamination holen, der verändert werden muss. Punkt wandert zu Ende des Magneten.
-        testP = RotorSheet1.getAirDockingPoint1()[0]
+        testP = RotorSheet1.airDockingPoint1[0]
         for lElem in allLamL:
-            if lElem["p1"].getCoordinate() == testP.getCoordinate():
+            if lElem["p1"].coordinate == testP.coordinate:
                 lElem["LaminationLine"].startPoint = changePointM
-            elif lElem["p2"].getCoordinate() == testP.getCoordinate():
+            elif lElem["p2"].coordinate == testP.coordinate:
                 lElem["LaminationLine"].endPoint = changePointM
 
         for lElem in allLamL2:
-            if lElem["p1"].getCoordinate() == testP.getCoordinate():
+            if lElem["p1"].coordinate == testP.coordinate:
                 lElem["LaminationLine"].startPoint = dockingPointM
-            elif lElem["p2"].getCoordinate() == testP.getCoordinate():
+            elif lElem["p2"].coordinate == testP.coordinate:
                 lElem["LaminationLine"].endPoint = dockingPointM
 
-        curveOfRotorSheet1 = RotorSheet1.geometricalElement[0].getCurve()
-        curveOfRotorSheet1.append(Magnet1.getInnerLinePart()[0])
-        RotorSheet1.geometricalElement[0].setCurve(curveOfRotorSheet1)
+        curveOfRotorSheet1 = RotorSheet1.geometricalElement[0].curve
+        curveOfRotorSheet1.append(Magnet1.innerLinePart[0])
+        RotorSheet1.geometricalElement[0].curve = curveOfRotorSheet1
 
     ###Mit addAirSpace() wird der Luftraum auf der Rotorseite bis zum Movingband erzeugt und Materialeigenschaften definiert.
     def _addAirSpace(self):
         airGapLength = self._airGapDict["width"] / 4
         PCentre = self._laminationDict["machineCentrePoint"].duplicate()
         alpha = self._angleGeoParts
-        pMagAir: Point = self._physicalElements[1].getAirDockingPoint()[0]
+        pMagAir: Point = self._physicalElements[1].airDockingPoint[0]
         pAir1: Point = pMagAir.duplicate()  # mmagnet center point on airgap side
-        for line in self._physicalElements[1].getAirLinePart():
+        for line in self._physicalElements[1].airLinePart:
             line: Union[Line, CircleArc, Spline]
-            if pMagAir in line.getPoints():  # only set mesh on line near airgap
+            if pMagAir in line.points:  # only set mesh on line near airgap
                 line.setMeshLength(
                     airGapLength
                 )  # set mesh of magnet-air interface points mesh is homogeneous
@@ -261,13 +261,13 @@ class RotorSPMSM(Rotor):
 
         # createLine
         lAir1 = CircleArc("lAir1", pAir1, PCentre, pAir2)
-        lAir2 = Line("lAir2", pAir1, self._physicalElements[1].getAirDockingPoint()[0])
-        lAir3 = Line("lAir3", pAir2, self._physicalElements[0].getAirDockingPoint2()[0])
+        lAir2 = Line("lAir2", pAir1, self._physicalElements[1].airDockingPoint[0])
+        lAir3 = Line("lAir3", pAir2, self._physicalElements[0].airDockingPoint2[0])
         sAir1 = Surface(
             "sAir1",
             [lAir1, lAir2, lAir3]
-            + self._physicalElements[0].getOuterLinePart()
-            + self._physicalElements[1].getAirLinePart(),
+            + self._physicalElements[0].outerLinePart
+            + self._physicalElements[1].airLinePart,
         )
         # sAir1.setMeshLength(airGapLength)
         airPart = AirArea("airRotor", [sAir1], self._airGapDict["material"])
@@ -298,9 +298,9 @@ class RotorSPMSM(Rotor):
         ] = self._physicalElements[0]
         rotorLamSurfList = rotorLam.geometricalElement
         PCentre = self._laminationDict["machineCentrePoint"].duplicate()
-        pH1 = rotorLam.getBetweenLinePart()[
+        pH1 = rotorLam.betweenLinePart[
             0
-        ].startPoint  # getBetweenLinePart() not defined in parent-class RotorLamination
+        ].startPoint  # betweenLinePart not defined in parent-class RotorLamination
         hilfsLinie1 = Line("L_hilf1", PCentre, pH1)
         ez = Point("p_Z", PCentre._x, PCentre._y, PCentre._z + 1, 1)
         hilfsLinie2 = Line("L_hilf2", PCentre, ez)
@@ -338,7 +338,7 @@ class RotorSPMSM(Rotor):
                 magDirection=self._magnetDict["magnetisationDirection"][i],
                 magType=self._magnetDict["magnetisationType"],
             )
-            dupMag.setName("magnet_SPMSM_" + str(dupMag.id))
+            dupMag.name = "magnet_SPMSM_" + str(dupMag.id)
             dupMagnetList.append(dupMag)
 
         # OLD VERSION
@@ -408,11 +408,11 @@ class RotorSPMSM(Rotor):
 
         mbRotor1 = []
         mbNegDirection = (
-            self._physicalElements[3].geometricalElement[0].getCurve()[1].duplicate()
+            self._physicalElements[3].geometricalElement[0].curve[1].duplicate()
         )
         mbNegDirection.rotateZ(self._laminationDict["machineCentrePoint"], -angle)
         mbRotor1.append(mbNegDirection)
-        mbRotor1.append(self._physicalElements[3].geometricalElement[0].getCurve()[1])
+        mbRotor1.append(self._physicalElements[3].geometricalElement[0].curve[1])
 
         for i in range(1, self._nbrGeoParts):
             c1 = curveInner[0].duplicate()
@@ -439,7 +439,7 @@ class RotorSPMSM(Rotor):
                 )
                 mbRotor_aux.append(l_mb_aux)
             mbAux = MovingBand("", mbRotor_aux, self._airGapDict["material"], True)
-            mbAux.setName("mb_Aux_" + str(mbAux.id))
+            mbAux.name = "mb_Aux_" + str(mbAux.id)
             allMBAux.append(mbAux)
         self._physicalElements = self._physicalElements + allMBAux
 
@@ -450,10 +450,10 @@ class RotorSPMSM(Rotor):
         pprimary2 = Point("pprimary2", self._laminationDict["r_R"], 0, 0, 1)
         lLamprimary = Line("lLamprimary", pprimary1, pprimary2)
 
-        lAir = self._physicalElements[2].geometricalElement[0].getCurve()[2].duplicate()
+        lAir = self._physicalElements[2].geometricalElement[0].curve[2].duplicate()
         lAir.rotateZ(self._laminationDict["machineCentrePoint"], -angle * 2)
         lAirGap = (
-            self._physicalElements[3].geometricalElement[0].getCurve()[2].duplicate()
+            self._physicalElements[3].geometricalElement[0].curve[2].duplicate()
         )
         lAirGap.rotateZ(self._laminationDict["machineCentrePoint"], -angle)
 

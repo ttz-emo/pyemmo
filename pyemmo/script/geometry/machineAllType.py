@@ -62,21 +62,21 @@ class MachineAllType(object):
         - R_AIRGAP
         """
         paramDict = default_param_dict.GEO
-        paramDict.SYMMETRY_FACTOR = self.getSymmetryFactor()
-        paramDict.L_AX_R = self.getRotor().getAxialLength()
-        paramDict.L_AX_S = self.getStator().getAxialLength()
-        paramDict.NBR_POLE_PAIRS = self.getNbrPolePairs()
-        paramDict.NBR_SLOTS = self.getStator().getNbrSlots()
+        paramDict.SYMMETRY_FACTOR = self.symmetryFactor
+        paramDict.L_AX_R = self.rotor.axialLength
+        paramDict.L_AX_S = self.stator.axialLength
+        paramDict.NBR_POLE_PAIRS = self.NbrPolePairs
+        paramDict.NBR_SLOTS = self.stator.NbrSlots
         paramDict.NBR_TURNS_IN_FACE = (
-            self.getStator().winding.get_turns() / 2
+            self.stator.winding.get_turns() / 2
         )  # divide by two because there are allways two slot sides
-        paramDict.R_AIRGAP = self.getRotor().getMovingBand()[0].radius
+        paramDict.R_AIRGAP = self.rotor.movingBand[0].radius
         return paramDict
 
     def createMachineDomains(self) -> None:
         """Create the different Machine Domains"""
-        rotor = self.getRotor()
-        stator = self.getStator()
+        rotor = self.rotor
+        stator = self.stator
         ###DomainS beinhaltet alle Physical Elements, die bestromt werden.
         self._domainS = Domain(
             "DomainS",
@@ -159,19 +159,44 @@ class MachineAllType(object):
         else:
             raise TypeError(f"Given name was not type str, but '{type(nameVal)}'")
 
-    def getSymmetryFactor(self) -> int:
+    @property
+    def symmetryFactor(self) -> int:
+        """Getter of Symmetry Factor
+
+        Returns:
+            int: Symmetry Factor
+        """
         return self._symmetryFactor
 
-    def setSymmetryFactor(self, symFactor: int):
+    @symmetryFactor.setter
+    def symmetryFactor(self, symFactor: int):
+        """Setter for Symmetry Factor
+
+        Args:
+            symFactor (int): Symmetry Factor
+        """
         assert type(symFactor) == int
         self._symmetryFactor = symFactor
 
-    def getNbrPolePairs(self) -> int:
+    @property
+    def NbrPolePairs(self) -> int:
         """Getter of number of pole pairs"""
         return self._nbrPolePairs
 
+    @NbrPolePairs.setter
     def setNbrPolePairs(self, nbrPolePairs: Union[int, float]) -> None:
-        """Setter of number of pole pairs"""
+        """Setter of number of pole pairs
+
+        Args:
+            nbrPolePairs (Union[int, float]): _description_
+
+        Raises:
+            TypeError: _description_
+
+        Returns:
+            _type_: _description_
+        """
+        
         if isinstance(nbrPolePairs, int):
             self._nbrPolePairs = nbrPolePairs
             return None
@@ -184,15 +209,18 @@ class MachineAllType(object):
                 f"Given number of pole pairs was not an integer (p={nbrPolePairs})"
             )
 
-    def getRotor(self) -> Rotor:
+    @property
+    def rotor(self) -> Rotor:
         """Get the rotor object of the machine"""
         return self._rotor
 
-    def getStator(self) -> Stator:
+    @property
+    def stator(self) -> Stator:
         """Get the stator object of the machine"""
         return self._stator
 
-    def getDomains(self) -> List[Domain]:
+    @property
+    def domains(self) -> List[Domain]:
         """Return all Domains of the machine as list"""
         domainList: List[Domain] = list()
         # Add primary and slave lines first!
@@ -219,18 +247,19 @@ class MachineAllType(object):
         domainList.append(self._domainNL)
         return domainList
 
-    def getPrimaryLines(self) -> List[Line]:
+    @property
+    def primaryLines(self) -> List[Line]:
         """get a list of primary lines of rotor and stator
 
         Returns:
             List[Line]: list of primary line geometrical elements
         """
-        rotorDict = self.getRotor().sortPhysicals()
-        statorDict = self.getStator().sortPhysicals()
+        rotorDict = self.rotor.sortPhysicals()
+        statorDict = self.stator.sortPhysicals()
         physicalPrimeLines = rotorDict["primary"] + statorDict["primary"]
         primeLines: List[Line] = list()
         for physicalPrimeLine in physicalPrimeLines:
-            if physicalPrimeLine.getGeoElementType() == Line:
+            if physicalPrimeLine.geoElementType == Line:
                 primeLines.extend(physicalPrimeLine.geometricalElement)
             else:
                 raise (
@@ -246,12 +275,12 @@ class MachineAllType(object):
         Returns:
             List[Line]: list of secondary line geometrical elements
         """
-        rotorDict = self.getRotor().sortPhysicals()
-        statorDict = self.getStator().sortPhysicals()
+        rotorDict = self.rotor.sortPhysicals()
+        statorDict = self.stator.sortPhysicals()
         physicalSecLines = rotorDict["slave"] + statorDict["slave"]
         secondaryLines: List[Line] = list()
         for physicalSecLine in physicalSecLines:
-            if physicalSecLine.getGeoElementType() == Line:
+            if physicalSecLine.geoElementType == Line:
                 secondaryLines.extend(physicalSecLine.geometricalElement)
             else:
                 raise (
@@ -261,11 +290,17 @@ class MachineAllType(object):
                 )
         return secondaryLines
 
-    def getPhysicalElements(self) -> List[PhysicalElement]:
+    @property
+    def physicalElements(self) -> List[PhysicalElement]:
+        """_summary_
+
+        Returns:
+            List[PhysicalElement]: _description_
+        """
         physicals: List[PhysicalElement] = list()
         for physical in (
-            self.getStator().getPhysicalElements()
-            + self.getRotor().getPhysicalElements()
+            self.stator.physicalElements
+            + self.rotor.physicalElements
         ):
             physicals.append(physical)
         return physicals
@@ -284,15 +319,15 @@ class MachineAllType(object):
             meshGainFactor (float): Gain factor for mesh size from airgap to outer machine limit.
             basisMeshsize (float, optional): Basis mesh size to use near the airgap (minimal mesh size). Defaults to None = 2*Pi* Rotor_Movingband_Radius / 360.
         """
-        rMb = self.getRotor().getMovingBandRadius()
+        rMb = self.rotor.movingBandRadius
         # get max. stator radius:
         rS = 0
-        for phys in self.getStator()._domainOuterLimit.physicals:
+        for phys in self.stator._domainOuterLimit.physicals:
             for geo in phys.geometricalElement:
                 if isinstance(geo, Line):
-                    for p in geo.getPoints():
-                        if p.getRadius() > rS:
-                            rS = p.getRadius()
+                    for p in geo.points:
+                        if p.radius > rS:
+                            rS = p.radius
         if not basisMeshsize:
             basisMeshsize = 2 * pi * rMb / 360
 
@@ -311,17 +346,17 @@ class MachineAllType(object):
         else:
             mssg = f"Unknown function specifier '{functionType}' for functional mesh."
             raise (ValueError(mssg))
-        for physical in self.getPhysicalElements():
+        for physical in self.physicalElements:
             for geo in physical.geometricalElement:
                 points: List[Point] = []
                 if isinstance(geo, Surface):
-                    for curve in geo.getCurve():
-                        points.extend(curve.getPoints())
+                    for curve in geo.curve:
+                        points.extend(curve.points)
                 # All curves should belong to a surface...
                 # else:
                 #     points.extend(geo.getPoints())
                 for point in points:
-                    rP = point.getRadius()
+                    rP = point.radius
                     if functionType == "linear":
                         if rP < rMb:
                             # meshSizeFaktor = (a1*rP+b1)
@@ -333,7 +368,7 @@ class MachineAllType(object):
                         faktor = (a * rP**2 + b * rP + c) + 1
                         faktor = 1 if faktor < 1 else faktor
                         pMeshSize = faktor * basisMeshsize
-                    point.setMeshLength(pMeshSize)
+                    point.meshLength = pMeshSize
 
     def plot(
         self,
@@ -349,7 +384,7 @@ class MachineAllType(object):
             fig, ax = plt.subplots()
             fig.set_dpi(300)
             ax.set_aspect("equal", adjustable="box")
-        domains = self.getDomains()
+        domains = self.domains
         for domain in domains:
             for phys in domain.physicals:
                 for geoElem in phys.geometricalElement:

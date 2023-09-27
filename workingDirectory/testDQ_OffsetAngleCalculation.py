@@ -140,7 +140,7 @@ SPMSM.plot()
 # %% calc angle offset
 dAxisAngle = polteilung / 2 * nbrPolePairs  # center angle of north pole -> d-Axis
 print(f"d-Axis (rotor north pole) angle (elec): {rad2deg(dAxisAngle)}°")
-nu, amp, angle = SPMSM.getStator().winding.get_MMF_harmonics()
+nu, amp, angle = SPMSM.stator.winding.get_MMF_harmonics()
 # Stator Winkel für I_U = 1 p.u., I_V = -1/2, I_W = -1/2
 phiS = float(angle[where(nu == nbrPolePairs)])  # rad elec
 
@@ -191,7 +191,7 @@ import os
 
 os.system(
     createCmdCommand(
-        onelabFile=myScript.getProFilePath(),
+        onelabFile=myScript.proFilePath,
         useGUI=True,
         paramDict={"Flag_ClearResults": 1},
     )

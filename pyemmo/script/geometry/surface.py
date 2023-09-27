@@ -63,10 +63,10 @@ class Surface(Transformable):
 
     def __eq__(self, other: "Surface"):
         # check type and number of points
-        if isinstance(other, self.__class__) and (len(self.getAllPoints()) == len(other.getAllPoints())):
+        if isinstance(other, self.__class__) and (len(self.allPoints) == len(other.allPoints)):
             # check that all points are equal
-            otherPoints = other.getAllPoints()
-            for point in self.getAllPoints():
+            otherPoints = other.allPoints
+            for point in self.allPoints:
                 if point not in otherPoints:
                     return False
 
@@ -133,7 +133,13 @@ class Surface(Transformable):
     #
     #       [Line]
     ###
-    def getCurve(self) -> List[Union[Line, CircleArc, Spline]]:
+    @property
+    def curve(self) -> List[Union[Line, CircleArc, Spline]]:
+        """Getter of curve
+
+        Returns:
+            List[Union[Line, CircleArc, Spline]]: _curves
+        """
         return self._curves
 
     ###Mit translate() kann eine Fläche linear verschoben werden. Die Inputvariablen dx, dy und dz beschreiben die Verschiebungsfaktoren in der x-, y- und z- Richtung.
@@ -154,7 +160,7 @@ class Surface(Transformable):
         if self._todesmerker == True:
             ...  # TODO: Add warning
         else:
-            allP = self.getAllPoints()
+            allP = self.allPoints
             for p in allP:
                 p.translate(dx, dy, dz)
 
@@ -176,7 +182,7 @@ class Surface(Transformable):
         if self._todesmerker == True:
             ...  # TODO: Add warning
         else:
-            allP = self.getAllPoints()
+            allP = self.allPoints
 
             for p in allP:
                 p.rotateZ(rotationPoint, angle)
@@ -199,7 +205,7 @@ class Surface(Transformable):
         if self._todesmerker == True:
             ...  # TODO: Add warning
         else:
-            allP = self.getAllPoints()
+            allP = self.allPoints
 
             for p in allP:
                 p.rotateX(rotationPoint, angle)
@@ -222,7 +228,7 @@ class Surface(Transformable):
         if self._todesmerker == True:
             ...  # TODO: Add warning
         else:
-            allP = self.getAllPoints()
+            allP = self.allPoints
             for p in allP:
                 p.rotateY(rotationPoint, angle)
 
@@ -249,7 +255,7 @@ class Surface(Transformable):
     ###
     def duplicate(self, name=""):
         newCurves: List[Union[Line, CircleArc, Spline]] = list()
-        for curve in self.getCurve():
+        for curve in self.curve:
             newCurves.append(curve.duplicate())
         s = Surface(name, newCurves)
         if name == "":
@@ -308,17 +314,22 @@ class Surface(Transformable):
 
         return s
 
-    def getAllPoints(self) -> List[Point]:
-        """Get all Points of a Surface (including rotation points of circle arcs)"""
-        LineLoop = self.getCurve()
+    @property
+    def allPoints(self) -> List[Point]:
+        """Get all Points of a Surface (including rotation points of circle arcs)
+
+        Returns:
+            List[Point]: _description_
+        """
+        LineLoop = self.curve
         PointList: List[Point] = list()
         for line in LineLoop:
-            if line.getType() == "CircleArc":
+            if line.type == "CircleArc":
                 CenterPoint = line.center
                 if CenterPoint not in PointList:
                     PointList.append(CenterPoint)
-            elif line.getType() == "Spline":
-                for controlPoint in line.getControlPoints():
+            elif line.type == "Spline":
+                for controlPoint in line.controlPoints:
                     if controlPoint not in PointList:
                         PointList.append(controlPoint)
             startPoint = line.startPoint
@@ -345,15 +356,15 @@ class Surface(Transformable):
         if addSurf == self:
             return self
         touchpoints = None  # default setting of touching points (start and endpoint of interface line)
-        curves = self.getCurve().copy()  # copy curve lists
-        addCurves = addSurf.getCurve().copy()
+        curves = self.curve.copy()  # copy curve lists
+        addCurves = addSurf.curve.copy()
         # compare each curve in the curve loop to check if there is a matching line = interface line
         for curve in curves:
             for addCurve in addCurves:
                 if curve.arePointsEqual(addCurve):
                     # found matching curve! Make sure the line types are equal:
-                    if curve.getType() == addCurve.getType():
-                        touchpoints = curve.getPoints()
+                    if curve.type == addCurve.type:
+                        touchpoints = curve.points
                         break
                     else:
                         mssg = "Tried to combine surfaces, but the contact curves have different line types!"
@@ -400,14 +411,14 @@ class Surface(Transformable):
             addName = addSurf.name.replace("combinedLine_", "")
             newSurf = self.duplicate()  # TODO: avoid name repitition
             newSurf.name = f"combinedLine_{sName}_{addName}"
-            newSurf.setCurve(curves=newCurves)
+            newSurf.curve(curves=newCurves)
             return newSurf
         else:
             mssg = f"Cound not combine surfaces ({self.name} and {addSurf.name}). No intersection curve was found!"
             raise (RuntimeError(mssg))
 
     def recombineCurves(self) -> None:
-        oldLoop = self.getCurve()
+        oldLoop = self.curve
         newLoop: List[Union[Line, CircleArc, Spline]] = list()
         while oldLoop:
             curve = oldLoop.pop()
@@ -429,7 +440,7 @@ class Surface(Transformable):
                 newLoop.append(newCurve)
             else:
                 newLoop.append(curve)
-        self.setCurve(newLoop)
+        self.curve(newLoop)
         return None
 
     ###
@@ -472,7 +483,7 @@ class Surface(Transformable):
         Returns:
             List[Union[Line, CircleArc, Spline]]: New sorted line loop
         """
-        oldLoop: List[Line] = self.getCurve()
+        oldLoop: List[Line] = self.curve
         # direction: List[int] = list()
         # direction = 1  # append 1 for first line, cause it sets the direction
         newLoop: List[Line] = list()
@@ -508,7 +519,7 @@ class Surface(Transformable):
             #         oldLoop[i2].switchPoints()
             #         newLoop.append(oldLoop.pop(i2))
             #         break
-        self.setCurve(newLoop)
+        self.curve(newLoop)
         return None
 
     ###
@@ -539,7 +550,33 @@ class Surface(Transformable):
     #
     #       None
     ###
+    # @property
+    # def meshColor(self) -> str:
+    #     """get the mesh color
+
+    #     Returns:
+    #         str: name of the color
+    #     """
+    #     return self._color
+    
+    # @meshColor.setter
+    # def setMeshColor(self, color: str) -> str:
+    #     """Setter for Mesh Color
+
+    #     Args:
+    #         color (str): _description_
+
+    #     Returns:
+    #         str: _description_
+    #     """
+    #     self._color = color
+
     def setMeshColor(self, color: str) -> None:
+        """set the mesh color
+
+        Args:
+            color (str): _description_
+        """
         self._color = color
 
     def getMeshColor(self) -> str:
@@ -561,7 +598,13 @@ class Surface(Transformable):
     #
     #       String
     ###
-    def getType(self):
+    @property
+    def type(self) -> str:
+        """Getter of Type
+
+        Returns:
+            str: "Surface"
+        """
         return "Surface"
 
     ###
@@ -575,7 +618,13 @@ class Surface(Transformable):
     #
     #       None
     ###
-    def setCurve(self, curves) -> None:
+    @curve.setter
+    def curve(self, curves) -> None:
+        """Setter for Curve
+
+        Args:
+            curves (_type_): _curve
+        """
         # print("set new curves")
         self._curves = curves
 
@@ -595,15 +644,21 @@ class Surface(Transformable):
     def cutOut(self, ToolSurface: "Surface", keepTool: bool = True) -> None:
         """Cut out a Tool Surface from the Parent surface by Boolean Difference"""
         self._cut.append(ToolSurface)
-        ToolSurface.setTool()  # set the tool surface _isTool=True
+        ToolSurface.tool  # set the tool surface _isTool=True
         if not keepTool:
             ToolSurface.delete()
 
-    def getTools(self) -> List[Type["Surface"]]:
-        """Get the list of tool surfaces to cut out of this surface"""
+    @property
+    def tools(self) -> List[Type["Surface"]]:
+        """Get the list of tool surfaces to cut out of this surface
+
+        Returns:
+            list: _cut
+        """
         return self._cut
 
-    def setTool(self) -> None:
+    @tools.setter
+    def tool(self) -> None:
         """set the surface as subtraction surface"""
         self._isTool = True
 
@@ -628,12 +683,12 @@ class Surface(Transformable):
         Raises:
             Nothing
         """
-        points = self.getPoints()
+        points = self.points
         x = []
         y = []
         z = []
         for p in points:
-            coords = p.getCoordinate()
+            coords = p.coordinate
             x.append(coords[0])
             y.append(coords[1])
             z.append(coords[2])
@@ -659,7 +714,7 @@ class Surface(Transformable):
             xlim, ylim = self.getBoundingBox(scalingFactor=1.1)
             fig.axes[0].set(xlim=xlim, ylim=ylim)
             ax.set_aspect("equal", adjustable="box")
-        for curve in self.getCurve():
+        for curve in self.curve:
             curve.plot(
                 fig,
                 linewidth=linewidth,
@@ -669,7 +724,7 @@ class Surface(Transformable):
                 tag=tag,
             )
         if tag:
-            cog = self.calcCOG().getCoordinate()
+            cog = self.calcCOG().coordinate
             ax.annotate(
                 f"""S {self.id} ("{self.name}")""",
                 (cog[0], cog[1]),
@@ -681,10 +736,17 @@ class Surface(Transformable):
     def getBoundingBox(
         self, scalingFactor: float = 1.0
     ) -> Tuple[List[float], List[float]]:
-        """Get the minimum and maximum x and y values of the points"""
+        """Get the minimum and maximum x and y values of the points
+
+        Args:
+            scalingFactor (float, optional): _description_. Defaults to 1.0.
+
+        Returns:
+            Tuple[List[float], List[float]]: _description_
+        """
         minx, maxx, miny, maxy = 0.0, 0.0, 0.0, 0.0
-        for point in self.getPoints():
-            x, y, z = point.getCoordinate()
+        for point in self.points:
+            x, y, z = point.coordinate
             if x < minx:
                 minx = x
             elif x > maxx:
@@ -698,9 +760,14 @@ class Surface(Transformable):
             maxy * scalingFactor,
         ]
 
-    def getPoints(self) -> List[Point]:
-        """Get all Points on the contour of a Surface"""
-        LineLoop = self.getCurve()
+    @property
+    def points(self) -> List[Point]:
+        """Get all Points on the contour of a Surface
+
+        Returns:
+            List[Point]: _description_
+        """
+        LineLoop = self.curve
         if LineLoop:
             PointList: List[Point] = list()
             for line in LineLoop:
@@ -713,37 +780,39 @@ class Surface(Transformable):
             return PointList
         else:
             return []
-
+    
     def setMeshLength(self, meshLength: float) -> None:
         """set the meshLength of all points of a surface.
 
         Args:
             meshLength (float): mesh length to be set for all points
         """
-        pointList = self.getAllPoints()
+        pointList = self.allPoints
         for point in pointList:
-            point.setMeshLength(meshLength)
+            point._meshLength = meshLength
 
-    def getMinMeshLength(self) -> float:
+    @property
+    def minMeshLength(self) -> float:
         """get the minimum meshLength of all points of the surface.
 
         Returns:
             float: min mesh length of all points
         """
-        pointList = self.getAllPoints()
-        ml = pointList.pop().getMeshLength()
+        pointList = self.allPoints
+        ml = pointList.pop().meshLength
         for point in pointList:
-            nml = point.getMeshLength()
+            nml = point.meshLength
             if nml < ml:
                 ml = nml
         return ml
 
-    def getMeanMeshLength(self) -> float:
+    @property
+    def meanMeshLength(self) -> float:
         """get the mean mesh length of all points of the surface.
 
         Returns:
             float: mean of mesh length of all points in meter
         """
-        pointList = self.getAllPoints()
-        mlList = [p.getMeshLength() for p in pointList]
+        pointList = self.allPoints
+        mlList = [p.meshLength for p in pointList]
         return mean(mlList)
