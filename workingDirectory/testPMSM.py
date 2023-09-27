@@ -1,9 +1,27 @@
 # %%
+
 import os
+import sys
 import subprocess
 import math
 from swat_em.datamodel import datamodel
 
+try:
+    from pyemmo.script.script import Script
+except:
+    try:
+        rootname = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    except:
+        rootname = (
+            r"C:\Users\k49976\Desktop\repositoryGibLab\pyemmo"
+        )
+        print(f"Could not determine root. Setting it manually to '{rootname}'")
+    print(f'rootname is "{rootname}"')
+    sys.path.append(rootname)
+    from pyemmo.version import __version__
+    print(__version__)
+    from pyemmo.script.script import Script
+    
 from pyemmo.script.geometry.point import Point
 from pyemmo.script.geometry.surface import Surface
 from pyemmo.script.geometry.circleArc import CircleArc
@@ -152,7 +170,7 @@ def createRotorPMSM():
             mbR_allAux.append(mbAux)
         # outer part of the moving band
         mbR_Aux = MovingBand("", mbR_allAux, air, auxiliary=True)
-        mbR_Aux.setName("mbRotor_" + str(mbR_Aux.id))
+        mbR_Aux.name = "mbRotor_" + str(mbR_Aux.id)
         mbRotorAux.append(mbR_Aux)
 
     # Definition der PhysicalElements
@@ -308,7 +326,7 @@ def createStatorPMSM():
     allSlot: list[Slot] = []
     for i2 in range(0, len(s_Nut)):
         allSlot.append(Slot(name="", geometricalElement=[s_Nut[i2]], material=copper))
-        allSlot[len(allSlot) - 1].setName("slot_" + str(allSlot[len(allSlot) - 1].id))
+        allSlot[len(allSlot) - 1].name = "slot_" + str(allSlot[len(allSlot) - 1].id)
         # allSlot[len(allSlot) - 1].addExcitation(windingInstruction[i2])
     phy_airGap = AirGap("luftspalt_stator", s_Luftspalt, air)
 
@@ -380,4 +398,4 @@ pmsmScript = Script(
 pmsmScript.generateScript()
 # %%
 # subprocess.run(createCmdCommand(pmsmScript.getGeoFilePath(), True), check=False)
-subprocess.run(createCmdCommand(pmsmScript.getProFilePath(), True), check=False)
+subprocess.run(createCmdCommand(pmsmScript.proFilePath, True), check=False)
