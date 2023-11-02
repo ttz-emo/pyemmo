@@ -1,5 +1,4 @@
 import sys
-from pyemmo.script.geometry.point import Point
 
 try:
     from pyemmo.script.script import Script
@@ -8,7 +7,7 @@ except:
     print(f"Could not determine root. Setting it manually to '{rootname}'")
     print(f'rootname is "{rootname}"')
     sys.path.append(rootname)
-
+from pyemmo.script.geometry.point import Point
 # ==========================================
 # Definition of funciton 'buildPyemmoPoint':
 # ==========================================
