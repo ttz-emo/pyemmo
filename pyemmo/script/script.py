@@ -876,14 +876,20 @@ class Script(object):
         # reset all lists and code strings
         # points
         self.pointCode: str = ""
+        for point in self.pointArray:
+            point._todesmerker = False
         self.pointArray: List[Point] = []
 
         # lines
         self.curveCode: str = ""
+        for curve in self.curveList:
+            curve._todesmerker = False
         self.curveList: List[Union[Line, CircleArc, Spline]] = []
 
         # surfaces
         self.areaCode: str = ""
+        for area in self.areaArray:
+            area._todesmerker = False
         self.areaArray: List[Surface] = []
 
         # physical surfaces
