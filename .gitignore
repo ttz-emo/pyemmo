@@ -15,7 +15,6 @@ Area*.csv
 test*.pro
 test*.geo
 test*.json
-defaultFileInfo.mat
 
 # Dont track doc build
 doc/_build/
@@ -24,5 +23,7 @@ doc/_build/
 doc/UML_Diagrams/*
 !doc/UML_Diagrams/createUML.py
 
+# Exclude testPosImport content
+workingDirectory/testPosImport/*
+
 # specific files to ignore
-workingDirectory/testPosImport/VergleichEisenverlustberechnungAnsysOnelab.mat
