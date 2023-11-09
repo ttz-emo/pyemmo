@@ -2049,10 +2049,10 @@ class Script(object):
             # TODO: Add option for "-bin" case (user setting)
 
             computeCommandCode = (
-                """DefineConstant[\n\tC_ = {"-solve Analysis -v 99 -v2"""  # -bin
+                """DefineConstant[\n\tC_ = {"-solve Analysis -v 99 -v2 -pos"""  # -bin
             )
             for postOpName in self.getPostOperationNames():
-                computeCommandCode += " -pos " + postOpName
+                computeCommandCode += " " + postOpName
             computeCommandCode += (
                 """ ", Name "GetDP/9ComputeCommand", Visible Flag_Debug}\n];\n"""
             )
