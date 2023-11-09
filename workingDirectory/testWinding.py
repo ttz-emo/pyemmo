@@ -1,29 +1,15 @@
 # %%
-from genericpath import isdir
 from os import mkdir, path
-import sys
-
-try:
-    from pyemmo.script.script import Script
-except:
-    try:
-        rootname = path.abspath(path.join(path.dirname(__file__), ".."))
-    except:
-        rootname = (
-            "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\Software_V2"
-        )
-        print(f"Could not determine root. Setting it manually to '{rootname}'")
-    print(f'rootname is "{rootname}"')
-    sys.path.append(rootname)
-    from pyemmo.script.script import Script
+from genericpath import isdir
+import math
+from pyemmo.script.script import Script
 from pyemmo.definitions import RESULT_DIR
 from pyemmo.script.geometry.point import Point
 from pyemmo.script.geometry.line import Line
 from pyemmo.script.material.electricalSteel import Material, ElectricalSteel
 from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
-import math
 
-#%%
+# %%
 
 PBohrung = Point("mittelPunktBohrung", 0, 0, 0, 5e-3)
 
@@ -68,7 +54,7 @@ simuSPMSMDict = {
 # Maschine aus dem Baukasten parametrisieren
 SPMSM = MachineSPMSM(simuSPMSMDict)
 rotor = SPMSM.addRotorToMachine("sheet01_standard", "magnet01_surface")
-rR_Blech =  55e-3
+rR_Blech = 55e-3
 rotor.addLaminationParameter(
     {
         "r_We": 20e-3,
@@ -90,13 +76,14 @@ rotor.addMagnetParameter(
         "meshLength": 3e-3,
     }
 )
-rR = rR_Blech+h_mag
+rR = rR_Blech + h_mag
 l_airgap = 1e-3
 rotor.addAirGapParameter({"width": l_airgap, "material": air})
 rotor.createRotor()
 rotor.plot()
-#%%
-from swat_em import datamodel,analyse
+# %%
+from swat_em import datamodel, analyse
+
 # generate winding and add to stator
 myWinding = datamodel()
 myWinding.genwdg(Q=nbrSlots, P=int(nbrPoles / 2), m=3, layers=2, turns=30)
@@ -105,7 +92,7 @@ stator = SPMSM.addStatorToMachine(
 )
 stator.addLaminationParameter(
     {
-        "r_S_i": rR+l_airgap,
+        "r_S_i": rR + l_airgap,
         "r_S_a": 100e-3,
         "meshLength": 3e-3,
         "material": steel_1010,
@@ -128,11 +115,11 @@ stator.addSlotParameter(
 stator.addAirGapParameter({"width": 1e-3, "material": air})
 stator.createStator()
 stator.plot()
-#%% Create Machine
+# %% Create Machine
 SPMSM.createMachineDomains()
 SPMSM.plot()
 # SPMSM.createMachineDomains -> MachineAllType function
-#%%
+# %%
 modelDir = path.abspath(path.join(RESULT_DIR, "Test_WindingDef"))
 if not isdir(modelDir):
     mkdir(modelDir)
@@ -154,7 +141,7 @@ myScript = Script(
     machine=SPMSM,
 )
 myScript.generateScript()
-#%%
+# %%
 from pyemmo.functions.runOnelab import createCmdCommand, findGmsh, findGetDP
 from pyemmo.functions.importResults import plotAllDat
 import os
