@@ -367,7 +367,7 @@ def main(
     jsonLogFileHandler.setFormatter(logFmt)
     logger.addHandler(jsonLogFileHandler)
     logging.info(
-        "PyEMMO JSON-API started on %s %s",
+        "PyEMMO API started on %s %s",
         datetime.date.today(),
         datetime.datetime.now().strftime("%H:%M:%S"),
     )
@@ -448,21 +448,24 @@ def main(
     logging.debug("CMD command is: '%s'", command)
     calcInfo = subprocess.run(
         command,
-        capture_output=not importJSON.getFlagOpenGui(extendedInfo),
+        capture_output=True,  # not importJSON.getFlagOpenGui(extendedInfo),
         text=True,
         check=False,
     )
     # print(f"StdOut:\n{calcInfo.stdout}")
     if calcInfo.stderr:
-        if "error" in calcInfo.stderr.lower():
-            logging.error(
-                "Onelab call issued the following errors: %s", calcInfo.stderr
-            )
-        else:
-            logging.warning(
-                "Onelab call issued the following warnings: \n\t%s",
-                calcInfo.stderr.replace("\n", "\n\t"),
-            )
+        for textLine in calcInfo.stderr.split("\n"):
+            if "error" in textLine.lower():
+                logging.error(
+                    "Onelab call issued the following error: \n\t%s",
+                    textLine.replace("\n", "\n\t"),
+                )
+            else:
+                if textLine:  # if textline is not empty
+                    logging.warning(
+                        "Onelab call issued the following warning: \n\t%s",
+                        textLine.replace("\n", "\n\t"),
+                    )
     # iron loss post processing:
     resPath = apiScript.getResultsPath()
     # check if resPath exists -> simulation has been run.
