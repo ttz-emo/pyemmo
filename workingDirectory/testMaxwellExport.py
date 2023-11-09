@@ -7,7 +7,6 @@ ids = ["H (A_per_meter)", "otherVal (W)"]
 file = (
     r"C:\Users\ganser\AppData\Local\Programs\pyemmo\Results\testExportMaxwellData.tab"
 )
-
 try:
     exportTabMaxwell(data, ids, file)
 except AssertionError as assErr:
