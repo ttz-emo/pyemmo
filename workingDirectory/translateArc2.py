@@ -33,7 +33,7 @@ def translateArc2(line: pyleecan.Classes.Arc2.Arc2):
     # FIXME: namen von centerpoint in der klammer überprüfen, ob er mit der von pyleecan übereinstimmt
 
     # Berechnung des Endpunkts des Kreisbogens
-    angleRad = math.radians(line.get_angle())
+    angleRad = line.get_angle()
     endPoint_x = (
         centerPoint.coordinate[0]
         + (startPoint.coordinate[0] - centerPoint.coordinate[0]) * math.cos(angleRad)
