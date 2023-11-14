@@ -8,7 +8,7 @@ except:
     print(f"Could not determine root. Setting it manually to '{rootname}'")
     print(f'rootname is "{rootname}"')
     sys.path.append(rootname)
-    
+
 import pyleecan.Classes.Machine
 import pyleecan.Classes.LamHole
 import pyleecan.Classes.LamSlotMag
@@ -27,7 +27,7 @@ def translateGeometry(
     detail,  # Lamination, HoleMag, HoleVoid
     motor: pyleecan.Classes.Machine.Machine,  # Import of motor
     label,
-    surface 
+    surface,
 ):
     """_summary_
 
@@ -54,7 +54,7 @@ def translateGeometry(
             IdExt = "Pol"  # "RoNut" "Rotorblech"
 
         elif isinstance(motor.rotor, pyleecan.Classes.LamHole.LamHole):
-            # Entered if machine-type is: IPMSM
+            # Entered if machine-type is: IPMSM, SPSMSM
 
             if detail == "HoleMag":
                 pyleecanMat = motor.rotor.hole[0].magnet_0.mat_type
