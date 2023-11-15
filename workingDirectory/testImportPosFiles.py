@@ -1,4 +1,4 @@
-#%%
+# %%
 from os import path
 import gmsh
 import numpy as np
@@ -7,9 +7,9 @@ import math
 from matplotlib import pyplot as plt
 from pyemmo.functions.importResults import importPos
 
-bRadFilePath = r"C:\Users\ganser\AppData\Local\Programs\pyemmo\workingDirectory\testPosImport\res\brad.pos"
+POS_FILE_PATH = r"C:\Users\ganser\AppData\Local\Programs\pyemmo\workingDirectory\testPosImport\brad.pos"
 # filepathRotor = r"C:\Users\ganser\AppData\Local\Programs\pyemmo_git\pyemmo\workingDirectory\testPosImport\res\brad.pos"
-filepath = [bRadFilePath]
+filepath = [POS_FILE_PATH]
 # with open(filepath) as posFile:
 #     header = posFile.readline()
 #     for line in posFile.readline():
@@ -29,6 +29,7 @@ for sim, path in enumerate(filepath):
     print(f"Radius is {radius*1e3}mm.")
     angles.append(np.empty((numElem[0], 1)))
     values.append(np.empty((numElem[0], 1)))
+    # FIXME: reshaping into 4 components fails for multiple time steps
     for i, (x, y, z, value) in enumerate(data[0].reshape(numElem[0], 4)):
         angles[sim][i] = np.rad2deg(math.acos(x / radius))
         values[sim][i] = value
@@ -46,19 +47,20 @@ for i, angle in enumerate(angles):
 
 ax.set(xlabel="Angle in °", ylabel="Airgap flux density in T")
 plt.legend(["stator side", "rotor side", "mean"])
+plt.show()
 # %%
 # Try with new importPos function
-dataFilePath = bRadFilePath
+DATA_FILE_PATH = POS_FILE_PATH
 try:
-    time, data = importPos(dataFilePath)
+    time, data = importPos(DATA_FILE_PATH)
 except OSError:
-    print("Failed for file ", dataFilePath)
+    print("Failed for file ", DATA_FILE_PATH)
 
-dataFilePath = r"C:\Users\ganser\AppData\Local\Programs\pyemmo_git\pyemmo\workingDirectory\testPosImport\res\dBdt_stator.pos"
+DATA_FILE_PATH = r"C:\Users\ganser\AppData\Local\Programs\pyemmo_git\pyemmo\workingDirectory\testPosImport\bradMultiTimeSteps.pos"
 try:
-    time, data = importPos(dataFilePath)
+    time, data = importPos(DATA_FILE_PATH)
 except OSError:
-    print("Failed for file ", dataFilePath)
+    print("Failed for file ", DATA_FILE_PATH)
 else:
     fig, ax = plt.subplots()
     ax.plot(time, np.mean(norm(data, axis=2), axis=1))

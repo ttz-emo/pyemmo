@@ -61,6 +61,75 @@ def intAndPlot(viewTag, symFactor, axLen, time, filePath, plotName: str):
     return intViewTag, intData
 
 
+def printHomogenousModelData(
+    values: np.ndarray,
+    time: np.ndarray,
+    tags: np.ndarray,
+    viewName: str,
+    resDir: str,
+    resFileName: str,
+):
+    """print amplitude of B elementwise in Gmsh
+
+    Args:
+        values (np.ndarray): array of magnitudes (elementwise)
+        time (np.ndarray): time vector
+        tags (list[int]): mesh element list
+        resDir (str): path to results directory
+        viewName (str): name of view.
+    """
+    model = gmsh.model.getCurrent()  # or just get current model...
+    BmView = gmsh.view.add(viewName)  # get tag of new view
+    for step in range(len(time) - 1):
+        gmsh.view.addHomogeneousModelData(
+            tag=BmView,
+            step=step + 1,
+            modelName=model,
+            dataType="ElementData",
+            tags=tags,
+            data=values[step],
+            time=time[step],
+        )
+    # save field to file:
+    pFilePath = os.path.join(resDir, resFileName)
+    gmsh.view.write(BmView, pFilePath)
+
+
+def printModelData(
+    values: np.ndarray,
+    time: np.ndarray,
+    tags: np.ndarray,
+    viewName: str,
+    resDir: str,
+    resFileName: str,
+):
+    """print amplitude of B elementwise in Gmsh
+
+    Args:
+        values (np.ndarray): array of vector values (elementwise)
+        time (np.ndarray): time vector
+        tags (list[int]): mesh element list
+        viewName (str): name of view.
+        resDir (str): path to results directory
+        resFileName (str): name of pos file
+    """
+    model = gmsh.model.getCurrent()  # or just get current model...
+    newView = gmsh.view.add(viewName)  # get tag of new view
+    for step in range(len(time) - 1):
+        gmsh.view.addModelData(
+            tag=newView,
+            step=step+1,
+            modelName=model,
+            dataType="ElementData",
+            tags=tags,
+            data=values[step],
+            time=time[step],
+        )
+    # save field to file:
+    posFilePath = os.path.join(resDir, resFileName)
+    gmsh.view.write(newView, posFilePath)
+
+
 def ironLossInteractive(
     bFilePath: os.PathLike, axLen: float, lossParams: tuple, symFactor: int, elemId: int
 ):
@@ -192,6 +261,25 @@ def ironLossInteractive(
     print("Calculating hysteresis losses...")
     sigma_h = lossParams[0]  # hysteresis loss factor
     Bm = (bmax - bmin) / 2  # magnitude is (max-min)/2
+
+    printHomogenousModelData(
+        [np.linalg.norm(Bm, axis=1)],
+        [0],
+        btags,
+        viewName=f"Amplitude of B ({machineSide})",
+        resDir=resDir,
+        resFileName=f"B_m_{machineSide}.pos",
+    )
+    printModelData(
+        dBdt,
+        time[0:-1],
+        btags,
+        f"dB/dt ({machineSide})",
+        resDir=resDir,
+        resFileName=f"dBdt_{machineSide}",
+    )
+    gmsh.fltk.run()
+
     BmArray = np.tile(Bm, (NBR_STEPS, 1, 1))
     BminArray = np.tile(bmin, (NBR_STEPS, 1, 1))
     # phaseB = np.arcsin(np.divide(B_Data-np.mean(B_Data,axis=0),BmArray))
@@ -228,8 +316,7 @@ def ironLossInteractive(
                 fMaxInd = np.linalg.norm(amp[1:, elem, :], axis=1).argmax() + 1
                 phi0 = phase[fMaxInd, :, :]
             # find phi0 by detecting zero points
-            zero_crossings = np.where(np.diff(np.sign(B_Data),axis=0))[0]
-            
+            zero_crossings = np.where(np.diff(np.sign(B_Data), axis=0))[0]
 
             # fMaxIndex equals order of that spectral part
             phi = np.linspace(
@@ -262,6 +349,27 @@ def ironLossInteractive(
     ax21.plot(time, Hirr[:, elemId, 1], "C1")
     ax21.set_ylabel("H in A/m")
     fig.tight_layout()
+
+    # Plot x and y comp. of Bm and Hm over element number
+    fig, axes = plt.subplots(nrows=2, ncols=1)
+    ax1 = axes[0]
+    ax1.plot(time, bMeanFree[:, elemId, 0])
+    ax1.plot(time, bMeanFree[:, elemId, 1])
+    ax1.set_xlabel("time in s")
+    ax1.set_ylabel("B in T")
+    ax1.legend(["x","y"])
+    # ax1.set_title("B field in T")
+    ax1.grid()
+    ax2 = axes[1]
+    ax2.plot(time, Hirr[:, elemId, 0])
+    ax2.plot(time, Hirr[:, elemId, 1])
+    ax2.set_xlabel("time in s")
+    ax2.set_ylabel("H in A/m")
+    ax2.legend(["x","y"])
+    # ax2.set_title("$H_{\mathrm{irr}}$ in A/m")
+    ax2.grid()
+    fig.tight_layout()
+
 
     # Plot Ellipsis
     fig, ax = plt.subplots()

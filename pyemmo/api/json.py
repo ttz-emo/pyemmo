@@ -8,11 +8,12 @@ from os import mkdir
 from os.path import isdir, isfile, join
 from typing import Dict, List, Tuple
 import logging
+import json
 import datetime
 from . import logger, ch
 from .. import logFmt
 from ..definitions import RESULT_DIR
-from ..functions import runOnelab, calcIronLoss
+from ..functions import runOnelab, calcIronLoss, importResults
 from ..script.geometry.machineAllType import MachineAllType
 from ..script.geometry.rotor import Rotor
 from ..script.geometry.stator import Stator
@@ -343,6 +344,7 @@ def main(
         6. Create command line call for gmsh/getdp with :func:`createCmdCommand()
            <pyemmo.functions.runOnelab.createCmdCommand>` and start with :code:`subprocess.run`
 
+    TODO: Update docstring - main also accepts list of surface dicts instead of filename
 
     Args:
         geo (str): File path to JSON formatted geometry file.
@@ -359,13 +361,13 @@ def main(
         mkdir(model)
     # Set logging path to model dir
     jsonLogFileHandler = logging.FileHandler(
-        filename=os.path.join(model, "pydraft_jsonAPI.log"), mode="w", encoding="utf-8"
+        filename=os.path.join(model, "pyemmo_jsonAPI.log"), mode="w", encoding="utf-8"
     )
     jsonLogFileHandler.setLevel(logger.getEffectiveLevel())
     jsonLogFileHandler.setFormatter(logFmt)
     logger.addHandler(jsonLogFileHandler)
     logging.info(
-        "PyDraft JSON-API started on %s %s",
+        "PyEMMO API started on %s %s",
         datetime.date.today(),
         datetime.datetime.now().strftime("%H:%M:%S"),
     )
@@ -381,14 +383,22 @@ def main(
 
     # get geometry
     if isfile(geo):
-        # import the segment machine geometry
-        segmentSurfDict = modelJSON.importMachineGeometry(geo)
-    elif isinstance(geo, dict):
-        segmentSurfDict = geo
+        # import the segment surface list from the json file
+        try:
+            with open(geo, encoding="utf-8") as jsonFile:
+                machineGeoList = json.load(jsonFile)
+        except FileNotFoundError as fnfe:
+            raise fnfe
+        except Exception as exept:
+            raise exept
+    elif isinstance(geo, list):
+        machineGeoList = geo
     else:
         raise TypeError(
             f"Geometry file has to be type 'File' or 'dict', not {type(geo)}"
         )
+    # create dict with surface api (segment) objects from the surface list
+    segmentSurfDict = modelJSON.importMachineGeometry(machineGeoList)
 
     # addition information
     if isfile(extInfo):
@@ -438,21 +448,24 @@ def main(
     logging.debug("CMD command is: '%s'", command)
     calcInfo = subprocess.run(
         command,
-        capture_output=not importJSON.getFlagOpenGui(extendedInfo),
+        capture_output=True,  # not importJSON.getFlagOpenGui(extendedInfo),
         text=True,
         check=False,
     )
     # print(f"StdOut:\n{calcInfo.stdout}")
     if calcInfo.stderr:
-        if "error" in calcInfo.stderr.lower():
-            logging.error(
-                "Onelab call issued the following errors: %s", calcInfo.stderr
-            )
-        else:
-            logging.warning(
-                "Onelab call issued the following warnings: \n\t%s",
-                calcInfo.stderr.replace("\n", "\n\t"),
-            )
+        for textLine in calcInfo.stderr.split("\n"):
+            if "error" in textLine.lower():
+                logging.error(
+                    "Onelab call issued the following error: \n\t%s",
+                    textLine.replace("\n", "\n\t"),
+                )
+            else:
+                if textLine:  # if textline is not empty
+                    logging.warning(
+                        "Onelab call issued the following warning: \n\t%s",
+                        textLine.replace("\n", "\n\t"),
+                    )
     # iron loss post processing:
     resPath = apiScript.resultsPath
     # check if resPath exists -> simulation has been run.
@@ -531,32 +544,33 @@ def main(
                 "IRON LOSS CALCULATION: B field results file 'b_rotor.pos' or 'b_stator.pos' not found in '%s'",
                 resPath,
             )
-            # raise (
-            #     FileNotFoundError(
-            #         "IRON LOSS CALCULATION: B field results file 'b_rotor.pos' or 'b_stator.pos' not found in "
-            #         + resPath
-            #     )
-            # )
+    if (
+        importJSON.getFlagCalcIronLoss(extendedInfo)
+        and simulationParameters["analysis_type"] == 0  # static simulation
+    ):
+        logger.warning(
+            "IRON LOSS CALCULATION: Iron loss calculation cannot be done for static simulation!",
+        )
     # close log file handler!
     jsonLogFileHandler.close()
 
-    ###########################################################################################
-    ################ Plot Results for Debugging ##################
-    # resPath = apiScript.getResultsPath()
-    # if isdir(resPath):
-    #     # if the folder for results exists
-    #     for file in listdir(resPath):
-    #         filename, fileExt = splitext(file)
-    #         if fileExt == ".dat":
-    #             importResults.plotTimeTableDat(
-    #                 abspath(join(resPath, file)),
-    #                 filename,
-    #                 title=filename,
-    #                 savefig=True,
-    #                 showfig=False,
-    #                 savePath=None,
-    #             )
-    ###########################################################################################
+    # Plot Results for Debugging
+    if logger.getEffectiveLevel() <= 10:
+        resPath = apiScript.getResultsPath()
+        if isdir(resPath):
+            # if the folder for results exists
+            importResults.plt.set_loglevel(level="info") # avoid matplotlib debug infos
+            for file in os.listdir(resPath):
+                filename, fileExt = os.path.splitext(file)
+                if fileExt == ".dat":
+                    importResults.plotTimeTableDat(
+                        os.path.abspath(join(resPath, file)),
+                        filename,
+                        title=filename,
+                        savefig=True,
+                        showfig=False,
+                        savePath=None,
+                    )
 
 
 if __name__ == "__main__":

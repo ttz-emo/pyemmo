@@ -1,23 +1,13 @@
-#%%
-from sys import path
-from os.path import abspath, join, dirname
-
-try:
-    rootname = abspath(join(dirname(__file__), ".."))
-except:
-    rootname = "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\pyemmo"
-    # print(f"Could not determine root. Setting it manually to '{rootname}'")
-print(f'rootname is "{rootname}"')
-path.append(rootname)
-#%%
+# %%
+import subprocess
 from pyemmo.definitions import RESULT_DIR
 from pyemmo.script.script import Script
 from pyemmo.script.geometry.point import Point
 from pyemmo.script.geometry.line import Line
 from pyemmo.script.geometry.surface import Surface
 from pyemmo.functions.runOnelab import createCmdCommand
-from subprocess import run
 
+# %%
 myScript = Script("testGEO", scriptPath=RESULT_DIR, simuParams={})
 p1 = Point("p1", 1, 0, 0, 0.1)
 p2 = Point("p2", 2, 0, 0, 0.1)
@@ -45,4 +35,6 @@ s2 = Surface("s2", [l5, l6, l7, l8])
 s1.addToScript(myScript)
 s2.addToScript(myScript)
 myScript.generateScript(mode=1)  # only geo file
-run(createCmdCommand(onelabFile=myScript.getGeoFilePath(), useGUI=True))
+subprocess.run(
+    createCmdCommand(onelabFile=myScript.getGeoFilePath(), useGUI=True), check=False
+)

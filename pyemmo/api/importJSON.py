@@ -9,6 +9,7 @@ from typing import Dict, List, Tuple, Union, Literal, Any
 from numpy import pi, zeros
 from numpy.linalg import norm
 
+from ..functions.cleanName import cleanName
 from ..script.material.material import Material
 from ..script.material.electricalSteel import ElectricalSteel
 from . import air
@@ -309,7 +310,8 @@ def getModelName(extendedInfo: dict) -> str:
     """
     mNKey = "modelName"
     if mNKey in extendedInfo.keys():
-        return extendedInfo[mNKey]
+        correctScriptName = cleanName(extendedInfo[mNKey])
+        return correctScriptName
     raise KeyError(f"Name of model files ('{mNKey}') missing from extended info dict!")
 
 
@@ -424,7 +426,7 @@ def createMaterial(matDict: Dict[str, Dict[Literal["wert"], Any]]) -> Material:
                     for i, hbArray in enumerate(bhDict["wert"]):
                         bhCurve[i] = [hbArray[1], hbArray[0]]
                 # else:
-                    # raise ValueError(f"BH-Curve of Material '{name}' is empty!")
+                # raise ValueError(f"BH-Curve of Material '{name}' is empty!")
             elif "kl_1" in bhDict.keys():
                 ...  # TODO: add temperatur depended BH curve to material
             else:
@@ -516,9 +518,15 @@ def isAir(materialName: str):
     """
     isAir checks if the material name contains "air" or "luft" and returns True if it does so
     """
-    if "air" in materialName.lower() or "luft" in materialName.lower():
-        return True
-    return False
+    if isinstance(materialName, str):
+        if "air" in materialName.lower() or "luft" in materialName.lower():
+            return True
+        return False
+    if isinstance(materialName, list):
+        if not materialName:  # if materialName is empty
+            return True
+        raise TypeError("Imported material name is unempty list, not string!")
+    raise TypeError("Imported material name has type" + str(type(materialName)))
 
 
 # ======================================= END MATERIAL FUNCTIONS ===================================

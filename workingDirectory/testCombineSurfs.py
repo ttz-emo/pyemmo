@@ -2,15 +2,6 @@
 from sys import path
 from os.path import abspath, join, dirname
 from numpy import deg2rad
-
-try:
-    rootname = abspath(join(dirname(__file__), ".."))
-except:
-    rootname = "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\Software_V2"
-    # print(f"Could not determine root. Setting it manually to '{rootname}'")
-print(f'rootname is "{rootname}"')
-path.append(rootname)
-#%%
 import pyemmo as emmo
 from pyemmo.definitions import RESULT_DIR
 from pyemmo.script.script import Script
@@ -24,7 +15,7 @@ from subprocess import run
 
 #%%
 myScript = Script("testGEO", scriptPath=RESULT_DIR, simuParams={})
-pm = Point("p1", 0, 0, 0, 0.1)
+pm = Point("pm", 0, 0, 0, 0.1)
 p2 = Point("p2", 1, 0, 0, 0.1)
 p3 = Point("p3", 1, 1, 0, 0.1)
 p4 = Point("p4", 0, 1, 0, 0.1)
@@ -72,7 +63,7 @@ combinedSurf.addToScript(myScript)
 surf3.addToScript(myScript)
 surf5.addToScript(myScript)
 myScript.generateScript(mode=1)  # only geo file
-run(createCmdCommand(onelabFile=myScript.getGeoFilePath(), useGUI=True))
+# run(createCmdCommand(onelabFile=myScript.getGeoFilePath(), useGUI=True))
 #%%
 myScript._resetGeometry()
 r1 = 1

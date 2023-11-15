@@ -26,14 +26,14 @@ if not isdir(USER_DIR):
 # global logging format
 logFmt = logging.Formatter("%(levelname)-7s: %(message)s")
 globalLogFileHandler = logging.FileHandler(
-    filename=os.path.join(USER_DIR, "pydraft.log"), encoding="utf-8"
+    filename=os.path.join(USER_DIR, "pyemmo.log"), encoding="utf-8"
 )
 globalLogFileHandler.setFormatter(logFmt)
 rootLogger = logging.getLogger()
 rootLogger.addHandler(globalLogFileHandler)
 # logging.basicConfig()
 logging.info(
-    "PyDraft started on %s %s",
+    "PyEMMO started on %s %s",
     datetime.date.today(),
     datetime.datetime.now().strftime("%H:%M:%S"),
 )

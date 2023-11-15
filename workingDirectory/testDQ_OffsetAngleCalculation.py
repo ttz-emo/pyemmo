@@ -1,29 +1,19 @@
 # %%
+import os
+from os import mkdir, path
 from cmath import pi
 from genericpath import isdir
-from os import mkdir, path
-import sys
 from numpy import rad2deg, where, gcd
-
-try:
-    from pyemmo.script.script import Script
-except:
-    try:
-        rootname = path.abspath(path.join(path.dirname(__file__), ".."))
-    except:
-        rootname = (
-            "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\Software_V2"
-        )
-        print(f"Could not determine root. Setting it manually to '{rootname}'")
-    print(f'rootname is "{rootname}"')
-    sys.path.append(rootname)
-    from pyemmo.script.script import Script
+from swat_em import datamodel, analyse
+from pyemmo.functions.runOnelab import createCmdCommand
+from pyemmo.functions.importResults import plotAllDat
+from pyemmo.script.script import Script
 from pyemmo.definitions import RESULT_DIR
 from pyemmo.script.geometry.point import Point
-from pyemmo.script.geometry.line import Line
+
+# from pyemmo.script.geometry.line import Line
 from pyemmo.script.material.electricalSteel import Material, ElectricalSteel
 from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
-from swat_em import datamodel, analyse
 
 # %%
 
@@ -148,8 +138,6 @@ print(f"Stator north pole angle (elec): {rad2deg(phiS)}°")
 qAxisAngle = rad2deg(dAxisAngle) + 90  # deg elec
 print(f"q-Axis angle (elec): {(qAxisAngle)}°")
 dqOffset = rad2deg(nutteilung / 2 * nbrPolePairs) - rad2deg(phiS)  # deg elec
-from swat_em import analyse
-
 phi, MMK, theta = analyse.calc_MMK(
     Q=winding.get_num_slots(),
     m=3,
@@ -185,9 +173,6 @@ myScript = Script(
     machine=SPMSM,
 )
 myScript.generateScript()
-from pyemmo.functions.runOnelab import createCmdCommand, findGmsh, findGetDP
-from pyemmo.functions.importResults import plotAllDat
-import os
 
 os.system(
     createCmdCommand(
@@ -196,5 +181,5 @@ os.system(
         paramDict={"Flag_ClearResults": 1},
     )
 )
-# plotAllDat(myScript.getResultsPath())
+plotAllDat(myScript.getResultsPath())
 # %%

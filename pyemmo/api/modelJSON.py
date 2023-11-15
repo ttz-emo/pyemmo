@@ -1,5 +1,4 @@
 """This module is about the model generation via json api"""
-import json
 from math import ceil
 from typing import Dict, List, Literal, Tuple, Union
 
@@ -270,45 +269,37 @@ def createAPISurf(areaDict: dict) -> SurfaceAPI:
     return surf
 
 
-def importMachineGeometry(geometryFile: str) -> Dict[str, SurfaceAPI]:
+def importMachineGeometry(machineGeoList: list[dict]) -> Dict[str, SurfaceAPI]:
     """import one segment of the whole machine geometry from the geo.json file
 
     Args:
-        geometryFile (str): File path to the json file containing the geometry information
+        machineGeoList (list[dict]): List of surface dictionaries with api geo info. 
+        TODO: describe surface dict structure! 
 
     Returns:
         Dict[str, SurfaceAPI]: Segment Surface dict with short IDs (IdExt) as keys and
         SurfaceAPI objects as values
     """
-    try:
-        with open(geometryFile, encoding="utf-8") as jsonFile:
-            machineGeoList = json.load(jsonFile)
-    except FileNotFoundError as fnfe:
-        raise fnfe
-    except Exception as exept:
-        raise exept
-    else:
-        # if no exceptions occured
-        segmentSurfDict: Dict[str, SurfaceAPI] = dict()
-        for area in machineGeoList:
-            if isinstance(area, dict):
-                # normal surface; no subtraction
-                apiSurf: SurfaceAPI = createAPISurf(area)
-                segmentSurfDict[apiSurf.idExt] = apiSurf
-            elif isinstance(area, list):
-                mainSurf = createAPISurf(area.pop(0))
-                for toolArea in area:
-                    toolSurf = createAPISurf(toolArea)
-                    mainSurf.cutOut(toolSurf)
-                segmentSurfDict[mainSurf.idExt] = mainSurf
-            else:
-                msg = (
-                    "The type of an element in the area list imported from the"
-                    f"geometry file ({geometryFile}) was neither dict or list."
-                    f"Type is '{type(area)}'. Value is {area}"
-                )
-                raise ValueError(msg)
-        return segmentSurfDict
+    segmentSurfDict: Dict[str, SurfaceAPI] = {}
+    for area in machineGeoList:
+        if isinstance(area, dict):
+            # normal surface; no subtraction
+            apiSurf: SurfaceAPI = createAPISurf(area)
+            segmentSurfDict[apiSurf.getIdExt()] = apiSurf
+        elif isinstance(area, list):
+            mainSurf = createAPISurf(area.pop(0))
+            for toolArea in area:
+                toolSurf = createAPISurf(toolArea)
+                mainSurf.cutOut(toolSurf)
+            segmentSurfDict[mainSurf.getIdExt()] = mainSurf
+        else:
+            msg = (
+                "The type of an element in the area list imported from the"
+                f"geometry file ({machineGeoList}) was neither dict or list."
+                f"Type is '{type(area)}'. Value is {area}"
+            )
+            raise ValueError(msg)
+    return segmentSurfDict
 
 
 def createSurfaceDict(surfList: List[SurfaceAPI]) -> Dict[str, SurfaceAPI]:

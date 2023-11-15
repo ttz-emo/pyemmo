@@ -910,14 +910,20 @@ class Script(object):
         # reset all lists and code strings
         # points
         self.pointCode: str = ""
+        for point in self.pointArray:
+            point._todesmerker = False
         self.pointArray: List[Point] = []
 
         # lines
         self.curveCode: str = ""
+        for curve in self.curveList:
+            curve._todesmerker = False
         self.curveList: List[Union[Line, CircleArc, Spline]] = []
 
         # surfaces
         self.areaCode: str = ""
+        for area in self.areaArray:
+            area._todesmerker = False
         self.areaArray: List[Surface] = []
 
         # physical surfaces
@@ -2092,10 +2098,10 @@ class Script(object):
             # TODO: Add option for "-bin" case (user setting)
 
             computeCommandCode = (
-                """DefineConstant[\n\tC_ = {"-solve Analysis -v 99 -v2"""  # -bin
+                """DefineConstant[\n\tC_ = {"-solve Analysis -v 99 -v2 -pos"""  # -bin
             )
-            for postOpName in self.postOperationNames:
-                computeCommandCode += " -pos " + postOpName
+            for postOpName in self.getPostOperationNames():
+                computeCommandCode += " " + postOpName
             computeCommandCode += (
                 """ ", Name "GetDP/9ComputeCommand", Visible Flag_Debug}\n];\n"""
             )
