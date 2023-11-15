@@ -519,7 +519,7 @@ class Surface(Transformable):
             #         oldLoop[i2].switchPoints()
             #         newLoop.append(oldLoop.pop(i2))
             #         break
-        self.curve(newLoop)
+        self.curve = newLoop
         return None
 
     ###
