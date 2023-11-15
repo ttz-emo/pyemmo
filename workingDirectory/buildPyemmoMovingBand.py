@@ -12,6 +12,12 @@ def buildPyemmoMovingBand(machine):
     geometryList, rotorContourLineList, statorContourLineList = createGeoDict(
         machine=machine
     )
+    """Build the MovingBand in the airgap.
+
+    Returns:
+        _type_: _description_
+    """
+
     rotorRext = machine.rotor.Rext
     statorRint = machine.stator.Rint
     H0 = machine.rotor.slot.H0
@@ -117,7 +123,7 @@ def buildPyemmoMovingBand(machine):
     )
     # Curves:
     rotorCircle2 = CircleArc(
-        name="rotorBand2",
+        name="MB_CurveRotor",
         startPoint=PointM21,
         endPoint=PointM22,
         centerPoint=centerPoint,
@@ -210,7 +216,7 @@ def buildPyemmoMovingBand(machine):
     )
     # Curves:
     statorCircle3 = CircleArc(
-        name="statorBand3",
+        name="MB_CurveStator",
         startPoint=PointM31,
         endPoint=PointM32,
         centerPoint=centerPoint,
@@ -236,8 +242,8 @@ def buildPyemmoMovingBand(machine):
     allBands.append(rotorBand2)
     allBands.append(statorBand3)
     allBands.append(statorBand4)
+    geometryList.extend(allBands)
     print("Plot allBands: ")
     plot(allBands)
-    plot("---")
-    
-    return allBands
+
+    return allBands, geometryList
