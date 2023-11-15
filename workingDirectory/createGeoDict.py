@@ -104,7 +104,6 @@ def createGeoDict(machine):
                 if surfToCutOutSplit[0] == "Rotor":
                     geometryList[0].cutOut(surfToCutOut)
 
-    # split2Lines(geometryList=geometryList)
     print("===============================")
     print("End of Translation for Stator. ")
     print("===============================")
