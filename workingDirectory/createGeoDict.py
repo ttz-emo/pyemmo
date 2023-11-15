@@ -1,5 +1,7 @@
 import sys
 from os.path import join
+from typing import List
+import math
 
 try:
     from pyemmo.script.script import Script
@@ -11,23 +13,28 @@ except:
 
 from pyleecan.definitions import DATA_DIR
 from pyleecan.Functions.load import load
-from typing import List
+from pyleecan.Classes.MachineIPMSM import MachineIPMSM
 
 from pyemmo.functions.plot import plot
 from pyemmo.api.SurfaceJSON import SurfaceAPI
 from workingDirectory.translateGeometry import translateGeometry
+from workingDirectory.getRotorStatorContour import getRotorContour, getStatorContour
+
+# from workingDirectory.buildPyemmoMovingBand import buildPyemmoMovingBand
+
 
 # ===========================================
 # Definition of function 'createGeoDict':
 # ===========================================
-def createGeoDict():
-    Toyota_Prius = load(join(DATA_DIR, "Machine", "Toyota_Prius.json"))
-    # Import SPMSM:
-    SPMSM_motor = load(join(DATA_DIR, "Machine", "SPMSM_002.json"))
-    # Import ASM:
-    SCIM_motor = load(join(DATA_DIR, "Machine", "SCIM_L2EP_48s_2p.json"))
-    RotorSurf = Toyota_Prius.rotor.build_geometry(sym=2, alpha=0)
-    StatorSurf = Toyota_Prius.stator.build_geometry(sym=2, alpha=0)
+def createGeoDict(machine):
+    """_summary_
+
+    Args:
+        machine (_type_): _description_
+    """
+
+    RotorSurf = machine.rotor.build_geometry(sym=machine.rotor.slot.Zs, alpha=0)
+    StatorSurf = machine.stator.build_geometry(sym=machine.stator.slot.Zs, alpha=0)
 
     RotorSurfLabels = []
     StatorSurfLabels = []
@@ -36,7 +43,7 @@ def createGeoDict():
     RotorSurfLabelsSplit2 = []
     StatorSurfLabelsSplit2 = []
 
-    testList: List[SurfaceAPI] = []
+    geometryList: List[SurfaceAPI] = []
 
     # =======================================
     # Loop of translation for rotor surfaces:
@@ -51,11 +58,11 @@ def createGeoDict():
             saveSpaceTemp.extend(split1.split("-"))
         RotorSurfLabelsSplit2.append(saveSpaceTemp)
         print(f"\nTranslation for {RotorSurfLabels[i]}:")
-        testList.append(
+        geometryList.append(
             translateGeometry(
                 bauteil=RotorSurfLabelsSplit2[i][0],
                 detail=RotorSurfLabelsSplit2[i][2],
-                motor=Toyota_Prius,
+                motor=machine,
                 label=RotorSurfLabels[i],
                 surface=RotorSurf[i],
             )
@@ -77,22 +84,62 @@ def createGeoDict():
 
         StatorSurfLabelsSplit2.append(saveSpaceTemp)
         print(f"\nTranslation for {StatorSurfLabels[i]}:")
-        testList.append(
+        geometryList.append(
             translateGeometry(
                 bauteil=StatorSurfLabelsSplit2[i][0],
                 detail=StatorSurfLabelsSplit2[i][2],
-                motor=Toyota_Prius,
+                motor=machine,
                 label=StatorSurfLabels[i],
                 surface=StatorSurf[i],
             )
         )
 
+    # ===========================
+    # CutOuts in rotorLamination:
+    # ===========================
+    if isinstance(machine, MachineIPMSM):
+        for k, surfToCutOut in enumerate(geometryList):
+            if surfToCutOut.name != "Rotor-0_Lamination":
+                surfToCutOutSplit = surfToCutOut.name.split("-")
+                if surfToCutOutSplit[0] == "Rotor":
+                    geometryList[0].cutOut(surfToCutOut)
+
+    # split2Lines(geometryList=geometryList)
     print("===============================")
-    print("End of Translation for Stator.")
+    print("End of Translation for Stator. ")
     print("===============================")
     print("End of Translation for machine.")
     print("===============================")
 
-    plot(testList)
+    plot(geoList=geometryList, linewidth=1, markersize=3)
 
-createGeoDict()
+    print("Plot of machine")
+    print("End of function")
+    print("===============")
+
+    print("getRotorContour:")
+    rotorContourLineList = getRotorContour(geometryList=geometryList, machine=machine)
+    statorContourLineList = getStatorContour(geometryList=geometryList, machine=machine)
+    # ------------------------------------------------------
+    # Change names of rotorRint-Curve and statorRext-Curve:
+    # ------------------------------------------------------
+    rotorRint = machine.rotor.Rint
+    statorRext = machine.stator.Rext
+    if rotorRint > 0:
+        isShaft = True
+    else:
+        isShaft = False
+
+    for a, surf in enumerate(geometryList):
+        for b, curve in enumerate(surf.curve):
+            if isShaft:
+                if math.isclose(
+                    a=curve.startPoint.radius, b=rotorRint, abs_tol=1e-6
+                ) and math.isclose(a=curve.endPoint.radius, b=rotorRint, abs_tol=1e-6):
+                    curve.name = "InnerLimit"
+            if math.isclose(
+                a=curve.startPoint.radius, b=statorRext, abs_tol=1e-6
+            ) and math.isclose(a=curve.endPoint.radius, b=statorRext, abs_tol=1e-6):
+                curve.name = "OuterLimit"
+                
+    return geometryList, rotorContourLineList, statorContourLineList
