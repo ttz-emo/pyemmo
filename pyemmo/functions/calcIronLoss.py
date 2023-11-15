@@ -177,6 +177,29 @@ def calcTimeDomainIronLosses(
     else:
         # set iron loss to 0
         ironLoss["exc"] = np.zeros(eddyLoss.shape)
+        excLossField = np.zeros(eddyLossField.shape)
+    
+    # Export total loss field
+    if saveFields:
+        # save the View to a pos file
+        model = gmsh.model.getCurrent()
+        actView = gmsh.view.add(f"Total Loss [W/m³] ({fileName})")  # get tag of new view
+        totalLossField = hystLossField + eddyLossField + excLossField
+        for step in range(len(time) - 1):
+            gmsh.view.addHomogeneousModelData(
+                tag=actView,
+                step=step + 1,
+                modelName=model,
+                dataType="ElementData",
+                tags=elementTags,
+                data=totalLossField[step, :],
+                time=time[step],
+            )
+        # save p_hyst-field to file:
+        pFilePath = os.path.join(
+            os.path.dirname(bFilePath), f"p_core_from_{fileName}.pos"
+        )
+        gmsh.view.write(actView, pFilePath)
 
     if finGmsh:
         gmsh.finalize()
