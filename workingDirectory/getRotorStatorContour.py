@@ -38,11 +38,11 @@ def getRotorContour(geometryList, machine):
     # =================================================
     # Erstellung der Rotor-Konturlinie fuer MovingBand:
     # =================================================
-    # -----------------------------------------------------------
-    # Aussortieren der Linien die nicht an der Oberfläche liegen:
-    # -----------------------------------------------------------
+    # ------------------------------------------------------
+    # Aussortieren der Linien die nicht am Luftspalt liegen:
+    # ------------------------------------------------------
     # rotor lamination:
-    for a, curve in enumerate(rotorLamSurfList[0].curve):
+    for curve in rotorLamSurfList[0].curve:
         if (
             math.isclose(a=curve.startPoint.radius, b=rotorRint, abs_tol=1e-6) is False
             and math.isclose(a=curve.endPoint.radius, b=rotorRint, abs_tol=1e-6)
@@ -60,7 +60,7 @@ def getRotorContour(geometryList, machine):
         # Split von Linien/Kreisboegen:
         # -----------------------------
         # Heraussuchen der Boeden von Magnet und Slot
-        for a, curve in enumerate(rotorContourLineList):
+        for curve in rotorContourLineList:
             if (
                 math.isclose(a=curve.startPoint.radius, b=rotorRext, abs_tol=1e-6)
                 is False
@@ -69,8 +69,8 @@ def getRotorContour(geometryList, machine):
             ):
                 rotorSlotBottomLineList.append(curve)
 
-        for a, magnet in enumerate(rotorMagSurfList):
-            for b, curve in enumerate(magnet.curve):
+        for magnet in rotorMagSurfList:
+            for curve in magnet.curve:
                 rotorContourLineList.append(curve)
                 if (
                     math.isclose(
@@ -92,10 +92,10 @@ def getRotorContour(geometryList, machine):
         plot(rotorSlotBottomLineList, linewidth=1, markersize=3, tag=True)
         print("---")
 
-        # ------------------------------------------------
+        # -------------------------------------------
         # Loeschen des Rotornutboden und Magnetboden:
-        # ------------------------------------------------
-        for a, curve in enumerate(rotorSlotBottomLineList):
+        # -------------------------------------------
+        for curve in rotorSlotBottomLineList:
             rotorContourLineList.remove(curve)
         # rotorContourLineList.remove(rotorSlotBottomLineList[0])
 
@@ -130,11 +130,11 @@ def getRotorContour(geometryList, machine):
     # Aussortieren von doppelten Linien/Kreisboegen:
     # ----------------------------------------------
     else:
-        for a, rotorLamSurfCurve in enumerate(rotorLamSurfList[0].curve):
+        for rotorLamSurfCurve in rotorLamSurfList[0].curve:
             # Rotor-Lamination Curves
-            for b, rotorMagSurf in enumerate(rotorMagSurfList):
+            for rotorMagSurf in rotorMagSurfList:
                 # Rotor-Magnets Surfaces (for multiple magnets)
-                for c, rotorMagSurfCurve in enumerate(rotorMagSurf.curve):
+                for rotorMagSurfCurve in rotorMagSurf.curve:
                     # Rotor-Magnet Curves
                     if (
                         rotorMagSurfCurve.startPoint.coordinate
@@ -169,7 +169,7 @@ def getStatorContour(geometryList, machine):
     # -----------------------------------------------------------
     statorRint = machine.stator.Rint
     statorRext = machine.stator.Rext
-    for a, curve in enumerate(statorLamSurfList[0].curve):
+    for curve in statorLamSurfList[0].curve:
         if (
             math.isclose(
                 a=curve.startPoint.radius,
@@ -198,7 +198,7 @@ def getStatorContour(geometryList, machine):
             statorContourLineList.append(curve)
 
     statorLinePointList = []
-    for a, curve in enumerate(statorContourLineList):
+    for curve in statorContourLineList:
         if (
             curve.startPoint.radius > statorRint
             and math.isclose(a=curve.startPoint.radius, b=statorRint, abs_tol=1e-6)
