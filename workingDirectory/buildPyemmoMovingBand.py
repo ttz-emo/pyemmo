@@ -1,4 +1,7 @@
 import math
+
+from pyleecan.Classes.MachineIPMSM import MachineIPMSM
+
 from workingDirectory.createGeoDict import createGeoDict
 from pyemmo.script.geometry.point import Point
 from pyemmo.script.geometry.circleArc import CircleArc
@@ -8,34 +11,33 @@ from pyemmo.functions.plot import plot
 from workingDirectory.getCoordinatesForPoint import getXforPoint, getYforPoint
 
 
-def buildPyemmoMovingBand(machine):
-    geometryList, rotorContourLineList, statorContourLineList = createGeoDict(
-        machine=machine
-    )
+def buildPyemmoMovingBand(
+    machine, rotorRext, statorRint, magnetFarthestRadius, magnetShortestRadius
+):
     """Build the MovingBand in the airgap.
 
     Returns:
         _type_: _description_
     """
 
-    rotorRext = machine.rotor.Rext
-    statorRint = machine.stator.Rint
-    H0 = machine.rotor.slot.H0
-    Hmag = machine.rotor.slot.Hmag
-    magnetFarthestRadius = rotorRext + Hmag - H0
 
-    # if isinstance(machine, MachineSCIM):
-    rotorSym = machine.rotor.slot.Zs
-    statorSym = machine.stator.slot.Zs
-    rotorSymAngle = 2 * math.pi / rotorSym  # [rad]
-    statorSymAngle = 2 * math.pi / statorSym  # [rad]
 
-    # else:
-    #     rotorSym = machine.get_pole_pair_number() * 2
-    #     statorSym = machine.stator.slot.Zs
-    #     rotorSymAngle = 2 * math.pi / rotorSym  # [rad]
-    #     statorSymAngle = 2 * math.pi / statorSym  # [rad]
+    if isinstance(machine, MachineIPMSM):
+        rotorSym = machine.get_pole_pair_number()
+        statorSym = machine.stator.slot.Zs
+        rotorSymAngle = 2 * math.pi / rotorSym  # [rad]
+        statorSymAngle = 2 * math.pi / statorSym  # [rad]
 
+    else:
+        rotorSym = machine.rotor.slot.Zs
+        statorSym = machine.stator.slot.Zs
+        rotorSymAngle = 2 * math.pi / rotorSym  # [rad]
+        statorSymAngle = 2 * math.pi / statorSym  # [rad]
+
+    geometryList, rotorContourLineList, statorContourLineList = createGeoDict(
+        machine, rotorSym, statorSym,magnetFarthestRadius, magnetShortestRadius
+    )
+    
     # =========================================================================
     # Calculation of the distance between rotor/magnet and stator inner radius:
     # =========================================================================
@@ -66,10 +68,10 @@ def buildPyemmoMovingBand(machine):
                 lowestYPointRotor = point
 
     centerPoint = Point(name="centerPointBand", x=0, y=0, z=0, meshLength=1)
-    nbrStatorSeg=machine.stator.slot.Zs
-    angleStator=(2 * math.pi / nbrStatorSeg)
-    nbrRotorSeg=machine.rotor.slot.Zs
-    angleRotor=(2 * math.pi / nbrRotorSeg)
+    nbrStatorSeg = machine.stator.slot.Zs
+    angleStator = 2 * math.pi / nbrStatorSeg
+    nbrRotorSeg = machine.rotor.slot.Zs
+    angleRotor = 2 * math.pi / nbrRotorSeg
     # ================
     # Bands for rotor:
     # ================
@@ -226,7 +228,7 @@ def buildPyemmoMovingBand(machine):
         angle=angleStator,
         meshSize=1.0,
     )
-    
+
     plot(stlu1curves, linewidth=1, markersize=3, tag=True)
     Statorluftspalt1.plot()
     print("---")
