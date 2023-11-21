@@ -1,29 +1,21 @@
-#%%
+# %%
 from cmath import atan
 from genericpath import isfile
-from sys import path
-from os.path import abspath, join, dirname
-from matplotlib.pyplot import plot, show
+from os.path import join
 from matplotlib import pyplot as plt
-
-try:
-    rootDir = abspath(join(dirname(__file__), ".."))
-except:
-    rootDir = "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\Software_V2"
-    print(f"Could not determine root. Setting it manually to '{rootDir}'")
-print(f'rootname is "{rootDir}"')
-path.append(rootDir)
-
+from pyemmo.definitions import ROOT_DIR
 from pyemmo.functions.importResults import (
     plotTimeTableDat,
     readTimeTableDat,
     splitData,
-    plotAllDat,
+    # plotAllDat,
     importSP,
 )
-
-#%% time table formated file:
-resDir = join(rootDir, "Results", "Test_API_JSON", "model files", "res_TestAPI_JSON")
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    import matplotlib
+# %% time table formated file:
+resDir = join(ROOT_DIR, "workingDirectory", "testPosImport")
 # TORQUE
 datFileTorque = join(resDir, "Ts.dat")
 # import raw data
@@ -54,7 +46,7 @@ plotTimeTableDat(
 #         top=max(torqueArray[sim]) * 1.1,
 #     )
 #     # ax.autoscale()
-#%% RegionValue formated file (VirtualWork results):
+# %% RegionValue formated file (VirtualWork results):
 # TORQUE
 datFileTorqueVW = join(resDir, "Tr_vw.dat")
 # import raw data
@@ -70,7 +62,7 @@ plotTimeTableDat(
     showfig=True,
     savePath=None,
 )
-#%% PLOT INDUCED VOLTAGE
+# %% PLOT INDUCED VOLTAGE
 time = dict()
 indVoltage = dict()
 fig, ax = plt.subplots()
@@ -82,24 +74,27 @@ for phase in "ABC":
     # ax.plot(time[phase], indVoltage[phase])
 # show()
 
-#%% Import Radial Flux Density in Airgap
-time = dict()
-pos = dict()
-angle = dict()
-Brad = dict()
+# %% Import Radial Flux Density in Airgap
+time = {}
+pos = {}
+angle = {}
+Brad = {}
 
 for machineSide in ["stator", "rotor"]:
     posFile = join(resDir, f"b_radial_airgap_{machineSide}.pos")
     if isfile(posFile):
         name, time[machineSide], pos[machineSide], Brad[machineSide] = importSP(posFile)
-        angle[machineSide] = list()
+        angle[machineSide] = []
         for pNbr in range(len(pos[machineSide])):
             px = pos[machineSide][pNbr][0]
             py = pos[machineSide][pNbr][1]
-            angle[machineSide].append(atan(px / py))
+            if py==0:
+                angle[machineSide].append(0.0)
+            else:
+                angle[machineSide].append(atan(px / py))
 fig, ax = plt.subplots()
 fig.set_dpi(300)
 ax.plot(angle["rotor"], Brad["rotor"])
-show()
+fig.show()
 
 # %%

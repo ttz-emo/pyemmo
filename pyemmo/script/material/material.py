@@ -439,5 +439,5 @@ class Material(object):
         for row in table:
             if row[1] is None:
                 row[1] = "None"  # set to string because formatting None not supported
-            print(f"{row[0]: >25} {row[1]: <15}")
+            print(f"{row[0]: >30} {row[1]: <15}")
         print("\n")

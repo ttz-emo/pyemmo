@@ -2,33 +2,16 @@
 import os
 from os import path
 import shutil
-import sys
-
-try:
-    from pyemmo.script.script import Script
-except:
-    try:
-        rootname = path.abspath(path.join(path.dirname(__file__), ".."))
-    except:
-        rootname = (
-            "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\Software_V2"
-        )
-        print(f"Could not determine root. Setting it manually to '{rootname}'")
-    print(f'rootname is "{rootname}"')
-    sys.path.append(rootname)
-    from pyemmo.script.script import Script
-
-from pyemmo.script.script import default_param_dict
-
-#%% copy testfile
-testProFile = shutil.copyfile(
-    src=path.abspath(path.join(rootname, "Results", "TestIPMSM", "Test_IPMSM.pro")),
-    dst=path.abspath(path.join(rootname, "workingDirectory", "testPostOperation.pro")),
-)
-#%% Create PostOperation code
 from pygetdp import PostOperation
 from pygetdp.postoperation import PostopItem
+from pyemmo.definitions import ROOT_DIR
+from pyemmo.script.script import Script
+from pyemmo.script.script import default_param_dict
 
+# %% copy testfile
+#TODO: Test Überarbeiten!
+# testProFile = path.join(ROOT_DIR, "\workingDirectory\pmsm\Test_SPMSM_Baukasten.pro")
+# %% Create PostOperation code
 myPO = PostOperation()
 # kwargsDict = 'Print[ bn, OnElementsOf Rotor_Magnets, Name "B_normal (Magnets)", File StrCat[ResDir, "Bn_Mag", ExtGmsh]]'
 poItem = myPO.add(
@@ -48,10 +31,10 @@ poItem.add().add(
     LastTimeStepOnly="",
 )
 print(myPO.code)
-#%% Append to the end of the pro file
+# %% Append to the end of the pro file
 with open(testProFile, "a") as proFile:
     proFile.write(myPO.code)
-#%%
+# %%
 os.remove(testProFile)
 # %%
 default_param_dict = {
@@ -67,7 +50,7 @@ default_param_dict = {
 }
 myScript = Script(
     "testPostOperation",
-    path.abspath(path.join(rootname, "workingDirectory")),
+    path.abspath(path.join(ROOT_DIR, "workingDirectory", "testPostOperation")),
     default_param_dict,
     None,
 )
@@ -75,11 +58,7 @@ myScript.addPostOperation(
     quantityName="b",
     name="User Defined PostOperation",
     OnGrid="{(r_AG)*Sin[Pi/nbSlots-$A*Pi/180],(r_AG)*Cos[Pi/nbSlots-$A*Pi/180],0}{0:360/SymmetryFactor,0,0}",
-    File=path.abspath(
-        path.join(
-            rootname, "workingDirectory", "testPostOperationRes", "b_OnRadius.pos"
-        )
-    ),
+    File=path.abspath(path.join(myScript.getResultsPath(), "b_OnRadius.pos")),
 )
 print(myScript.postOperation.code)
 # %%
