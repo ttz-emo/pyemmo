@@ -12,23 +12,16 @@ def getRotorSurfaces(geometryList):
     # =========================================
     rotorLamSurfList = []
     rotorMagSurfList = []
-    for i, surf in enumerate(geometryList):
-        surfNameSplit = []
-        surfSplit = surf.name.split("-")
-
-        for u, split in enumerate(surfSplit):
-            surfNameSplit.extend(split.split("_"))
-
-        if surfNameSplit[0] == "Rotor" and surfNameSplit[2] == "Lamination":
+    
+    for surf in geometryList:
+        if surf.idExt == "Pol":
             rotorLamSurfList.append(surf)
             print("rotorLamSurf:")
             print(f"gefunden: {surf.name}")
-
-        elif surfNameSplit[0] == "Rotor" and surfNameSplit[2] == "Magnet":
+        elif surf.idExt == "Mag":
             rotorMagSurfList.append(surf)
             print("rotorMagSurf:")
             print(f"gefunden: {surf.name}")
-
     return rotorLamSurfList, rotorMagSurfList
 
 def getStatorSurfaces(geometryList):
@@ -45,21 +38,11 @@ def getStatorSurfaces(geometryList):
     # =========================================
     statorLamSurfList = []
     statorWindSurfList = []
-    for i, surf in enumerate(geometryList):
-        surfNameSplit = []
-        surfSplit = surf.name.split("-")
-
-        for u, split in enumerate(surfSplit):
-            surfNameSplit.extend(split.split("_"))
-
-        if surfNameSplit[0] == "Stator" and surfNameSplit[2] == "Lamination":
+    
+    for surf in geometryList:
+        if surf.idExt == "StNut":
             statorLamSurfList.append(surf)
             print("statorLamSurf:")
             print(f"gefunden: {surf.name}")
-
-        # elif surfNameSplit[0] == "Rotor" and surfNameSplit[2] == "Magnet":
-        #     statorWindSurfList.append(surf)
-        #     print("rotorMagSurf:")
-        #     print(f"gefunden: {surf.name}")
 
     return statorLamSurfList
