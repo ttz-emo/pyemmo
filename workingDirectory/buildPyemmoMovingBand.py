@@ -2,6 +2,7 @@ import math
 
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
 
+from pyemmo.script.material.material import Material
 from workingDirectory.createGeoDict import createGeoDict
 from pyemmo.script.geometry.point import Point
 from pyemmo.script.geometry.circleArc import CircleArc
@@ -20,8 +21,6 @@ def buildPyemmoMovingBand(
         _type_: _description_
     """
 
-
-
     if isinstance(machine, MachineIPMSM):
         rotorSym = machine.get_pole_pair_number()
         statorSym = machine.stator.slot.Zs
@@ -35,9 +34,9 @@ def buildPyemmoMovingBand(
         statorSymAngle = 2 * math.pi / statorSym  # [rad]
 
     geometryList, rotorContourLineList, statorContourLineList = createGeoDict(
-        machine, rotorSym, statorSym,magnetFarthestRadius, magnetShortestRadius
+        machine, rotorSym, statorSym, magnetFarthestRadius, magnetShortestRadius
     )
-    
+    materialAir = Material(name="Air",conductivity=0,relPermeability=1.0000004,remanence=None,tempCoefRem=None,BH=None,density=None,thermalConductivity=None,thermalCapacity=None)
     # =========================================================================
     # Calculation of the distance between rotor/magnet and stator inner radius:
     # =========================================================================
@@ -59,8 +58,8 @@ def buildPyemmoMovingBand(
     print("---")
 
     biggestPreviousYRotor = 0
-    for a, curve in enumerate(rotorContourLineList):
-        for b, point in enumerate(curve.points):
+    for curve in rotorContourLineList:
+        for point in curve.points:
             if point.coordinate[1] > biggestPreviousYRotor:
                 biggestPreviousYRotor = point.coordinate[1]
                 biggestYPointRotor = point
@@ -72,12 +71,13 @@ def buildPyemmoMovingBand(
     angleStator = 2 * math.pi / nbrStatorSeg
     nbrRotorSeg = machine.rotor.slot.Zs
     angleRotor = 2 * math.pi / nbrRotorSeg
+    
     # ================
     # Bands for rotor:
     # ================
-    # -----------
-    # First Band:
-    # -----------
+    # -----------------
+    # Rotor inner band:
+    # -----------------
     # Points:
     PointM11 = Point(name="PointM11", x=bandRadiusList[0], y=0, z=0, meshLength=1)
     PointM12 = Point(
@@ -113,7 +113,7 @@ def buildPyemmoMovingBand(
         name="Rotorluftspalt 1",
         idExt="LuR1",
         curves=Rotorluftspalt1Curves,
-        material="Air",
+        material=materialAir,
         nbrSegments=nbrRotorSeg,
         angle=angleRotor,
         meshSize=1.0,
@@ -122,9 +122,9 @@ def buildPyemmoMovingBand(
     Rotorluftspalt1.plot()
     print("---")
 
-    # ------------
-    # Second Band:
-    # ------------
+    # -----------------
+    # Rotor outer band:
+    # -----------------
     # Points:
     PointM21 = Point(name="PointM21", x=bandRadiusList[1], y=0, z=0, meshLength=1)
     PointM22 = Point(
@@ -156,7 +156,7 @@ def buildPyemmoMovingBand(
         name="Rotorluftspalt 2",
         idExt="LuR2",
         curves=Rotorluftspalt2Curves,
-        material="Air",
+        material=materialAir,
         nbrSegments=nbrRotorSeg,
         angle=angleRotor,
         meshSize=1.0,
@@ -172,16 +172,16 @@ def buildPyemmoMovingBand(
     plot(RotorluftspaltCurves, linewidth=1, markersize=3, tag=True)
     print("---")
 
+
     # =================
     # Bands for stator:
     # =================
-
-    # ------------
-    # Fourth Band:
-    # ------------
+    # ------------------
+    # Stator outer band:
+    # ------------------
     biggestPreviousYStator = 0
-    for a, curve in enumerate(statorContourLineList):
-        for b, point in enumerate(curve.points):
+    for curve in statorContourLineList:
+        for point in curve.points:
             if point.coordinate[1] > biggestPreviousYStator:
                 biggestPreviousYStator = point.coordinate[1]
                 biggestYPointStator = point
@@ -223,7 +223,7 @@ def buildPyemmoMovingBand(
         name="Statorluftspalt 1",
         idExt="StLu1",
         curves=stlu1curves,
-        material="Air",
+        material=materialAir,
         nbrSegments=nbrStatorSeg,
         angle=angleStator,
         meshSize=1.0,
@@ -233,9 +233,9 @@ def buildPyemmoMovingBand(
     Statorluftspalt1.plot()
     print("---")
 
-    # -----------
-    # Third Band:
-    # -----------
+    # ------------------
+    # Stator inner band:
+    # ------------------
     # Points:
     PointM31 = Point(name="PointM31", x=bandRadiusList[2], y=0, z=0, meshLength=1)
     PointM32 = Point(
@@ -267,7 +267,7 @@ def buildPyemmoMovingBand(
         name="Statorluftspalt 2",
         idExt="StLu2",
         curves=StLu2curves,
-        material="Air",
+        material= materialAir,
         nbrSegments=nbrStatorSeg,
         angle=angleStator,
         meshSize=1.0,
