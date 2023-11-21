@@ -9,10 +9,10 @@ except:
     sys.path.append(rootname)
 from pyemmo.script.geometry.point import Point
 # ==========================================
-# Definition of funciton 'buildPyemmoPoint':
+# Definition of function 'buildPyemmoPoint':
 # ==========================================
 def buildPyemmoPoint(pyleecanPoint):
-    """_summary_
+    """This function translates a ``point`` from ``pyleecan``-format into ``pyemmo``-format.
 
     Args:
         pyleecanPoint (_type_): _description_
