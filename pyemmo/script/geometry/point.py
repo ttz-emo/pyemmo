@@ -33,7 +33,7 @@ class Point(Transformable):
 
     # Die statische Variable ID wird durch die Methode getNewID() hochgezählt.
     # Diese Variable wird für die automatische ID-Vergabe der Punkte verwendet!
-    ID = 0
+    pointID = 0
 
     def __init__(self, name: str, x: float, y: float, z: float, meshLength: float):
         """Konstruktor der Klasse Point.
@@ -97,8 +97,8 @@ class Point(Transformable):
         Returns:
             int: New unique ID for point.
         """
-        Point.ID = Point.ID + 1
-        return Point.ID
+        Point.pointID = Point.pointID + 1
+        return Point.pointID
 
     # pylint: disable=locally-disabled, invalid-name
     @property
@@ -117,12 +117,12 @@ class Point(Transformable):
         Args:
             newID (int): New ID of point
         """
-        if newID < self.ID:
+        if newID < self.pointID:
             raise ValueError(
                 "New ID of point is smaller than global ID count."
                 "New ID mus be existing!"
             )
-        Point.ID = newID
+        Point.pointID = newID
         self._id = newID
 
     @property
