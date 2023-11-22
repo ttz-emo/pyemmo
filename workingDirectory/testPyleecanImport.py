@@ -107,11 +107,16 @@ machine = SPMSMMuster4Shaftinverted
 isInternalRotor: bool = False
 
 rotorRext = machine.rotor.Rext
+rotorRint = machine.rotor.Rint
 statorRint = machine.stator.Rint
 H0 = machine.rotor.slot.H0
 Hmag = machine.rotor.slot.Hmag
-magnetFarthestRadius = rotorRext + Hmag - H0
-magnetShortestRadius = rotorRext - H0
+if isInternalRotor:
+    magnetFarthestRadius = rotorRext + Hmag - H0
+    magnetShortestRadius = rotorRext - H0
+else:
+    magnetFarthestRadius = rotorRint + H0
+    magnetShortestRadius = rotorRint + H0 - Hmag
 
 # --------------------------
 # isInternalRotor detection:
