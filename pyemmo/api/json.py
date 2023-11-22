@@ -477,7 +477,7 @@ def main(
         # FIXME: Implement better check for simulation status
         brFilePath = join(resPath, "b_rotor.pos")
         bsFilePath = join(resPath, "b_stator.pos")
-        nbrPolePairs = machine.NbrPolePairs
+        nbrPolePairs = machine.nbrPolePairs
         calcAngle = (
             simulationParameters["final_rotor_pos"]
             - simulationParameters["init_rotor_pos"]

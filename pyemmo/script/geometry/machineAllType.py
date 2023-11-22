@@ -41,13 +41,13 @@ class MachineAllType(object):
             Nothing
         """
         ###Name des Objektes.
-        self._name = name if name else "machine"
-        self._nbrPolePairs = nbrPolePairs
-        self._symmetryFactor = symmetryFactor
+        self.name = name if name else "machine"
+        self.nbrPolePairs = nbrPolePairs
+        self.symmetryFactor = symmetryFactor
         ###Objekt der Klasse Rotor.
-        self._rotor = rotor
+        self.rotor = rotor
         ###Objekt der Klasse Stator.
-        self._stator = stator
+        self.stator = stator
         if rotor and stator:
             self.createMachineDomains()
 
@@ -65,7 +65,7 @@ class MachineAllType(object):
         paramDict.SYMMETRY_FACTOR = self.symmetryFactor
         paramDict.L_AX_R = self.rotor.axialLength
         paramDict.L_AX_S = self.stator.axialLength
-        paramDict.NBR_POLE_PAIRS = self.NbrPolePairs
+        paramDict.NBR_POLE_PAIRS = self.nbrPolePairs
         paramDict.NBR_SLOTS = self.stator.NbrSlots
         paramDict.NBR_TURNS_IN_FACE = (
             self.stator.winding.get_turns() / 2
@@ -121,7 +121,7 @@ class MachineAllType(object):
         )
 
         if (
-            len(self._rotor._domainPrimary.physicals + stator._domainPrimary.physicals)
+            len(self.rotor._domainPrimary.physicals + stator._domainPrimary.physicals)
             > 0
         ):
             ###primarykante der elektrischen Maschine.
@@ -145,6 +145,18 @@ class MachineAllType(object):
         self._domainOuterLimit = Domain(
             "OuterLimitLine", stator._domainOuterLimit.physicals
         )
+    
+    def domainsCreated(self)->bool:
+        """check if the machine domains have been created.
+
+        Returns:
+            bool: True, if domains have been created; else False.
+        """
+        try:
+            self.domains
+        except AttributeError:
+            return False
+        return True
 
     @property
     def name(self) -> str:
@@ -179,31 +191,26 @@ class MachineAllType(object):
         self._symmetryFactor = symFactor
 
     @property
-    def NbrPolePairs(self) -> int:
-        """Getter of number of pole pairs"""
+    def nbrPolePairs(self) -> int:
+        """number of pole pairs"""
         return self._nbrPolePairs
 
-    @NbrPolePairs.setter
-    def setNbrPolePairs(self, nbrPolePairs: Union[int, float]) -> None:
+    @nbrPolePairs.setter
+    def nbrPolePairs(self, nbrPolePairs: Union[int, float]) -> None:
         """Setter of number of pole pairs
 
         Args:
-            nbrPolePairs (Union[int, float]): _description_
+            nbrPolePairs (Union[int, float]): Pole pair number of machine.
 
         Raises:
-            TypeError: _description_
-
-        Returns:
-            _type_: _description_
+            TypeError: If number of pole pairs in not positiv integer.
         """
-        
+
         if isinstance(nbrPolePairs, int):
             self._nbrPolePairs = nbrPolePairs
-            return None
         elif isinstance(nbrPolePairs, float):
             if nbrPolePairs.is_integer():
                 self._nbrPolePairs = int(nbrPolePairs)
-                return None
         else:
             raise TypeError(
                 f"Given number of pole pairs was not an integer (p={nbrPolePairs})"
@@ -214,11 +221,35 @@ class MachineAllType(object):
         """Get the rotor object of the machine"""
         return self._rotor
 
+    @rotor.setter
+    def rotor(self, newRotor: Rotor):
+        if isinstance(newRotor, Rotor):
+            self._rotor = newRotor
+            if self.domainsCreated():
+                # if domains have been created before, recreate them.
+                self.createMachineDomains()
+        elif newRotor is None:
+            self._rotor = None
+        else:
+            raise TypeError(f"Wrong type for rotor: {type(newRotor)}")
+
     @property
     def stator(self) -> Stator:
         """Get the stator object of the machine"""
         return self._stator
 
+    @stator.setter
+    def stator(self, newStator: Stator):
+        if isinstance(newStator, Stator):
+            self._stator = newStator
+            if self.domainsCreated():
+                # if domains have been created before, recreate them.
+                self.createMachineDomains()
+        elif newStator is None:
+            self._stator = None
+        else:
+            raise TypeError(f"Wrong type for stator: {type(newStator)}")
+        
     @property
     def domains(self) -> List[Domain]:
         """Return all Domains of the machine as list"""
@@ -298,10 +329,7 @@ class MachineAllType(object):
             List[PhysicalElement]: _description_
         """
         physicals: List[PhysicalElement] = list()
-        for physical in (
-            self.stator.physicalElements
-            + self.rotor.physicalElements
-        ):
+        for physical in self.stator.physicalElements + self.rotor.physicalElements:
             physicals.append(physical)
         return physicals
 
