@@ -2051,7 +2051,7 @@ class Script(object):
             computeCommandCode = (
                 """DefineConstant[\n\tC_ = {"-solve Analysis -v 99 -v2 -pos"""  # -bin
             )
-            for postOpName in self.getPostOperationNames():
+            for postOpName in self.postOperationNames:
                 computeCommandCode += " " + postOpName
             computeCommandCode += (
                 """ ", Name "GetDP/9ComputeCommand", Visible Flag_Debug}\n];\n"""
