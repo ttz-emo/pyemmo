@@ -96,9 +96,9 @@ class RotorIPMSM(Rotor):
                 laminationPart = RotorLamination_Sheet01_Standard(self._laminationDict)
 
             if self._magnetType == "magnet_Slot01":
-                from .magnet_Slot01 import Magnet_Slot01
+                from .magnet_Slot01 import MagnetSlot01
 
-                magnetPart = Magnet_Slot01(
+                magnetPart = MagnetSlot01(
                     self._magnetDict,  # comment Max: In _init_ definition von Magnet-Klasse heißt das Argument "machineDict"... (Wahrscheinlich nur ungenauer Variablenname)
                     self._magnetDict["magnetisationDirection"][0],
                     self._magnetDict["magnetisationType"],

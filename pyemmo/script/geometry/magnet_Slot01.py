@@ -1,20 +1,19 @@
+"""Module for class Magnet_Slot01"""
+
 from .magnet import Magnet
-from .physicalElement import PhysicalElement
 from .point import Point
 from .line import Line
-from .circleArc import CircleArc
 from .surface import Surface
 from .. import colorDict
-import math
 
 
-class Magnet_Slot01(Magnet):
+class MagnetSlot01(Magnet):
     def __init__(self, machineDict, magnetisationDirection, magnetisationType):
         ###Dictionary mit allen Magnet-Parametern.
         self._machineDict = machineDict
 
         self.id = self._getNewID()
-        magName = "Magnet_Slot01_" + str(self.id)
+        magName = "MagnetSlot01_" + str(self.id)
         super().__init__(
             name=magName,
             geoElements=[],
