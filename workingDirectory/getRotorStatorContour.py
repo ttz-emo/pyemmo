@@ -173,7 +173,7 @@ def getSurfacemagnetContour(
         )
 
     else:
-        magnetShortestRadius = rotorRext - Hmag + H0
+        magnetShortestRadius = rotorRint + H0 - Hmag
         rotorContourLineList = calculationSurfacemagnetContour(
             machine=machine,
             rotorLamSurfList=rotorLamSurfList,
