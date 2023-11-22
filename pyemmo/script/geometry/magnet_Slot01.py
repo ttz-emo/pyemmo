@@ -24,6 +24,42 @@ class Magnet_Slot01(Magnet):
         )
         self._createGeometry()
 
+    @property
+    def airLinePart(self):
+        """get airLinePart
+
+        Returns:
+            _type_: _airLinePart
+        """
+        return self._airLinePart
+
+    @property
+    def lamLinePart(self):
+        """get lamLinePart
+
+        Returns:
+            _type_: _lamLinePart
+        """
+        return self._lamLinePart
+
+    @property
+    def laminationDockingPoint(self):
+        """get laminationDockingPoint
+
+        Returns:
+            _type_: _laminationDockingPoint
+        """
+        return self._laminationDockingPoint
+
+    @property
+    def innerLinePart(self):
+        """get innerLinePart
+
+        Returns:
+            _type_: _innerLinePart
+        """
+        return self._innerLinePart
+
     def _createGeometry(self):
         rA_Rotor = self._machineDict["rA_Rotor"]
         h_M = self._machineDict["h_Mag"]
@@ -88,50 +124,5 @@ class Magnet_Slot01(Magnet):
             elif self.magDir == -1:
                 s.meshColor(colorDict["Green"])
 
-    @property
-    def innerLinePart(self):
-        """get innerLinePart
-
-        Returns:
-            _type_: _innerLinePart
-        """
-        return self._innerLinePart
-
     # def getAirDockingPoint(self):
     #     return self._airDockingPoint
-
-    @property
-    def airLinePart(self):
-        """get airLinePart
-
-        Returns:
-            _type_: _airLinePart
-        """
-        return self._airLinePart
-
-    @property
-    def lamLinePart(self):
-        """get lamLinePart
-
-        Returns:
-            _type_: _lamLinePart
-        """
-        return self._lamLinePart
-
-    @property
-    def laminationDockingPoint(self):
-        """get laminationDockingPoint
-
-        Returns:
-            _type_: _laminationDockingPoint
-        """
-        return self._laminationDockingPoint
-
-    @property
-    def geometricalElement(self):
-        """get geometricalElement
-
-        Returns:
-            _type_: _geometricalElement
-        """
-        return self._geometricalElement
