@@ -45,7 +45,7 @@ class Line(Transformable):
             raise (
                 ValueError(
                     f"The coordinates of start and end point of Line '{name}' are equal: "
-                    f"{startPoint.getCoordinate()} - {endPoint.getCoordinate()}."
+                    f"{startPoint.coordinate} - {endPoint.coordinate}."
                 )
             )
         ###ID der Linie.
