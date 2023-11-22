@@ -50,10 +50,10 @@ class Stator(object):
             Nothing
         """
         self.name = name if name else "Stator"  # name of the stator
-        self.physicalElements = physicalElements
         self.nbrSlots = nbrSlots
         self.axialLength = axLen  # active axial length
         self.winding = winding
+        self.physicalElements = physicalElements
         # only generate domains if they are physical elements
         if self.physicalElements:
             self._createDomainForStator()
@@ -93,7 +93,7 @@ class Stator(object):
         Raises:
             TypeError: _description_
         """
-        if isinstance(nbrSlots, int):
+        if isinstance(nbrSlots, (int, float)):
             self._nbrSlots = nbrSlots
         else:
             raise TypeError(
