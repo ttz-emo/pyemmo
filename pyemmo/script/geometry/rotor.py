@@ -10,17 +10,9 @@ from .physicalElement import PhysicalElement
 from ..material.electricalSteel import ElectricalSteel
 from ...definitions import DEFAULT_GEO_TOL
 
-###
-# Eine Instanz der Klasse Rotor beschreibt den Rotor eine elektrische Maschine im dreidimensionalen
-# Raum. Diese Klasse wird in Verbindung mit der Klasse machineAllType verwendet. Um welchen Typ
-# Maschine es sich handelt, definiert der Nutzer selbst, durch die Definition seiner Physical
-# Elements. Diese Klasse sollte man nur verwenden, wenn die Geometrie der Maschine als Import (bspw.
-# Step) weiter verarbeitet wird. Für die Verwendung des Baukastens, ist die Spezifizierung der
-# Maschine zunächst sinnvoll. Hierfür sollte man deshalb spezifische Klassen bspw. machineSPMSM (für
-# Oberflächenmagnete) benutzen und die dazugehörige Klasse RotorSPMSM verwenden.
-###
+
 class Rotor:
-    """    Eine Instanz der Klasse Rotor beschreibt den Rotor eine elektrische Maschine im
+    """Eine Instanz der Klasse Rotor beschreibt den Rotor eine elektrische Maschine im
     dreidimensionalen Raum. Diese Klasse wird in Verbindung mit der Klasse machineAllType
     verwendet. Um welchen Typ Maschine es sich handelt, definiert der Nutzer selbst, durch die
     Definition seiner Physical Elements. Diese Klasse sollte man nur verwenden, wenn die Geometrie
@@ -28,17 +20,7 @@ class Rotor:
     ist die Spezifizierung der Maschine zunächst sinnvoll. Hierfür sollte man deshalb spezifische
     Klassen bspw. machineSPMSM (für Oberflächenmagnete) benutzen und die dazugehörige Klasse
     RotorSPMSM verwenden.
-
-    Raises:
-        TypeError: _description_
-        TypeError: _description_
-        ValueError: _description_
-        Exception: _description_
-
-    Returns:
-        _type_: _description_
     """
-
 
     def __init__(
         self,
@@ -53,14 +35,12 @@ class Rotor:
             name (str): Defaults to "".
             axLen (float): Active axial length of stator lamination in [m]. Defaults to 1.0
 
-        Returns:
-
         Raises:
             Nothing
         """
-        self._name = name if name else "Rotor"  # rotor name
-        self._physicalElements = physicalElementList  # rotor physical elements
-        self._axLen = axLen  # active axial length
+        self.name = name if name else "Rotor"  # rotor name
+        self.physicalElements = physicalElementList  # rotor physical elements
+        self.axLen = axLen  # active axial length
 
         self._createDomainForRotor()  # create rotor domains
 
@@ -91,7 +71,7 @@ class Rotor:
         Returns:
             float: _axLen
         """
-        
+
         return self._axLen
 
     @axialLength.setter
@@ -119,7 +99,7 @@ class Rotor:
         Returns:
             List[PhysicalElement]: _physicalElements
         """
-        
+
         return self._physicalElements
 
     @physicalElements.setter
@@ -135,7 +115,7 @@ class Rotor:
         Returns:
             _type_: _description_
         """
-        
+
         if isinstance(physicalElementsList, List):
             self._physicalElements = physicalElementsList
             # pylint: disable=locally-disabled,  pointless-statement
@@ -271,7 +251,7 @@ class Rotor:
                         domainLam.append(physElem)
                 else:
                     physName = physElem.name
-                    raise Exception(
+                    raise RuntimeError(
                         f"No Material defined: ({physName})", f"Material is {material}"
                     )
 
@@ -432,22 +412,10 @@ class Rotor:
                 axis.set_ylim(bottom=lim)
         return fig, axis
 
-    ###
-    # Mit addToScript wird der Rotor zum Skriptobjekt übergeben und in gmsh-Syntax übersetzt.
-    # Diese Methode sollte stets nur in Kombination mit generateScript (Klassenmethode von Script)
-    # verwendet werden.
-    #
-    #   Input:
-    #
-    #       script : Script
-    #
-    #   Output:
-    #
-    #       None
-    #
-    ###
     def addToScript(self, script):
-        """_summary_
+        """Mit addToScript wird der Rotor zum Skriptobjekt übergeben und in gmsh-Syntax übersetzt.
+        Diese Methode sollte stets nur in Kombination mit generateScript (Klassenmethode von Script)
+        verwendet werden.
 
         Args:
             script (_type_): _description_
