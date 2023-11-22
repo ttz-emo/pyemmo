@@ -67,7 +67,8 @@ def createLine(
                         lineDict["MpZ"],
                     )
                 )
-            ) < DEFAULT_GEO_TOL
+            )
+            < DEFAULT_GEO_TOL
         ):
             # the point is the global center point
             centerPoint = globalCenterPoint
@@ -273,8 +274,8 @@ def importMachineGeometry(machineGeoList: list[dict]) -> Dict[str, SurfaceAPI]:
     """import one segment of the whole machine geometry from the geo.json file
 
     Args:
-        machineGeoList (list[dict]): List of surface dictionaries with api geo info. 
-        TODO: describe surface dict structure! 
+        machineGeoList (list[dict]): List of surface dictionaries with api geo info.
+        TODO: describe surface dict structure!
 
     Returns:
         Dict[str, SurfaceAPI]: Segment Surface dict with short IDs (IdExt) as keys and
@@ -625,7 +626,9 @@ def phase2angle(phaseChar: Literal["u", "v", "w"]) -> float:
     raise ValueError(f'Phase ID "{phaseChar}"is not a single character!', phaseChar)
 
 
-def phase2color(phaseChar: Literal["u", "v", "w"]) -> Literal["IndianRed", "Yellow", "Aquamarine"]:
+def phase2color(
+    phaseChar: Literal["u", "v", "w"]
+) -> Literal["IndianRed", "Yellow", "Aquamarine"]:
     """Get gmsh mesh color name for a phase-character. See `gmsh colors
     <https://gitlab.onelab.info/gmsh/gmsh/blob/gmsh_4_11_0/src/common/Colors.h>`_
     for all available colors.
@@ -693,6 +696,7 @@ def getSlotInfo(slotSurfName: str) -> Tuple[int, int]:
     msg = f'Slot identifier "StCu" was not in Surfacename: {slotSurfName}'
     raise ValueError(msg)
 
+
 def getSlotPhase(windSWATList, segmentNbr, slotSide) -> Slot:
     """Gets the name (u, v, w) of the Phase with it's direction (+, -)
 
@@ -710,9 +714,9 @@ def getSlotPhase(windSWATList, segmentNbr, slotSide) -> Slot:
     """
     # ToDo: slotSide berücksichtigen -> Zweischichtwicklung, Zahnspulenwicklung oder Einschichtwicklung
     for phaseIndex, phaseList in enumerate(windSWATList):
-        for slotNumber in phaseList[slotSide-1]:
-        #     for slotNumber in slotSideList:
-            if abs(slotNumber)==segmentNbr+1:
+        for slotNumber in phaseList[slotSide]:
+            #     for slotNumber in slotSideList:
+            if abs(slotNumber) == segmentNbr + 1:
                 if phaseIndex == 0:
                     phase = "u"
                 elif phaseIndex == 1:
@@ -721,23 +725,26 @@ def getSlotPhase(windSWATList, segmentNbr, slotSide) -> Slot:
                     phase = "w"
                 else:
                     raise ValueError("PhaseIndex not 0, 1 or 2.")
-                
+
                 if sign(slotNumber) == 1:
                     cDir = "p"
                 else:
                     cDir = "n"
-                    
-                print(f"phaseIndex: {phaseIndex}| phaseList: {phaseList}| cDir: {cDir}| slotNumber: {slotNumber}| phase: {phase}")
+
+                print(
+                    f"phaseIndex: {phaseIndex}| phaseList: {phaseList}| cDir: {cDir}| slotNumber: {slotNumber}| phase: {phase}"
+                )
                 return cDir, phase
     raise RuntimeError("Could not determine phase index by slot number.")
-                
+
+
 def createSlot(surf: SurfaceAPI, material: Material, extendedInfo: dict) -> Slot:
     """create a Physical Element of type Slot.
 
     Args:
         surf (SurfaceAPI): Slot geometric surface. Surface IdExt must be formatted like
-            "StCu<slotSide>_<segmentNumber>". E.g. The first slot side of the first
-            segment must be named "StCu0_0".
+            ``StCu<slotSide>_<segmentNumber>``. E.g. The first slot side of the first
+            segment must be named ``StCu0_0``.
         material (Material): Slot Material.
         extendedInfo (dict): Additional model information dict, with winding configuration.
 
@@ -745,7 +752,7 @@ def createSlot(surf: SurfaceAPI, material: Material, extendedInfo: dict) -> Slot
         Slot: Slot object generated from the above information.
     """
 
-    slotSide, segmentNbr = getSlotInfo(surf.idExt) 
+    slotSide, segmentNbr = getSlotInfo(surf.idExt)
     windSWATList = importJSON.getWindingSWATList(extendedInfo)
     cDir, phase = getSlotPhase(windSWATList, segmentNbr, slotSide)
     slotName = surf.idExt + "_" + phase.upper() + cDir
@@ -780,12 +787,15 @@ def createWinding(extendedInfo: dict) -> datamodel:
     #     windList, nbrSlots, bool((2 * nbrPolePairs / symFactor) % 2)
     # )
     print(windLayout)
-    swatemWinding.set_phases(S=windLayout, turns=(importJSON.getNbrOfTurns(extendedInfo)))
+    swatemWinding.set_phases(
+        S=windLayout, turns=(importJSON.getNbrOfTurns(extendedInfo))
+    )
     swatemWinding.analyse_wdg()  # analyse winding to make sure its valid and all parameters are set
     return swatemWinding
 
 
-def genWindLayoutSwatEM(extendedInfo: dict,
+def genWindLayoutSwatEM(
+    extendedInfo: dict,
     # windingList: List[str], nbrSlots: int, onePole=False
 ) -> List[List[int]]:
     """generate winding layout for `swat_em <https://swat-em.readthedocs.io/en/latest/#>`__
