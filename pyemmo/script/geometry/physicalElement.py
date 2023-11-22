@@ -107,12 +107,12 @@ class PhysicalElement:
         return self._material
 
     @material.setter
-    def material(self, newMaterial: Material):
+    def material(self, newMaterial: Union[Material, None]):
         "Setter for material"
-        if isinstance(newMaterial, Material):
+        if isinstance(newMaterial, Material) or newMaterial is None:
             self._material = newMaterial
         else:
-            raise TypeError("Type of material must be a string.")
+            raise TypeError("Type of material must type pyemmo.Material!")
 
     # pylint: disable=locally-disabled, invalid-name
     @property
