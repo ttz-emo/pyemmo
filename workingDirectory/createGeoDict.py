@@ -121,9 +121,13 @@ def createGeoDict(machine, rotorSym, statorSym, magnetFarthestRadius, magnetShor
     print("End of function")
     print("===============")
 
-    print("getRotorContour:")
+    # -------------------------------------------
+    # Generation of the rotor and stator contour:
+    # -------------------------------------------
+    print("Generate rotor and stator contour:")
     rotorContourLineList = getSurfacemagnetContour(geometryList=geometryList, machine=machine, isInternal=False)
     statorContourLineList = getStatorContour(geometryList=geometryList, machine=machine)
+    
     # ------------------------------------------------------
     # Change names of rotorRint-Curve and statorRext-Curve:
     # ------------------------------------------------------
