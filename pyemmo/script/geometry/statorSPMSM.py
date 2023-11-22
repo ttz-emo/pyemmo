@@ -60,8 +60,8 @@ class StatorPMSM(Stator):
         winding: datamodel = None,
         startPosition: float = 0.0,
     ):
-        Stator.__init__(
-            self, name="StatorSPMSM", nbrSlots=nbrSlots, axLen=axLen, winding=winding
+        super().__init__(
+            name="StatorSPMSM", nbrSlots=nbrSlots, axLen=axLen, winding=winding
         )
         ###Blechtype des Stators.
         self._laminationType = laminationType

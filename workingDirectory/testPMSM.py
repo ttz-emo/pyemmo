@@ -380,7 +380,7 @@ scriptPath = os.path.join(RESULT_DIR, "testFreeGeoDef")
 if not os.path.isdir(scriptPath):
     os.mkdir(scriptPath)
 pmsmScript = Script(
-    name="test pmsm freeDefined",
+    name="test_pmsm_freeDefined",
     scriptPath=scriptPath,
     simuParams={
         "init_rotor_pos": 0,

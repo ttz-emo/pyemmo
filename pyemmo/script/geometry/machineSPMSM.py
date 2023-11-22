@@ -38,9 +38,9 @@ class MachineSPMSM(MachineAllType):
         ###Symmetriefaktor z. B. 4 für ein Viertelmodell der Maschine.
         self._symmetryFactor = self._simuParam["analysisParameter"]["symmetryFactor"]
         ###Rotorobjekt der Klasse RotorSPMSM.
-        self._rotor = None
+        self.rotor = None
         ###Statorobjekt der Klasse StatorSPMSM.
-        self._stator = None
+        self.stator = None
         # Calculate Poles and Slots for Model
         self._simuParam["analysisParameter"]["nbrPolesinModel"] = (
             self._simuParam["analysisParameter"]["nbrPolesTotal"] / self._symmetryFactor
@@ -104,8 +104,8 @@ class MachineSPMSM(MachineAllType):
             self._symmetryFactor,
             startPosition,
         )
-        self._rotor = rotorSPMSM1
-        return self._rotor
+        self.rotor = rotorSPMSM1
+        return self.rotor
 
     ###
     # Mit addStatorToMachine() wird ein Statorobjekt der Klasse StatorSPMSM erzeugt und der Maschine zugewiesen.
@@ -169,8 +169,8 @@ class MachineSPMSM(MachineAllType):
             winding=winding,
             startPosition=startPosition,
         )
-        self._stator = statorSPMSM1
-        return self._stator
+        self.stator = statorSPMSM1
+        return self.stator
 
     ###createMachine() erzeugt alle nötigen Domaine automatisch und befüllt sie mit PhysicalElement-Objekten gemäß ihren Eigenschaften.
     ##
