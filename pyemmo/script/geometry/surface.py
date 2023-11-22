@@ -39,7 +39,6 @@ if TYPE_CHECKING:
 class Surface(Transformable):
     ###Statische Variable zur ID-Verwaltung
     ID = 0
-    GroupID = 1000
 
     ###Konstruktor der Klasse Surface
     def __init__(self, name: str, curves: List[Union["Line", "CircleArc", "Spline"]]):
