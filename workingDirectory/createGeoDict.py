@@ -66,6 +66,7 @@ def createGeoDict(machine, rotorSym, statorSym, isInternalRotor: bool, magnetFar
                 machine=machine,
                 label=RotorSurfLabels[i],
                 surface=RotorSurf[i],
+                isInternalRotor=isInternalRotor,
                 magnetFarthestRadius=magnetFarthestRadius,
                 magnetShortestRadius=magnetShortestRadius
             )
@@ -94,6 +95,7 @@ def createGeoDict(machine, rotorSym, statorSym, isInternalRotor: bool, magnetFar
                 machine=machine,
                 label=StatorSurfLabels[i],
                 surface=StatorSurf[i],
+                isInternalRotor=isInternalRotor,
                 magnetFarthestRadius=magnetFarthestRadius,
                 magnetShortestRadius=magnetShortestRadius
             )
