@@ -36,7 +36,17 @@ def buildPyemmoMovingBand(
     geometryList, rotorContourLineList, statorContourLineList = createGeoDict(
         machine, rotorSym, statorSym, magnetFarthestRadius, magnetShortestRadius
     )
-    materialAir = Material(name="Air",conductivity=0,relPermeability=1.0000004,remanence=None,tempCoefRem=None,BH=None,density=None,thermalConductivity=None,thermalCapacity=None)
+    materialAir = Material(
+        name="Air",
+        conductivity=0,
+        relPermeability=1.0000004,
+        remanence=None,
+        tempCoefRem=None,
+        BH=None,
+        density=None,
+        thermalConductivity=None,
+        thermalCapacity=None,
+    )
     # =========================================================================
     # Calculation of the distance between rotor/magnet and stator inner radius:
     # =========================================================================
@@ -71,7 +81,7 @@ def buildPyemmoMovingBand(
     angleStator = 2 * math.pi / nbrStatorSeg
     nbrRotorSeg = machine.rotor.slot.Zs
     angleRotor = 2 * math.pi / nbrRotorSeg
-    
+
     # ================
     # Bands for rotor:
     # ================
@@ -172,7 +182,6 @@ def buildPyemmoMovingBand(
     plot(RotorluftspaltCurves, linewidth=1, markersize=3, tag=True)
     print("---")
 
-
     # =================
     # Bands for stator:
     # =================
@@ -267,7 +276,7 @@ def buildPyemmoMovingBand(
         name="Statorluftspalt 2",
         idExt="StLu2",
         curves=StLu2curves,
-        material= materialAir,
+        material=materialAir,
         nbrSegments=nbrStatorSeg,
         angle=angleStator,
         meshSize=1.0,
