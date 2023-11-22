@@ -218,7 +218,7 @@ class Script(object):
             str: script name
         """
         return self._name
-    
+
     @name.setter
     def name(self, newName):
         """setter of Script name
@@ -245,7 +245,7 @@ class Script(object):
             newScriptPath (_type_): _description_
         """
         self._scriptPath = newScriptPath
-    
+
     @property
     def proFilePath(self) -> str:
         """Get the path to the resulting pro file named "ScriptName.pro"
@@ -254,7 +254,7 @@ class Script(object):
             str: path to the pro Script file
         """
         return join(self.scriptPath, self.name + ".pro")
-    
+
     @property
     def geoFilePath(self) -> str:
         """Get the path to the resulting geo file named "ScriptName.geo"
@@ -286,8 +286,8 @@ class Script(object):
         # if isinstance(newMachine, MachineAllType):
         self._machine = newMachine
         # else:
-            # msg = f"Given parameter machine was not type machine, but '{type(newMachine)}'"
-            # raise TypeError(msg)
+        # msg = f"Given parameter machine was not type machine, but '{type(newMachine)}'"
+        # raise TypeError(msg)
         # reset attributes
         self._resetGeometry()
         self.group = GroupGetDP()  # reset group (= domains)
@@ -318,7 +318,7 @@ class Script(object):
         """Getter of the attribute simulationParameters"""
         return self.simulationParameters
 
-    @property    
+    @property
     def factory(self) -> str:
         """Getter of the attribute factory"""
         return self._factory
@@ -1255,10 +1255,11 @@ class Script(object):
             if physicalElement.material:
                 self._addMaterial(physicalElement)
             # add magnetization if specified
-            # FIXME: BUG Attribute errors inside addMag... functions are not catched! 
-            
-            try:
-                typeMag = physicalElement.magnetisationType
+            # FIXME: BUG Attribute errors inside addMag... functions are not catched!
+
+            if isinstance(physicalElement, Magnet):
+                mag: Magnet = physicalElement
+                typeMag = mag.magType
                 if typeMag == "radial":
                     self._addMagnetisationRadial(physicalElement)
                 elif typeMag == "parallel":
@@ -1266,10 +1267,10 @@ class Script(object):
                 elif typeMag == "tangential":
                     self._addMagnetisationTangential(physicalElement)
                 else:
-                    raise TypeError(f"Wrong Magnetisation Type: '{typeMag}'. Magnetisation Type must be 'radial', 'parallel' or 'tangential'.")
-            except AttributeError:
-                # raise AttributeError("Attribute Error Magnetisation Type.")
-                pass
+                    raise TypeError(
+                        f"Wrong Magnetisation Type: '{typeMag}'. Magnetisation Type must be 'radial', 'parallel' or 'tangential'."
+                    )
+
             # try:
             #     typeMag = physicalElement.magnetisationType
             #     if typeMag == "radial":
