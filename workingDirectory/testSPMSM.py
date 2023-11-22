@@ -5,8 +5,8 @@ from os import mkdir, path
 
 # from pyemmo.functions.importResults import plotAllDat
 # from numpy import rad2deg, where
-from swat_em import datamodel
 import math
+from swat_em import datamodel
 
 # from pyemmo.definitions import RESULT_DIR, MAIN_DIR
 from pyemmo.script.geometry.point import Point

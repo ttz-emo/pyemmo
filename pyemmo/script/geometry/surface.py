@@ -63,7 +63,9 @@ class Surface(Transformable):
 
     def __eq__(self, other: "Surface"):
         # check type and number of points
-        if isinstance(other, self.__class__) and (len(self.allPoints) == len(other.allPoints)):
+        if isinstance(other, self.__class__) and (
+            len(self.allPoints) == len(other.allPoints)
+        ):
             # check that all points are equal
             otherPoints = other.allPoints
             for point in self.allPoints:
@@ -122,17 +124,6 @@ class Surface(Transformable):
         """
         self._name = name
 
-    ###
-    # Mit getCurve() werden alle Kurven der Fläche zurück gegeben.
-    #
-    #   Input:
-    #
-    #       None
-    #
-    #   Output:
-    #
-    #       [Line]
-    ###
     @property
     def curve(self) -> List[Union[Line, CircleArc, Spline]]:
         """Getter of curve
@@ -522,34 +513,17 @@ class Surface(Transformable):
         self.curve = newLoop
         return None
 
-    ###
-    # Die Methode replaceCurve() tauscht eine Kurve in der Liste gegen eine neue Kurve aus.
-    #
-    #   Input:
-    #
-    #       oldCurve : Line
-    #       newCurve : Line
-    #
-    #   Output:
-    #
-    #       None
-    ###
-    def replaceCurve(self, oldCurve, newCurve) -> None:
-        for i in range(len(self._curves)):
-            if self._curves[i] == oldCurve:
+    def replaceCurve(self, oldCurve: Line, newCurve: Line) -> None:
+        """Die Methode replaceCurve() tauscht eine Kurve in der Liste gegen eine neue Kurve aus.
+
+        Args:
+            oldCurve (Line): Curve to be replaced.
+            newCurve (Line): Curve that should be inserted instead.
+        """
+        for i, curve in enumerate(self.curve):
+            if curve == oldCurve:
                 self._curves[i] = newCurve
 
-    ###
-    # Mit setMeshColor() kann die Farbe des Netzes festgelegt werden.
-    #
-    #   Input:
-    #
-    #       color : string
-    #
-    #   Output:
-    #
-    #       None
-    ###
     # @property
     # def meshColor(self) -> str:
     #     """get the mesh color
@@ -558,7 +532,7 @@ class Surface(Transformable):
     #         str: name of the color
     #     """
     #     return self._color
-    
+
     # @meshColor.setter
     # def setMeshColor(self, color: str) -> str:
     #     """Setter for Mesh Color
@@ -587,43 +561,22 @@ class Surface(Transformable):
         """
         return self._color
 
-    ###
-    # Mit getType() wird ein Identifier der Klasse als String zurück gegeben.
-    #
-    #   Input:
-    #
-    #       None
-    #
-    #   Output:
-    #
-    #       String
-    ###
     @property
     def type(self) -> str:
-        """Getter of Type
+        """Mit getType() wird ein Identifier der Klasse als String zurück gegeben.
 
         Returns:
             str: "Surface"
         """
         return "Surface"
 
-    ###
-    # Mit setCurve() werden die Kurven der Klasse ausgetauscht.
-    #
-    #   Input:
-    #
-    #       curve : Line
-    #
-    #   Output:
-    #
-    #       None
-    ###
+
     @curve.setter
-    def curve(self, curves) -> None:
-        """Setter for Curve
+    def curve(self, curves:list[Line]) -> None:
+        """Set line loop of surface
 
         Args:
-            curves (_type_): _curve
+            curves (list[Line]): Line loop with surface boundary lines.
         """
         # print("set new curves")
         self._curves = curves
@@ -780,7 +733,7 @@ class Surface(Transformable):
             return PointList
         else:
             return []
-    
+
     def setMeshLength(self, meshLength: float) -> None:
         """set the meshLength of all points of a surface.
 
