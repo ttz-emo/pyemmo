@@ -38,6 +38,6 @@ class StatorLamination(PhysicalElement):
             material=material,
             phyID=phyID,
         )
-        self._physicalElementType = "Lamination"  # the physical element type can be used to identify physical elements
+        self.physicalElementType = "Lamination"  # the physical element type can be used to identify physical elements
 
         self.setColor("SteelBlue4")

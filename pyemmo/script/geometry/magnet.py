@@ -42,7 +42,7 @@ class Magnet(PhysicalElement):
         """
         super().__init__(name, geoElements, material, phyID)
         # the physical element type can be used to identify physical elements
-        self._physicalElementType = "Magnet"
+        self.physicalElementType = "Magnet"
         ###Magnetisierungsrichtung des Magneten (+1 oder -1)
         self.magDir = magDirection
         ###Magnetisierungstype des Magneten (z. B. "radial").

@@ -29,4 +29,4 @@ class PrimaryLine(PhysicalElement):
             name=name, material=material, geometricalElement=geometricalElement
         )
         # the physical element type can be used to identify physical elements
-        self._physicalElementType = "PrimaryLine"
+        self.physicalElementType = "PrimaryLine"

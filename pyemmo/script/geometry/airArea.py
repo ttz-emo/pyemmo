@@ -43,5 +43,5 @@ class AirArea(PhysicalElement):
             self, name=name, material=material, geometricalElement=geometricalElement
         )
         # the physical element type can be used to identify physical elements
-        self._physicalElementType = "AirArea"
+        self.physicalElementType = "AirArea"
         self.setColor("SkyBlue")
