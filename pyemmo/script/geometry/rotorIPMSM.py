@@ -111,10 +111,8 @@ class RotorIPMSM(Rotor):
         self._createConstraintLine()
         self._createDomainForRotor()  # create rotor domains
 
-        if (
-            self._physicalRaw[1].magnetisationType == "parallel"
-            or self._physicalRaw[1].magnetisationType == "tangential"
-        ):
+        mag: Magnet = self._physicalRaw[1]
+        if mag.magType in ("parallel", "tangential"):
             allAngle = self._calculateAngleForParallelMagnet()
             allMag = self.getAllMagnet()
             for i, mag in enumerate(allMag):
@@ -274,6 +272,7 @@ class RotorIPMSM(Rotor):
                 self._magnetDict["material"],
                 self._magnetDict["magnetisationDirection"][i],
                 self._magnetDict["magnetisationType"],
+                0.0,
             )
             mag2.name = self._magnetType + "_" + str(mag2.id)
             allMag.append(mag2)
