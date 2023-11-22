@@ -32,10 +32,9 @@ class RotorIPMSM(Rotor):
         magnetDict=None,
         airGapDict=None,
     ):
-        self._name = "RotorIPMSM"
+        super().__init__(physicalElementList=[], name="RotorIPMSM", axLen=axLen)
         self._laminationType = laminationType
         self._magnetType = magnetType
-        self._physicalElements: List[PhysicalElement] = list()
 
         self._angleGeoParts = angleGeoParts
         self._startPosition = startPosition
@@ -47,9 +46,6 @@ class RotorIPMSM(Rotor):
             self._symmetryFactor = int(symmetryFactor)
         else:
             raise ValueError(f"The symmetry factor is not an integer: {symmetryFactor}")
-
-        self._axLen = axLen  # active axial length
-
         # Wenn laminationDict nicht None: Setzte Lamination Parameter
         if laminationDict:
             self.addLaminationParameter(laminationDict)
