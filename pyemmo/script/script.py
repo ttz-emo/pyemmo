@@ -1310,7 +1310,7 @@ class Script(object):
             matDict["physicalElemID"][matIndex].append(physicalElement.id)
 
     def _addMagnetisationRadial(self, magnet: Magnet):
-        magDir = magnet.magnetisationDirection
+        magDir = magnet.magDir
         matName = cleanName(magnet.material.name)
         self.functionMagnetisation.add(
             name="br",
@@ -1320,8 +1320,8 @@ class Script(object):
 
     def _addMagnetisationParallel(self, physicalElement: Magnet):
         matName = cleanName(physicalElement.material.name)
-        magAngle = physicalElement.magnetisationVectorAngle
-        magDir = physicalElement.magnetisationDirection
+        magAngle = physicalElement.magAngle
+        magDir = physicalElement.magDir
         magFunction = (
             f"{magDir}*br_{matName} * Vector["
             f"Cos[{magAngle} + RotorPosition[]], "
@@ -1334,8 +1334,8 @@ class Script(object):
         )
 
     def _addMagnetisationTangential(self, magnet: Magnet):
-        magAngle = magnet.magnetisationVectorAngle
-        magDir = magnet.magnetisationDirection
+        magAngle = magnet.magAngle
+        magDir = magnet.magDir
         matName = cleanName(magnet.material.name)
         magFunction = (
             f"{magDir}*br_{matName} * Vector["
@@ -1984,7 +1984,7 @@ class Script(object):
             magnetisations: List[str] = []
             for mag in machine.rotor._domainM.physicals:
                 mag: Magnet = mag
-                magnetisations.append(mag.magnetisationType == "tangential")
+                magnetisations.append(mag.magType == "tangential")
             if any(magnetisations):
                 logging.warning(
                     "Tangential magnetization detected! Dq-offset calculation is invalid"

@@ -150,9 +150,9 @@ class Magnet_Surface01(Magnet):
         self._laminationDockingPoint = [pMagnet1]
 
         for s in self._geometricalElement:
-            if self.magnetisationDirection == 1:
+            if self.magDir == 1:
                 s.setMeshColor(colorDict["Red"])
-            elif self.magnetisationDirection == -1:
+            elif self.magDir == -1:
                 s.setMeshColor(colorDict["Green"])
 
     ###Gibt eine Liste mit der Schnittkante im Magneten zurück (siehe _innerLinePart).

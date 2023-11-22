@@ -118,7 +118,7 @@ class RotorIPMSM(Rotor):
             allAngle = self._calculateAngleForParallelMagnet()
             allMag = self.getAllMagnet()
             for i, mag in enumerate(allMag):
-                mag.magnetisationVectorAngle = allAngle[i]
+                mag.magAngle = allAngle[i]
 
     def _calculateAngleForParallelMagnet(self):
         Magnet1 = self._physicalRaw[1]

@@ -83,9 +83,9 @@ class Magnet_Slot01(Magnet):
         self._laminationDockingPoint = [pMagnet1, pMagnet2, pMagnet3, pMagnet4]
 
         for s in self._geometricalElement:
-            if self.magnetisationDirection == 1:
+            if self.magDir == 1:
                 s.meshColor = colorDict["Red"]
-            elif self.magnetisationDirection == -1:
+            elif self.magDir == -1:
                 s.meshColor(colorDict["Green"])
 
     @property
