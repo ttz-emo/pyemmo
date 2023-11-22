@@ -48,30 +48,89 @@ class PhysicalElement:
     ):
         # the physical element type can be used to identify physical elements
         self._physicalElementType = "PhysicalElement"
-
-        self._name: str = name
-        self.geometricalElement: List[
-            Union[Surface, Line, CircleArc, Spline]
-        ] = geometricalElement
-        self._material: Material = material
+        self._name = name
+        self._geometricalElement = geometricalElement
+        self._material = material
+        
         if phyID is None:
             # pylint: disable=locally-disabled, invalid-name
             self.id = self._getNewID()
         else:
             self.id = phyID
-
-    def _getNewID(self):
-        """Wird eine Instanz erzeugt, bekommt sie automatisch eine eindeutige ID zugewiesen.
-        Mit getNewID() wird eine neue ID erzeugt."""
-        PhysicalElement.Physical_ID = PhysicalElement.Physical_ID + 1
-        return PhysicalElement.Physical_ID
-
+    
+    # ----- @property für die Instanzen -----
+    
+    @property
+    def physicalElementType(self) -> str:
+        return self._physicalElementType
+    
+    @property
+    def name(self) -> str:
+        'Getter von name'
+        return self._name
+    
+    # @property
+    # def geometricalElement(self) -> str:
+    #     'Getter von geometricalElement'
+    #     return self._geometricalElement  
+    
+    @property
+    def material(self) -> str:
+        'Getter von material'
+        return self._material
+      
     # pylint: disable=locally-disabled, invalid-name
     @property
     def id(self) -> int:
         """PhysicalElement ID"""
         return self._id
+    
+    @property
+    def geometricalElement(self) -> Union[List[Surface], List[Line]]:
+        """geometricalElement sind alle geometrischen Elemente einer Klasse.
 
+        Input:
+
+            None
+
+        Output:
+
+            [Surface] oder [Line]
+        """
+        return self._geometricalElement
+    
+    
+    @geometricalElement.setter
+    def geometricalElement(self, geometricalElement: Union[List[Surface], List[Line]]):
+        """setter of geo elements
+
+        Args:
+            geometricalElement (Union[List[Surface], List[Line]]): _description_
+        """
+        self._geometricalElement = geometricalElement
+        # run element type funtion to ensure there are not lines AND surfaces
+        self.geoElementType
+    
+    # ------------------------------
+    # ---------- @.setter ----------
+
+    @material.setter
+    def material(self, newMaterial):
+        'Setter for material'
+        if isinstance(newMaterial, (str)):
+            self._material = newMaterial
+            return None
+        else:
+            TypeError('Type of material must be a string.')
+    
+    @name.setter
+    def name(self, newName) -> str:
+        'Setter for name'
+        if isinstance(newName, (str)):
+            self._name = newName
+        else:
+            TypeError('Type of name must be a string.')
+    
     @id.setter
     def id(self, newID: int):
         """setter of PhysicalElement ID
@@ -89,48 +148,32 @@ class PhysicalElement:
         PhysicalElement.Physical_ID = newID  # set global ID to not overcount newID
         self._id = newID
 
+        
+    
+    @physicalElementType.setter
+    def physicalElementType(self, newPhysicalElementType) -> str:
+        'setter for physicalElementType'
+        if isinstance(newPhysicalElementType, (str)):
+            self._physicalElementType = newPhysicalElementType
+        else:
+            TypeError('Type of physicalElementType must be string.')
+
+    # -----------------------------
+    # ---------- methods ----------   
+    
+    def _getNewID(self):
+        """Wird eine Instanz erzeugt, bekommt sie automatisch eine eindeutige ID zugewiesen.
+        Mit getNewID() wird eine neue ID erzeugt."""
+        PhysicalElement.Physical_ID = PhysicalElement.Physical_ID + 1
+        return PhysicalElement.Physical_ID
+    
     @property
-    def geometricalElement(self) -> Union[List[Surface], List[Line]]:
-        """geometricalElement sind alle geometrischen Elemente einer Klasse.
-
-        Input:
-
-            None
-
-        Output:
-
-            [Surface] oder [Line]
-        """
-        return self._geometricalElement
-
-    @geometricalElement.setter
-    def geometricalElement(self, geometricalElement: Union[List[Surface], List[Line]]):
-        """setter of geo elements"""
-        self._geometricalElement: Union[List[Surface], List[Line]] = geometricalElement
-        # run element type funtion to ensure there are not lines AND surfaces
-        self.getGeoElementType()
-
-    def getMaterial(self) -> Material:
-        """getter of Material"""
-        return self._material
-
-    def setMaterial(self, material: Material):
-        """setter of Material"""
-        self._material = material
-
-    def getName(self):
-        """getter of name"""
-        return self._name
-
-    def setName(self, name):
-        """setter of name"""
-        self._name = name
-
-    def getType(self) -> str:
+    def type(self) -> str:
         """The function getType of PhysicalElement returns a string with the PhysicalElement-Type"""
         return self._physicalElementType
 
-    def getGeoElementType(self) -> Union[Line, Surface, None]:
+    @property
+    def geoElementType(self) -> Union[Line, Surface, None]:
         """get type of geometry elements.
 
         Raises:
@@ -155,7 +198,7 @@ class PhysicalElement:
             else:
                 raise ValueError(
                     (
-                        f"Geometrical element of PhysicalElement '{self.getName()}' is neither Line"
+                        f"Geometrical element of PhysicalElement '{self.name}' is neither Line"
                         f"nor Surface but: {type(GeoElement)}"
                     )
                 )

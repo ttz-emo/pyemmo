@@ -35,7 +35,7 @@ class Magnet_Slot01(Magnet):
         d_Slot = self._machineDict["d_Slot"]
 
         PCentre: Point = self._machineDict["machineCentrePoint"].duplicate()
-        coordCentre = PCentre.getCoordinate()
+        coordCentre = PCentre.coordinate
 
         r_M_bottom = rA_Rotor - d_Slot - h_M
 
@@ -83,25 +83,55 @@ class Magnet_Slot01(Magnet):
         self._laminationDockingPoint = [pMagnet1, pMagnet2, pMagnet3, pMagnet4]
 
         for s in self._geometricalElement:
-            if self.getMagnetisationDirection() == 1:
-                s.setMeshColor(colorDict["Red"])
-            elif self.getMagnetisationDirection() == -1:
-                s.setMeshColor(colorDict["Green"])
+            if self.magnetisationDirection == 1:
+                s.meshColor = colorDict["Red"]
+            elif self.magnetisationDirection == -1:
+                s.meshColor(colorDict["Green"])
 
-    def getInnerLinePart(self):
+    @property
+    def innerLinePart(self):
+        """get innerLinePart
+
+        Returns:
+            _type_: _innerLinePart
+        """
         return self._innerLinePart
 
     # def getAirDockingPoint(self):
     #     return self._airDockingPoint
 
-    def getAirLinePart(self):
+    @property
+    def airLinePart(self):
+        """get airLinePart
+
+        Returns:
+            _type_: _airLinePart
+        """
         return self._airLinePart
 
-    def getLamLinePart(self):
+    @property
+    def lamLinePart(self):
+        """get lamLinePart
+
+        Returns:
+            _type_: _lamLinePart
+        """
         return self._lamLinePart
 
-    def getLaminationDockingPoint(self):
+    @property
+    def laminationDockingPoint(self):
+        """get laminationDockingPoint
+
+        Returns:
+            _type_: _laminationDockingPoint
+        """
         return self._laminationDockingPoint
 
-    def getGeometricalElement(self):
+    @property
+    def geometricalElement(self):
+        """get geometricalElement
+
+        Returns:
+            _type_: _geometricalElement
+        """
         return self._geometricalElement

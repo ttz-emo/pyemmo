@@ -225,7 +225,7 @@ SPMSM.setFunctionMesh("linear", 8)
 SPMSM.plot()
 # SPMSM.createMachineDomains -> MachineAllType function
 # %%
-resDir = r"C:\Users\ganser\AppData\Local\Programs\pyemmo\Results\Baukasten"
+resDir = r"C:\Users\k49976\Desktop\repositoryGibLab\pyemmo\Results\Baukasten"
 modelDir = path.abspath(path.join(resDir, "Test_SPMSM"))
 if not path.isdir(modelDir):
     mkdir(modelDir)
@@ -251,7 +251,7 @@ myScript.generateScript()
 
 os.system(
     createCmdCommand(
-        onelabFile=myScript.getProFilePath(),
+        onelabFile=myScript.proFilePath,
         useGUI=True,
         paramDict={"Flag_ClearResults": 1},
     )

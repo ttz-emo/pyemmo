@@ -89,7 +89,7 @@ def createMachine(
         axLen=axLen["rotor"],
     )
     # create the stator
-    nbrSlotTotal = segmentSurfDict["StNut"].getNbrSegments()
+    nbrSlotTotal = segmentSurfDict["StNut"].NbrSegments
     # create winding
     windingSwat = modelJSON.createWinding(extendedInfo)
     statorAPI = Stator(
@@ -173,10 +173,10 @@ def createMeshSizeGUICode(machineSurfDict: Dict[str, List[SurfaceAPI]]):
             for surfID in surfID_List:
                 surfList.extend(machineSurfDict[surfID])
             # get the mesh size
-            meshSize = surfList[0].getMeshSize()
+            meshSize = surfList[0].meshSize
             # if meshsize in surfaceAPI was 0, get the mean mesh size of the points
             if not meshSize:
-                meshSize = surfList[0].getMeanMeshLength()
+                meshSize = surfList[0].meanMeshLength
             meshSize = round(meshSize * 1e3, 3)
             try:
                 # try to get the real name from the api name dict
@@ -212,10 +212,10 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
         script (Script): Actual Script object to add PostOperation.
         extendedInfo (dict): Extended info dict to get the different radii.
     """
-    machine = script.getMachine()
+    machine = script.machine
     # 1. Airgap flux density
     rotorAirgapRadius = importJSON.getMovingbandRadius(extendedInfo)
-    statorAirgapRadius = machine.getStator().getMovingBand()[0].radius
+    statorAirgapRadius = machine.stator.movingBand[0].radius
     for side, radius in {
         "rotor": rotorAirgapRadius,
         "stator": statorAirgapRadius,
@@ -273,10 +273,10 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
     ## 4. Add rotor and stator b-field export for iron loss calculation
     if importJSON.getFlagCalcIronLoss(extendedInfo):
         rotorIronPhysicalID = [
-            str(phys.id) for phys in machine.getRotor()._domainLam.physicals
+            str(phys.id) for phys in machine.rotor._domainLam.physicals
         ]
         statorIronPhysicalID = [
-            str(phys.id) for phys in machine.getStator()._domainLam.physicals
+            str(phys.id) for phys in machine.stator._domainLam.physicals
         ]
         script.addPostOperation(
             "b",
@@ -298,11 +298,11 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
         # if there are magnets
         allMagConducting = True
         for magnet in machine._domainM.physicals:
-            if magnet.getMaterial().getConductivity() is None:
+            if magnet.material.conductivity is None:
                 allMagConducting = False
                 logging.warning(
                     "Unable to calculate magnet losses, due to missing el. conductivity in %s.",
-                    magnet.getName(),
+                    magnet.name,
                 )
                 break
         if allMagConducting:
@@ -438,7 +438,7 @@ def main(
     #     + " -solve Analysis -v1",
     #     shell=True,
     # )
-    proFile = apiScript.getProFilePath()  # path to .pro file
+    proFile = apiScript.proFilePath  # path to .pro file
     command = runOnelab.createCmdCommand(
         onelabFile=proFile,
         gmshPath=gmsh,
@@ -467,7 +467,7 @@ def main(
                         textLine.replace("\n", "\n\t"),
                     )
     # iron loss post processing:
-    resPath = apiScript.getResultsPath()
+    resPath = apiScript.resultsPath
     # check if resPath exists -> simulation has been run.
     if (
         importJSON.getFlagCalcIronLoss(extendedInfo)
@@ -477,7 +477,7 @@ def main(
         # FIXME: Implement better check for simulation status
         brFilePath = join(resPath, "b_rotor.pos")
         bsFilePath = join(resPath, "b_stator.pos")
-        nbrPolePairs = machine.getNbrPolePairs()
+        nbrPolePairs = machine.NbrPolePairs
         calcAngle = (
             simulationParameters["final_rotor_pos"]
             - simulationParameters["init_rotor_pos"]
@@ -489,8 +489,8 @@ def main(
                 "IRON LOSS CALCULATION: Simulated rotation (%.3f°) might be smaller than one electrical period! Iron loss calculation is only valid if at least one electrical period is simulated.",
                 calcAngle,
             )
-        rotorMat = machine.getRotor()._domainLam.physicals[0].getMaterial()
-        statorMat = machine.getStator()._domainLam.physicals[0].getMaterial()
+        rotorMat = machine.rotor._domainLam.physicals[0].material
+        statorMat = machine.stator._domainLam.physicals[0].material
         if (
             isfile(brFilePath)
             and isfile(bsFilePath)

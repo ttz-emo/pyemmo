@@ -156,15 +156,15 @@ class ElectricalSteel(Material):
     def print(self) -> None:
         """print electrical steel material to stdout"""
         table = [
-            ["Name:", self.getName()],
+            ["Name:", self.name],
             ["Is linear:", "Yes" if self.isLinear() else "No"],
-            ["Electrical Conductivity [S/m]:", self.getConductivity()],
-            ["Relative Permeability []:", self.getRelPermeability()],
-            ["Remanence Flux Density[T]:", self.getRemanence()],
-            ["Density [kg/m³]:", self.getDensity()],
+            ["Electrical Conductivity [S/m]:", self.conductivity],
+            ["Relative Permeability []:", self.relPermeability],
+            ["Remanence Flux Density[T]:", self.remanence],
+            ["Density [kg/m³]:", self.density],
             ["Sheet Thickness [mm]:", self.sheetThickness],
-            ["Thermal Conductivity [W/(m*K)]:", self.getThermalConductivity()],
-            ["Thermal Capacity [J/(kg*K)]:", self.getThermalCapacity()],
+            ["Thermal Conductivity [W/(m*K)]:", self.thermalConductivity],
+            ["Thermal Capacity [J/(kg*K)]:", self.thermalCapacity],
         ]
         for row in table:
             if row[1] is None:

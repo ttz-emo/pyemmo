@@ -56,25 +56,44 @@ class Stator(object):
         self._axLen = axLen  # active axial length
         self.winding = winding
         # only generate domains if they are physical elements
-        if self.getPhysicalElements():
+        if self.physicalElements:
             self._createDomainForStator()
 
-    def getName(self) -> str:
+    @property
+    def name(self) -> str:
         """Getter of stator name"""
         return self._name
 
-    def setName(self, name: str) -> None:
-        """Setter of stator name"""
+    @name.setter
+    def name(self, name: str) -> None:
+        """Setter of stator name
+
+        Args:
+            name (str): _description_
+
+        Raises:
+            TypeError: _description_
+        """
         if isinstance(name, str):
             self._name = name
         else:
             raise TypeError(f"Given name was not type str, but '{type(name)}'")
 
-    def getNbrSlots(self) -> int:
+    @property
+    def NbrSlots(self) -> int:
         """Getter of number of slots (Qs)"""
         return self._nbrSlots
 
-    def setNbrSlots(self, nbrSlots: int) -> None:
+    @NbrSlots.setter
+    def NbrSlots(self, nbrSlots: int) -> None:
+        """Setter for the Number of Slots
+
+        Args:
+            nbrSlots (int): _description_
+
+        Raises:
+            TypeError: _description_
+        """
         if isinstance(nbrSlots, int):
             self._nbrSlots = nbrSlots
         else:
@@ -82,11 +101,21 @@ class Stator(object):
                 f"Given number of slots was not Type int but {type(nbrSlots)}."
             )
 
-    def getAxialLength(self) -> float:
+    @property
+    def axialLength(self) -> float:
         """Getter of axLen [m]"""
         return self._axLen
 
-    def setAxialLength(self, axLen: Union[float, int]) -> None:
+    @axialLength.setter
+    def axialLength(self, axLen: Union[float, int]) -> None:
+        """Setter for axLen [m]
+
+        Args:
+            axLen (Union[float, int]): _description_
+
+        Raises:
+            TypeError: _description_
+        """
         if isinstance(axLen, (float, int)):
             self._axLen = axLen
         else:
@@ -94,12 +123,24 @@ class Stator(object):
                 f"Given axial length axLen was not numeric but {type(axLen)}."
             )
 
-    def getPhysicalElements(self) -> List[PhysicalElement]:
+    @property
+    def physicalElements(self) -> List[PhysicalElement]:
         """Getter of PhysicalElements-list"""
         return self._physicalElements
 
-    def setPhysicalElements(self, physicalElementsList: List[PhysicalElement]) -> None:
-        """Setter of PhysicalElements-List"""
+    @physicalElements.setter
+    def physicalElements(self, physicalElementsList: List[PhysicalElement]) -> None:
+        """Setter of PhysicalElement-List
+
+        Args:
+            physicalElementsList (List[PhysicalElement]): _description_
+
+        Raises:
+            TypeError: _description_
+
+        Returns:
+            _type_: _description_
+        """
         if isinstance(physicalElementsList, List):
             self._physicalElements = physicalElementsList
             self._createDomainForStator()
@@ -123,28 +164,36 @@ class Stator(object):
         else:
             raise ValueError(f"Argument 'physicalElementList' was not type list!")
 
-    def getSlots(self) -> List[Slot]:
+    @property
+    def slots(self) -> List[Slot]:
         """getSlots returns a list of physical elements of type slot in stator.physicalElementList.
         The List is sortet in circumferderal (mathematically positive) direction so the first slot in the list is the one closest to the x-axis
 
         Returns:
             List[Slot]: List of slots
         """
-        physicalElements = self.getPhysicalElements()
+        physicalElements = self.physicalElements
         slotList: List[Slot] = []
         for physElem in physicalElements:
-            if physElem.getType() == "Slot":
+            if physElem.type == "Slot":
                 slotList.append(physElem)
         slotList.sort(key=Slot.getRadialPosition)
         return slotList
 
-    def getMovingBand(self) -> List[MovingBand]:
+    @property
+    def movingBand(self) -> List[MovingBand]:
         """get the MovingBand physical elements"""
         domainMB = self._mb
         return domainMB.physicals
 
-    def getMovingBandRadius(self) -> float:
-        physicalMBList = self.getMovingBand()
+    @property
+    def movingBandRadius(self) -> float:
+        """Getter for the Moving Band radius
+
+        Returns:
+            float: Moving Band radius
+        """
+        physicalMBList = self.movingBand
         if physicalMBList:
             mbRadius = physicalMBList[0].radius
             for physicalMB in physicalMBList:
@@ -153,7 +202,7 @@ class Stator(object):
                         ValueError(
                             f"Rotor Movingband domain got Circle Arc objects with different Radius:\n"
                             + f"Radius MB_0: {mbRadius}\n"
-                            + f"Radius {physicalMB.getName()}: {physicalMB.radius}\n"
+                            + f"Radius {physicalMB.name}: {physicalMB.radius}\n"
                         )
                     )
             return mbRadius
@@ -185,7 +234,7 @@ class Stator(object):
             TypeError: If winding is not type swat_em.datamodel
         """
         if isinstance(winding, datamodel):
-            if winding.get_num_slots() == self.getNbrSlots():
+            if winding.get_num_slots() == self.NbrSlots:
                 try:
                     if (
                         not winding.get_fundamental_windingfactor()
@@ -200,7 +249,7 @@ class Stator(object):
             else:
                 raise (
                     ValueError(
-                        f"Given Winding object (Qs={winding.get_num_slots()}) doesn't have the same number of slots as the stator (Qs={self.getNbrSlots()})."
+                        f"Given Winding object (Qs={winding.get_num_slots()}) doesn't have the same number of slots as the stator (Qs={self.NbrSlots})."
                     )
                 )
         else:
@@ -214,7 +263,7 @@ class Stator(object):
         """Automatische Zuweisung der PhysicalElements zu den passenden Domainen"""
         # Set winding parameters in slots
         (layout, strLayout, colorLayout) = self.winding.get_layers()
-        for slotPos, slot in enumerate(self.getSlots()):
+        for slotPos, slot in enumerate(self.slots):
             if self.winding.get_num_layers() == 2:
                 layer = (slotPos+1) % 2  # alternate layers
                 slotIDLayout = int(
@@ -292,13 +341,13 @@ class Stator(object):
         phy_slaveLine = []  # Teilmodell Slavekante
         limit_Line = []
         for physicalElement in self._physicalElements:
-            geoType = physicalElement.getGeoElementType()
+            geoType = physicalElement.geoElementType
             if geoType == Surface:
                 # domainC, domainL & domainNL
-                material = physicalElement.getMaterial()
+                material = physicalElement.material
                 if material:
                     # if conductivity not None add to domainC
-                    if material.getConductivity():
+                    if material.conductivity:
                         phy_domainC.append(physicalElement)
                     else:
                         phy_domainCC.append(physicalElement)
@@ -312,20 +361,20 @@ class Stator(object):
                         phy_domainLam.append(physicalElement)
                 else:
                     raise Exception(
-                        f"physicalElement ({physicalElement.getName()}) of type Surface should have a material! Material is {material}"
+                        f"physicalElement ({physicalElement.name}) of type Surface should have a material! Material is {material}"
                     )
 
                 # domainS zuweisen
-                if physicalElement.getType() == "Slot":
+                if physicalElement.type == "Slot":
                     phy_domainS.append(physicalElement)
                     continue
 
                 # Stator airgap
-                if physicalElement.getType() == "AirGap":
+                if physicalElement.type == "AirGap":
                     phy_airgap.append(physicalElement)
 
                 # Stator lamination if not allready defined
-                if physicalElement.getType() == "Lamination":
+                if physicalElement.type == "Lamination":
                     # pE could allready been added due to material
                     if physicalElement not in phy_domainLam:
                         phy_domainLam.append(physicalElement)
@@ -333,16 +382,16 @@ class Stator(object):
                 phy_domain.append(physicalElement)  # append Surface to main Domain
             elif geoType == Line:
                 # MB zuweisen
-                if physicalElement.getType() == "MovingBand":
+                if physicalElement.type == "MovingBand":
                     mb_all.append(physicalElement)
                     continue  # continue after because it cant be any other physicalElement type
-                elif physicalElement.getType() == "PrimaryLine":
+                elif physicalElement.type == "PrimaryLine":
                     phy_primaryLine.append(physicalElement)
                     continue
-                elif physicalElement.getType() == "SlaveLine":
+                elif physicalElement.type == "SlaveLine":
                     phy_slaveLine.append(physicalElement)
                     continue
-                elif physicalElement.getType() == "LimitLine":
+                elif physicalElement.type == "LimitLine":
                     limit_Line.append(physicalElement)
 
         sortedPhy = {
@@ -377,7 +426,7 @@ class Stator(object):
             fig.set_dpi(300)
             ax.set_aspect("equal")
             # ax.set_aspect("equal", adjustable="box")
-        for phys in self.getPhysicalElements():
+        for phys in self.physicalElements:
             for geoElem in phys.geometricalElement:
                 geoElem.plot(
                     fig=fig,
@@ -385,7 +434,7 @@ class Stator(object):
                     marker=marker,
                     markersize=markersize,
                 )
-        lim = 0.01 * self.getMovingBandRadius()
+        lim = 0.01 * self.movingBandRadius
         ax.set_xlim(left=-lim)
         ax.set_ylim(bottom=-lim)
 

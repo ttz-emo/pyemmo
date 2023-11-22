@@ -70,19 +70,35 @@ class Magnet(PhysicalElement):
         else:
             self.setColor("Green")
 
-    def getMagnetisationType(self) -> str:
-        """get magnetisation type"""
+    @property
+    def magnetisationType(self) -> str:
+        """get magnetisationType
+
+        Returns:
+            str: _magnetisationType
+        """
         return self._magnetisationType
 
-    def getMagnetisationDirection(self) -> Literal[-1, 1]:
+    @property
+    def magnetisationDirection(self) -> Literal[-1, 1]:
         """getter of magnetisation direction
 
         Returns:
             -1 or 1: north or south pole magnetisation
         """
         return self._magnetisationDirection
+    
+    @property
+    def magnetisationVectorAngle(self) -> float:
+        """get magnetisation angle
 
-    def setMagnetisationVectorAngle(self, angle: float):
+        Returns:
+            float: offset angle of magnetisation vector in rad
+        """
+        return self._magnetisationVectorAngle
+    
+    @magnetisationVectorAngle.setter
+    def magnetisationVectorAngle(self, angle: float):
         """set of magnetisation angle
 
         Args:
@@ -90,10 +106,3 @@ class Magnet(PhysicalElement):
         """
         self._magnetisationVectorAngle = angle
 
-    def getMagnetisationVectorAngle(self) -> float:
-        """get magnetisation angle
-
-        Returns:
-            float: offset angle of magnetisation vector in rad
-        """
-        return self._magnetisationVectorAngle

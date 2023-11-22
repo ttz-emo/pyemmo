@@ -64,7 +64,7 @@ class Magnet_Surface03(Magnet):
         magnetWidth: float = self._machineDict["w_Mag"]
 
         globalCenter: Point = self._machineDict["machineCentrePoint"].duplicate()
-        centerCoords = globalCenter.getCoordinate()
+        centerCoords = globalCenter.coordinate
 
         # Konstuktion der Punkte an der x-Achse
         pMagnet1 = Point(
@@ -118,23 +118,47 @@ class Magnet_Surface03(Magnet):
         self._laminationDockingPoint = [pMagnet2]
 
         for surf in self.geometricalElement:
-            if self.getMagnetisationDirection() == 1:
+            if self.magnetisationDirection() == 1:
                 surf.setMeshColor(colorDict["Red"])
-            elif self.getMagnetisationDirection() == -1:
+            elif self.magnetisationDirection() == -1:
                 surf.setMeshColor(colorDict["Green"])
 
     ###Gibt eine Liste mit der Schnittkante im Magneten zurück (siehe _innerLinePart).
-    def getInnerLinePart(self):
+    @property
+    def innerLinePart(self) -> list:
+        """get innerLinePart \n
+        Gibt eine Liste mit der Schnittkante im Magneten zurück (siehe _innerLinePart).
+        Returns:
+            list: _innerLinePart
+        """
         return self._innerLinePart
 
     ###Gibt eine Liste mit dem airDockingPoint zurück (siehe _airDockingPoint).
-    def getAirDockingPoint(self):
+    @property
+    def airDockingPoint(self) -> list:
+        """get airDockingPoint \n
+        Gibt eine Liste mit dem airDockingPoint zurück (siehe _airDockingPoint).
+        Returns:
+            list: _airDockingPoint
+        """
         return self._airDockingPoint
 
     ###Gibt eine Liste mit airLinePart zurück (siehe _airLinePart).
-    def getAirLinePart(self):
+    @property
+    def airLinePart(self) -> list:
+        """get airLinePart \n
+        Gibt eine Liste mit airLinePart zurück (siehe _airLinePart).
+        Returns:
+            list: _airLinePart
+        """
         return self._airLinePart
 
     ###Gibt eine Liste mit dem laminationDockingPoint zurück (siehe _laminationDockingPoint).
-    def getLaminationDockingPoint(self):
+    @property
+    def laminationDockingPoint(self) -> list:
+        """get laminationDockingPoint \n
+        Gibt eine Liste mit dem laminationDockingPoint zurück (siehe _laminationDockingPoint).
+        Returns:
+            list: _laminationDockingPoint
+        """
         return self._laminationDockingPoint

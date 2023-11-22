@@ -21,7 +21,7 @@ from ..script.geometry.surface import Surface
 from ..script.geometry.transformable import Transformable
 from ..script.material.material import Material
 from ..definitions import DEFAULT_GEO_TOL
-from . import importJSON, globalCenterPoint
+from . import importJSON, globalCenterPoint, logger
 from .SurfaceJSON import SurfaceAPI
 
 # from .. import calc_phaseangle_starvoltageV2
@@ -59,7 +59,7 @@ def createLine(
         mpName = lineDict["MpName"]
         if mpName in ("MP", "M1") and (
             norm(
-                array(globalCenterPoint.getCoordinate())
+                array(globalCenterPoint.coordinate)
                 - array(
                     (
                         lineDict["MpX"],
@@ -67,7 +67,8 @@ def createLine(
                         lineDict["MpZ"],
                     )
                 )
-            ) < DEFAULT_GEO_TOL
+            )
+            < DEFAULT_GEO_TOL
         ):
             # the point is the global center point
             centerPoint = globalCenterPoint
@@ -201,12 +202,12 @@ def getSurfaceLineList(
             # endpoint of penultimate (vorletzte) line must be first point
             # of this line (==last line in curve loop)
             startPoint = pointList[-1]
-            assert startPoint.getCoordinate() == coordsP1, (
+            assert startPoint.coordinate == coordsP1, (
                 f"Start point ({startPoint.name}) of last line {lineDict['LineName']} "
                 "is NOT endpoint of previous line. Check line loop!"
             )
             endPoint = pointList[0]
-            assert endPoint.getCoordinate() == coordsP2, (
+            assert endPoint.coordinate == coordsP2, (
                 f"End point ({endPoint.name}) of last line ('{lineDict['LineName']}') "
                 "in line loop is NOT startpoint of first line. Check line loop!"
             )
@@ -214,7 +215,7 @@ def getSurfaceLineList(
             # ATTENTION: StartPoint of new line must be EndPoint of last line
             startPoint = pointList[-1]
             # make sure the coordinates are correct
-            assert startPoint.getCoordinate() == coordsP1, (
+            assert startPoint.coordinate == coordsP1, (
                 f"End point ({startPoint.name}) of last line in line loop is NOT "
                 f"startpoint of this line ('{lineDict['LineName']}'). Check line loop!"
             )
@@ -285,17 +286,17 @@ def importMachineGeometry(machineGeoList: list[dict]) -> Dict[str, SurfaceAPI]:
         if isinstance(area, dict):
             # normal surface; no subtraction
             apiSurf: SurfaceAPI = createAPISurf(area)
-            segmentSurfDict[apiSurf.getIdExt()] = apiSurf
+            segmentSurfDict[apiSurf.idExt] = apiSurf
         elif isinstance(area, list):
             mainSurf = createAPISurf(area.pop(0))
             for toolArea in area:
                 toolSurf = createAPISurf(toolArea)
                 mainSurf.cutOut(toolSurf)
-            segmentSurfDict[mainSurf.getIdExt()] = mainSurf
+            segmentSurfDict[mainSurf.idExt] = mainSurf
         else:
             msg = (
                 "The type of an element in the area list imported from the"
-                f"geometry file ({machineGeoList}) was neither dict or list."
+                f"geometry file was neither dict or list."
                 f"Type is '{type(area)}'. Value is {area}"
             )
             raise ValueError(msg)
@@ -329,7 +330,7 @@ def createSurfaceDict(surfList: List[SurfaceAPI]) -> Dict[str, SurfaceAPI]:
         if not isinstance(surf, SurfaceAPI):
             msg = f"The object in the surface list was not type 'SurfaceAPI', but '{type(surf)}'."
             raise ValueError(msg)
-        surfID = surf.getIdExt()  # key is area ID
+        surfID = surf.idExt  # key is area ID
         surfaceDict[surfID] = surf
     return surfaceDict
 
@@ -394,7 +395,7 @@ def createMachineGeometryFromSegment(
         surfIdExt,
         surf,
     ) in segmentSurfDict.items():  # iterate through machine surface segments
-        nbrSegments = surf.getNbrSegments() / symFactor
+        nbrSegments = surf.NbrSegments / symFactor
         # make sure number of segments is an integer
         if not nbrSegments.is_integer():
             mssg = f"Number of segments (Quantity/SymFactor) must be even, but is: {nbrSegments}"
@@ -406,21 +407,21 @@ def createMachineGeometryFromSegment(
             # rotate and duplicate parent surface
             dupSurf: SurfaceAPI = rotateDuplicate(
                 geoObj=surf,
-                angle=segmentNbr * surf.getAngle(),
+                angle=segmentNbr * surf.angle,
             )
             # set IdExt to SurfaceID + SegmentNbr
             newIdExt = surfIdExt + "_" + str(segmentNbr)
             dupSurf.setIdExt(newIdExt)
             # for each surface that should be subtracted from the parent surface
-            for tool in surf.getTools():
+            for tool in surf.tools:
                 tool: SurfaceAPI = tool
-                toolIdExt = tool.getIdExt()
+                toolIdExt = tool.idExt
                 if toolIdExt not in surfDict:
                     surfDict[toolIdExt] = []
                 # Rotate and duplicate tool surface
                 dupToolSurf: SurfaceAPI = rotateDuplicate(
                     geoObj=tool,
-                    angle=segmentNbr * surf.getAngle(),
+                    angle=segmentNbr * surf.angle,
                 )
                 # set name to SurfaceID + Segment number
                 newToolID = toolIdExt + "_" + str(segmentNbr)
@@ -461,7 +462,7 @@ def createPhysicalSurfaces(
     # inside, all the others have to be too:
     machineSide = (
         "Rotor"
-        if surfList[0].getCurve()[0].startPoint.calcDist() <= rotorMBRadius
+        if surfList[0].curve[0].startPoint.calcDist() <= rotorMBRadius
         else "Stator"
     )
 
@@ -469,7 +470,7 @@ def createPhysicalSurfaces(
         slots: List[Slot] = list()
         for surf in surfList:
             slot = createSlot(
-                surf=surf, material=surf.getMaterial(), extendedInfo=extendedInfo
+                surf=surf, material=surf.material, extendedInfo=extendedInfo
             )
             slots.append(slot)
         return slots, machineSide
@@ -478,7 +479,7 @@ def createPhysicalSurfaces(
         for surf in surfList:
             mag = createMagnet(
                 surf=surf,
-                material=surf.getMaterial(),
+                material=surf.material,
                 magType=importJSON.getMagDir(extendedInfo),
             )  # create magnet object
             magList.append(mag)
@@ -488,13 +489,13 @@ def createPhysicalSurfaces(
             airArea = AirArea(
                 name=idExt,
                 geometricalElement=surfList,
-                material=surfList[0].getMaterial(),
+                material=surfList[0].material,
             )
             return [airArea], machineSide
         airGap = AirGap(
             name=idExt,
             geometricalElement=surfList,
-            material=surfList[0].getMaterial(),
+            material=surfList[0].material,
         )
         return [airGap], machineSide
     # elif "RoCu" in surfName: # For ASM-Cage
@@ -504,16 +505,16 @@ def createPhysicalSurfaces(
     #     pass
     if any(identifier in idExt for identifier in ("Pol", "RoNut")):
         lam = RotorLamination(
-            name=idExt, geometricalElement=surfList, material=surfList[0].getMaterial()
+            name=idExt, geometricalElement=surfList, material=surfList[0].material
         )
         return [lam], machineSide
     if "StNut" in idExt:
         lam = StatorLamination(
-            name=idExt, geometricalElement=surfList, material=surfList[0].getMaterial()
+            name=idExt, geometricalElement=surfList, material=surfList[0].material
         )
         return [lam], machineSide
     physElem = PhysicalElement(
-        name=idExt, geometricalElement=surfList, material=surfList[0].getMaterial()
+        name=idExt, geometricalElement=surfList, material=surfList[0].material
     )
     physElem.setColor()  # set random color for all surfs
     # FIXME: Is it really necessary to return a list here? Seems to allway be just a PE...
@@ -539,11 +540,11 @@ def createMagnet(surf: SurfaceAPI, material: Material, magType: str) -> Magnet:
         Magnet: The Magnet object generated from the above information.
     """
     # get segment number
-    segmentNbr = surf.getIdExt().split("_")[1]
+    segmentNbr = surf.idExt.split("_")[1]
     # identify magnetization direction:
     magDir = 1 if (int(segmentNbr) + 1) % 2 else -1
     return Magnet(
-        name=surf.getIdExt(),
+        name=surf.idExt,
         geoElements=[surf],
         material=material,
         magDirection=magDir,
@@ -571,7 +572,7 @@ def getMagVec(magSurface: Surface) -> float:
     Raises:
         NameError: if S1 or S2 are not found in surfaces points.
     """
-    magnetPointList = magSurface.getPoints()
+    magnetPointList = magSurface.points
     for point in magnetPointList:
         # S1 is inner magnet point, S2 is outer
         if "S1" in point.name:
@@ -579,7 +580,7 @@ def getMagVec(magSurface: Surface) -> float:
         elif "S2" in point.name:
             pOuter = point.duplicate()
     try:
-        innerPointCoords = pInner.getCoordinate()
+        innerPointCoords = pInner.coordinate
         # translate the outer point like the inner point would be in the coordinate center
         # by appliing a translation with vector \vec{-pInner}. Now the angle between the x-axis
         # and the outer point is the magnetisation vector
@@ -625,9 +626,7 @@ def phase2angle(phaseChar: Literal["u", "v", "w"]) -> float:
     raise ValueError(f'Phase ID "{phaseChar}"is not a single character!', phaseChar)
 
 
-def phase2color(
-    phaseChar: Literal["u", "v", "w"]
-) -> Literal["IndianRed", "Yellow", "Aquamarine"]:
+def phase2color(phaseChar: Literal["u", "v", "w"]) -> Literal["IndianRed", "Yellow", "Aquamarine"]:
     """Get gmsh mesh color name for a phase-character. See `gmsh colors
     <https://gitlab.onelab.info/gmsh/gmsh/blob/gmsh_4_11_0/src/common/Colors.h>`_
     for all available colors.
@@ -657,6 +656,7 @@ def phase2color(
         raise ValueError(
             f'Phase ID "{phaseChar}" is not uvw! Can not determine phase angle!'
         )
+
     raise ValueError(f'Phase ID "{phaseChar}"is not a single character!', phaseChar)
 
 
@@ -681,7 +681,7 @@ def getSlotInfo(slotSurfName: str) -> Tuple[int, int]:
     if "StCu" in slotSurfName:
         # split up the surface name to get Slot side (0 odr 1) and segmentNbr (n)
         [slotSide, segmentNbr] = slotSurfName.lstrip("StCu").split("_")
-        # if both stings are numbers
+        # if both strings are numbers
         if slotSide.isdecimal() and segmentNbr.isdecimal():
             if float(slotSide).is_integer() and float(segmentNbr).is_integer():
                 return int(slotSide), int(segmentNbr)  # return the int value
@@ -696,29 +696,79 @@ def getSlotInfo(slotSurfName: str) -> Tuple[int, int]:
     raise ValueError(msg)
 
 
+def getSlotPhase(
+    windingLayout: list[list[int]], segmentNbr: int, slotSide: int
+) -> (Literal["p", "n"], Literal["u", "v", "w"]):
+    """Gets the name (u, v, w) of the Phase with it's direction (+, -)
+
+    Args:
+        windingLayout (list[list[int]]): Winding layout formatted for swat-em phases attribute (see
+         `this <https://swat-em.readthedocs.io/en/latest/reference.html#swat_em.datamodel.datamodel.set_phases>`__
+         SWAT-EM method for more details)
+        segmentNbr (int): Circumferderal model segment number starting with 0 on the x-axis (first segment).
+         Number increasing in math. positive direction.
+        slotSide (int): Slot side 0 = right side; 1 = left side (TODO: Specify upper and lower slot separation).
+
+    Returns:
+        Literal['p','n']: Winding direction (
+            'p' = positiv = +z-direction;
+            'n' = negative = -z-direction)
+        Literal["u", "v", "w"]: Phase indicator
+
+    Raises:
+        ValueError: If phase index in windingLayout is not 0, 1 or 2.
+        RuntimeError: If windingLayout is empty.
+
+    """
+    for phaseIndex, phaseList in enumerate(windingLayout):
+        # for slotSideList in phaseList:
+        for slotNumber in phaseList[slotSide - 1]:
+            if abs(slotNumber) == segmentNbr + 1:
+                if phaseIndex == 0:
+                    phase = "u"
+                elif phaseIndex == 1:
+                    phase = "v"
+                elif phaseIndex == 2:
+                    phase = "w"
+                else:
+                    raise ValueError("PhaseIndex not 0, 1 or 2.")
+
+                if sign(slotNumber) == 1:
+                    cDir = "p"
+                else:
+                    cDir = "n"
+                logger.debug(
+                    "slot number: %i || slot side: %i || phase: %s || direction: %s",
+                    slotNumber,
+                    slotSide,
+                    phase,
+                    cDir,
+                )
+                return cDir, phase
+    raise RuntimeError("Could not determine phase index by slot number.")
+
+
 def createSlot(surf: SurfaceAPI, material: Material, extendedInfo: dict) -> Slot:
     """create a Physical Element of type Slot.
 
     Args:
         surf (SurfaceAPI): Slot geometric surface. Surface IdExt must be formatted like
             "StCu<slotSide>_<segmentNumber>". E.g. The first slot side of the first
-            segment must be named "StCu0_0".
+            segment must be named "StCu1_0".
         material (Material): Slot Material.
         extendedInfo (dict): Additional model information dict, with winding configuration.
 
     Returns:
         Slot: Slot object generated from the above information.
     """
-    slotSide, segmentNbr = getSlotInfo(surf.getIdExt())
-    windList = importJSON.getWindingList(extendedInfo)
-    # modulo operation to repeat the winding sequence
-    windIndex = (2 * segmentNbr + slotSide % 2) % (len(windList))  # + 1)
-    cDir = windList[windIndex][0]  # Current direction ('+' or '-')
-    phase = windList[windIndex][1]  # Phase ID (U,V,W)
-    slotName = surf.getIdExt() + "_" + phase.upper() + ("p" if cDir == "+" else "n")
-    slot = Slot(
-        name=slotName, geometricalElement=[surf], material=material
-    )  # create slot without winding information, because winding is set by stator
+
+    slotSide, segmentNbr = getSlotInfo(surf.idExt)
+    windingLayout = importJSON.getWindingList(extendedInfo)
+    # slotSide is set 0 or 1 where the naming of slotSide is 1 or 2
+    cDir, phase = getSlotPhase(windingLayout, segmentNbr, slotSide - 1)
+    slotName = surf.idExt + "_" + phase.upper() + cDir
+    # create slot without winding information, because winding is set by stator
+    slot = Slot(name=slotName, geometricalElement=[surf], material=material)
     surf.setMeshColor(phase2color(phase))
     return slot
 
@@ -733,97 +783,20 @@ def createWinding(extendedInfo: dict) -> datamodel:
     Returns:
         datamodel: swat_em.datamodel object of winding.
     """
-    winding = datamodel()
+    swatemWinding = datamodel()
     nbrSlots = importJSON.getNbrSlots(extendedInfo)
     nbrPolePairs = importJSON.getNbrPolePairs(extendedInfo)
-    winding.set_machinedata(Q=nbrSlots, p=nbrPolePairs, m=3)
+    swatemWinding.set_machinedata(Q=nbrSlots, p=nbrPolePairs, m=3)
     # get winding layout from json file
-    windList = importJSON.getWindingList(extendedInfo)
-    symFactor = importJSON.getSymFactor(extendedInfo)
+    # windList = importJSON.getWindingList(extendedInfo)
+    # symFactor = importJSON.getSymFactor(extendedInfo)
     # format winding layout for swat_em
-    windLayout = genWindLayoutSwatEM(
-        windList, nbrSlots, bool((2 * nbrPolePairs / symFactor) % 2)
+    windLayout = importJSON.getWindingList(extendedInfo)
+    swatemWinding.set_phases(
+        S=windLayout, turns=(importJSON.getNbrOfTurns(extendedInfo))
     )
-    # print(windLayout)
-    winding.set_phases(S=windLayout, turns=(importJSON.getNbrOfTurns(extendedInfo)))
-    winding.analyse_wdg()  # analyse winding to make sure its valid and all parameters are set
-    return winding
-
-
-def genWindLayoutSwatEM(
-    windingList: List[str], nbrSlots: int, onePole=False
-) -> List[List[int]]:
-    """generate winding layout for `swat_em <https://swat-em.readthedocs.io/en/latest/#>`__
-    winding object (:class:`datamodel`)
-
-    FIXME: the number of slot sides per slot is assumed to be 2 allways.
-
-    Args:
-        windingList (List[str]): Motor model winding layout (with symmetry) generated from matlab
-        Qs (int): Total number of stator slots
-        onePole (bool, optional): Flag if winding layout is only given for one pole, so the winding
-            direction has to be reversed every time. Defaults to False.
-
-    Returns:
-        List[List[int]]: Winding layout formatted for swat-em phases attribute (see
-        `this <https://swat-em.readthedocs.io/en/latest/reference.html#swat_em.datamodel.datamodel.set_phases>`__
-        SWAT-EM method for more details)
-    """
-    # windType = "integer" if windingList[0::2]==windingList[1::2] else "fractional"
-    # winding type is not of intrest because there will allways be 2 slot sides in one slot,
-    # even if its a interger winding
-
-    # FIXME: "number of slot sides" should be considered, instead of setting it to two by default
-    nbrSlotsInList = len(windingList) / 2
-    # number of times to repeat the winding sequence to get the values for all slots:
-    nbrRepeat = nbrSlots / nbrSlotsInList
-    if (
-        nbrRepeat.is_integer() and nbrSlotsInList.is_integer()
-    ):  # set them to int because swat_em-layout and range function only take int
-        nbrRepeat = int(nbrRepeat)
-        nbrSlotsInList = int(nbrSlotsInList)
-    # if windType == "fractional":
-    # winding layout with slot numbers like:
-    # [Phase1[[upper slot side],[lower slot side]],Phase2[[...],[...]],Phase3[[...],[...]]]
-    windLayout = [[[], []], [[], []], [[], []]]
-    for segment in range(nbrRepeat):
-        offset = segment * nbrSlotsInList  # slot number offset for repetition
-        if onePole:
-            # if there is only one pole in the model, then reverse winding direction for second
-            # pole segment
-            signChange = -1 if segment % 2 else 1
-        else:
-            signChange = 1
-        for slotID, phaseID in enumerate(windingList):
-            phaseID = phaseID.replace("u", "1")
-            phaseID = phaseID.replace("v", "2")
-            phaseID = phaseID.replace("w", "3")
-            phaseNum = abs(int(phaseID)) - 1  # 0,1 or 2 for m=3 winding
-            # actual slot number from 0...nbrSlots(=Qs)
-            slotNum = int(ceil((slotID + 1) / 2) + offset)
-            slotSide = (slotID) % 2  # 0 or 1 for left or right/upper or lower slot side
-            # +1 or -1 direction of winding turns
-            windDir = signChange * int(sign(int(phaseID)))
-            windLayout[phaseNum][slotSide].append(windDir * slotNum)
-    # elif windType == "integer":
-    #     windLayout = [[],[],[]]
-    #     for segment in range(nbrRepeat):
-    #         offset = segment*nbrSlotsInList
-    #         if onePole:
-    #             signChange = (-1 if segment%2 else 1)
-    #         for slotID, phaseID in enumerate(windingList):
-    #             if slotID%2==0:
-    #                 phaseID = phaseID.replace("u","1")
-    #                 phaseID = phaseID.replace("v","2")
-    #                 phaseID = phaseID.replace("w","3")
-    #                 phaseNum = abs(int(phaseID))-1
-    #                 slotNum = int(ceil((slotID+1)/2)+offset)
-    #                 windDir = signChange*sign(int(phaseID))
-    #                 windLayout[phaseNum].append(windDir*slotNum)
-    # else:
-    #     raise(ValueError("Winding type is not 'integer' or 'factional'"))
-    return windLayout
-
+    swatemWinding.analyse_wdg()  # analyse winding to make sure its valid and all parameters are set
+    return swatemWinding
 
 # ==================================================================================================
 # ======================================= END MODEL GENERATION =====================================

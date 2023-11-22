@@ -81,8 +81,8 @@ class Point(Transformable):
         isEqual checks if another points coordinates are equal with a given tolerance
         (default < 1e-7)
         """
-        originCoords = array(self.getCoordinate())
-        compCoords = array(compPoint.getCoordinate())
+        originCoords = array(self.coordinate)
+        compCoords = array(compPoint.coordinate)
 
         if norm(originCoords - compCoords) < tol:
             return True
@@ -147,7 +147,8 @@ class Point(Transformable):
         """isDrawn returns true if the point was added to a script"""
         return self._todesmerker
 
-    def getCoordinate(self) -> Tuple[float, float, float]:
+    @property
+    def coordinate(self) -> Tuple[float, float, float]:
         """Die Methode getCoordinate() gibt die x- y- und z-Koordinaten eines Punktes zurück.
 
         Returns:
@@ -155,7 +156,8 @@ class Point(Transformable):
         """
         return (self._x, self._y, self._z)
 
-    def setCoordinate(self, coordinate: Tuple[float, float, float]):
+    @coordinate.setter
+    def coordinate(self, coordinate: Tuple[float, float, float]):
         """Die Methode setCoordinate() setzt die x- y- und z-Koordinaten eines Punktes.
 
         Args:
@@ -164,8 +166,18 @@ class Point(Transformable):
         self._x = coordinate[0]
         self._y = coordinate[1]
         self._z = coordinate[2]
+    
+    @property
+    def meshLength(self) -> float:
+        """get mesh length of point
 
-    def setMeshLength(self, meshLength: float):
+        Returns:
+            float: mesh length
+        """
+        return self._meshLength
+    
+    @meshLength.setter
+    def meshLength(self, meshLength: float):
         """Set mesh length of point.
 
         Args:
@@ -173,13 +185,6 @@ class Point(Transformable):
         """
         self._meshLength = meshLength
 
-    def getMeshLength(self) -> float:
-        """get mesh length of point
-
-        Returns:
-            float: mesh length
-        """
-        return self._meshLength
 
     def translate(self, dx: float, dy: float, dz: float) -> bool:
         """Mit translate() kann ein Punkt linear verschoben werden. Die Inputvariablen dx, dy und dz
@@ -210,7 +215,7 @@ class Point(Transformable):
         """
         if not self._todesmerker:
             # durch Verschiebung Rotation im Ursprung!
-            rotPointCoords = rotationPoint.getCoordinate()
+            rotPointCoords = rotationPoint.coordinate
             self.translate(-rotPointCoords[0], -rotPointCoords[1], -rotPointCoords[2])
             oldx = self._x
             oldy = self._y
@@ -228,7 +233,7 @@ class Point(Transformable):
         """
         if not self._todesmerker:
             # durch Verschiebung Rotation im Ursprung!
-            rotPointCoords = rotationPoint.getCoordinate()
+            rotPointCoords = rotationPoint.coordinate
             self.translate(-rotPointCoords[0], -rotPointCoords[1], -rotPointCoords[2])
             oldy = self._y
             oldz = self._z
@@ -247,7 +252,7 @@ class Point(Transformable):
         """
         if not self._todesmerker:
             # durch Verschiebung Rotation im Ursprung!
-            rotPointCoords = rotationPoint.getCoordinate()
+            rotPointCoords = rotationPoint.coordinate
             self.translate(-rotPointCoords[0], -rotPointCoords[1], -rotPointCoords[2])
             oldx = self._x
             oldz = self._z
@@ -265,8 +270,8 @@ class Point(Transformable):
         Returns:
             Point: Duplicate of point.
         """
-        x, y, z = self.getCoordinate()
-        meshLen = self.getMeshLength()
+        x, y, z = self.coordinate
+        meshLen = self.meshLength
         dupPoint = Point(name, x, y, z, meshLen)
         if not name:
             parentName = self.name
@@ -316,10 +321,10 @@ class Point(Transformable):
         # 6. Spiegelpunkt bestimmen -> S + PS
 
         # 1) Normal vector on plane given by V1 and V2
-        pV1startPoint = array(planeVector1.startPoint.getCoordinate())
-        pV1endPoint = array(planeVector1.endPoint.getCoordinate())
-        pV2startPoint = array(planeVector2.startPoint.getCoordinate())
-        pV2endPoint = array(planeVector2.endPoint.getCoordinate())
+        pV1startPoint = array(planeVector1.startPoint.coordinate)
+        pV1endPoint = array(planeVector1.endPoint.coordinate)
+        pV2startPoint = array(planeVector2.startPoint.coordinate)
+        pV2endPoint = array(planeVector2.endPoint.coordinate)
         normalVec = cross(pV1endPoint - pV1startPoint, pV2endPoint - pV2startPoint)
 
         if array_equal(normalVec, [0, 0, 0]):
@@ -332,7 +337,7 @@ class Point(Transformable):
         # = Plane_Point.x * nE[0] + Plane_Point.y * nE[1] + Plane_Point.z * nE[2]
         # determine the right side of equation:
 
-        Constant = vdot(planePoint.getCoordinate(), normalVec)
+        Constant = vdot(planePoint.coordinate, normalVec)
 
         # 3) normal vector on plane through point to mirror
         # h = (Point.x + lambda * nE[0])
@@ -340,7 +345,7 @@ class Point(Transformable):
         #     (Point.z + lambda * nE[2])
 
         # 4) projection of point on plane -> intersectionPoint
-        selfVec = array(self.getCoordinate())
+        selfVec = array(self.coordinate)
         lambda1 = (Constant - (vdot(normalVec, selfVec))) / (norm(pow(normalVec, 2), 1))
         # determine intersection by putting lambda in equation of h
         intersectionPoint = selfVec + lambda1 * normalVec
@@ -409,7 +414,7 @@ class Point(Transformable):
                 cCoords = CenterPoint
         else:
             try:
-                cCoords = CenterPoint.getCoordinate()
+                cCoords = CenterPoint.coordinate
             except AttributeError:
                 ValueError("CenterPoint was not class Point or array of coordinates")
             except Exception as exce:
@@ -417,7 +422,7 @@ class Point(Transformable):
         dupPoint = self.duplicate()
         # translate the point so that the rotation center is at origin
         if dupPoint.translate(-cCoords[0], -cCoords[1], -cCoords[2]):
-            x, y, _ = dupPoint.getCoordinate()
+            x, y, _ = dupPoint.coordinate
         else:
             raise AttributeError("Translation failed")
         if flag_deg:
@@ -439,11 +444,12 @@ class Point(Transformable):
         Returns:
             float: distance in meter.
         """
-        StartPoint = array(self.getCoordinate())
+        StartPoint = array(self.coordinate)
         EndPoint = array(xyz)
         return norm(StartPoint - EndPoint)
 
-    def getRadius(self) -> float:
+    @property
+    def radius(self) -> float:
         """get the radius to the center point (0,0,0)
 
         Returns:
@@ -468,7 +474,7 @@ class Point(Transformable):
             color (list, optional): Defaults to [random() for i in range(3)].
             tag (bool): Flag to print point id and name like "P `P_ID` ("`P_Name`")"
         """
-        coords = self.getCoordinate()
+        coords = self.coordinate
         if fig is None:
             fig, ax = plt.subplots()
             ax.set_aspect("equal", adjustable="box")

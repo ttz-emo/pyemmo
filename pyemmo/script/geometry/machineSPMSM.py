@@ -271,13 +271,22 @@ class MachineSPMSM(MachineAllType):
     #     else:
     #         print("No definition of stator or rotor!")
 
-    ###Mit setName() kann der Name der Instanz geändert werden.
-    def setName(self, name):
-        self._name = name
-
     ###getName() gibt den Namen der Instanz als String zurück.
-    def getName(self):
+    @property
+    def name(self) -> str:
+        """get name of motor
+
+        Returns:
+            str: name
+        """
         return self._name
+    
+    ###Mit setName() kann der Name der Instanz geändert werden.
+    @name.setter
+    def name(self, newName):
+        self._name = newName
+
+    
 
     ###
     # Mit addToScript wird die Maschine zum Skriptobjekt übergeben und in gmsh-Syntax übersetzt.

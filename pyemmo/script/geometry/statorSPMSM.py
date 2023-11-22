@@ -165,68 +165,68 @@ class StatorPMSM(Stator):
         allLamL2 = []
 
         for i1 in range(0, len(Slot1._innerLinePart)):
-            sl_OP = {"SlotInnerLine": Slot1.getInnerLinePart()[i1]}
-            p1 = Slot1.getInnerLinePart()[i1].startPoint
-            p2 = Slot1.getInnerLinePart()[i1].endPoint
+            sl_OP = {"SlotInnerLine": Slot1.innerLinePart[i1]}
+            p1 = Slot1.innerLinePart[i1].startPoint
+            p2 = Slot1.innerLinePart[i1].endPoint
             sl_OP["p1"] = p1
             sl_OP["p2"] = p2
             allSlotOP.append(sl_OP)
 
         for i2 in range(0, len(StatorSheet1._innerLinePart)):
-            lamL1 = {"LaminationLine": StatorSheet1.getInnerLinePart()[i2]}
-            p1 = StatorSheet1.getInnerLinePart()[i2].startPoint
-            p2 = StatorSheet1.getInnerLinePart()[i2].endPoint
+            lamL1 = {"LaminationLine": StatorSheet1.innerLinePart[i2]}
+            p1 = StatorSheet1.innerLinePart[i2].startPoint
+            p2 = StatorSheet1.innerLinePart[i2].endPoint
             lamL1["p1"] = p1
             lamL1["p2"] = p2
             allLamL.append(lamL1)
 
         for i3 in range(0, len(StatorSheet1._betweenLinePart)):
-            lamL1 = {"LaminationLine": StatorSheet1.getBetweenLinePart()[i2]}
-            p1 = StatorSheet1.getBetweenLinePart()[i2].startPoint
-            p2 = StatorSheet1.getBetweenLinePart()[i2].endPoint
+            lamL1 = {"LaminationLine": StatorSheet1.betweenLinePart[i2]}
+            p1 = StatorSheet1.betweenLinePart[i2].startPoint
+            p2 = StatorSheet1.betweenLinePart[i2].endPoint
             lamL1["p1"] = p1
             lamL1["p2"] = p2
             allLamL2.append(lamL1)
 
-        dockingPointSOP = Slot1.getairDockingPoint()[0]
+        dockingPointSOP = Slot1.airDockingPoint[0]
         # prüfen welcher Punkt in allMagL der DockingPoint ist! -> Momentan allMagL darf nur ein Element besitzen -> Ansonsten hier eine For-Schleife einrichten.
-        if allSlotOP[0]["p1"].getCoordinate() == dockingPointSOP.getCoordinate():
+        if allSlotOP[0]["p1"].coordinate == dockingPointSOP.coordinate:
             changePointSOP = allSlotOP[0]["p2"]
-        elif allSlotOP[0]["p2"].getCoordinate() == dockingPointSOP.getCoordinate():
+        elif allSlotOP[0]["p2"].coordinate == dockingPointSOP.coordinate:
             changePointSOP = allSlotOP[0]["p1"]
 
         # Punkt von Lamination holen, der verändert werden muss. Punkt wandert zu Ende des Magneten.
-        testP = StatorSheet1.getAirDockingPoint1()[0]
+        testP = StatorSheet1.airDockingPoint1[0]
         for lElem in allLamL:
-            if lElem["p1"].getCoordinate() == testP.getCoordinate():
+            if lElem["p1"].coordinate == testP.coordinate:
                 lElem["LaminationLine"].startPoint = changePointSOP
-            elif lElem["p2"].getCoordinate() == testP.getCoordinate():
+            elif lElem["p2"].coordinate == testP.coordinate:
                 lElem["LaminationLine"].endPoint = changePointSOP
 
         for lElem in allLamL2:
             if (
-                StatorSheet1.getBetweenLinePart()[0].startPoint.getCoordinate()
-                == testP.getCoordinate()
+                StatorSheet1.betweenLinePart[0].startPoint.coordinate
+                == testP.coordinate
             ):
-                lElem["LaminationLine"].startPoint = Slot1.getLaminationDockingPoint()[
+                lElem["LaminationLine"].startPoint = Slot1.laminationDockingPoint[
                     0
                 ]
             elif (
-                StatorSheet1.getBetweenLinePart()[0].endPoint.getCoordinate()
-                == testP.getCoordinate()
+                StatorSheet1.betweenLinePart[0].endPoint.coordinate
+                == testP.coordinate
             ):
-                lElem["LaminationLine"].endPoint = Slot1.getLaminationDockingPoint()[0]
+                lElem["LaminationLine"].endPoint = Slot1.laminationDockingPoint[0]
 
-        curveOfStatorSheet1 = StatorSheet1.geometricalElement[0].getCurve()
-        curveOfStatorSheet1 = curveOfStatorSheet1 + Slot1.getLaminationDockingLine()
-        StatorSheet1.geometricalElement[0].setCurve(curveOfStatorSheet1)
+        curveOfStatorSheet1 = StatorSheet1.geometricalElement[0].curve
+        curveOfStatorSheet1 = curveOfStatorSheet1 + Slot1.laminationDockingLine
+        StatorSheet1.geometricalElement[0].curve = curveOfStatorSheet1
 
     ###Mit addAirSpace() wird der Luftraum auf der Statorseite bis zum Movingband erzeugt und Materialeigenschaften definiert.
     def _addAirSpace(self):
         airGapLength = self._airGapDict["width"] / 4
         PCentre = self._laminationDict["machineCentrePoint"].duplicate()
         alpha = self._angleGeoParts
-        pAir1: Point = self._physicalRaw[1].getairDockingPoint()[0].duplicate()
+        pAir1: Point = self._physicalRaw[1].airDockingPoint[0].duplicate()
         pAir1.translate(
             -airGapLength * math.cos(alpha), -airGapLength * math.sin(alpha), 0
         )
@@ -235,13 +235,13 @@ class StatorPMSM(Stator):
 
         # createLine
         lAir1 = CircleArc("lAir1", pAir1, PCentre, pAir2)
-        lAir2 = Line("lAir2", pAir1, self._physicalRaw[1].getairDockingPoint()[0])
-        lAir3 = Line("lAir3", pAir2, self._physicalRaw[0].getAirDockingPoint2()[0])
+        lAir2 = Line("lAir2", pAir1, self._physicalRaw[1].airDockingPoint[0])
+        lAir3 = Line("lAir3", pAir2, self._physicalRaw[0].airDockingPoint2[0])
         sAir1 = Surface(
             "sAir1",
             [lAir1, lAir2, lAir3]
-            + self._physicalRaw[0].getInnerLinePart()
-            + self._physicalRaw[1].getInnerLinePart(),
+            + self._physicalRaw[0].innerLinePart
+            + self._physicalRaw[1].innerLinePart,
         )
         sAir1.setMeshLength(airGapLength)
         airPart = AirGap("airStator", [sAir1], self._airGapDict["material"])
@@ -252,7 +252,7 @@ class StatorPMSM(Stator):
         # duplicate
         allGeo = self._physicalRaw[0].geometricalElement
         PCentre = self._laminationDict["machineCentrePoint"].duplicate()
-        pH1 = self._physicalRaw[0].getBetweenLinePart()[0].startPoint
+        pH1 = self._physicalRaw[0].betweenLinePart[0].startPoint
         hilfsLinie1 = Line("L_hilf1", PCentre, pH1)
         ez = Point("p_Z", PCentre._x, PCentre._y, PCentre._z + 1, 1)
         hilfsLinie2 = Line("L_hilf2", PCentre, ez)
@@ -276,9 +276,9 @@ class StatorPMSM(Stator):
         surfaceSlot2 = slotSurfs[0].mirror(PCentre, hilfsLinie1, hilfsLinie2)
         slotSurfs.insert(0, surfaceSlot2)
         slot1 = Slot("", [surfaceSlot2], self._slotDict["material"])
-        slot1.setName("slot_" + str(slot1.id))
+        slot1.name = "slot_" + str(slot1.id)
         slot2 = Slot("", [slotSurfs[1]], self._slotDict["material"])
-        slot2.setName("slot_" + str(slot2.id))
+        slot2.name = "slot_" + str(slot2.id)
         allSlot = [slot1, slot2]
 
         for i in range(1, int(self._nbrGeoParts / 2)):
@@ -286,7 +286,7 @@ class StatorPMSM(Stator):
                 sNew2 = s.duplicate()
                 sNew2.rotateZ(self._laminationDict["machineCentrePoint"], i * alpha)
                 slot3 = Slot("", [sNew2], self._slotDict["material"])
-                slot3.setName("slot_" + str(slot3.id))
+                slot3.name = "slot_" + str(slot3.id)
                 allSlot.append(slot3)
 
         self._physicalElements = self._physicalElements + allSlot
@@ -351,7 +351,7 @@ class StatorPMSM(Stator):
             )
         ]
         mbStator: List[CircleArc] = [
-            self._physicalRaw[2].geometricalElement[0].getCurve()[0].duplicate()
+            self._physicalRaw[2].geometricalElement[0].curve[0].duplicate()
         ]
         mbStator[0].rotateZ(self._laminationDict["machineCentrePoint"], -1 * angle)
 
@@ -373,7 +373,7 @@ class StatorPMSM(Stator):
         pprimary1 = Point("pprimary1", self._laminationDict["r_S_i"], 0, 0, 1)
         pprimary2 = Point("pprimary2", self._laminationDict["r_S_a"], 0, 0, 1)
         lLamprimary = Line("lLamprimary", pprimary1, pprimary2)
-        lAir = self._physicalRaw[2].geometricalElement[0].getCurve()[1].duplicate()
+        lAir = self._physicalRaw[2].geometricalElement[0].curve[1].duplicate()
         lAir.rotateZ(self._laminationDict["machineCentrePoint"], -1 * angle)
 
         primaryLine1 = PrimaryLine("primary_StatorLine", [lLamprimary, lAir])

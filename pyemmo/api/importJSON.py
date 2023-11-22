@@ -73,13 +73,24 @@ def getCurrentdq(extendedInfo: dict) -> Tuple[float]:
             "Identifier 'id' and/or 'iq' missing from extended Information dict!"
         )
 
+#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
-def getWindingList(extendedInfo: dict) -> List[str]:
-    """
-    Get the winding list from the extended info dict.
-    The winding list looks like:
 
-        ['+u', '-v', '+v', '-w', '+w', '-u']
+def getWindingList(extendedInfo: dict) -> list[list[list[int]]]:
+    """Get winding layout from extended info dict. The layout must be in form of
+    the SWAT-EM winding layout. The layout looks something like:
+
+    single-layer winding:
+        [[phase_u1], [phase_v1], [phase_w1]]
+
+    double-layer winding:
+        [[[phase_u1], [phase_u2]], [[phase_v1], [phase_v2]], [[phase_w1], [phase_w2]]]
+        
+    Where phase_u1 is a list of integers representing the slot ID and the winding direction
+    (with their sign). See`this <https://swat-em.readthedocs.io/en/latest/reference.html#swat_em.datamodel.datamodel.set_phases>`__
+    SWAT-EM method for more details.
 
     Args:
         extendedInfo (dict): dict with simulation infos
@@ -88,15 +99,14 @@ def getWindingList(extendedInfo: dict) -> List[str]:
         KeyError: if "winding" key not in extendedInfo
 
     Returns:
-        List[str]: winding list with elements "<+,-><u,v,w>"
+        list[list[list[int]]]: SWAT-EM formatted winding layout
     """
     windKey = "winding"
     if not windKey in extendedInfo.keys():
         raise KeyError("Missing winding information from extended info.")
-    else:
-        windList: List[str] = extendedInfo[windKey]
+    # windList: List[str] = extendedInfo[windKey]
+    windList = extendedInfo[windKey]
     return windList
-
 
 def getNbrOfTurns(extendedInfo: dict) -> float:
     """
