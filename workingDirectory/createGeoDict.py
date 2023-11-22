@@ -18,7 +18,7 @@ from pyleecan.Classes.MachineIPMSM import MachineIPMSM
 from pyemmo.functions.plot import plot
 from pyemmo.api.SurfaceJSON import SurfaceAPI
 from workingDirectory.translateGeometry import translateGeometry
-from workingDirectory.getRotorStatorContour import getRotorContour, getStatorContour
+from workingDirectory.getRotorStatorContour import getRotorContour, getStatorContour, getSurfacemagnetContour
 
 # from workingDirectory.buildPyemmoMovingBand import buildPyemmoMovingBand
 
@@ -122,7 +122,7 @@ def createGeoDict(machine, rotorSym, statorSym, magnetFarthestRadius, magnetShor
     print("===============")
 
     print("getRotorContour:")
-    rotorContourLineList = getRotorContour(geometryList=geometryList, machine=machine)
+    rotorContourLineList = getSurfacemagnetContour(geometryList=geometryList, machine=machine, isInternal=False)
     statorContourLineList = getStatorContour(geometryList=geometryList, machine=machine)
     # ------------------------------------------------------
     # Change names of rotorRint-Curve and statorRext-Curve:
