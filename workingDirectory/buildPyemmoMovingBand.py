@@ -50,12 +50,22 @@ def buildPyemmoMovingBand(
     # =========================================================================
     # Calculation of the distance between rotor/magnet and stator inner radius:
     # =========================================================================
-    if rotorRext > magnetFarthestRadius:
-        diffRadius = statorRint - rotorRext
-        maxRadius = rotorRext
+    if isInternalRotor:
+        if rotorRext > magnetFarthestRadius:
+            diffRadius = statorRint - rotorRext
+            maxRadius = rotorRext
+        else:
+            diffRadius = statorRint - magnetFarthestRadius
+            maxRadius = magnetFarthestRadius
     else:
-        diffRadius = statorRint - magnetFarthestRadius
-        maxRadius = magnetFarthestRadius
+        statorRext = machine.stator.Rext
+        rotorRint = machine.rotor.Rint
+        if rotorRint < magnetShortestRadius:
+            diffRadius = statorRext - rotorRint
+            maxRadius = statorRext
+        else:
+            diffRadius = statorRint - magnetShortestRadius
+            maxRadius = magnetShortestRadius
 
     numberOfBands = 5
     Wp = diffRadius / numberOfBands
