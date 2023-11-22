@@ -40,27 +40,28 @@ class Spline(Line):
             p1 (Point): Startpoint
             p2 (Point): Endpoint
             controlPoints (List[Point]): List of controll points
-            SplineType (Literal[0, 1, 2], optional): There are 3 different types of Splines that can be generated with Gmsh. Defaults to 0 (Spline).
+            SplineType (Literal[0, 1, 2], optional): There are 3 different types of Splines
+             that can be generated with Gmsh. Defaults to 0 (Spline):
+             
                 0 : Catmull-Rom Spline (Build-in Kernel) or C2 BSpline (OpenCASCADE Kernel)
                 1 : Bezierkurve
                 2 : Basis-Spline
 
         """
-        ###Name vom Polynomzug.
-        self.name = name
-        ###Startpunkt des Polynomzugs.
-        self.startPoint = startPoint
-        ###Endpunkt des Polynomzugs.
-        self.endPoint = endPoint
+        super().__init__(name=name, startPoint=startPoint, endPoint=endPoint)
         ###Zwischenpunkte vom Polynomzug in der richtigen durchzulaufenden Reihenfolge.
-        self._controlPoints = controlPoints
-        ###Id des Polynomzugs.
-        self.id = self._getNewID()
-        ###Todesmerker wird nur gesetzt, wenn das Objekt im Skript erzeugt wurde (Aufruf von addToScript())!
-        self._todesmerker = False
-        self._splineType = (
-            SplineType  # 0: Catmull-Rom Spline, 1: Bezierkurve, 2: Basis-Spline
-        )
+        self.controlPoints = controlPoints
+        # 0: Catmull-Rom Spline, 1: Bezierkurve, 2: Basis-Spline
+        self._splineType = SplineType
+
+    @property
+    def type(self) -> Literal["Spline"]:
+        """Mit type wird ein Identifier der Klasse als String zurück gegeben.
+
+        Returns:
+            Literal["Spline"]: Class identifier
+        """
+        return "Spline"
 
     @property
     def splineType(self) -> Literal[0, 1, 2]:
@@ -125,15 +126,6 @@ class Spline(Line):
         points.extend(super().points)
         points.extend(self.controlPoints)
         return points
-
-    @property
-    def type(self) -> Literal["Spline"]:
-        """Mit type wird ein Identifier der Klasse als String zurück gegeben.
-
-        Returns:
-            Literal["Spline"]: Class identifier
-        """
-        return "Spline"
 
     def translate(self, dx: float, dy: float, dz: float):
         """Mit translate() wird das Objekt linear verschoben. Die Inputvariablen dx, dy und dz beschreiben die Verschiebungsfaktoren in der x-, y- und z- Richtung.
