@@ -686,12 +686,12 @@ class Script(object):
             if addC is not None:
                 curve.center = addC
         elif curve.type == "Spline":
-            controlPointList = curve.controlPoints
+            controlPointList = curve.controlPoints.copy()
             for controlPoint in controlPointList:
                 newP = self._addPoint(controlPoint)
                 if newP is not None:
                     curve.removeControlPoint(controlPoint)
-                    curve.controlPoint(controlPointList.index(controlPoint), newP)
+                    curve.addControlPoint(newP,controlPointList.index(controlPoint))
 
         identicalCurve = self.testCurve(curve)
         if identicalCurve is None:
