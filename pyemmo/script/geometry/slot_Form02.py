@@ -83,20 +83,56 @@ class Slot_Form02(Slot):
         self._laminationDockingPoint = [pS6]
         self._betweenLinePart = [lS8, lS2]
 
-    def getBetweenLinePart(self):
+    @property
+    def betweenLinePart(self):
+        """Getter of betweenLinePart
+
+        Returns:
+            _type_: _description_
+        """
         return self._betweenLinePart
 
-    def getairDockingLine(self):
+    @property
+    def airDockingLine(self):
+        """Getter of airDockingLine
+
+        Returns:
+            _type_: _description_
+        """
         return self._airDockingLine
     
-    def getInnerLinePart(self):
+    @property
+    def innerLinePart(self):
+        """Getter of innerLinePart
+
+        Returns:
+            _type_: _description_
+        """
         return self._innerLinePart
 
-    def getairDockingPoint(self):
+    @property
+    def airDockingPoint(self):
+        """Getter of airDockingPoint
+
+        Returns:
+            _type_: _description_
+        """
         return self._airDockingPoint
 
-    def getLaminationDockingLine(self):
+    @property
+    def laminationDockingLine(self):
+        """Getter of laminationDockingLine
+
+        Returns:
+            _type_: _description_
+        """
         return self._laminationDockingLine
 
-    def getLaminationDockingPoint(self):
+    @property
+    def laminationDockingPoint(self):
+        """Getter of laminationDockingPoint
+
+        Returns:
+            _type_: _description_
+        """
         return self._laminationDockingPoint

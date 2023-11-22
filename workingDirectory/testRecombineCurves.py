@@ -1,31 +1,18 @@
-#%%
-from cmath import pi
-from sys import path
-from os.path import abspath, join, dirname
-from typing import List, Union
-from numpy import deg2rad, rint
-
-try:
-    rootname = abspath(join(dirname(__file__), ".."))
-except:
-    rootname = "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\Software_V2"
-    # print(f"Could not determine root. Setting it manually to '{rootname}'")
-print(f'rootname is "{rootname}"')
-path.append(rootname)
-#%%
-import pyemmo as emmo
+# %%
+from math import pi
 from pyemmo.definitions import RESULT_DIR
 from pyemmo.script.script import Script
 from pyemmo.script.geometry.point import Point
 from pyemmo.script.geometry.line import Line
 from pyemmo.script.geometry.circleArc import CircleArc
-from pyemmo.script.geometry.spline import Spline
+
+# from pyemmo.script.geometry.spline import Spline
 from pyemmo.script.geometry.surface import Surface
 from pyemmo.functions.runOnelab import createCmdCommand
 from subprocess import run
 
 pm = Point("p1", 0, 0, 0, 0.1)
-#%% Airgap Band Surface recombination
+# %% Airgap Band Surface recombination
 nbrSegments = 8
 nbrSegmentsInModel = 2
 segmentAngle = 2 * pi / nbrSegments
@@ -55,9 +42,9 @@ l31 = CircleArc("l3.1", p5, pm, p7)
 l4 = Line("l4", p7, p8)
 l51 = CircleArc("l5.1", p8, pm, p6)
 l5 = CircleArc("l5", p6, pm, p4)
-l6 = CircleArc("l6", p4, pm , p1)
+l6 = CircleArc("l6", p4, pm, p1)
 
-surfSeg = Surface("Segment_1", [l1,l2,l3,l31,l4,l51,l5,l6])
+surfSeg = Surface("Segment_1", [l1, l2, l3, l31, l4, l51, l5, l6])
 surfSeg.plot()
 # originalLoop = surfSeg.getCurve()
 # newLoop: List[Union[Line, CircleArc, Spline]] = list()
@@ -85,11 +72,15 @@ surfSeg.plot()
 # surfSeg.setCurve(newLoop)
 # ... ->
 surfSeg.recombineCurves()
+surfSeg.setMeshLength(5e-3)
 surfSeg.plot()
-#%%
+# %%
 recombineScript = Script("testRecombineSurfs", scriptPath=RESULT_DIR, simuParams={})
 surfSeg.addToScript(recombineScript)
 recombineScript.generateScript(mode=1)  # only geo file
-run(createCmdCommand(onelabFile=recombineScript.getGeoFilePath(), useGUI=True))
+run(
+    createCmdCommand(onelabFile=recombineScript.getGeoFilePath(), useGUI=True),
+    check=True,
+)
 
 # %%

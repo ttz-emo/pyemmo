@@ -1,12 +1,12 @@
 # %%
-from numpy import pi
 from typing import List
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
 from pyemmo.script.geometry.point import Point
 from pyemmo.script.geometry.line import Line
 from pyemmo.script.geometry.circleArc import CircleArc
 from pyemmo.script.geometry.surface import Surface
-
-import matplotlib.pyplot as plt
 
 P1 = Point("P1", 0, 0, 0, 1)
 # make sure point is plotted even though no fig is given
@@ -26,12 +26,13 @@ L3 = Line("L3", P3, P4)
 L4 = Line("L4", P4, P1)
 S1 = Surface("S1", [L1, L3, L2, L4])
 S1.plot(tag=True)
-#%%
-S1.rotateZ(P1, pi / 4)
+# %%
+S1.rotateZ(P1, np.pi / 4)
 fig, ax = plt.subplots()
+ax: Axes = ax
 ax.set_aspect("equal", adjustable="box")
 for i in range(4):
-    S1.rotateZ(P1, i * pi / 2)  # rotate 90° to check plot
+    S1.rotateZ(P1, i * np.pi / 2)  # rotate 90° to check plot
     C1 = CircleArc(name="Arc1", startPoint=P2, centerPoint=P1, endPoint=P4)
     # diameter = C1.getRadius()*2
     # theta1, theta2 = C1.getAnglesToX(flag_deg=True)
@@ -69,10 +70,9 @@ for p in points:
     x.append(coords[0])
     y.append(coords[1])
     z.append(coords[2])
-from numpy import mean, pi
 
-print([mean(x), mean(y), mean(z)])
+print([np.mean(x), np.mean(y), np.mean(z)])
 plt.plot(x, y, "bo")
-plt.plot(mean(x), mean(y), color="green", marker="x", markersize=12)
+plt.plot(np.mean(x), np.mean(y), color="green", marker="x", markersize=12)
 plt.show()
 # %%

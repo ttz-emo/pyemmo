@@ -59,7 +59,7 @@ def createLine(
         mpName = lineDict["MpName"]
         if mpName in ("MP", "M1") and (
             norm(
-                array(globalCenterPoint.getCoordinate())
+                array(globalCenterPoint.coordinate)
                 - array(
                     (
                         lineDict["MpX"],
@@ -202,12 +202,12 @@ def getSurfaceLineList(
             # endpoint of penultimate (vorletzte) line must be first point
             # of this line (==last line in curve loop)
             startPoint = pointList[-1]
-            assert startPoint.getCoordinate() == coordsP1, (
+            assert startPoint.coordinate == coordsP1, (
                 f"Start point ({startPoint.name}) of last line {lineDict['LineName']} "
                 "is NOT endpoint of previous line. Check line loop!"
             )
             endPoint = pointList[0]
-            assert endPoint.getCoordinate() == coordsP2, (
+            assert endPoint.coordinate == coordsP2, (
                 f"End point ({endPoint.name}) of last line ('{lineDict['LineName']}') "
                 "in line loop is NOT startpoint of first line. Check line loop!"
             )
@@ -215,7 +215,7 @@ def getSurfaceLineList(
             # ATTENTION: StartPoint of new line must be EndPoint of last line
             startPoint = pointList[-1]
             # make sure the coordinates are correct
-            assert startPoint.getCoordinate() == coordsP1, (
+            assert startPoint.coordinate == coordsP1, (
                 f"End point ({startPoint.name}) of last line in line loop is NOT "
                 f"startpoint of this line ('{lineDict['LineName']}'). Check line loop!"
             )
@@ -294,13 +294,13 @@ def importMachineGeometry(geometryFile: str) -> Dict[str, SurfaceAPI]:
             if isinstance(area, dict):
                 # normal surface; no subtraction
                 apiSurf: SurfaceAPI = createAPISurf(area)
-                segmentSurfDict[apiSurf.getIdExt()] = apiSurf
+                segmentSurfDict[apiSurf.idExt] = apiSurf
             elif isinstance(area, list):
                 mainSurf = createAPISurf(area.pop(0))
                 for toolArea in area:
                     toolSurf = createAPISurf(toolArea)
                     mainSurf.cutOut(toolSurf)
-                segmentSurfDict[mainSurf.getIdExt()] = mainSurf
+                segmentSurfDict[mainSurf.idExt] = mainSurf
             else:
                 msg = (
                     "The type of an element in the area list imported from the"
@@ -338,7 +338,7 @@ def createSurfaceDict(surfList: List[SurfaceAPI]) -> Dict[str, SurfaceAPI]:
         if not isinstance(surf, SurfaceAPI):
             msg = f"The object in the surface list was not type 'SurfaceAPI', but '{type(surf)}'."
             raise ValueError(msg)
-        surfID = surf.getIdExt()  # key is area ID
+        surfID = surf.idExt  # key is area ID
         surfaceDict[surfID] = surf
     return surfaceDict
 
@@ -403,7 +403,7 @@ def createMachineGeometryFromSegment(
         surfIdExt,
         surf,
     ) in segmentSurfDict.items():  # iterate through machine surface segments
-        nbrSegments = surf.getNbrSegments() / symFactor
+        nbrSegments = surf.NbrSegments / symFactor
         # make sure number of segments is an integer
         if not nbrSegments.is_integer():
             mssg = f"Number of segments (Quantity/SymFactor) must be even, but is: {nbrSegments}"
@@ -415,21 +415,21 @@ def createMachineGeometryFromSegment(
             # rotate and duplicate parent surface
             dupSurf: SurfaceAPI = rotateDuplicate(
                 geoObj=surf,
-                angle=segmentNbr * surf.getAngle(),
+                angle=segmentNbr * surf.angle,
             )
             # set IdExt to SurfaceID + SegmentNbr
             newIdExt = surfIdExt + "_" + str(segmentNbr)
             dupSurf.setIdExt(newIdExt)
             # for each surface that should be subtracted from the parent surface
-            for tool in surf.getTools():
+            for tool in surf.tools:
                 tool: SurfaceAPI = tool
-                toolIdExt = tool.getIdExt()
+                toolIdExt = tool.idExt
                 if toolIdExt not in surfDict:
                     surfDict[toolIdExt] = []
                 # Rotate and duplicate tool surface
                 dupToolSurf: SurfaceAPI = rotateDuplicate(
                     geoObj=tool,
-                    angle=segmentNbr * surf.getAngle(),
+                    angle=segmentNbr * surf.angle,
                 )
                 # set name to SurfaceID + Segment number
                 newToolID = toolIdExt + "_" + str(segmentNbr)
@@ -470,7 +470,7 @@ def createPhysicalSurfaces(
     # inside, all the others have to be too:
     machineSide = (
         "Rotor"
-        if surfList[0].getCurve()[0].startPoint.calcDist() <= rotorMBRadius
+        if surfList[0].curve[0].startPoint.calcDist() <= rotorMBRadius
         else "Stator"
     )
 
@@ -478,7 +478,7 @@ def createPhysicalSurfaces(
         slots: List[Slot] = list()
         for surf in surfList:
             slot = createSlot(
-                surf=surf, material=surf.getMaterial(), extendedInfo=extendedInfo
+                surf=surf, material=surf.material, extendedInfo=extendedInfo
             )
             slots.append(slot)
         return slots, machineSide
@@ -487,7 +487,7 @@ def createPhysicalSurfaces(
         for surf in surfList:
             mag = createMagnet(
                 surf=surf,
-                material=surf.getMaterial(),
+                material=surf.material,
                 magType=importJSON.getMagDir(extendedInfo),
             )  # create magnet object
             magList.append(mag)
@@ -497,13 +497,13 @@ def createPhysicalSurfaces(
             airArea = AirArea(
                 name=idExt,
                 geometricalElement=surfList,
-                material=surfList[0].getMaterial(),
+                material=surfList[0].material,
             )
             return [airArea], machineSide
         airGap = AirGap(
             name=idExt,
             geometricalElement=surfList,
-            material=surfList[0].getMaterial(),
+            material=surfList[0].material,
         )
         return [airGap], machineSide
     # elif "RoCu" in surfName: # For ASM-Cage
@@ -513,16 +513,16 @@ def createPhysicalSurfaces(
     #     pass
     if any(identifier in idExt for identifier in ("Pol", "RoNut")):
         lam = RotorLamination(
-            name=idExt, geometricalElement=surfList, material=surfList[0].getMaterial()
+            name=idExt, geometricalElement=surfList, material=surfList[0].material
         )
         return [lam], machineSide
     if "StNut" in idExt:
         lam = StatorLamination(
-            name=idExt, geometricalElement=surfList, material=surfList[0].getMaterial()
+            name=idExt, geometricalElement=surfList, material=surfList[0].material
         )
         return [lam], machineSide
     physElem = PhysicalElement(
-        name=idExt, geometricalElement=surfList, material=surfList[0].getMaterial()
+        name=idExt, geometricalElement=surfList, material=surfList[0].material
     )
     physElem.setColor()  # set random color for all surfs
     # FIXME: Is it really necessary to return a list here? Seems to allway be just a PE...
@@ -548,11 +548,11 @@ def createMagnet(surf: SurfaceAPI, material: Material, magType: str) -> Magnet:
         Magnet: The Magnet object generated from the above information.
     """
     # get segment number
-    segmentNbr = surf.getIdExt().split("_")[1]
+    segmentNbr = surf.idExt.split("_")[1]
     # identify magnetization direction:
     magDir = 1 if (int(segmentNbr) + 1) % 2 else -1
     return Magnet(
-        name=surf.getIdExt(),
+        name=surf.idExt,
         geoElements=[surf],
         material=material,
         magDirection=magDir,
@@ -580,7 +580,7 @@ def getMagVec(magSurface: Surface) -> float:
     Raises:
         NameError: if S1 or S2 are not found in surfaces points.
     """
-    magnetPointList = magSurface.getPoints()
+    magnetPointList = magSurface.points
     for point in magnetPointList:
         # S1 is inner magnet point, S2 is outer
         if "S1" in point.name:
@@ -588,7 +588,7 @@ def getMagVec(magSurface: Surface) -> float:
         elif "S2" in point.name:
             pOuter = point.duplicate()
     try:
-        innerPointCoords = pInner.getCoordinate()
+        innerPointCoords = pInner.coordinate
         # translate the outer point like the inner point would be in the coordinate center
         # by appliing a translation with vector \vec{-pInner}. Now the angle between the x-axis
         # and the outer point is the magnetisation vector
@@ -634,9 +634,7 @@ def phase2angle(phaseChar: Literal["u", "v", "w"]) -> float:
     raise ValueError(f'Phase ID "{phaseChar}"is not a single character!', phaseChar)
 
 
-def phase2color(
-    phaseChar: Literal["u", "v", "w"]
-) -> Literal["IndianRed", "Yellow", "Aquamarine"]:
+def phase2color(phaseChar: Literal["u", "v", "w"]) -> Literal["IndianRed", "Yellow", "Aquamarine"]:
     """Get gmsh mesh color name for a phase-character. See `gmsh colors
     <https://gitlab.onelab.info/gmsh/gmsh/blob/gmsh_4_11_0/src/common/Colors.h>`_
     for all available colors.
@@ -772,11 +770,11 @@ def createSlot(surf: SurfaceAPI, material: Material, extendedInfo: dict) -> Slot
         Slot: Slot object generated from the above information.
     """
 
-    slotSide, segmentNbr = getSlotInfo(surf.getIdExt())
+    slotSide, segmentNbr = getSlotInfo(surf.idExt)
     windingLayout = importJSON.getWindingList(extendedInfo)
     # slotSide is set 0 or 1 where the naming of slotSide is 1 or 2
     cDir, phase = getSlotPhase(windingLayout, segmentNbr, slotSide - 1)
-    slotName = surf.getIdExt() + "_" + phase.upper() + cDir
+    slotName = surf.idExt + "_" + phase.upper() + cDir
     # create slot without winding information, because winding is set by stator
     slot = Slot(name=slotName, geometricalElement=[surf], material=material)
     surf.setMeshColor(phase2color(phase))

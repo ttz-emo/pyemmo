@@ -55,7 +55,7 @@ class StatorLamination_Sheet01_Standard(StatorLamination):
         r_S_a = self._machineDict["r_S_a"]
 
         PCentre = self._machineDict["machineCentrePoint"].duplicate()
-        coordCentre = PCentre.getCoordinate()
+        coordCentre = PCentre.coordinate
 
         alpha = self._machineDict["angleGeoParts"]
 
@@ -112,17 +112,41 @@ class StatorLamination_Sheet01_Standard(StatorLamination):
         self._airDockingPoint2 = [pSi2]
 
     ###Gibt eine Liste mit der Innenkante des Statorbleches zurück (siehe _innerLinePart).
-    def getInnerLinePart(self):
+    @property
+    def innerLinePart(self) -> list:
+        """Gibt eine Liste mit der Innenkante des Statorbleches zurück (siehe _innerLinePart).
+
+        Returns:
+            list: _innerLinePart
+        """
         return self._innerLinePart
 
     ###Gibt eine Liste mit der Schnittkante zurück (siehe _betweenLinePart).
-    def getBetweenLinePart(self):
+    @property
+    def betweenLinePart(self) -> list:
+        """Gibt eine List mit der Schnittkante zurück (siehe _betweenLinePart).
+
+        Returns:
+            _type_: _betweeLinePart
+        """
         return self._betweenLinePart
 
     ###Gibt eine Liste mit dem airDockingPoint1 zurück (siehe _airDockingPoint1).
-    def getAirDockingPoint1(self):
+    @property
+    def airDockingPoint1(self) -> list:
+        """Gibt eine Liste mit dem airDockingPoint1 zurück (siehe _airDockingPoint1).
+
+        Returns:
+            list: _airDockingPoint1
+        """
         return self._airDockingPoint1
 
     ###Gibt eine Liste mit dem airDockingPoint2 zurück (siehe _airDockingPoint2).
-    def getAirDockingPoint2(self):
+    @property
+    def airDockingPoint2(self) -> list:
+        """Gibt eine Liste mit dem airDockingPoint2 zurück (siehe _airDockingPoint2).
+
+        Returns:
+            list: _airDockingPoint2
+        """
         return self._airDockingPoint2

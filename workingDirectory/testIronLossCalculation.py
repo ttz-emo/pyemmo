@@ -1,6 +1,8 @@
 """Module to test iron loss calculation"""
 # %%
 import os
+from os import path
+import sys
 import time as clockTime
 import numpy as np
 import gmsh
@@ -8,7 +10,22 @@ import subprocess
 from typing import List
 import logging
 from matplotlib import pyplot as plt
+
+try:
+    from pyemmo.script.script import Script
+except:
+    try:
+        rootname = path.abspath(path.join(path.dirname(__file__), ".."))
+    except:
+        rootname = "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\pyemmo"
+        print(f"Could not determine root. Setting it manually to '{rootname}'")
+    print(f'rootname is "{rootname}"')
+    sys.path.append(rootname)
+    for p in sys.path:
+        print(p)
+
 from pyemmo.definitions import ROOT_DIR, RESULT_DIR
+
 
 # from pyemmo.functions import importResults as imp
 from pyemmo.functions import runOnelab

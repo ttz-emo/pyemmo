@@ -1,28 +1,14 @@
 # %%
-from numpy import sign
 from os import path
-import sys
-
-try:
-    from pyemmo.script.script import Script
-except:
-    try:
-        rootname = path.abspath(path.join(path.dirname(__file__), ".."))
-    except:
-        rootname = "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\pyemmo"
-        print(f"Could not determine root. Setting it manually to '{rootname}'")
-    print(f'rootname is "{rootname}"')
-    sys.path.append(rootname)
-    from pyemmo.script.script import Script
-
+import math
+import subprocess
+from swat_em import datamodel
+from pyemmo.script.script import Script
 from pyemmo.script.geometry.point import Point
 from pyemmo.script.material import ElectricalSteel, Material
 from pyemmo.script.geometry.machineIPMSM import MachineIPMSM
 from pyemmo.functions import runOnelab
 from pyemmo.definitions import ROOT_DIR
-import math
-import subprocess
-from swat_em import datamodel
 
 ####################################################
 #       Rotorparameter (ausgedacht!)
@@ -152,7 +138,7 @@ testIPMSM_Script.addPostOperation(
     name="User Defined PostOperation",
     OnGrid="{(r_AG)*Sin[$A*Pi/180],(r_AG)*Cos[$A*Pi/180],0}{0:360/SymmetryFactor,0,0}",
     # OnGrid="{(r_AG)*Sin[Pi/nbSlots-$A*Pi/180],(r_AG)*Cos[Pi/nbSlots-$A*Pi/180],0}{0:360/SymmetryFactor,0,0}",
-    File=path.abspath(path.join(testIPMSM_Script.getResultsPath(), "b_OnRadius.pos")),
+    File=path.abspath(path.join(testIPMSM_Script.resultsPath, "b_OnRadius.pos")),
 )
 import time
 startTime = time.time()
@@ -163,7 +149,7 @@ print(f"\n Generation of script took {stopTime-startTime} seconds.")
 
 # %%
 proFilePath = path.join(
-    testIPMSM_Script.getScriptPath(), testIPMSM_Script.getName() + ".pro"
+    testIPMSM_Script.scriptPath, testIPMSM_Script.name + ".pro"
 )
 command = runOnelab.createCmdCommand(
     onelabFile=path.abspath(proFilePath),

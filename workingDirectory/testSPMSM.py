@@ -2,24 +2,11 @@
 # %%
 import os
 from os import mkdir, path
-import sys
 
 # from pyemmo.functions.importResults import plotAllDat
 # from numpy import rad2deg, where
 from swat_em import datamodel
 import math
-
-try:
-    from pyemmo.script.script import Script
-except ImportError:
-    try:
-        rootname = path.abspath(path.join(path.dirname(__file__), ".."))
-    except:
-        rootname = "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\pyemmo"
-        print(f"Could not determine root. Setting it manually to '{rootname}'")
-    print(f'rootname is "{rootname}"')
-    sys.path.append(rootname)
-    from pyemmo.script.script import Script
 
 # from pyemmo.definitions import RESULT_DIR, MAIN_DIR
 from pyemmo.script.geometry.point import Point
@@ -27,6 +14,7 @@ from pyemmo.script.geometry.point import Point
 # from pyemmo.script.geometry.line import Line
 from pyemmo.script.material.electricalSteel import Material, ElectricalSteel
 from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
+from pyemmo.script.script import Script
 from pyemmo.functions.runOnelab import createCmdCommand
 
 # %%
@@ -237,7 +225,7 @@ SPMSM.setFunctionMesh("linear", 8)
 SPMSM.plot()
 # SPMSM.createMachineDomains -> MachineAllType function
 # %%
-resDir = r"C:\Users\ganser\AppData\Local\Programs\pyemmo\Results\Baukasten"
+resDir = r"C:\Users\k49976\Desktop\repositoryGibLab\pyemmo\Results\Baukasten"
 modelDir = path.abspath(path.join(resDir, "Test_SPMSM"))
 if not path.isdir(modelDir):
     mkdir(modelDir)
@@ -263,7 +251,7 @@ myScript.generateScript()
 
 os.system(
     createCmdCommand(
-        onelabFile=myScript.getProFilePath(),
+        onelabFile=myScript.proFilePath,
         useGUI=True,
         paramDict={"Flag_ClearResults": 1},
     )

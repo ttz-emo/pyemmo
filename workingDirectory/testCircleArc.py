@@ -25,7 +25,7 @@ C.plot(fig)
 P1.plot(fig)
 P2.plot(fig)
 print(circArc.getAnglesToX())
-print(f"Radius: {circArc.getRadius()}.")
+print(f"Radius: {circArc.radius}.")
 print(f"Angle: {circArc.getAngle(inDeg=True)}.")
 circArc.plot(fig)
 # %%

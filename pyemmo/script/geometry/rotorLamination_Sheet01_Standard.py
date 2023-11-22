@@ -53,7 +53,7 @@ class RotorLamination_Sheet01_Standard(RotorLamination):
         r_R = self._machineDict["r_R"]
 
         PCentre = self._machineDict["machineCentrePoint"].duplicate()
-        coordCentre = PCentre.getCoordinate()
+        coordCentre = PCentre.coordinate
 
         alpha = self._machineDict["angleGeoParts"]
 
@@ -111,7 +111,8 @@ class RotorLamination_Sheet01_Standard(RotorLamination):
         self._airDockingPoint2 = [pRotor2]
 
     ###Gibt eine Liste mit der Außenkante des Bleches zurück (siehe _outerLinePart).
-    def getOuterLinePart(self) -> List[CircleArc]:
+    @property
+    def outerLinePart(self) -> List[CircleArc]:
         """Get the boundary line(s) of the rotor lamination towards the airgap
 
         Returns:
@@ -120,7 +121,8 @@ class RotorLamination_Sheet01_Standard(RotorLamination):
         return self._outerLinePart
 
     ###Gibt eine Liste mit der Schnittkante zurück (siehe _betweenLinePart).
-    def getBetweenLinePart(self) -> List[Line]:
+    @property
+    def betweenLinePart(self) -> List[Line]:
         """Gibt eine Liste mit der Schnittkante zurück. Schnittkante zwischen 2 Blechen.
 
         Returns:
@@ -129,7 +131,8 @@ class RotorLamination_Sheet01_Standard(RotorLamination):
         return self._betweenLinePart
 
     ###Gibt eine Liste mit dem airDockingPoint1 zurück (siehe _airDockingPoint1).
-    def getAirDockingPoint1(self) -> List[Point]:
+    @property
+    def airDockingPoint1(self) -> List[Point]:
         """Get point of lamination segment at airgap interface near x-Axis
 
         Returns:
@@ -138,7 +141,8 @@ class RotorLamination_Sheet01_Standard(RotorLamination):
         return self._airDockingPoint1
 
     ###Gibt eine Liste mit dem airDockingPoint2 zurück (siehe _airDockingPoint2).
-    def getAirDockingPoint2(self) -> List[Point]:
+    @property
+    def airDockingPoint2(self) -> List[Point]:
         """Get point of lamination segment at airgap interface on interface line to next segment in math. positive direction.
 
         Returns:

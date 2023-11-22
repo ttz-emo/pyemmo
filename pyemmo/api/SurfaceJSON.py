@@ -80,7 +80,8 @@ class SurfaceAPI(Surface):
         self._angle: float = angle
         self._meshSize: float = meshSize
 
-    def getIdExt(self) -> str:
+    @property
+    def idExt(self) -> str:
         """get the abbriviation of the surface name (literal Surface ID)
 
         Returns:
@@ -88,7 +89,8 @@ class SurfaceAPI(Surface):
         """
         return self._idExt
 
-    def setIdExt(self, name: str) -> None:
+    
+    def setIdExt(self, newName: str) -> None:
         """set the abbriviation of the surface name (literal Surface ID)
 
         Args:
@@ -97,12 +99,13 @@ class SurfaceAPI(Surface):
         Returns:
             None
         """
-        if isinstance(name, str):
-            self._idExt = name
+        if isinstance(newName, str):
+            self._idExt = newName
         else:
-            raise ValueError(f"The given name was not type str: {name}!")
+            raise ValueError(f"The given name was not type str: {newName}!")
 
-    def getMaterial(self) -> Material:
+    @property
+    def material(self) -> Material:
         """get the material of the API surface
 
         Returns:
@@ -110,7 +113,8 @@ class SurfaceAPI(Surface):
         """
         return self._material
 
-    def getAngle(self) -> float:
+    @property
+    def angle(self) -> float:
         """get the angle of one surface segment. Should be 2*Pi/self._nbrSegments
 
         Returns:
@@ -118,7 +122,8 @@ class SurfaceAPI(Surface):
         """
         return self._angle
 
-    def getNbrSegments(self) -> int:
+    @property
+    def NbrSegments(self) -> int:
         """get the nbrSegments of segments of a API surface to form a whole circle (2*Pi)
 
         Returns:
@@ -126,7 +131,8 @@ class SurfaceAPI(Surface):
         """
         return self._nbrSegments
 
-    def getMeshSize(self) -> float:
+    @property
+    def meshSize(self) -> float:
         """get the mesh size of the points of the surface
 
         Returns:
@@ -134,7 +140,8 @@ class SurfaceAPI(Surface):
         """
         return self._meshSize
 
-    def setMeshSize(self, meshSize: float) -> None:
+    @meshSize.setter
+    def meshSize(self, meshSize: float) -> None:
         """set the mesh size of the points.
 
         Args:
@@ -160,17 +167,17 @@ class SurfaceAPI(Surface):
         """
         # duplicate curves for new surface
         newCurves: List[Union[Line, CircleArc, Spline]] = []
-        for curve in self.getCurve():
+        for curve in self.curve:
             newCurves.append(curve.duplicate())
         # create duplicate surfcace object
         duplicatSurf = SurfaceAPI(
             name=name,
-            idExt=self.getIdExt(),
+            idExt=self.idExt,
             curves=newCurves,
-            material=self.getMaterial(),
-            nbrSegments=self.getNbrSegments(),
-            angle=self.getAngle(),
-            meshSize=self.getMeshSize(),
+            material=self.material,
+            nbrSegments=self.NbrSegments,
+            angle=self.angle,
+            meshSize=self.meshSize,
         )
         # add "_dup" str to new surface name, if it was not duplicted before
         if name == "":
@@ -179,7 +186,7 @@ class SurfaceAPI(Surface):
                 duplicatSurf.name = f"{parentName}_dup"
             else:
                 duplicatSurf.name = f"{parentName}_{duplicatSurf.id}"
-        duplicatSurf.setMeshColor(self.getMeshColor())
+        duplicatSurf.setMeshColor(self.getMeshColor)
         return duplicatSurf
 
     # def rotateDuplicate(self, symFactor: int) -> List["SurfaceAPI"]:

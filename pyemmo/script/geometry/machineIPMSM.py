@@ -43,35 +43,55 @@ class MachineIPMSM(MachineAllType):
         # Calculate Poles and Slots for Model
         self._simuParam["analysisParameter"]["nbrPolesinModel"] = (
             self._simuParam["analysisParameter"]["nbrPolesTotal"]
-            / self.getSymmetryFactor()
+            / self.symmetryFactor
         )
         self._simuParam["analysisParameter"]["nbrSlotinModel"] = (
             self._simuParam["analysisParameter"]["nbrSlotTotal"]
-            / self.getSymmetryFactor()
+            / self.symmetryFactor
         )
 
-    def getNbrPolesInModel(self):
-        return int(self._simuParam["analysisParameter"]["nbrPolesinModel"])
+    @property
+    def NbrPolesInModel(self) -> int:
+        """get NbrPolesInModel
 
-    def getNbrPolePairs(self):
+        Returns:
+            int: NbrPolesInModel
+        """
+        return int(self._simuParam["analysisParameter"]["nbrPolesinModel"])
+    
+    @property
+    def NbrPolePairs(self) -> int:
         """get the number of pole pairs
 
         Returns:
             int: the number of pole pairs of the IPMSM
         """
-        simuParams = self._getSimuParamDict()
+        simuParams = self._simuParamDict
         nbrPolePairs = simuParams["analysisParameter"]["nbrPolesTotal"] / 2
         assert float(nbrPolePairs).is_integer()
         return nbrPolePairs
 
-    def getSymmetryFactor(self):
+    @property
+    def symmetryFactor(self) -> int:
+        """get the SymmetryFactor
+
+        Returns:
+            int: _symmetryFactor
+        """
         return int(self._symmetryFactor)
 
-    def getStartPos(self):
-        simuParams = self._getSimuParamDict()
+    @property
+    def startPos(self):
+        """get the StartPos
+
+        Returns:
+            _type_: _description_
+        """
+        simuParams = self._simuParamDict
         return simuParams["analysisParameter"]["startPosition"]
 
-    def getRotor(self):
+    @property
+    def rotor(self):
         """Get the rotor of the machine
 
         Returns:
@@ -79,15 +99,17 @@ class MachineIPMSM(MachineAllType):
         """
         return self._rotor
 
-    def getStator(self):
+    @property
+    def stator(self):
         """Get the stator of the machine
 
         Returns:
             Stator: Stator of the IMPSM
         """
         return self._stator
-
-    def getSimParams(self) -> SimpleNamespace:
+    
+    @property
+    def simParams(self) -> SimpleNamespace:
         """
         Return geometical simulation parameters as SimpleNamespace
         - SYMMETRY_FACTOR
@@ -98,12 +120,12 @@ class MachineIPMSM(MachineAllType):
         - R_AIRGAP
         """
         paramDict = default_param_dict.GEO
-        paramDict.SYMMETRY_FACTOR = self.getSymmetryFactor()
-        paramDict.L_AX_R = self.getRotor().getAxialLength()
-        paramDict.L_AX_S = self.getStator().getAxialLength()
-        paramDict.NBR_POLE_PAIRS = self.getNbrPolePairs()
-        paramDict.NBR_SLOTS = self.getStator().getNbrSlots()
-        slots = self.getStator().getSlots()
+        paramDict.SYMMETRY_FACTOR = self.symmetryFactor
+        paramDict.L_AX_R = self.rotor.axialLength
+        paramDict.L_AX_S = self.stator.axialLength
+        paramDict.NBR_POLE_PAIRS = self.NbrPolePairs
+        paramDict.NBR_SLOTS = self.stator.NbrSlots
+        slots = self.stator.slots
         nbrTurns = slots[0].nbrTurns
         slots.pop(0)
         for slot in slots:
@@ -113,10 +135,11 @@ class MachineIPMSM(MachineAllType):
                     f"Different number of turns in slots! {nbrTurns} != {actNbrTurns}"
                 )
         paramDict.NBR_TURNS_IN_FACE = nbrTurns
-        paramDict.R_AIRGAP = self.getRotor().getMovingBand()[0].radius
+        paramDict.R_AIRGAP = self.rotor.movingBand[0].radius
         return paramDict
 
-    def _getSimuParamDict(self) -> Dict:
+    @property
+    def _simuParamDict(self) -> Dict:
         """return the simulation parameter dict
 
         Returns:
@@ -135,10 +158,10 @@ class MachineIPMSM(MachineAllType):
         return self._simuParam
 
     def addRotorToMachine(self, laminationType: str, magnetType: str, axLen: float = 1):
-        nbrPoles = self.getNbrPolePairs() * 2
-        symFactor = self.getSymmetryFactor()
+        nbrPoles = self.NbrPolePairs * 2
+        symFactor = self.symmetryFactor
         angleGeoParts = 2 * pi / (nbrPoles) / 2  # half segment?
-        userRot = self.getStartPos()
+        userRot = self.startPos
         # rotate half pole, because pole center is on x-axis
         startPosition = angleGeoParts + userRot
         nbrGeoParts = int(nbrPoles / symFactor) * 2  # half segment?
@@ -258,13 +281,13 @@ class MachineIPMSM(MachineAllType):
             Nothing
         """
         # calculate movingband heigth
-        rotor = self.getRotor()
-        stator = self.getStator()
-        mbRadiusRotor = rotor.getMovingBand()[0].radius
-        mbRadiusStator = stator.getMovingBand()[0].radius
+        rotor = self.rotor
+        stator = self.stator
+        mbRadiusRotor = rotor.movingBand[0].radius
+        mbRadiusStator = stator.movingBand[0].radius
         mbHeigth = abs(mbRadiusStator - mbRadiusRotor)
         # set the movingband mesh to mbHeigth
-        for mb in rotor.getMovingBand() + stator.getMovingBand():
+        for mb in rotor.movingBand + stator.movingBand:
             for mbLine in mb.geometricalElement:
                 mbLine.setMeshLength(mbHeigth)
         return None
