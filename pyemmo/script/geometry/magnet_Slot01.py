@@ -16,11 +16,12 @@ class Magnet_Slot01(Magnet):
         self.id = self._getNewID()
         magName = "Magnet_Slot01_" + str(self.id)
         super().__init__(
-            magName,
-            [],
-            machineDict["material"],
-            magnetisationDirection,
-            magnetisationType,
+            name=magName,
+            geoElements=[],
+            material=machineDict["material"],
+            magDirection=magnetisationDirection,
+            magType=magnetisationType,
+            magVectorAngle=0.0,
         )
         self._createGeometry()
 
