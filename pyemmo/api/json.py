@@ -556,7 +556,7 @@ def main(
 
     # Plot Results for Debugging
     if logger.getEffectiveLevel() <= 10:
-        resPath = apiScript.getResultsPath()
+        resPath = apiScript.resPath
         if isdir(resPath):
             # if the folder for results exists
             importResults.plt.set_loglevel(level="info") # avoid matplotlib debug infos
