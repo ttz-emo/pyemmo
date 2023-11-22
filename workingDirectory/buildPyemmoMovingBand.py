@@ -13,7 +13,7 @@ from workingDirectory.getCoordinatesForPoint import getXforPoint, getYforPoint
 
 
 def buildPyemmoMovingBand(
-    machine, rotorRext, statorRint, magnetFarthestRadius, magnetShortestRadius
+    machine, rotorRext, statorRint, isInternalRotor: bool, magnetFarthestRadius, magnetShortestRadius
 ):
     """Build the MovingBand in the airgap.
 
@@ -34,7 +34,7 @@ def buildPyemmoMovingBand(
         statorSymAngle = 2 * math.pi / statorSym  # [rad]
 
     geometryList, rotorContourLineList, statorContourLineList = createGeoDict(
-        machine, rotorSym, statorSym, magnetFarthestRadius, magnetShortestRadius
+        machine, rotorSym, statorSym, isInternalRotor, magnetFarthestRadius, magnetShortestRadius
     )
     materialAir = Material(
         name="Air",

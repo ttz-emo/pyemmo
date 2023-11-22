@@ -26,7 +26,7 @@ from workingDirectory.getRotorStatorContour import getRotorContour, getStatorCon
 # ===========================================
 # Definition of function 'createGeoDict':
 # ===========================================
-def createGeoDict(machine, rotorSym, statorSym, magnetFarthestRadius, magnetShortestRadius):
+def createGeoDict(machine, rotorSym, statorSym, isInternalRotor: bool, magnetFarthestRadius, magnetShortestRadius):
     """_summary_
 
     Args:

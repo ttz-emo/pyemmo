@@ -104,6 +104,7 @@ machine = SPMSMMuster4Shaftinverted
 # =====================================
 # Festlegung der Simulations-Parameter:
 # =====================================
+isInternalRotor: bool = False
 
 rotorRext = machine.rotor.Rext
 statorRint = machine.stator.Rint
@@ -113,7 +114,7 @@ magnetFarthestRadius = rotorRext + Hmag - H0
 magnetShortestRadius = rotorRext - H0
 
 allBands, geometryList, movingband_r = buildPyemmoMovingBand(
-    machine, rotorRext, statorRint, magnetFarthestRadius, magnetShortestRadius
+    machine, rotorRext, statorRint, isInternalRotor,magnetFarthestRadius, magnetShortestRadius
 )
 
 geoTranslationDict = {}

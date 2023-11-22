@@ -33,6 +33,7 @@ def translateGeometry(
     machine: pyleecan.Classes.Machine.Machine,  # Import of motor
     label,
     surface,
+    isInternalRotor: bool,
     magnetFarthestRadius,
     magnetShortestRadius,
 ):
@@ -121,9 +122,9 @@ def translateGeometry(
             meshSize=0,
         )
 
-        # ---
-        # Adding the S1 and S2 Points
-        # ---
+        # ----------------------------
+        # Adding the S1 and S2 Points:
+        # ----------------------------
         if isMag:
             pyemmoSurfaceCurveCopy = pyemmoSurface.curve.copy()
             for curve in pyemmoSurfaceCurveCopy:
