@@ -75,7 +75,7 @@ class MachineIPMSM(MachineAllType):
         paramDict.L_AX_R = self.rotor.axialLength
         paramDict.L_AX_S = self.stator.axialLength
         paramDict.NBR_POLE_PAIRS = self.nbrPolePairs
-        paramDict.NBR_SLOTS = self.stator.NbrSlots
+        paramDict.NBR_SLOTS = self.stator.nbrSlots
         slots = self.stator.slots
         nbrTurns = slots[0].nbrTurns
         slots.pop(0)

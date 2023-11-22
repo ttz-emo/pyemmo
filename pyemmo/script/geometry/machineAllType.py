@@ -66,7 +66,7 @@ class MachineAllType(object):
         paramDict.L_AX_R = self.rotor.axialLength
         paramDict.L_AX_S = self.stator.axialLength
         paramDict.NBR_POLE_PAIRS = self.nbrPolePairs
-        paramDict.NBR_SLOTS = self.stator.NbrSlots
+        paramDict.NBR_SLOTS = self.stator.nbrSlots
         paramDict.NBR_TURNS_IN_FACE = (
             self.stator.winding.get_turns() / 2
         )  # divide by two because there are allways two slot sides
