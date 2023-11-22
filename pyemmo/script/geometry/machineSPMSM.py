@@ -4,6 +4,7 @@ from .rotorSPMSM import RotorSPMSM
 from .statorSPMSM import StatorPMSM, datamodel
 import math
 
+
 ###
 # Eine Instanz der Klasse MachineSPMSM beschreibt eine Synchronmaschine mit Oberflächenmagneten im dreidimensionalen Raum.
 # Dieser Maschinentype ist ein Bestandteil des Baukastens, welches vom Nutzer für die Simulation instanziiert werden kann.
@@ -30,17 +31,16 @@ class MachineSPMSM(MachineAllType):
     #
     ###
     def __init__(self, simuParam):
-
-        ###Name des Objektes.
-        self._name = "machine"
-        ###Simulationsparameter gemäß der Eingabe.
+        nbrPoles = simuParam["analysisParameter"]["nbrPolesTotal"]
+        symFactor = simuParam["analysisParameter"]["symmetryFactor"]
+        super().__init__(
+            nbrPolePairs=nbrPoles/2,
+            symmetryFactor=symFactor,
+            rotor=None,
+            stator=None,
+            name="MachineSPMSM"
+        )
         self._simuParam = simuParam
-        ###Symmetriefaktor z. B. 4 für ein Viertelmodell der Maschine.
-        self._symmetryFactor = self._simuParam["analysisParameter"]["symmetryFactor"]
-        ###Rotorobjekt der Klasse RotorSPMSM.
-        self.rotor = None
-        ###Statorobjekt der Klasse StatorSPMSM.
-        self.stator = None
         # Calculate Poles and Slots for Model
         self._simuParam["analysisParameter"]["nbrPolesinModel"] = (
             self._simuParam["analysisParameter"]["nbrPolesTotal"] / self._symmetryFactor
@@ -280,13 +280,11 @@ class MachineSPMSM(MachineAllType):
             str: name
         """
         return self._name
-    
+
     ###Mit setName() kann der Name der Instanz geändert werden.
     @name.setter
     def name(self, newName):
         self._name = newName
-
-    
 
     ###
     # Mit addToScript wird die Maschine zum Skriptobjekt übergeben und in gmsh-Syntax übersetzt.
