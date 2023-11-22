@@ -1,6 +1,5 @@
 """This module is about the model generation via json api"""
 import json
-from math import ceil
 from typing import Dict, List, Literal, Tuple, Union
 
 from numpy import pi, sign, array
@@ -22,7 +21,7 @@ from ..script.geometry.surface import Surface
 from ..script.geometry.transformable import Transformable
 from ..script.material.material import Material
 from ..definitions import DEFAULT_GEO_TOL
-from . import importJSON, globalCenterPoint
+from . import importJSON, globalCenterPoint, logger
 from .SurfaceJSON import SurfaceAPI
 
 # from .. import calc_phaseangle_starvoltageV2
@@ -68,7 +67,8 @@ def createLine(
                         lineDict["MpZ"],
                     )
                 )
-            ) < DEFAULT_GEO_TOL
+            )
+            < DEFAULT_GEO_TOL
         ):
             # the point is the global center point
             centerPoint = globalCenterPoint
@@ -666,7 +666,7 @@ def phase2color(
         raise ValueError(
             f'Phase ID "{phaseChar}" is not uvw! Can not determine phase angle!'
         )
-        
+
     raise ValueError(f'Phase ID "{phaseChar}"is not a single character!', phaseChar)
 
 
@@ -705,12 +705,35 @@ def getSlotInfo(slotSurfName: str) -> Tuple[int, int]:
     msg = f'Slot identifier "StCu" was not in Surfacename: {slotSurfName}'
     raise ValueError(msg)
 
-def getSlotPhase(windSWATList, segmentNbr, slotSide) -> Slot:
-    # ToDo: slotSide berücksichtigen -> Zweischichtwicklung, Zahnspulenwicklung oder Einschichtwicklung
-    for phaseIndex, phaseList in enumerate(windSWATList):
+
+def getSlotPhase(
+    windingLayout: list[list[int]], segmentNbr: int, slotSide: int
+) -> (Literal["p", "n"], Literal["u", "v", "w"]):
+    """Gets the name (u, v, w) of the Phase with it's direction (+, -)
+
+    Args:
+        windingLayout (list[list[int]]): Winding layout formatted for swat-em phases attribute (see
+         `this <https://swat-em.readthedocs.io/en/latest/reference.html#swat_em.datamodel.datamodel.set_phases>`__
+         SWAT-EM method for more details)
+        segmentNbr (int): Circumferderal model segment number starting with 0 on the x-axis (first segment).
+         Number increasing in math. positive direction.
+        slotSide (int): Slot side 0 = right side; 1 = left side (TODO: Specify upper and lower slot separation).
+
+    Returns:
+        Literal['p','n']: Winding direction (
+            'p' = positiv = +z-direction;
+            'n' = negative = -z-direction)
+        Literal["u", "v", "w"]: Phase indicator
+
+    Raises:
+        ValueError: If phase index in windingLayout is not 0, 1 or 2.
+        RuntimeError: If windingLayout is empty.
+
+    """
+    for phaseIndex, phaseList in enumerate(windingLayout):
         # for slotSideList in phaseList:
-        for slotNumber in phaseList[slotSide-1]:
-            if abs(slotNumber)==segmentNbr+1:
+        for slotNumber in phaseList[slotSide - 1]:
+            if abs(slotNumber) == segmentNbr + 1:
                 if phaseIndex == 0:
                     phase = "u"
                 elif phaseIndex == 1:
@@ -719,25 +742,29 @@ def getSlotPhase(windSWATList, segmentNbr, slotSide) -> Slot:
                     phase = "w"
                 else:
                     raise ValueError("PhaseIndex not 0, 1 or 2.")
-                
+
                 if sign(slotNumber) == 1:
                     cDir = "p"
                 else:
                     cDir = "n"
-                    
-                print("===== =====")
-                print(f"slotNumber: {slotNumber} || phase: {phase} || phaseList: {phaseList}")
-                # print(f"phaseIndex: {phaseIndex}| phaseList: {phaseList}| cDir: {cDir}| slotNumber: {slotNumber}| phase: {phase}")
+                logger.debug(
+                    "slot number: %i || slot side: %i || phase: %s || direction: %s",
+                    slotNumber,
+                    slotSide,
+                    phase,
+                    cDir,
+                )
                 return cDir, phase
     raise RuntimeError("Could not determine phase index by slot number.")
-                
+
+
 def createSlot(surf: SurfaceAPI, material: Material, extendedInfo: dict) -> Slot:
     """create a Physical Element of type Slot.
 
     Args:
         surf (SurfaceAPI): Slot geometric surface. Surface IdExt must be formatted like
             "StCu<slotSide>_<segmentNumber>". E.g. The first slot side of the first
-            segment must be named "StCu0_0".
+            segment must be named "StCu1_0".
         material (Material): Slot Material.
         extendedInfo (dict): Additional model information dict, with winding configuration.
 
@@ -745,18 +772,14 @@ def createSlot(surf: SurfaceAPI, material: Material, extendedInfo: dict) -> Slot
         Slot: Slot object generated from the above information.
     """
 
-    slotSide, segmentNbr = getSlotInfo(surf.getIdExt()) 
-    windSWATList = importJSON.getWindingSWATList(extendedInfo)
+    slotSide, segmentNbr = getSlotInfo(surf.getIdExt())
+    windingLayout = importJSON.getWindingList(extendedInfo)
     # slotSide is set 0 or 1 where the naming of slotSide is 1 or 2
-    slotSide = slotSide - 1
-    cDir, phase = getSlotPhase(windSWATList, segmentNbr, slotSide)
+    cDir, phase = getSlotPhase(windingLayout, segmentNbr, slotSide - 1)
     slotName = surf.getIdExt() + "_" + phase.upper() + cDir
-
-    slot = Slot(
-        name=slotName, geometricalElement=[surf], material=material
-    )  # create slot without winding information, because winding is set by stator
+    # create slot without winding information, because winding is set by stator
+    slot = Slot(name=slotName, geometricalElement=[surf], material=material)
     surf.setMeshColor(phase2color(phase))
-    print(f"phase: {phase} | phase2color: {phase2color(phase)}")
     return slot
 
 
@@ -774,35 +797,16 @@ def createWinding(extendedInfo: dict) -> datamodel:
     nbrSlots = importJSON.getNbrSlots(extendedInfo)
     nbrPolePairs = importJSON.getNbrPolePairs(extendedInfo)
     swatemWinding.set_machinedata(Q=nbrSlots, p=nbrPolePairs, m=3)
-    windLayout = importJSON.getWindingSWATList(extendedInfo)
-    print(windLayout)
-    swatemWinding.set_phases(S=windLayout, turns=(importJSON.getNbrOfTurns(extendedInfo)))
+    # get winding layout from json file
+    # windList = importJSON.getWindingList(extendedInfo)
+    # symFactor = importJSON.getSymFactor(extendedInfo)
+    # format winding layout for swat_em
+    windLayout = importJSON.getWindingList(extendedInfo)
+    swatemWinding.set_phases(
+        S=windLayout, turns=(importJSON.getNbrOfTurns(extendedInfo))
+    )
     swatemWinding.analyse_wdg()  # analyse winding to make sure its valid and all parameters are set
     return swatemWinding
-
-
-def genWindLayoutSwatEM(extendedInfo: dict,
-    # windingList: List[str], nbrSlots: int, onePole=False
-) -> List[List[int]]:
-    """generate winding layout for `swat_em <https://swat-em.readthedocs.io/en/latest/#>`__
-    winding object (:class:`datamodel`)
-
-    FIXME: the number of slot sides per slot is assumed to be 2 allways.
-
-    Args:
-        windingList (List[str]): Motor model winding layout (with symmetry) generated from matlab
-        Qs (int): Total number of stator slots
-        onePole (bool, optional): Flag if winding layout is only given for one pole, so the winding
-            direction has to be reversed every time. Defaults to False.
-
-    Returns:
-        List[List[int]]: Winding layout formatted for swat-em phases attribute (see
-        `this <https://swat-em.readthedocs.io/en/latest/reference.html#swat_em.datamodel.datamodel.set_phases>`__
-        SWAT-EM method for more details)
-    """
-    windLayout = importJSON.getWindingSWATList(extendedInfo)
-    return windLayout
-
 
 # ==================================================================================================
 # ======================================= END MODEL GENERATION =====================================
