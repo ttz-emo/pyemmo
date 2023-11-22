@@ -40,7 +40,7 @@ class Rotor:
         """
         self.name = name if name else "Rotor"  # rotor name
         self.physicalElements = physicalElementList  # rotor physical elements
-        self.axLen = axLen  # active axial length
+        self.axialLength = axLen  # active axial length
 
         self._createDomainForRotor()  # create rotor domains
 
