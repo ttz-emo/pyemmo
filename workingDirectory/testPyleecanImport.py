@@ -113,6 +113,11 @@ Hmag = machine.rotor.slot.Hmag
 magnetFarthestRadius = rotorRext + Hmag - H0
 magnetShortestRadius = rotorRext - H0
 
+# --------------------------
+# isInternalRotor detection:
+# --------------------------
+isInternalRotor = bool(statorRint > rotorRext)
+
 allBands, geometryList, movingband_r = buildPyemmoMovingBand(
     machine, rotorRext, statorRint, isInternalRotor,magnetFarthestRadius, magnetShortestRadius
 )
