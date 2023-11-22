@@ -78,10 +78,6 @@ class Magnet_Surface01(Magnet):
 
         self._createGeometry()
 
-    ###Wird eine Instanz erzeugt, bekommt sie automatisch eine eindeutige ID zugewiesen. Mit getNewID() wird eine neue ID erzeugt.
-    def _getNewID(self):
-        PhysicalElement.Physical_ID = PhysicalElement.Physical_ID + 1
-        return PhysicalElement.Physical_ID
 
     ###_createGeometry() erzeugt die Magnetgeometrie und definiert alle Attribute der Klasse.
     def _createGeometry(self):
