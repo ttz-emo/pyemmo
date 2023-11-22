@@ -3,8 +3,7 @@ from typing import List
 from pyemmo.script.material.material import Material
 from .surface import Surface
 from .physicalElement import PhysicalElement
-from .. import colorDict
-import math
+
 
 ###
 # Eine Instanz der RotorLamination ist das Blechpaket des Rotors. Eine beliebige Geometrie kann mit der Klasse RotorLamination definiert werden.
@@ -13,19 +12,9 @@ import math
 # Eine einfachere Anwendung bietet der Maschinenbaukasten von pyemmo.
 # \image html RotorBlech.png
 ###
-
-
 class RotorLamination(PhysicalElement):
-    ###
-    # Konstruktor der Klasse RotorLamination.
-    #
-    #   Input:
-    #
-    #       machineDict : dict
-    #       geometricalElement : list
-    #       material : Material
-    #
-    ###
+    """Class for rotor lamination"""
+
     def __init__(
         self,
         name: str,
@@ -33,8 +22,7 @@ class RotorLamination(PhysicalElement):
         material: Material,
         phyID: int = None,
     ):
-        PhysicalElement.__init__(
-            self,
+        super().__init__(
             name=name,
             material=material,
             geometricalElement=geometricalElement,
