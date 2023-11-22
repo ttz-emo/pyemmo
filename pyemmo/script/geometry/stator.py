@@ -51,8 +51,8 @@ class Stator(object):
         """
         self.name = name if name else "Stator"  # name of the stator
         self.physicalElements = physicalElements
-        self._nbrSlots = nbrSlots
-        self._axLen = axLen  # active axial length
+        self.nbrSlots = nbrSlots
+        self.axialLength = axLen  # active axial length
         self.winding = winding
         # only generate domains if they are physical elements
         if self.physicalElements:
