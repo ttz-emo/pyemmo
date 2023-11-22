@@ -81,21 +81,21 @@ class Slot_Form01(Slot):
         self._betweenLinePart = [lS8, lS2]
 
     @property
-    def betweenLinePart(self):
+    def betweenLinePart(self) -> list[Line]:
         return self._betweenLinePart
 
     @property
-    def innerLinePart(self):
+    def innerLinePart(self) -> list[Line]:
         return self._innerLinePart
 
     @property
-    def airDockingPoint(self):
+    def airDockingPoint(self) -> list[Point]:
         return self._airDockingPoint
 
     @property
-    def laminationDockingLine(self):
+    def laminationDockingLine(self) -> list[Line]:
         return self._laminationDockingLine
 
     @property
-    def laminationDockingPoint(self):
+    def laminationDockingPoint(self) -> list[Point]:
         return self._laminationDockingPoint
