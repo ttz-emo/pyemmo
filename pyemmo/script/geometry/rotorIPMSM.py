@@ -32,10 +32,9 @@ class RotorIPMSM(Rotor):
         magnetDict=None,
         airGapDict=None,
     ):
-        self._name = "RotorIPMSM"
+        super().__init__(physicalElementList=[], name="RotorIPMSM", axLen=axLen)
         self._laminationType = laminationType
         self._magnetType = magnetType
-        self._physicalElements: List[PhysicalElement] = list()
 
         self._angleGeoParts = angleGeoParts
         self._startPosition = startPosition
@@ -47,9 +46,6 @@ class RotorIPMSM(Rotor):
             self._symmetryFactor = int(symmetryFactor)
         else:
             raise ValueError(f"The symmetry factor is not an integer: {symmetryFactor}")
-
-        self._axLen = axLen  # active axial length
-
         # Wenn laminationDict nicht None: Setzte Lamination Parameter
         if laminationDict:
             self.addLaminationParameter(laminationDict)
@@ -96,9 +92,9 @@ class RotorIPMSM(Rotor):
                 laminationPart = RotorLamination_Sheet01_Standard(self._laminationDict)
 
             if self._magnetType == "magnet_Slot01":
-                from .magnet_Slot01 import Magnet_Slot01
+                from .magnet_Slot01 import MagnetSlot01
 
-                magnetPart = Magnet_Slot01(
+                magnetPart = MagnetSlot01(
                     self._magnetDict,  # comment Max: In _init_ definition von Magnet-Klasse heißt das Argument "machineDict"... (Wahrscheinlich nur ungenauer Variablenname)
                     self._magnetDict["magnetisationDirection"][0],
                     self._magnetDict["magnetisationType"],
@@ -111,14 +107,12 @@ class RotorIPMSM(Rotor):
         self._createConstraintLine()
         self._createDomainForRotor()  # create rotor domains
 
-        if (
-            self._physicalRaw[1].magnetisationType == "parallel"
-            or self._physicalRaw[1].magnetisationType == "tangential"
-        ):
+        mag: Magnet = self._physicalRaw[1]
+        if mag.magType in ("parallel", "tangential"):
             allAngle = self._calculateAngleForParallelMagnet()
             allMag = self.getAllMagnet()
             for i, mag in enumerate(allMag):
-                mag.magnetisationVectorAngle = allAngle[i]
+                mag.magAngle = allAngle[i]
 
     def _calculateAngleForParallelMagnet(self):
         Magnet1 = self._physicalRaw[1]
@@ -274,6 +268,7 @@ class RotorIPMSM(Rotor):
                 self._magnetDict["material"],
                 self._magnetDict["magnetisationDirection"][i],
                 self._magnetDict["magnetisationType"],
+                0.0,
             )
             mag2.name = self._magnetType + "_" + str(mag2.id)
             allMag.append(mag2)

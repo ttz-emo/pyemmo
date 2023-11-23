@@ -218,7 +218,7 @@ class Script(object):
             str: script name
         """
         return self._name
-    
+
     @name.setter
     def name(self, newName):
         """setter of Script name
@@ -245,7 +245,7 @@ class Script(object):
             newScriptPath (_type_): _description_
         """
         self._scriptPath = newScriptPath
-    
+
     @property
     def proFilePath(self) -> str:
         """Get the path to the resulting pro file named "ScriptName.pro"
@@ -254,7 +254,7 @@ class Script(object):
             str: path to the pro Script file
         """
         return join(self.scriptPath, self.name + ".pro")
-    
+
     @property
     def geoFilePath(self) -> str:
         """Get the path to the resulting geo file named "ScriptName.geo"
@@ -286,8 +286,8 @@ class Script(object):
         # if isinstance(newMachine, MachineAllType):
         self._machine = newMachine
         # else:
-            # msg = f"Given parameter machine was not type machine, but '{type(newMachine)}'"
-            # raise TypeError(msg)
+        # msg = f"Given parameter machine was not type machine, but '{type(newMachine)}'"
+        # raise TypeError(msg)
         # reset attributes
         self._resetGeometry()
         self.group = GroupGetDP()  # reset group (= domains)
@@ -318,7 +318,7 @@ class Script(object):
         """Getter of the attribute simulationParameters"""
         return self.simulationParameters
 
-    @property    
+    @property
     def factory(self) -> str:
         """Getter of the attribute factory"""
         return self._factory
@@ -686,12 +686,12 @@ class Script(object):
             if addC is not None:
                 curve.center = addC
         elif curve.type == "Spline":
-            controlPointList = curve.controlPoints
+            controlPointList = curve.controlPoints.copy()
             for controlPoint in controlPointList:
                 newP = self._addPoint(controlPoint)
                 if newP is not None:
                     curve.removeControlPoint(controlPoint)
-                    curve.controlPoint(controlPointList.index(controlPoint), newP)
+                    curve.addControlPoint(newP,controlPointList.index(controlPoint))
 
         identicalCurve = self.testCurve(curve)
         if identicalCurve is None:
@@ -918,7 +918,7 @@ class Script(object):
         self.curveCode: str = ""
         for curve in self.curveList:
             curve._todesmerker = False
-        self.curveList: List[Union[Line, CircleArc, Spline]] = []
+        self._setCurveList([])
 
         # surfaces
         self.areaCode: str = ""
@@ -1255,10 +1255,11 @@ class Script(object):
             if physicalElement.material:
                 self._addMaterial(physicalElement)
             # add magnetization if specified
-            # FIXME: BUG Attribute errors inside addMag... functions are not catched! 
-            
-            try:
-                typeMag = physicalElement.magnetisationType
+            # FIXME: BUG Attribute errors inside addMag... functions are not catched!
+
+            if isinstance(physicalElement, Magnet):
+                mag: Magnet = physicalElement
+                typeMag = mag.magType
                 if typeMag == "radial":
                     self._addMagnetisationRadial(physicalElement)
                 elif typeMag == "parallel":
@@ -1266,10 +1267,10 @@ class Script(object):
                 elif typeMag == "tangential":
                     self._addMagnetisationTangential(physicalElement)
                 else:
-                    raise TypeError(f"Wrong Magnetisation Type: '{typeMag}'. Magnetisation Type must be 'radial', 'parallel' or 'tangential'.")
-            except AttributeError:
-                # raise AttributeError("Attribute Error Magnetisation Type.")
-                pass
+                    raise TypeError(
+                        f"Wrong Magnetisation Type: '{typeMag}'. Magnetisation Type must be 'radial', 'parallel' or 'tangential'."
+                    )
+
             # try:
             #     typeMag = physicalElement.magnetisationType
             #     if typeMag == "radial":
@@ -1310,7 +1311,7 @@ class Script(object):
             matDict["physicalElemID"][matIndex].append(physicalElement.id)
 
     def _addMagnetisationRadial(self, magnet: Magnet):
-        magDir = magnet.magnetisationDirection
+        magDir = magnet.magDir
         matName = cleanName(magnet.material.name)
         self.functionMagnetisation.add(
             name="br",
@@ -1320,8 +1321,8 @@ class Script(object):
 
     def _addMagnetisationParallel(self, physicalElement: Magnet):
         matName = cleanName(physicalElement.material.name)
-        magAngle = physicalElement.magnetisationVectorAngle
-        magDir = physicalElement.magnetisationDirection
+        magAngle = physicalElement.magAngle
+        magDir = physicalElement.magDir
         magFunction = (
             f"{magDir}*br_{matName} * Vector["
             f"Cos[{magAngle} + RotorPosition[]], "
@@ -1334,8 +1335,8 @@ class Script(object):
         )
 
     def _addMagnetisationTangential(self, magnet: Magnet):
-        magAngle = magnet.magnetisationVectorAngle
-        magDir = magnet.magnetisationDirection
+        magAngle = magnet.magAngle
+        magDir = magnet.magDir
         matName = cleanName(magnet.material.name)
         magFunction = (
             f"{magDir}*br_{matName} * Vector["
@@ -1984,7 +1985,7 @@ class Script(object):
             magnetisations: List[str] = []
             for mag in machine.rotor._domainM.physicals:
                 mag: Magnet = mag
-                magnetisations.append(mag.magnetisationType == "tangential")
+                magnetisations.append(mag.magType == "tangential")
             if any(magnetisations):
                 logging.warning(
                     "Tangential magnetization detected! Dq-offset calculation is invalid"
@@ -2100,7 +2101,7 @@ class Script(object):
             computeCommandCode = (
                 """DefineConstant[\n\tC_ = {"-solve Analysis -v 99 -v2 -pos"""  # -bin
             )
-            for postOpName in self.getPostOperationNames():
+            for postOpName in self.postOperationNames:
                 computeCommandCode += " " + postOpName
             computeCommandCode += (
                 """ ", Name "GetDP/9ComputeCommand", Visible Flag_Debug}\n];\n"""

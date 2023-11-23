@@ -13,6 +13,7 @@ from ..material.electricalSteel import ElectricalSteel
 
 # from ... import calc_phaseangle_starvoltageV2
 
+
 # analyse.calc_phaseangle_starvoltage = calc_phaseangle_starvoltageV2
 ###
 # Eine Instanz der Klasse Stator beschreibt den Stator eine elektrische Maschine im dreidimensionalen Raum.
@@ -48,13 +49,11 @@ class Stator(object):
         Raises:
             Nothing
         """
-        self._name = name if name else "Stator"  # name of the stator
-        self._physicalElements = (
-            physicalElements  # list of all physical Elements of the Stator
-        )
-        self._nbrSlots = nbrSlots
-        self._axLen = axLen  # active axial length
+        self.name = name if name else "Stator"  # name of the stator
+        self.nbrSlots = nbrSlots
+        self.axialLength = axLen  # active axial length
         self.winding = winding
+        self.physicalElements = physicalElements
         # only generate domains if they are physical elements
         if self.physicalElements:
             self._createDomainForStator()
@@ -80,12 +79,12 @@ class Stator(object):
             raise TypeError(f"Given name was not type str, but '{type(name)}'")
 
     @property
-    def NbrSlots(self) -> int:
+    def nbrSlots(self) -> int:
         """Getter of number of slots (Qs)"""
         return self._nbrSlots
 
-    @NbrSlots.setter
-    def NbrSlots(self, nbrSlots: int) -> None:
+    @nbrSlots.setter
+    def nbrSlots(self, nbrSlots: int) -> None:
         """Setter for the Number of Slots
 
         Args:
@@ -94,7 +93,7 @@ class Stator(object):
         Raises:
             TypeError: _description_
         """
-        if isinstance(nbrSlots, int):
+        if isinstance(nbrSlots, (int, float)):
             self._nbrSlots = nbrSlots
         else:
             raise TypeError(
@@ -234,7 +233,7 @@ class Stator(object):
             TypeError: If winding is not type swat_em.datamodel
         """
         if isinstance(winding, datamodel):
-            if winding.get_num_slots() == self.NbrSlots:
+            if winding.get_num_slots() == self.nbrSlots:
                 try:
                     if (
                         not winding.get_fundamental_windingfactor()
@@ -249,7 +248,7 @@ class Stator(object):
             else:
                 raise (
                     ValueError(
-                        f"Given Winding object (Qs={winding.get_num_slots()}) doesn't have the same number of slots as the stator (Qs={self.NbrSlots})."
+                        f"Given Winding object (Qs={winding.get_num_slots()}) doesn't have the same number of slots as the stator (Qs={self.nbrSlots})."
                     )
                 )
         else:
@@ -265,7 +264,7 @@ class Stator(object):
         (layout, strLayout, colorLayout) = self.winding.get_layers()
         for slotPos, slot in enumerate(self.slots):
             if self.winding.get_num_layers() == 2:
-                layer = (slotPos+1) % 2  # alternate layers
+                layer = (slotPos + 1) % 2  # alternate layers
                 slotIDLayout = int(
                     slotPos / 2 + (((-1) ** slotPos) - 1) / 4
                 )  # create row like: 0,0,1,1,2,2,3,3,...

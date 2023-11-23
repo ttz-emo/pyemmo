@@ -33,7 +33,7 @@ class Point(Transformable):
 
     # Die statische Variable ID wird durch die Methode getNewID() hochgezählt.
     # Diese Variable wird für die automatische ID-Vergabe der Punkte verwendet!
-    ID = 0
+    pointID = 0
 
     def __init__(self, name: str, x: float, y: float, z: float, meshLength: float):
         """Konstruktor der Klasse Point.
@@ -48,11 +48,7 @@ class Point(Transformable):
         ###Name des Punktes.
         self.name = name
         ###x-Koordinate des Punktes.
-        self._x = x
-        ###y-Koordinate des Punktes.
-        self._y = y
-        ###z-Koordinate des Punktes.
-        self._z = z
+        self.coordinate = (x, y, z)
         ###Netzgröße vom Mesh.
         self._meshLength = meshLength
         ###ID des Punktes.
@@ -76,18 +72,7 @@ class Point(Transformable):
     #     else:
     #         return False
 
-    def isEqual(self, compPoint: "Point", tol=DEFAULT_GEO_TOL):
-        """
-        isEqual checks if another points coordinates are equal with a given tolerance
-        (default < 1e-7)
-        """
-        originCoords = array(self.coordinate)
-        compCoords = array(compPoint.coordinate)
-
-        if norm(originCoords - compCoords) < tol:
-            return True
-        else:
-            return False
+    # ------ attributes ------
 
     @classmethod
     def _getNewID(cls) -> int:
@@ -97,8 +82,8 @@ class Point(Transformable):
         Returns:
             int: New unique ID for point.
         """
-        Point.ID = Point.ID + 1
-        return Point.ID
+        Point.pointID = Point.pointID + 1
+        return Point.pointID
 
     # pylint: disable=locally-disabled, invalid-name
     @property
@@ -117,12 +102,12 @@ class Point(Transformable):
         Args:
             newID (int): New ID of point
         """
-        if newID < self.ID:
+        if newID < self.pointID:
             raise ValueError(
                 "New ID of point is smaller than global ID count."
                 "New ID mus be existing!"
             )
-        Point.ID = newID
+        Point.pointID = newID
         self._id = newID
 
     @property
@@ -141,11 +126,8 @@ class Point(Transformable):
         Args:
             name (str): New Point name
         """
+        assert isinstance(name, (str)), f"Name must be string, not {type(name)}"
         self._name = name
-
-    def isDrawn(self):
-        """isDrawn returns true if the point was added to a script"""
-        return self._todesmerker
 
     @property
     def coordinate(self) -> Tuple[float, float, float]:
@@ -163,10 +145,14 @@ class Point(Transformable):
         Args:
             coordinate (Tuple[float, float, float]): New point coordinates.
         """
+        assert len(coordinate) == 3, "Number of point cooridinates must be 3!"
+        assert all(
+            isinstance(val, (int, float)) for val in coordinate
+        ), "Point coordinate values must be int or float!"
         self._x = coordinate[0]
         self._y = coordinate[1]
         self._z = coordinate[2]
-    
+
     @property
     def meshLength(self) -> float:
         """get mesh length of point
@@ -175,7 +161,7 @@ class Point(Transformable):
             float: mesh length
         """
         return self._meshLength
-    
+
     @meshLength.setter
     def meshLength(self, meshLength: float):
         """Set mesh length of point.
@@ -185,6 +171,23 @@ class Point(Transformable):
         """
         self._meshLength = meshLength
 
+    # ------ methods ------
+
+    def isEqual(self, compPoint: "Point", tol=DEFAULT_GEO_TOL):
+        """
+        isEqual checks if another points coordinates are equal with a given tolerance
+        (default < 1e-7)
+        """
+        originCoords = array(self.coordinate)
+        compCoords = array(compPoint.coordinate)
+
+        if norm(originCoords - compCoords) < tol:
+            return True
+        return False
+    
+    def isDrawn(self):
+        """isDrawn returns true if the point was added to a script"""
+        return self._todesmerker
 
     def translate(self, dx: float, dy: float, dz: float) -> bool:
         """Mit translate() kann ein Punkt linear verschoben werden. Die Inputvariablen dx, dy und dz
@@ -260,7 +263,7 @@ class Point(Transformable):
             self._z = -sin(angle) * oldx + cos(angle) * oldz
             self.translate(rotPointCoords[0], rotPointCoords[1], rotPointCoords[2])
 
-    def duplicate(self, name=None) -> "Point":
+    def duplicate(self, name="") -> "Point":
         """Mit duplicate() wird ein neuer Punkt mit gleichen Koordinaten erzeugt. Dieser Punkt hat
         jedoch eine unterschiedliche ID zum Originalpunkt.
 

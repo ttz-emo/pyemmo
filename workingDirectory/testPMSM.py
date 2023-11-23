@@ -12,16 +12,15 @@ except:
     try:
         rootname = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     except:
-        rootname = (
-            r"C:\Users\k49976\Desktop\repositoryGibLab\pyemmo"
-        )
+        rootname = r"C:\Users\k49976\Desktop\repositoryGibLab\pyemmo"
         print(f"Could not determine root. Setting it manually to '{rootname}'")
     print(f'rootname is "{rootname}"')
     sys.path.append(rootname)
     from pyemmo.version import __version__
+
     print(__version__)
     from pyemmo.script.script import Script
-    
+
 from pyemmo.script.geometry.point import Point
 from pyemmo.script.geometry.surface import Surface
 from pyemmo.script.geometry.circleArc import CircleArc
@@ -183,8 +182,11 @@ def createRotorPMSM():
         material=ndFe35,
         magDirection=1,
         magType="radial",
+        magVectorAngle=0.0,
     )
-    magnet2 = Magnet("magnet_Sued", s_Magnet[2:4], ndFe35, -1, "radial")
+    magnet2 = Magnet(
+        "magnet_Sued", s_Magnet[2:4], ndFe35, -1, "radial", magVectorAngle=0.0
+    )
     luft = AirArea(name="luft", geometricalElement=s_Container, material=air)
     luftspalt = AirGap("luftspalt", s_Luftspalt, air)
     masterR = PrimaryLine("masterR", [dLR2, dLdB3, dLdC3])
@@ -380,7 +382,7 @@ scriptPath = os.path.join(RESULT_DIR, "testFreeGeoDef")
 if not os.path.isdir(scriptPath):
     os.mkdir(scriptPath)
 pmsmScript = Script(
-    name="test pmsm freeDefined",
+    name="test_pmsm_freeDefined",
     scriptPath=scriptPath,
     simuParams={
         "init_rotor_pos": 0,

@@ -78,14 +78,19 @@ def getCurrentdq(extendedInfo: dict) -> Tuple[float]:
 #------------------------------------------------------------------------------
 
 
-def getWindingList(extendedInfo: dict) -> List[int]: # changed 'List[str]' to 'List[int]'
-    """
-    ToDo: Test if this function might be unnessesary
-    
-    Get the winding list from the extended info dict.
-    The winding list looks like:
+def getWindingList(extendedInfo: dict) -> list[list[list[int]]]:
+    """Get winding layout from extended info dict. The layout must be in form of
+    the SWAT-EM winding layout. The layout looks something like:
 
-        ['+u', '-v', '+v', '-w', '+w', '-u']
+    single-layer winding:
+        [[phase_u1], [phase_v1], [phase_w1]]
+
+    double-layer winding:
+        [[[phase_u1], [phase_u2]], [[phase_v1], [phase_v2]], [[phase_w1], [phase_w2]]]
+        
+    Where phase_u1 is a list of integers representing the slot ID and the winding direction
+    (with their sign). See`this <https://swat-em.readthedocs.io/en/latest/reference.html#swat_em.datamodel.datamodel.set_phases>`__
+    SWAT-EM method for more details.
 
     Args:
         extendedInfo (dict): dict with simulation infos
@@ -94,47 +99,14 @@ def getWindingList(extendedInfo: dict) -> List[int]: # changed 'List[str]' to 'L
         KeyError: if "winding" key not in extendedInfo
 
     Returns:
-        List[str]: winding list with elements "<+,-><u,v,w>"
+        list[list[list[int]]]: SWAT-EM formatted winding layout
     """
     windKey = "winding"
     if not windKey in extendedInfo.keys():
         raise KeyError("Missing winding information from extended info.")
-    else:
-        # windList: List[str] = extendedInfo[windKey]
-        windList: List[int] = extendedInfo[windKey]
+    # windList: List[str] = extendedInfo[windKey]
+    windList = extendedInfo[windKey]
     return windList
-
-#------------------------------------------------------------------------------
-#------------------------------------------------------------------------------
-#------------------------------------------------------------------------------
-
-def getWindingSWATList(extendedInfo: dict) -> List[int]: # changed 'List[str]' to 'List[int]'
-    """
-    Get the windingSWAT list from the extended info dict.
-    The winding list looks like:
-
-        [[[phase_u1], [phase_u2]], [[phase_v1], [phase_v2]], [[phase_w1], [phase_w2]]]
-
-    Args:
-        extendedInfo (dict): dict with simulation infos
-
-    Raises:
-        KeyError: if "winding" key not in extendedInfo
-
-    Returns:
-        List[str]: winding list with elements "<+,-><u,v,w>"
-    """
-    windKey = "wickSWAT"
-    if not windKey in extendedInfo.keys():
-        raise KeyError("Missing wickSWAT information from extended info.")
-    else:
-        # windList: List[str] = extendedInfo[windKey]
-        windList: List[int] = extendedInfo[windKey]
-    return windList
-
-#------------------------------------------------------------------------------
-#------------------------------------------------------------------------------
-#------------------------------------------------------------------------------
 
 def getNbrOfTurns(extendedInfo: dict) -> float:
     """

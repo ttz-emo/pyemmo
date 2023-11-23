@@ -4,6 +4,7 @@ from .rotorSPMSM import RotorSPMSM
 from .statorSPMSM import StatorPMSM, datamodel
 import math
 
+
 ###
 # Eine Instanz der Klasse MachineSPMSM beschreibt eine Synchronmaschine mit Oberflächenmagneten im dreidimensionalen Raum.
 # Dieser Maschinentype ist ein Bestandteil des Baukastens, welches vom Nutzer für die Simulation instanziiert werden kann.
@@ -30,17 +31,16 @@ class MachineSPMSM(MachineAllType):
     #
     ###
     def __init__(self, simuParam):
-
-        ###Name des Objektes.
-        self._name = "machine"
-        ###Simulationsparameter gemäß der Eingabe.
+        nbrPoles = simuParam["analysisParameter"]["nbrPolesTotal"]
+        symFactor = simuParam["analysisParameter"]["symmetryFactor"]
+        super().__init__(
+            nbrPolePairs=nbrPoles/2,
+            symmetryFactor=symFactor,
+            rotor=None,
+            stator=None,
+            name="MachineSPMSM"
+        )
         self._simuParam = simuParam
-        ###Symmetriefaktor z. B. 4 für ein Viertelmodell der Maschine.
-        self._symmetryFactor = self._simuParam["analysisParameter"]["symmetryFactor"]
-        ###Rotorobjekt der Klasse RotorSPMSM.
-        self._rotor = None
-        ###Statorobjekt der Klasse StatorSPMSM.
-        self._stator = None
         # Calculate Poles and Slots for Model
         self._simuParam["analysisParameter"]["nbrPolesinModel"] = (
             self._simuParam["analysisParameter"]["nbrPolesTotal"] / self._symmetryFactor
@@ -104,8 +104,8 @@ class MachineSPMSM(MachineAllType):
             self._symmetryFactor,
             startPosition,
         )
-        self._rotor = rotorSPMSM1
-        return self._rotor
+        self.rotor = rotorSPMSM1
+        return self.rotor
 
     ###
     # Mit addStatorToMachine() wird ein Statorobjekt der Klasse StatorSPMSM erzeugt und der Maschine zugewiesen.
@@ -169,8 +169,8 @@ class MachineSPMSM(MachineAllType):
             winding=winding,
             startPosition=startPosition,
         )
-        self._stator = statorSPMSM1
-        return self._stator
+        self.stator = statorSPMSM1
+        return self.stator
 
     ###createMachine() erzeugt alle nötigen Domaine automatisch und befüllt sie mit PhysicalElement-Objekten gemäß ihren Eigenschaften.
     ##
@@ -280,13 +280,11 @@ class MachineSPMSM(MachineAllType):
             str: name
         """
         return self._name
-    
+
     ###Mit setName() kann der Name der Instanz geändert werden.
     @name.setter
     def name(self, newName):
         self._name = newName
-
-    
 
     ###
     # Mit addToScript wird die Maschine zum Skriptobjekt übergeben und in gmsh-Syntax übersetzt.

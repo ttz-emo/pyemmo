@@ -40,27 +40,92 @@ class Spline(Line):
             p1 (Point): Startpoint
             p2 (Point): Endpoint
             controlPoints (List[Point]): List of controll points
-            SplineType (Literal[0, 1, 2], optional): There are 3 different types of Splines that can be generated with Gmsh. Defaults to 0 (Spline).
+            SplineType (Literal[0, 1, 2], optional): There are 3 different types of Splines
+             that can be generated with Gmsh. Defaults to 0 (Spline):
+             
                 0 : Catmull-Rom Spline (Build-in Kernel) or C2 BSpline (OpenCASCADE Kernel)
                 1 : Bezierkurve
                 2 : Basis-Spline
 
         """
-        ###Name vom Polynomzug.
-        self.name = name
-        ###Startpunkt des Polynomzugs.
-        self.startPoint = startPoint
-        ###Endpunkt des Polynomzugs.
-        self.endPoint = endPoint
+        super().__init__(name=name, startPoint=startPoint, endPoint=endPoint)
         ###Zwischenpunkte vom Polynomzug in der richtigen durchzulaufenden Reihenfolge.
-        self._controlPoints = controlPoints
-        ###Id des Polynomzugs.
-        self.id = self._getNewID()
-        ###Todesmerker wird nur gesetzt, wenn das Objekt im Skript erzeugt wurde (Aufruf von addToScript())!
-        self._todesmerker = False
-        self._splineType = (
-            SplineType  # 0: Catmull-Rom Spline, 1: Bezierkurve, 2: Basis-Spline
-        )
+        self.controlPoints = controlPoints
+        # 0: Catmull-Rom Spline, 1: Bezierkurve, 2: Basis-Spline
+        self._splineType = SplineType
+
+    @property
+    def type(self) -> Literal["Spline"]:
+        """Mit type wird ein Identifier der Klasse als String zurück gegeben.
+
+        Returns:
+            Literal["Spline"]: Class identifier
+        """
+        return "Spline"
+
+    @property
+    def splineType(self) -> Literal[0, 1, 2]:
+        """get Spline type. There are 3 different types of Splines that can be generated with Gmsh:
+                0 : Catmull-Rom Spline (Build-in Kernel) or C2 BSpline (OpenCASCADE Kernel)
+                1 : Bezierkurve
+                2 : Basis-Spline
+
+        Returns:
+            Literal[0,1,2]: Spline type
+        """
+        return self._splineType
+
+    @property
+    def controlPoints(self) -> List[Point]:
+        """Get the controll point list of a Spline
+
+        Returns:
+            List[Point]: controll point list
+        """
+        return self._controlPoints
+
+    @controlPoints.setter
+    def controlPoints(self, newControlPointList: List[Point]):
+        """Mit setControlPoints können neue Kontrollpunkte der Spline definiert werden.
+
+        Args:
+            newControlPointList (List[Point]): List of new controll points
+        """
+        self._controlPoints = newControlPointList
+
+    def addControlPoint(self, newControllPoint: Point, position: int = None):
+        """Mit addControlPoint() kann an einer definierten Postion ein weitere Kontrollpunkt in die Liste der Kontrollpunkte ergänzt werden.
+
+        Args:
+            newP (Point): New controll point
+            position (int): Position in controll point list Defaults to None. If None, controll point is appended to the controll point list.
+        """
+        if isinstance(position, int):
+            self.controlPoints.insert(position, newControllPoint)
+        else:
+            self.controlPoints.append(newControllPoint)
+
+    def removeControlPoint(self, point: Point):
+        """Mit removeControlPoint() kann ein definierter Punkt aus der Liste der Kontrollpunkte entfernt werden.
+
+        Args:
+            point (Point): Controll point that should be removed.
+        """
+        cpList = self.controlPoints
+        if point in cpList:
+            cpList.remove(point)
+        else:
+            raise (
+                UserWarning(
+                    f"Tried to remove Point '{point.name}' from controll points of Spline '{self.name}', but point was not found in controll point list."
+                )
+            )
+
+    def getPoints(self) -> List["Point"]:
+        points = []
+        points.extend(super().points)
+        points.extend(self.controlPoints)
+        return points
 
     def translate(self, dx: float, dy: float, dz: float):
         """Mit translate() wird das Objekt linear verschoben. Die Inputvariablen dx, dy und dz beschreiben die Verschiebungsfaktoren in der x-, y- und z- Richtung.
@@ -191,81 +256,6 @@ class Spline(Line):
         else:
             SP.name = name
         return SP
-
-    @property
-    def splineType(self) -> Literal[0, 1, 2]:
-        """get Spline type. There are 3 different types of Splines that can be generated with Gmsh:
-                0 : Catmull-Rom Spline (Build-in Kernel) or C2 BSpline (OpenCASCADE Kernel)
-                1 : Bezierkurve
-                2 : Basis-Spline
-
-        Returns:
-            Literal[0,1,2]: Spline type
-        """
-        return self._splineType
-
-    @property
-    def controlPoints(self) -> List[Point]:
-        """Get the controll point list of a Spline
-
-        Returns:
-            List[Point]: controll point list
-        """
-        return self._controlPoints
-
-    @controlPoints.setter
-    def controlPoints(self, newControlPointList: List[Point]):
-        """Mit setControlPoints können neue Kontrollpunkte der Spline definiert werden.
-
-        Args:
-            newControlPointList (List[Point]): List of new controll points
-        """
-        self._controlPoints = newControlPointList
-
-    @property
-    def controlPoint(self, newControllPoint: Point, position: int = None):
-        """Mit addControlPoint() kann an einer definierten Postion ein weitere Kontrollpunkt in die Liste der Kontrollpunkte ergänzt werden.
-
-        Args:
-            newP (Point): New controll point
-            position (int): Position in controll point list Defaults to None. If None, controll point is appended to the controll point list.
-        """
-        controllPointList = self.controlPoints
-        if position or position == 0:
-            controllPointList.insert(position, newControllPoint)
-        else:
-            controllPointList.append(newControllPoint)
-
-    def removeControlPoint(self, point: Point):
-        """Mit removeControlPoint() kann ein definierter Punkt aus der Liste der Kontrollpunkte entfernt werden.
-
-        Args:
-            point (Point): Controll point that should be removed.
-        """
-        cpList = self.controlPoints
-        if point in cpList:
-            cpList.remove(point)
-        else:
-            raise (
-                UserWarning(
-                    f"Tried to remove Point '{point.name}' from controll points of Spline '{self.name}', but point was not found in controll point list."
-                )
-            )
-        
-    def getPoints(self) -> List["Point"]:
-        points = []
-        points.extend(super().points)
-        points.extend(self.controlPoints)
-        return points
-
-    @property
-    def type(self) -> Literal["Spline"]:
-        """Mit type wird ein Identifier der Klasse als String zurück gegeben.
-
-        Returns:
-            Literal["Spline"]: Class identifier
-        """
-        return "Spline"
 
     # def plot(
     #     self,

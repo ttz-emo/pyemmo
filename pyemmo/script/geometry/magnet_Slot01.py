@@ -1,28 +1,64 @@
+"""Module for class Magnet_Slot01"""
+
 from .magnet import Magnet
-from .physicalElement import PhysicalElement
 from .point import Point
 from .line import Line
-from .circleArc import CircleArc
 from .surface import Surface
 from .. import colorDict
-import math
 
 
-class Magnet_Slot01(Magnet):
+class MagnetSlot01(Magnet):
     def __init__(self, machineDict, magnetisationDirection, magnetisationType):
         ###Dictionary mit allen Magnet-Parametern.
         self._machineDict = machineDict
 
         self.id = self._getNewID()
-        magName = "Magnet_Slot01_" + str(self.id)
+        magName = "MagnetSlot01_" + str(self.id)
         super().__init__(
-            magName,
-            [],
-            machineDict["material"],
-            magnetisationDirection,
-            magnetisationType,
+            name=magName,
+            geoElements=[],
+            material=machineDict["material"],
+            magDirection=magnetisationDirection,
+            magType=magnetisationType,
+            magVectorAngle=0.0,
         )
         self._createGeometry()
+
+    @property
+    def airLinePart(self):
+        """get airLinePart
+
+        Returns:
+            _type_: _airLinePart
+        """
+        return self._airLinePart
+
+    @property
+    def lamLinePart(self):
+        """get lamLinePart
+
+        Returns:
+            _type_: _lamLinePart
+        """
+        return self._lamLinePart
+
+    @property
+    def laminationDockingPoint(self):
+        """get laminationDockingPoint
+
+        Returns:
+            _type_: _laminationDockingPoint
+        """
+        return self._laminationDockingPoint
+
+    @property
+    def innerLinePart(self):
+        """get innerLinePart
+
+        Returns:
+            _type_: _innerLinePart
+        """
+        return self._innerLinePart
 
     def _createGeometry(self):
         rA_Rotor = self._machineDict["rA_Rotor"]
@@ -83,55 +119,10 @@ class Magnet_Slot01(Magnet):
         self._laminationDockingPoint = [pMagnet1, pMagnet2, pMagnet3, pMagnet4]
 
         for s in self._geometricalElement:
-            if self.magnetisationDirection == 1:
+            if self.magDir == 1:
                 s.meshColor = colorDict["Red"]
-            elif self.magnetisationDirection == -1:
+            elif self.magDir == -1:
                 s.meshColor(colorDict["Green"])
-
-    @property
-    def innerLinePart(self):
-        """get innerLinePart
-
-        Returns:
-            _type_: _innerLinePart
-        """
-        return self._innerLinePart
 
     # def getAirDockingPoint(self):
     #     return self._airDockingPoint
-
-    @property
-    def airLinePart(self):
-        """get airLinePart
-
-        Returns:
-            _type_: _airLinePart
-        """
-        return self._airLinePart
-
-    @property
-    def lamLinePart(self):
-        """get lamLinePart
-
-        Returns:
-            _type_: _lamLinePart
-        """
-        return self._lamLinePart
-
-    @property
-    def laminationDockingPoint(self):
-        """get laminationDockingPoint
-
-        Returns:
-            _type_: _laminationDockingPoint
-        """
-        return self._laminationDockingPoint
-
-    @property
-    def geometricalElement(self):
-        """get geometricalElement
-
-        Returns:
-            _type_: _geometricalElement
-        """
-        return self._geometricalElement

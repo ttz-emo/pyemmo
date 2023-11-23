@@ -50,7 +50,7 @@ class MovingBand(PhysicalElement):
         self.geometricalElement: List[CircleArc] = geometricalElement
         self.radius = geometricalElement[0].radius
         # the physical element type can be used to identify physical elements
-        self._physicalElementType = "MovingBand"
+        self.physicalElementType = "MovingBand"
         ###Hilfslinien des Movingbands zur Ergänzung zum Vollkreis, bei einem Teilmodell.
         self._auxiliary = auxiliary
 

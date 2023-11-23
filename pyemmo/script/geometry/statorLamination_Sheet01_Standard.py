@@ -1,11 +1,10 @@
 from .statorLamination import StatorLamination
-from .physicalElement import PhysicalElement
 from .. import colorDict
 from .point import Point
 from .line import Line
 from .circleArc import CircleArc
 from .surface import Surface
-import math
+
 
 ###
 # Ein Objekt der Klasse StatorLamination_Sheet01_Standard:
@@ -38,26 +37,25 @@ class StatorLamination_Sheet01_Standard(StatorLamination):
     #
     ###
     def __init__(self, machineDict):
-        self._machineDict = machineDict
-        StatorLamination.__init__(
-            self,
+        self.machineDict = machineDict
+        super().__init__(
             name="StatorLamination_Sheet01_Standard",
             geometricalElement=list(),
             material=None,
         )
         ###Name des Statorblechs
-        self._name = "StatorLamination_Sheet01_Standard_" + str(self.id)
+        self.name = "StatorLamination_Sheet01_Standard_" + str(self.id)
         self._createGeometry()
 
     ###_createGeometry() erzeugt die Blechgeometrie und definiert alle Attribute der Klasse.
     def _createGeometry(self):
-        r_S_i = self._machineDict["r_S_i"]
-        r_S_a = self._machineDict["r_S_a"]
+        r_S_i = self.machineDict["r_S_i"]
+        r_S_a = self.machineDict["r_S_a"]
 
-        PCentre = self._machineDict["machineCentrePoint"].duplicate()
+        PCentre = self.machineDict["machineCentrePoint"].duplicate()
         coordCentre = PCentre.coordinate
 
-        alpha = self._machineDict["angleGeoParts"]
+        alpha = self.machineDict["angleGeoParts"]
 
         # Konstuktion der Punkte an der x-Achse
         pSi1 = Point(
@@ -65,7 +63,7 @@ class StatorLamination_Sheet01_Standard(StatorLamination):
             coordCentre[0] + r_S_i,
             coordCentre[1],
             coordCentre[2],
-            self._machineDict["meshLength"],
+            self.machineDict["meshLength"],
         )
         pSi2 = pSi1.duplicate()
         pSi2.name = "pSi2"
@@ -78,10 +76,10 @@ class StatorLamination_Sheet01_Standard(StatorLamination):
         pSa2.rotateZ(PCentre, alpha)
 
         # Startposition berücksichtigen
-        pSi1.rotateZ(PCentre, self._machineDict["startPosition"])
-        pSi2.rotateZ(PCentre, self._machineDict["startPosition"])
-        pSa1.rotateZ(PCentre, self._machineDict["startPosition"])
-        pSa2.rotateZ(PCentre, self._machineDict["startPosition"])
+        pSi1.rotateZ(PCentre, self.machineDict["startPosition"])
+        pSi2.rotateZ(PCentre, self.machineDict["startPosition"])
+        pSa1.rotateZ(PCentre, self.machineDict["startPosition"])
+        pSa2.rotateZ(PCentre, self.machineDict["startPosition"])
 
         # Konstuktion der Linien
         lSi = CircleArc("lSi", pSi1, PCentre, pSi2)
@@ -97,7 +95,7 @@ class StatorLamination_Sheet01_Standard(StatorLamination):
         ###Fläche des Bleches (halbe Nut bzw. Zahn) in einer Liste.
         self._geometricalElement = [surfaceStator]
         ###Material des Bleches.
-        self._material = self._machineDict["material"]
+        self._material = self.machineDict["material"]
         ###Innenkante des Bleches.
         # \image html innerLinePart.png
         self._innerLinePart = [lSi]
@@ -113,7 +111,7 @@ class StatorLamination_Sheet01_Standard(StatorLamination):
 
     ###Gibt eine Liste mit der Innenkante des Statorbleches zurück (siehe _innerLinePart).
     @property
-    def innerLinePart(self) -> list:
+    def innerLinePart(self) -> list[Line]:
         """Gibt eine Liste mit der Innenkante des Statorbleches zurück (siehe _innerLinePart).
 
         Returns:
@@ -123,7 +121,7 @@ class StatorLamination_Sheet01_Standard(StatorLamination):
 
     ###Gibt eine Liste mit der Schnittkante zurück (siehe _betweenLinePart).
     @property
-    def betweenLinePart(self) -> list:
+    def betweenLinePart(self) -> list[Line]:
         """Gibt eine List mit der Schnittkante zurück (siehe _betweenLinePart).
 
         Returns:
@@ -133,7 +131,7 @@ class StatorLamination_Sheet01_Standard(StatorLamination):
 
     ###Gibt eine Liste mit dem airDockingPoint1 zurück (siehe _airDockingPoint1).
     @property
-    def airDockingPoint1(self) -> list:
+    def airDockingPoint1(self) -> list[Point]:
         """Gibt eine Liste mit dem airDockingPoint1 zurück (siehe _airDockingPoint1).
 
         Returns:
@@ -143,7 +141,7 @@ class StatorLamination_Sheet01_Standard(StatorLamination):
 
     ###Gibt eine Liste mit dem airDockingPoint2 zurück (siehe _airDockingPoint2).
     @property
-    def airDockingPoint2(self) -> list:
+    def airDockingPoint2(self) -> list[Point]:
         """Gibt eine Liste mit dem airDockingPoint2 zurück (siehe _airDockingPoint2).
 
         Returns:

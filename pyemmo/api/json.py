@@ -483,7 +483,7 @@ def main(
         # FIXME: Implement better check for simulation status
         brFilePath = join(resPath, "b_rotor.pos")
         bsFilePath = join(resPath, "b_stator.pos")
-        nbrPolePairs = machine.NbrPolePairs
+        nbrPolePairs = machine.nbrPolePairs
         calcAngle = (
             simulationParameters["final_rotor_pos"]
             - simulationParameters["init_rotor_pos"]
@@ -562,7 +562,7 @@ def main(
 
     # Plot Results for Debugging
     if logger.getEffectiveLevel() <= 10:
-        resPath = apiScript.resultsPath
+        resPath = apiScript.resPath
         if isdir(resPath):
             # if the folder for results exists
             importResults.plt.set_loglevel(level="info") # avoid matplotlib debug infos

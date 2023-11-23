@@ -27,6 +27,18 @@ def calcTimeDomainIronLosses(
     axialLength: float = 1.0,
     saveFields: bool = True,
 ) -> Tuple[Dict[str, np.ndarray], List[float]]:
+    """TODO: _summary_
+
+    Args:
+        bFilePath (os.PathLike): _description_
+        lossFactor (dict): _description_
+        symFactor (int): _description_
+        axialLength (float, optional): _description_. Defaults to 1.0.
+        saveFields (bool, optional): _description_. Defaults to True.
+
+    Returns:
+        Tuple[Dict[str, np.ndarray], List[float]]: Iron loss results-dict + time array
+    """
     ironLoss = {}  # dict for loss results
     finGmsh = False  # determine if gmsh should be closed at the end
     if not gmsh.isInitialized():

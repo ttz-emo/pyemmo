@@ -1,11 +1,12 @@
-from typing import Dict, List, Literal, Tuple, Union
+"""Module for class Slot"""
+from typing import List, Literal, Tuple, Union
 from pyemmo.script.geometry.line import Line
 from pyemmo.script.geometry.surface import Surface
 from pyemmo.script.material.material import Material
 from .physicalElement import PhysicalElement
-from .. import colorDict
 from math import degrees
 from numpy import mean
+
 
 ###
 # Eine Instanz der Klasse Slot beschreibt eine Nut einer elektrischen Maschine im dreidimensionalen Raum.
@@ -14,25 +15,14 @@ from numpy import mean
 # \image html slot.png
 ###
 class Slot(PhysicalElement):
-    """Class Slot
-
-    Args:
-        PhysicalElement (_type_): _description_
-
-    Raises:
-        TypeError: _description_
-        ValueError: _description_
-
-    Returns:
-        _type_: _description_
-    """
+    """Class Slot"""
 
     def __init__(
         self,
         name: str,
         geometricalElement: List[Surface],
         material: Material,
-        windingDir: Union[Literal[1], Literal[-1]] = 1,
+        windingDir: Literal[-1, 1] = 1,
         phase: float = 0,
         nbrTurns: int = 0,
         phyID: int = None,
@@ -40,7 +30,7 @@ class Slot(PhysicalElement):
         """
         Constuctor of the class Slot.
 
-        Attribute:
+        Args:
             name (str): slot name
             geometricalElement (List[Surface]): List of surface(s) forming the slot
             material (Material): Slot material
@@ -50,14 +40,13 @@ class Slot(PhysicalElement):
             phyID (int): Physical Surface ID for Onelab Script. Defaults to None and will be set unique automatically.
 
         """
-        PhysicalElement.__init__(
-            self,
+        super().__init__(
             name=name,
             material=material,
             geometricalElement=geometricalElement,
             phyID=phyID,
         )
-        self._physicalElementType = "Slot"  # the physical element type can be used to identify physical elements
+        self.physicalElementType = "Slot"  # the physical element type can be used to identify physical elements
         ###Liste aus Flächen (Objekte der Klasse Surface).
         if self.geometricalElement:  # if list is not empty
             if self.geoElementType == Line:
@@ -65,24 +54,22 @@ class Slot(PhysicalElement):
                     f"Physical element type 'Slot' should only contain Surface  Elements but got type Line!"
                 )
         # Material der Wicklung
-        self.material = material # FIXME: redefinition of material. Allready defined in pe!
         self.windDirection = windingDir  # set winding direction
         self.phase = phase  # set phase angle
         self.nbrTurns = nbrTurns  # set number of winding turns
-        # set color
-        self.setColor("Orange")
+        self.setColor("Orange")  # set color
 
     @property
-    def windDirection(self) -> Union[Literal[1], Literal[-1]]:
-        """Getter of winding direction
+    def windDirection(self) -> Literal[-1, 1]:
+        """Winding direction
 
         Returns:
-            _type_: _description_
+            Literal[-1,1]: Winding direction (-1 = -z, 1 = +z)
         """
         return self._windDirection
 
     @windDirection.setter
-    def windDirection(self, windDir: Union[Literal[1], Literal[-1]]) -> None:
+    def windDirection(self, windDir: Literal[-1, 1]) -> None:
         """Setter of winding direction. Can be +1 or -1.
 
         Args:
@@ -95,19 +82,19 @@ class Slot(PhysicalElement):
 
     @property
     def phase(self) -> float:
-        """Getter of phase angle
+        """slot winding phase angle
 
         Returns:
-            float: _description_
+            float: phase angle in rad
         """
         return self._phase
 
     @phase.setter
     def phase(self, phaseAngle: float) -> None:
-        """Setter of phase angle [radians]
+        """Setter of phase angle
 
         Args:
-            phaseAngle (float): _description_
+            phaseAngle (float): angle of winding phase in rad.
         """
         if isinstance(phaseAngle, (int, float)):
             self._phase = phaseAngle
@@ -119,16 +106,16 @@ class Slot(PhysicalElement):
         """Getter of number of winding turns in face attribute
 
         Returns:
-            int: _description_
+            int: number of winding turns in slot.
         """
         return self._nbrTurns
 
     @nbrTurns.setter
-    def nbrTurns(self, nbrTurnsInFace: int) -> None:
+    def nbrTurns(self, nbrTurnsInFace: Union[int, float]) -> None:
         """Setter of number of wires in face attribute
 
         Args:
-            nbrTurnsInFace (int): _description_
+            nbrTurnsInFace (int): number of winding turns in slot
         """
         if isinstance(nbrTurnsInFace, int):
             self._nbrTurns = nbrTurnsInFace
@@ -173,7 +160,6 @@ class Slot(PhysicalElement):
         This is useful when sorting the slots in circumfederal direction
 
         Returns:
-            Tuple[float, float]: _description_
             float: Angle of the center of the slots surface(s) in radians
             float: Radius of the center of the slots surface(s) in m
         """

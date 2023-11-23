@@ -14,35 +14,40 @@ if TYPE_CHECKING:
     from ..script import Script
 
 
-###
-# Eine Instanz der Klasse Surface ist eine Fläche im dreidimensionalen Raum.
-#
-#   Input:
-#
-#       name : string
-#       curves : [Line]
-#
-#   Beispiel:
-#
-#       from pyemmo import *
-#       P1 = Point('P1', 0, 0, 0, 1)
-#       P2 = Point('P2', 1, 0, 0, 1)
-#       P3 = Point('P3', 1, 1, 0, 1)
-#       P4 = Point('P4', 0, 1, 0, 1)
-#       L1 = Line('L1', P1, P2)
-#       L2 = Line('L2', P2, P3)
-#       L3 = Line('L3', P3, P4)
-#       L4 = Line('L4', P4, P1)
-#       S1 = Surface('S1', [L1, L3, L2, L4])
-#
-###
 class Surface(Transformable):
-    ###Statische Variable zur ID-Verwaltung
+    """Eine Instanz der Klasse Surface ist eine Fläche im dreidimensionalen Raum.
+
+    Input:
+
+        name : string
+        curves : [Line]
+
+    Beispiel:
+
+        from pyemmo import *
+        P1 = Point('P1', 0, 0, 0, 1)
+        P2 = Point('P2', 1, 0, 0, 1)
+        P3 = Point('P3', 1, 1, 0, 1)
+        P4 = Point('P4', 0, 1, 0, 1)
+        L1 = Line('L1', P1, P2)
+        L2 = Line('L2', P2, P3)
+        L3 = Line('L3', P3, P4)
+        L4 = Line('L4', P4, P1)
+        S1 = Surface('S1', [L1, L3, L2, L4])
+    """
+
     ID = 0
-    GroupID = 1000
+    """Statische Variable zur ID-Verwaltung"""
 
     ###Konstruktor der Klasse Surface
-    def __init__(self, name: str, curves: List[Union["Line", "CircleArc", "Spline"]]):
+    def __init__(self, name: str, curves: List[Union[Line, CircleArc, Spline]]):
+        """Create a surface object.
+
+        Args:
+            name (str): Surface name
+            curves (List[Union[Line, CircleArc, Spline]]): Line loop defining the
+             surface boundary line (must be closed!)
+        """
         ###Name des Objektes.
         self.name: str = name
         ###Kurven die eine Fläche umschließen.
@@ -57,13 +62,16 @@ class Surface(Transformable):
         self._todesmerker: bool = False
         ###Farbe vom Netz.
         self._color = ""
-        self._cut: List["Surface"] = []
+        # init because _cut(=tools) is only accessed by method ``cutOut``
+        self._cut: List["Surface"] = [] 
         self._isTool: bool = False
         self._delete: bool = False
 
     def __eq__(self, other: "Surface"):
         # check type and number of points
-        if isinstance(other, self.__class__) and (len(self.allPoints) == len(other.allPoints)):
+        if isinstance(other, self.__class__) and (
+            len(self.allPoints) == len(other.allPoints)
+        ):
             # check that all points are equal
             otherPoints = other.allPoints
             for point in self.allPoints:
@@ -78,6 +86,16 @@ class Surface(Transformable):
     def _getNewID(cls) -> int:
         Surface.ID = Surface.ID + 1
         return Surface.ID
+
+    # --------- properties ----------
+    @property
+    def type(self) -> str:
+        """Mit getType() wird ein Identifier der Klasse als String zurück gegeben.
+
+        Returns:
+            str: "Surface"
+        """
+        return "Surface"
 
     # pylint: disable=locally-disabled, invalid-name
     @property
@@ -122,197 +140,104 @@ class Surface(Transformable):
         """
         self._name = name
 
-    ###
-    # Mit getCurve() werden alle Kurven der Fläche zurück gegeben.
-    #
-    #   Input:
-    #
-    #       None
-    #
-    #   Output:
-    #
-    #       [Line]
-    ###
     @property
     def curve(self) -> List[Union[Line, CircleArc, Spline]]:
-        """Getter of curve
+        """Getter of surface line loop.
 
         Returns:
-            List[Union[Line, CircleArc, Spline]]: _curves
+            List[Union[Line, CircleArc, Spline]]: List of lines that form the surface.
         """
         return self._curves
 
-    ###Mit translate() kann eine Fläche linear verschoben werden. Die Inputvariablen dx, dy und dz beschreiben die Verschiebungsfaktoren in der x-, y- und z- Richtung.
-    #
-    #   Input:
-    #
-    #       dx : float
-    #       dy : float
-    #       dz : float
-    #
-    #   Beispiel:
-    #
-    #       S1 = ('S1', [L1, L2, L3, L4])
-    #       S1.translate(0, 1, 0)
-    #
-    ###
-    def translate(self, dx, dy, dz):
-        if self._todesmerker == True:
-            ...  # TODO: Add warning
+    # TODO: Rename "curve"
+    @curve.setter
+    def curve(self, curves: list[Line]) -> None:
+        """Set line loop of surface
+
+        Args:
+            curves (list[Line]): Line loop with surface boundary lines.
+        """
+        self._curves = curves
+
+    # @property
+    # def meshColor(self) -> str:
+    #     """get the mesh color
+
+    #     Returns:
+    #         str: name of the color
+    #     """
+    #     return self._color
+
+    # @meshColor.setter
+    # def setMeshColor(self, color: str) -> str:
+    #     """Setter for Mesh Color
+
+    #     Args:
+    #         color (str): _description_
+
+    #     Returns:
+    #         str: _description_
+    #     """
+    #     self._color = color
+    # TODO: mesh color as property
+    def setMeshColor(self, color: str) -> None:
+        """set the mesh color
+
+        Args:
+            color (str): _description_
+        """
+        self._color = color
+
+    def getMeshColor(self) -> str:
+        """get the mesh color
+
+        Returns:
+            str: name of the color
+        """
+        return self._color
+
+    @property
+    def delete(self) -> bool:
+        """Get the delete-status of the surface"""
+        return self._delete
+
+    @delete.setter
+    def delete(self, status: bool) -> None:
+        """Delete Surface at the end of script generation"""
+        if isinstance(status, bool):
+            self._delete = True
         else:
-            allP = self.allPoints
-            for p in allP:
-                p.translate(dx, dy, dz)
+            raise TypeError("Delete status was not type bool!")
 
-    ###Mit rotateZ() wird eine Fläche um einen Rotationspunkt (rotationPoint) und die Z-Achse mit einem definierten Winkel rotiert.
-    #
-    #   Input:
-    #
-    #       rotaionPoint : Point
-    #       angle : float
-    #
-    #   Beispiel:
-    #
-    #       from math import pi
-    #       S1 = ('S1', [L1, L2, L3, L4])
-    #       S1.rotateZ(P0, pi)
-    #
-    ###
-    def rotateZ(self, rotationPoint, angle):
-        if self._todesmerker == True:
-            ...  # TODO: Add warning
-        else:
-            allP = self.allPoints
+    @property
+    def points(self) -> List[Point]:
+        """Get all Points on the contour of a Surface
 
-            for p in allP:
-                p.rotateZ(rotationPoint, angle)
+        Returns:
+            List[Point]: List of all Points of surface
+        """
+        LineLoop = self.curve
+        if LineLoop:
+            PointList: List[Point] = []
+            for line in LineLoop:
+                startPoint = line.startPoint
+                endPoint = line.endPoint
+                if startPoint not in PointList:
+                    PointList.append(startPoint)
+                if endPoint not in PointList:
+                    PointList.append(endPoint)
+            return PointList
+        return []
 
-    ###Mit rotateX() wird eine Fläche um einen Rotationspunkt (rotationPoint) und die X-Achse mit einem definierten Winkel rotiert.
-    #
-    #   Input:
-    #
-    #       rotaionPoint : Point
-    #       angle : float
-    #
-    #   Beispiel:
-    #
-    #       from math import pi
-    #       S1 = ('S1', [L1, L2, L3, L4])
-    #       S1.rotateX(P0, pi)
-    #
-    ###
-    def rotateX(self, rotationPoint, angle):
-        if self._todesmerker == True:
-            ...  # TODO: Add warning
-        else:
-            allP = self.allPoints
+    @property
+    def meanMeshLength(self) -> float:
+        """get the mean mesh length of all points of the surface.
 
-            for p in allP:
-                p.rotateX(rotationPoint, angle)
-
-    ###Mit rotateY() wird eine Fläche um einen Rotationspunkt (rotationPoint) und die Y-Achse mit einem definierten Winkel rotiert.
-    #
-    #   Input:
-    #
-    #       rotaionPoint : Point
-    #       angle : float
-    #
-    #   Beispiel:
-    #
-    #       from math import pi
-    #       S1 = ('S1', [L1, L2, L3, L4])
-    #       S1.rotateY(P0, pi)
-    #
-    ###
-    def rotateY(self, rotationPoint, angle):
-        if self._todesmerker == True:
-            ...  # TODO: Add warning
-        else:
-            allP = self.allPoints
-            for p in allP:
-                p.rotateY(rotationPoint, angle)
-
-    ###Mit duplicate() wird eine neue Fläche mit gleichen Eigenschaften zur Originalen erzeugt. Diese Fläche hat jedoch eine unterschiedliche ID.
-    #
-    #   Optionaler Input:
-    #
-    #       name : string
-    #
-    #   Output:
-    #
-    #       Surface
-    #
-    #   Beispiel:
-    #
-    #       S1 = ('S1', [L1, L2, L3, L4])
-    #       S2 = S1.duplicate()
-    #
-    #   Akutelle ID von S1 und S2:
-    #
-    #       >> S1: ID = 1
-    #       >> S2: ID = 2
-    #
-    ###
-    def duplicate(self, name=""):
-        newCurves: List[Union[Line, CircleArc, Spline]] = list()
-        for curve in self.curve:
-            newCurves.append(curve.duplicate())
-        s = Surface(name, newCurves)
-        if name == "":
-            parentName = self.name
-            if "_dup" not in parentName:
-                s.name = f"{parentName}_dup"
-            else:
-                s.name = parentName
-        s._color = self._color
-        return s
-
-    ###Mit mirror() kann eine Fläche an einer definierten Ebene gespiegelt werden. Bildpunkte werden hierbei generiert und eine Linie zwischen den Punkten erzeugt. Die Spiegelebene wird durch einen Aufpunkt (planePoint) und 2 Vektoren (planeVector1 und planeVector2) beschrieben.
-    #
-    #   Input:
-    #
-    #       planePoint : Point
-    #       planeVector1 : Line
-    #       planeVector2 : Line
-    #
-    #   Optionaler Input:
-    #
-    #       name : string
-    #
-    #   Output:
-    #
-    #       Surface
-    #
-    #   Beispiel:
-    #
-    #       P0 = Point('P0', 0, 0, 0, 1)
-    #       Py = Point('Py', 0, 1, 0, 1)
-    #       Pz = Point('Pz', 0, 0, 1, 1)
-    #       yAxis = Line(P0, Py)
-    #       zAxis = Line(P0, Pz)
-    #       S1 = ('S1', [L1, L2, L3, L4])
-    #       S2 = S1.mirror(P0, yAxis, zAxis)
-    #
-    ###
-    def mirror(self, planePoint, planeVector1, planeVector2, name=""):
-        allCurve = []
-        for aC in self._curves:
-            allCurve.append(aC)
-        allCurve.reverse()
-        allNewCurve = []
-        for aC in allCurve:
-            allNewCurve.append(aC.mirror(planePoint, planeVector1, planeVector2))
-
-        s = Surface(self._name, allNewCurve)
-
-        if name == "":
-            s.name = f"s_{self.id}"
-        else:
-            s.name = name
-
-        s.setMeshColor(self.getMeshColor())
-
-        return s
+        Returns:
+            float: mean of mesh length of all points in meter
+        """
+        mlList = [p.meshLength for p in self.allPoints]
+        return mean(mlList)
 
     @property
     def allPoints(self) -> List[Point]:
@@ -339,6 +264,167 @@ class Surface(Transformable):
             if endPoint not in PointList:
                 PointList.append(endPoint)
         return PointList
+
+    @property
+    def tools(self) -> List[Type["Surface"]]:
+        """Get the list of tool surfaces to cut out of this surface
+
+        ``tools`` has NO SETTER, because is only accessed by method ``cutOut()``
+
+        Returns:
+            list: List of tool surfaces
+        """
+        return self._cut
+
+    # --------- methods ----------
+
+    def translate(self, dx: float, dy: float, dz: float):
+        """Mit translate() kann eine Fläche linear verschoben werden.
+        Die Inputvariablen dx, dy und dz beschreiben die Verschiebungsfaktoren in der x-, y- und z- Richtung.
+
+        Args:
+            dx (float): x-offset in m
+            dy (float): y-offset in m
+            dz (float): z-offset in m
+        """
+        if self._todesmerker == True:
+            ...  # TODO: Add warning
+        else:
+            allP = self.allPoints
+            for p in allP:
+                p.translate(dx, dy, dz)
+
+    def rotateZ(self, rotationPoint: Point, angle: float):
+        """Mit rotateZ() wird eine Fläche um einen Rotationspunkt (rotationPoint) und
+        die Z-Achse mit einem definierten Winkel rotiert.
+
+        Beispiel:
+            from math import pi
+            S1 = ('S1', [L1, L2, L3, L4])
+            S1.rotateZ(P0, pi)
+
+
+        Args:
+            rotationPoint (Point): Center point for rotation.
+            angle (float): rotation angle in rad.
+        """
+        if self._todesmerker == True:
+            ...  # TODO: Add warning
+        else:
+            allP = self.allPoints
+
+            for p in allP:
+                p.rotateZ(rotationPoint, angle)
+
+    def rotateX(self, rotationPoint: Point, angle: float):
+        """Mit rotateX() wird eine Fläche um einen Rotationspunkt (rotationPoint) und
+        die X-Achse mit einem definierten Winkel rotiert.
+
+        Beispiel:
+            from math import pi
+            S1 = ('S1', [L1, L2, L3, L4])
+            S1.rotateX(P0, pi)
+
+
+        Args:
+            rotationPoint (Point): Center point for rotation.
+            angle (float): rotation angle in rad.
+        """
+        if self._todesmerker == True:
+            ...  # TODO: Add warning
+        else:
+            allP = self.allPoints
+
+            for p in allP:
+                p.rotateX(rotationPoint, angle)
+
+    def rotateY(self, rotationPoint: Point, angle: float):
+        """Mit rotateY() wird eine Fläche um einen Rotationspunkt (rotationPoint) und
+        die Y-Achse mit einem definierten Winkel rotiert.
+
+        Beispiel:
+            from math import pi
+            S1 = ('S1', [L1, L2, L3, L4])
+            S1.rotateY(P0, pi)
+
+
+        Args:
+            rotationPoint (Point): Center point for rotation.
+            angle (float): rotation angle in rad.
+        """
+        if self._todesmerker == True:
+            ...  # TODO: Add warning
+        else:
+            allP = self.allPoints
+            for p in allP:
+                p.rotateY(rotationPoint, angle)
+
+    def duplicate(self, name="") -> "Surface":
+        """Mit duplicate() wird eine neue Fläche mit gleichen Eigenschaften zur
+        Originalen erzeugt. Diese Fläche hat jedoch eine unterschiedliche ID.
+
+        Beispiel:
+            S1 = ('S1', [L1, L2, L3, L4])
+            S2 = S1.duplicate()
+
+        Akutelle ID von S1 und S2:
+            >> S1: ID = 1
+            >> S2: ID = 2
+
+        Args:
+            name (str, optional): New surface name. Defaults to "".
+
+        Returns:
+            Surface: Duplicated surface.
+        """
+        newCurves: List[Union[Line, CircleArc, Spline]] = list()
+        for curve in self.curve:
+            newCurves.append(curve.duplicate())
+        s = Surface(name, newCurves)
+        if name == "":
+            parentName = self.name
+            if "_dup" not in parentName:
+                s.name = f"{parentName}_dup"
+            else:
+                s.name = parentName
+        s._color = self._color
+        return s
+
+    def mirror(
+        self, planePoint: Point, planeVector1: Line, planeVector2: Line, name: str = ""
+    ) -> "Surface":
+        """Mit mirror() kann eine Fläche an einer definierten Ebene gespiegelt werden.
+        Bildpunkte werden hierbei generiert und eine Linie zwischen den Punkten erzeugt.
+        Die Spiegelebene wird durch einen Aufpunkt (planePoint) und 2 Vektoren
+        (planeVector1 und planeVector2) beschrieben.
+
+        Args:
+            planePoint (Point): Mirror start point
+            planeVector1 (Line): First direction vector for mirror plane.
+            planeVector2 (Line): Second direction vector for mirror plane.
+            name (str, optional): New Surface name. Defaults to "".
+
+        Returns:
+            Surface: Mirrored surface.
+        """
+        allCurve = []
+        for aC in self._curves:
+            allCurve.append(aC)
+        allCurve.reverse()
+        allNewCurve = []
+        for aC in allCurve:
+            allNewCurve.append(aC.mirror(planePoint, planeVector1, planeVector2))
+
+        s = Surface(self._name, allNewCurve)
+
+        if name == "":
+            s.name = f"s_{self.id}"
+        else:
+            s.name = name
+
+        s.setMeshColor(self.getMeshColor())
+
+        return s
 
     def combine(self, addSurf: "Surface") -> "Surface":
         """combine two surfaces.
@@ -379,7 +465,7 @@ class Surface(Transformable):
                     lines2combine: List[Union[Line, CircleArc, Spline]] = list()
                     # find the two lines in the two remaining curve lists containing the docking point:
                     for curve in newCurves:
-                        for linePoint in curve.getPoints():
+                        for linePoint in curve.points:
                             if linePoint.isEqual(dockPoint):
                                 # if the line point and docking point coordinates are equal add the line to the combine lines-list:
                                 lines2combine.append(curve)
@@ -411,7 +497,7 @@ class Surface(Transformable):
             addName = addSurf.name.replace("combinedLine_", "")
             newSurf = self.duplicate()  # TODO: avoid name repitition
             newSurf.name = f"combinedLine_{sName}_{addName}"
-            newSurf.curve(curves=newCurves)
+            newSurf.curve = newCurves
             return newSurf
         else:
             mssg = f"Cound not combine surfaces ({self.name} and {addSurf.name}). No intersection curve was found!"
@@ -440,29 +526,23 @@ class Surface(Transformable):
                 newLoop.append(newCurve)
             else:
                 newLoop.append(curve)
-        self.curve(newLoop)
+        self.curve = newLoop
         return None
 
-    ###
-    # Mit addToScript wird die Fläche zum Skriptobjekt übergeben und in gmsh-Syntax übersetzt.
-    # Transformationen von Flächen sind nach dem Aufruf nicht mehr erlaubt, da die neuen Koordinaten der Punkte nicht mehr erfasst werden.
-    # Diese Methode sollte stets nur in Kombination mit generateScript (Klassenmethode von Script) verwendet werden.
-    #
-    #   Input:
-    #
-    #       script : Script
-    #
-    #   Output:
-    #
-    #       None
-    #
-    #   Beispiel:
-    #
-    #       myScript = Script(...)
-    #       S1.addToScript(myScript)
-    #
-    ###
     def addToScript(self, script: "Script"):
+        """Mit addToScript wird die Fläche zum Skriptobjekt übergeben und in gmsh-Syntax übersetzt.
+        Transformationen von Flächen sind nach dem Aufruf nicht mehr erlaubt, da die neuen Koordinaten
+        der Punkte nicht mehr erfasst werden. Diese Methode sollte stets nur in Kombination mit
+        generateScript() (Klassenmethode von Script) verwendet werden.
+
+        Beispiel:
+
+            myScript = Script(...)
+            S1.addToScript(myScript)
+
+        Args:
+            script (Script): Script object.
+        """
         # if addToScript was not allready done
         if not self._todesmerker:
             self._todesmerker = True
@@ -476,6 +556,18 @@ class Surface(Transformable):
         The function returns true if the surface is allready in the script
         """
         return self._todesmerker
+
+    def setTool(self) -> None:
+        """set the surface as subtraction surface"""
+        self._isTool = True
+
+    def isTool(self) -> bool:
+        """returns True if the surface has been subtracted from a other surface.
+
+        Returns:
+            bool: True if the surface has been subtracted, False if not.
+        """
+        return self._isTool
 
     def sortCurves(self) -> None:
         """sortiert die Kurven einer geschlossenen Fläche neu, um eine Curve Loop in Gmsh zu erstellen
@@ -491,7 +583,7 @@ class Surface(Transformable):
         newLoop.append(oldLoop.pop(0))
         nbrLines = len(oldLoop)  # get the remaining number of lines
         # for every line thats left:
-        for i1 in range(nbrLines):
+        for _ in range(nbrLines):
             # Check which line in oldLoop appends to the last line in newLoop
             # if that line was found get direction, append it to newLoop and remove it from oldLoop
             for i2 in range(0, len(oldLoop)):
@@ -522,153 +614,47 @@ class Surface(Transformable):
         self.curve = newLoop
         return None
 
-    ###
-    # Die Methode replaceCurve() tauscht eine Kurve in der Liste gegen eine neue Kurve aus.
-    #
-    #   Input:
-    #
-    #       oldCurve : Line
-    #       newCurve : Line
-    #
-    #   Output:
-    #
-    #       None
-    ###
-    def replaceCurve(self, oldCurve, newCurve) -> None:
-        for i in range(len(self._curves)):
-            if self._curves[i] == oldCurve:
+    def replaceCurve(self, oldCurve: Line, newCurve: Line) -> None:
+        """Die Methode replaceCurve() tauscht eine Kurve in der Liste gegen eine neue Kurve aus.
+
+        Args:
+            oldCurve (Line): Curve to be replaced.
+            newCurve (Line): Curve that should be inserted instead.
+        """
+        for i, curve in enumerate(self.curve):
+            if curve == oldCurve:
                 self._curves[i] = newCurve
-
-    ###
-    # Mit setMeshColor() kann die Farbe des Netzes festgelegt werden.
-    #
-    #   Input:
-    #
-    #       color : string
-    #
-    #   Output:
-    #
-    #       None
-    ###
-    # @property
-    # def meshColor(self) -> str:
-    #     """get the mesh color
-
-    #     Returns:
-    #         str: name of the color
-    #     """
-    #     return self._color
-    
-    # @meshColor.setter
-    # def setMeshColor(self, color: str) -> str:
-    #     """Setter for Mesh Color
-
-    #     Args:
-    #         color (str): _description_
-
-    #     Returns:
-    #         str: _description_
-    #     """
-    #     self._color = color
-
-    def setMeshColor(self, color: str) -> None:
-        """set the mesh color
-
-        Args:
-            color (str): _description_
-        """
-        self._color = color
-
-    def getMeshColor(self) -> str:
-        """get the mesh color
-
-        Returns:
-            str: name of the color
-        """
-        return self._color
-
-    ###
-    # Mit getType() wird ein Identifier der Klasse als String zurück gegeben.
-    #
-    #   Input:
-    #
-    #       None
-    #
-    #   Output:
-    #
-    #       String
-    ###
-    @property
-    def type(self) -> str:
-        """Getter of Type
-
-        Returns:
-            str: "Surface"
-        """
-        return "Surface"
-
-    ###
-    # Mit setCurve() werden die Kurven der Klasse ausgetauscht.
-    #
-    #   Input:
-    #
-    #       curve : Line
-    #
-    #   Output:
-    #
-    #       None
-    ###
-    @curve.setter
-    def curve(self, curves) -> None:
-        """Setter for Curve
-
-        Args:
-            curves (_type_): _curve
-        """
-        # print("set new curves")
-        self._curves = curves
-
-    @property
-    def delete(self) -> bool:
-        """Get the delete-status of the surface"""
-        return self._delete
-
-    @delete.setter
-    def delete(self, status: bool) -> None:
-        """Delete Surface at the end of script generation"""
-        if isinstance(status, bool):
-            self._delete = True
-        else:
-            raise TypeError("Delete status was not type bool!")
 
     def cutOut(self, ToolSurface: "Surface", keepTool: bool = True) -> None:
         """Cut out a Tool Surface from the Parent surface by Boolean Difference"""
         self._cut.append(ToolSurface)
-        ToolSurface.tool  # set the tool surface _isTool=True
+        ToolSurface.setTool()  # set to the tool surface
         if not keepTool:
-            ToolSurface.delete()
+            ToolSurface.delete = True
 
-    @property
-    def tools(self) -> List[Type["Surface"]]:
-        """Get the list of tool surfaces to cut out of this surface
+    def setMeshLength(self, meshLength: float) -> None:
+        """set the meshLength of all points of a surface.
+
+        Args:
+            meshLength (float): mesh length to be set for all points
+        """
+        pointList = self.allPoints
+        for point in pointList:
+            point.meshLength = meshLength
+
+    def getMinMeshLength(self) -> float:
+        """get the minimum meshLength of all points of the surface.
 
         Returns:
-            list: _cut
+            float: min mesh length of all points
         """
-        return self._cut
-
-    @tools.setter
-    def tool(self) -> None:
-        """set the surface as subtraction surface"""
-        self._isTool = True
-
-    def isTool(self) -> bool:
-        """returns True if the surface has been subtracted from a other surface.
-
-        Returns:
-            bool: True if the surface has been subtracted, False if not.
-        """
-        return self._isTool
+        pointList = self.allPoints
+        ml = pointList.pop().meshLength
+        for point in pointList:
+            nml = point.meshLength
+            if nml < ml:
+                ml = nml
+        return ml
 
     def calcCOG(self) -> Point:
         """
@@ -759,60 +745,3 @@ class Surface(Transformable):
             miny * scalingFactor,
             maxy * scalingFactor,
         ]
-
-    @property
-    def points(self) -> List[Point]:
-        """Get all Points on the contour of a Surface
-
-        Returns:
-            List[Point]: _description_
-        """
-        LineLoop = self.curve
-        if LineLoop:
-            PointList: List[Point] = list()
-            for line in LineLoop:
-                startPoint = line.startPoint
-                endPoint = line.endPoint
-                if startPoint not in PointList:
-                    PointList.append(startPoint)
-                if endPoint not in PointList:
-                    PointList.append(endPoint)
-            return PointList
-        else:
-            return []
-    
-    def setMeshLength(self, meshLength: float) -> None:
-        """set the meshLength of all points of a surface.
-
-        Args:
-            meshLength (float): mesh length to be set for all points
-        """
-        pointList = self.allPoints
-        for point in pointList:
-            point._meshLength = meshLength
-
-    @property
-    def minMeshLength(self) -> float:
-        """get the minimum meshLength of all points of the surface.
-
-        Returns:
-            float: min mesh length of all points
-        """
-        pointList = self.allPoints
-        ml = pointList.pop().meshLength
-        for point in pointList:
-            nml = point.meshLength
-            if nml < ml:
-                ml = nml
-        return ml
-
-    @property
-    def meanMeshLength(self) -> float:
-        """get the mean mesh length of all points of the surface.
-
-        Returns:
-            float: mean of mesh length of all points in meter
-        """
-        pointList = self.allPoints
-        mlList = [p.meshLength for p in pointList]
-        return mean(mlList)

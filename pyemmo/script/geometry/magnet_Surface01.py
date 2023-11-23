@@ -1,12 +1,10 @@
 from .magnet import Magnet
-from .physicalElement import PhysicalElement
 from .point import Point
 from .line import Line
 from .circleArc import CircleArc
 from .surface import Surface
 from .. import colorDict
 
-import math
 
 ###
 # Ein Objekt der Klasse Magnet_Surface01:
@@ -39,12 +37,12 @@ class Magnet_Surface01(Magnet):
         h_M (float): Magnet hight
         angularWidth_i (float): Inner angular width
         angularWidth_a (float): Outer angular width
-        magnetisationDirection (Literial[-1,1]): see definition in Class 
+        magnetisationDirection (Literial[-1,1]): see definition in Class
             :class:`~pyemmo.script.geometry.magnet.Magnet`
-        magnetisationType (str): see definition in Class 
+        magnetisationType (str): see definition in Class
             :class:`~pyemmo.script.geometry.magnet.Magnet`
         material (Material): Material of magnet.
-        meshLength (float): 
+        meshLength (float):
 
     .. figure:: ../image_Doku/magnet_Surface01.png
         :align: center
@@ -74,14 +72,10 @@ class Magnet_Surface01(Magnet):
             machineDict["material"],
             magnetisationDirection,
             magnetisationType,
+            0.0,
         )
 
         self._createGeometry()
-
-    ###Wird eine Instanz erzeugt, bekommt sie automatisch eine eindeutige ID zugewiesen. Mit getNewID() wird eine neue ID erzeugt.
-    def _getNewID(self):
-        PhysicalElement.Physical_ID = PhysicalElement.Physical_ID + 1
-        return PhysicalElement.Physical_ID
 
     ###_createGeometry() erzeugt die Magnetgeometrie und definiert alle Attribute der Klasse.
     def _createGeometry(self):
@@ -150,9 +144,9 @@ class Magnet_Surface01(Magnet):
         self._laminationDockingPoint = [pMagnet1]
 
         for s in self._geometricalElement:
-            if self.magnetisationDirection == 1:
+            if self.magDir == 1:
                 s.setMeshColor(colorDict["Red"])
-            elif self.magnetisationDirection == -1:
+            elif self.magDir == -1:
                 s.setMeshColor(colorDict["Green"])
 
     ###Gibt eine Liste mit der Schnittkante im Magneten zurück (siehe _innerLinePart).
@@ -198,4 +192,3 @@ class Magnet_Surface01(Magnet):
             list: _laminationDockingPoint
         """
         return self._laminationDockingPoint
-    
