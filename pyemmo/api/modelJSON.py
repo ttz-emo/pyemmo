@@ -68,6 +68,7 @@ def createLine(
                     )
                 )
             )
+           
             < DEFAULT_GEO_TOL
         ):
             # the point is the global center point
@@ -274,8 +275,8 @@ def importMachineGeometry(machineGeoList: list[dict]) -> Dict[str, SurfaceAPI]:
     """import one segment of the whole machine geometry from the geo.json file
 
     Args:
-        machineGeoList (list[dict]): List of surface dictionaries with api geo info. 
-        TODO: describe surface dict structure! 
+        machineGeoList (list[dict]): List of surface dictionaries with api geo info.
+        TODO: describe surface dict structure!
 
     Returns:
         Dict[str, SurfaceAPI]: Segment Surface dict with short IDs (IdExt) as keys and
@@ -626,7 +627,9 @@ def phase2angle(phaseChar: Literal["u", "v", "w"]) -> float:
     raise ValueError(f'Phase ID "{phaseChar}"is not a single character!', phaseChar)
 
 
-def phase2color(phaseChar: Literal["u", "v", "w"]) -> Literal["IndianRed", "Yellow", "Aquamarine"]:
+def phase2color(
+    phaseChar: Literal["u", "v", "w"]
+) -> Literal["IndianRed", "Yellow", "Aquamarine"]:
     """Get gmsh mesh color name for a phase-character. See `gmsh colors
     <https://gitlab.onelab.info/gmsh/gmsh/blob/gmsh_4_11_0/src/common/Colors.h>`_
     for all available colors.
@@ -793,7 +796,9 @@ def createWinding(extendedInfo: dict) -> datamodel:
     # format winding layout for swat_em
     windLayout = importJSON.getWindingList(extendedInfo)
     swatemWinding.set_phases(
+        
         S=windLayout, turns=(importJSON.getNbrOfTurns(extendedInfo))
+    
     )
     swatemWinding.analyse_wdg()  # analyse winding to make sure its valid and all parameters are set
     return swatemWinding

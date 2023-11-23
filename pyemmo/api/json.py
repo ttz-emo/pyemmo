@@ -382,28 +382,34 @@ def main(
             raise FileNotFoundError(f"Provided gmsh executable was not found: {gmsh}")
 
     # get geometry
-    if isfile(geo):
-        # import the segment surface list from the json file
-        try:
-            with open(geo, encoding="utf-8") as jsonFile:
-                machineGeoList = json.load(jsonFile)
-        except FileNotFoundError as fnfe:
-            raise fnfe
-        except Exception as exept:
-            raise exept
-    elif isinstance(geo, list):
-        machineGeoList = geo
+    if isinstance(geo,str):
+        if isfile(geo):
+            # import the segment surface list from the json file
+            try:
+                with open(geo, encoding="utf-8") as jsonFile:
+                    machineGeoList = json.load(jsonFile)
+                    # create dict with surface api (segment) objects from the surface list
+                    segmentSurfDict = modelJSON.importMachineGeometry(machineGeoList)
+            except FileNotFoundError as fnfe:
+                raise fnfe
+            except Exception as exept:
+                raise exept
+        else:
+            raise(FileNotFoundError(f"Given file path {geo} was not a file."))
+    elif isinstance(geo, dict):
+        segmentSurfDict = geo
     else:
         raise TypeError(
             f"Geometry file has to be type 'File' or 'dict', not {type(geo)}"
         )
-    # create dict with surface api (segment) objects from the surface list
-    segmentSurfDict = modelJSON.importMachineGeometry(machineGeoList)
-
+    
     # addition information
-    if isfile(extInfo):
-        # import the extended information
-        extendedInfo = importJSON.importExtInfo(extInfo)
+    if isinstance(extInfo, str):
+        if isfile(extInfo):
+            # import the extended information
+            extendedInfo = importJSON.importExtInfo(extInfo)
+        else:
+            raise(FileNotFoundError(f"Given file path {extInfo} was not a file."))
     elif isinstance(extInfo, dict):
         extendedInfo = extInfo
     else:

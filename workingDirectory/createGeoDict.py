@@ -18,7 +18,7 @@ from pyleecan.Classes.MachineIPMSM import MachineIPMSM
 from pyemmo.functions.plot import plot
 from pyemmo.api.SurfaceJSON import SurfaceAPI
 from workingDirectory.translateGeometry import translateGeometry
-from workingDirectory.getRotorStatorContour import getRotorContour, getStatorContour
+from workingDirectory.getRotorStatorContour import getRotorContour, getStatorContour, getSurfacemagnetContour
 
 # from workingDirectory.buildPyemmoMovingBand import buildPyemmoMovingBand
 
@@ -26,15 +26,15 @@ from workingDirectory.getRotorStatorContour import getRotorContour, getStatorCon
 # ===========================================
 # Definition of function 'createGeoDict':
 # ===========================================
-def createGeoDict(machine):
+def createGeoDict(machine, rotorSym, statorSym, isInternalRotor: bool, magnetFarthestRadius, magnetShortestRadius):
     """_summary_
 
     Args:
         machine (_type_): _description_
     """
 
-    RotorSurf = machine.rotor.build_geometry(sym=machine.rotor.slot.Zs, alpha=0)
-    StatorSurf = machine.stator.build_geometry(sym=machine.stator.slot.Zs, alpha=0)
+    RotorSurf = machine.rotor.build_geometry(sym=rotorSym, alpha=0)
+    StatorSurf = machine.stator.build_geometry(sym=statorSym, alpha=0)
 
     RotorSurfLabels = []
     StatorSurfLabels = []
@@ -45,6 +45,7 @@ def createGeoDict(machine):
 
     geometryList: List[SurfaceAPI] = []
 
+    
     # =======================================
     # Loop of translation for rotor surfaces:
     # =======================================
@@ -62,9 +63,12 @@ def createGeoDict(machine):
             translateGeometry(
                 bauteil=RotorSurfLabelsSplit2[i][0],
                 detail=RotorSurfLabelsSplit2[i][2],
-                motor=machine,
+                machine=machine,
                 label=RotorSurfLabels[i],
                 surface=RotorSurf[i],
+                isInternalRotor=isInternalRotor,
+                magnetFarthestRadius=magnetFarthestRadius,
+                magnetShortestRadius=magnetShortestRadius
             )
         )
     print("=============================")
@@ -88,9 +92,12 @@ def createGeoDict(machine):
             translateGeometry(
                 bauteil=StatorSurfLabelsSplit2[i][0],
                 detail=StatorSurfLabelsSplit2[i][2],
-                motor=machine,
+                machine=machine,
                 label=StatorSurfLabels[i],
                 surface=StatorSurf[i],
+                isInternalRotor=isInternalRotor,
+                magnetFarthestRadius=magnetFarthestRadius,
+                magnetShortestRadius=magnetShortestRadius
             )
         )
 
@@ -98,7 +105,7 @@ def createGeoDict(machine):
     # CutOuts in rotorLamination:
     # ===========================
     if isinstance(machine, MachineIPMSM):
-        for k, surfToCutOut in enumerate(geometryList):
+        for surfToCutOut in geometryList:
             if surfToCutOut.name != "Rotor-0_Lamination":
                 surfToCutOutSplit = surfToCutOut.name.split("-")
                 if surfToCutOutSplit[0] == "Rotor":
@@ -116,9 +123,13 @@ def createGeoDict(machine):
     print("End of function")
     print("===============")
 
-    print("getRotorContour:")
-    rotorContourLineList = getRotorContour(geometryList=geometryList, machine=machine)
+    # -------------------------------------------
+    # Generation of the rotor and stator contour:
+    # -------------------------------------------
+    print("Generate rotor and stator contour:")
+    rotorContourLineList = getSurfacemagnetContour(geometryList=geometryList, machine=machine, isInternal=False)
     statorContourLineList = getStatorContour(geometryList=geometryList, machine=machine)
+    
     # ------------------------------------------------------
     # Change names of rotorRint-Curve and statorRext-Curve:
     # ------------------------------------------------------
@@ -129,8 +140,8 @@ def createGeoDict(machine):
     else:
         isShaft = False
 
-    for a, surf in enumerate(geometryList):
-        for b, curve in enumerate(surf.curve):
+    for surf in geometryList:
+        for curve in surf.curve:
             if isShaft:
                 if math.isclose(
                     a=curve.startPoint.radius, b=rotorRint, abs_tol=1e-6

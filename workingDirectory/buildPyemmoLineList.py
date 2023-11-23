@@ -33,7 +33,7 @@ def buildPyemmoLineList(pyleecanLineList):
     """
     pyemmoLineList = []
     returnlist = []
-    for j, line in enumerate(pyleecanLineList):
+    for line in pyleecanLineList:
         if isinstance(line, pyleecan.Classes.Segment.Segment):
             pyemmoLineList = Line(
                 # name=list(line.prop_dict.values())[0],
