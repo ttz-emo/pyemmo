@@ -258,24 +258,44 @@ class Stator(object):
                 )
             )
 
-    def _createDomainForStator(self):
-        """Automatische Zuweisung der PhysicalElements zu den passenden Domainen"""
-        # Set winding parameters in slots
-        (layout, strLayout, colorLayout) = self.winding.get_layers()
+    def _setWindingParamInSlots(self):
+        """This function sets the winding parameters in the ``Slot`` objects from the
+        SWAT-EM winding layout in ``Stator.winding``.
+        By determining the slot sequence and slot side the winding parameters can be
+        set:
+            - Winding direction: + or -
+            - Winding phase: u, v or w
+            - Number of winding turns
+        """
+        # get_layers returns right/upper and left/lower slot side as
+        # list of phases (1,2 or 3) and winding direction (+ or -)
+        (layout, _, _) = self.winding.get_layers()
         for slotPos, slot in enumerate(self.slots):
+            # Slot list is sorted in circumferential direction
             if self.winding.get_num_layers() == 2:
-                layer = (slotPos + 1) % 2  # alternate layers
-                slotIDLayout = int(
-                    slotPos / 2 + (((-1) ** slotPos) - 1) / 4
-                )  # create row like: 0,0,1,1,2,2,3,3,...
+                # if there are two layers, we have to alternate the right/left
+                # or outer/inner layer, while keeping the slot number
+                # (slotIDLayout) constant.
+                # E.g. the first slot side in the first slot gets layer=0,
+                # slotIDLayout=0; second slot gets layer=1, slotIDLayout=0;...
+                # BUG:  Sorting of slots by circumferential position probably
+                #       does not work for outer/inner slot division
+                layer = slotPos % 2  # alternate layers
+                # create row like: 0,0,1,1,2,2,3,3,...
+                slotIDLayout = int(slotPos / 2 + (((-1) ** slotPos) - 1) / 4)
             else:
                 layer = 0  # there is only one layer
                 slotIDLayout = slotPos
-
+            # Finally get winding direction and phase number (0,1,2 = u,v,w)
             slot.windDirection = sign(layout[layer, slotIDLayout])
+            # recalculate phase angle in rad
             slot.phase = (abs(layout[layer, slotIDLayout]) - 1) * 2 * pi / 3
             slot.nbrTurns = self.winding.get_turns()
+            slot.setColor()
 
+    def _createDomainForStator(self):
+        """Automatische Zuweisung der PhysicalElements zu den passenden Domainen"""
+        self._setWindingParamInSlots()
         allPhy = self.sortPhysicals()
         ###DomainS beinhaltet alle Physical Elements, die bestromt werden.
         self._domainS = Domain("DomainS_Stator", allPhy["domainS"])
@@ -366,6 +386,7 @@ class Stator(object):
                 # domainS zuweisen
                 if physicalElement.type == "Slot":
                     phy_domainS.append(physicalElement)
+                    physicalElement.setColor()
                     continue
 
                 # Stator airgap
