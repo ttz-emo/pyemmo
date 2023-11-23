@@ -3,24 +3,31 @@ import math
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
 
 from pyemmo.script.material.material import Material
-from workingDirectory.createGeoDict import createGeoDict
 from pyemmo.script.geometry.point import Point
 from pyemmo.script.geometry.circleArc import CircleArc
 from pyemmo.script.geometry.line import Line
 from pyemmo.api.SurfaceJSON import SurfaceAPI
 from pyemmo.functions.plot import plot
-from workingDirectory.getCoordinatesForPoint import getXforPoint, getYforPoint
+from .createGeoDict import createGeoDict
+from .getCoordinatesForPoint import getXforPoint, getYforPoint
 
 
 def buildPyemmoMovingBand(
-    machine, rotorRext, statorRint, isInternalRotor: bool, magnetFarthestRadius, magnetShortestRadius
+    machine,
+    rotorRext,
+    statorRint,
+    isInternalRotor: bool,
+    magnetFarthestRadius,
+    magnetShortestRadius,
 ):
     """Build the MovingBand in the airgap.
 
     Returns:
         _type_: _description_
     """
-
+    # ==============================
+    # Calculation of the symmetries:
+    # ==============================
     if isinstance(machine, MachineIPMSM):
         rotorSym = machine.get_pole_pair_number()
         statorSym = machine.stator.slot.Zs
@@ -33,9 +40,21 @@ def buildPyemmoMovingBand(
         rotorSymAngle = 2 * math.pi / rotorSym  # [rad]
         statorSymAngle = 2 * math.pi / statorSym  # [rad]
 
+    # =================================================================
+    # Translation of geometry and creation of rotor and stator contour:
+    # =================================================================
     geometryList, rotorContourLineList, statorContourLineList = createGeoDict(
-        machine, rotorSym, statorSym, isInternalRotor, magnetFarthestRadius, magnetShortestRadius
+        machine,
+        rotorSym,
+        statorSym,
+        isInternalRotor,
+        magnetFarthestRadius,
+        magnetShortestRadius,
     )
+
+    # ===============
+    # Material 'Air':
+    # ===============
     materialAir = Material(
         name="Air",
         conductivity=0,
@@ -47,6 +66,7 @@ def buildPyemmoMovingBand(
         thermalConductivity=None,
         thermalCapacity=None,
     )
+
     # =========================================================================
     # Calculation of the distance between rotor/magnet and stator inner radius:
     # =========================================================================
@@ -67,6 +87,9 @@ def buildPyemmoMovingBand(
             diffRadius = statorRint - magnetShortestRadius
             maxRadius = magnetShortestRadius
 
+    # ====================================
+    # Calculation of the MovingBand radii:
+    # ====================================
     numberOfBands = 5
     Wp = diffRadius / numberOfBands
     bandRadiusList = []
