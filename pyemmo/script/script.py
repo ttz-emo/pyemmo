@@ -918,7 +918,7 @@ class Script(object):
         self.curveCode: str = ""
         for curve in self.curveList:
             curve._todesmerker = False
-        self.curveList: List[Union[Line, CircleArc, Spline]] = []
+        self._setCurveList([])
 
         # surfaces
         self.areaCode: str = ""
