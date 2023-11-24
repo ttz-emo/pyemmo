@@ -4,7 +4,7 @@ from pyemmo.script.geometry.surface import Surface
 from pyemmo.script.material.material import Material
 from .physicalElement import PhysicalElement
 from .. import colorDict
-from math import degrees
+from math import degrees, isclose, pi
 from numpy import mean
 
 ###
@@ -58,8 +58,7 @@ class Slot(PhysicalElement):
         self.windDirection = windingDir  # set winding direction
         self.phase = phase  # set phase angle
         self.nbrTurns = nbrTurns  # set number of winding turns
-        # set color
-        self.setColor("Orange")
+        self.setColor()  # set color
 
     @property
     def windDirection(self) -> Union[Literal[1], Literal[-1]]:
@@ -148,3 +147,29 @@ class Slot(PhysicalElement):
             phiList.append(centerPoint.getAngleToX())
             radList.append(centerPoint.getRadius())
         return (mean(phiList), mean(radList))
+
+    def setColor(self, colorName: str = None):  # overwrite set color
+        """Set mesh color for Slot
+
+        If no mesh color name is given => determine by phase OR use orange
+
+        All available mesh colors are listed under
+        `gmsh colors <https://gitlab.onelab.info/gmsh/gmsh/blob/gmsh_4_11_0/src/common/Colors.h>`__.
+
+        Args:
+            colorName (str, optional): `X11 color name <https://en.wikipedia.org/wiki/X11_color_names>`__
+                as string. Defaults to Phase color.
+        """
+        if not colorName:
+            phaseDeg = degrees(self.phase % (2 * pi))
+            if isclose(phaseDeg, 0):
+                # phase u
+                super().setColor("Magenta")
+            elif isclose(phaseDeg, 120):
+                # phase v
+                super().setColor("Yellow4")
+            elif isclose(phaseDeg, 240):
+                # phase w
+                super().setColor("Cyan")
+        else:
+            super().setColor("Orange")
