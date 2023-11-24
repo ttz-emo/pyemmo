@@ -15,12 +15,15 @@ Area*.csv
 test*.pro
 test*.geo
 test*.json
-duplicationInformation.csv
-Materials.csv
-defaultFileInfo.mat
 
 # Dont track doc build
-PyDraft/doc/_build/
+doc/_build/
+
+# exclude uml diagrams folder except for createUML.py
+doc/UML_Diagrams/*
+!doc/UML_Diagrams/createUML.py
+
+# Exclude testPosImport content
+workingDirectory/testPosImport/*
 
 # specific files to ignore
-PyDraft/workingDirectory/testPosImport/VergleichEisenverlustberechnungAnsysOnelab.mat

@@ -275,6 +275,27 @@ def ironLossInteractive(
     ax21.set_ylabel("$H_{\mathrm{irr}}/H_{\mathrm{irr,max}}$")
     fig.tight_layout()
 
+    # Plot x and y comp. of Bm and Hm over element number
+    fig, axes = plt.subplots(nrows=2, ncols=1)
+    ax1 = axes[0]
+    ax1.plot(time, bMeanFree[:, elemId, 0])
+    ax1.plot(time, bMeanFree[:, elemId, 1])
+    ax1.set_xlabel("time in s")
+    ax1.set_ylabel("B in T")
+    ax1.legend(["x","y"])
+    # ax1.set_title("B field in T")
+    ax1.grid()
+    ax2 = axes[1]
+    ax2.plot(time, Hirr[:, elemId, 0])
+    ax2.plot(time, Hirr[:, elemId, 1])
+    ax2.set_xlabel("time in s")
+    ax2.set_ylabel("H in A/m")
+    ax2.legend(["x","y"])
+    # ax2.set_title("$H_{\mathrm{irr}}$ in A/m")
+    ax2.grid()
+    fig.tight_layout()
+
+
     # Plot Ellipsis
     fig, ax = plt.subplots()
     ps = ax.plot(Hirr[:, elemId, :]/np.max(Hirr[:, elemId, :]), bMeanFree[:, elemId, :]/np.max(bMeanFree[:, elemId, :]))
