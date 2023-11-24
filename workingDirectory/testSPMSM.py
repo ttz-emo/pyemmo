@@ -78,8 +78,8 @@ if magType == 0:
     rotor.addMagnetParameter(
         {
             "h_M": 7e-3,
-            "angularWidth_i": math.pi / 10,
-            "angularWidth_a": math.pi / 12,
+            "angularWidth_i": math.pi / 5,
+            "angularWidth_a": math.pi / 6,
             "magnetisationDirection": [1, -1, 1, -1, 1, -1, 1, -1],
             "magnetisationType": "radial",
             "material": ndFe35,
