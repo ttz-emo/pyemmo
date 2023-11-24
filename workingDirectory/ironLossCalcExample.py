@@ -243,24 +243,36 @@ def ironLossInteractive(
     # Plot Bm and Hm over element number
     fig, axes = plt.subplots(nrows=2, ncols=1)
     ax1 = axes[0]
-    ax1.plot(time, bMeanFree[:, elemId, 0])
+    ax1.plot(time, bMeanFree[:, elemId, 0]/np.max(bMeanFree[:, elemId, 0]))
     ax1.set_xlabel("time in s")
-    ax1.set_ylabel("B in T")
+    ax1.set_ylabel("$B/B_{\mathrm{max}}$")
+    ax1.yaxis.label.set_color("C0")
+    ax1.tick_params(axis='y', colors="C0")
     # ax1.grid(color="C0")
     ax1.set_title("x-Comp")
+    ax1.grid(True)
+
     ax12 = ax1.twinx()
-    ax12.plot(time, Hirr[:, elemId, 0], "C1")
-    ax12.set_ylabel("H in A/m")
+    ax12.plot(time, Hirr[:, elemId, 0]/np.max(Hirr[:, elemId, 0]), "C1")
+    ax12.yaxis.label.set_color("C1")
+    ax12.tick_params(axis='y', colors="C1")
+    ax12.set_ylabel("$H_{\mathrm{irr}}/H_{\mathrm{irr,max}}$")
 
     ax2 = axes[1]
-    ax2.plot(time, bMeanFree[:, elemId, 1])
+    ax2.plot(time, bMeanFree[:, elemId, 1]/np.max(bMeanFree[:, elemId, 1]))
     ax2.set_xlabel("time in s")
-    ax2.set_ylabel("B in T")
+    ax2.set_ylabel("$B/B_{\mathrm{max}}$")
+    ax2.yaxis.label.set_color("C0")
+    ax2.tick_params(axis='y', colors="C0")
     # ax2.grid(color="C0")
     ax2.set_title("y-Comp")
+    ax2.grid(True)
+    
     ax21 = ax2.twinx()
-    ax21.plot(time, Hirr[:, elemId, 1], "C1")
-    ax21.set_ylabel("H in A/m")
+    ax21.plot(time, Hirr[:, elemId, 1]/np.max(Hirr[:, elemId, 1]), "C1")
+    ax21.yaxis.label.set_color("C1")
+    ax21.tick_params(axis='y', colors="C1")
+    ax21.set_ylabel("$H_{\mathrm{irr}}/H_{\mathrm{irr,max}}$")
     fig.tight_layout()
 
     # Plot x and y comp. of Bm and Hm over element number
@@ -286,10 +298,12 @@ def ironLossInteractive(
 
     # Plot Ellipsis
     fig, ax = plt.subplots()
-    ax.plot(Hirr[:, elemId, :], bMeanFree[:, elemId, :])
+    ps = ax.plot(Hirr[:, elemId, :]/np.max(Hirr[:, elemId, :]), bMeanFree[:, elemId, :]/np.max(bMeanFree[:, elemId, :]))
+    ps[0].set_color("C3")
+    ps[1].set_color("C4")
     ax.grid(True)
-    ax.set_xlabel("$H_{\mathrm{irr}}$")
-    ax.set_ylabel("$B$")
+    ax.set_xlabel("$H_{\mathrm{irr}}/H_{\mathrm{irr,max}}$")
+    ax.set_ylabel("$B/B_{\mathrm{max}}$")
     ax.legend(["x", "y"])
     ax.axhline(y=0, color="k")
     ax.axvline(x=0, color="k")

@@ -18,6 +18,7 @@ from .slaveLine import SlaveLine
 import math
 from typing import List, Union, Dict
 
+
 ###
 # Eine Instanz der Klasse RotorSPMSM beschreibt speziell den Rotor einer permanent erregten Synchronmaschine mit Oberflächenmagneten im dreidimensionalen Raum.
 # Diese Klasse wird in Verbindung mit der Klasse Maschinenklasse, MachineSPMSM verwendet.
@@ -405,8 +406,12 @@ class RotorSPMSM(Rotor):
                 pLimitInner2,
             )
         ]
+        for i in range(1, self._nbrGeoParts):
+            c1 = curveInner[0].duplicate()
+            c1.rotateZ(self._laminationDict["machineCentrePoint"], i * angle)
+            curveInner.append(c1)
 
-        mbRotor1 = []
+        mbRotor1: List[CircleArc] = []
         mbNegDirection = (
             self._physicalElements[3].geometricalElement[0].getCurve()[1].duplicate()
         )
@@ -414,12 +419,8 @@ class RotorSPMSM(Rotor):
         mbRotor1.append(mbNegDirection)
         mbRotor1.append(self._physicalElements[3].geometricalElement[0].getCurve()[1])
 
-        for i in range(1, self._nbrGeoParts):
-            c1 = curveInner[0].duplicate()
-            c1.rotateZ(self._laminationDict["machineCentrePoint"], i * angle)
-            curveInner.append(c1)
-        for i in range(1, self._nbrGeoParts):
-            c2 = mbRotor1[0].duplicate()
+        for i in range(1, self._nbrGeoParts - 1):
+            c2 = mbRotor1[1].duplicate()
             c2.rotateZ(self._laminationDict["machineCentrePoint"], i * angle)
             mbRotor1.append(c2)
 
