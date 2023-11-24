@@ -57,31 +57,15 @@ def createLine(
     if lineType == "Arc":
         # determine Centerpoint
         mpName = lineDict["MpName"]
-        if mpName in ("MP", "M1") and (
-            norm(
-                array(globalCenterPoint.coordinate)
-                - array(
-                    (
-                        lineDict["MpX"],
-                        lineDict["MpY"],
-                        lineDict["MpZ"],
-                    )
-                )
-            )
-            < DEFAULT_GEO_TOL
-        ):
-            # the point is the global center point
-            centerPoint = globalCenterPoint
-        else:  # Point is not CenterPoint (0,0,0)
-            # import coordinates of Centerpoint for THIS arc
-            coordsMP = (lineDict["MpX"], lineDict["MpY"], lineDict["MpZ"])
-            centerPoint = Point(
-                mpName,
-                coordsMP[0],
-                coordsMP[1],
-                coordsMP[2],
-                meshLen if meshLen else lineDict["MpMesh"],
-            )
+        # import coordinates of Centerpoint for THIS arc
+        coordsMP = (lineDict["MpX"], lineDict["MpY"], lineDict["MpZ"])
+        centerPoint = Point(
+            mpName,
+            coordsMP[0],
+            coordsMP[1],
+            coordsMP[2],
+            meshLen if meshLen else lineDict["MpMesh"],
+        )
         line = CircleArc(lineName, startPoint, centerPoint, endPoint)
     elif lineType == "Line":
         line = Line(lineName, startPoint, endPoint)
