@@ -9,7 +9,7 @@ except:
     sys.path.append(rootname)
 
 import pyleecan.Classes.Arc3
-from workingDirectory.buildPyemmoPoint import buildPyemmoPoint
+from .buildPyemmoPoint import buildPyemmoPoint
 
 # =======================================
 # Definition of function 'translateArc3':

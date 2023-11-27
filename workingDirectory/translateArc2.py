@@ -9,7 +9,7 @@ except:
     print(f'rootname is "{rootname}"')
     sys.path.append(rootname)
 
-from workingDirectory.buildPyemmoPoint import buildPyemmoPoint
+from .buildPyemmoPoint import buildPyemmoPoint
 from pyemmo.script.geometry.point import Point
 import pyleecan.Classes.Arc2
 
