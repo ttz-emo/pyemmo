@@ -283,8 +283,8 @@ def createParamDict(machine: Machine, pyleecanSimulation: Simulation) -> dict[st
         "calcIronLoss": False,
     }
 
-    with open("translationDict.json", "w") as json_file:
-        json.dump(translationParameterDict, json_file, indent=4)
+    # with open("translationDict.json", "w") as json_file:
+    #     json.dump(translationParameterDict, json_file, indent=4)
 
     return translationParameterDict
 
