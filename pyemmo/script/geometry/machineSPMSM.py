@@ -11,44 +11,55 @@ import math
 # Durch die Vorauswahl des Maschinentypes, werden Eigenschaften aus dem Input-Dictionary den Bauteilen automatisch zugewiesen.
 ###
 class MachineSPMSM(MachineAllType):
-    ###
-    # Konstruktor der Klasse MachineSPMSM.
-    #
-    #   Eingabeparameter:
-    #
-    #       name : String
-    #       simuParam : {'analysisParameter': { 'symmetryFactor' : Integer,
-    #                                           'nbrPolesTotal' : Integer,
-    #                                           'nbrSlotTotal' : Integer,
-    #                                           'timeMax' : Float,
-    #                                           'timeStep' : Float,
-    #                                           'analysisType' : String,
-    #                                           'startPosition' : Float},
-    #                   'output' : {'b' : Boolean,
-    #                               'az' : Boolean,
-    #                               'js' : Boolean}
-    #                   }
-    #
-    ###
+    """
+    SPMSM machine class
+
+        TODO: example
+    """
+
     def __init__(self, simuParam):
+        """create a SPMSM machine object
+
+        Args:
+            simuParam (dict): classical machine simulation parameter dict.
+
+        DEFAULT simulation parameter dict:
+
+        .. code:: python
+
+            {
+                "analysisParameter": {
+                    "freq": 1000 / 60, # mech. frequency
+                    "symmetryFactor": 4,
+                    "nbrPolesTotal": 10,
+                    "nbrSlotTotal": 12,
+                    "timeMax": 1 / (1000/60), # stop time simulation
+                    "timeStep": 1/ (180 * (1000/60) * 2),  # step time
+                    "analysisType": "timedomain",  # options: 'timedomain' or 'static'
+                    "startPosition": 0, # init rotation
+                },
+            }
+
+
+        """
         nbrPoles = simuParam["analysisParameter"]["nbrPolesTotal"]
         symFactor = simuParam["analysisParameter"]["symmetryFactor"]
         super().__init__(
-            nbrPolePairs=nbrPoles/2,
+            nbrPolePairs=nbrPoles / 2,
             symmetryFactor=symFactor,
             rotor=None,
             stator=None,
-            name="MachineSPMSM"
+            name="MachineSPMSM",
         )
         self._simuParam = simuParam
-        # Calculate Poles and Slots for Model
+        ###Symmetriefaktor z. B. 4 für ein Viertelmodell der Maschine.
+        self._symmetryFactor = self._simuParam["analysisParameter"]["symmetryFactor"]
         self._simuParam["analysisParameter"]["nbrPolesinModel"] = (
             self._simuParam["analysisParameter"]["nbrPolesTotal"] / self._symmetryFactor
         )
         self._simuParam["analysisParameter"]["nbrSlotinModel"] = (
             self._simuParam["analysisParameter"]["nbrSlotTotal"] / self._symmetryFactor
         )
-        self._nbrPolePairs = self._simuParam["analysisParameter"]["nbrPolesTotal"] / 2
 
     ###
     # Mit addRotorToMachine() wird ein Rotorobjekt der Klasse RotorSPMSM erzeugt und der Maschine zugewiesen.
@@ -64,13 +75,16 @@ class MachineSPMSM(MachineAllType):
     #
     #   Beispiel:
     #
-    #       pmsm1 = pyd.MachineSPMSM(simuSPMSMDict)
+    #       pmsm1 = MachineSPMSM(simuSPMSMDict)
     #       rotor1 = pmsm1.addRotorToMachine('sheet01_standard', 'magnet01_surface')
-    #       rotor1.addLaminationParameter({'r_We' : 20e-3,
-    #           'r_R' : 55e-3,
-    #           'meshLength' : 3e-3,
-    #           'material' : steel_1010,
-    #           'machineCentrePoint' : PBohrung})
+    #       rotor1.addLaminationParameter(
+    #           {
+    #               'r_We' : 20e-3,
+    #               'r_R' : 55e-3,
+    #               'meshLength' : 3e-3,
+    #               'material' : steel_1010,
+    #               'machineCentrePoint' : PBohrung
+    #           })
     #       rotor1.addMagnetParameter({'h_M' : 7e-3,
     #           'angularWidth_i' : math.pi/10,
     #           'angularWidth_a' : math.pi/12,

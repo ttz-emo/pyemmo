@@ -1,5 +1,6 @@
 import unittest
 from pyemmo.script.script import Script
+from .. import save_path
 
 
 class TestScript(unittest.TestCase):
@@ -35,7 +36,20 @@ class TestScript(unittest.TestCase):
         """
         # Script Objekt für Tests erzeugen
         self.scriptObj = Script(
-            name="testScript", scriptPath="c:/Test/Path", factory="Build-in"
+            name="testScript",
+            scriptPath=save_path,
+            factory="Built-in",
+            simuParams={
+                "init_rotor_pos": 0,
+                "angle_increment": 1,
+                "final_rotor_pos": 90,
+                "Id_eff": 0,
+                "Iq_eff": 0,
+                "rot_speed": 1000,
+                "park_angle_offset": 0,
+                "analysis_type": 1,
+                "magTemp": 20,
+            },
         )
 
     def tearDown(self):
@@ -51,12 +65,10 @@ class TestScript(unittest.TestCase):
 
         # Sicherstellen, dass init Funktion Werte richtig setzt
         self.assertEqual(self.scriptObj.name, "testScript")
-        self.assertEqual(self.scriptObj.scriptPath, "c:/Test/Path")
-        self.assertEqual(self.scriptObj.factory, "Build-in")
+        self.assertEqual(self.scriptObj.scriptPath, save_path)
+        self.assertEqual(self.scriptObj.factory, "Built-in")
 
 
-"""
-Dieser Abschnitt ermöglicht das direkte Starten der Testmethoden beim ausführen der Datei
-"""
 if __name__ == "__main__":
+    # """Dieser Abschnitt ermöglicht das direkte Starten der Testmethoden beim ausführen der Datei"""
     unittest.main()

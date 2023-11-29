@@ -45,20 +45,20 @@ drehzahl = 1000
 fel = drehzahl / 60 * nbrPolePairs
 simuSPMSMDict = {
     "analysisParameter": {
-        "freq": drehzahl / 60,
+        # "freq": drehzahl / 60,
         "symmetryFactor": 4,
         "nbrPolesTotal": nbrPoles,
         "nbrSlotTotal": nbrSlots,
-        "timeMax": 1
-        / 67,  # Winkel/wr 2*math.pi / (2 * math.pi * 67) = 1/67 für ganzen mech. Winkel mit f = 67 Hz
-        "timeStep": 1
-        / (
-            180 * 67 * 2
-        ),  # Ein Grad pro Step -> math.pi/180/(2*math.pi*67) = 1/(180*2*67)
-        "analysisType": "timedomain",  #'timedomain', #'static'
+        # "timeMax": 1
+        # / 67,  # Winkel/wr 2*math.pi / (2 * math.pi * 67) = 1/67 für ganzen mech. Winkel mit f = 67 Hz
+        # "timeStep": 1
+        # / (
+        #     180 * 67 * 2
+        # ),  # Ein Grad pro Step -> math.pi/180/(2*math.pi*67) = 1/(180*2*67)
+        # "analysisType": "timedomain",  #'timedomain', #'static'
         "startPosition": 0,
     },
-    "output": {"b": True, "az": True, "js": True},
+    # "output": {"b": True, "az": True, "js": True},
 }
 
 # %% Maschine aus dem Baukasten parametrisieren
@@ -79,8 +79,8 @@ if magType == 0:
     rotor.addMagnetParameter(
         {
             "h_M": 7e-3,
-            "angularWidth_i": math.pi / 10,
-            "angularWidth_a": math.pi / 12,
+            "angularWidth_i": math.pi / 5,
+            "angularWidth_a": math.pi / 6,
             "magnetisationDirection": [1, -1, 1, -1, 1, -1, 1, -1],
             "magnetisationType": "radial",
             "material": ndFe35,
@@ -157,7 +157,7 @@ rotor.plot()
 winding = datamodel()
 winding.genwdg(Q=nbrSlots, P=nbrPoles, m=3, layers=2, turns=23)
 SLOT_TYPE = 1
-if SLOT_TYPE == 0:
+if SLOT_TYPE == 0: # trapezoidal slot
     stator = SPMSM.addStatorToMachine("sheet01_standard", "slotForm_01", winding)
     stator.addLaminationParameter(
         {
@@ -181,7 +181,7 @@ if SLOT_TYPE == 0:
             "slot_OPAir": True,
         }
     )
-elif SLOT_TYPE == 1:
+elif SLOT_TYPE == 1: # round slot bottom
     stator = SPMSM.addStatorToMachine("sheet01_standard", "slotForm_03", winding)
     stator.addLaminationParameter(
         {
@@ -199,8 +199,8 @@ elif SLOT_TYPE == 1:
             "h_SlotOP": 4e-3,
             "h_Wedge": 5e-3,
             "w_Wedge": 22e-3,
-            "h_Slot": 15e-3,
-            "r_Slot": 14e-3,
+            "h_Slot": 10e-3,
+            "r_Slot": 13e-3,
             "slot_OPAir": True,
             "material": copper,
         }

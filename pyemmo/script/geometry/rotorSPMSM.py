@@ -386,8 +386,12 @@ class RotorSPMSM(Rotor):
                 pLimitInner2,
             )
         ]
+        for i in range(1, self.nbrGeoParts):
+            c1 = curveInner[0].duplicate()
+            c1.rotateZ(self.laminationDict["machineCentrePoint"], i * angle)
+            curveInner.append(c1)
 
-        mbRotor1 = []
+        mbRotor1: List[CircleArc] = []
         mbNegDirection = (
             self._physicalElements[3].geometricalElement[0].curve[1].duplicate()
         )
