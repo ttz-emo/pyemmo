@@ -1,6 +1,6 @@
 import unittest
-from pydraft.script.geometry.rotorIPMSM import RotorIPMSM
-from pydraft.script.geometry.point import Point
+from pyemmo.script.geometry.rotorIPMSM import RotorIPMSM
+from pyemmo.script.geometry.point import Point
 
 
 class TestRotorIPMSM(unittest.TestCase):
@@ -81,8 +81,6 @@ class TestRotorIPMSM(unittest.TestCase):
         self.assertEqual(self.rotorObj._laminationDict["startPosition"], 3.14)
 
 
-"""
-Dieser Abschnitt ermöglicht das direkte Starten der Testmethoden beim ausführen der Datei
-"""
+# Dieser Abschnitt ermöglicht das direkte Starten der Testmethoden beim ausführen der Datei
 if __name__ == "__main__":
     unittest.main()
