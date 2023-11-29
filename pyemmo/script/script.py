@@ -162,40 +162,39 @@ class Script(object):
         self.idedentLines: List[Union[Line, CircleArc, Spline]] = list()
         ### END FOR DEBUGGING ###
 
-        self.simulationParameters = (
-            default_param_dict  # set simulation parameters to default SimpleNamespace
-        )
+        # set default simulation parameters
+        self.simulationParameters = default_param_dict
         if simuParams:
-            self.simulationParameters.SYM.INIT_ROTOR_POS = simuParams["init_rotor_pos"]
-            self.simulationParameters.SYM.ANGLE_INCREMENT = simuParams[
+            self.simulationParameters["SYM"]["INIT_ROTOR_POS"] = simuParams["init_rotor_pos"]
+            self.simulationParameters["SYM"]["ANGLE_INCREMENT"] = simuParams[
                 "angle_increment"
             ]
-            self.simulationParameters.SYM.FINAL_ROTOR_POS = simuParams[
+            self.simulationParameters["SYM"]["FINAL_ROTOR_POS"] = simuParams[
                 "final_rotor_pos"
             ]
-            self.simulationParameters.SYM.Id_eff = simuParams["Id_eff"]
-            self.simulationParameters.SYM.Iq_eff = simuParams["Iq_eff"]
-            self.simulationParameters.SYM.SPEED_RPM = simuParams["rot_speed"]
-            self.simulationParameters.SYM.PATH_RES = self.getResultsPath()
+            self.simulationParameters["SYM"]["Id_eff"] = simuParams["Id_eff"]
+            self.simulationParameters["SYM"]["Iq_eff"] = simuParams["Iq_eff"]
+            self.simulationParameters["SYM"]["SPEED_RPM"] = simuParams["rot_speed"]
+            self.simulationParameters["SYM"]["PATH_RES"] = self.getResultsPath()
             # optional parameters
             if "park_angle_offset" in simuParams.keys():
-                self.simulationParameters.SYM.ParkAngOffset = simuParams[
+                self.simulationParameters["SYM"]["ParkAngOffset"] = simuParams[
                     "park_angle_offset"
                 ]
             if "analysis_type" in simuParams.keys():
-                self.simulationParameters.SYM.ANALYSIS_TYPE = simuParams[
+                self.simulationParameters["SYM"]["ANALYSIS_TYPE"] = simuParams[
                     "analysis_type"
                 ]
             if "nbrParallePaths" in simuParams.keys():
-                self.simulationParameters.SYM.NBR_PARALLEL_PATHS = simuParams[
+                self.simulationParameters["SYM"]["NBR_PARALLEL_PATHS"] = simuParams[
                     "nbrParallePaths"
                 ]
             if "calcMagnetLosses" in simuParams.keys():
-                self.simulationParameters.SYM.CALC_MAGNET_LOSSES = simuParams[
+                self.simulationParameters["SYM"]["CALC_MAGNET_LOSSES"] = simuParams[
                     "calcMagnetLosses"
                 ]
             if "magTemp" in simuParams.keys():
-                self.simulationParameters.MAT.TEMP_MAG = simuParams["magTemp"]
+                self.simulationParameters["MAT"]["TEMP_MAG"] = simuParams["magTemp"]
 
         # add machine domains
         self.machine = machine
@@ -285,9 +284,9 @@ class Script(object):
     def setResultsPath(self, resPath: str):
         """Setter of the attribute resPath"""
         self.resPath = resPath
-        self.simulationParameters.SYM.PATH_RES = resPath
+        self.simulationParameters["SYM"]["PATH_RES"] = resPath
 
-    def getSimParams(self) -> SimpleNamespace:
+    def getSimParams(self) -> dict:
         """Getter of the attribute simulationParameters"""
         return self.simulationParameters
 
@@ -1864,7 +1863,7 @@ class Script(object):
         # TODO: Improve check here...
         # assert len(geometryParams) == len(simuParamDict.GEO) # assert there is the correct
         # number of parameters
-        simuParamDict.GEO = geometryParams
+        simuParamDict["GEO"] = geometryParams
 
         # 2. Set simulation parameters
         #   INIT_ROTOR_POS  -> Allready set in __init__
@@ -1886,10 +1885,10 @@ class Script(object):
                         break  # if one BH curve is found, we can stop the loop
                     if isinstance(physicalElement, Magnet):
                         hasMagnets = True
-        simuParamDict.SYM.FLAG_NL = flagCalcNL
+        simuParamDict["SYM"]["FLAG_NL"] = flagCalcNL
         if not hasMagnets:
             # if there where no magnet physical elements, set flag to false, even if its set to true...
-            simuParamDict.SYM.CALC_MAGNET_LOSSES = 0
+            simuParamDict["SYM"]["CALC_MAGNET_LOSSES"] = 0
 
         # machine.getStator().winding.plot_star('plot_star.png',None,False,True)
         if machine.getStator().winding.get_windingfactor_el()[1][0, 0] < 0:
@@ -1899,15 +1898,15 @@ class Script(object):
             # The funamental winding factor allways refers to the mechanical order which is equal
             # to the number of pole pairs. (So this is also true for non-fundamental winding
             # configurations)
-            simuParamDict.SYM.FLAG_CHANGE_ROT_DIR = 1
+            simuParamDict["SYM"]["FLAG_CHANGE_ROT_DIR"] = 1
         else:
             # Otherwise the rotation direction is ok.
-            simuParamDict.SYM.FLAG_CHANGE_ROT_DIR = 0
+            simuParamDict["SYM"]["FLAG_CHANGE_ROT_DIR"] = 0
 
         # if the Park-transformation angle is not set manually, try to calculate it
-        if simuParamDict.SYM.ParkAngOffset is None:
-            nbrPolePairs = default_param_dict.GEO.NBR_POLE_PAIRS
-            nbrSlots = default_param_dict.GEO.NBR_SLOTS
+        if simuParamDict["SYM"]["ParkAngOffset"] is None:
+            nbrPolePairs = default_param_dict["GEO"]["NBR_POLE_PAIRS"]
+            nbrSlots = default_param_dict["GEO"]["NBR_SLOTS"]
             slotPitch = 2 * pi / nbrSlots
             mmfOrder, _, angle = machine.getStator().winding.get_MMF_harmonics()
             ## DEBUGGING:
@@ -1945,7 +1944,7 @@ class Script(object):
                 dqOffset = (
                     -rad2deg(slotPitch / 2 * nbrPolePairs) + rad2deg(systemOffset) + 270
                 )
-            simuParamDict.SYM.ParkAngOffset = dqOffset
+            simuParamDict["SYM"]["ParkAngOffset"] = dqOffset
 
     def _getParamCode(self, paramName: str, paramValue) -> str:
         """Get a line of parameter code: "paramCode = f"{paramName} = {paramValue};\n" """

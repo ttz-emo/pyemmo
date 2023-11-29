@@ -97,12 +97,12 @@ class MachineIPMSM(MachineAllType):
         - NBR_TURNS_IN_FACE
         - R_AIRGAP
         """
-        paramDict = default_param_dict.GEO
-        paramDict.SYMMETRY_FACTOR = self.getSymmetryFactor()
-        paramDict.L_AX_R = self.getRotor().getAxialLength()
-        paramDict.L_AX_S = self.getStator().getAxialLength()
-        paramDict.NBR_POLE_PAIRS = self.getNbrPolePairs()
-        paramDict.NBR_SLOTS = self.getStator().getNbrSlots()
+        paramDict = default_param_dict["GEO"]
+        paramDict["SYMMETRY_FACTOR"] = self.getSymmetryFactor()
+        paramDict["L_AX_R"] = self.getRotor().getAxialLength()
+        paramDict["L_AX_S"] = self.getStator().getAxialLength()
+        paramDict["NBR_POLE_PAIRS"] = self.getNbrPolePairs()
+        paramDict["NBR_SLOTS"] = self.getStator().getNbrSlots()
         slots = self.getStator().getSlots()
         nbrTurns = slots[0].nbrTurns
         slots.pop(0)
@@ -112,8 +112,8 @@ class MachineIPMSM(MachineAllType):
                 raise ValueError(
                     f"Different number of turns in slots! {nbrTurns} != {actNbrTurns}"
                 )
-        paramDict.NBR_TURNS_IN_FACE = nbrTurns
-        paramDict.R_AIRGAP = self.getRotor().getMovingBand()[0].radius
+        paramDict["NBR_TURNS_IN_FACE"] = nbrTurns
+        paramDict["R_AIRGAP"] = self.getRotor().getMovingBand()[0].radius
         return paramDict
 
     def _getSimuParamDict(self) -> Dict:

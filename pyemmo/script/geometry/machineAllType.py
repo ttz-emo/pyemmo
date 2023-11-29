@@ -51,9 +51,9 @@ class MachineAllType(object):
         if rotor and stator:
             self.createMachineDomains()
 
-    def getSimParams(self) -> SimpleNamespace:
+    def getSimParams(self) -> dict:
         """
-        Return geometical simulation parameters as SimpleNamespace
+        Return geometical simulation parameters as dict
         - SYMMETRY_FACTOR
         - L_AX_R
         - L_AX_S
@@ -61,16 +61,16 @@ class MachineAllType(object):
         - NBR_TURNS_IN_FACE
         - R_AIRGAP
         """
-        paramDict = default_param_dict.GEO
-        paramDict.SYMMETRY_FACTOR = self.getSymmetryFactor()
-        paramDict.L_AX_R = self.getRotor().getAxialLength()
-        paramDict.L_AX_S = self.getStator().getAxialLength()
-        paramDict.NBR_POLE_PAIRS = self.getNbrPolePairs()
-        paramDict.NBR_SLOTS = self.getStator().getNbrSlots()
-        paramDict.NBR_TURNS_IN_FACE = (
+        paramDict = default_param_dict["GEO"]
+        paramDict["SYMMETRY_FACTOR"] = self.getSymmetryFactor()
+        paramDict["L_AX_R"] = self.getRotor().getAxialLength()
+        paramDict["L_AX_S"] = self.getStator().getAxialLength()
+        paramDict["NBR_POLE_PAIRS"] = self.getNbrPolePairs()
+        paramDict["NBR_SLOTS"] = self.getStator().getNbrSlots()
+        paramDict["NBR_TURNS_IN_FACE"] = (
             self.getStator().winding.get_turns() / 2
         )  # divide by two because there are allways two slot sides
-        paramDict.R_AIRGAP = self.getRotor().getMovingBand()[0].radius
+        paramDict["R_AIRGAP"] = self.getRotor().getMovingBand()[0].radius
         return paramDict
 
     def createMachineDomains(self) -> None:

@@ -17,9 +17,8 @@ except Exception:
     warnings.warn("Color Dict could not be imported...")
 
 # define default parameters in parameter dict
-default_param_dict = SimpleNamespace(**{"GEO": {}, "SYM": {}, "MAT": {}})
-default_param_dict.GEO = SimpleNamespace(
-    **{
+default_param_dict = {"GEO": {}, "SYM": {}, "MAT": {}}
+default_param_dict["GEO"] ={
         "SYMMETRY_FACTOR": 1,
         "L_AX_R": 1.0,
         "L_AX_S": 1.0,
@@ -28,9 +27,7 @@ default_param_dict.GEO = SimpleNamespace(
         "NBR_TURNS_IN_FACE": 20,
         "R_AIRGAP": 0.1,
     }
-)
-default_param_dict.SYM = SimpleNamespace(
-    **{
+default_param_dict["SYM"] = {
         "INIT_ROTOR_POS": 0.0,
         "ANGLE_INCREMENT": 0.5,
         "FINAL_ROTOR_POS": 90.0,
@@ -45,13 +42,10 @@ default_param_dict.SYM = SimpleNamespace(
         "NBR_PARALLEL_PATHS": 1,
         "CALC_MAGNET_LOSSES": 0,
     }
-)
-default_param_dict.MAT = SimpleNamespace(
-    **{
+default_param_dict["MAT"] = {
         "VALUE_DENSITY_LAM": 7800,
         "TEMP_MAG": 20,
     }
-)
 
 boundaryDomainDict = {
     "primary": "Surf_cutA0",
