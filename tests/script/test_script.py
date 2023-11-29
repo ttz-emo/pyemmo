@@ -1,6 +1,6 @@
 import unittest
 from pyemmo.script.script import Script
-from .. import save_path
+from .. import TEST_RES_DIR
 
 
 class TestScript(unittest.TestCase):
@@ -37,7 +37,7 @@ class TestScript(unittest.TestCase):
         # Script Objekt für Tests erzeugen
         self.scriptObj = Script(
             name="testScript",
-            scriptPath=save_path,
+            scriptPath=TEST_RES_DIR,
             factory="Built-in",
             simuParams={
                 "init_rotor_pos": 0,
@@ -65,7 +65,7 @@ class TestScript(unittest.TestCase):
 
         # Sicherstellen, dass init Funktion Werte richtig setzt
         self.assertEqual(self.scriptObj.name, "testScript")
-        self.assertEqual(self.scriptObj.scriptPath, save_path)
+        self.assertEqual(self.scriptObj.scriptPath, TEST_RES_DIR)
         self.assertEqual(self.scriptObj.factory, "Built-in")
 
 
