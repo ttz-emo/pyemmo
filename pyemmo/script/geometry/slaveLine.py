@@ -33,4 +33,4 @@ class SlaveLine(PhysicalElement):
             self, name=name, material=material, geometricalElement=geometricalElement
         )
 
-        self._physicalElementType = "SlaveLine"  # the physical element type can be used to identify physical elements
+        self.physicalElementType = "SlaveLine"  # the physical element type can be used to identify physical elements

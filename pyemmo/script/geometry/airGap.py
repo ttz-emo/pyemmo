@@ -32,5 +32,5 @@ class AirGap(PhysicalElement):
             self, name=name, material=material, geometricalElement=geometricalElement
         )
         # the physical element type can be used to identify physical elements
-        self._physicalElementType = "AirGap"
+        self.physicalElementType = "AirGap"
         self.setColor("SkyBlue")

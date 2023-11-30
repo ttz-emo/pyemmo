@@ -5,8 +5,8 @@ from os import mkdir, path
 
 # from pyemmo.functions.importResults import plotAllDat
 # from numpy import rad2deg, where
-from swat_em import datamodel
 import math
+from swat_em import datamodel
 
 # from pyemmo.definitions import RESULT_DIR, MAIN_DIR
 from pyemmo.script.geometry.point import Point
@@ -16,6 +16,7 @@ from pyemmo.script.material.electricalSteel import Material, ElectricalSteel
 from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
 from pyemmo.script.script import Script
 from pyemmo.functions.runOnelab import createCmdCommand
+from pyemmo.definitions import ROOT_DIR
 
 # %%
 
@@ -225,7 +226,7 @@ SPMSM.setFunctionMesh("linear", 8)
 SPMSM.plot()
 # SPMSM.createMachineDomains -> MachineAllType function
 # %%
-resDir = r"C:\Users\ganser\AppData\Local\Programs\pyemmo\Results\Baukasten"
+resDir = os.path.join(ROOT_DIR, r"Results\Baukasten")
 modelDir = path.abspath(path.join(resDir, "Test_SPMSM"))
 if not path.isdir(modelDir):
     mkdir(modelDir)
@@ -251,7 +252,7 @@ myScript.generateScript()
 
 os.system(
     createCmdCommand(
-        onelabFile=myScript.getProFilePath(),
+        onelabFile=myScript.proFilePath,
         useGUI=True,
         paramDict={"Flag_ClearResults": 1},
     )

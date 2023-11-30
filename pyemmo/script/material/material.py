@@ -6,6 +6,8 @@ import warnings
 import numpy
 
 from .materialManagement import getMaterial
+from ... import rootLogger as logger
+
 
 class Material(object):
     """Class Material defines a material for the simulation with onelab"""
@@ -54,9 +56,9 @@ class Material(object):
         if isinstance(__o, self.__class__):
             # check BH is equal:
             try:
-                #FIXME: Maybe check shapes before...
+                # FIXME: Maybe check shapes before...
                 # if comparison results in ValueError, shapes could not be broadcasted
-                bhComp = self.getBH() == __o.getBH()
+                bhComp = self.BH == __o.BH
             except ValueError:
                 # comparison with empty array returns a ValueError
                 return False
@@ -101,18 +103,18 @@ class Material(object):
             name (str): Material name.
         """
         rawMat = getMaterial(dataBase, name)
-        self.setName(rawMat["name"])
-        self.setConductivity(rawMat["conductivity"])
-        self.setRelPermeability(rawMat["relPermeability"])
+        self.name = rawMat["name"]
+        self.conductivity = rawMat["conductivity"]
+        self.relPermeability = rawMat["relPermeability"]
         # remanence can be string "no information"...
         if isinstance(rawMat["remanence"], str):
-            self.setRemanence(0)
+            self.remanence = 0
         else:
-            self.setRemanence(rawMat["remanence"])
+            self.remanence = rawMat["remanence"]
         self.setLinear(rawMat["linear"])
         if not self.isLinear():
             # if material is nonlinear load BH
-            self.setBH(rawMat["BH"])
+            self.BH = rawMat["BH"]
 
     def isLinear(self) -> bool:
         """check if the material is linear or has BH curve
@@ -121,10 +123,10 @@ class Material(object):
             bool: True if material doesn't have a BH curve, but a relative permeability.
             Otherwise Flase
         """
-        if self._linear and self.getBH().size:
+        if self._linear and self.BH.size:
             # pylint: disable=locally-disabled,  line-too-long
             warnings.warn(
-                f"Linearity flag of material '{self.getName()}' is True although BH-curve is not empty!"
+                f"Linearity flag of material '{self.name}' is True although BH-curve is not empty!"
             )
         return self._linear
 
@@ -139,7 +141,8 @@ class Material(object):
         else:
             raise ValueError("Attribute linear must be type bool.")
 
-    def getName(self) -> str:
+    @property
+    def name(self) -> str:
         """getter of material name
 
         Returns:
@@ -147,7 +150,8 @@ class Material(object):
         """
         return self._name
 
-    def getConductivity(self) -> Union[float, int, None]:
+    @property
+    def conductivity(self) -> Union[float, int, None]:
         """get electrical conductivity
 
         Returns:
@@ -155,7 +159,8 @@ class Material(object):
         """
         return self._conductivity
 
-    def getRelPermeability(self) -> Union[float, int, None]:
+    @property
+    def relPermeability(self) -> Union[float, int, None]:
         """get relative magnetic permeability
 
         Returns:
@@ -163,7 +168,8 @@ class Material(object):
         """
         return self._relPermeability
 
-    def getRemanence(self) -> Union[float, int, None]:
+    @property
+    def remanence(self) -> Union[float, int, None]:
         """get remanent flux density
 
         Returns:
@@ -171,7 +177,8 @@ class Material(object):
         """
         return self._remanence
 
-    def getTempCoefRem(self) -> Union[float, int, None]:
+    @property
+    def tempCoefRem(self) -> Union[float, int, None]:
         """Get the temperature coefficient of the remanent flux density.
 
         Returns:
@@ -180,7 +187,16 @@ class Material(object):
         """
         return self._tempCoefRem
 
-    def getBH(self, temperature: float = None) -> numpy.ndarray:
+    @property
+    def BH(self, temperature: float = None) -> numpy.ndarray:
+        """getter of BH
+
+        Args:
+            temperature (float, optional): _description_. Defaults to None.
+
+        Returns:
+            numpy.ndarray: _description_
+        """
         if not temperature:
             return self._BH
         if self._BH.ndim < 3:
@@ -194,52 +210,9 @@ class Material(object):
         assert self._BH.ndim == 3
         # TODO: implement temperature depended bh curve
 
-    def setName(self, name: str):
-        """set the material name
-
-        Args:
-            name (str): new material name
-        """
-        if isinstance(name, str):
-            self._name = name
-        else:
-            raise ValueError("Material name must be type str.")
-
-    def setConductivity(self, conductivity: Union[float, int]):
-        """set the electrical conductivity of the material
-
-        Args:
-            conductivity (Union[float, int]): electrical conductivity in S/m
-        """
-        if isinstance(conductivity, (int, float)) or conductivity is None:
-            self._conductivity = conductivity
-        else:
-            raise ValueError("Conductivity must be numeric.")
-
-    def setRelPermeability(self, relPermeability: Union[float, int]):
-        """set the relative permeability of the material
-
-        Args:
-            relPermeability (Union[float, int]): relative permeability
-        """
-        if isinstance(relPermeability, (int, float)) or relPermeability is None:
-            self._relPermeability = relPermeability
-        else:
-            raise ValueError("Relative permeability must be numeric.")
-
-    def setRemanence(self, remanence: Union[float, int]):
-        """set the remanence of the material
-
-        Args:
-            remanence (Union[float, int]): remanent flux density in [T]
-        """
-        if isinstance(remanence, (int, float)) or remanence is None:
-            self._remanence = remanence
-        else:
-            raise ValueError("Remanent flux density must be numeric.")
-
     # pylint: disable=invalid-name
-    def setBH(self, BH: numpy.ndarray):
+    @BH.setter
+    def BH(self, BH: numpy.ndarray):
         """setter of BH curve.
 
         Args:
@@ -249,22 +222,31 @@ class Material(object):
         if BH is None:
             # if BH is None, set empty array
             self._BH = (numpy.empty(0),)
-            return None
-        if isinstance(BH, list):
+        elif isinstance(BH, list):
             # if list is given, set numpy array
             self.setLinear(False)
-            self._BH = numpy.array(BH)
-            return None
-        if isinstance(BH, numpy.ndarray):
+            self.BH = numpy.array(BH)  # recall setter to check valid BH shape
+        elif isinstance(BH, numpy.ndarray):
             if BH.ndim == 2:
                 # number of dimensions must be 2
                 if BH.shape[1] == 2:
-                    # number of coloums must be 2
+                    # number of coloums must be 2 for B and H
+                    if BH.shape[0] < 2:
+                        raise ValueError(
+                            (
+                                "Too view points in BH curve of material %s! At least specify 3 value pairs.",
+                                self.name,
+                            )
+                        )
+                    if BH.shape[0] < 6:
+                        logger.warning(
+                            "Only %i point in BH curve of material %s! Results might be inaccurate.",
+                            BH.shape[0],
+                            self.name,
+                        )
+                    # set BH curve
                     self._BH = BH
-                    if BH.size > 0:
-                        # if the array is not empty, set nonlinear
-                        self.setLinear(False)
-                    return None
+                    self.setLinear(False)
                 else:
                     raise (
                         ValueError(
@@ -287,7 +269,56 @@ class Material(object):
                 )
             )
 
-    def getDensity(self):
+    @name.setter
+    def name(self, name: str):
+        """set the material name
+
+        Args:
+            name (str): new material name
+        """
+        if isinstance(name, str):
+            self._name = name
+        else:
+            raise ValueError("Material name must be type str.")
+
+    @conductivity.setter
+    def conductivity(self, conductivity: Union[float, int]):
+        """set the electrical conductivity of the material
+
+        Args:
+            conductivity (Union[float, int]): electrical conductivity in S/m
+        """
+        if isinstance(conductivity, (int, float)) or conductivity is None:
+            self._conductivity = conductivity
+        else:
+            raise ValueError("Conductivity must be numeric.")
+
+    @relPermeability.setter
+    def relPermeability(self, relPermeability: Union[float, int]):
+        """set the relative permeability of the material
+
+        Args:
+            relPermeability (Union[float, int]): relative permeability
+        """
+        if isinstance(relPermeability, (int, float)) or relPermeability is None:
+            self._relPermeability = relPermeability
+        else:
+            raise ValueError("Relative permeability must be numeric.")
+
+    @remanence.setter
+    def remanence(self, remanence: Union[float, int]):
+        """set the remanence of the material
+
+        Args:
+            remanence (Union[float, int]): remanent flux density in [T]
+        """
+        if isinstance(remanence, (int, float)) or remanence is None:
+            self._remanence = remanence
+        else:
+            raise ValueError("Remanent flux density must be numeric.")
+
+    @property
+    def density(self):
         """Get density of the material in kg/m³
 
         Returns:
@@ -295,7 +326,8 @@ class Material(object):
         """
         return self._density
 
-    def setDensity(self, density: float) -> None:
+    @density.setter
+    def density(self, density: float) -> None:
         """set the density of the material in kg/m³
 
         Args:
@@ -325,7 +357,8 @@ class Material(object):
                 )
             )
 
-    def getThermalConductivity(self):
+    @property
+    def thermalConductivity(self):
         """get the thermal conductivity of the material in W/(m*K)
 
         Returns:
@@ -333,7 +366,8 @@ class Material(object):
         """
         return self._thermalConductivity
 
-    def setThermalConductivity(self, thermalConductivity: float) -> None:
+    @thermalConductivity.setter
+    def thermalConductivity(self, thermalConductivity: float) -> None:
         """set the thermal conductivity of the material in W/(m*K)
 
         Args:
@@ -362,7 +396,8 @@ class Material(object):
                 )
             )
 
-    def getThermalCapacity(self):
+    @property
+    def thermalCapacity(self):
         """get the thermalCapacity of the material in W/(m*K)
 
         Returns:
@@ -370,7 +405,8 @@ class Material(object):
         """
         return self._thermalConductivity
 
-    def setThermalCapacity(self, thermalCapacity: float) -> None:
+    @thermalCapacity.setter
+    def thermalCapacity(self, thermalCapacity: float) -> None:
         """set the thermalCapacity of the material in J/(kg*K)
 
         Args:
@@ -402,14 +438,14 @@ class Material(object):
     def print(self) -> None:
         """print material to stdout"""
         table = [
-            ["Name:", self.getName()],
+            ["Name:", self.name],
             ["Is linear:", "Yes" if self.isLinear() else "No"],
-            ["Electrical Conductivity [S/m]:", self.getConductivity()],
-            ["Relative Permeability []:", self.getRelPermeability()],
-            ["Remanence Flux Density[T]:", self.getRemanence()],
-            ["Density [kg/m³]:", self.getDensity()],
-            ["Thermal Conductivity [W/(m*K)]:", self.getThermalConductivity()],
-            ["Thermal Capacity [J/(kg*K)]:", self.getThermalCapacity()],
+            ["Electrical Conductivity [S/m]:", self.conductivity],
+            ["Relative Permeability []:", self.relPermeability],
+            ["Remanence Flux Density[T]:", self.remanence],
+            ["Density [kg/m³]:", self.density],
+            ["Thermal Conductivity [W/(m*K)]:", self.thermalConductivity],
+            ["Thermal Capacity [J/(kg*K)]:", self.thermalCapacity],
         ]
         for row in table:
             if row[1] is None:

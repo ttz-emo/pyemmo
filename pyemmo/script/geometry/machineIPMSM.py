@@ -1,10 +1,7 @@
-from ctypes import Union
-from types import SimpleNamespace
 from typing import Dict
 
 from pyemmo.script.geometry.machineAllType import MachineAllType
 from ..script import default_param_dict
-from ..script import Script
 from .domain import Domain
 from .rotorIPMSM import RotorIPMSM
 from .statorSPMSM import StatorPMSM
@@ -30,8 +27,7 @@ class MachineIPMSM(MachineAllType):
     """
     def __init__(self, simuParam, name="Machine_IPMSM"):
         """Constructor of the class MachineIPMSM."""
-        MachineAllType.__init__(
-            self,
+        super().__init__(
             nbrPolePairs=(simuParam["analysisParameter"]["nbrPolesTotal"] / 2),
             symmetryFactor=simuParam["analysisParameter"]["symmetryFactor"],
             rotor=None,
@@ -43,53 +39,27 @@ class MachineIPMSM(MachineAllType):
         # Calculate Poles and Slots for Model
         self._simuParam["analysisParameter"]["nbrPolesinModel"] = (
             self._simuParam["analysisParameter"]["nbrPolesTotal"]
-            / self.getSymmetryFactor()
+            / self.symmetryFactor
         )
         self._simuParam["analysisParameter"]["nbrSlotinModel"] = (
             self._simuParam["analysisParameter"]["nbrSlotTotal"]
-            / self.getSymmetryFactor()
+            / self.symmetryFactor
         )
 
-    def getNbrPolesInModel(self):
-        return int(self._simuParam["analysisParameter"]["nbrPolesinModel"])
-
-    def getNbrPolePairs(self):
-        """get the number of pole pairs
+    @property
+    def startPos(self):
+        """get the StartPos
 
         Returns:
-            int: the number of pole pairs of the IPMSM
+            _type_: _description_
         """
-        simuParams = self._getSimuParamDict()
-        nbrPolePairs = simuParams["analysisParameter"]["nbrPolesTotal"] / 2
-        assert float(nbrPolePairs).is_integer()
-        return nbrPolePairs
-
-    def getSymmetryFactor(self):
-        return int(self._symmetryFactor)
-
-    def getStartPos(self):
-        simuParams = self._getSimuParamDict()
+        simuParams = self._simuParamDict
         return simuParams["analysisParameter"]["startPosition"]
-
-    def getRotor(self):
-        """Get the rotor of the machine
-
-        Returns:
-            RotorIPMSM: rotor with internal permanent magnets
+    
+    @property
+    def simParams(self) -> dict:
         """
-        return self._rotor
-
-    def getStator(self):
-        """Get the stator of the machine
-
-        Returns:
-            Stator: Stator of the IMPSM
-        """
-        return self._stator
-
-    def getSimParams(self) -> SimpleNamespace:
-        """
-        Return geometical simulation parameters as SimpleNamespace
+        Return geometical simulation parameters as dict
         - SYMMETRY_FACTOR
         - L_AX_R
         - L_AX_S
@@ -98,14 +68,14 @@ class MachineIPMSM(MachineAllType):
         - R_AIRGAP
         """
         paramDict = default_param_dict["GEO"]
-        paramDict["SYMMETRY_FACTOR"] = self.getSymmetryFactor()
-        paramDict["L_AX_R"] = self.getRotor().getAxialLength()
-        paramDict["L_AX_S"] = self.getStator().getAxialLength()
-        paramDict["NBR_POLE_PAIRS"] = self.getNbrPolePairs()
-        paramDict["NBR_SLOTS"] = self.getStator().getNbrSlots()
-        slots = self.getStator().getSlots()
+        paramDict["SYMMETRY_FACTOR"] = self.symmetryFactor
+        paramDict["L_AX_R"] = self.rotor.axialLength
+        paramDict["L_AX_S"] = self.stator.axialLength
+        paramDict["NBR_POLE_PAIRS"] = self.nbrPolePairs
+        paramDict["NBR_SLOTS"] = self.stator.nbrSlots
+        slots = self.stator.slots
         nbrTurns = slots[0].nbrTurns
-        slots.pop(0)
+        slots.pop(0) # pop first one to don't compare the slot against itself
         for slot in slots:
             actNbrTurns = slot.nbrTurns
             if nbrTurns != actNbrTurns:
@@ -113,10 +83,11 @@ class MachineIPMSM(MachineAllType):
                     f"Different number of turns in slots! {nbrTurns} != {actNbrTurns}"
                 )
         paramDict["NBR_TURNS_IN_FACE"] = nbrTurns
-        paramDict["R_AIRGAP"] = self.getRotor().getMovingBand()[0].radius
+        paramDict["R_AIRGAP"] = self.rotor.movingBand[0].radius
         return paramDict
 
-    def _getSimuParamDict(self) -> Dict:
+    @property
+    def _simuParamDict(self) -> Dict:
         """return the simulation parameter dict
 
         Returns:
@@ -135,15 +106,15 @@ class MachineIPMSM(MachineAllType):
         return self._simuParam
 
     def addRotorToMachine(self, laminationType: str, magnetType: str, axLen: float = 1):
-        nbrPoles = self.getNbrPolePairs() * 2
-        symFactor = self.getSymmetryFactor()
+        nbrPoles = self.nbrPolePairs * 2
+        symFactor = self.symmetryFactor
         angleGeoParts = 2 * pi / (nbrPoles) / 2  # half segment?
-        userRot = self.getStartPos()
+        userRot = self.startPos
         # rotate half pole, because pole center is on x-axis
         startPosition = angleGeoParts + userRot
         nbrGeoParts = int(nbrPoles / symFactor) * 2  # half segment?
 
-        self._rotor = RotorIPMSM(
+        self.rotor = RotorIPMSM(
             laminationType=laminationType,
             magnetType=magnetType,
             angleGeoParts=angleGeoParts,  # angle of one segment
@@ -152,7 +123,7 @@ class MachineIPMSM(MachineAllType):
             startPosition=startPosition,
             axLen=axLen,
         )
-        return self._rotor
+        return self.rotor
 
     def addStatorToMachine(
         self,
@@ -184,69 +155,69 @@ class MachineIPMSM(MachineAllType):
             axLen=axLen,
             winding=winding,
         )
-        self._stator = statorSPMSM1
-        return self._stator
+        self.stator = statorSPMSM1
+        return self.stator
 
     def createMachineDomains(self):
-        if self._rotor != None and self._stator != None:
+        if self.rotor != None and self.stator != None:
             self._domainS = Domain(
                 "DomainS",
-                self._rotor._domainS.physicals + self._stator._domainS.physicals,
+                self.rotor._domainS.physicals + self.stator._domainS.physicals,
             )
-            self._domainM = Domain("DomainM", self._rotor._domainM.physicals)
+            self._domainM = Domain("DomainM", self.rotor._domainM.physicals)
             self._domainC = Domain(
                 "DomainC",
-                self._rotor._domainC.physicals + self._stator._domainC.physicals,
+                self.rotor._domainC.physicals + self.stator._domainC.physicals,
             )
             self._setMovingbandMesh()  # set the moving band mesh length
-            self._mbRotor = Domain("MB_Rotor", self._rotor._mb.physicals)
-            self._mbStator = Domain("MB_Stator", self._stator._mb.physicals)
+            self._mbRotor = Domain("MB_Rotor", self.rotor._mb.physicals)
+            self._mbStator = Domain("MB_Stator", self.stator._mb.physicals)
             self._domain = Domain(
                 "Domain",
-                self._rotor._domain.physicals + self._stator._domain.physicals,
+                self.rotor._domain.physicals + self.stator._domain.physicals,
             )
             self._domainL = Domain(
                 "DomainL",
-                self._rotor._domainL.physicals + self._stator._domainL.physicals,
+                self.rotor._domainL.physicals + self.stator._domainL.physicals,
             )
             self._domainNL = Domain(
                 "DomainNL",
-                self._rotor._domainNL.physicals + self._stator._domainNL.physicals,
+                self.rotor._domainNL.physicals + self.stator._domainNL.physicals,
             )
 
             self._rotorMoving = Domain(
-                "Rotor_Moving", self._rotor._rotorMoving.physicals
+                "Rotor_Moving", self.rotor._rotorMoving.physicals
             )
-            self._mbBaux = Domain("Rotor_Bnd_MBaux", self._rotor._mbBaux.physicals)
+            self._mbBaux = Domain("Rotor_Bnd_MBaux", self.rotor._mbBaux.physicals)
             self._domainAirGapRotor = Domain(
-                "Rotor_Airgap", self._rotor._domainAirGap.physicals
+                "Rotor_Airgap", self.rotor._domainAirGap.physicals
             )
             self._domainAirGapStator = Domain(
-                "Stator_Airgap", self._stator._domainAirGap.physicals
+                "Stator_Airgap", self.stator._domainAirGap.physicals
             )
 
             if (
-                self._rotor._domainPrimary.physicals
-                or self._stator._domainPrimary.physicals
+                self.rotor._domainPrimary.physicals
+                or self.stator._domainPrimary.physicals
             ):
                 self._domainPrimary = Domain(
                     "primaryRegion_Rotor",
-                    self._rotor._domainPrimary.physicals
-                    + self._stator._domainPrimary.physicals,
+                    self.rotor._domainPrimary.physicals
+                    + self.stator._domainPrimary.physicals,
                 )
                 self._domainSlave = Domain(
                     "SlaveRegion_Rotor",
-                    self._rotor._domainSlave.physicals
-                    + self._stator._domainSlave.physicals,
+                    self.rotor._domainSlave.physicals
+                    + self.stator._domainSlave.physicals,
                 )
             else:
                 self._domainPrimary = None
                 self._domainSlave = None
             self._domainInnerLimit = Domain(
-                "InnerLimitLine", self._rotor._domainInnerLimit.physicals
+                "InnerLimitLine", self.rotor._domainInnerLimit.physicals
             )
             self._domainOuterLimit = Domain(
-                "OuterLimitLine", self._stator._domainOuterLimit.physicals
+                "OuterLimitLine", self.stator._domainOuterLimit.physicals
             )
         else:
             print("No definition of stator or rotor!")
@@ -258,13 +229,13 @@ class MachineIPMSM(MachineAllType):
             Nothing
         """
         # calculate movingband heigth
-        rotor = self.getRotor()
-        stator = self.getStator()
-        mbRadiusRotor = rotor.getMovingBand()[0].radius
-        mbRadiusStator = stator.getMovingBand()[0].radius
+        rotor = self.rotor
+        stator = self.stator
+        mbRadiusRotor = rotor.movingBand[0].radius
+        mbRadiusStator = stator.movingBand[0].radius
         mbHeigth = abs(mbRadiusStator - mbRadiusRotor)
         # set the movingband mesh to mbHeigth
-        for mb in rotor.getMovingBand() + stator.getMovingBand():
+        for mb in rotor.movingBand + stator.movingBand:
             for mbLine in mb.geometricalElement:
                 mbLine.setMeshLength(mbHeigth)
         return None

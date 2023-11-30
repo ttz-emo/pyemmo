@@ -1,32 +1,31 @@
 from .slot import Slot
-from .physicalElement import PhysicalElement
+
+"""Module for class Slot_Form03"""
+import math
 from .point import Point
 from .line import Line
 from .circleArc import CircleArc
 from .surface import Surface
-import math
 
 
 class Slot_Form03(Slot):
     def __init__(self, machineDict):
-        self._machineDict = machineDict
-        Slot.__init__(
-            self,
+        self.machineDict = machineDict
+        super().__init__(
             name="Slot_Form03",
-            geometricalElement=list(),
+            geometricalElement=[],
             material=machineDict["material"],
         )
         self._name = "Slot_Form03_" + str(self.id)
         self._createGeometry()
 
     def _createGeometry(self):
-
-        dockingLength = self._machineDict["rI_Stator"]
-        angle_slotOP = math.atan2(self._machineDict["w_SlotOP"], dockingLength)
-
-        PCentre = self._machineDict["machineCentrePoint"]
-        coordCentre = PCentre.getCoordinate()
-        angleStart = self._machineDict["startPosition"]
+        """Create the slot geometry"""
+        dockingLength = self.machineDict["rI_Stator"]
+        angle_slotOP = math.atan2(self.machineDict["w_SlotOP"], dockingLength)
+        PCentre: Point = self.machineDict["machineCentrePoint"]
+        coordCentre = PCentre.coordinate
+        angleStart = self.machineDict["startPosition"]
 
         # Konstuktion der Punkte an der x-Achse
         pS1 = Point(
@@ -34,23 +33,23 @@ class Slot_Form03(Slot):
             coordCentre[0] + dockingLength,
             coordCentre[1],
             coordCentre[2],
-            self._machineDict["meshLength"],
+            self.machineDict["meshLength"],
         )
         pS2 = pS1.duplicate()
         pS2.rotateZ(PCentre, angle_slotOP)
         pS3 = pS1.duplicate()
-        pS3.translate(self._machineDict["h_SlotOP"], 0, 0)
+        pS3.translate(self.machineDict["h_SlotOP"], 0, 0)
         pS4 = pS3.duplicate()
         pS4.rotateZ(PCentre, angle_slotOP)
 
         pS5 = pS1.duplicate()
-        pS5.translate(self._machineDict["h_Wedge"], self._machineDict["w_Wedge"] / 2, 0)
+        pS5.translate(self.machineDict["h_Wedge"], self.machineDict["w_Wedge"] / 2, 0)
         pS6 = pS3.duplicate()
-        pS6.translate(self._machineDict["h_Slot"], self._machineDict["r_Slot"], 0)
+        pS6.translate(self.machineDict["h_Slot"], self.machineDict["r_Slot"], 0)
         pS7 = pS3.duplicate()
-        pS7.translate(self._machineDict["h_Slot"] + self._machineDict["r_Slot"], 0, 0)
+        pS7.translate(self.machineDict["h_Slot"] + self.machineDict["r_Slot"], 0, 0)
         pRot = pS3.duplicate()
-        pRot.translate(self._machineDict["h_Slot"], 0, 0)
+        pRot.translate(self.machineDict["h_Slot"], 0, 0)
 
         pS1.rotateZ(PCentre, angleStart)
         pS2.rotateZ(PCentre, angleStart)
@@ -84,17 +83,47 @@ class Slot_Form03(Slot):
         self._laminationDockingPoint = [pS7]  #
         self._betweenLinePart = [lS8, lS2]
 
-    def getBetweenLinePart(self):
+    @property
+    def betweenLinePart(self):
+        """Getter of betweenLinePart
+
+        Returns:
+            _type_: _description_
+        """
         return self._betweenLinePart
 
-    def getInnerLinePart(self):
+    @property
+    def innerLinePart(self):
+        """Getter of innerLinePart
+
+        Returns:
+            _type_: _description_
+        """
         return self._innerLinePart
 
-    def getairDockingPoint(self):
+    @property
+    def airDockingPoint(self):
+        """Getter of airDockingPoint
+
+        Returns:
+            _type_: _description_
+        """
         return self._airDockingPoint
 
-    def getLaminationDockingLine(self):
+    @property
+    def laminationDockingLine(self):
+        """Getter of laminationDockingLine
+
+        Returns:
+            _type_: _description_
+        """
         return self._laminationDockingLine
 
-    def getLaminationDockingPoint(self):
+    @property
+    def laminationDockingPoint(self):
+        """Getter of laminationDockingPoint
+
+        Returns:
+            _type_: _description_
+        """
         return self._laminationDockingPoint

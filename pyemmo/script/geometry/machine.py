@@ -35,12 +35,15 @@ class Machine:
         self._rotor: Rotor = rotor
         ###Objekt der Klasse Stator.
         self._stator: Stator = stator
-
-    def setName(self, name: str):
-        """Mit setName() kann man den Namen der Maschine ändern."""
-        self._name = name
-
-    ###
-    def getName(self) -> str:
-        """getName() gibt den Namen der elektrischen Maschine als Stringvariable zurück."""
+        
+    @property
+    def name(self) -> str:
+        """name gibt den Namen der elektrischen Maschine als Stringvariable zurück."""
         return self._name
+    
+    @name.setter
+    def name(self, newName: str):
+        """Mit name kann man den Namen der Maschine ändern."""
+        self._name = newName
+
+

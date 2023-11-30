@@ -148,7 +148,7 @@ import os
 
 os.system(
     createCmdCommand(
-        onelabFile=myScript.getProFilePath(),
+        onelabFile=myScript.proFilePath,
         useGUI=True,
         paramDict={"Flag_ClearResults": 1},
     )

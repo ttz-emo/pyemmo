@@ -68,7 +68,7 @@ class CircleArc(Line):
         self.center: Point = centerPoint
         # make sure that start and end point have the same distance (radius)
         # to the center point:
-        self.getRadius()  # raises error if not
+        self.radius  # raises error if not
 
         ###Id des Kreisbogens.
         self.id = self._getNewID()
@@ -107,7 +107,8 @@ class CircleArc(Line):
         self._center = newCenterPoint
         # FIXME: Make sure other points are changed too, !if position changes!
 
-    def getType(self) -> Literal["CircleArc"]:
+    @property
+    def type(self) -> Literal["CircleArc"]:
         """getter of curve type
 
         Returns:
@@ -301,7 +302,8 @@ class CircleArc(Line):
         else:
             return angle
 
-    def getRadius(self) -> float:
+    @property
+    def radius(self) -> float:
         """Return the distance between the center point and the start point (P1) of the
         CircleArc (= radius)
 
@@ -316,19 +318,19 @@ class CircleArc(Line):
         startPoint = self.startPoint
         endPoint = self.endPoint
         if isclose(
-            center.calcDist(startPoint.getCoordinate()),
-            center.calcDist(endPoint.getCoordinate()),
+            center.calcDist(startPoint.coordinate),
+            center.calcDist(endPoint.coordinate),
             abs_tol=DEFAULT_GEO_TOL,
         ):
-            radius = center.calcDist(startPoint.getCoordinate())
+            radius = center.calcDist(startPoint.coordinate)
             return radius
         # pylint: disable=locally-disabled,  line-too-long
         raise (
             ValueError(
                 (
                     f"Start and end point of circle arc '{self.name}' dont have the same distance to the center point:"
-                    f"Distance Pc-P1={center.calcDist(startPoint.getCoordinate())}; "
-                    f"Distance Pc-P2 = {center.calcDist(endPoint.getCoordinate())}."
+                    f"Distance Pc-P1={center.calcDist(startPoint.coordinate)}; "
+                    f"Distance Pc-P2 = {center.calcDist(endPoint.coordinate)}."
                 )
             )
         )
@@ -355,8 +357,8 @@ class CircleArc(Line):
         """
         # pylint: disable=locally-disabled, too-many-locals, too-many-arguments
         centerPoint = self.center
-        centerCoords = centerPoint.getCoordinate()
-        diameter = self.getRadius() * 2
+        centerCoords = centerPoint.coordinate
+        diameter = self.radius * 2
         thetaStart, thetaEnd = self.getAnglesToX(inDeg=False)
         angleDiff = thetaEnd - thetaStart
         if (
@@ -389,7 +391,7 @@ class CircleArc(Line):
             # add tag to arc
             tagPoint = self.startPoint.duplicate()
             tagPoint.rotateZ(centerPoint, (theta2 - theta1) / 2)
-            tagCo = tagPoint.getCoordinate()
+            tagCo = tagPoint.coordinate
             axes.annotate(
                 f"""C {self.id} ("{self.name}")""",
                 (tagCo[0], tagCo[1]),
@@ -430,8 +432,8 @@ class CircleArc(Line):
 
         if not touchPoint:
             # find the point where the two lines are touching
-            for point in self.getPoints():
-                for addP in addLine.getPoints():
+            for point in self.points:
+                for addP in addLine.points:
                     if point.isEqual(addP):
                         touchPoint: Point = point
                         break
@@ -439,7 +441,7 @@ class CircleArc(Line):
             # get the two points forming the new start and endpoint excluding the docking point
             newPoints = [
                 point
-                for point in self.getPoints() + addLine.getPoints()
+                for point in self.points + addLine.points
                 if not point.isEqual(touchPoint)
             ]
             if len(newPoints) == 2:  # make sure there are exactly 2 points

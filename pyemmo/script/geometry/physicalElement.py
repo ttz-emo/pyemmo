@@ -37,7 +37,7 @@ class PhysicalElement:
     """
 
     # Statische Variable zur ID-Verwaltung
-    Physical_ID: int = 1000
+    physicalID: int = 1000
 
     def __init__(
         self,
@@ -47,90 +47,133 @@ class PhysicalElement:
         phyID: int = None,
     ):
         # the physical element type can be used to identify physical elements
-        self._physicalElementType = "PhysicalElement"
+        self.physicalElementType = "PhysicalElement"
+        self.name = name
+        self.geometricalElement = geometricalElement
+        self.material = material
 
-        self._name: str = name
-        self.geometricalElement: List[
-            Union[Surface, Line, CircleArc, Spline]
-        ] = geometricalElement
-        self._material: Material = material
         if phyID is None:
             # pylint: disable=locally-disabled, invalid-name
             self.id = self._getNewID()
         else:
             self.id = phyID
 
-    def _getNewID(self):
-        """Wird eine Instanz erzeugt, bekommt sie automatisch eine eindeutige ID zugewiesen.
-        Mit getNewID() wird eine neue ID erzeugt."""
-        PhysicalElement.Physical_ID = PhysicalElement.Physical_ID + 1
-        return PhysicalElement.Physical_ID
+    # ----- properties -----
+
+    @property
+    def physicalElementType(self) -> str:
+        """Type of physical element.
+        This should be equal to class name...
+
+        Returns:
+            str: Physical element type, e.g. "PhysicalElement" or "Magnet"
+        """
+        return self._physicalElementType
+
+    @physicalElementType.setter
+    def physicalElementType(self, newPhysicalElementType: str) -> str:
+        "setter for physicalElementType"
+        if isinstance(newPhysicalElementType, str):
+            self._physicalElementType = newPhysicalElementType
+        else:
+            raise TypeError(
+                f"Type of physicalElementType must be string, but is {type(newPhysicalElementType)}"
+            )
+
+    @property
+    def name(self) -> str:
+        """Phyiscal element name
+
+        Returns:
+            str: name
+        """
+        return self._name
+
+    @name.setter
+    def name(self, newName) -> str:
+        "Setter for name"
+        if isinstance(newName, (str)):
+            self._name = newName
+        else:
+            raise TypeError("Type of name must be a string.")
+
+    @property
+    def material(self) -> Material:
+        """Material of phyiscal element
+
+        Returns:
+            Material: material
+        """
+        return self._material
+
+    @material.setter
+    def material(self, newMaterial: Union[Material, None]):
+        "Setter for material"
+        if isinstance(newMaterial, Material) or newMaterial is None:
+            self._material = newMaterial
+        else:
+            raise TypeError("Type of material must type pyemmo.Material!")
 
     # pylint: disable=locally-disabled, invalid-name
     @property
     def id(self) -> int:
-        """PhysicalElement ID"""
+        """Physical element identification number.
+        This is the ID that is used in ONELAB. Physical element IDs start at 1000
+        and are counted automatically.
+
+        Returns:
+            int: Physical elemnt ID number.
+        """
         return self._id
 
     @id.setter
     def id(self, newID: int):
         """setter of PhysicalElement ID
+        The values for pe IDs start at 1000. The choosen value MUST be bigger that the actual
+        max. value (=``PhysicalElement.Physical_ID``).
+        After the value is set once manually, max. value (``PhysicalElement.Physical_ID``) is
+        updated and all future IDs will be bigger than the manually set value.
 
         Args:
-            newID (int): new ID
+            newID (int): new physical element ID.
         """
         if not isinstance(newID, int):
             raise TypeError(f"PhysicalElement ID must be positive integer! {newID}")
-        if 1000 < newID < PhysicalElement.Physical_ID:
+        if 1000 < newID < PhysicalElement.physicalID:
             raise ValueError(
                 "New ID of PhysicalElement is smaller than global ID count."
                 "Given newID must be existing!"
             )
-        PhysicalElement.Physical_ID = newID  # set global ID to not overcount newID
+        PhysicalElement.physicalID = newID  # set global ID to not overcount newID
         self._id = newID
 
     @property
     def geometricalElement(self) -> Union[List[Surface], List[Line]]:
-        """geometricalElement sind alle geometrischen Elemente einer Klasse.
+        """Geometrical enities of physical element.
 
-        Input:
-
-            None
-
-        Output:
-
-            [Surface] oder [Line]
+        Returns:
+            Union[List[Surface], List[Line]]: Geometrical Entities.
         """
         return self._geometricalElement
 
     @geometricalElement.setter
     def geometricalElement(self, geometricalElement: Union[List[Surface], List[Line]]):
-        """setter of geo elements"""
-        self._geometricalElement: Union[List[Surface], List[Line]] = geometricalElement
-        # run element type funtion to ensure there are not lines AND surfaces
-        self.getGeoElementType()
+        """Geometrical elements
 
-    def getMaterial(self) -> Material:
-        """getter of Material"""
-        return self._material
+        Args:
+            geometricalElement (Union[List[Surface], List[Line]]): Geometrical elements
+        """
+        self._geometricalElement = geometricalElement
+        # run element type funtion to ensure there are not lines AND surfaces at the same time
+        self.geoElementType
 
-    def setMaterial(self, material: Material):
-        """setter of Material"""
-        self._material = material
-
-    def getName(self):
-        """getter of name"""
-        return self._name
-
-    def setName(self, name):
-        """setter of name"""
-        self._name = name
-
-    def getType(self) -> str:
+    @property
+    def type(self) -> str:
         """The function getType of PhysicalElement returns a string with the PhysicalElement-Type"""
         return self._physicalElementType
 
-    def getGeoElementType(self) -> Union[Line, Surface, None]:
+    @property
+    def geoElementType(self) -> Union[Line, Surface, None]:
         """get type of geometry elements.
 
         Raises:
@@ -155,7 +198,7 @@ class PhysicalElement:
             else:
                 raise ValueError(
                     (
-                        f"Geometrical element of PhysicalElement '{self.getName()}' is neither Line"
+                        f"Geometrical element of PhysicalElement '{self.name}' is neither Line"
                         f"nor Surface but: {type(GeoElement)}"
                     )
                 )
@@ -168,7 +211,15 @@ class PhysicalElement:
             return Line
         if isSurface:
             return Surface
-        raise Exception("GeoElement-Type was neither Line nor Surface...")
+        raise TypeError("GeoElement-Type was neither Line nor Surface...")
+
+    # ---------- methods ----------
+
+    def _getNewID(self):
+        """Wird eine Instanz erzeugt, bekommt sie automatisch eine eindeutige ID zugewiesen.
+        Mit getNewID() wird eine neue ID erzeugt."""
+        PhysicalElement.physicalID = PhysicalElement.physicalID + 1
+        return PhysicalElement.physicalID
 
     ###
     # Mit addToScript wird das PhysicalElement zum Skriptobjekt übergeben und in gmsh-Syntax

@@ -1,12 +1,11 @@
 from typing import List
 from .rotorLamination import RotorLamination
-from .physicalElement import PhysicalElement
 from .. import colorDict
 from .point import Point
 from .line import Line
 from .circleArc import CircleArc
 from .surface import Surface
-import math
+
 
 ###
 # Ein Objekt der Klasse RotorLamination_Sheet01_Standard:
@@ -30,21 +29,21 @@ import math
 #
 ###
 class RotorLamination_Sheet01_Standard(RotorLamination):
-    """Konstruktor der Klasse RotorLamination Type Sheet01_Standard
-    Input:
-        machineDict : dict"""
+    def __init__(self, machineDict: dict):
+        """Konstruktor der Klasse RotorLamination Type Sheet01_Standard
 
-    def __init__(self, machineDict):
-        RotorLamination.__init__(
-            self,
+        Args:
+            machineDict (dict): Machine parameter dict
+        """
+        super().__init__(
             name="RotorLamination_Sheet01_Standard",
-            material=None,
+            material=machineDict["material"],
             geometricalElement=[],
         )
         ###Alle Parameter zur Beschreibung des Rotorblechs.
         self._machineDict = machineDict
         ###Name des Rotorsblech
-        self._name = "RotorLamination_Sheet01_Standard_" + str(self.id)
+        self.name = "RotorLamination_Sheet01_Standard_" + str(self.id)
         self._createGeometry()
 
     ###_createGeometry() erzeugt die Blechgeometrie und definiert alle Attribute der Klasse.
@@ -53,7 +52,7 @@ class RotorLamination_Sheet01_Standard(RotorLamination):
         r_R = self._machineDict["r_R"]
 
         PCentre = self._machineDict["machineCentrePoint"].duplicate()
-        coordCentre = PCentre.getCoordinate()
+        coordCentre = PCentre.coordinate
 
         alpha = self._machineDict["angleGeoParts"]
 
@@ -95,8 +94,6 @@ class RotorLamination_Sheet01_Standard(RotorLamination):
         # Bei jedem Baukausten müssen diese Attribute vorkommen
         ###Fläche des Bleches (halber Pol) in einer Liste.
         self._geometricalElement = [surfaceRotor]
-        ###Material des Bleches.
-        self._material = self._machineDict["material"]
         ###Außenkante des Bleches.
         # \image html outerLinePart.png
         self._outerLinePart = [lRotorAussen]
@@ -111,7 +108,8 @@ class RotorLamination_Sheet01_Standard(RotorLamination):
         self._airDockingPoint2 = [pRotor2]
 
     ###Gibt eine Liste mit der Außenkante des Bleches zurück (siehe _outerLinePart).
-    def getOuterLinePart(self) -> List[CircleArc]:
+    @property
+    def outerLinePart(self) -> List[CircleArc]:
         """Get the boundary line(s) of the rotor lamination towards the airgap
 
         Returns:
@@ -120,7 +118,8 @@ class RotorLamination_Sheet01_Standard(RotorLamination):
         return self._outerLinePart
 
     ###Gibt eine Liste mit der Schnittkante zurück (siehe _betweenLinePart).
-    def getBetweenLinePart(self) -> List[Line]:
+    @property
+    def betweenLinePart(self) -> List[Line]:
         """Gibt eine Liste mit der Schnittkante zurück. Schnittkante zwischen 2 Blechen.
 
         Returns:
@@ -129,7 +128,8 @@ class RotorLamination_Sheet01_Standard(RotorLamination):
         return self._betweenLinePart
 
     ###Gibt eine Liste mit dem airDockingPoint1 zurück (siehe _airDockingPoint1).
-    def getAirDockingPoint1(self) -> List[Point]:
+    @property
+    def airDockingPoint1(self) -> List[Point]:
         """Get point of lamination segment at airgap interface near x-Axis
 
         Returns:
@@ -138,7 +138,8 @@ class RotorLamination_Sheet01_Standard(RotorLamination):
         return self._airDockingPoint1
 
     ###Gibt eine Liste mit dem airDockingPoint2 zurück (siehe _airDockingPoint2).
-    def getAirDockingPoint2(self) -> List[Point]:
+    @property
+    def airDockingPoint2(self) -> List[Point]:
         """Get point of lamination segment at airgap interface on interface line to next segment in math. positive direction.
 
         Returns:

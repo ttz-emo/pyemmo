@@ -32,10 +32,9 @@ class RotorIPMSM(Rotor):
         magnetDict=None,
         airGapDict=None,
     ):
-        self._name = "RotorIPMSM"
+        super().__init__(physicalElementList=[], name="RotorIPMSM", axLen=axLen)
         self._laminationType = laminationType
         self._magnetType = magnetType
-        self._physicalElements: List[PhysicalElement] = list()
 
         self._angleGeoParts = angleGeoParts
         self._startPosition = startPosition
@@ -47,9 +46,6 @@ class RotorIPMSM(Rotor):
             self._symmetryFactor = int(symmetryFactor)
         else:
             raise ValueError(f"The symmetry factor is not an integer: {symmetryFactor}")
-
-        self._axLen = axLen  # active axial length
-
         # Wenn laminationDict nicht None: Setzte Lamination Parameter
         if laminationDict:
             self.addLaminationParameter(laminationDict)
@@ -96,9 +92,9 @@ class RotorIPMSM(Rotor):
                 laminationPart = RotorLamination_Sheet01_Standard(self._laminationDict)
 
             if self._magnetType == "magnet_Slot01":
-                from .magnet_Slot01 import Magnet_Slot01
+                from .magnet_Slot01 import MagnetSlot01
 
-                magnetPart = Magnet_Slot01(
+                magnetPart = MagnetSlot01(
                     self._magnetDict,  # comment Max: In _init_ definition von Magnet-Klasse heißt das Argument "machineDict"... (Wahrscheinlich nur ungenauer Variablenname)
                     self._magnetDict["magnetisationDirection"][0],
                     self._magnetDict["magnetisationType"],
@@ -111,25 +107,23 @@ class RotorIPMSM(Rotor):
         self._createConstraintLine()
         self._createDomainForRotor()  # create rotor domains
 
-        if (
-            self._physicalRaw[1].getMagnetisationType() == "parallel"
-            or self._physicalRaw[1].getMagnetisationType() == "tangential"
-        ):
+        mag: Magnet = self._physicalRaw[1]
+        if mag.magType in ("parallel", "tangential"):
             allAngle = self._calculateAngleForParallelMagnet()
             allMag = self.getAllMagnet()
             for i, mag in enumerate(allMag):
-                mag.setMagnetisationVectorAngle(allAngle[i])
+                mag.magAngle = allAngle[i]
 
     def _calculateAngleForParallelMagnet(self):
         Magnet1 = self._physicalRaw[1]
-        dockingPointM = Magnet1.getLaminationDockingPoint()[0].duplicate()
-        coordDPM = dockingPointM.getCoordinate()
+        dockingPointM = Magnet1.laminationDockingPoint[0].duplicate()
+        coordDPM = dockingPointM.coordinate
         angleParallel1 = math.atan2(coordDPM[1], coordDPM[0])
         allAngleParallel = [angleParallel1]
         alpha = self._angleGeoParts * 2
         for i in range(1, int(self._nbrGeoParts / 2)):
             dockingPointM.rotateZ(self._laminationDict["machineCentrePoint"], alpha)
-            coordDPM = dockingPointM.getCoordinate()
+            coordDPM = dockingPointM.coordinate
             angle = math.atan2(coordDPM[1], coordDPM[0])
             allAngleParallel.append(angle)
         return allAngleParallel
@@ -146,10 +140,10 @@ class RotorIPMSM(Rotor):
         Magnet1 = self._physicalRaw[1]
 
         # alle Magnetlinien extrahieren die das Blechpaket schneiden
-        MagLList = Magnet1.getLamLinePart()
+        MagLList = Magnet1.lamLinePart
 
         # alle Magnetlinien extrahieren die auf der Symmetrieachse liegen
-        MagCenterLList = Magnet1.getInnerLinePart()
+        MagCenterLList = Magnet1.innerLinePart
         if not MagCenterLList:
             # MagCenterLList ist leer
             # Magnet liegt nicht auf der zentralen Achse (-> zwei getrennte Magnete vorhanden)
@@ -163,7 +157,7 @@ class RotorIPMSM(Rotor):
             #           und aufteilen in zwei neue Linen mit Anfangs und Endpunkt von Magnet..
             #           Anschließend übrige Magnetlinien zur Blechkontur hinzfügen
 
-            OldLamCenterL = Rotorsheet.getBetweenLinePart()[0]
+            OldLamCenterL = Rotorsheet.betweenLinePart[0]
             LamCenterL_bottom = OldLamCenterL.duplicate(
                 OldLamCenterL.name + "_1"
             )  # untere Linie muss dupliziert werden wegen Reihenfolge der Linien in der LineList der Fläche
@@ -180,7 +174,7 @@ class RotorIPMSM(Rotor):
 
             ## Neue Linien und Magnetlinien zu RotorlinienListe hinzufügen:
             # alle Rotorlinien kopieren (ID behalten!):
-            LamLList = Rotorsheet.geometricalElement[0].getCurve()
+            LamLList = Rotorsheet.geometricalElement[0].curve
 
             # Rotoroberflächen-nahe Linie ist bereits in LamLList enthalten
             # Magnetlinien hinzufügen
@@ -201,8 +195,8 @@ class RotorIPMSM(Rotor):
         PCentre = self._laminationDict["machineCentrePoint"].duplicate()
         alpha = self._angleGeoParts
         laminationPart = self._physicalRaw[0]
-        P1: Point = laminationPart.getAirDockingPoint1()[0].duplicate()
-        P2: Point = laminationPart.getAirDockingPoint2()[0].duplicate()
+        P1: Point = laminationPart.airDockingPoint1[0].duplicate()
+        P2: Point = laminationPart.airDockingPoint2[0].duplicate()
         P3 = P1.duplicate()
         P3.translate(
             math.cos(alpha) * airGapLength, math.sin(alpha) * airGapLength, 0
@@ -233,7 +227,7 @@ class RotorIPMSM(Rotor):
         ## duplicate Rotorsheet ##
         allGeo = self._physicalRaw[0].geometricalElement
         PCentre = self._laminationDict["machineCentrePoint"].duplicate()
-        pH1 = self._physicalRaw[0].getBetweenLinePart()[0].startPoint.duplicate()
+        pH1 = self._physicalRaw[0].betweenLinePart[0].startPoint.duplicate()
         hilfsLinie1 = Line("L_hilf1", PCentre, pH1)
         ez = Point("p_Z", PCentre._x, PCentre._y, PCentre._z + 1, 1)
         hilfsLinie2 = Line("L_hilf2", PCentre, ez)
@@ -274,8 +268,9 @@ class RotorIPMSM(Rotor):
                 self._magnetDict["material"],
                 self._magnetDict["magnetisationDirection"][i],
                 self._magnetDict["magnetisationType"],
+                0.0,
             )
-            mag2.setName(self._magnetType + "_" + str(mag2.id))
+            mag2.name = self._magnetType + "_" + str(mag2.id)
             allMag.append(mag2)
 
         wholeMagnet = [self._physicalRaw[1]] + allMag
@@ -346,7 +341,7 @@ class RotorIPMSM(Rotor):
         mbNegDirection = (
             self._physicalRaw[2]
             .geometricalElement[0]
-            .getCurve()[1]
+            .curve[1]
             .duplicate(name="lAirGap")
         )  # duplicate the outer airgap line (movingband line)
         mbNegDirection.rotateZ(
@@ -386,7 +381,7 @@ class RotorIPMSM(Rotor):
                 material=self._airGapDict["material"],
                 auxiliary=True,
             )
-            mbAux.setName("mb_Aux_" + str(mbAux.id))
+            mbAux.name = "mb_Aux_" + str(mbAux.id)
             allMBAux.append(mbAux)
         # append Movingband Aux Rotor to physicalElement
         for movingband in allMBAux:
@@ -400,7 +395,7 @@ class RotorIPMSM(Rotor):
         lAirGapprimary = (
             self._physicalRaw[2]
             .geometricalElement[0]
-            .getCurve()[0]
+            .curve[0]
             .duplicate(name="lAirgapprimary")  # duplicate part of airgap on x-axis
         )
         lAirGapprimary.rotateZ(
@@ -560,6 +555,6 @@ class RotorIPMSM(Rotor):
     def getAllMagnet(self) -> List[Magnet]:
         MagList: List[Magnet] = list()
         for physElem in self._physicalElements:
-            if physElem.getType() == "Magnet":
+            if physElem.type == "Magnet":
                 MagList.append(physElem)
         return MagList

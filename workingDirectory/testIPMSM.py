@@ -138,7 +138,7 @@ testIPMSM_Script.addPostOperation(
     name="User Defined PostOperation",
     OnGrid="{(r_AG)*Sin[$A*Pi/180],(r_AG)*Cos[$A*Pi/180],0}{0:360/SymmetryFactor,0,0}",
     # OnGrid="{(r_AG)*Sin[Pi/nbSlots-$A*Pi/180],(r_AG)*Cos[Pi/nbSlots-$A*Pi/180],0}{0:360/SymmetryFactor,0,0}",
-    File=path.abspath(path.join(testIPMSM_Script.getResultsPath(), "b_OnRadius.pos")),
+    File=path.abspath(path.join(testIPMSM_Script.resultsPath, "b_OnRadius.pos")),
 )
 import time
 startTime = time.time()
@@ -149,7 +149,7 @@ print(f"\n Generation of script took {stopTime-startTime} seconds.")
 
 # %%
 proFilePath = path.join(
-    testIPMSM_Script.getScriptPath(), testIPMSM_Script.getName() + ".pro"
+    testIPMSM_Script.scriptPath, testIPMSM_Script.name + ".pro"
 )
 command = runOnelab.createCmdCommand(
     onelabFile=path.abspath(proFilePath),

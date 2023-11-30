@@ -49,11 +49,11 @@ def getPrimaryLines(
     rotorMLList: List[Line] = []  # Rotor primarylines
     statorMLList: List[Line] = []  # Stator primarylines
     for area in segmentSurfDict.values():  # for every surface
-        for line in area.getCurve():  # for each line
+        for line in area.curve:  # for each line
             # get the coordinates of the startpoint
-            startPoint = line.startPoint.getCoordinate()[:]
+            startPoint = line.startPoint.coordinate[:]
             # get the coords of the endpoint
-            endPoint = line.endPoint.getCoordinate()[:]
+            endPoint = line.endPoint.coordinate[:]
             # if the y-values are smaller than the maximal Distanz from y=0 (=Pinball radius)
             #   -> it's a primaryline
             if abs(startPoint[1]) < pinballRadius and abs(endPoint[1]) < pinballRadius:
@@ -157,7 +157,7 @@ def findLines(
         ValueError: If SurfID is found more than once in the surface list
     """
     areaOfSurfID = [
-        area for area in segmentSurfDict.values() if (surfID == area.getIdExt())
+        area for area in segmentSurfDict.values() if (surfID == area.idExt)
     ]
     if not areaOfSurfID:  # SurfID not in Surface Dict
         jsonLogger.warning(f"Surface ID '{surfID}' not found in machine surface list.")
@@ -167,7 +167,7 @@ def findLines(
         msg = f"Surface with ID '{surfID}' was found more than once in the list of machine surfaces"
         raise ValueError(msg)
     lineList: List[Line] = []
-    for line in areaOfSurfID[0].getCurve():
+    for line in areaOfSurfID[0].curve:
         linename = line.name
         if findLine(linename, lineIDList):
             lineList.append(line)
@@ -200,9 +200,9 @@ def getBoundaryLines(
     lineList, boundarySurface = findLines(segmentSurfDict, surfID, lineIDList)
     if lineList:  # if there are lines in linelist
         dupLines = []
-        angle = boundarySurface.getAngle()
+        angle = boundarySurface.angle
         # number of segments in symmetry:
-        nbrSegments = boundarySurface.getNbrSegments() / symFactor
+        nbrSegments = boundarySurface.NbrSegments / symFactor
         for line in lineList:
             for i in range(1, int(nbrSegments)):
                 dupLines.append(rotateDuplicate(line, i * angle))
@@ -424,11 +424,11 @@ def createBoundaries(
     # machineSurfDict = createSurfaceDict(segmentSurfDict)
     try:
         if "StLu" in segmentSurfDict.keys():
-            movingBandMaterial: Material = segmentSurfDict["StLu"].getMaterial()
+            movingBandMaterial: Material = segmentSurfDict["StLu"].material
         elif "StLu1" in segmentSurfDict.keys():
-            movingBandMaterial: Material = segmentSurfDict["StLu1"].getMaterial()
+            movingBandMaterial: Material = segmentSurfDict["StLu1"].material
         else:
-            movingBandMaterial: Material = segmentSurfDict["StLu2"].getMaterial()
+            movingBandMaterial: Material = segmentSurfDict["StLu2"].material
     except KeyError:
         jsonLogger.warning(
             """Stator-Airgap Surface-ID was not "StLu","StLu1" or "StLu2". Can't determine Airgap material! Using air instead."""
@@ -473,7 +473,7 @@ def createBoundaries(
     else:
         # checkout if Wel has Center point
         noInnerLimit = False
-        for point in segmentSurfDict["Wel"].getAllPoints():
+        for point in segmentSurfDict["Wel"].allPoints:
             if point.isEqual(globalCenterPoint):
                 # no inner limit line
                 noInnerLimit = True

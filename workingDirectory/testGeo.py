@@ -4,6 +4,7 @@ from pyemmo.definitions import RESULT_DIR
 from pyemmo.script.script import Script
 from pyemmo.script.geometry.point import Point
 from pyemmo.script.geometry.line import Line
+from pyemmo.script.geometry.spline import Spline
 from pyemmo.script.geometry.surface import Surface
 from pyemmo.functions.runOnelab import createCmdCommand
 
@@ -34,7 +35,13 @@ s2 = Surface("s2", [l5, l6, l7, l8])
 
 s1.addToScript(myScript)
 s2.addToScript(myScript)
+
+# add spline
+spline = Spline("spline", p1, p3, [p2, p4], SplineType=0)
+spline.addControlPoint(p8,1)
+spline.addToScript(myScript)
+
 myScript.generateScript(mode=1)  # only geo file
 subprocess.run(
-    createCmdCommand(onelabFile=myScript.getGeoFilePath(), useGUI=True), check=False
+    createCmdCommand(onelabFile=myScript.geoFilePath, useGUI=True), check=False
 )
