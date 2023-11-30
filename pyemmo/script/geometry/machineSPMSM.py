@@ -1,4 +1,3 @@
-from .domain import Domain
 from .machineAllType import MachineAllType
 from .rotorSPMSM import RotorSPMSM
 from .statorSPMSM import StatorPMSM, datamodel
@@ -45,20 +44,19 @@ class MachineSPMSM(MachineAllType):
         nbrPoles = simuParam["analysisParameter"]["nbrPolesTotal"]
         symFactor = simuParam["analysisParameter"]["symmetryFactor"]
         super().__init__(
-            nbrPolePairs=nbrPoles / 2,
+            nbrPolePairs=nbrPoles/2,
             symmetryFactor=symFactor,
             rotor=None,
             stator=None,
-            name="MachineSPMSM",
+            name="MachineSPMSM"
         )
         self._simuParam = simuParam
-        ###Symmetriefaktor z. B. 4 für ein Viertelmodell der Maschine.
-        self._symmetryFactor = self._simuParam["analysisParameter"]["symmetryFactor"]
+
         self._simuParam["analysisParameter"]["nbrPolesinModel"] = (
-            self._simuParam["analysisParameter"]["nbrPolesTotal"] / self._symmetryFactor
+            self._simuParam["analysisParameter"]["nbrPolesTotal"] / self.symmetryFactor
         )
         self._simuParam["analysisParameter"]["nbrSlotinModel"] = (
-            self._simuParam["analysisParameter"]["nbrSlotTotal"] / self._symmetryFactor
+            self._simuParam["analysisParameter"]["nbrSlotTotal"] / self.symmetryFactor
         )
 
     ###
@@ -100,13 +98,13 @@ class MachineSPMSM(MachineAllType):
     def addRotorToMachine(self, laminationType, magnetType):
         startPosition = (
             math.pi
-            / self._symmetryFactor
+            / self.symmetryFactor
             / self._simuParam["analysisParameter"]["nbrPolesinModel"]
             + self._simuParam["analysisParameter"]["startPosition"]
         )
         angleGeoParts = (
             math.pi
-            / self._symmetryFactor
+            / self.symmetryFactor
             / self._simuParam["analysisParameter"]["nbrPolesinModel"]
         )
         nbrGeoParts = self._simuParam["analysisParameter"]["nbrPolesinModel"] * 2
@@ -115,7 +113,7 @@ class MachineSPMSM(MachineAllType):
             magnetType,
             angleGeoParts,
             nbrGeoParts,
-            self._symmetryFactor,
+            self.symmetryFactor,
             startPosition,
         )
         self.rotor = rotorSPMSM1
@@ -160,18 +158,18 @@ class MachineSPMSM(MachineAllType):
     ):
         startPosition = (
             math.pi
-            / self._symmetryFactor
+            / self.symmetryFactor
             / self._simuParam["analysisParameter"]["nbrSlotinModel"]
             + self._simuParam["analysisParameter"]["startPosition"]
         )
         angleGeoParts = (
             math.pi
-            / self._symmetryFactor
+            / self.symmetryFactor
             / self._simuParam["analysisParameter"]["nbrSlotinModel"]
         )
         nbrGeoParts = self._simuParam["analysisParameter"]["nbrSlotinModel"] * 2
         nbrSlotsTotal = (
-            nbrGeoParts * self._symmetryFactor / 2
+            nbrGeoParts * self.symmetryFactor / 2
         )  # divided by 2 because one slot is formed by 2 geoParts
         statorSPMSM1 = StatorPMSM(
             laminationType=laminationType,
@@ -179,7 +177,7 @@ class MachineSPMSM(MachineAllType):
             nbrSlots=nbrSlotsTotal,
             angleGeoParts=angleGeoParts,
             nbrGeoParts=nbrGeoParts,
-            symmetryFactor=self._symmetryFactor,
+            symmetryFactor=self.symmetryFactor,
             winding=winding,
             startPosition=startPosition,
         )
@@ -348,6 +346,6 @@ class MachineSPMSM(MachineAllType):
         #     self._mbRotor,
         #     self._domain,
         #     self._mbRotor.physicals[0].getMaterial(),
-        #     self._symmetryFactor,
+        #     self.symmetryFactor,
         # )
         # script._printFormulationGetDP(self)

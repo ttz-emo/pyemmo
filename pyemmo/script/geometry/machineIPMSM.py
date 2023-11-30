@@ -1,10 +1,7 @@
-from ctypes import Union
-from types import SimpleNamespace
 from typing import Dict
 
 from pyemmo.script.geometry.machineAllType import MachineAllType
 from ..script import default_param_dict
-from ..script import Script
 from .domain import Domain
 from .rotorIPMSM import RotorIPMSM
 from .statorSPMSM import StatorPMSM
@@ -60,9 +57,9 @@ class MachineIPMSM(MachineAllType):
         return simuParams["analysisParameter"]["startPosition"]
     
     @property
-    def simParams(self) -> SimpleNamespace:
+    def simParams(self) -> dict:
         """
-        Return geometical simulation parameters as SimpleNamespace
+        Return geometical simulation parameters as dict
         - SYMMETRY_FACTOR
         - L_AX_R
         - L_AX_S
@@ -70,23 +67,23 @@ class MachineIPMSM(MachineAllType):
         - NBR_TURNS_IN_FACE
         - R_AIRGAP
         """
-        paramDict = default_param_dict.GEO
-        paramDict.SYMMETRY_FACTOR = self.symmetryFactor
-        paramDict.L_AX_R = self.rotor.axialLength
-        paramDict.L_AX_S = self.stator.axialLength
-        paramDict.NBR_POLE_PAIRS = self.nbrPolePairs
-        paramDict.NBR_SLOTS = self.stator.nbrSlots
+        paramDict = default_param_dict["GEO"]
+        paramDict["SYMMETRY_FACTOR"] = self.symmetryFactor
+        paramDict["L_AX_R"] = self.rotor.axialLength
+        paramDict["L_AX_S"] = self.stator.axialLength
+        paramDict["NBR_POLE_PAIRS"] = self.nbrPolePairs
+        paramDict["NBR_SLOTS"] = self.stator.nbrSlots
         slots = self.stator.slots
         nbrTurns = slots[0].nbrTurns
-        slots.pop(0)
+        slots.pop(0) # pop first one to don't compare the slot against itself
         for slot in slots:
             actNbrTurns = slot.nbrTurns
             if nbrTurns != actNbrTurns:
                 raise ValueError(
                     f"Different number of turns in slots! {nbrTurns} != {actNbrTurns}"
                 )
-        paramDict.NBR_TURNS_IN_FACE = nbrTurns
-        paramDict.R_AIRGAP = self.rotor.movingBand[0].radius
+        paramDict["NBR_TURNS_IN_FACE"] = nbrTurns
+        paramDict["R_AIRGAP"] = self.rotor.movingBand[0].radius
         return paramDict
 
     @property
