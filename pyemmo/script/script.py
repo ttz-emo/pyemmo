@@ -9,14 +9,12 @@ import re
 import logging
 from math import pi
 from os.path import abspath, join
-from types import SimpleNamespace
 from typing import TYPE_CHECKING, Dict, List, Literal, Tuple, Union
 from numpy import rad2deg, where
 from pygetdp import Function as FunctionGetDP
 from pygetdp import Group as GroupGetDP
 from pygetdp import PostOperation
 from pygetdp.postoperation import PostopItem
-
 
 from ..definitions import DEFAULT_GEO_TOL, MAIN_DIR
 from ..functions.cleanName import cleanName, isValidFilename
@@ -46,8 +44,8 @@ if TYPE_CHECKING:
 
 
 class Script(object):
-    """Eine Instanz der Klasse Script beinhaltet alle Informationen, die zum Erzeugen der .geo-
-    und .pro-Skripte benötigt werden."""
+    """Eine Instanz der Klasse Script beinhaltet alle Informationen, die zum
+    Erzeugen der .geo- und .pro-Skripte benötigt werden."""
 
     def __init__(
         self,
@@ -61,31 +59,36 @@ class Script(object):
         """
         Args:
             name (str): script name
-            scriptPath (str): path, where the geo and pro scripts should be saved
+            scriptPath (str): path, where the geo and pro scripts should be
+                saved
             simuParams (dict): Dictionary with different simulation parameters
 
-                - "init_rotor_pos" - initial rotor position mech °
-                - "angle_increment" - angular step size in mech °
-                - "final_rotor_pos" - final rotor position mech °
+                - "INIT_ROTOR_POS" - initial rotor position mech °
+                - "ANGLE_INCREMENT" - angular step size in mech °
+                - "FINAL_ROTOR_POS" - final rotor position mech °
                 - "Id_eff" - d-axis current in A
                 - "Iq_eff" - q-axis current in A
-                - "rot_speed" - rotational speed in rpm
+                - "SPEED_RPM" - rotational speed in rpm
 
                 optional:
 
-                - "park_angle_offset" - offset angle for park-transformation in elec °
-                - "nbrParallePaths" - number of parallel winding paths
-                - "calcMagnetLosses" - flag to calculate eddy current losses in PMs
-                - "analysis_type"
+                - "ParkAngOffset" - offset angle for park-transformation in
+                    elec °
+                - "NBR_PARALLEL_PATHS" - number of parallel winding paths
+                - "CALC_MAGNET_LOSSES" - flag to calculate eddy current losses
+                    in PMs
+                - "ANALYSIS_TYPE"
 
                     - 0: static (default)
                     - 1: transient
 
-            machine (Machine): pyemmo machine object for geometry and geometic parameters.
-                Defaults to None.
-            resultsPath (str, optional): path, where the simulation results should be stored.
-                Defaults to a folder in scriptPath with name "res_{scriptName}".
-            factory (str, optional): Geometry kernel for the geo file. Possible inputs are:
+            machine (Machine): pyemmo machine object for geometry and geometic
+                parameters. Defaults to None.
+            resultsPath (str, optional): path, where the simulation results
+                should be stored. Defaults to a folder in scriptPath with name
+                "res_{scriptName}".
+            factory (str, optional): Geometry kernel for the geo file.
+                Possible inputs are:
 
                 - "Build-in" (default)
                 - "OpenCASCADE"
@@ -94,17 +97,20 @@ class Script(object):
         DEFAULT SimuParam Dict:
 
         .. code:: python
-
             {
-                "init_rotor_pos": 0,
-                "angle_increment": 1,
-                "final_rotor_pos": 90,
-                "Id_eff": 0,
-                "Iq_eff": 0,
-                "rot_speed": 1000,
-                "park_angle_offset": 0,
-                "analysis_type": 1,
-                "magTemp": 20,
+                "SYM": {
+                    "INIT_ROTOR_POS": 0.0,
+                    "ANGLE_INCREMENT": 0.5,
+                    "FINAL_ROTOR_POS": 90.0,
+                    "Id_eff": 0,
+                    "Iq_eff": 1,
+                    "SPEED_RPM": 1000,
+                    "ParkAngOffset": None,  # optional
+                    "ANALYSIS_TYPE": 1,  # optional; 0: static, 1: transient
+                },
+                "MAT": {
+                    "TEMP_MAG": 20,
+                }
             }
         """
         ###Name des Skriptes
@@ -112,15 +118,25 @@ class Script(object):
             self.name = name
         else:
             raise ValueError(
-                f"Script name has invalid format! Make sure the Script name can be used as a filename! ('{name}')"
+                "Script name has invalid format! Make sure the Script name"
+                + f"can be used as a filename! ('{name}')"
+            )
+        # set default simulation parameters
+        self._simulationParameters = default_param_dict
+        # update simulation parameters with user parameters
+        for key, paramDict in simuParams.items():
+            self._simulationParameters[key] = (
+                default_param_dict[key] | paramDict
             )
         ### directory to save the model files
         self.scriptPath = scriptPath
         ### directory to save simulation results
-        self.resPath = (
+        self.resultsPath = (
             abspath(resultsPath).replace("\\", "/")
             if resultsPath
-            else abspath(join(scriptPath, "res_" + self.name)).replace("\\", "/")
+            else abspath(join(scriptPath, "res_" + self.name)).replace(
+                "\\", "/"
+            )
         )
         ###Punkte in Gmsh-Syntax
         self.pointCode: str = ""
@@ -153,61 +169,25 @@ class Script(object):
 
         self._postOperation: PostOperation = PostOperation()
 
-        self.factory = factory
+        self.factory = factory  # gmsh geometry kernel
 
         ### FOR DEBUGGING ###
         self.nbrIdedentPoints: int = 0
-        self.idedentPoints: List[Point] = list()
+        self.idedentPoints: List[Point] = []
         self.nbrIdedentLines: int = 0
-        self.idedentLines: List[Union[Line, CircleArc, Spline]] = list()
+        self.idedentLines: List[Union[Line, CircleArc, Spline]] = []
         ### END FOR DEBUGGING ###
 
-        # set default simulation parameters
-        self.simulationParameters = default_param_dict
-        if simuParams:
-            self.simulationParameters["SYM"]["INIT_ROTOR_POS"] = simuParams["init_rotor_pos"]
-            self.simulationParameters["SYM"]["ANGLE_INCREMENT"] = simuParams[
-                "angle_increment"
-            ]
-            self.simulationParameters["SYM"]["FINAL_ROTOR_POS"] = simuParams[
-                "final_rotor_pos"
-            ]
-            self.simulationParameters["SYM"]["Id_eff"] = simuParams["Id_eff"]
-            self.simulationParameters["SYM"]["Iq_eff"] = simuParams["Iq_eff"]
-            self.simulationParameters["SYM"]["SPEED_RPM"] = simuParams["rot_speed"]
-            self.simulationParameters["SYM"]["PATH_RES"] = self.resultsPath
-            # optional parameters
-            if "park_angle_offset" in simuParams.keys():
-                self.simulationParameters["SYM"]["ParkAngOffset"] = simuParams[
-                    "park_angle_offset"
-                ]
-            if "analysis_type" in simuParams.keys():
-                self.simulationParameters["SYM"]["ANALYSIS_TYPE"] = simuParams[
-                    "analysis_type"
-                ]
-            if "nbrParallePaths" in simuParams.keys():
-                self.simulationParameters["SYM"]["NBR_PARALLEL_PATHS"] = simuParams[
-                    "nbrParallePaths"
-                ]
-            if "calcMagnetLosses" in simuParams.keys():
-                self.simulationParameters["SYM"]["CALC_MAGNET_LOSSES"] = simuParams[
-                    "calcMagnetLosses"
-                ]
-            if "magTemp" in simuParams.keys():
-                self.simulationParameters["MAT"]["TEMP_MAG"] = simuParams["magTemp"]
-
         # add machine domains
-        self._machine = machine
+        self._machine = machine  # do not set machine via setter function!
         if machine:
             self._addMachineDomains()
         # else
         #   machine is None...
 
-    #### END INIT ###
-
-    # ----------------------------------------------------------------------------
-    # ------------------ START OF GETTER AND SETTER FUNCTIONS --------------------
-    # ----------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
+    # ----------------- START OF GETTER AND SETTER FUNCTIONS ------------------
+    # -------------------------------------------------------------------------
 
     @property
     def name(self) -> str:
@@ -219,11 +199,11 @@ class Script(object):
         return self._name
 
     @name.setter
-    def name(self, newName):
+    def name(self, newName: str):
         """setter of Script name
 
         Args:
-            newName (_type_): _description_
+            newName (str): new script name.
         """
         self._name = newName
 
@@ -237,11 +217,12 @@ class Script(object):
         return self._scriptPath
 
     @scriptPath.setter
-    def scriptPath(self, newScriptPath):
+    def scriptPath(self, newScriptPath: os.PathLike):
         """setter of Script Path
 
         Args:
-            newScriptPath (_type_): _description_
+            newScriptPath (os.PathLike): New path to folder where ONELAB files
+                should be stored.
         """
         self._scriptPath = newScriptPath
 
@@ -268,54 +249,66 @@ class Script(object):
         """getter of machine object
 
         Returns:
-            Union[MachineAllType, None]: actual machine object in script or None if no machine was
-            given
+            Union[MachineAllType, None]: actual machine object in script or
+                None if no machine was given
         """
         return self._machine
 
     @machine.setter
     def machine(self, newMachine: MachineAllType):
         """Setter of machine attribute.
-        You should not use setMachine because then basically everything would have to be recreated
-        (Domains, Physicals, Geos,...) Rather generate new script...
+        You should not use setMachine because then basically everything would
+        have to be recreated (Domains, Physicals, Geos,...) Rather generate new
+        script...
+        TODO: check this function and add test case.
 
         Args:
             machine (MachineAllType): machine to create in script.
         """
+        logging.warning("Reset of machine in script '%s'!", self.name)
         # if isinstance(newMachine, MachineAllType):
-        self._machine = newMachine
+        # self._machine = newMachine
+        self.__init__(
+            self.name,
+            scriptPath=self.scriptPath,
+            simuParams=self.simParams,
+            machine=newMachine,
+            resultsPath=self.resultsPath,
+            factory=self.factory,
+        )
         # else:
         # msg = f"Given parameter machine was not type machine, but '{type(newMachine)}'"
         # raise TypeError(msg)
         # reset attributes
-        self._resetGeometry()
-        self.group = GroupGetDP()  # reset group (= domains)
+        # self._resetGeometry()
+        # self.group = GroupGetDP()  # reset group (= domains)
         # reset material attributes:
-        self.materialDict: Dict[str, List[List[int]]] = {
-            "material": [],
-            "physicalElemID": [],
-        }
-        self.functionMaterial = FunctionGetDP()
-        self.functionMagnetisation = FunctionGetDP()
+        # self.materialDict: Dict[str, List[List[int]]] = {
+        #     "material": [],
+        #     "physicalElemID": [],
+        # }
+        # self.functionMaterial = FunctionGetDP()
+        # self.functionMagnetisation = FunctionGetDP()
 
-        # create new machine geometry
-        self._addMachineDomains()
+        # # create new machine geometry
+        # self._addMachineDomains()
 
     @property
     def resultsPath(self) -> str:
-        """Getter of the attribute resPath (path where the simulation results are stored)"""
-        return self.resPath
+        """Getter of the attribute resPath
+        (path where the simulation results are stored)"""
+        return self._resPath
 
     @resultsPath.setter
     def resultsPath(self, resPath: str):
         """Setter of the attribute resPath"""
-        self.resPath = resPath
-        self.simulationParameters["SYM"]["PATH_RES"] = resPath
+        self._resPath = resPath
+        self._simulationParameters["SYM"]["PATH_RES"] = resPath
 
     @property
-    def simParams(self) -> SimpleNamespace:
+    def simParams(self) -> dict:
         """Getter of the attribute simulationParameters"""
-        return self.simulationParameters
+        return self._simulationParameters
 
     @property
     def factory(self) -> str:
@@ -328,7 +321,7 @@ class Script(object):
         if re.search(r"open[\s\-]?cascade", factory.lower()):
             self._factory = "OpenCASCADE"
         else:
-            self._factory = "Built-in"
+            self._factory = "Build-in"
         # raise(ValueError(f"Given factory '{factory}' was not recognized!"))
 
     @property
@@ -341,8 +334,8 @@ class Script(object):
                     "material": [ListOfMaterials],
                     "physicalElemID":  [[physicalIDs],[physicalIDs],...]
                 }
-                Every material in the material list has a list of physical element IDs in the
-                physicalElemID-List(=List of lists)
+                Every material in the material list has a list of physical
+                element IDs in the physicalElemID-List(=List of lists)
         """
         return self._materialDict
 
@@ -351,23 +344,29 @@ class Script(object):
         """get the list of curves in the script
 
         Returns:
-            List[Union[Line,CircleArc,Spline]]: list of curves that have been added to the script
+            List[Union[Line,CircleArc,Spline]]: list of curves that have been
+                added to the script
         """
         return self._curveList
 
-    def _setCurveList(self, curveList: List[Union[Line, CircleArc, Spline]]) -> None:
+    def _setCurveList(
+        self, curveList: List[Union[Line, CircleArc, Spline]]
+    ) -> None:
         """set the curve list of the script.
 
         Args:
-            curveList (List[Union[Line,CircleArc,Spline]]): list of line to be set in the script
+            curveList (List[Union[Line,CircleArc,Spline]]): list of line to be
+                set in the script
 
         Raises:
             ValueError: if curve list was not type "list"
-            ValueError: if one element of curve list is not a line of child of class line
+            ValueError: if one element of curve list is not a line of child of
+                class line
         """
         if isinstance(curveList, list):
             for curve in curveList:
-                # check if the element of curveList is neither type "Line" nor child-class of Line
+                # check if the element of curveList is neither type "Line" nor
+                # child-class of Line
                 # (e.g. CircleArc)
                 # if type(curve) != Line or Line not in type(curve).__bases__:
                 if not isinstance(curve, Line):
@@ -375,8 +374,8 @@ class Script(object):
                     raise ValueError(msg)
             # if all elements in curveList are valid lines -> set new line list
             self._curveList = curveList
-            # TODO: normally the point list has to be renewed by now... But the function should
-            # not be used anyway by now.
+            # TODO: normally the point list has to be renewed by now...
+            # But the function should not be used anyway by now.
         else:
             raise (
                 ValueError(
@@ -403,7 +402,11 @@ class Script(object):
         if isinstance(postOperation, PostOperation):
             self._postOperation = postOperation
             return None
-        msg = f"Given object was not of type PostOperation: {type(postOperation)};{postOperation}"
+        msg = (
+            "Given object was not of type PostOperation: "
+            + str(type(postOperation))
+            + str(postOperation)
+        )
         raise TypeError(msg)
 
     @property
@@ -416,19 +419,20 @@ class Script(object):
         postOperation = self.postOperation
         return [POItem.Name for POItem in postOperation.items]
 
-    # ----------------------------------------------------------------------------
-    # ------------------- END OF GETTER AND SETTER FUNCTIONS ---------------------
-    # ----------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
+    # ------------------- END OF GETTER AND SETTER FUNCTIONS ------------------
+    # -------------------------------------------------------------------------
 
-    # ----------------------------------------------------------------------------
-    # -------------------------- START OF GEO FUNCTIONS --------------------------
-    # ----------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
+    # -------------------------- START OF GEO FUNCTIONS -----------------------
+    # -------------------------------------------------------------------------
 
     def _addPoint(self, point: Point) -> Union[Point, None]:
         """
         Adding Point to Script Object.
 
-        The function returns the identical point if one was found otherwise None.
+        The function returns the identical point if one was found otherwise
+        None.
         """
         if not point.isDrawn():
             identicalPoint = self._testPoint(point)
@@ -443,46 +447,51 @@ class Script(object):
             self.idedentPoints.append(point)
             return identicalPoint
         # point was allready drawn
-        logging.debug(f"Point '%s' has allready been added to the script.", point.name)
+        logging.debug(
+            f"Point '%s' has allready been added to the script.", point.name
+        )
         return None
 
     def _testPoint(
         self, testPoint: Point, tol: float = DEFAULT_GEO_TOL
     ) -> Union[Point, None]:
         """
-        Tests if the coordinates of a given point match with those of a point allready existing in
-        the point list of the script inside a given tolerance (tol).
-        The function returns the identical point (from the point list) if one was found,
-        otherwise None.
+        Tests if the coordinates of a given point match with those of a point
+        allready existing in the point list of the script inside a given
+        tolerance (tol). The function returns the identical point (from the
+        point list) if one was found, otherwise None.
 
         Args:
-            point (Point):      Point to test against the point list
-            tol (float):        Tolerance radius (im meter) to check if points are equal
+            point (Point): Point to test against the point list
+            tol (float): Tolerance radius (im meter) to check if
+                points are equal
 
         Returns:
-            Point or None:      Identical point from the point list if one was found
+            Point or None: Identical point from the point list if one was found
         """
         for point in self.pointArray:
             if testPoint.isEqual(point, tol=tol):
-                # Programm an dieser Stelle abbrechen und den identischen Punkt zurück geben
+                # Stop program at this stage and return identical point
                 if point.meshLength > testPoint.meshLength:
                     point.meshLength = testPoint.meshLength
                 return point
         return None
 
     def _testLine(self, line2Test: Line) -> Union[Line, None]:
-        """checks if start or end point of the given curve of type Line are allready existing in
-        the point list of the script and if the given line is identical with an existing line in
-        the line list of the script. If start or end point are allready existing, they are
-        replaced by the existing points.
-        FIXME: If only a part of curve is overlapping an existing curve, its not recognized by the
-        function!!!
+        """checks if start or end point of the given curve of type Line are
+        allready existing in the point list of the script and if the given line
+        is identical with an existing line in the line list of the script. If
+        start or end point are allready existing, they are replaced by the
+        existing points.
+        FIXME: If only a part of curve is overlapping an existing curve, its
+        not recognized by the function!!!
 
         Args:
-            line2Test (Line): New line that should be added to the script
+            line2Test (Line): New line that should be added to the script.
 
         Returns:
-            Line | None: Identical Line if an existing Line was found, otherwise None
+            Line | None: Identical Line if an existing Line was found,
+                otherwise None.
         """
         curveList = self.curveList
         existingLines: List[Line] = []
@@ -494,7 +503,10 @@ class Script(object):
         testPointDict = {"p1": line2Test.startPoint, "p2": line2Test.endPoint}
         # compare all points to the two test points
         for existingLine in existingLines:
-            compareP = {"p1": existingLine.startPoint, "p2": existingLine.endPoint}
+            compareP = {
+                "p1": existingLine.startPoint,
+                "p2": existingLine.endPoint,
+            }
             #!!! Testing for absolute identical points (name, id, ...)
             if (
                 testPointDict["p1"] == compareP["p1"]
@@ -503,7 +515,8 @@ class Script(object):
                 testPointDict["p2"] == compareP["p1"]
                 or testPointDict["p2"] == compareP["p2"]
             ):
-                # Return identical Line, if one was found, exept for if the line is forced:
+                # Return identical Line, if one was found, exept for if the
+                # line is forced:
                 if line2Test.force:
                     # append the line even if it allready exists due to "force"
                     return None
@@ -517,20 +530,23 @@ class Script(object):
                 self.idedentLines.append(line2Test)
                 ######
                 return existingLine
-        # If no identical line was found, return None to add the line to the curve list.
+        # If no identical line was found, return None to add the line to the
+        # curve list.
         return None
 
     def _testCircleArc(self, curve: CircleArc) -> Union[CircleArc, None]:
-        """checks if start point, end point and center point of the given curve of type CircleArc
-        are equal to the points of an existing circle arc in the curve list of the script.
-        FIXME: If only a part of curve is overlapping an existing curve, its not recognized by the
-        function!!!
+        """checks if start point, end point and center point of the given curve
+        of type CircleArc are equal to the points of an existing circle arc in
+        the curve list of the script.
+        FIXME: If only a part of curve is overlapping an existing curve, its
+        not recognized by the function!!!
 
         Args:
             curve (CircleArc): New arc that should be added to the script
 
         Returns:
-            CircleArc | None: Identical arc if an existing CircleArc was found, otherwise None
+            CircleArc | None: Identical arc if an existing CircleArc was found,
+                otherwise None
         """
         curveList = self.curveList
         existingArcs: List[CircleArc] = list()
@@ -572,20 +588,23 @@ class Script(object):
                 ######
                 # return identical CircleArc
                 return arc
-        # no identical curve found; return None to add Curve to global curve list
+        # no identical curve found
+        # return None to add Curve to global curve list
         return None
 
     def _testSpline(self, curve: Spline) -> Union[Spline, None]:
-        """checks if start point, end point and control point list of the given curve of type
-        Spline are equal to the points of an existing spline in the curve list of the script.
-        FIXME: If only a part of curve is overlapping an existing curve, its not recognized by the
-        function!!!
+        """checks if start point, end point and control point list of the given
+        curve of type Spline are equal to the points of an existing spline in
+        the curve list of the script.
+        FIXME: If only a part of curve is overlapping an existing curve, its
+        not recognized by the function!!!
 
         Args:
             curve (Spline): New arc that should be added to the script
 
         Returns:
-            Spline | None: Identical arc if an existing Spline was found, otherwise None
+            Spline | None: Identical arc if an existing Spline was found,
+                otherwise None
         """
         curveList = self.curveList
         existingSplines: List[Spline] = []
@@ -605,7 +624,9 @@ class Script(object):
                 "p2": spline.endPoint,
                 "controlP": spline.controlPoints,
             }
-            if len(testPointDict["controlP"]) == len(comparePointDict["controlP"]):
+            if len(testPointDict["controlP"]) == len(
+                comparePointDict["controlP"]
+            ):
                 # only continue if control point list length is equal
                 if (
                     (
@@ -616,29 +637,33 @@ class Script(object):
                         testPointDict["p2"] == comparePointDict["p1"]
                         or testPointDict["p2"] == comparePointDict["p2"]
                     )
-                    and (testPointDict["controlP"] == comparePointDict["controlP"])
+                    and (
+                        testPointDict["controlP"]
+                        == comparePointDict["controlP"]
+                    )
                 ):
-                    # if all start, end point and control point list is matching:
-                    # return identical spline
+                    # if all start, end point and control point list are
+                    # matching -> return identical spline
                     return spline
         # if no equal spline was found, return None to add it
         return None
 
     def testCurve(self, curve: Union[Line, CircleArc, Spline]):
         """
-        checks if start or end point of the given line "curve" are allready existing in the point
-        list of the script and if the given line "curve" is identical with an existing line in the
-        line list of the script.
-        If start or end point are allready existing, they are replaced by the existing points.
-        If only a part of curve is overlapping an existing curve, its not recognized by the
-        function.
+        checks if start or end point of the given line "curve" are allready
+        existing in the point list of the script and if the given line "curve"
+        is identical with an existing line in the line list of the script.
+        If start or end point are allready existing, they are replaced by the
+        existing points. If only a part of curve is overlapping an existing
+        curve, its not recognized by the function.
 
         Args:
-            curve (Line|CircleArc|Spline):  line to check start point, end point and the line
-            itself on existance in the script.
+            curve (Line|CircleArc|Spline):  line to check start point, end
+                point and the line itself on existance in the script.
 
         Returns:
-            Line|CircleArc|Spline or None: Existing identical line, if one was found, or None.
+            Line|CircleArc|Spline or None: Existing identical line, if one was
+                found, or None.
         """
         # test line
         curveType = curve.type
@@ -653,19 +678,24 @@ class Script(object):
             raise TypeError(msg)
         return testResult
 
-    def _addCurve(self, curve: Union[Line, CircleArc, Spline]) -> Union[None, Line]:
+    def _addCurve(
+        self, curve: Union[Line, CircleArc, Spline]
+    ) -> Union[None, Line]:
         """
-        The function _addCurve checks if the points of the Line/Curve or the curve itself allready
-        exist in the Script point- and curve list. If not it adds the point and line code to the
-        script. The function returns None if no identical curve was found and the given curve has
-        been added. The functions returns the Line if an identical Line allready exists.
+        The function _addCurve checks if the points of the Line/Curve or the
+        curve itself allready exist in the Script point- and curve list. If not
+        it adds the point and line code to the script. The function returns
+        None if no identical curve was found and the given curve has been
+        added. The functions returns the Line if an identical Line allready
+        exists.
 
         Args:
             curve: Line
 
         Returns:
-            Line or None: Identical line, if one was found, so it can be replaced in the surfaces
-            curveloop. If no duplicate was found the function returns None.
+            Line or None: Identical line, if one was found, so it can be
+                replaced in the surfaces curveloop. If no duplicate was found
+                the function returns None.
         """
         # Punkte prüfen und erzeugen
         startPoint = curve.startPoint
@@ -690,13 +720,15 @@ class Script(object):
                 newP = self._addPoint(controlPoint)
                 if newP is not None:
                     curve.removeControlPoint(controlPoint)
-                    curve.addControlPoint(newP,controlPointList.index(controlPoint))
+                    curve.addControlPoint(
+                        newP, controlPointList.index(controlPoint)
+                    )
 
         identicalCurve = self.testCurve(curve)
         if identicalCurve is None:
             # add the curve to the global curve list
             self.curveList.append(curve)
-        # Wenn identicalCurve = None -> keine identische Kurve in der Liste gefunden.
+        # Wenn identicalCurve = None -> no identical curve found in list
         if not identicalCurve:
             # create the geometrical curve Code
             curveName = cleanName(curve.name)
@@ -756,21 +788,27 @@ class Script(object):
             if testLine is not None:
                 surface.replaceCurve(line, testLine)
 
-    def _checkLoop(self, surface: Surface) -> Tuple[List[Line], List[Literal[-1, 1]]]:
+    def _checkLoop(
+        self, surface: Surface
+    ) -> Tuple[List[Line], List[Literal[-1, 1]]]:
         """
-        Reorder the lines of a close curve loop (surface) to generate a valid Gmsh curve loop.
+        Reorder the lines of a close curve loop (surface) to generate a valid
+        Gmsh curve loop.
 
         Args:
             surface (Surface): Surface to get line loop to sort.
 
         Returns:
-            (List[Line], List[Literal[-1, 1]]): New reorder curve loop and direction list with
-            1 if line should appear in defined direction (from P1 to P2) or -1 if direction
-            should be inverted (from P2 to P1)
+            (List[Line], List[Literal[-1, 1]]): New reorder curve loop and
+                direction list with 1 if line should appear in defined
+                direction (from P1 to P2) or -1 if direction should be inverted
+                (from P2 to P1)
         """
         oldLoop: List[Line] = surface.curve.copy()
         direction: List[int] = []
-        direction.append(1)  # append 1 for first line, cause it sets the direction
+        direction.append(
+            1
+        )  # append 1 for first line, cause it sets the direction
         newLoop: List[Line] = []
         # add first line to newLoop, because it doesnt need to be checked
         newLoop.append(oldLoop.pop(0))
@@ -778,7 +816,8 @@ class Script(object):
         # for every line thats left:
         for outerCounter in range(nbrLines):
             # Check which line in oldLoop appends to the last line in newLoop
-            # if that line was found get direction, append it to newLoop and remove it from oldLoop
+            # if that line was found get direction, append it to newLoop and
+            # remove it from oldLoop
             for curveIndex, curve in enumerate(oldLoop):
                 if direction[-1] == 1:
                     if curve.startPoint.isEqual(newLoop[-1].endPoint):
@@ -803,10 +842,11 @@ class Script(object):
     def _addLoopCode(self, surface: Surface) -> str:
         """Create the curve loop code for the gmsh input file.
 
-        The IDs of the curve objects (lines) forming a closed loop must be in the correct
-        order so the end point of the first line is the start point of the second line and
-        so on. See :func:`_checkLoop <pyemmo.script.script.Script._checkLoop>` function for more
-        information.
+        The IDs of the curve objects (lines) forming a closed loop must be in
+        the correct order so the end point of the first line is the start point
+        of the second line and so on. See
+        :func:`_checkLoop <pyemmo.script.script.Script._checkLoop>` function
+        for more information.
 
         The gmsh-code for a curve loop looks like:
 
@@ -814,8 +854,8 @@ class Script(object):
 
             Curve Loop(Surface_ID) = {Line_ID1, Line_ID2, -Line_ID3, Line_ID4};
 
-        Where :code:`Surface_ID` and :code:`Line_ID` are integers refering to a surface and
-        line instance.
+        Where :code:`Surface_ID` and :code:`Line_ID` are integers refering to
+        a surface and line instance.
 
         Args:
             surface (Surface): Surface to generate the curve loop code from
@@ -853,7 +893,9 @@ class Script(object):
         if surface not in self.areaArray:
             self._addLineCode(surface)
             code: str = str()
-            toolIDCode: str = ", "  # string for tool surfaces that should be subtracted
+            toolIDCode: str = (
+                ", "  # string for tool surfaces that should be subtracted
+            )
             for toolSurf in surface.tools:  # if _cut list is not empty
                 toolSurfName = cleanName(toolSurf.name)
                 toolSurfID = toolSurf.id
@@ -867,9 +909,7 @@ class Script(object):
                         # adding Surface name for better identification
                         code += f"Surf_{toolSurfName} = {{{toolSurfID}}};\n"
                         # add Surface Code
-                        code += (
-                            f"Plane Surface(Surf_{toolSurfName}) = {{{toolSurfID}}};\n"
-                        )
+                        code += f"Plane Surface(Surf_{toolSurfName}) = {{{toolSurfID}}};\n"
                         self.areaArray.append(toolSurf)
                     # code = code + "};\n"
                 # add the surface ID to the lineloop-cut-id-list
@@ -880,12 +920,16 @@ class Script(object):
             surfName = cleanName(surface.name)
             surfID = surface.id
             ## Add surface code:
-            # Generate name for ID; adding Surface name for better identification
+            # Generate name for ID; adding Surface name for better
+            # identification
             code += f"Surf_{surfName} = {{{surfID}}};\n"
-            # add Surface Code: Plane Surface(Surf_SURFNAME) = {LOOPID, CUT_ID1, CUT_ID2,...};\n
+            # add Surface Code:
+            # Plane Surface(Surf_SURFNAME) = {LOOPID, CUT_ID1, CUT_ID2,...};\n
             code += (
                 f"Plane Surface(Surf_{surfName}) = {{{surfID}"
-                + toolIDCode[:-2]  # ignore last two characters because they are ", "
+                + toolIDCode[
+                    :-2
+                ]  # ignore last two characters because they are ", "
                 + "};\n"
             )
 
@@ -904,8 +948,8 @@ class Script(object):
             self.colorCode += cCode
 
     def _resetGeometry(self) -> None:
-        """Reset all geometry attributes of the script (point, line and surface lists; code strings;
-        physical elements)"""
+        """Reset all geometry attributes of the script (point, line and surface
+        lists; code strings; physical elements)"""
         # reset all lists and code strings
         # points
         self.pointCode: str = ""
@@ -932,13 +976,13 @@ class Script(object):
         # reset colors
         self.colorCode: str = ""  # code for mesh colors
 
-    # ----------------------------------------------------------------------------
-    # -------------------------- END OF GEO FUNCTIONS ----------------------------
-    # ----------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
+    # -------------------------- END OF GEO FUNCTIONS -------------------------
+    # -------------------------------------------------------------------------
 
-    # ----------------------------------------------------------------------------
-    # -------------------------- START OF PRO FUNCTIONS --------------------------
-    # ----------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
+    # -------------------------- START OF PRO FUNCTIONS -----------------------
+    # -------------------------------------------------------------------------
 
     def _addMachineDomains(self):
         domainList = self._createMachineDomains(self.machine)
@@ -948,36 +992,44 @@ class Script(object):
 
     def _createMachineDomains(self, machine: MachineAllType) -> List[Domain]:
         """
-        Create Domain objects from the output (Dict[domainName, List[PhysicalElements]]) of rotor
-        and stator sortPhysicals() by linking them with the domain names for the magstatdyn file
-        specified in rotorDomainDict and statorDomainDict (Dict[statorDomainName, magStatDynName])
+        Create Domain objects from the output (Dict[domainName,
+        List[PhysicalElements]]) of rotor and stator sortPhysicals() by linking
+        them with the domain names for the magstatdyn file specified in
+        rotorDomainDict and statorDomainDict (Dict[statorDomainName,
+        magStatDynName])
 
         Args:
-            machine (MachineAllType): machine to get the physicals from (machine of script)
+            machine (MachineAllType): machine to get the physicals from
+                (machine of script)
 
         Returns:
-            List[Domain]: Domain list containing domains suitable for the magstatdyn.pro file.
-            The order of that list is important since it dicides which points and lines are created
-            first and which are sorted out!
+            List[Domain]: Domain list containing domains suitable for the
+                magstatdyn.pro file. The order of that list is important since
+                it dicides which points and lines are created first and which
+                are sorted out!
         """
         domainList: List[Domain] = list()
         stator = machine.stator
         statorPhysicalsDict = stator.sortPhysicals()
         rotor = machine.rotor
         rotorPhysicalsDict = rotor.sortPhysicals()
-        # create (boundary) domains existing in rotor AND stator (primary, secondary lines)
-        # These domains MUST be created first, because meshing constraints need to be applied on
-        # them and this is only possible if the line IDs of these lines are not sorted out due to
-        # identical lines.
-        # The domains will be created in the order they appeer in this domain list!
+        # create (boundary) domains existing in rotor AND stator (primary,
+        # secondary lines) These domains MUST be created first, because meshing
+        # constraints need to be applied on them and this is only possible if
+        # the line IDs of these lines are not sorted out due to identical
+        # lines.The domains will be created in the order they appeer in this
+        # domain list!
         for statorDomain in statorPhysicalsDict.keys():
             if statorDomain in boundaryDomainDict:
                 bndDomain = Domain(
-                    boundaryDomainDict[statorDomain], statorPhysicalsDict[statorDomain]
+                    boundaryDomainDict[statorDomain],
+                    statorPhysicalsDict[statorDomain],
                 )
                 if statorDomain in rotorPhysicalsDict.keys():
                     # boundary also exists in rotor
-                    bndDomain.addPhysicalElements(rotorPhysicalsDict[statorDomain])
+                    bndDomain.addPhysicalElements(
+                        rotorPhysicalsDict[statorDomain]
+                    )
                 domainList.append(bndDomain)
 
         # create rotor domains
@@ -985,16 +1037,19 @@ class Script(object):
         rotorPhysicalsDict["domainCC"].extend(rotorPhysicalsDict["domainC"])
         rotorPhysicalsDict["domainC"].clear()
         # create Domains
-        domainList.extend(self._createDomains(rotorPhysicalsDict, rotorDomainDict))
-        # add additional domains for every movinband part, to specify the Link-boundary
-        # in magstatdyn
+        domainList.extend(
+            self._createDomains(rotorPhysicalsDict, rotorDomainDict)
+        )
+        # add additional domains for every movinband part, to specify the
+        # Link-boundary in magstatdyn
         for domain in domainList:
             if domain.name == "Rotor_Bnd_MB":
                 for i, mbPhysical in enumerate(domain.physicals):
                     domainList.insert(
                         3 + i,
                         Domain(
-                            name=f"Rotor_Bnd_MB_{i+1}", physicalElements=[mbPhysical]
+                            name=f"Rotor_Bnd_MB_{i+1}",
+                            physicalElements=[mbPhysical],
                         ),
                     )
                 break
@@ -1005,10 +1060,14 @@ class Script(object):
         statorPhysicalsDict["domainC"].clear()
 
         # add stator domains to domain list
-        domainList.extend(self._createDomains(statorPhysicalsDict, statorDomainDict))
+        domainList.extend(
+            self._createDomains(statorPhysicalsDict, statorDomainDict)
+        )
 
         # create additional slot domains for excitations
-        domainList.extend(self._createWindingDomains(statorPhysicalsDict).values())
+        domainList.extend(
+            self._createWindingDomains(statorPhysicalsDict).values()
+        )
 
         # append domains to identify linear and non-linear surfaces
         nonLinearDomainID = "domainNL"
@@ -1022,7 +1081,8 @@ class Script(object):
         linearDomainID = "domainL"
         linearDomain = Domain(
             "DomainL",
-            rotorPhysicalsDict[linearDomainID] + statorPhysicalsDict[linearDomainID],
+            rotorPhysicalsDict[linearDomainID]
+            + statorPhysicalsDict[linearDomainID],
         )
         domainList.append(linearDomain)
 
@@ -1039,7 +1099,10 @@ class Script(object):
             Domain(
                 name="MovingBand_PhysicalNb",
                 physicalElements=PhysicalElement(
-                    name="", geometricalElement=[], material=airgapMaterial, phyID=0
+                    name="",
+                    geometricalElement=[],
+                    material=airgapMaterial,
+                    phyID=0,
                 ),
             )
         )
@@ -1064,17 +1127,19 @@ class Script(object):
         Create a list of domains
 
         Args:
-            physicalsDict (dict): Dict with domain name as key string and a list of physical
-                elements containing to that domain ["Domain Name", List[PhysicalElements]].
-            domainDict (dict): Dict with domain name as key string and pro-script domain name as
-                value.
+            physicalsDict (dict): Dict with domain name as key string and a
+                list of physical elements containing to that domain
+                ["Domain Name", List[PhysicalElements]].
+            domainDict (dict): Dict with domain name as key string and
+                pro-script domain name as value.
 
                 .. code:: python
 
                     {"Domain Name", "Pro-Script Name"}
 
         Returns:
-            List[Domain]: List of domains with correct pro script names and physicals.
+            List[Domain]: List of domains with correct pro script names and
+                physicals.
 
                 .. code:: python
 
@@ -1085,12 +1150,15 @@ class Script(object):
             if domainName in domainDict.keys():
                 if physicalsDict[domainName]:  # if there are physicalElements
                     domainList.append(
-                        Domain(domainDict[domainName], physicalsDict[domainName])
+                        Domain(
+                            domainDict[domainName], physicalsDict[domainName]
+                        )
                     )
                 else:
                     # FIXME: ADD MACHINE SIDE TO DOMAIN NAME
                     logging.debug(
-                        f"There were no physical elements in domain '{domainName}'."
+                        "There were no physical elements in domain '%s'.",
+                        domainName,
                     )
         return domainList
 
@@ -1124,7 +1192,9 @@ class Script(object):
                             )
                         else:
                             # add slot to existing domain
-                            slotDomainDict[slotDomainName].addPhysicalElements([slot])
+                            slotDomainDict[slotDomainName].addPhysicalElements(
+                                [slot]
+                            )
                     # else:
                     # FIXME: if physical element in domainS is not type Slot:
                     # should there be an Error or Warning?
@@ -1132,43 +1202,49 @@ class Script(object):
         return None
 
     def addPostOperation(self, quantityName: str, name: str, **kwargs) -> None:
-        # def addPostOperation(self, quantityName: str, name: str="User Defined PostOperation",
-        # **kwargs)->None:
         """Add a new PostOperation (Print) statement
 
         Args:
-            - quantityName (str): Name of the PostProcessing quantity (eg. a, az, b, bn, hn,
-            b_tangent, b_radial, br, mu, j, js, jz, Vmag, I_n, ir, p_Lam, P_Lam, Inertia,...)
+            - quantityName (str): Name of the PostProcessing quantity (eg. a,
+                az, b, bn, hn, b_tangent, b_radial, br, mu, j, js, jz, Vmag,
+                I_n, ir, p_Lam, P_Lam, Inertia,...)
             - name (str, optional): Name of the PostOperation.
 
-            - **kwargs: kwargs are used to complete the Print statment, so eg. to print Br on the
-            whole Domain the function call would look like:
-                myScript.addPostOperation("b_radial", "User Defined PostOperation",
-                OnElementsOf="Domain", File="Path/To/resFile.pos", LastTimeStepOnly="",)
+            - **kwargs: kwargs are used to complete the Print statment, so eg.
+                to print Br on the whole Domain the function call would look
+                like:
+                    myScript.addPostOperation("b_radial", "User Defined
+                    PostOperation", OnElementsOf="Domain",
+                    File="Path/To/resFile.pos", LastTimeStepOnly="",)
 
-            A special case is if you want to save something to the parameterized folder "ResDir"
-            (Onelab parameter). In this case you have to specify the following "File" kwarg:
-                '..., File = "CAT_RESDIR\YourResFileName.pos" ...'
+            A special case is if you want to save something to the
+            parameterized folder "ResDir" (Onelab parameter). In this case you
+            have to specify the following "File" kwarg:
+                '..., File = "CAT_RESDIR/YourResFileName.pos" ...'
             That way the File kwarg is replaced by:
                 '.., File = StrCat[ResDir,"YourResFileName.pos"] ...'
 
-            See https://getdp.info/doc/texinfo/getdp.html#Types-for-PostOperation for more
-            PostOperation options
+            See
+            https://getdp.info/doc/texinfo/getdp.html#Types-for-PostOperation
+            for more PostOperation options
         """
         userDefinedPO = self.postOperation
         postOperationNames = self.postOperationNames
-        # search in the user defined PostOperation if there is a PO with that name
-        # remember: our self._postOperation object of type (PostOperation) has a list of
-        # PostOperations ("items") which can have several "Operations" (eg. Prints, Echos,...)
-        # defined
+        # search in the user defined PostOperation if there is a PO with that
+        # name. Remember: our self._postOperation object of type
+        # (PostOperation) has a list of PostOperations ("items") which can have
+        # several "Operations" (eg. Prints, Echos,...) defined
 
         name = cleanName(name)
         if name in postOperationNames:
-            # if that PostOperation allready exists, get the PostOperationItem with that name
+            # if that PostOperation allready exists, get the PostOperationItem
+            # with that name
             poItem = userDefinedPO.items[postOperationNames.index(name)]
         else:
             # it that PostOperation is not existing, create it
-            poItem = userDefinedPO.add(Name=name, NameOfPostProcessing="MagStaDyn_a_2D")
+            poItem = userDefinedPO.add(
+                Name=name, NameOfPostProcessing="MagStaDyn_a_2D"
+            )
         poItem: PostopItem = poItem
         poItem.add().add(quantity=quantityName, **kwargs)
         if "File" in kwargs:
@@ -1179,19 +1255,23 @@ class Script(object):
                     f'"{kwargs["File"]}"', f'StrCat[ResDir,"{resfileName}"]'
                 )
 
-    # ----------------------------------------------------------------------------
-    # -------------------------- END OF PRO FUNCTIONS ----------------------------
-    # ----------------------------------------------------------------------------
-    def _createPhysicalElementCode(self, physicalElement: PhysicalElement) -> str:
-        """Create the code for a physical element (= domain for simulation) in the .geo file.
-        E.g. for a Physical Surface the code would look like:
+    # -------------------------------------------------------------------------
+    # -------------------------- END OF PRO FUNCTIONS -------------------------
+    # -------------------------------------------------------------------------
+    def _createPhysicalElementCode(
+        self, physicalElement: PhysicalElement
+    ) -> str:
+        """Create the code for a physical element (= domain for simulation) in
+        the .geo file. E.g. for a Physical Surface the code would look like:
 
         .. code:: text
 
-            Physical Surface("PHYSICAL_NAME", PHSICAL_ID) = {GEO_ID1,GEO_ID2,...};
+            Physical Surface("PHYSICAL_NAME", PHSICAL_ID) =
+                {GEO_ID1,GEO_ID2,...};
 
         Args:
-            physicalElement (PhysicalElement): Physical element to generate code from.
+            physicalElement (PhysicalElement): Physical element to generate
+                code from.
 
         Returns:
             str: Gmsh style physical element code.
@@ -1216,7 +1296,8 @@ class Script(object):
                 else:  # its a line
                     lineOrNone = self._addCurve(geo)
                     if lineOrNone:
-                        # result of addCurve was an identical line; add the id of that line
+                        # result of addCurve was an identical line;
+                        # add the id of that line
                         code += f"{lineOrNone.id},"
                     else:
                         # add the id of the new line (= geo)
@@ -1232,12 +1313,16 @@ class Script(object):
 
         This calls:
 
-            - :func:`addSurface() <pyemmo.script.script.Script.addSurface>` and :func:`addCurve() <pyemmo.script.script.Script._addCurve>`
-            - :func:`addMaterial() <pyemmo.script.script.Script._addMaterial>` if Material is not defined yet
-            - addMagnetization() (radial, parallel or tangential) if Physical is a Magnet
+            - :func:`addSurface() <pyemmo.script.script.Script.addSurface>` and
+                 :func:`addCurve() <pyemmo.script.script.Script._addCurve>`
+            - :func:`addMaterial() <pyemmo.script.script.Script._addMaterial>`
+                if Material is not defined yet
+            - addMagnetization() (radial, parallel or tangential) if Physical
+                is a Magnet
 
         Args:
-            physicalElement (PhysicalElement): Physical Element to add to Script.
+            physicalElement (PhysicalElement): Physical Element to add to
+                Script.
 
         """
         if physicalElement.geometricalElement:
@@ -1254,7 +1339,8 @@ class Script(object):
             if physicalElement.material:
                 self._addMaterial(physicalElement)
             # add magnetization if specified
-            # FIXME: BUG Attribute errors inside addMag... functions are not catched!
+            # FIXME: BUG Attribute errors inside addMag... functions are not
+            # catched!
 
             if isinstance(physicalElement, Magnet):
                 mag: Magnet = physicalElement
@@ -1267,7 +1353,9 @@ class Script(object):
                     self._addMagnetisationTangential(physicalElement)
                 else:
                     raise TypeError(
-                        f"Wrong Magnetisation Type: '{typeMag}'. Magnetisation Type must be 'radial', 'parallel' or 'tangential'."
+                        f"Wrong Magnetisation Type: '{typeMag}'."
+                        + "Magnetisation Type must be 'radial', 'parallel' or "
+                        + "'tangential'."
                     )
 
             # try:
@@ -1286,13 +1374,14 @@ class Script(object):
     def _addMaterial(self, physicalElement: PhysicalElement) -> None:
         """
         Add the material of a physical element to the material_dict.
-        If the material allready exists in the material dict, its physical element ID is
-        added to the physical element list of that material.
+        If the material allready exists in the material dict, its physical
+        element ID is added to the physical element list of that material.
 
         Args:
-            physicalElement (PhysicalElement): Physical element (PE) which material should
-                be added to the script. If the material of the PE is allready in the material
-                dict of the script, the PE-ID is added to the material dict.
+            physicalElement (PhysicalElement): Physical element (PE) which
+                material should be added to the script. If the material of the
+                PE is allready in the material dict of the script, the PE-ID is
+                added to the material dict.
 
         Returns:
             None
@@ -1349,7 +1438,8 @@ class Script(object):
         )
 
     def _addDomain(self, domain: Domain):
-        """_addDomain adds a group with the domain name to the script-class getdp-group "_group" """
+        """_addDomain adds a group with the domain name to the script-class
+        getdp-group "_group" """
         physicalElements: List[PhysicalElement] = domain.physicals
         physIDs: List[int] = []
         for physicalElement in physicalElements:
@@ -1359,7 +1449,8 @@ class Script(object):
         self.group.add(cleanName(domain.name), physIDs)
 
     def _printAllMaterial(self):
-        """Generate the GetDP function code for all materials in the material dict"""
+        """Generate the GetDP function code for all materials in the material
+        dict"""
         self.functionMaterial.define(name=["br", "js"])
         self.functionMaterial.add_params({"mu0": "4.e-7 * Pi"})
 
@@ -1390,7 +1481,9 @@ class Script(object):
                 mueR = mat.relPermeability
                 matFun.add_params({"muR_" + matName: (mueR if mueR else 0)})
                 # add nu
-                matFun.add_params({"nu_" + matName: f"1/(muR_{matName} * mu0)"})
+                matFun.add_params(
+                    {"nu_" + matName: f"1/(muR_{matName} * mu0)"}
+                )
                 matFun.add("nu", "nu_" + matName, "group_" + matName)
             else:
                 # if non linear
@@ -1404,14 +1497,21 @@ class Script(object):
                 hString = hString[0 : len(hString) - 1] + "}"
                 matFun.add_params({f"Mat_h_{matName}": hString})
                 matFun.add_params({f"Mat_b_{matName}": bString})
-                matFun.add_params({f"Mat_b2_{matName}": f"Mat_b_{matName}()^2"})
                 matFun.add_params(
-                    {f"Mat_nu_{matName}": f"Mat_h_{matName}()/Mat_b_{matName}()"}
+                    {f"Mat_b2_{matName}": f"Mat_b_{matName}()^2"}
                 )
-                matFun.add_params({f"Mat_nu_{matName}(0)": f"Mat_nu_{matName}(1)"})
                 matFun.add_params(
                     {
-                        f"Mat_nu_b2_{matName}": f"ListAlt[Mat_b2_{matName}(), Mat_nu_{matName}()]"
+                        f"Mat_nu_{matName}": f"Mat_h_{matName}()/Mat_b_{matName}()"
+                    }
+                )
+                matFun.add_params(
+                    {f"Mat_nu_{matName}(0)": f"Mat_nu_{matName}(1)"}
+                )
+                matFun.add_params(
+                    {
+                        f"Mat_nu_b2_{matName}": f"ListAlt[Mat_b2_{matName}(),"
+                        + f" Mat_nu_{matName}()]"
                     }
                 )
                 matFun.add(
@@ -1435,7 +1535,8 @@ class Script(object):
                 )
                 matFun.add(
                     f"dhdb_NL_{matName}",
-                    f"2 * dnudb2_{matName}[$1#1] * " + matFun.SquDyadicProduct("#1"),
+                    f"2 * dnudb2_{matName}[$1#1] * "
+                    + matFun.SquDyadicProduct("#1"),
                 )
                 matFun.add("nu", f"nu_{matName}[$1]", f"group_{matName}")
                 matFun.add(
@@ -1480,15 +1581,22 @@ class Script(object):
 
             if mat.density:
                 matFun.add_params(
-                    {f"density_{matName}": (mat.density, f"density of {matName}")}
+                    {
+                        f"density_{matName}": (
+                            mat.density,
+                            f"density of {matName}",
+                        )
+                    }
                 )
                 matFun.add("density", f"density_{matName}", f"group_{matName}")
 
     def _createPointCode(self) -> None:
-        """creates all the point code (as text) and stores it in the privat variable _pointCode.
+        """creates all the point code (as text) and stores it in the privat
+        variable _pointCode.
 
-        Here a function had to be outsourced instead of printing the points directly on
-        generation, because otherwise the smallest mesh size of a point could not be recognized
+        Here a function had to be outsourced instead of printing the points
+        directly on generation, because otherwise the smallest mesh size of a
+        point could not be recognized
         """
         for point in self.pointArray:
             pName = cleanName(point.name)
@@ -1503,8 +1611,8 @@ class Script(object):
 
     def _createMovingGeoCode(self) -> str:
         """Create the code for plotting the moving geometry in the gmsh GUI.
-        This code should be added at the end of the geo file to extract the boundary lines
-        and plot them in the post processing.
+        This code should be added at the end of the geo file to extract the
+        boundary lines and plot them in the post processing.
         The code will look like:
 
         .. code:: c
@@ -1584,8 +1692,8 @@ class Script(object):
         for the stator airgap surfaces (IDs 27 to 31)
 
         Args:
-            physList (List[PhysicalElement]): list of physical elements to combine.
-                The IDs are extracted
+            physList (List[PhysicalElement]): list of physical elements to
+                combine. The IDs are extracted.
             regionName (str): region name for the comment
 
         Returns:
@@ -1601,23 +1709,30 @@ class Script(object):
                                 meshCompCode += str(geoElem.id) + ","
                         else:
                             logging.warning(
-                                f'Creation of "Compound Mesh" for domain "{regionName}" failed, '
-                                f'because "{physical.name}" has only one surface.'
+                                (
+                                    'Creation of "Compound Mesh" for domain "%s" failed, because "%s" has only one surface.',
+                                    regionName,
+                                    physical.name,
+                                )
                             )
                             return ""
                     else:
                         logging.warning(
-                            f'Creation of "Compound Mesh" for domain "{regionName}" failed, '
-                            f'because "{physical.name}" is not a surface.'
+                            'Creation of "Compound Mesh" for domain "%s" failed, because "%s" is not a surface.',
+                            regionName,
+                            physical.name,
                         )
                         return ""
                 else:
                     # domain/region has different materials -> no compound surface
                     # or is not geo type surface
                     logging.warning(
-                        f"Creation of 'Compound Mesh' for domain '{regionName}' failed, "
-                        f"because materials of '{physList[0].name}' and "
-                        f"'{physical.name}' don't match."
+                        (
+                            "Creation of 'Compound Mesh' for domain '%s' failed, ",
+                            regionName,
+                        )
+                        + ("because materials of '%s' and ", physList[0].name)
+                        + ("'%s' don't match.", physical.name)
                     )
                     return ""
 
@@ -1626,7 +1741,9 @@ class Script(object):
                 meshCompCode = (
                     "Compound Surface{" + meshCompCode[0:-1]
                 )  # erase last comma
-                meshCompCode += f"}}; // {regionName}\n"  # add closing and comment
+                meshCompCode += (
+                    f"}}; // {regionName}\n"  # add closing and comment
+                )
                 return meshCompCode
             else:
                 return ""
@@ -1635,15 +1752,18 @@ class Script(object):
             return ""
 
     def _createMeshModCode(self) -> str:
-        """Create the code to individually modify the mesh size of the machine domains.
+        """Create the code to individually modify the mesh size of the machine
+        domains.
 
         This adds a bunch of code lines to the .geo file to modify the mesh.
         The main modification are:
 
-        1. Compound Mesh: If "Compound Mesh" is set to 1, gmsh tries to mesh the airgap
-           and lamination surfaces of rotor and stator as combined surfaces.
+        1. Compound Mesh: If "Compound Mesh" is set to 1, gmsh tries to mesh
+            the airgap and lamination surfaces of rotor and stator as combined
+            surfaces.
         2. Periodic Mesh constraint for primary and secondary lines.
-        3. Mesh size setting for movingband lines via number of movingband segments factor.
+        3. Mesh size setting for movingband lines via number of movingband
+            segments factor.
 
         Returns:
             str: Gmsh code to modify the mesh properties.
@@ -1676,7 +1796,8 @@ class Script(object):
                     390.0,
                     Name StrCat[INPUT_MESH, "Number of Rotor Movingband Segments"],
                     Max 1440, Min 180, Step 10,
-                    Help "Set the number of mesh segments on the interface between rotor/statorairgap and movingband. Value represents number of segments on whole circle.",
+                    Help "Set the number of mesh segments on the interface between rotor/statorairgap
+                    and movingband. Value represents number of segments on whole circle.",
                     Visible Flag_ExpertMode},
                 r_MB_R = 0.03228066299098263
             ];
@@ -1725,7 +1846,8 @@ class Script(object):
         meshModCode += """EndIf // (Flag_CompoundMesh)\n\n"""
 
         # 2. add mesh size setting via factor
-        # Allready done in json API. This would need a other grouping instead of GetDP domains
+        # Allready done in json API. This would need a other grouping instead
+        # of GetDP domains
 
         # 3. add periodic meshing constraint for primary and secondary lines
         symFactor = self.machine.symmetryFactor
@@ -1733,7 +1855,9 @@ class Script(object):
             primeLines = self.machine.primaryLines
             secondaryLines = self.machine.getSecondaryLines()
             if primeLines and secondaryLines:
-                meshModCode += "// Add Periodic Mesh to model symmetry boundary-lines\n"
+                meshModCode += (
+                    "// Add Periodic Mesh to model symmetry boundary-lines\n"
+                )
                 primeLineIDs = str()
                 for line in primeLines:
                     primeLineIDs += f"{line.id},"
@@ -1744,8 +1868,9 @@ class Script(object):
                     secondIDs += f"{line.id},"
                 # set primary lines without last comma
                 meshModCode += f"secondaryLines = {{{secondIDs[0:-1]}}};\n"
-                # The following assumes, that the prime lines are located on the x-axis.
-                # Rotation from prime to secondary occure in math. positive direction!
+                # The following assumes, that the prime lines are located on
+                # the x-axis. Rotation from prime to secondary occure in math.
+                # positive direction!
                 meshModCode += (
                     r"Periodic Curve{secondaryLines[]} = {primaryLines[]} "
                     r"Rotate {{0,0,1}, {0,0,0}, "
@@ -1753,7 +1878,9 @@ class Script(object):
                 )
 
         # 4. add mesh size setting for movingband lines
-        movingbandPhysicals = rotor.movingBand  # get list of movingband physicals
+        movingbandPhysicals = (
+            rotor.movingBand
+        )  # get list of movingband physicals
         if movingbandPhysicals:
             # create line id string for mesh size setting
             mbLineIDs = str()
@@ -1762,20 +1889,25 @@ class Script(object):
                     physicalMovingband.type == "MovingBand"
                     and physicalMovingband.geoElementType == Line
                 ):
-                    # if the mobingband object is type movingband and its geo elements are lines
+                    # if the mobingband object is type movingband and its
+                    # geo-elements are lines
                     for mbLine in physicalMovingband.geometricalElement:
                         # mbLine.setMeshLength()
                         mbLineIDs += f"{mbLine.id},"  # add the line id
             # get approx. the min mesh length of the rotor movingband
             # (only checking first line of first movingband physical)
-            mbMeshSize = movingbandPhysicals[0].geometricalElement[0].getMinMeshLength()
+            mbMeshSize = (
+                movingbandPhysicals[0].geometricalElement[0].getMinMeshLength()
+            )
             if mbLineIDs:
                 rRotorMB = rotor.movingBandRadius
                 nbrSeg0 = (2 * pi * rRotorMB / mbMeshSize) - (
                     2 * pi * rRotorMB / mbMeshSize
                 ) % 10  # calc number of movingband segments by steps of 10
                 # create parameter code for movingband segment setting
-                meshModCode += "// Add mesh size setting for Movingband lines\n"
+                meshModCode += (
+                    "// Add mesh size setting for Movingband lines\n"
+                )
                 meshModCode += (
                     "DefineConstant[\n"
                     + (
@@ -1801,14 +1933,16 @@ class Script(object):
                     "MeshSize{ PointsOf{Line{MB_LinesR[]};}} = "
                     "2*Pi*r_MB_R/NbrMbSegments;\n\n"
                 )
-            # same thing for stator movingband with number of segments of rotor movingband
+            # same thing for stator movingband with number of segments of
+            # rotor movingband
             mbLineIDs = str()  # reset string
             for physicalMovingband in stator.movingBand:
                 if (
                     physicalMovingband.type == "MovingBand"
                     and physicalMovingband.geoElementType == Line
                 ):
-                    # if the mobingband object is type movingband and its geo elements are lines
+                    # if the mobingband object is type movingband and its
+                    # geo-elements are lines
                     for mbLine in physicalMovingband.geometricalElement:
                         # mbLine.setMeshLength()
                         mbLineIDs += f"{mbLine.id},"  # add the line id
@@ -1821,18 +1955,17 @@ class Script(object):
                     + str(rStatorMB)
                     + "/NbrMbSegments;\n\n"
                 )  # set the mesh size for all movingband points
-            meshModCode += (
-                "Mesh.SurfaceFaces = 0; // don't show mesh faces (only edges)\n\n"
-            )
+            meshModCode += "Mesh.SurfaceFaces = 0; // don't show mesh faces (only edges)\n\n"
         return meshModCode
 
     def writeGeo(self, UD_MeshCode: str = "") -> None:
         """writeGeo generates the .geo-File for the current script.
 
         Args:
-            UD_MeshCode (str): User defined code to modify mesh settings. This will be printed
-            *before* the internal mesh settings because otherwise Movingsband-Mesh could be
-            overwritten. Must be conformal with the gmsh syntax!
+            UD_MeshCode (str): User defined code to modify mesh settings. This
+            will be printed *before* the internal mesh settings because
+            otherwise Movingsband-Mesh could be overwritten. Must be conformal
+            with the gmsh syntax!
         """
         geoFilePath = os.path.join(self.scriptPath, self.name + ".geo")
         # add all the geo Code
@@ -1859,7 +1992,9 @@ class Script(object):
         meshSettingsCode += (
             "Mesh.SurfaceEdges = 1;\nMesh.Light = 0;\nMesh.SurfaceFaces = 1;\n"
         )
-        meshSettingsCode += "Mesh.Algorithm = 6; // Frontal-Delaunay for 2D meshes\n"
+        meshSettingsCode += (
+            "Mesh.Algorithm = 6; // Frontal-Delaunay for 2D meshes\n"
+        )
         meshModCode = ""
         movingGeoCode = ""
         if self.machine:
@@ -1881,7 +2016,9 @@ class Script(object):
             geoScript.write(self.curveCode)
             geoScript.write(self.areaCode)
             geoScript.write(
-                """If (!Flag_individualColoring)\n""" + self.colorCode + """EndIf\n"""
+                """If (!Flag_individualColoring)\n"""
+                + self.colorCode
+                + """EndIf\n"""
             )
             # geoScript.write(self._colorCode)
             geoScript.write(self.physicalElementCode)
@@ -1890,30 +2027,32 @@ class Script(object):
             geoScript.write(movingGeoCode)
 
         logging.debug(
-            f"I found {self.nbrIdedentPoints} identical points. "
-            f"There are {len(self.pointArray)} points in the model."
+            ("I found %d identical points. ", self.nbrIdedentPoints)
+            + ("There are %d points in the model.", len(self.pointArray))
         )
         logging.debug(
-            f"I found {self.nbrIdedentLines} identical lines."
-            f"There are {len(self.curveList)} lines in the model."
+            ("I found %d identical lines.", self.nbrIdedentLines)
+            + ("There are %d lines in the model.", len(self.curveList))
         )
 
     def _setParameters(self):
-        """Set the machine parameters for the script to the Script.simulationParameters
-        :attr:`SimpleNamespace https://docs.python.org/3/library/types.html#types.SimpleNamespace`
-        attribute.
+        """Set the machine parameters for the script to the
+        ``Script.simParams`` attribute.
         """
         machine = self.machine
         if not machine:
-            raise Exception("There was no machine specified. Add machine to script.")
+            raise RuntimeError(
+                "There was no machine specified. Add machine to script."
+            )
         simuParamDict = self.simParams
         # 1. Set geometrical parameters via "machine.getSimParams()"
         #   SYMMETRY_FACTOR, L_AX_R, L_AX_S, NBR_POLE_PAIRS, NBR_TURNS_IN_FACE
         geometryParams = machine.getSimParams()
         # TODO: Improve check here...
-        # assert len(geometryParams) == len(simuParamDict.GEO) # assert there is the correct
-        # number of parameters
-        simuParamDict["GEO"] = geometryParams
+        # assert len(geometryParams) == len(simuParamDict.GEO) # assert there
+        # is the correct number of parameters
+        # update machine parameters
+        simuParamDict["GEO"] = simuParamDict["GEO"] | geometryParams
 
         # 2. Set simulation parameters
         #   INIT_ROTOR_POS  -> Allready set in __init__
@@ -1937,50 +2076,60 @@ class Script(object):
                         hasMagnets = True
         simuParamDict["SYM"]["FLAG_NL"] = flagCalcNL
         if not hasMagnets:
-            # if there where no magnet physical elements, set flag to false, even if its set to true...
+            # if there where no magnet physical elements, set flag to false
+            # even if its set to true...
             simuParamDict["SYM"]["CALC_MAGNET_LOSSES"] = 0
 
         # machine.getStator().winding.plot_star('plot_star.png',None,False,True)
         if machine.stator.winding.get_windingfactor_el()[1][0, 0] < 0:
-            # The fundamental windingfactor sign indicates the rotation dirction of the field wave.
-            # If its negative, the field rotates mathematically negative (CW) and
-            # the rotation dirction should be inverted.
-            # The funamental winding factor allways refers to the mechanical order which is equal
-            # to the number of pole pairs. (So this is also true for non-fundamental winding
-            # configurations)
+            # The fundamental windingfactor sign indicates the rotation
+            # dirction of the field wave. If its negative, the field rotates
+            # mathematically negative (CW) and the rotation dirction should be
+            # inverted. The funamental winding factor allways refers to the
+            # mechanical order which is equal to the number of pole pairs. (So
+            # this is also true for non-fundamental winding configurations)
             simuParamDict["SYM"]["FLAG_CHANGE_ROT_DIR"] = 1
         else:
             # Otherwise the rotation direction is ok.
             simuParamDict["SYM"]["FLAG_CHANGE_ROT_DIR"] = 0
 
-        # if the Park-transformation angle is not set manually, try to calculate it
+        # if the Park-transformation angle is not set manually, try to
+        # calculate it
         if simuParamDict["SYM"]["ParkAngOffset"] is None:
             nbrPolePairs = default_param_dict["GEO"]["NBR_POLE_PAIRS"]
             nbrSlots = default_param_dict["GEO"]["NBR_SLOTS"]
             slotPitch = 2 * pi / nbrSlots
             mmfOrder, _, angle = machine.stator.winding.get_MMF_harmonics()
             ## DEBUGGING:
-            # if not os.path.exists(self.resPath):
-            #     os.mkdir(self.resPath)
-            # machine.getStator().winding.save_to_file(
-            #     os.path.join(self.resPath, f"winding_{self.name}.wdg")
-            # )
-            # machine.getStator().winding.plot_MMK(
-            #     filename=os.path.join(self.resPath,f".\{self.name}_MMF.png"), res=[800, 600], show=True
-            # )
+            if logging.root.level == logging.DEBUG:
+                if not os.path.exists(self.resultsPath):
+                    os.mkdir(self.resultsPath)
+                machine.stator.winding.save_to_file(
+                    os.path.join(self.resultsPath, f"winding_{self.name}.wdg")
+                )
+                machine.stator.winding.plot_MMK(
+                    filename=os.path.join(
+                        self.resultsPath, f".\{self.name}_MMF.png"
+                    ),
+                )
 
-            # Stator Winkel für I_U = 1 p.u., I_V = -1/2, I_W = -1/2 in rad elec
+            # Stator angle for I_U = 1 p.u., I_V = -1/2, I_W = -1/2 in rad elec
             systemOffset = float(angle[where(mmfOrder == nbrPolePairs)])
-            # print(f"Stator north pole angle (elec): {rad2deg(currentSystemOffset)}°")
+            logging.debug(
+                "Stator north pole angle (elec): %.1f°", rad2deg(systemOffset)
+            )
 
-            # dq-offset (electrical) is current system offset (CSO) angle - half slot pitch
-            # because CSO is calculated from center of first slot, but geometry starts with
-            # center of tooth.
-            # + 270° elec (= -90°) for change of park matrix (to classical park matrix, where
-            # d-axis is aligned with the u-axis; before q-axis was aligned with u-axis).
-            # FIXME: This assumes, that the positiv d-axis is at the center of the first pole pitch.
-            # This only is true if first pole (CCW) is a north pole! And the magnetization is kind
-            # of radial. Does't work for tangential or hallbach magnetization...
+            # dq-offset (electrical) is:
+            #   current system offset (CSO) angle - half slot pitch
+            # because CSO is calculated from center of first slot, but geometry
+            # starts with center of tooth.
+            # + 270° elec (= -90°) for change of park matrix (to classical park
+            #  matrix, where d-axis is aligned with the u-axis; before q-axis
+            # was aligned with u-axis).
+            # FIXME: This assumes, that the positiv d-axis is at the center of
+            # the first pole pitch. This only is true if first pole (CCW) is a
+            # north pole! And the magnetization is kind of radial. Does't work
+            # for tangential or hallbach magnetization...
             magnetisations: List[str] = []
             for mag in machine.rotor._domainM.physicals:
                 mag: Magnet = mag
@@ -1992,14 +2141,19 @@ class Script(object):
                 dqOffset = 0
             else:
                 dqOffset = (
-                    -rad2deg(slotPitch / 2 * nbrPolePairs) + rad2deg(systemOffset) + 270
+                    -rad2deg(slotPitch / 2 * nbrPolePairs)
+                    + rad2deg(systemOffset)
+                    + 270
                 )
             simuParamDict["SYM"]["ParkAngOffset"] = dqOffset
 
     def _getParamCode(self, paramName: str, paramValue) -> str:
-        """Get a line of parameter code: "paramCode = f"{paramName} = {paramValue};\n" """
+        """Get a line of parameter code:
+        "paramCode = f"{paramName} = {paramValue};\n" """
         if isinstance(paramValue, (str)):
-            paramCode = f'{paramName} = "{paramValue}";\n'  # add "" for string value
+            paramCode = (
+                f'{paramName} = "{paramValue}";\n'  # add "" for string value
+            )
         else:  # isinstance(paramValue,(int, float)):
             paramCode = f"{paramName} = {paramValue};\n"
         return paramCode
@@ -2007,15 +2161,15 @@ class Script(object):
     def _createParamCode(self) -> str:
         """Create the string code for the parameter file"""
         self._setParameters()  # set Parameters to write code
-        paramDict = vars(self.simParams)
+        paramDict = self.simParams
         paramCode: str = "// MACHINE SPECIFIC VALUES \n"
-        for paramName, paramValue in vars(paramDict["GEO"]).items():
+        for paramName, paramValue in paramDict["GEO"].items():
             paramCode += self._getParamCode(paramName, paramValue)
         paramCode += "// SIMULATION SPECIFIC VALUES\n"
-        for paramName, paramValue in vars(paramDict["SYM"]).items():
+        for paramName, paramValue in paramDict["SYM"].items():
             paramCode += self._getParamCode(paramName, paramValue)
         paramCode += "// MATERIAL SPECIFIC VALUES\n"
-        for paramName, paramValue in vars(paramDict["MAT"]).items():
+        for paramName, paramValue in paramDict["MAT"].items():
             paramCode += self._getParamCode(paramName, paramValue)
         return paramCode
 
@@ -2035,7 +2189,9 @@ class Script(object):
         """
         # Write the code
         #   1. write parameter file
-        machineTempFile = abspath(join(MAIN_DIR, "script", "machine_template.pro"))
+        machineTempFile = abspath(
+            join(MAIN_DIR, "script", "machine_template.pro")
+        )
         # script file name
         paramFileName = self.name + "_param.geo"
         paramFilePath = abspath(join(self.scriptPath, paramFileName))
@@ -2057,14 +2213,19 @@ class Script(object):
 
         # 3. append group code to machine file
         #   3.1 import parameter file
+        # replace the place holder "PARAMETER_FILE" with the actual parameter
+        # file name
         machineFileCode = machineFileCode.replace(
             "PARAMETER_FILE", '"' + paramFileName + '"', 1
-        )  # replace the place holder "PARAMETER_FILE" with the actual parameter file name
+        )
         #   3.2 add groups and material groups
-        #       generate material code in _functionMaterial to account for material groups
+        #       generate material code in _functionMaterial to account for
+        #       material groups
         self._printAllMaterial()
         #       replace the place holder "GROUP_CODE" with actual group code
-        machineFileCode = machineFileCode.replace("GROUP_CODE", self.group.code, 1)
+        machineFileCode = machineFileCode.replace(
+            "GROUP_CODE", self.group.code, 1
+        )
 
         #  3.3 function code
         machineFileCode = machineFileCode.replace(
@@ -2077,9 +2238,9 @@ class Script(object):
         # filename of the motor model template of getdp
         calculationFileName = "machine_magstadyn_a.pro"
         # filepath to the template calculation file for motor models
-        calcFileTempPath = join(MAIN_DIR, "script", calculationFileName).replace(
-            "\\", "/"
-        )
+        calcFileTempPath = join(
+            MAIN_DIR, "script", calculationFileName
+        ).replace("\\", "/")
         # read the template file
         with open(calcFileTempPath, encoding="utf-8") as templateCalcFile:
             calcCode = versionStr + templateCalcFile.read()
@@ -2091,20 +2252,17 @@ class Script(object):
         with open(calcFilePath, "w", encoding="utf-8") as calcFile:
             calcFile.write(calcCode)
 
-        #  6.1 add the PostOperation command code before including the magstatdyn file
+        #  6.1 add the PostOperation command code before including the
+        # magstatdyn-file
         postOperation = self.postOperation
         if postOperation.items:  # if there are Items in PostOperation
-            # add the code for the compute command including the post operations
+            # add the code for the compute command including the postoperations
             # TODO: Add option for "-bin" case (user setting)
 
-            computeCommandCode = (
-                """DefineConstant[\n\tC_ = {"-solve Analysis -v 99 -v2 -pos"""  # -bin
-            )
+            computeCommandCode = """DefineConstant[\n\tC_ = {"-solve Analysis -v 99 -v2 -pos"""  # -bin
             for postOpName in self.postOperationNames:
                 computeCommandCode += " " + postOpName
-            computeCommandCode += (
-                """ ", Name "GetDP/9ComputeCommand", Visible Flag_Debug}\n];\n"""
-            )
+            computeCommandCode += """ ", Name "GetDP/9ComputeCommand", Visible Flag_Debug}\n];\n"""
 
             machineFileCode += computeCommandCode
 
@@ -2113,7 +2271,8 @@ class Script(object):
         # machineFileCode = machineFileCode.replace(
         #     "DEFAULT_PRO_FILE", '"' + calculationFileName + '"', 1
         # )
-        # had to replace placeholder method here to add the postoperation command before
+        # had to replace placeholder method here to add the postoperation
+        # command before
         machineFileCode += f'Include "{calculationFileName}"\n'
 
         # 6.2 add the PostOperation code
@@ -2135,7 +2294,8 @@ class Script(object):
                         - 1: only .geo-files
                         - 2: only .pro-files
 
-            UD_MeshCode (str): User defined mesh code. Must be conformal with the gmsh syntax.
+            UD_MeshCode (str): User defined mesh code. Must be conformal with
+                the gmsh syntax.
         """
         if mode == 0:
             self.writeGeo(UD_MeshCode=UD_MeshCode)
