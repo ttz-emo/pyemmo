@@ -352,6 +352,29 @@ def getFlagCalcIronLoss(extendedInfo: dict) -> bool:
     msg = f"Iron loss calculation flag ('{mbKey}') missing from extended info dict!"
     raise KeyError(msg)
 
+def getMagAngle(extendedInfo: dict) -> dict:
+    """Returns the magnetization angle dictionary.\n
+    This dictionary defines the *magnetization vector angle in rad* with the
+    magnet surface IdExt as key. Identifier is 'magAngle'.
+    The magAngle dict looks like:
+
+        {\n
+            "Mag1": 0.192,\n
+            "Mag2": 0.344,\n
+            ...\n
+        }\n
+    """
+    mbKey = "magAngle"
+    if mbKey in extendedInfo.keys():
+        if isinstance(extendedInfo[mbKey], dict):
+            return extendedInfo[mbKey]
+        msg = (
+            "The parameter 'magAngle' was not a dict!"
+            f"But type {type(extendedInfo[mbKey])}"
+        )
+        raise TypeError(msg)
+    msg = f"Magnetization angle flag ('{mbKey}') missing from extended info dict!"
+    raise KeyError(msg)
 
 # ==================================== END EXTENDED INFO FUNCTIONS =================================
 # ====================================== START MATERIAL FUNCTIONS ==================================
