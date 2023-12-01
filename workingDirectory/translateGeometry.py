@@ -3,46 +3,130 @@ import copy
 from math import pi, isclose
 from numpy import angle
 
-try:
-    from pyemmo.script.script import Script
-except:
-    rootname = "C:\\Users\\k49976\\Desktop\\repositoryGibLab\\pyemmo"
-    print(f"Could not determine root. Setting it manually to '{rootname}'")
-    print(f'rootname is "{rootname}"')
-    sys.path.append(rootname)
-
 import pyleecan.Classes.Machine
 import pyleecan.Classes.LamHole
 import pyleecan.Classes.LamSlotMag
 import pyleecan.Classes.LamSlotWind
+import pyleecan.Classes.Surface
 
 from pyemmo.api.SurfaceJSON import SurfaceAPI
 from pyemmo.script.geometry.point import Point
 from pyemmo.script.geometry.circleArc import CircleArc
-from workingDirectory.buildPyemmoMaterial import buildPyemmoMaterial
-from workingDirectory.buildPyemmoLineList import buildPyemmoLineList
-from workingDirectory.getCoordinatesForPoint import getXforPoint, getYforPoint
+from pyemmo.definitions import DEFAULT_GEO_TOL
+from .buildPyemmoMaterial import buildPyemmoMaterial
+from .buildPyemmoLineList import buildPyemmoLineList
+from .createS1S2 import createS1S2
+from .getMagnetizationAngle import getMagnetizationDict
 
 
 # ===========================================
 # Definition of function 'translateGeometry':
 # ===========================================
-def translateGeometry(
-    bauteil,  # Stator or Rotor
-    detail,  # Lamination, HoleMag, HoleVoid
+def buildGeoSPMSM(
+    bauteil: str,  # Stator or Rotor
+    detail: str,  # Lamination, HoleMag, HoleVoid
     machine: pyleecan.Classes.Machine.Machine,  # Import of motor
-    label,
-    surface,
+    label: str,
+    surface: pyleecan.Classes.Surface.Surface,
+    magnetizationDict: dict,
+):
+    isMag = False
+    if bauteil == "Rotor":
+        if detail == "Lamination":
+            pyleecanMat = machine.rotor.mat_type
+            IdExt = "Pol"  # "RoNut" "Rotorblech"
+            name = "Rotorblech"
+
+        elif detail == "Magnet":
+            pyleecanMat = machine.rotor.magnet.mat_type
+            IdExt = "Mag"
+            name = "Magnet"
+            anglePointRef = angle(surface.point_ref)
+            isMag = True
+
+        else:
+            raise ValueError(f"Wrong input for 'detail'. Your input was '{detail}'.")
+
+        pyemmoMaterial = buildPyemmoMaterial(pyleecanMat)
+
+        pyemmoSurface = SurfaceAPI(
+            name=label,
+            idExt=IdExt,
+            curves=buildPyemmoLineList(surface.line_list),
+            material=pyemmoMaterial,
+            nbrSegments=machine.get_pole_pair_number() * 2,
+            angle=(2 * pi / (machine.get_pole_pair_number() * 2)),
+            meshSize=0,
+        )
+
+        # ----------------------------------------------------
+        # Filling the magnetization dict if surface is magnet:
+        # ----------------------------------------------------
+        if isMag:
+            magnetizationDict = getMagnetizationDict(
+                magnetizationDict=magnetizationDict,
+                idExt=pyemmoSurface.idExt,
+                anglePointRef=anglePointRef,
+                magnetizationType=machine.rotor.magnet.type_magnetization,
+            )
+
+    # stator
+    elif bauteil == "Stator":
+        if detail == "Lamination":
+            pyleecanMat = machine.stator.mat_type
+            IdExt = "StNut"  # "Statorblech"
+            name = "Statorblech"
+
+        elif detail == "Winding":
+            pyleecanMat = machine.stator.winding.conductor.cond_mat
+            IdExt = "StCu0"  # "Stator-Nut"
+            name = "Stator-Nut"
+
+        else:
+            raise ValueError(f"Wrong input for 'detail'. Your input was '{detail}'.")
+
+        pyemmoMaterial = buildPyemmoMaterial(pyleecanMat)
+
+        pyemmoSurface = SurfaceAPI(
+            name=name,
+            idExt=IdExt,
+            curves=buildPyemmoLineList(surface.line_list),
+            material=pyemmoMaterial,
+            nbrSegments=machine.stator.slot.Zs,
+            angle=(2 * pi / machine.stator.slot.Zs),
+            meshSize=1.0,
+        )
+
+    else:
+        raise ValueError(
+            f"Wrong input for 'bauteil'. 'bauteil' must be 'Rotor' or 'Stator'. Your input was '{bauteil}'."
+        )
+
+    return pyemmoSurface, magnetizationDict
+
+
+# ===========================================
+# Definition of function 'translateGeometry': ORIGINAL
+# ===========================================
+def translateGeometrySPMSM(
+    bauteil: str,  # Stator or Rotor
+    detail: str,  # Lamination, HoleMag, HoleVoid
+    machine: pyleecan.Classes.Machine.Machine,  # Import of motor
+    label: str,
+    surface: pyleecan.Classes.Surface.Surface,
     isInternalRotor: bool,
-    magnetFarthestRadius,
-    magnetShortestRadius,
+    magnetFarthestRadius: float,
+    magnetShortestRadius: float,
 ):
     """_summary_
 
     Args:
-        bauteil (_type_): _description_
-        detail (_type_): _description_
-        motor (pyleecan.Classes.Machine.Machine): _description_
+        bauteil (str): _description_
+        machine (pyleecan.Classes.Machine.Machine): _description_
+        surface (pyleecan.Classes.Surface.Surface): _description_
+        isInternalRotor (bool): _description_
+        magnetFarthestRadius (float): _description_
+        magnetShortestRadius (float): _description_
 
     Raises:
         ValueError: _description_
@@ -126,65 +210,22 @@ def translateGeometry(
         # Adding the S1 and S2 Points:
         # ----------------------------
         if isMag:
-            pyemmoSurfaceCurveCopy = pyemmoSurface.curve.copy()
-            for curve in pyemmoSurfaceCurveCopy:
-                # S1
-                if isclose(
-                    a=curve.startPoint.radius, b=magnetShortestRadius, abs_tol=1e-6
-                ) and isclose(
-                    a=curve.endPoint.radius, b=magnetShortestRadius, abs_tol=1e-6
-                ):
-                    S1 = Point(
-                        name="S1",
-                        x=getXforPoint(magnetShortestRadius, anglePointRef),
-                        y=getYforPoint(magnetShortestRadius, anglePointRef),
-                        z=0,
-                        meshLength=1.0,
-                    )
-                    magnetCurve1 = CircleArc(
-                        name="magnetCurve1",
-                        startPoint=curve.startPoint,
-                        centerPoint=centerPoint,
-                        endPoint=S1,
-                    )
-                    magnetCurve2 = CircleArc(
-                        name="magnetCurve2",
-                        startPoint=S1,
-                        centerPoint=centerPoint,
-                        endPoint=curve.endPoint,
-                    )
-                    pyemmoSurface.curve.remove(curve)
-                    pyemmoSurface.curve.append(magnetCurve1)
-                    pyemmoSurface.curve.append(magnetCurve2)
-
-                # S2
-                elif isclose(
-                    a=curve.startPoint.radius, b=magnetFarthestRadius, abs_tol=1e-6
-                ) and isclose(
-                    a=curve.endPoint.radius, b=magnetFarthestRadius, abs_tol=1e-6
-                ):
-                    S2 = Point(
-                        name="S2",
-                        x=getXforPoint(magnetFarthestRadius, anglePointRef),
-                        y=getYforPoint(magnetFarthestRadius, anglePointRef),
-                        z=0,
-                        meshLength=1.0,
-                    )
-                    magnetCurve3 = CircleArc(
-                        name="magnetCurve3",
-                        startPoint=curve.startPoint,
-                        centerPoint=centerPoint,
-                        endPoint=S2,
-                    )
-                    magnetCurve4 = CircleArc(
-                        name="magnetCurve4",
-                        startPoint=S2,
-                        centerPoint=centerPoint,
-                        endPoint=curve.endPoint,
-                    )
-                    pyemmoSurface.curve.remove(curve)
-                    pyemmoSurface.curve.append(magnetCurve3)
-                    pyemmoSurface.curve.append(magnetCurve4)
+            if isInternalRotor:
+                createS1S2(
+                    pyemmoSurface=pyemmoSurface,
+                    anglePointRef=anglePointRef,
+                    centerPoint=centerPoint,
+                    magnetShortestRadius=magnetShortestRadius,
+                    magnetFarthestRadius=magnetFarthestRadius,
+                )
+            else:
+                createS1S2(
+                    pyemmoSurface=pyemmoSurface,
+                    anglePointRef=anglePointRef,
+                    centerPoint=centerPoint,
+                    magnetShortestRadius=magnetFarthestRadius,
+                    magnetFarthestRadius=magnetShortestRadius,
+                )
 
     # stator
     elif bauteil == "Stator":
