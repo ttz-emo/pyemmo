@@ -8,26 +8,6 @@ from numpy import pi
 from typing import List
 import swat_em as swatem
 
-# ===============
-# Imports pyemmo:
-# ===============
-try:
-    from pyemmo.script.script import Script
-except:
-    rootname = "C:\\Users\\k49976\\Desktop\\repositoryGibLab\\pyemmo"
-    print(f"Could not determine root. Setting it manually to '{rootname}'")
-    print(f'rootname is "{rootname}"')
-    sys.path.append(rootname)
-from pyemmo.api.SurfaceJSON import SurfaceAPI
-from pyemmo.script.material.material import Material
-from pyemmo.script.geometry.line import Line
-from pyemmo.script.geometry.circleArc import CircleArc
-from pyemmo.script.geometry.point import Point
-from Tests import save_plot_path
-from pyemmo.functions.plot import plot
-from workingDirectory.buildPyemmoMovingBand import buildPyemmoMovingBand
-from pyemmo.api.json import main
-
 # =================
 # Imports pyleecan:
 # =================
@@ -42,6 +22,8 @@ import pyleecan.Classes.Arc1
 import pyleecan.Classes.Arc2
 import pyleecan.Classes.Arc3
 from pyleecan.Classes.Machine import Machine
+from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
+from pyleecan.Classes.MachineIPMSM import MachineIPMSM
 from pyleecan.Classes.Simulation import Simulation
 from pyleecan.Classes.Simu1 import Simu1
 from pyleecan.Classes.Lamination import Lamination
@@ -52,88 +34,134 @@ from pyleecan.Methods.Simulation.MagElmer import (
     MagElmer_BP_dict,
 )
 
+# ===============
+# Imports pyemmo:
+# ===============
+try:
+    from pyemmo.script.script import Script
+except:
+    rootname = "C:\\Users\\k49976\\Desktop\\repositoryGibLab\\pyemmo"
+    print(f"Could not determine root. Setting it manually to '{rootname}'")
+    print(f'rootname is "{rootname}"')
+    sys.path.append(rootname)
+
+from pyemmo.functions.plot import plot
+from workingDirectory.buildPyemmoMovingBand import buildMovingBandSPMSM
+from pyemmo.api.json import main
+from pyemmo.definitions import ROOT_DIR
+
 
 # ===================
 # Import of Machines:
 # ===================
 # Import IPMSM
-IPMSM_motor = load(join(DATA_DIR, "Machine", "IPMSM_B.json"))
-# Import SPMSM:
-SPMSM_motor = load(join(DATA_DIR, "Machine", "SPMSM_002.json"))
-# directory = "C:\Users\k49976\Desktop"
-SPMSMMuster = load(join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster.json"))
-SPMSMMuster2 = load(join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_2.json"))
-SPMSMMuster2Shaft = load(
-    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_2Shaft.json")
-)
+# IPMSM_motor = load(join(DATA_DIR, "Machine", "IPMSM_B.json"))
+# # Import SPMSM:
+# SPMSM_motor = load(join(DATA_DIR, "Machine", "SPMSM_002.json"))
+# # directory = "C:\Users\k49976\Desktop"
+# SPMSMMuster = load(join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster.json"))
+# SPMSMMuster2 = load(join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_2.json"))
+# SPMSMMuster2Shaft = load(
+#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_2Shaft.json")
+# )
+# SPMSMMuster2ShaftModified = load(
+#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_2ShaftModified.json")
+# )
 SPMSMMuster2ShaftSIMU = load(
     join(
         "C:\\Users\\k49976\\Desktop\\TEST_TRANSLATION\\2023_11_16-14h50min23s_FEMM_SPMSMPyleecanMuster_2Shaft",
         "FEMM_SPMSMPyleecanMuster_2Shaft.json",
     )
 )
-SPMSMMuster3Shaft = load(
-    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_3Shaft.json")
+# # SPMSMMuster3Shaft = load(
+# #     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_3Shaft.json")
+# # )
+# SPMSMMuster4Shaft = load(
+#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_4Shaft.json")
+# )
+# SPMSMMuster4ShaftSIMU = load(
+#     join(
+#         "C:\\Users\\k49976\\Desktop\\TEST_TRANSLATION\\2023_11_15-13h38min47s_FEMM_SPMSMPyleecanMuster_4Shaft",
+#         "FEMM_SPMSMPyleecanMuster_4Shaft.json",
+#     )
+# )
+# SPMSMMuster4Shaftinverted = load(
+#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_4Shaft_inverted.json")
+# )
+# SPMSMMuster4ShaftinvertedSIMU = load(
+#     join(
+#         "C:\\Users\\k49976\\Desktop\\TEST_TRANSLATION\\2023_11_21-16h00min55s_FEMM_SPMSMPyleecanMuster_4Shaft_inverted",
+#         "FEMM_SPMSMPyleecanMuster_4Shaft_inverted.json",
+#     )
+# )
+# SPMSMMuster6Shaft = load(
+#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_6_Shaft.json")
+# )
+# # Import ASM:
+# SCIM_motor = load(join(DATA_DIR, "Machine", "SCIM_L2EP_48s_2p.json"))
+SPMSMMusterShaft_1 = load(
+    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_1.json")
 )
-SPMSMMuster4Shaft = load(
-    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_4Shaft.json")
+SPMSMMusterShaft_2 = load(
+    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_2.json")
 )
-SPMSMMuster4ShaftSIMU = load(
-    join(
-        "C:\\Users\\k49976\\Desktop\\TEST_TRANSLATION\\2023_11_15-13h38min47s_FEMM_SPMSMPyleecanMuster_4Shaft",
-        "FEMM_SPMSMPyleecanMuster_4Shaft.json",
-    )
+SPMSMMusterShaft_3 = load(
+    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_3.json")
 )
-SPMSMMuster4Shaftinverted = load(
-    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_4Shaft_inverted.json")
+SPMSMMusterShaft_4 = load(
+    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_4.json")
 )
-SPMSMMuster4ShaftinvertedSIMU = load(
-    join(
-        "C:\\Users\\k49976\\Desktop\\TEST_TRANSLATION\\2023_11_21-16h00min55s_FEMM_SPMSMPyleecanMuster_4Shaft_inverted",
-        "FEMM_SPMSMPyleecanMuster_4Shaft_inverted.json",
-    )
+SPMSMMusterShaft_5 = load(
+    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_5.json")
 )
-# Import ASM:
-SCIM_motor = load(join(DATA_DIR, "Machine", "SCIM_L2EP_48s_2p.json"))
-
 # ========================================
 # Festlegung der zu berechnenden Maschine:
 # ========================================
-machine = SPMSMMuster4Shaftinverted
+machine = SPMSMMusterShaft_5
+simulation = SPMSMMuster2ShaftSIMU
 
 # =====================================
 # Festlegung der Simulations-Parameter:
 # =====================================
-isInternalRotor: bool = False
 
 rotorRext = machine.rotor.Rext
 rotorRint = machine.rotor.Rint
 statorRint = machine.stator.Rint
-H0 = machine.rotor.slot.H0
-Hmag = machine.rotor.slot.Hmag
-if isInternalRotor:
-    magnetFarthestRadius = rotorRext + Hmag - H0
-    magnetShortestRadius = rotorRext - H0
-else:
-    magnetFarthestRadius = rotorRint + H0
-    magnetShortestRadius = rotorRint + H0 - Hmag
+statorRext = machine.stator.Rext
+
 
 # --------------------------
 # isInternalRotor detection:
 # --------------------------
 isInternalRotor = bool(statorRint > rotorRext)
 
-allBands, geometryList, movingband_r = buildPyemmoMovingBand(
-    machine, rotorRext, statorRint, isInternalRotor,magnetFarthestRadius, magnetShortestRadius
-)
+if isinstance(machine, MachineSIPMSM):
+    allBands, geometryList, movingband_r = buildMovingBandSPMSM(
+        machine=machine,
+        rotorRint=rotorRint,
+        rotorRext=rotorRext,
+        statorRint=statorRint,
+        statorRext=statorRext,
+        isInternalRotor=isInternalRotor,
+    )
+
+# elif isinstance(machine, MachineIPMSM):
+#     allBands, geometryList, movingband_r = buildMovingBandIPMSM(
+#         machine=machine,
+#         rotorRint=rotorRint,
+#         rotorRext=rotorRext,
+#         statorRint=statorRint,
+#         statorRext=statorRext,
+#         isInternalRotor=isInternalRotor,
+#     )
 
 geoTranslationDict = {}
-for a, surfAPI in enumerate(geometryList):
+for surfAPI in geometryList:
     geoTranslationDict[surfAPI.idExt] = surfAPI
 
 geometryLineListFinish = []
-for a, surf in enumerate(geometryList):
-    for b, line in enumerate(surf.curve):
+for surf in geometryList:
+    for line in surf.curve:
         geometryLineListFinish.append(line)
 
 print("Plot ENDE:")
@@ -289,10 +317,10 @@ def createParamDict(machine: Machine, pyleecanSimulation: Simulation) -> dict[st
     return translationParameterDict
 
 
-paramDict = createParamDict(machine, SPMSMMuster4ShaftinvertedSIMU)
+paramDict = createParamDict(machine, simulation)
 main(
     geo=geoTranslationDict,
     extInfo=paramDict,
-    model="TEST_TRANSLATION",
+    model=join(ROOT_DIR, r"Results\pyleecanAPI\TEST_TRANSLATION"),
     gmsh="C:\\Software\\Onelab\\gmsh.exe",
 )
