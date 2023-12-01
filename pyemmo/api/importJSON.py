@@ -39,15 +39,15 @@ def importExtInfo(extInfoPath: str) -> dict:
 
 def getMagDir(extendedInfo: dict) -> str:
     """Retrun the magnetization direction (parallel, radial, ...) from the extendedInfo dict"""
-    magDirKey = "magDirection"
+    magDirKey = "magType"
     if magDirKey in extendedInfo.keys():
         if isinstance(extendedInfo[magDirKey], str):
             return extendedInfo[magDirKey]
         raise ValueError(
-            f"Magnetization direction (magDirection) is not type str: {extendedInfo[magDirKey]}"
+            f"Magnetization direction (magType) is not type str: {extendedInfo[magDirKey]}"
         )
     raise KeyError(
-        "Magnetization direction (magDirection) is missing from extended info dict!"
+        "Magnetization direction (magType) is missing from extended info dict!"
     )
 
 
