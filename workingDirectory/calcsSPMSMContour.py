@@ -1,4 +1,5 @@
 import math
+import copy
 
 from pyleecan.Classes.Machine import Machine
 
@@ -10,6 +11,7 @@ from pyemmo.functions.plot import plot
 def calcSPMSMContGenerally(
     machine: Machine,
     rotorLamSurfList: list[SurfaceAPI],
+    rotorMagSurfList: list[SurfaceAPI],
     radius: float,
     isInternalRotor: bool,
 ) -> tuple[list, list, Point, Point]:
@@ -34,7 +36,7 @@ def calcSPMSMContGenerally(
     for curve in rotorLamSurfList[0].curve:
         if not (
             math.isclose(a=curve.startPoint.radius, b=radius, abs_tol=1e-6)
-        ) and not (math.isclose(a=curve.endPoint.radius, b=radius, abs_tol=1e-6)):
+        ) and not math.isclose(a=curve.endPoint.radius, b=radius, abs_tol=1e-6):
             rotorContourLineList.append(curve)
     print("---")
     print("Plot Überprüfung des Löschens der Seitenlinien.")
@@ -70,6 +72,8 @@ def calcSPMSMContGenerally(
                 if math.isclose(a=point.coordinate[1], b=0, abs_tol=1e-6):
                     lowestYPointRotor = point
 
+    rotorContourLineList.extend(rotorMagSurfList[0].curve)
+
     return (
         rotorContourLineList,
         lowestYPointRotor,
@@ -77,19 +81,7 @@ def calcSPMSMContGenerally(
     )
 
 
-def calcSurfMag():
-    pass
-
-
-def calcSurfMagEqualHW():
-    pass
-
-
-def calcSurfMagEqualW():
-    pass
-
-
-def calcSurfMagSlot(
+def calcSPMSMRotorContour(
     machine: Machine,
     rotorLamSurfList: list,
     rotorMagSurfList: list,
@@ -119,6 +111,7 @@ def calcSurfMagSlot(
     ) = calcSPMSMContGenerally(
         machine=machine,
         rotorLamSurfList=rotorLamSurfList,
+        rotorMagSurfList=rotorMagSurfList,
         radius=radius,
         isInternalRotor=isInternalRotor,
     )
@@ -126,27 +119,32 @@ def calcSurfMagSlot(
     # ----------------------------------------------
     # Aussortieren von doppelten Linien/Kreisboegen:
     # ----------------------------------------------
-    rotorContourLineListCopy = rotorContourLineList.copy()
+    rotorContourLineListCopy = copy.copy(rotorContourLineList)
     for rotorLamCurve in rotorContourLineListCopy:
         # Rotor-Lamination Curves
         for rotorMagCurve in rotorMagSurfList[0].curve:
             # Rotor-Magnet Curves
-            if math.isclose(
-                a=rotorMagCurve.startPoint.coordinate[0],
-                b=rotorLamCurve.endPoint.coordinate[0],
-                abs_tol=1e-6,
-            ) and math.isclose(
-                a=rotorMagCurve.endPoint.coordinate[1],
-                b=rotorLamCurve.startPoint.coordinate[1],
-                abs_tol=1e-6,
-            ) and math.isclose(
-                a=rotorMagCurve.endPoint.coordinate[0],
-                b=rotorLamCurve.startPoint.coordinate[0],
-                abs_tol=1e-6,
-            ) and math.isclose(
-                a=rotorMagCurve.endPoint.coordinate[1],
-                b=rotorLamCurve.startPoint.coordinate[1],
-                abs_tol=1e-6,
+            if (
+                math.isclose(
+                    a=rotorMagCurve.startPoint.coordinate[0],
+                    b=rotorLamCurve.endPoint.coordinate[0],
+                    abs_tol=1e-6,
+                )
+                and math.isclose(
+                    a=rotorMagCurve.endPoint.coordinate[1],
+                    b=rotorLamCurve.startPoint.coordinate[1],
+                    abs_tol=1e-6,
+                )
+                and math.isclose(
+                    a=rotorMagCurve.endPoint.coordinate[0],
+                    b=rotorLamCurve.startPoint.coordinate[0],
+                    abs_tol=1e-6,
+                )
+                and math.isclose(
+                    a=rotorMagCurve.endPoint.coordinate[1],
+                    b=rotorLamCurve.startPoint.coordinate[1],
+                    abs_tol=1e-6,
+                )
             ):
                 print(f"gefiltert: {rotorLamCurve}")
                 print(f"gefiltert: {rotorMagCurve}")
