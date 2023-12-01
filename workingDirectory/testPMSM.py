@@ -385,15 +385,16 @@ pmsmScript = Script(
     name="test_pmsm_freeDefined",
     scriptPath=scriptPath,
     simuParams={
-        "init_rotor_pos": 0,
-        "angle_increment": 1,
-        "final_rotor_pos": 90,
-        "Id_eff": 0,
-        "Iq_eff": 0,
-        "rot_speed": 1000,
-        "park_angle_offset": None,
-        "analysis_type": 0,
-        "magTemp": 20,
+        "SYM": {
+            "INIT_ROTOR_POS": 0.0,
+            "ANGLE_INCREMENT": 1,
+            "FINAL_ROTOR_POS": 90.0,
+            "Id_eff": 0,
+            "Iq_eff": 0,
+            "SPEED_RPM": 1000,
+            "ParkAngOffset": None,  # optional
+            "ANALYSIS_TYPE": 0,  # optional; 0: static, 1: transient
+        },
     },
     machine=machine,
 )

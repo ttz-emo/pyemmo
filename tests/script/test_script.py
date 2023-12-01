@@ -17,7 +17,7 @@ class TestScript(unittest.TestCase):
         Nützlich für beispielsweise zeitintensives Setup von Dingen die nicht verändert werden.
         Konkret z.B. Laden von vordefinierter, verifizierter Testgeometrie
         """
-        pass
+        # cls.maxDiff = None 
 
     @classmethod
     def tearDownClass(cls):
@@ -35,21 +35,26 @@ class TestScript(unittest.TestCase):
         Setup wird vor jeder Testmethode der Klasse TestRotorIPMSM ausgeführt
         """
         # Script Objekt für Tests erzeugen
+        self.initParamDict = {
+            "SYM": {
+                "INIT_ROTOR_POS": 0.0,
+                "ANGLE_INCREMENT": 1,
+                "FINAL_ROTOR_POS": 90.0,
+                "Id_eff": 2,
+                "Iq_eff": 1,
+                "SPEED_RPM": 1000,
+                "ParkAngOffset": None,  # optional
+                "ANALYSIS_TYPE": 1,  # optional; 0: static, 1: transient
+            },
+            "MAT": {
+                "TEMP_MAG": 20,
+            },
+        }
         self.scriptObj = Script(
             name="testScript",
             scriptPath=save_path,
             factory="Built-in",
-            simuParams={
-                "init_rotor_pos": 0,
-                "angle_increment": 1,
-                "final_rotor_pos": 90,
-                "Id_eff": 0,
-                "Iq_eff": 0,
-                "rot_speed": 1000,
-                "park_angle_offset": 0,
-                "analysis_type": 1,
-                "magTemp": 20,
-            },
+            simuParams=self.initParamDict,
         )
 
     def tearDown(self):
@@ -67,6 +72,15 @@ class TestScript(unittest.TestCase):
         self.assertEqual(self.scriptObj.name, "testScript")
         self.assertEqual(self.scriptObj.scriptPath, save_path)
         self.assertEqual(self.scriptObj.factory, "Built-in")
+        # Test that the initial parameters are in the resulting param dict
+        self.assertEqual(
+            self.scriptObj.simParams["SYM"],
+            self.scriptObj.simParams["SYM"] | self.initParamDict["SYM"],
+        )
+        self.assertEqual(
+            self.scriptObj.simParams["MAT"],
+            self.scriptObj.simParams["MAT"] | self.initParamDict["MAT"],
+        )
 
 
 if __name__ == "__main__":

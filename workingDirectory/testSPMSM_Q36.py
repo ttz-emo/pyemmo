@@ -239,16 +239,16 @@ myScript = Script(
     name="Test_SPMSM_Baukasten",
     scriptPath=modelDir,
     simuParams={
-        "init_rotor_pos": 0,
-        "angle_increment": 2,
-        "final_rotor_pos": 45,
-        "Id_eff": 0,
-        "Iq_eff": 10,
-        "rot_speed": SPEED,
-        "park_angle_offset": None,  # calc angle from machine layout
-        "analysis_type": 0,
-        "magTemp": 20,
-        "calcMagnetLosses": 1,
+        "SYM": {
+            "INIT_ROTOR_POS": 0.0,
+            "ANGLE_INCREMENT": 1,
+            "FINAL_ROTOR_POS": 90.0,
+            "Id_eff": 0,
+            "Iq_eff": 0,
+            "SPEED_RPM": 1000,
+            "ParkAngOffset": None,  # optional
+            "ANALYSIS_TYPE": 0,  # optional; 0: static, 1: transient
+        },
     },
     machine=SPMSM,
 )
