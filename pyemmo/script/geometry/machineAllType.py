@@ -1,7 +1,6 @@
 from cmath import pi
+from typing import  List, Literal, Union
 from matplotlib import pyplot as plt
-from types import SimpleNamespace
-from typing import Dict, List, Literal, Union
 
 from .physicalElement import PhysicalElement
 from .surface import Surface, Point, Line
@@ -51,9 +50,9 @@ class MachineAllType(object):
         if rotor and stator:
             self.createMachineDomains()
 
-    def getSimParams(self) -> SimpleNamespace:
+    def getSimParams(self) -> dict:
         """
-        Return geometical simulation parameters as SimpleNamespace
+        Return geometical simulation parameters as dict
         - SYMMETRY_FACTOR
         - L_AX_R
         - L_AX_S
@@ -61,16 +60,16 @@ class MachineAllType(object):
         - NBR_TURNS_IN_FACE
         - R_AIRGAP
         """
-        paramDict = default_param_dict.GEO
-        paramDict.SYMMETRY_FACTOR = self.symmetryFactor
-        paramDict.L_AX_R = self.rotor.axialLength
-        paramDict.L_AX_S = self.stator.axialLength
-        paramDict.NBR_POLE_PAIRS = self.nbrPolePairs
-        paramDict.NBR_SLOTS = self.stator.nbrSlots
-        paramDict.NBR_TURNS_IN_FACE = (
-            self.stator.winding.get_turns() / 2
-        )  # divide by two because there are allways two slot sides
-        paramDict.R_AIRGAP = self.rotor.movingBand[0].radius
+        paramDict = default_param_dict["GEO"]
+        paramDict["SYMMETRY_FACTOR"] = self.symmetryFactor
+        paramDict["L_AX_R"] = self.rotor.axialLength
+        paramDict["L_AX_S"] = self.stator.axialLength
+        paramDict["NBR_POLE_PAIRS"] = self.nbrPolePairs
+        paramDict["NBR_SLOTS"] = self.stator.nbrSlots
+        # FIXME: This is not True anymore!:
+        #   divide by two because there are allways two slot sides
+        paramDict["NBR_TURNS_IN_FACE"] = self.stator.winding.get_turns() / 2
+        paramDict["R_AIRGAP"] = self.rotor.movingBand[0].radius
         return paramDict
 
     def createMachineDomains(self) -> None:
@@ -145,8 +144,8 @@ class MachineAllType(object):
         self._domainOuterLimit = Domain(
             "OuterLimitLine", stator._domainOuterLimit.physicals
         )
-    
-    def domainsCreated(self)->bool:
+
+    def domainsCreated(self) -> bool:
         """check if the machine domains have been created.
 
         Returns:
@@ -249,11 +248,11 @@ class MachineAllType(object):
             self._stator = None
         else:
             raise TypeError(f"Wrong type for stator: {type(newStator)}")
-        
+
     @property
     def domains(self) -> List[Domain]:
         """Return all Domains of the machine as list"""
-        domainList: List[Domain] = list()
+        domainList: List[Domain] = []
         # Add primary and slave lines first!
         if self._domainPrimary != None:
             domainList.append(self._domainPrimary)

@@ -30,15 +30,16 @@ class Magnet(PhysicalElement):
         Konstruktor der Klasse Magnet
 
         Args:
-            name:           [str]       magnet (physical) name
-            geoElements:    [list]      list of geometrical elements
-            material:       [Material]
-            magDirection:   [-1, 1]     magnetization direction (north or south pole)
-            magType:        [str]       magnetization type ("parallel", "radial", "tangential")
-
-            magVectorAngle: [float]     magnetization vector angle (depends on  position)
-            (Default: None)\n
-            phyID:          [int]       physical ID (Default: None)
+            name (str): magnet (physical) name
+            geoElements (list): list of geometrical elements
+            material (Material): Magnet material 
+            magDirection (Literal[-1, 1]): magnetization direction (north or
+                south pole)
+            magType (str): magnetization type ("parallel", "radial",
+                "tangential")
+            magVectorAngle (float): magnetization vector angle in rad. See
+                ``Magnet.magAngle`` for more details. Defaults to None
+            phyID (int): physical ID (Default: None)
         """
         super().__init__(name, geoElements, material, phyID)
         # the physical element type can be used to identify physical elements

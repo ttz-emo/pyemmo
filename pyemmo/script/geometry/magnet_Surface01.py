@@ -81,8 +81,8 @@ class Magnet_Surface01(Magnet):
     def _createGeometry(self):
         dockingLength = self._machineDict["rA_Rotor"]
         h_M = self._machineDict["h_M"]
-        angle_ri = self._machineDict["angularWidth_i"]
-        angle_ra = self._machineDict["angularWidth_a"]
+        angle_ri = self._machineDict["angularWidth_i"]/2 # over 2 because only half pole is modeled
+        angle_ra = self._machineDict["angularWidth_a"]/2 # over 2 because only half pole is modeled
         magnet_centre = self._machineDict["machineCentrePoint"]
 
         PCentre = magnet_centre.duplicate()

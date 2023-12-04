@@ -122,14 +122,16 @@ testIPMSM_Script = Script(
     name="Test_IPMSM",
     scriptPath=modelDir,
     simuParams={
-        "init_rotor_pos": 0,
-        "angle_increment": 1,
-        "final_rotor_pos": 90,
-        "Id_eff": 0,
-        "Iq_eff": 0,
-        "rot_speed": 1000,
-        "park_angle_offset": None,
-        "analysis_type": 0,
+        "SYM": {
+            "INIT_ROTOR_POS": 0.0,
+            "ANGLE_INCREMENT": 1,
+            "FINAL_ROTOR_POS": 90.0,
+            "Id_eff": 0,
+            "Iq_eff": 0,
+            "SPEED_RPM": 1000,
+            "ParkAngOffset": None,  # optional
+            "ANALYSIS_TYPE": 0,  # optional; 0: static, 1: transient
+        },
     },
     machine=pmsm1,
 )
@@ -141,6 +143,7 @@ testIPMSM_Script.addPostOperation(
     File=path.abspath(path.join(testIPMSM_Script.resultsPath, "b_OnRadius.pos")),
 )
 import time
+
 startTime = time.time()
 testIPMSM_Script.generateScript()
 stopTime = time.time()
@@ -148,9 +151,7 @@ print("I am done!")
 print(f"\n Generation of script took {stopTime-startTime} seconds.")
 
 # %%
-proFilePath = path.join(
-    testIPMSM_Script.scriptPath, testIPMSM_Script.name + ".pro"
-)
+proFilePath = path.join(testIPMSM_Script.scriptPath, testIPMSM_Script.name + ".pro")
 command = runOnelab.createCmdCommand(
     onelabFile=path.abspath(proFilePath),
     gmshPath=runOnelab.findGmsh(),

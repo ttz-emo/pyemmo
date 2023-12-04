@@ -1,5 +1,5 @@
 import unittest
-from pydraft.functions.runOnelab import *
+from pyemmo.functions.runOnelab import findGmsh
 
 
 class TestRunOnelab(unittest.TestCase):
@@ -33,7 +33,6 @@ class TestRunOnelab(unittest.TestCase):
         Die Schreibweise "setUp" muss beachtet werden.
         Setup wird vor jeder Testmethode der Klasse TestRotorIPMSM ausgeführt
         """
-        
 
     def tearDown(self):
         """
@@ -45,16 +44,13 @@ class TestRunOnelab(unittest.TestCase):
 
     def test_findGmsh(self):
         # Setup
-        
-        # Run 
+
+        # Run
         GmshExe = findGmsh()
         # Verify
         ...
 
 
-
-"""
-Dieser Abschnitt ermöglicht das direkte Starten der Testmethoden beim ausführen der Datei
-"""
+# Dieser Abschnitt ermöglicht das direkte Starten der Testmethoden beim ausführen der Datei
 if __name__ == "__main__":
     unittest.main()
