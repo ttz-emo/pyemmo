@@ -67,7 +67,7 @@ def buildMovingBandSPMSM(
     statorRint: float,
     statorRext: float,
     isInternalRotor: bool,
-):
+)-> tuple[list, list[SurfaceAPI], List]:
     """_summary_
 
     Args:
