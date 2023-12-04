@@ -34,12 +34,12 @@ def buildGeoSPMSM(
     if bauteil == "Rotor":
         if detail == "Lamination":
             pyleecanMat = machine.rotor.mat_type
-            IdExt = "Pol"  # "RoNut" "Rotorblech"
+            idExt = "Pol"  # "RoNut" "Rotorblech"
             name = "Rotorblech"
 
         elif detail == "Magnet":
             pyleecanMat = machine.rotor.magnet.mat_type
-            IdExt = "Mag"
+            idExt = "Mag"
             name = "Magnet"
             anglePointRef = angle(surface.point_ref)
             isMag = True
@@ -51,7 +51,7 @@ def buildGeoSPMSM(
 
         pyemmoSurface = SurfaceAPI(
             name=label,
-            idExt=IdExt,
+            idExt=idExt,
             curves=buildPyemmoLineList(surface.line_list),
             material=pyemmoMaterial,
             nbrSegments=machine.get_pole_pair_number() * 2,
@@ -74,12 +74,12 @@ def buildGeoSPMSM(
     elif bauteil == "Stator":
         if detail == "Lamination":
             pyleecanMat = machine.stator.mat_type
-            IdExt = "StNut"  # "Statorblech"
+            idExt = "StNut"  # "Statorblech"
             name = "Statorblech"
 
         elif detail == "Winding":
             pyleecanMat = machine.stator.winding.conductor.cond_mat
-            IdExt = "StCu0"  # "Stator-Nut"
+            idExt = "StCu0"  # "Stator-Nut"
             name = "Stator-Nut"
 
         else:
@@ -89,7 +89,7 @@ def buildGeoSPMSM(
 
         pyemmoSurface = SurfaceAPI(
             name=name,
-            idExt=IdExt,
+            idExt=idExt,
             curves=buildPyemmoLineList(surface.line_list),
             material=pyemmoMaterial,
             nbrSegments=machine.stator.slot.Zs,
