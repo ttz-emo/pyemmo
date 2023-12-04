@@ -16,7 +16,7 @@ from .translateGeometry import translateGeometrySPMSM, buildGeoSPMSM
 from .getRotorStatorContour import (
     getSurfMagContour,
     getWindingContour,
-    getIPMSMRotorContour,
+    # getIPMSMRotorContour,
 )
 
 # from workingDirectory.buildPyemmoMovingBand import buildPyemmoMovingBand
