@@ -85,15 +85,15 @@ SPMSMMuster2ShaftSIMU = load(
 #         "FEMM_SPMSMPyleecanMuster_4Shaft.json",
 #     )
 # )
-# SPMSMMuster4Shaftinverted = load(
-#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_4Shaft_inverted.json")
-# )
-# SPMSMMuster4ShaftinvertedSIMU = load(
-#     join(
-#         "C:\\Users\\k49976\\Desktop\\TEST_TRANSLATION\\2023_11_21-16h00min55s_FEMM_SPMSMPyleecanMuster_4Shaft_inverted",
-#         "FEMM_SPMSMPyleecanMuster_4Shaft_inverted.json",
-#     )
-# )
+SPMSMMuster4Shaftinverted = load(
+    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_4Shaft_inverted.json")
+)
+SPMSMMuster4ShaftinvertedSIMU = load(
+    join(
+        "C:\\Users\\k49976\\Desktop\\TEST_TRANSLATION\\2023_11_21-16h00min55s_FEMM_SPMSMPyleecanMuster_4Shaft_inverted",
+        "FEMM_SPMSMPyleecanMuster_4Shaft_inverted.json",
+    )
+)
 # SPMSMMuster6Shaft = load(
 #     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_6_Shaft.json")
 # )
@@ -105,19 +105,31 @@ SPMSMMusterShaft_1 = load(
 SPMSMMusterShaft_2 = load(
     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_2.json")
 )
+SPMSMMusterShaft_2_inverted = load(
+    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_2_inverted.json")
+)
 SPMSMMusterShaft_3 = load(
     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_3.json")
+)
+SPMSMMusterShaft_3_inverted = load(
+    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_3_inverted.json")
 )
 SPMSMMusterShaft_4 = load(
     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_4.json")
 )
+SPMSMMusterShaft_4_inverted = load(
+    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_4_inverted.json")
+)
 SPMSMMusterShaft_5 = load(
     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_5.json")
+)
+SPMSMMusterShaft_5_inverted = load(
+    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_5_inverted.json")
 )
 # ========================================
 # Festlegung der zu berechnenden Maschine:
 # ========================================
-machine = SPMSMMusterShaft_5
+machine = SPMSMMusterShaft_5_inverted
 simulation = SPMSMMuster2ShaftSIMU
 
 # =====================================
@@ -169,7 +181,15 @@ plot(geometryLineListFinish, linewidth=1, markersize=3, tag=True)
 print("---")
 
 
-def translateWinding(machine: Machine):
+def translateWinding(machine: Machine) -> list[int]:
+    """Translates the winding from pyleecan to pyemmo.
+
+    Args:
+        machine (Machine): Pyleecan machine
+
+    Returns:
+        list[int]: _description_
+    """
     winding = swatem.datamodel()
     Q = machine.stator.slot.Zs
     P = machine.stator.winding.p * 2
