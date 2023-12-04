@@ -79,7 +79,8 @@ class Line(Transformable):
         Line.ID = Line.ID + 1
         return Line.ID
 
-    def getForce(self) -> bool:
+    @property
+    def force(self) -> bool:
         """return false flag
 
         Returns:
@@ -167,8 +168,9 @@ class Line(Transformable):
         """
         assert isinstance(newEndPoint, Point)
         self._endPoint = newEndPoint
-
-    def getPoints(self) -> Tuple["Point", "Point"]:
+    
+    @property
+    def points(self) -> Tuple["Point", "Point"]:
         """get the start and end point of a line
 
         Returns:
@@ -189,7 +191,8 @@ class Line(Transformable):
         self.startPoint = oldP2
         self.endPoint = oldP1
 
-    def getType(self) -> Literal["Line"]:
+    @property
+    def type(self) -> Literal["Line"]:
         """Get geometric element type
 
         Returns:
@@ -352,8 +355,8 @@ class Line(Transformable):
 
     def getPointDist(self) -> float:
         """calculate the distance between start and end point"""
-        StartPoint = array(self.startPoint.getCoordinate())
-        EndPoint = array(self.endPoint.getCoordinate())
+        StartPoint = array(self.startPoint.coordinate)
+        EndPoint = array(self.endPoint.coordinate)
         return norm(StartPoint - EndPoint)
 
     def plot(
@@ -378,8 +381,8 @@ class Line(Transformable):
         """
         startPoint = self.startPoint
         endPoint = self.endPoint
-        startCoords = startPoint.getCoordinate()
-        endCoords = endPoint.getCoordinate()
+        startCoords = startPoint.coordinate
+        endCoords = endPoint.coordinate
         if fig is None:
             fig, ax = plt.subplots()
             ax.set_aspect("equal", adjustable="box")
@@ -417,10 +420,10 @@ class Line(Transformable):
         Checks if start and end point of two lines are identical.
         The result is regardless of the direction.
         """
-        originP1 = array(self.startPoint.getCoordinate())
-        originP2 = array(self.endPoint.getCoordinate())
-        compP1 = array(compLine.startPoint.getCoordinate())
-        compP2 = array(compLine.endPoint.getCoordinate())
+        originP1 = array(self.startPoint.coordinate)
+        originP2 = array(self.endPoint.coordinate)
+        compP1 = array(compLine.startPoint.coordinate)
+        compP2 = array(compLine.endPoint.coordinate)
         # FIXME: Does not respect the type of line yet!
         if norm(originP1 - compP1) < tol:
             # oP1 and cP1 are identical
@@ -441,9 +444,9 @@ class Line(Transformable):
         Args:
             meshLength (float): Mesh length in meter
         """
-        pStart, pEnd = self.getPoints()
-        pStart.setMeshLength(meshLength)
-        pEnd.setMeshLength(meshLength)
+        pStart, pEnd = self.points
+        pStart.meshLength = meshLength
+        pEnd.meshLength = meshLength
 
     def getMinMeshLength(self) -> float:
         """get the minimum mesh length of start and end point
@@ -451,8 +454,8 @@ class Line(Transformable):
         Returns:
             float: min mesh length of start and end point
         """
-        pStart, pEnd = self.getPoints()
-        return min(pStart.getMeshLength(), pEnd.getMeshLength())
+        pStart, pEnd = self.points
+        return min(pStart.meshLength, pEnd.meshLength)
 
     def combine(self, addLine: "Line", touchPoint: Point = None) -> "Line":
         """combine two lines and return them as new line
@@ -473,8 +476,8 @@ class Line(Transformable):
                 )
             )
         if not touchPoint:
-            for p in self.getPoints():
-                for addP in addLine.getPoints():
+            for p in self.points:
+                for addP in addLine.points:
                     if p.isEqual(addP):
                         touchPoint: Point = p
                         break
@@ -482,7 +485,7 @@ class Line(Transformable):
             # get the two points excluding the docking point
             newPoints = [
                 point
-                for point in self.getPoints() + addLine.getPoints()
+                for point in self.points + addLine.points
                 if not point.isEqual(touchPoint)
             ]
             if len(newPoints) == 2:

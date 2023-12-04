@@ -9,6 +9,7 @@ from typing import Dict, List, Tuple, Union, Literal, Any
 from numpy import pi, zeros
 from numpy.linalg import norm
 
+from ..functions.cleanName import cleanName
 from ..script.material.material import Material
 from ..script.material.electricalSteel import ElectricalSteel
 from . import air
@@ -73,12 +74,24 @@ def getCurrentdq(extendedInfo: dict) -> Tuple[float]:
         )
 
 
-def getWindingList(extendedInfo: dict) -> List[str]:
-    """
-    Get the winding list from the extended info dict.
-    The winding list looks like:
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
-        ['+u', '-v', '+v', '-w', '+w', '-u']
+
+def getWindingList(extendedInfo: dict) -> list[list[list[int]]]:
+    """Get winding layout from extended info dict. The layout must be in form of
+    the SWAT-EM winding layout. The layout looks something like:
+
+    single-layer winding:
+        [[phase_u1], [phase_v1], [phase_w1]]
+
+    double-layer winding:
+        [[[phase_u1], [phase_u2]], [[phase_v1], [phase_v2]], [[phase_w1], [phase_w2]]]
+
+    Where phase_u1 is a list of integers representing the slot ID and the winding direction
+    (with their sign). See`this <https://swat-em.readthedocs.io/en/latest/reference.html#swat_em.datamodel.datamodel.set_phases>`__
+    SWAT-EM method for more details.
 
     Args:
         extendedInfo (dict): dict with simulation infos
@@ -87,13 +100,13 @@ def getWindingList(extendedInfo: dict) -> List[str]:
         KeyError: if "winding" key not in extendedInfo
 
     Returns:
-        List[str]: winding list with elements "<+,-><u,v,w>"
+        list[list[list[int]]]: SWAT-EM formatted winding layout
     """
     windKey = "winding"
     if not windKey in extendedInfo.keys():
         raise KeyError("Missing winding information from extended info.")
-    else:
-        windList: List[str] = extendedInfo[windKey]
+    # windList: List[str] = extendedInfo[windKey]
+    windList = extendedInfo[windKey]
     return windList
 
 
@@ -237,21 +250,21 @@ def getSimuParams(extendedInfo: dict) -> Dict[str, float]:
     """
     idq = getCurrentdq(extendedInfo)
     endPos = extendedInfo["endPos"]
-    # If is set to NaN in Matlab (-> "null" in JSON -> "None" in Python),
-    # the angle will be calulated.
-    parkAngleOffset = extendedInfo["parkAngleOffset"]
     simuParams = {
-        "init_rotor_pos": extendedInfo["startPos"],
-        "angle_increment": (endPos - extendedInfo["startPos"])
-        / extendedInfo["nbrSteps"],
-        "final_rotor_pos": endPos,
-        "Id_eff": idq[0],
-        "Iq_eff": idq[1],
-        "rot_speed": getRotFreq(extendedInfo, "rpm"),
-        "park_angle_offset": parkAngleOffset,
-        "analysis_type": extendedInfo["analysisType"],
-        "tempMag": getMagTemperature(extendedInfo),
-        "nbrParallePaths": getNbrParalellPaths(extendedInfo),
+        "SYM": {
+            "INIT_ROTOR_POS": extendedInfo["startPos"],
+            "ANGLE_INCREMENT": (endPos - extendedInfo["startPos"])
+            / extendedInfo["nbrSteps"],
+            "FINAL_ROTOR_POS": endPos,
+            "Id_eff": idq[0],
+            "Iq_eff": idq[1],
+            "SPEED_RPM": getRotFreq(extendedInfo, "rpm"),
+            "ParkAngOffset": extendedInfo["parkAngleOffset"],
+            "ANALYSIS_TYPE": extendedInfo["analysisType"],
+        },
+        "MAT": {
+            "TEMP_MAG": getMagTemperature(extendedInfo),
+        },
     }
     return simuParams
 
@@ -271,7 +284,8 @@ def getModelName(extendedInfo: dict) -> str:
     """
     mNKey = "modelName"
     if mNKey in extendedInfo.keys():
-        return extendedInfo[mNKey]
+        correctScriptName = cleanName(extendedInfo[mNKey])
+        return correctScriptName
     raise KeyError(f"Name of model files ('{mNKey}') missing from extended info dict!")
 
 
@@ -386,7 +400,7 @@ def createMaterial(matDict: Dict[str, Dict[Literal["wert"], Any]]) -> Material:
                     for i, hbArray in enumerate(bhDict["wert"]):
                         bhCurve[i] = [hbArray[1], hbArray[0]]
                 # else:
-                    # raise ValueError(f"BH-Curve of Material '{name}' is empty!")
+                # raise ValueError(f"BH-Curve of Material '{name}' is empty!")
             elif "kl_1" in bhDict.keys():
                 ...  # TODO: add temperatur depended BH curve to material
             else:
@@ -478,9 +492,15 @@ def isAir(materialName: str):
     """
     isAir checks if the material name contains "air" or "luft" and returns True if it does so
     """
-    if "air" in materialName.lower() or "luft" in materialName.lower():
-        return True
-    return False
+    if isinstance(materialName, str):
+        if "air" in materialName.lower() or "luft" in materialName.lower():
+            return True
+        return False
+    if isinstance(materialName, list):
+        if not materialName:  # if materialName is empty
+            return True
+        raise TypeError("Imported material name is unempty list, not string!")
+    raise TypeError("Imported material name has type" + str(type(materialName)))
 
 
 # ======================================= END MATERIAL FUNCTIONS ===================================

@@ -1,9 +1,9 @@
+"""Module for class StatorLamination"""
 from typing import List
 from pyemmo.script.material.material import Material
 from .surface import Surface
 from .physicalElement import PhysicalElement
-from .. import colorDict
-import math
+
 
 ###
 # Eine Instanz der StatorLamination ist das Blechpaket des Stators. Eine beliebige Geometrie kann mit der Klasse StatorLamination definiert werden.
@@ -13,17 +13,6 @@ import math
 # \image html statorBlech.png
 ###
 class StatorLamination(PhysicalElement):
-
-    ###
-    # Konstruktor der Klasse StatorLamination.
-    #
-    #   Input:
-    #
-    #       machineDict : dict
-    #       geometricalElement : list
-    #       material : Material
-    #
-    ###
     def __init__(
         self,
         name: str,
@@ -31,13 +20,21 @@ class StatorLamination(PhysicalElement):
         material: Material,
         phyID=None,
     ):
-        PhysicalElement.__init__(
-            self,
+        """Konstruktor der Klasse StatorLamination.
+
+        Args:
+            name (str): Lamination name.
+            machineDict (dict): Machine parameter dict.
+            geometricalElement (list[Surface]): List of surface elements that form the lamination.
+            material (Material): Lamination material.
+
+        """
+        super().__init__(
             name=name,
             geometricalElement=geometricalElement,
             material=material,
             phyID=phyID,
         )
-        self._physicalElementType = "Lamination"  # the physical element type can be used to identify physical elements
+        self.physicalElementType = "Lamination"  # the physical element type can be used to identify physical elements
 
         self.setColor("SteelBlue4")

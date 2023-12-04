@@ -48,13 +48,14 @@ class MovingBand(PhysicalElement):
         )
         # make sure geo elements are circle arcs
         self.geometricalElement: List[CircleArc] = geometricalElement
-        self.radius = geometricalElement[0].getRadius()
+        self.radius = geometricalElement[0].radius
         # the physical element type can be used to identify physical elements
-        self._physicalElementType = "MovingBand"
+        self.physicalElementType = "MovingBand"
         ###Hilfslinien des Movingbands zur Ergänzung zum Vollkreis, bei einem Teilmodell.
         self._auxiliary = auxiliary
 
-    def isAuxiliary(self) -> bool:
+    @property
+    def auxiliary(self) -> bool:
         """Gibt den Nutzer die Information zurück (Boolean), ob es sich bei dem Objekt um eine
         Hilfslinie handelt.
 
@@ -79,12 +80,12 @@ class MovingBand(PhysicalElement):
             ValueError: If the given radius does not match the radius of the given circle arcs.
         """
         for arc in self.geometricalElement:
-            if abs(arc.getRadius() - mbRadius) > DEFAULT_GEO_TOL:
+            if abs(arc.radius - mbRadius) > DEFAULT_GEO_TOL:
                 raise (
                     ValueError(
                         "Rotor Movingband domain got Circle Arc objects with different Radius:\n"
                         + f"Movingband radius: {mbRadius}\n"
-                        + f"Radius of {arc.name}: {arc.getRadius()}\n"
+                        + f"Radius of {arc.name}: {arc.radius}\n"
                     )
                 )
         self._radius = mbRadius

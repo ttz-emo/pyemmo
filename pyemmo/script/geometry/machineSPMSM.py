@@ -1,8 +1,8 @@
-from .domain import Domain
 from .machineAllType import MachineAllType
 from .rotorSPMSM import RotorSPMSM
 from .statorSPMSM import StatorPMSM, datamodel
 import math
+
 
 ###
 # Eine Instanz der Klasse MachineSPMSM beschreibt eine Synchronmaschine mit Oberflächenmagneten im dreidimensionalen Raum.
@@ -10,45 +10,54 @@ import math
 # Durch die Vorauswahl des Maschinentypes, werden Eigenschaften aus dem Input-Dictionary den Bauteilen automatisch zugewiesen.
 ###
 class MachineSPMSM(MachineAllType):
-    ###
-    # Konstruktor der Klasse MachineSPMSM.
-    #
-    #   Eingabeparameter:
-    #
-    #       name : String
-    #       simuParam : {'analysisParameter': { 'symmetryFactor' : Integer,
-    #                                           'nbrPolesTotal' : Integer,
-    #                                           'nbrSlotTotal' : Integer,
-    #                                           'timeMax' : Float,
-    #                                           'timeStep' : Float,
-    #                                           'analysisType' : String,
-    #                                           'startPosition' : Float},
-    #                   'output' : {'b' : Boolean,
-    #                               'az' : Boolean,
-    #                               'js' : Boolean}
-    #                   }
-    #
-    ###
-    def __init__(self, simuParam):
+    """
+    SPMSM machine class
 
-        ###Name des Objektes.
-        self._name = "machine"
-        ###Simulationsparameter gemäß der Eingabe.
+        TODO: example
+    """
+
+    def __init__(self, simuParam):
+        """create a SPMSM machine object
+
+        Args:
+            simuParam (dict): classical machine simulation parameter dict.
+
+        DEFAULT simulation parameter dict:
+
+        .. code:: python
+
+            {
+                "analysisParameter": {
+                    "freq": 1000 / 60, # mech. frequency
+                    "symmetryFactor": 4,
+                    "nbrPolesTotal": 10,
+                    "nbrSlotTotal": 12,
+                    "timeMax": 1 / (1000/60), # stop time simulation
+                    "timeStep": 1/ (180 * (1000/60) * 2),  # step time
+                    "analysisType": "timedomain",  # options: 'timedomain' or 'static'
+                    "startPosition": 0, # init rotation
+                },
+            }
+
+
+        """
+        nbrPoles = simuParam["analysisParameter"]["nbrPolesTotal"]
+        symFactor = simuParam["analysisParameter"]["symmetryFactor"]
+        super().__init__(
+            nbrPolePairs=nbrPoles/2,
+            symmetryFactor=symFactor,
+            rotor=None,
+            stator=None,
+            name="MachineSPMSM"
+        )
         self._simuParam = simuParam
-        ###Symmetriefaktor z. B. 4 für ein Viertelmodell der Maschine.
-        self._symmetryFactor = self._simuParam["analysisParameter"]["symmetryFactor"]
-        ###Rotorobjekt der Klasse RotorSPMSM.
-        self._rotor = None
-        ###Statorobjekt der Klasse StatorSPMSM.
-        self._stator = None
-        # Calculate Poles and Slots for Model
+
         self._simuParam["analysisParameter"]["nbrPolesinModel"] = (
-            self._simuParam["analysisParameter"]["nbrPolesTotal"] / self._symmetryFactor
+            self._simuParam["analysisParameter"]["nbrPolesTotal"] / self.symmetryFactor
         )
         self._simuParam["analysisParameter"]["nbrSlotinModel"] = (
-            self._simuParam["analysisParameter"]["nbrSlotTotal"] / self._symmetryFactor
+            self._simuParam["analysisParameter"]["nbrSlotTotal"] / self.symmetryFactor
         )
-        self._nbrPolePairs = self._simuParam["analysisParameter"]["nbrPolesTotal"] / 2
 
     ###
     # Mit addRotorToMachine() wird ein Rotorobjekt der Klasse RotorSPMSM erzeugt und der Maschine zugewiesen.
@@ -64,13 +73,16 @@ class MachineSPMSM(MachineAllType):
     #
     #   Beispiel:
     #
-    #       pmsm1 = pyd.MachineSPMSM(simuSPMSMDict)
+    #       pmsm1 = MachineSPMSM(simuSPMSMDict)
     #       rotor1 = pmsm1.addRotorToMachine('sheet01_standard', 'magnet01_surface')
-    #       rotor1.addLaminationParameter({'r_We' : 20e-3,
-    #           'r_R' : 55e-3,
-    #           'meshLength' : 3e-3,
-    #           'material' : steel_1010,
-    #           'machineCentrePoint' : PBohrung})
+    #       rotor1.addLaminationParameter(
+    #           {
+    #               'r_We' : 20e-3,
+    #               'r_R' : 55e-3,
+    #               'meshLength' : 3e-3,
+    #               'material' : steel_1010,
+    #               'machineCentrePoint' : PBohrung
+    #           })
     #       rotor1.addMagnetParameter({'h_M' : 7e-3,
     #           'angularWidth_i' : math.pi/10,
     #           'angularWidth_a' : math.pi/12,
@@ -86,13 +98,13 @@ class MachineSPMSM(MachineAllType):
     def addRotorToMachine(self, laminationType, magnetType):
         startPosition = (
             math.pi
-            / self._symmetryFactor
+            / self.symmetryFactor
             / self._simuParam["analysisParameter"]["nbrPolesinModel"]
             + self._simuParam["analysisParameter"]["startPosition"]
         )
         angleGeoParts = (
             math.pi
-            / self._symmetryFactor
+            / self.symmetryFactor
             / self._simuParam["analysisParameter"]["nbrPolesinModel"]
         )
         nbrGeoParts = self._simuParam["analysisParameter"]["nbrPolesinModel"] * 2
@@ -101,11 +113,11 @@ class MachineSPMSM(MachineAllType):
             magnetType,
             angleGeoParts,
             nbrGeoParts,
-            self._symmetryFactor,
+            self.symmetryFactor,
             startPosition,
         )
-        self._rotor = rotorSPMSM1
-        return self._rotor
+        self.rotor = rotorSPMSM1
+        return self.rotor
 
     ###
     # Mit addStatorToMachine() wird ein Statorobjekt der Klasse StatorSPMSM erzeugt und der Maschine zugewiesen.
@@ -146,18 +158,18 @@ class MachineSPMSM(MachineAllType):
     ):
         startPosition = (
             math.pi
-            / self._symmetryFactor
+            / self.symmetryFactor
             / self._simuParam["analysisParameter"]["nbrSlotinModel"]
             + self._simuParam["analysisParameter"]["startPosition"]
         )
         angleGeoParts = (
             math.pi
-            / self._symmetryFactor
+            / self.symmetryFactor
             / self._simuParam["analysisParameter"]["nbrSlotinModel"]
         )
         nbrGeoParts = self._simuParam["analysisParameter"]["nbrSlotinModel"] * 2
         nbrSlotsTotal = (
-            nbrGeoParts * self._symmetryFactor / 2
+            nbrGeoParts * self.symmetryFactor / 2
         )  # divided by 2 because one slot is formed by 2 geoParts
         statorSPMSM1 = StatorPMSM(
             laminationType=laminationType,
@@ -165,12 +177,12 @@ class MachineSPMSM(MachineAllType):
             nbrSlots=nbrSlotsTotal,
             angleGeoParts=angleGeoParts,
             nbrGeoParts=nbrGeoParts,
-            symmetryFactor=self._symmetryFactor,
+            symmetryFactor=self.symmetryFactor,
             winding=winding,
             startPosition=startPosition,
         )
-        self._stator = statorSPMSM1
-        return self._stator
+        self.stator = statorSPMSM1
+        return self.stator
 
     ###createMachine() erzeugt alle nötigen Domaine automatisch und befüllt sie mit PhysicalElement-Objekten gemäß ihren Eigenschaften.
     ##
@@ -271,13 +283,20 @@ class MachineSPMSM(MachineAllType):
     #     else:
     #         print("No definition of stator or rotor!")
 
-    ###Mit setName() kann der Name der Instanz geändert werden.
-    def setName(self, name):
-        self._name = name
-
     ###getName() gibt den Namen der Instanz als String zurück.
-    def getName(self):
+    @property
+    def name(self) -> str:
+        """get name of motor
+
+        Returns:
+            str: name
+        """
         return self._name
+
+    ###Mit setName() kann der Name der Instanz geändert werden.
+    @name.setter
+    def name(self, newName):
+        self._name = newName
 
     ###
     # Mit addToScript wird die Maschine zum Skriptobjekt übergeben und in gmsh-Syntax übersetzt.
@@ -327,6 +346,6 @@ class MachineSPMSM(MachineAllType):
         #     self._mbRotor,
         #     self._domain,
         #     self._mbRotor.physicals[0].getMaterial(),
-        #     self._symmetryFactor,
+        #     self.symmetryFactor,
         # )
         # script._printFormulationGetDP(self)

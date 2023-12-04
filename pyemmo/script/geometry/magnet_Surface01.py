@@ -1,12 +1,10 @@
 from .magnet import Magnet
-from .physicalElement import PhysicalElement
 from .point import Point
 from .line import Line
 from .circleArc import CircleArc
 from .surface import Surface
 from .. import colorDict
 
-import math
 
 ###
 # Ein Objekt der Klasse Magnet_Surface01:
@@ -39,12 +37,12 @@ class Magnet_Surface01(Magnet):
         h_M (float): Magnet hight
         angularWidth_i (float): Inner angular width
         angularWidth_a (float): Outer angular width
-        magnetisationDirection (Literial[-1,1]): see definition in Class 
+        magnetisationDirection (Literial[-1,1]): see definition in Class
             :class:`~pyemmo.script.geometry.magnet.Magnet`
-        magnetisationType (str): see definition in Class 
+        magnetisationType (str): see definition in Class
             :class:`~pyemmo.script.geometry.magnet.Magnet`
         material (Material): Material of magnet.
-        meshLength (float): 
+        meshLength (float):
 
     .. figure:: ../image_Doku/magnet_Surface01.png
         :align: center
@@ -74,25 +72,21 @@ class Magnet_Surface01(Magnet):
             machineDict["material"],
             magnetisationDirection,
             magnetisationType,
+            0.0,
         )
 
         self._createGeometry()
-
-    ###Wird eine Instanz erzeugt, bekommt sie automatisch eine eindeutige ID zugewiesen. Mit getNewID() wird eine neue ID erzeugt.
-    def _getNewID(self):
-        PhysicalElement.Physical_ID = PhysicalElement.Physical_ID + 1
-        return PhysicalElement.Physical_ID
 
     ###_createGeometry() erzeugt die Magnetgeometrie und definiert alle Attribute der Klasse.
     def _createGeometry(self):
         dockingLength = self._machineDict["rA_Rotor"]
         h_M = self._machineDict["h_M"]
-        angle_ri = self._machineDict["angularWidth_i"]
-        angle_ra = self._machineDict["angularWidth_a"]
+        angle_ri = self._machineDict["angularWidth_i"]/2 # over 2 because only half pole is modeled
+        angle_ra = self._machineDict["angularWidth_a"]/2 # over 2 because only half pole is modeled
         magnet_centre = self._machineDict["machineCentrePoint"]
 
         PCentre = magnet_centre.duplicate()
-        coordCentre = PCentre.getCoordinate()
+        coordCentre = PCentre.coordinate
 
         # Konstuktion der Punkte an der x-Achse
         pMagnet1 = Point(
@@ -150,23 +144,51 @@ class Magnet_Surface01(Magnet):
         self._laminationDockingPoint = [pMagnet1]
 
         for s in self._geometricalElement:
-            if self.getMagnetisationDirection() == 1:
+            if self.magDir == 1:
                 s.setMeshColor(colorDict["Red"])
-            elif self.getMagnetisationDirection() == -1:
+            elif self.magDir == -1:
                 s.setMeshColor(colorDict["Green"])
 
     ###Gibt eine Liste mit der Schnittkante im Magneten zurück (siehe _innerLinePart).
-    def getInnerLinePart(self):
+    @property
+    def innerLinePart(self) -> list:
+        """get innerLinePart \n
+        Gibt eine Liste mit der Schnittkante im Magneten zurück (siehe _innerLinePart).
+
+        Returns:
+            list: _innerLinePart
+        """
         return self._innerLinePart
 
     ###Gibt eine Liste mit dem airDockingPoint zurück (siehe _airDockingPoint).
-    def getAirDockingPoint(self):
+    @property
+    def airDockingPoint(self) -> list:
+        """get airDockingPoint \n
+        Gibt eine Liste mit dem airDockingPoint zurück (siehe _airDockingPoint)
+
+        Returns:
+            list: _airDockingPoint
+        """
         return self._airDockingPoint
 
     ###Gibt eine Liste mit airLinePart zurück (siehe _airLinePart).
-    def getAirLinePart(self):
+    @property
+    def airLinePart(self) -> list:
+        """get airLinePart \n
+        Gibt eine Liste mit airLinePart zurück (siehe _airLinePart).
+
+        Returns:
+            list: _airLinePart
+        """
         return self._airLinePart
 
     ###Gibt eine Liste mit dem laminationDockingPoint zurück (siehe _laminationDockingPoint).
-    def getLaminationDockingPoint(self):
+    @property
+    def laminationDockingPoint(self) -> list:
+        """get laminationDockingPoint \n
+        Gibt eine Liste mit dem laminationDockingPoint zurück (siehe _laminationDockingPoint).
+
+        Returns:
+            list: _laminationDockingPoint
+        """
         return self._laminationDockingPoint

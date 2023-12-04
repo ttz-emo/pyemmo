@@ -9,3 +9,8 @@ matAir.loadMatFromDataBase(
 )
 matAir.print()
 # %%
+matAir = material.Material(name="steel_1008")
+matAir.loadMatFromDataBase(
+    join(ROOT_DIR, "pyemmo\\script\\material\\Material_new.db"), name=matAir.name
+)
+matAir.print()

@@ -1,8 +1,25 @@
 # %%
+
 import os
+import sys
 import subprocess
 import math
 from swat_em.datamodel import datamodel
+
+try:
+    from pyemmo.script.script import Script
+except:
+    try:
+        rootname = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    except:
+        rootname = r"C:\Users\k49976\Desktop\repositoryGibLab\pyemmo"
+        print(f"Could not determine root. Setting it manually to '{rootname}'")
+    print(f'rootname is "{rootname}"')
+    sys.path.append(rootname)
+    from pyemmo.version import __version__
+
+    print(__version__)
+    from pyemmo.script.script import Script
 
 from pyemmo.script.geometry.point import Point
 from pyemmo.script.geometry.surface import Surface
@@ -152,7 +169,7 @@ def createRotorPMSM():
             mbR_allAux.append(mbAux)
         # outer part of the moving band
         mbR_Aux = MovingBand("", mbR_allAux, air, auxiliary=True)
-        mbR_Aux.setName("mbRotor_" + str(mbR_Aux.id))
+        mbR_Aux.name = "mbRotor_" + str(mbR_Aux.id)
         mbRotorAux.append(mbR_Aux)
 
     # Definition der PhysicalElements
@@ -165,8 +182,11 @@ def createRotorPMSM():
         material=ndFe35,
         magDirection=1,
         magType="radial",
+        magVectorAngle=0.0,
     )
-    magnet2 = Magnet("magnet_Sued", s_Magnet[2:4], ndFe35, -1, "radial")
+    magnet2 = Magnet(
+        "magnet_Sued", s_Magnet[2:4], ndFe35, -1, "radial", magVectorAngle=0.0
+    )
     luft = AirArea(name="luft", geometricalElement=s_Container, material=air)
     luftspalt = AirGap("luftspalt", s_Luftspalt, air)
     masterR = PrimaryLine("masterR", [dLR2, dLdB3, dLdC3])
@@ -308,7 +328,7 @@ def createStatorPMSM():
     allSlot: list[Slot] = []
     for i2 in range(0, len(s_Nut)):
         allSlot.append(Slot(name="", geometricalElement=[s_Nut[i2]], material=copper))
-        allSlot[len(allSlot) - 1].setName("slot_" + str(allSlot[len(allSlot) - 1].id))
+        allSlot[len(allSlot) - 1].name = "slot_" + str(allSlot[len(allSlot) - 1].id)
         # allSlot[len(allSlot) - 1].addExcitation(windingInstruction[i2])
     phy_airGap = AirGap("luftspalt_stator", s_Luftspalt, air)
 
@@ -362,22 +382,23 @@ scriptPath = os.path.join(RESULT_DIR, "testFreeGeoDef")
 if not os.path.isdir(scriptPath):
     os.mkdir(scriptPath)
 pmsmScript = Script(
-    name="test pmsm freeDefined",
+    name="test_pmsm_freeDefined",
     scriptPath=scriptPath,
     simuParams={
-        "init_rotor_pos": 0,
-        "angle_increment": 1,
-        "final_rotor_pos": 90,
-        "Id_eff": 0,
-        "Iq_eff": 0,
-        "rot_speed": 1000,
-        "park_angle_offset": None,
-        "analysis_type": 0,
-        "magTemp": 20,
+        "SYM": {
+            "INIT_ROTOR_POS": 0.0,
+            "ANGLE_INCREMENT": 1,
+            "FINAL_ROTOR_POS": 90.0,
+            "Id_eff": 0,
+            "Iq_eff": 0,
+            "SPEED_RPM": 1000,
+            "ParkAngOffset": None,  # optional
+            "ANALYSIS_TYPE": 0,  # optional; 0: static, 1: transient
+        },
     },
     machine=machine,
 )
 pmsmScript.generateScript()
 # %%
 # subprocess.run(createCmdCommand(pmsmScript.getGeoFilePath(), True), check=False)
-subprocess.run(createCmdCommand(pmsmScript.getProFilePath(), True), check=False)
+subprocess.run(createCmdCommand(pmsmScript.proFilePath, True), check=False)

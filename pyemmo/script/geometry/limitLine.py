@@ -28,4 +28,4 @@ class LimitLine(PhysicalElement):
             self, name=name, material=material, geometricalElement=geometricalElement
         )
         # the physical element type can be used to identify physical elements
-        self._physicalElementType = "LimitLine"
+        self.physicalElementType = "LimitLine"

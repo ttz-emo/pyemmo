@@ -30,70 +30,111 @@ class Magnet(PhysicalElement):
         Konstruktor der Klasse Magnet
 
         Args:
-            name:           [str]       magnet (physical) name
-            geoElements:    [list]      list of geometrical elements
-            material:       [Material]
-            magDirection:   [-1, 1]     magnetization direction (north or south pole)
-            magType:        [str]       magnetization type ("parallel", "radial", "tangential")
-
-            magVectorAngle: [float]     magnetization vector angle (depends on  position)
-            (Default: None)\n
-            phyID:          [int]       physical ID (Default: None)
+            name (str): magnet (physical) name
+            geoElements (list): list of geometrical elements
+            material (Material): Magnet material 
+            magDirection (Literal[-1, 1]): magnetization direction (north or
+                south pole)
+            magType (str): magnetization type ("parallel", "radial",
+                "tangential")
+            magVectorAngle (float): magnetization vector angle in rad. See
+                ``Magnet.magAngle`` for more details. Defaults to None
+            phyID (int): physical ID (Default: None)
         """
         super().__init__(name, geoElements, material, phyID)
         # the physical element type can be used to identify physical elements
-        self._physicalElementType = "Magnet"
-        ###Magnetisierungsrichtung des Magneten
-        self._magnetisationDirection = magDirection
+        self.physicalElementType = "Magnet"
+        ###Magnetisierungsrichtung des Magneten (+1 oder -1)
+        self.magDir = magDirection
         ###Magnetisierungstype des Magneten (z. B. "radial").
-        self._magnetisationType = magType
+        self.magType = magType
         ###Winkel des Richtungvektor für die Magnetisierung.
-        self._magnetisationVectorAngle = magVectorAngle
+        self.magAngle = magVectorAngle
         if magDirection == 1:
             self.setColor("Red")
         else:
             self.setColor("Green")
 
     def setMagnetisation(
-        self, magnetisationType: str, magnetisationDirection: Literal[-1, 1]
+        self,
+        magnetisationType: Literal["parallel", "radial", "tangential"],
+        magnetisationDirection: Literal[-1, 1],
     ):
-        """set magnetisation type
+        """set magnetization type
 
         Args:
             magnetisationType (str): String literal like 'radial', 'parallel',...
-            magnetisationDirection (Literal[-1,1]): South or north pole magnetisation.
+            magnetisationDirection (Literal[-1,1]): South or north pole magnetization.
         """
-        self._magnetisationType = magnetisationType
-        self._magnetisationDirection = magnetisationDirection
+        self.magType = magnetisationType
+        self.magDir = magnetisationDirection
         if magnetisationDirection == 1:
             self.setColor("Red")
         else:
             self.setColor("Green")
 
-    def getMagnetisationType(self) -> str:
-        """get magnetisation type"""
-        return self._magnetisationType
-
-    def getMagnetisationDirection(self) -> Literal[-1, 1]:
-        """getter of magnetisation direction
+    @property
+    def magType(self) -> Literal["parallel", "radial", "tangential"]:
+        """Magnetization Type
 
         Returns:
-            -1 or 1: north or south pole magnetisation
+            (Literal[&quot;parallel&quot;, &quot;radial&quot;, &quot;tangential&quot;]): Magnetization type
+        """
+        return self._magnetizationType
+
+    @magType.setter
+    def magType(
+        self, newMagType: Literal["parallel", "radial", "tangential"]
+    ):
+        """setter of magnetization type
+
+        Args:
+            newMagType (Literal[&quot;parallel&quot;, &quot;radial&quot;, &quot;tangential&quot;]):
+             Magnetization type
+        """
+        if isinstance(newMagType, str):
+            if newMagType in ("parallel", "radial", "tangential"):
+                self._magnetizationType = newMagType
+                return None
+        raise TypeError(
+            f'Wrong Magnetization Type: {newMagType}.\nMust be "parallel", "radial" or "tangential"'
+        )
+
+    @property
+    def magDir(self) -> Literal[-1, 1]:
+        """getter of magnetization direction
+
+        Returns:
+            -1 or 1: north or south pole magnetization
         """
         return self._magnetisationDirection
 
-    def setMagnetisationVectorAngle(self, angle: float):
-        """set of magnetisation angle
+    @magDir.setter
+    def magDir(self, newMagDir: Literal[-1, 1]):
+        if newMagDir in (-1, 1):
+            self._magnetisationDirection = newMagDir
+        else:
+            raise ValueError(
+                f"Magnetizarion direction not in (-1, 1), but is: {newMagDir}"
+            )
+
+    @property
+    def magAngle(self) -> float:
+        """Magnetization vector angle
+
+        Returns:
+            float: offset angle of magnetization vector in rad
+        """
+        return self._magnetisationVectorAngle
+
+    @magAngle.setter
+    def magAngle(self, angle: float):
+        """set of magnetization angle
 
         Args:
             angle (float): offset angle in rad
         """
+        assert isinstance(
+            angle, float
+        ), f"Magnetization is not type float but {type(angle)}"
         self._magnetisationVectorAngle = angle
-
-    def getMagnetisationVectorAngle(self) -> float:
-        """get magnetisation angle
-
-        Returns:
-            float: offset angle of magnetisation vector in rad
-        """
-        return self._magnetisationVectorAngle

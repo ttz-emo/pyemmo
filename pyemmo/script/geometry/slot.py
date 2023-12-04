@@ -1,11 +1,13 @@
-from typing import Dict, List, Literal, Tuple, Union
+"""Module for class Slot"""
+from typing import List, Literal, Tuple, Union
 from pyemmo.script.geometry.line import Line
 from pyemmo.script.geometry.surface import Surface
 from pyemmo.script.material.material import Material
 from .physicalElement import PhysicalElement
 from .. import colorDict
-from math import degrees
+from math import degrees, isclose, pi
 from numpy import mean
+
 
 ###
 # Eine Instanz der Klasse Slot beschreibt eine Nut einer elektrischen Maschine im dreidimensionalen Raum.
@@ -21,7 +23,7 @@ class Slot(PhysicalElement):
         name: str,
         geometricalElement: List[Surface],
         material: Material,
-        windingDir: Union[Literal[1], Literal[-1]] = 1,
+        windingDir: Literal[-1, 1] = 1,
         phase: float = 0,
         nbrTurns: int = 0,
         phyID: int = None,
@@ -29,7 +31,7 @@ class Slot(PhysicalElement):
         """
         Constuctor of the class Slot.
 
-        Attribute:
+        Args:
             name (str): slot name
             geometricalElement (List[Surface]): List of surface(s) forming the slot
             material (Material): Slot material
@@ -39,36 +41,41 @@ class Slot(PhysicalElement):
             phyID (int): Physical Surface ID for Onelab Script. Defaults to None and will be set unique automatically.
 
         """
-        PhysicalElement.__init__(
-            self,
+        super().__init__(
             name=name,
             material=material,
             geometricalElement=geometricalElement,
             phyID=phyID,
         )
-        self._physicalElementType = "Slot"  # the physical element type can be used to identify physical elements
+        self.physicalElementType = "Slot"  # the physical element type can be used to identify physical elements
         ###Liste aus Flächen (Objekte der Klasse Surface).
         if self.geometricalElement:  # if list is not empty
-            if self.getGeoElementType() == Line:
+            if self.geoElementType == Line:
                 raise TypeError(
                     f"Physical element type 'Slot' should only contain Surface  Elements but got type Line!"
                 )
         # Material der Wicklung
-        self.material = material # FIXME: redefinition of material. Allready defined in pe!
         self.windDirection = windingDir  # set winding direction
         self.phase = phase  # set phase angle
         self.nbrTurns = nbrTurns  # set number of winding turns
-        # set color
-        self.setColor("Orange")
+        self.setColor()  # set color
 
     @property
-    def windDirection(self) -> Union[Literal[1], Literal[-1]]:
-        """Getter of winding direction"""
+    def windDirection(self) -> Literal[-1, 1]:
+        """Winding direction
+
+        Returns:
+            Literal[-1,1]: Winding direction (-1 = -z, 1 = +z)
+        """
         return self._windDirection
 
     @windDirection.setter
-    def windDirection(self, windDir: Union[Literal[1], Literal[-1]]) -> None:
-        """Setter of winding direction. Can be +1 or -1."""
+    def windDirection(self, windDir: Literal[-1, 1]) -> None:
+        """Setter of winding direction. Can be +1 or -1.
+
+        Args:
+            windDir (Union[Literal[1], Literal[): _description_
+        """
         if windDir in (1, -1):
             self._windDirection = windDir
         else:
@@ -76,12 +83,20 @@ class Slot(PhysicalElement):
 
     @property
     def phase(self) -> float:
-        """Getter of phase angle"""
+        """slot winding phase angle
+
+        Returns:
+            float: phase angle in rad
+        """
         return self._phase
 
     @phase.setter
     def phase(self, phaseAngle: float) -> None:
-        """Setter of phase angle [radians]"""
+        """Setter of phase angle
+
+        Args:
+            phaseAngle (float): angle of winding phase in rad.
+        """
         if isinstance(phaseAngle, (int, float)):
             self._phase = phaseAngle
         else:
@@ -89,12 +104,20 @@ class Slot(PhysicalElement):
 
     @property
     def nbrTurns(self) -> int:
-        """Getter of number of winding turns in face attribute"""
+        """Getter of number of winding turns in face attribute
+
+        Returns:
+            int: number of winding turns in slot.
+        """
         return self._nbrTurns
 
     @nbrTurns.setter
-    def nbrTurns(self, nbrTurnsInFace: int) -> None:
-        """Setter of number of wires in face attribute"""
+    def nbrTurns(self, nbrTurnsInFace: Union[int, float]) -> None:
+        """Setter of number of wires in face attribute
+
+        Args:
+            nbrTurnsInFace (int): number of winding turns in slot
+        """
         if isinstance(nbrTurnsInFace, int):
             self._nbrTurns = nbrTurnsInFace
         elif isinstance(nbrTurnsInFace, float):
@@ -134,10 +157,10 @@ class Slot(PhysicalElement):
             return phase
 
     def getRadialPosition(self) -> Tuple[float, float]:
-        """get the radial position of the slot.
-        This usefull when sorting the slots in circumfederal direction
+        """get the radial position of the slot.\n
+        This is useful when sorting the slots in circumfederal direction
 
-        Returns
+        Returns:
             float: Angle of the center of the slots surface(s) in radians
             float: Radius of the center of the slots surface(s) in m
         """
@@ -146,5 +169,31 @@ class Slot(PhysicalElement):
         for surf in self.geometricalElement:
             centerPoint = surf.calcCOG()
             phiList.append(centerPoint.getAngleToX())
-            radList.append(centerPoint.getRadius())
+            radList.append(centerPoint.radius)
         return (mean(phiList), mean(radList))
+
+    def setColor(self, colorName: str = None):  # overwrite set color
+        """Set mesh color for Slot
+
+        If no mesh color name is given => determine by phase OR use orange
+
+        All available mesh colors are listed under
+        `gmsh colors <https://gitlab.onelab.info/gmsh/gmsh/blob/gmsh_4_11_0/src/common/Colors.h>`__.
+
+        Args:
+            colorName (str, optional): `X11 color name <https://en.wikipedia.org/wiki/X11_color_names>`__
+                as string. Defaults to Phase color.
+        """
+        if not colorName:
+            phaseDeg = degrees(self.phase % (2 * pi))
+            if isclose(phaseDeg, 0):
+                # phase u
+                super().setColor("Magenta")
+            elif isclose(phaseDeg, 120):
+                # phase v
+                super().setColor("Yellow4")
+            elif isclose(phaseDeg, 240):
+                # phase w
+                super().setColor("Cyan")
+        else:
+            super().setColor("Orange")
