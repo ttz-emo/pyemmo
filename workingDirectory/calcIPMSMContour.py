@@ -1,15 +1,22 @@
 import math
-from pyemmo.script.geometry.point import Point
+from typing import Union
 
-def calcIPMSMRotorContour(geometryList: list, radius: float) -> tuple[list, Point, Point]:
-    """Calculation of the rotor contour of an IPMSM machine.
+from pyemmo.script.geometry.point import Point
+from pyemmo.script.geometry.line import Line
+from pyemmo.script.geometry.circleArc import CircleArc
+
+
+def calcIPMSMRotorContour(
+    geometryList: list, radius: float
+) -> tuple[list[Union[Line, CircleArc]], Point, Point]:
+    """Calculation for the rotor contour of an IPMSM machine.
 
     Args:
         geometryList (list): List with all surfaces of the machine (Pyemmo format)
         radius (float): Pyleecan machine
 
     Returns:
-        tuple[list, Point, Point]: _description_
+        tuple[list[Union[Line, CircleArc]], Point, Point]: _description_
     """
     rotorContourLineList = []
     for surf in geometryList:
