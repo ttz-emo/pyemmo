@@ -1,6 +1,4 @@
-import sys
-import copy
-from math import pi, isclose
+from math import pi
 from numpy import angle
 
 import pyleecan.Classes.Machine
