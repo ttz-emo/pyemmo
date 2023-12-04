@@ -1,0 +1,91 @@
+"""Module for class MovingBand"""
+from typing import List
+
+from .circleArc import CircleArc
+from ..material.material import Material
+from .physicalElement import PhysicalElement
+from ..script import DEFAULT_GEO_TOL
+
+
+class MovingBand(PhysicalElement):
+    """Eine Instanz der Klasse MovingBand beschreibt das Band im Luftspalt, die bei der Movingband-
+    Simulationsmethode für die Drehung des Netzes verwendet wird. Das Movingband muss auf der Rotor-
+    Seite einen Vollkreis beschreiben, ist jedoch auf der Stator-Seite nicht nötig.
+        \\image html mb_Rotor.png
+        \\image html mb_Stator.png
+    """
+
+    ###
+    # Konstruktor der Klasse MovingBand.
+    #
+    #   Attribute:
+    #
+    #       ID : Integer
+    #       name : String
+    #       material : Material
+    #       geometricalElement : [CircleArc]
+    #       auxiliary : Boolean
+    #
+    ###
+    def __init__(
+        self,
+        name: str,
+        geometricalElement: List[CircleArc],
+        material: Material = None,
+        auxiliary: bool = False,
+    ):
+        """Create a moving band segment
+
+        Args:
+            name (str): Moving band segment name
+            geometricalElement (List[CircleArc]): List of arc segments to build the mb segment.
+            material (Material, optional): Airgap material. Defaults to None.
+            auxiliary (bool, optional): Flag to determine if given moving band segment is auxillar.
+            Defaults to False.
+        """
+        super().__init__(
+            name=name, geometricalElement=geometricalElement, material=material
+        )
+        # make sure geo elements are circle arcs
+        self.geometricalElement: List[CircleArc] = geometricalElement
+        self.radius = geometricalElement[0].radius
+        # the physical element type can be used to identify physical elements
+        self.physicalElementType = "MovingBand"
+        ###Hilfslinien des Movingbands zur Ergänzung zum Vollkreis, bei einem Teilmodell.
+        self._auxiliary = auxiliary
+
+    @property
+    def auxiliary(self) -> bool:
+        """Gibt den Nutzer die Information zurück (Boolean), ob es sich bei dem Objekt um eine
+        Hilfslinie handelt.
+
+        Returns:
+            bool: If MovingBand object is outside model segment (case symmetry) or not.
+        """
+        return self._auxiliary
+
+    @property
+    def radius(self) -> float:
+        """Get the moving band radius"""
+        return self._radius
+
+    @radius.setter
+    def radius(self, mbRadius: float):
+        """setter of movingband radius
+
+        Args:
+            mbRadius (float): Movingband Radius
+
+        Raises:
+            ValueError: If the given radius does not match the radius of the given circle arcs.
+        """
+        for arc in self.geometricalElement:
+            if abs(arc.radius - mbRadius) > DEFAULT_GEO_TOL:
+                raise (
+                    ValueError(
+                        "Rotor Movingband domain got Circle Arc objects with different Radius:\n"
+                        + f"Movingband radius: {mbRadius}\n"
+                        + f"Radius of {arc.name}: {arc.radius}\n"
+                    )
+                )
+        self._radius = mbRadius

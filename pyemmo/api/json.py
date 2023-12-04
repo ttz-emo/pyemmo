@@ -8,11 +8,12 @@ from os import mkdir
 from os.path import isdir, isfile, join
 from typing import Dict, List, Tuple
 import logging
+import json
 import datetime
 from . import logger, ch
 from .. import logFmt
 from ..definitions import RESULT_DIR
-from ..functions import runOnelab, calcIronLoss
+from ..functions import runOnelab, calcIronLoss, importResults
 from ..script.geometry.machineAllType import MachineAllType
 from ..script.geometry.rotor import Rotor
 from ..script.geometry.stator import Stator
@@ -88,7 +89,7 @@ def createMachine(
         axLen=axLen["rotor"],
     )
     # create the stator
-    nbrSlotTotal = segmentSurfDict["StNut"].getNbrSegments()
+    nbrSlotTotal = segmentSurfDict["StNut"].NbrSegments
     # create winding
     windingSwat = modelJSON.createWinding(extendedInfo)
     statorAPI = Stator(
@@ -172,10 +173,10 @@ def createMeshSizeGUICode(machineSurfDict: Dict[str, List[SurfaceAPI]]):
             for surfID in surfID_List:
                 surfList.extend(machineSurfDict[surfID])
             # get the mesh size
-            meshSize = surfList[0].getMeshSize()
+            meshSize = surfList[0].meshSize
             # if meshsize in surfaceAPI was 0, get the mean mesh size of the points
             if not meshSize:
-                meshSize = surfList[0].getMeanMeshLength()
+                meshSize = surfList[0].meanMeshLength
             meshSize = round(meshSize * 1e3, 3)
             try:
                 # try to get the real name from the api name dict
@@ -211,10 +212,10 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
         script (Script): Actual Script object to add PostOperation.
         extendedInfo (dict): Extended info dict to get the different radii.
     """
-    machine = script.getMachine()
+    machine = script.machine
     # 1. Airgap flux density
     rotorAirgapRadius = importJSON.getMovingbandRadius(extendedInfo)
-    statorAirgapRadius = machine.getStator().getMovingBand()[0].radius
+    statorAirgapRadius = machine.stator.movingBand[0].radius
     for side, radius in {
         "rotor": rotorAirgapRadius,
         "stator": statorAirgapRadius,
@@ -272,10 +273,10 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
     ## 4. Add rotor and stator b-field export for iron loss calculation
     if importJSON.getFlagCalcIronLoss(extendedInfo):
         rotorIronPhysicalID = [
-            str(phys.id) for phys in machine.getRotor()._domainLam.physicals
+            str(phys.id) for phys in machine.rotor._domainLam.physicals
         ]
         statorIronPhysicalID = [
-            str(phys.id) for phys in machine.getStator()._domainLam.physicals
+            str(phys.id) for phys in machine.stator._domainLam.physicals
         ]
         script.addPostOperation(
             "b",
@@ -297,11 +298,11 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
         # if there are magnets
         allMagConducting = True
         for magnet in machine._domainM.physicals:
-            if magnet.getMaterial().getConductivity() is None:
+            if magnet.material.conductivity is None:
                 allMagConducting = False
                 logging.warning(
                     "Unable to calculate magnet losses, due to missing el. conductivity in %s.",
-                    magnet.getName(),
+                    magnet.name,
                 )
                 break
         if allMagConducting:
@@ -313,7 +314,7 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
                 File=join("CAT_RESDIR", "Pv_eddy_Mag.dat"),
                 # Name='"p (stator)"',
             )
-            script.simulationParameters.SYM.CALC_MAGNET_LOSSES = 1
+            script.simParams["SYM"]["CALC_MAGNET_LOSSES"] = 1
 
 
 # ======================================== START MAIN FUNCTION =====================================
@@ -343,6 +344,7 @@ def main(
         6. Create command line call for gmsh/getdp with :func:`createCmdCommand()
            <pyemmo.functions.runOnelab.createCmdCommand>` and start with :code:`subprocess.run`
 
+    TODO: Update docstring - main also accepts list of surface dicts instead of filename
 
     Args:
         geo (str): File path to JSON formatted geometry file.
@@ -380,18 +382,23 @@ def main(
             raise FileNotFoundError(f"Provided gmsh executable was not found: {gmsh}")
 
     # get geometry
-    if isinstance(geo, str):
-        if isfile(geo):
-            # import the segment machine geometry
-            segmentSurfDict = modelJSON.importMachineGeometry(geo)
-        else:
-            raise FileNotFoundError(f"Given file '{geo}' doesn't exist!")
-    elif isinstance(geo, dict):
-        segmentSurfDict = geo
+    if isfile(geo):
+        # import the segment surface list from the json file
+        try:
+            with open(geo, encoding="utf-8") as jsonFile:
+                machineGeoList = json.load(jsonFile)
+        except FileNotFoundError as fnfe:
+            raise fnfe
+        except Exception as exept:
+            raise exept
+    elif isinstance(geo, list):
+        machineGeoList = geo
     else:
         raise TypeError(
             f"Geometry file has to be type 'File' or 'dict', not {type(geo)}"
         )
+    # create dict with surface api (segment) objects from the surface list
+    segmentSurfDict = modelJSON.importMachineGeometry(machineGeoList)
 
     # addition information
     if isfile(extInfo):
@@ -431,7 +438,7 @@ def main(
     #     + " -solve Analysis -v1",
     #     shell=True,
     # )
-    proFile = apiScript.getProFilePath()  # path to .pro file
+    proFile = apiScript.proFilePath  # path to .pro file
     command = runOnelab.createCmdCommand(
         onelabFile=proFile,
         gmshPath=gmsh,
@@ -460,20 +467,20 @@ def main(
                         textLine.replace("\n", "\n\t"),
                     )
     # iron loss post processing:
-    resPath = apiScript.getResultsPath()
+    resPath = apiScript.resultsPath
     # check if resPath exists -> simulation has been run.
     if (
         importJSON.getFlagCalcIronLoss(extendedInfo)
         and isdir(resPath)
-        and simulationParameters["analysis_type"] == 1  # transient simulation
+        and simulationParameters["SYM"]["ANALYSIS_TYPE"] == 1  # transient simulation
     ):
         # FIXME: Implement better check for simulation status
         brFilePath = join(resPath, "b_rotor.pos")
         bsFilePath = join(resPath, "b_stator.pos")
-        nbrPolePairs = machine.getNbrPolePairs()
+        nbrPolePairs = machine.nbrPolePairs
         calcAngle = (
-            simulationParameters["final_rotor_pos"]
-            - simulationParameters["init_rotor_pos"]
+            simulationParameters["SYM"]["FINAL_ROTOR_POS"]
+            - simulationParameters["SYM"]["INIT_ROTOR_POS"]
         )
         if 360 / nbrPolePairs > calcAngle:
             # make sure at least one electrical period has been simulated
@@ -482,15 +489,16 @@ def main(
                 "IRON LOSS CALCULATION: Simulated rotation (%.3f°) might be smaller than one electrical period! Iron loss calculation is only valid if at least one electrical period is simulated.",
                 calcAngle,
             )
-        rotorMat = machine.getRotor()._domainLam.physicals[0].getMaterial()
-        statorMat = machine.getStator()._domainLam.physicals[0].getMaterial()
+        rotorMat = machine.rotor._domainLam.physicals[0].material
+        statorMat = machine.stator._domainLam.physicals[0].material
         if (
             isfile(brFilePath)
             and isfile(bsFilePath)
             and isinstance(rotorMat, ElectricalSteel)
             and isinstance(statorMat, ElectricalSteel)
         ):
-            lossParams = rotorMat.lossParams
+            #FIXME: Material properties should be given valid
+            lossParams = rotorMat.lossParams 
             calcIronLoss.adaptIronLossParams(lossParams, rotorMat)
             ironLossR, _ = calcIronLoss.main(
                 brFilePath,
@@ -537,32 +545,34 @@ def main(
                 "IRON LOSS CALCULATION: B field results file 'b_rotor.pos' or 'b_stator.pos' not found in '%s'",
                 resPath,
             )
-            # raise (
-            #     FileNotFoundError(
-            #         "IRON LOSS CALCULATION: B field results file 'b_rotor.pos' or 'b_stator.pos' not found in "
-            #         + resPath
-            #     )
-            # )
+    if (
+        importJSON.getFlagCalcIronLoss(extendedInfo)
+        and simulationParameters["SYM"]["ANALYSIS_TYPE"] == 0  # static simulation
+    ):
+        # FIXME: Improve check because simulation type can be changed in gmsh GUI
+        logger.warning(
+            "IRON LOSS CALCULATION: Iron loss calculation cannot be done for static simulation!",
+        )
     # close log file handler!
     jsonLogFileHandler.close()
 
-    ###########################################################################################
-    ################ Plot Results for Debugging ##################
-    # resPath = apiScript.getResultsPath()
-    # if isdir(resPath):
-    #     # if the folder for results exists
-    #     for file in listdir(resPath):
-    #         filename, fileExt = splitext(file)
-    #         if fileExt == ".dat":
-    #             importResults.plotTimeTableDat(
-    #                 abspath(join(resPath, file)),
-    #                 filename,
-    #                 title=filename,
-    #                 savefig=True,
-    #                 showfig=False,
-    #                 savePath=None,
-    #             )
-    ###########################################################################################
+    # Plot Results for Debugging
+    if logger.getEffectiveLevel() <= 10:
+        resPath = apiScript.resultsPath
+        if isdir(resPath):
+            # if the folder for results exists
+            importResults.plt.set_loglevel(level="info") # avoid matplotlib debug infos
+            for file in os.listdir(resPath):
+                filename, fileExt = os.path.splitext(file)
+                if fileExt == ".dat":
+                    importResults.plotTimeTableDat(
+                        os.path.abspath(join(resPath, file)),
+                        filename,
+                        title=filename,
+                        savefig=True,
+                        showfig=False,
+                        savePath=None,
+                    )
 
 
 if __name__ == "__main__":
