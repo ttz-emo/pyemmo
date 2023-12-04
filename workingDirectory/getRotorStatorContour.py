@@ -5,6 +5,7 @@ from pyleecan.Classes.MachineSCIM import MachineSCIM
 
 from pyemmo.script.geometry.circleArc import CircleArc
 from pyemmo.script.geometry.line import Line
+from pyemmo.script.geometry.point import Point
 from .getRotorStatorSurfaces import getRotorSurfaces
 from .calcsSPMSMContour import calcSPMSMRotorContour
 
@@ -14,7 +15,7 @@ from .calcWindContour import calcWindContour
 
 def getSurfMagContour(
     geometryList: list, machine: Machine, isInternalRotor: bool = True
-) -> list[Line, CircleArc]:
+) -> tuple[list[Union[Line, CircleArc]], Point, Point]:
     """Get a list of curves of the contour of the rotor with a surfacemagnet. ``rotorContourLineList``
 
     Args:
