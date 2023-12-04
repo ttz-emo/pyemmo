@@ -73,9 +73,10 @@ def getCurrentdq(extendedInfo: dict) -> Tuple[float]:
             "Identifier 'id' and/or 'iq' missing from extended Information dict!"
         )
 
-#------------------------------------------------------------------------------
-#------------------------------------------------------------------------------
-#------------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 
 def getWindingList(extendedInfo: dict) -> list[list[list[int]]]:
@@ -87,7 +88,7 @@ def getWindingList(extendedInfo: dict) -> list[list[list[int]]]:
 
     double-layer winding:
         [[[phase_u1], [phase_u2]], [[phase_v1], [phase_v2]], [[phase_w1], [phase_w2]]]
-        
+
     Where phase_u1 is a list of integers representing the slot ID and the winding direction
     (with their sign). See`this <https://swat-em.readthedocs.io/en/latest/reference.html#swat_em.datamodel.datamodel.set_phases>`__
     SWAT-EM method for more details.
@@ -107,6 +108,7 @@ def getWindingList(extendedInfo: dict) -> list[list[list[int]]]:
     # windList: List[str] = extendedInfo[windKey]
     windList = extendedInfo[windKey]
     return windList
+
 
 def getNbrOfTurns(extendedInfo: dict) -> float:
     """
@@ -248,21 +250,21 @@ def getSimuParams(extendedInfo: dict) -> Dict[str, float]:
     """
     idq = getCurrentdq(extendedInfo)
     endPos = extendedInfo["endPos"]
-    # If is set to NaN in Matlab (-> "null" in JSON -> "None" in Python),
-    # the angle will be calulated.
-    parkAngleOffset = extendedInfo["parkAngleOffset"]
     simuParams = {
-        "init_rotor_pos": extendedInfo["startPos"],
-        "angle_increment": (endPos - extendedInfo["startPos"])
-        / extendedInfo["nbrSteps"],
-        "final_rotor_pos": endPos,
-        "Id_eff": idq[0],
-        "Iq_eff": idq[1],
-        "rot_speed": getRotFreq(extendedInfo, "rpm"),
-        "park_angle_offset": parkAngleOffset,
-        "analysis_type": extendedInfo["analysisType"],
-        "tempMag": getMagTemperature(extendedInfo),
-        "nbrParallePaths": getNbrParalellPaths(extendedInfo),
+        "SYM": {
+            "INIT_ROTOR_POS": extendedInfo["startPos"],
+            "ANGLE_INCREMENT": (endPos - extendedInfo["startPos"])
+            / extendedInfo["nbrSteps"],
+            "FINAL_ROTOR_POS": endPos,
+            "Id_eff": idq[0],
+            "Iq_eff": idq[1],
+            "SPEED_RPM": getRotFreq(extendedInfo, "rpm"),
+            "ParkAngOffset": extendedInfo["parkAngleOffset"],
+            "ANALYSIS_TYPE": extendedInfo["analysisType"],
+        },
+        "MAT": {
+            "TEMP_MAG": getMagTemperature(extendedInfo),
+        },
     }
     return simuParams
 

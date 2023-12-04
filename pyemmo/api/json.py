@@ -314,7 +314,7 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
                 File=join("CAT_RESDIR", "Pv_eddy_Mag.dat"),
                 # Name='"p (stator)"',
             )
-            script.simulationParameters.SYM.CALC_MAGNET_LOSSES = 1
+            script.simParams["SYM"]["CALC_MAGNET_LOSSES"] = 1
 
 
 # ======================================== START MAIN FUNCTION =====================================
@@ -478,15 +478,15 @@ def main(
     if (
         importJSON.getFlagCalcIronLoss(extendedInfo)
         and isdir(resPath)
-        and simulationParameters["analysis_type"] == 1  # transient simulation
+        and simulationParameters["SYM"]["ANALYSIS_TYPE"] == 1  # transient simulation
     ):
         # FIXME: Implement better check for simulation status
         brFilePath = join(resPath, "b_rotor.pos")
         bsFilePath = join(resPath, "b_stator.pos")
         nbrPolePairs = machine.nbrPolePairs
         calcAngle = (
-            simulationParameters["final_rotor_pos"]
-            - simulationParameters["init_rotor_pos"]
+            simulationParameters["SYM"]["FINAL_ROTOR_POS"]
+            - simulationParameters["SYM"]["INIT_ROTOR_POS"]
         )
         if 360 / nbrPolePairs > calcAngle:
             # make sure at least one electrical period has been simulated
@@ -503,7 +503,8 @@ def main(
             and isinstance(rotorMat, ElectricalSteel)
             and isinstance(statorMat, ElectricalSteel)
         ):
-            lossParams = rotorMat.lossParams
+            #FIXME: Material properties should be given valid
+            lossParams = rotorMat.lossParams 
             calcIronLoss.adaptIronLossParams(lossParams, rotorMat)
             ironLossR, _ = calcIronLoss.main(
                 brFilePath,
@@ -552,8 +553,9 @@ def main(
             )
     if (
         importJSON.getFlagCalcIronLoss(extendedInfo)
-        and simulationParameters["analysis_type"] == 0  # static simulation
+        and simulationParameters["SYM"]["ANALYSIS_TYPE"] == 0  # static simulation
     ):
+        # FIXME: Improve check because simulation type can be changed in gmsh GUI
         logger.warning(
             "IRON LOSS CALCULATION: Iron loss calculation cannot be done for static simulation!",
         )
@@ -562,7 +564,7 @@ def main(
 
     # Plot Results for Debugging
     if logger.getEffectiveLevel() <= 10:
-        resPath = apiScript.resPath
+        resPath = apiScript.resultsPath
         if isdir(resPath):
             # if the folder for results exists
             importResults.plt.set_loglevel(level="info") # avoid matplotlib debug infos

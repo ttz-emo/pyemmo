@@ -57,32 +57,15 @@ def createLine(
     if lineType == "Arc":
         # determine Centerpoint
         mpName = lineDict["MpName"]
-        if mpName in ("MP", "M1") and (
-            norm(
-                array(globalCenterPoint.coordinate)
-                - array(
-                    (
-                        lineDict["MpX"],
-                        lineDict["MpY"],
-                        lineDict["MpZ"],
-                    )
-                )
-            )
-           
-            < DEFAULT_GEO_TOL
-        ):
-            # the point is the global center point
-            centerPoint = globalCenterPoint
-        else:  # Point is not CenterPoint (0,0,0)
-            # import coordinates of Centerpoint for THIS arc
-            coordsMP = (lineDict["MpX"], lineDict["MpY"], lineDict["MpZ"])
-            centerPoint = Point(
-                mpName,
-                coordsMP[0],
-                coordsMP[1],
-                coordsMP[2],
-                meshLen if meshLen else lineDict["MpMesh"],
-            )
+        # import coordinates of Centerpoint for THIS arc
+        coordsMP = (lineDict["MpX"], lineDict["MpY"], lineDict["MpZ"])
+        centerPoint = Point(
+            mpName,
+            coordsMP[0],
+            coordsMP[1],
+            coordsMP[2],
+            meshLen if meshLen else lineDict["MpMesh"],
+        )
         line = CircleArc(lineName, startPoint, centerPoint, endPoint)
     elif lineType == "Line":
         line = Line(lineName, startPoint, endPoint)
@@ -725,7 +708,7 @@ def getSlotPhase(
     """
     for phaseIndex, phaseList in enumerate(windingLayout):
         # for slotSideList in phaseList:
-        for slotNumber in phaseList[slotSide - 1]:
+        for slotNumber in phaseList[slotSide]:
             if abs(slotNumber) == segmentNbr + 1:
                 if phaseIndex == 0:
                     phase = "u"
@@ -741,8 +724,8 @@ def getSlotPhase(
                 else:
                     cDir = "n"
                 logger.debug(
-                    "slot number: %i || slot side: %i || phase: %s || direction: %s",
-                    slotNumber,
+                    "segment number: %i || slot side: %i || phase: %s || direction: %s",
+                    segmentNbr,
                     slotSide,
                     phase,
                     cDir,
@@ -757,7 +740,7 @@ def createSlot(surf: SurfaceAPI, material: Material, extendedInfo: dict) -> Slot
     Args:
         surf (SurfaceAPI): Slot geometric surface. Surface IdExt must be formatted like
             "StCu<slotSide>_<segmentNumber>". E.g. The first slot side of the first
-            segment must be named "StCu1_0".
+            segment must be named "StCu0_0".
         material (Material): Slot Material.
         extendedInfo (dict): Additional model information dict, with winding configuration.
 
@@ -768,7 +751,7 @@ def createSlot(surf: SurfaceAPI, material: Material, extendedInfo: dict) -> Slot
     slotSide, segmentNbr = getSlotInfo(surf.idExt)
     windingLayout = importJSON.getWindingList(extendedInfo)
     # slotSide is set 0 or 1 where the naming of slotSide is 1 or 2
-    cDir, phase = getSlotPhase(windingLayout, segmentNbr, slotSide - 1)
+    cDir, phase = getSlotPhase(windingLayout, segmentNbr, slotSide)
     slotName = surf.idExt + "_" + phase.upper() + cDir
     # create slot without winding information, because winding is set by stator
     slot = Slot(name=slotName, geometricalElement=[surf], material=material)

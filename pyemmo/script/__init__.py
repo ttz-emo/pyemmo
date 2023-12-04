@@ -17,9 +17,40 @@ except Exception:
     warnings.warn("Color Dict could not be imported...")
 
 # define default parameters in parameter dict
-default_param_dict = SimpleNamespace(**{"GEO": {}, "SYM": {}, "MAT": {}})
-default_param_dict.GEO = SimpleNamespace(
-    **{
+default_param_dict = {"GEO": {}, "SYM": {}, "MAT": {}}
+"""Default Script parameters dict, looks like:
+    {\n
+        "GEO": {\n
+            "SYMMETRY_FACTOR": 1,\n
+            "L_AX_R": 1.0,\n
+            "L_AX_S": 1.0,\n
+            "NBR_POLE_PAIRS": 4,\n
+            "NBR_SLOTS": 12,\n
+            "NBR_TURNS_IN_FACE": 20,\n
+            "R_AIRGAP": 0.1,\n
+        }, \n
+        "SYM": {\n
+            "INIT_ROTOR_POS": 0.0,\n
+            "ANGLE_INCREMENT": 0.5,\n
+            "FINAL_ROTOR_POS": 90.0,\n
+            "Id_eff": 0,\n
+            "Iq_eff": 1,\n
+            "FLAG_NL": 1,\n
+            "SPEED_RPM": 1000,\n
+            "PATH_RES": "",\n
+            "ParkAngOffset": None,  # optional\n
+            "ANALYSIS_TYPE": 1,  # optional; 0: static, 1: transient\n
+            "FLAG_CHANGE_ROT_DIR": 0,\n
+            "NBR_PARALLEL_PATHS": 1,\n
+            "CALC_MAGNET_LOSSES": 0,\n
+        }, \n
+        "MAT": {\n
+            "VALUE_DENSITY_LAM": 7800,\n
+            "TEMP_MAG": 20,\n
+        }\n
+    } 
+"""
+default_param_dict["GEO"] ={
         "SYMMETRY_FACTOR": 1,
         "L_AX_R": 1.0,
         "L_AX_S": 1.0,
@@ -28,9 +59,7 @@ default_param_dict.GEO = SimpleNamespace(
         "NBR_TURNS_IN_FACE": 20,
         "R_AIRGAP": 0.1,
     }
-)
-default_param_dict.SYM = SimpleNamespace(
-    **{
+default_param_dict["SYM"] = {
         "INIT_ROTOR_POS": 0.0,
         "ANGLE_INCREMENT": 0.5,
         "FINAL_ROTOR_POS": 90.0,
@@ -45,13 +74,10 @@ default_param_dict.SYM = SimpleNamespace(
         "NBR_PARALLEL_PATHS": 1,
         "CALC_MAGNET_LOSSES": 0,
     }
-)
-default_param_dict.MAT = SimpleNamespace(
-    **{
+default_param_dict["MAT"] = {
         "VALUE_DENSITY_LAM": 7800,
         "TEMP_MAG": 20,
     }
-)
 
 boundaryDomainDict = {
     "primary": "Surf_cutA0",

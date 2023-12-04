@@ -369,11 +369,12 @@ class RotorSPMSM(Rotor):
     ###Mit createConstraintLine werden alle Grenzlinien, Movingbands, primary- und Slavelinien definiert.
     def _createConstraintLine(self):
         angle = self.angleGeoParts
+        centerPoint: Point = self.laminationDict["machineCentrePoint"]
         pLimitInner1 = Point(
             "pLimitInner1",
-            self.laminationDict["r_We"] + self.laminationDict["machineCentrePoint"]._x,
-            self.laminationDict["machineCentrePoint"]._y,
-            self.laminationDict["machineCentrePoint"]._z,
+            self.laminationDict["r_We"] + centerPoint.coordinate[0],
+            centerPoint.coordinate[1],
+            centerPoint.coordinate[2],
             1,
         )
         pLimitInner2 = pLimitInner1.duplicate()
@@ -386,8 +387,12 @@ class RotorSPMSM(Rotor):
                 pLimitInner2,
             )
         ]
+        for i in range(1, self.nbrGeoParts):
+            c1 = curveInner[0].duplicate()
+            c1.rotateZ(self.laminationDict["machineCentrePoint"], i * angle)
+            curveInner.append(c1)
 
-        mbRotor1 = []
+        mbRotor1: List[CircleArc] = []
         mbNegDirection = (
             self._physicalElements[3].geometricalElement[0].curve[1].duplicate()
         )
