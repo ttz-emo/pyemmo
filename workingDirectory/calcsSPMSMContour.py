@@ -1,10 +1,13 @@
 import math
 import copy
+from typing import Union
 
 from pyleecan.Classes.Machine import Machine
 
 from pyemmo.api.SurfaceJSON import SurfaceAPI
 from pyemmo.script.geometry.point import Point
+from pyemmo.script.geometry.line import Line
+from pyemmo.script.geometry.circleArc import CircleArc
 from pyemmo.functions.plot import plot
 
 
@@ -14,7 +17,7 @@ def calcSPMSMContGenerally(
     rotorMagSurfList: list[SurfaceAPI],
     radius: float,
     isInternalRotor: bool,
-) -> tuple[list, list, Point, Point]:
+) -> tuple[list[Union[Line, CircleArc]], Point, Point]:
     """General calculations for creating the rotor contour: \n
     * Filtering the lines that lie on the air gap
     * Detecting the outer points of the rotor contour facing the air gap
@@ -26,7 +29,7 @@ def calcSPMSMContGenerally(
         isInternalRotor (bool): Internal or external rotor
 
     Returns:
-        _type_: _description_
+        tuple[list[Union[Line, CircleArc]], Point, Point]: _description_
     """
     rotorContourLineList = []
     # --------------------------------------------
