@@ -59,7 +59,19 @@ def getSurfMagContour(
     return rotorContourLineList, lowestYPointRotor, biggestYPointRotor
 
 
-def getWindingContour(geometryList: list, machine: Machine, isInternalRotor: bool):
+def getWindingContour(
+    geometryList: list, machine: Machine, isInternalRotor: bool
+) -> list[Union[Line, CircleArc]]:
+    """Get a list of curves of the contour of the lamination with a winding.
+
+    Args:
+        geometryList (list): _description_
+        machine (Machine): _description_
+        isInternalRotor (bool): _description_
+
+    Returns:
+        list[Union[Line, CircleArc]]: _description_
+    """
     statorRint = machine.stator.Rint
     statorRext = machine.stator.Rext
     if isInternalRotor:
