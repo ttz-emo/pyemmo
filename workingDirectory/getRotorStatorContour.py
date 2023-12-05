@@ -89,7 +89,6 @@ def getIPMSMContour(
             lowestYPointRotor,
             biggestYPointRotor,
         ) = calcIPMSMRotorContour(
-            machine=machine,
             rotorLamSurfList=rotorLamSurfList,
             radius=rotorRint,
         )
@@ -99,7 +98,6 @@ def getIPMSMContour(
             lowestYPointRotor,
             biggestYPointRotor,
         ) = calcIPMSMRotorContour(
-            machine=machine,
             rotorLamSurfList=rotorLamSurfList,
             radius=rotorRext,
         )
