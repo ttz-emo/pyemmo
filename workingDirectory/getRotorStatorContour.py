@@ -8,8 +8,7 @@ from pyemmo.script.geometry.line import Line
 from pyemmo.script.geometry.point import Point
 from .getRotorStatorSurfaces import getRotorSurfaces
 from .calcsSPMSMContour import calcSPMSMRotorContour
-
-# from .calcIPMSMContour import calcIPMSMRotorContour
+from .calcIPMSMContour import calcIPMSMRotorContour
 from .calcWindContour import calcWindContour
 
 
@@ -30,7 +29,9 @@ def getSurfMagContour(
     rotorRint = machine.rotor.Rint
     rotorRext = machine.rotor.Rext
 
-    rotorLamSurfList, rotorMagSurfList = getRotorSurfaces(geometryList=geometryList)
+    rotorLamSurfList, rotorMagSurfList = getRotorSurfaces(
+        geometryList=geometryList
+    )
     if isInternalRotor:
         (
             rotorContourLineList,
@@ -54,6 +55,53 @@ def getSurfMagContour(
             rotorMagSurfList=rotorMagSurfList,
             radius=rotorRext,
             isInternalRotor=isInternalRotor,
+        )
+
+    return rotorContourLineList, lowestYPointRotor, biggestYPointRotor
+
+
+def getIPMSMContour(
+    geometryList: list, machine: Machine, isInternalRotor: bool = True
+) -> tuple[list[Union[Line, CircleArc]], Point, Point]:
+    """Get a list of curves of the contour of the rotor with a interior magnets. ``rotorContourLineList``
+
+    Args:
+        geometryList (list): List with all surfaces of the machine (Pyemmo format)
+        machine (Machine): Pyleecan machine
+        isInternalRotor (bool, optional): Internal or external Rotor. Defaults to True.
+
+    Returns:
+        list[Line, CircleArc]: _description_
+    """
+
+    rotorRint = machine.rotor.Rint
+    rotorRext = machine.rotor.Rext
+
+    rotorLamSurfList = []
+    
+    for surf in geometryList:
+        if surf.idExt == "Pol":
+            rotorLamSurfList.append(surf)
+            
+    if isInternalRotor:
+        (
+            rotorContourLineList,
+            lowestYPointRotor,
+            biggestYPointRotor,
+        ) = calcIPMSMRotorContour(
+            machine=machine,
+            rotorLamSurfList=rotorLamSurfList,
+            radius=rotorRint,
+        )
+    else:
+        (
+            rotorContourLineList,
+            lowestYPointRotor,
+            biggestYPointRotor,
+        ) = calcIPMSMRotorContour(
+            machine=machine,
+            rotorLamSurfList=rotorLamSurfList,
+            radius=rotorRext,
         )
 
     return rotorContourLineList, lowestYPointRotor, biggestYPointRotor
