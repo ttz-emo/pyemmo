@@ -1,55 +1,68 @@
-import sys
-from os.path import join
 from typing import List
 import math
 
-
-from pyleecan.definitions import DATA_DIR
-from pyleecan.Functions.load import load
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
 from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 from pyleecan.Classes.Machine import Machine
 
 from pyemmo.functions.plot import plot
 from pyemmo.api.SurfaceJSON import SurfaceAPI
-from .translateGeometry import translateGeometrySPMSM, buildGeoSPMSM
+from .translateGeometry import translateGeometry
 from .getRotorStatorContour import (
     getSurfMagContour,
     getWindingContour,
-    # getIPMSMRotorContour,
+    getIPMSMContour,
 )
 
-# from workingDirectory.buildPyemmoMovingBand import buildPyemmoMovingBand
+
+def detectInnerOuterLimit(
+    geometryList: list[SurfaceAPI],
+    rotorRint: float,
+    statorRext: float,
+    isShaft: bool,
+) -> list[SurfaceAPI]:
+    """Overwrites the name of the curve, if its the most outlying curve (-> ``OuterLimit``) or the most innerlying curve (-> ``InnerLimit``).
+
+    Attention when making the function call:\n
+    If the machine has an external rotor:\n
+    ``rotorRint`` replaced with ``statorRint``\n
+    ``statorRext`` replaced with ``rotorRext``
+
+    Args:
+        geometryList (list[SurfaceAPI]): list of the machine surfaces
+        rotorRint (float): inner radius of the rotor
+        statorRext (float): outer radius of the stator
+
+    Returns:
+        list[SurfaceAPI]: _description_
+    """
+    for surf in geometryList:
+        for curve in surf.curve:
+            if isShaft:
+                if math.isclose(
+                    a=curve.startPoint.radius, b=rotorRint, abs_tol=1e-6
+                ) and math.isclose(
+                    a=curve.endPoint.radius, b=rotorRint, abs_tol=1e-6
+                ):
+                    curve.name = "InnerLimit"
+            if math.isclose(
+                a=curve.startPoint.radius, b=statorRext, abs_tol=1e-6
+            ) and math.isclose(
+                a=curve.endPoint.radius, b=statorRext, abs_tol=1e-6
+            ):
+                curve.name = "OuterLimit"
+    return geometryList
 
 
 # ===========================================
 # Definition of function 'createGeoDict':
 # ===========================================
-def createGeoDictSPMSM(
+def createGeoDict(
     machine: Machine,
     rotorSym: int,
     statorSym: int,
     isInternalRotor: bool,
-    magnetFarthestRadius: float,
-    magnetShortestRadius: float,
 ):
-    """_summary_
-
-    Args:
-        machine (Machine): _description_
-        rotorSym (int): _description_
-        statorSym (int): _description_
-        isInternalRotor (bool): _description_
-        magnetFarthestRadius (float): _description_
-        magnetShortestRadius (float): _description_
-
-    Raises:
-        TypeError: _description_
-
-    Returns:
-        _type_: _description_
-    """
-
     RotorSurf = machine.rotor.build_geometry(sym=rotorSym, alpha=0)
     StatorSurf = machine.stator.build_geometry(sym=statorSym, alpha=0)
 
@@ -62,6 +75,9 @@ def createGeoDictSPMSM(
 
     geometryList: List[SurfaceAPI] = []
     magnetizationDict = {}
+
+    rotorRint = machine.rotor.Rint
+    statorRext = machine.stator.Rext
 
     # =======================================
     # Loop of translation for rotor surfaces:
@@ -76,7 +92,7 @@ def createGeoDictSPMSM(
             saveSpaceTemp.extend(split1.split("-"))
         RotorSurfLabelsSplit2.append(saveSpaceTemp)
         print(f"\nTranslation for {RotorSurfLabels[i]}:")
-        pyemmoSurface, magnetizationDict = buildGeoSPMSM(
+        pyemmoSurface, magnetizationDict = translateGeometry(
             bauteil=RotorSurfLabelsSplit2[i][0],
             detail=RotorSurfLabelsSplit2[i][2],
             machine=machine,
@@ -102,19 +118,19 @@ def createGeoDictSPMSM(
 
         StatorSurfLabelsSplit2.append(saveSpaceTemp)
         print(f"\nTranslation for {StatorSurfLabels[i]}:")
-        pyemmoSurface, magnetizationDict = buildGeoSPMSM(
+        pyemmoSurface, magnetizationDict = translateGeometry(
             bauteil=StatorSurfLabelsSplit2[i][0],
             detail=StatorSurfLabelsSplit2[i][2],
             machine=machine,
             label=StatorSurfLabels[i],
-            surface=StatorSurf[i],
+            surface=surf,
             magnetizationDict=magnetizationDict,
         )
         geometryList.append(pyemmoSurface)
 
-    # ===========================
-    # CutOuts in rotorLamination:
-    # ===========================
+    # =====================================
+    # CutOuts in rotorLamination if IPMSM:
+    # =====================================
     if isinstance(machine, MachineIPMSM):
         for surfToCutOut in geometryList:
             if surfToCutOut.name != "Rotor-0_Lamination":
@@ -139,18 +155,34 @@ def createGeoDictSPMSM(
     # -------------------------------------------
     print("Generate rotor and stator contour:")
     if isinstance(machine, MachineIPMSM):
-        rotorContourLineList = getIPMSMRotorContour(
-            geometryList=geometryList, machine=machine, isInternalRotor=isInternalRotor
+        (
+            rotorContourLineList,
+            lowestYPointRotor,
+            biggestYPointRotor,
+        ) = getIPMSMContour(
+            geometryList=geometryList,
+            machine=machine,
+            isInternalRotor=isInternalRotor,
         )
         statorContourLineList = getWindingContour(
-            geometryList=geometryList, machine=machine, isInternalRotor=isInternalRotor
+            geometryList=geometryList,
+            machine=machine,
+            isInternalRotor=isInternalRotor,
         )
     elif isinstance(machine, MachineSIPMSM):
-        rotorContourLineList, lowestYPointRotor, biggestYPointRotor = getSurfMagContour(
-            geometryList=geometryList, machine=machine, isInternalRotor=isInternalRotor
+        (
+            rotorContourLineList,
+            lowestYPointRotor,
+            biggestYPointRotor,
+        ) = getSurfMagContour(
+            geometryList=geometryList,
+            machine=machine,
+            isInternalRotor=isInternalRotor,
         )
         statorContourLineList = getWindingContour(
-            geometryList=geometryList, machine=machine, isInternalRotor=isInternalRotor
+            geometryList=geometryList,
+            machine=machine,
+            isInternalRotor=isInternalRotor,
         )
     else:
         raise TypeError("Unable to translate machine type!")
@@ -158,56 +190,24 @@ def createGeoDictSPMSM(
     # ------------------------------------------------------
     # Change names of rotorRint-Curve and statorRext-Curve:
     # ------------------------------------------------------
-    rotorRint = machine.rotor.Rint
-    statorRext = machine.stator.Rext
 
-    if rotorRint > 0:
-        isShaft = True
-    else:
-        isShaft = False
-
-    def detectInnerOuterLimit(
-        geometryList: list[SurfaceAPI], rotorRint: float, statorRext: float
-    ) -> list[SurfaceAPI]:
-        """Overwrites the name of the curve, if its the most outlying curve (-> ``OuterLimit``) or the most innerlying curve (-> ``InnerLimit``).
-
-        Attention when making the function call:\n
-        If the machine has an external rotor:\n
-        ``rotorRint`` replaced with ``statorRint``\n
-        ``statorRext`` replaced with ``rotorRext``
-
-        Args:
-            geometryList (list[SurfaceAPI]): list of the machine surfaces
-            rotorRint (float): inner radius of the rotor
-            statorRext (float): outer radius of the stator
-
-        Returns:
-            list[SurfaceAPI]: _description_
-        """
-        for surf in geometryList:
-            for curve in surf.curve:
-                if isShaft:
-                    if math.isclose(
-                        a=curve.startPoint.radius, b=rotorRint, abs_tol=1e-6
-                    ) and math.isclose(
-                        a=curve.endPoint.radius, b=rotorRint, abs_tol=1e-6
-                    ):
-                        curve.name = "InnerLimit"
-                if math.isclose(
-                    a=curve.startPoint.radius, b=statorRext, abs_tol=1e-6
-                ) and math.isclose(a=curve.endPoint.radius, b=statorRext, abs_tol=1e-6):
-                    curve.name = "OuterLimit"
-        return geometryList
+    isShaft = bool(rotorRint > 0)
 
     if isInternalRotor:
         geometryList = detectInnerOuterLimit(
-            geometryList=geometryList, rotorRint=rotorRint, statorRext=statorRext
+            geometryList=geometryList,
+            rotorRint=rotorRint,
+            statorRext=statorRext,
+            isShaft=isShaft,
         )
     else:
         rotorRext = machine.rotor.Rext
         statorRint = machine.stator.Rint
         geometryList = detectInnerOuterLimit(
-            geometryList=geometryList, rotorRint=statorRint, statorRext=rotorRext
+            geometryList=geometryList,
+            rotorRint=statorRint,
+            statorRext=rotorRext,
+            isShaft=isShaft,
         )
 
     return (
