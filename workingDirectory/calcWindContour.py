@@ -78,13 +78,13 @@ def calcWindContour(
 
     centerPoint = Point(name="centerPoint", x=0, y=0, z=0, meshLength=1)
     statorNewLine = CircleArc(
-        name="statorNewCircleArc",
+        name="windNewCircleArc",
         startPoint=statorLinePointList[0],
         endPoint=statorLinePointList[1],
         centerPoint=centerPoint,
     )
     statorContourLineList.append(statorNewLine)
-    print("statorContourLineList:")
+    print("windContourLineList:")
     plot(statorContourLineList, linewidth=1, markersize=3, tag=True)
     print("---")
     return statorContourLineList
