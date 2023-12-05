@@ -46,7 +46,7 @@ except:
     sys.path.append(rootname)
 
 from pyemmo.functions.plot import plot
-from workingDirectory.buildPyemmoMovingBand import buildMovingBandSPMSM
+from workingDirectory.buildPyemmoMovingBand import buildMovingBand
 from pyemmo.api.json import main
 from pyemmo.definitions import ROOT_DIR
 
@@ -55,7 +55,7 @@ from pyemmo.definitions import ROOT_DIR
 # Import of Machines:
 # ===================
 # Import IPMSM
-# IPMSM_motor = load(join(DATA_DIR, "Machine", "IPMSM_B.json"))
+IPMSM_motor = load(join(DATA_DIR, "Machine", "IPMSM_B.json"))
 # # Import SPMSM:
 # SPMSM_motor = load(join(DATA_DIR, "Machine", "SPMSM_002.json"))
 # # directory = "C:\Users\k49976\Desktop"
@@ -129,7 +129,7 @@ SPMSMMusterShaft_5_inverted = load(
 # ========================================
 # Festlegung der zu berechnenden Maschine:
 # ========================================
-machine = SPMSMMusterShaft_5_inverted
+machine = IPMSM_motor
 simulation = SPMSMMuster2ShaftSIMU
 
 # =====================================
@@ -148,7 +148,7 @@ statorRext = machine.stator.Rext
 isInternalRotor = bool(statorRint > rotorRext)
 
 if isinstance(machine, MachineSIPMSM):
-    allBands, geometryList, movingband_r = buildMovingBandSPMSM(
+    allBands, geometryList, movingband_r = buildMovingBand(
         machine=machine,
         rotorRint=rotorRint,
         rotorRext=rotorRext,
@@ -157,15 +157,15 @@ if isinstance(machine, MachineSIPMSM):
         isInternalRotor=isInternalRotor,
     )
 
-# elif isinstance(machine, MachineIPMSM):
-#     allBands, geometryList, movingband_r = buildMovingBandIPMSM(
-#         machine=machine,
-#         rotorRint=rotorRint,
-#         rotorRext=rotorRext,
-#         statorRint=statorRint,
-#         statorRext=statorRext,
-#         isInternalRotor=isInternalRotor,
-#     )
+elif isinstance(machine, MachineIPMSM):
+    allBands, geometryList, movingband_r = buildMovingBand(
+        machine=machine,
+        rotorRint=rotorRint,
+        rotorRext=rotorRext,
+        statorRint=statorRint,
+        statorRext=statorRext,
+        isInternalRotor=isInternalRotor,
+    )
 
 geoTranslationDict = {}
 for surfAPI in geometryList:
