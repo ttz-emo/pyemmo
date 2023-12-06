@@ -31,15 +31,7 @@ def createGeoDict(
     StatorSurfLabelsSplit2 = []
 
     geometryList: List[SurfaceAPI] = []
-    magnetizationDict = {}
 
-    rotorRint = machine.rotor.Rint
-    statorRext = machine.stator.Rext
-
-    rotorRint = machine.rotor.Rint
-    statorRext = machine.stator.Rext
-
-    
     # =======================================
     # Loop of translation for rotor surfaces:
     # =======================================
@@ -53,13 +45,14 @@ def createGeoDict(
             saveSpaceTemp.extend(split1.split("-"))
         RotorSurfLabelsSplit2.append(saveSpaceTemp)
         print(f"\nTranslation for {RotorSurfLabels[i]}:")
-        pyemmoSurface, magnetizationDict = translateGeometry(
-            bauteil=RotorSurfLabelsSplit2[i][0],
-            detail=RotorSurfLabelsSplit2[i][2],
-            machine=machine,
-            label=RotorSurfLabels[i],
-            surface=surf,
-            magnetizationDict=magnetizationDict,
+        geometryList.append(
+            translateGeometry(
+                bauteil=RotorSurfLabelsSplit2[i][0],
+                detail=RotorSurfLabelsSplit2[i][2],
+                motor=machine,
+                label=RotorSurfLabels[i],
+                surface=RotorSurf[i],
+            )
         )
         geometryList.append(pyemmoSurface)
     print("=============================")
@@ -79,13 +72,14 @@ def createGeoDict(
 
         StatorSurfLabelsSplit2.append(saveSpaceTemp)
         print(f"\nTranslation for {StatorSurfLabels[i]}:")
-        pyemmoSurface, magnetizationDict = translateGeometry(
-            bauteil=StatorSurfLabelsSplit2[i][0],
-            detail=StatorSurfLabelsSplit2[i][2],
-            machine=machine,
-            label=StatorSurfLabels[i],
-            surface=surf,
-            magnetizationDict=magnetizationDict,
+        geometryList.append(
+            translateGeometry(
+                bauteil=StatorSurfLabelsSplit2[i][0],
+                detail=StatorSurfLabelsSplit2[i][2],
+                motor=machine,
+                label=StatorSurfLabels[i],
+                surface=StatorSurf[i],
+            )
         )
         geometryList.append(pyemmoSurface)
 

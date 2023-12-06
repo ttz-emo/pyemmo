@@ -17,46 +17,45 @@ from .getMagnetizationDict import getMagnetizationDict
 # Definition of function 'translateGeometry':
 # ===========================================
 def translateGeometry(
-    bauteil: str,  # Stator or Rotor
-    detail: str,  # Lamination, HoleMag, HoleVoid
+    nameSplitList: list[str],  # list with the splitted names
     machine: pyleecan.Classes.Machine.Machine,  # Import of motor
     label: str,
     surface: pyleecan.Classes.Surface.Surface,
     magnetizationDict: dict,
 ) -> tuple[SurfaceAPI, dict]:
     isMag = False
-    if bauteil == "Rotor":
-        if detail == "Lamination":
+    if nameSplitList[0] == "Rotor":
+        if nameSplitList[2] == "Lamination":
             pyleecanMat = machine.rotor.mat_type
             idExt = "Pol"  # "RoNut" "Rotorblech"
             name = "Rotorblech"
 
-        elif detail == "Magnet":
+        elif nameSplitList[2] == "Magnet":
             pyleecanMat = machine.rotor.magnet.mat_type
             idExt = "Mag"
             name = "Magnet"
             anglePointRef = angle(surface.point_ref)
             isMag = True
 
-        elif detail == "Hole":
+        elif nameSplitList[2] == "Hole":
             pyleecanMat = machine.rotor.hole.mat_type
             idExt = "Mag"
             name = "Magnet"
             anglePointRef = angle(surface.point_ref)
             isMag = True
 
-        elif detail == "HoleMag":
+        elif nameSplitList[2] == "HoleMag":
             pyleecanMat = machine.rotor.hole[0].magnet_0.mat_type
             idExt = "Mag"  # "Magnet"
             name = "Magnet"
 
-        elif detail == "HoleVoid":
+        elif nameSplitList[2] == "HoleVoid":
             pyleecanMat = machine.rotor.hole[0].mat_void
             idExt = "Lpl"  # "Loch (Pollueke)"
             name = "Loch"
         else:
             raise ValueError(
-                f"Wrong input for 'detail'. Your input was '{detail}'."
+                f"Wrong input for 'detail'. Your input was '{nameSplitList[2]}'."
             )
 
         pyemmoMaterial = buildPyemmoMaterial(pyleecanMat)
@@ -83,20 +82,23 @@ def translateGeometry(
             )
 
     # stator
-    elif bauteil == "Stator":
-        if detail == "Lamination":
+    elif nameSplitList[0] == "Stator":
+        if nameSplitList[2] == "Lamination":
             pyleecanMat = machine.stator.mat_type
             idExt = "StNut"  # "Statorblech"
             name = "Statorblech"
 
-        elif detail == "Winding":
+        elif nameSplitList[2] == "Winding":
             pyleecanMat = machine.stator.winding.conductor.cond_mat
-            idExt = "StCu0"  # "Stator-Nut"
             name = "Stator-Nut"
+            if nameSplitList[3] == "R0":
+                idExt = "StCu0"  # "Stator-Nut"
+            else:
+                idExt = "StCu1"  # "Stator-Nut"
 
         else:
             raise ValueError(
-                f"Wrong input for 'detail'. Your input was '{detail}'."
+                f"Wrong input for 'detail'. Your input was '{nameSplitList[2]}'."
             )
 
         pyemmoMaterial = buildPyemmoMaterial(pyleecanMat)
@@ -113,7 +115,7 @@ def translateGeometry(
 
     else:
         raise ValueError(
-            f"Wrong input for 'bauteil'. 'bauteil' must be 'Rotor' or 'Stator'. Your input was '{bauteil}'."
+            f"Wrong input for 'bauteil'. 'bauteil' must be 'Rotor' or 'Stator'. Your input was '{nameSplitList[0]}'."
         )
 
     return pyemmoSurface, magnetizationDict
