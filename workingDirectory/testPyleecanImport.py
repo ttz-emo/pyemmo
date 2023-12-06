@@ -1,9 +1,6 @@
-import pyleecan
 from os import path
 from os.path import join
 import sys
-import json
-import math
 from numpy import pi
 from typing import List
 import swat_em as swatem
