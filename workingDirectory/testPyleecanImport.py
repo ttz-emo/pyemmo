@@ -124,7 +124,7 @@ MACHINE_DIR = join(DATA_DIR, "Machine")
 # ========================================
 # Festlegung der zu berechnenden Maschine:
 # ========================================
-machine = load(abspath(join(MACHINE_DIR, "SIPMSM_001.json")))
+machine = load(abspath(join(MACHINE_DIR, "SPMSM_015.json")))
 
 simulation = Simu1(name="pyemmo_test_simu", machine=machine)
 simulation.mag = MagFEMM(is_periodicity_a=True, is_periodicity_t=True)
@@ -329,7 +329,7 @@ def createParamDict(
         "rot_freq": pyleecanSimulation.input.OP.N0
         / 60,  # rotational frequency in Hz
         "parkAngleOffset": None,  # park transformation offset angle in elec. ° (STANDARD = None)
-        "analysisType": 1,  # 0=static; 1=transient (STANDARD = 1)
+        "analysisType": 0,  # 0=static; 1=transient (STANDARD = 1)
         "tempMag": 20,  # magnet temperature °C (STANDARD = 20°C)
         "r_z": 0.7,  # tooth radius in meterm (STANDARD = None)
         "r_j": 0.9,  # yoke radius in meter (STANDARD = None)
