@@ -153,8 +153,8 @@ def createGeoDict(
     if isInternalRotor:
         geometryList = detectInnerOuterLimit(
             geometryList=geometryList,
-            rotorRint=rotorRint,
-            statorRext=statorRext,
+            innerRadius=rotorRint,
+            outerRadius=statorRext,
             isShaft=isShaft,
         )
     else:
@@ -162,8 +162,8 @@ def createGeoDict(
         statorRint = machine.stator.Rint
         geometryList = detectInnerOuterLimit(
             geometryList=geometryList,
-            rotorRint=statorRint,
-            statorRext=rotorRext,
+            innerRadius=statorRint,
+            outerRadius=rotorRext,
             isShaft=isShaft,
         )
 
