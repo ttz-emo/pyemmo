@@ -115,7 +115,7 @@ def translateGeometry(
 
     else:
         raise ValueError(
-            f"Wrong input for 'bauteil'. 'bauteil' must be 'Rotor' or 'Stator'. Your input was '{bauteil}'."
+            f"Wrong input for 'bauteil'. 'bauteil' must be 'Rotor' or 'Stator'. Your input was '{nameSplitList[0]}'."
         )
 
     return pyemmoSurface, magnetizationDict
