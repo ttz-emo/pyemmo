@@ -13,14 +13,6 @@ import swat_em as swatem
 # =================
 from pyleecan.definitions import DATA_DIR
 from pyleecan.Functions.load import load
-import pyleecan.Classes.LamHole
-import pyleecan.Classes.LamSlotMag
-import pyleecan.Classes.LamSlotWind
-import pyleecan.Classes.LamSquirrelCage
-import pyleecan.Classes.Segment
-import pyleecan.Classes.Arc1
-import pyleecan.Classes.Arc2
-import pyleecan.Classes.Arc3
 from pyleecan.Classes.Machine import Machine
 from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
@@ -33,9 +25,6 @@ from pyleecan.Classes.Lamination import Lamination
 from pyleecan.Classes.LamHole import LamHole
 from pyleecan.Classes.LamSlotMag import LamSlotMag
 from pyleecan.Classes.OPdq import OPdq
-from pyleecan.Methods.Simulation.MagElmer import (
-    MagElmer_BP_dict,
-)
 
 # ===============
 # Imports pyemmo:
@@ -51,7 +40,7 @@ except:
 from pyemmo.functions.plot import plot
 from workingDirectory.buildPyemmoMovingBand import buildMovingBand
 from pyemmo.api.json import main
-from pyemmo.definitions import ROOT_DIR, RESULT_DIR
+from pyemmo.definitions import ROOT_DIR
 
 
 # ===================
@@ -64,18 +53,18 @@ IPMSM_motor = load(join(DATA_DIR, "Machine", "IPMSM_B.json"))
 # # directory = "C:\Users\k49976\Desktop"
 # SPMSMMuster = load(join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster.json"))
 # SPMSMMuster2 = load(join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_2.json"))
-# SPMSMMuster2Shaft = load(
-#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_2Shaft.json")
-# )
+SPMSMMuster2Shaft = load(
+    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_2Shaft.json")
+)
 # SPMSMMuster2ShaftModified = load(
 #     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_2ShaftModified.json")
 # )
-# SPMSMMuster2ShaftSIMU = load(
-#     join(
-#         "C:\\Users\\k49976\\Desktop\\TEST_TRANSLATION\\2023_11_16-14h50min23s_FEMM_SPMSMPyleecanMuster_2Shaft",
-#         "FEMM_SPMSMPyleecanMuster_2Shaft.json",
-#     )
-# )
+SPMSMMuster2ShaftSIMU = load(
+    join(
+        "C:\\Users\\k49976\\Desktop\\TEST_TRANSLATION\\2023_11_16-14h50min23s_FEMM_SPMSMPyleecanMuster_2Shaft",
+        "FEMM_SPMSMPyleecanMuster_2Shaft.json",
+    )
+)
 # # SPMSMMuster3Shaft = load(
 # #     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_3Shaft.json")
 # # )
@@ -88,47 +77,47 @@ IPMSM_motor = load(join(DATA_DIR, "Machine", "IPMSM_B.json"))
 #         "FEMM_SPMSMPyleecanMuster_4Shaft.json",
 #     )
 # )
-# SPMSMMuster4Shaftinverted = load(
-#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_4Shaft_inverted.json")
-# )
-# SPMSMMuster4ShaftinvertedSIMU = load(
-#     join(
-#         "C:\\Users\\k49976\\Desktop\\TEST_TRANSLATION\\2023_11_21-16h00min55s_FEMM_SPMSMPyleecanMuster_4Shaft_inverted",
-#         "FEMM_SPMSMPyleecanMuster_4Shaft_inverted.json",
-#     )
-# )
+SPMSMMuster4Shaftinverted = load(
+    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_4Shaft_inverted.json")
+)
+SPMSMMuster4ShaftinvertedSIMU = load(
+    join(
+        "C:\\Users\\k49976\\Desktop\\TEST_TRANSLATION\\2023_11_21-16h00min55s_FEMM_SPMSMPyleecanMuster_4Shaft_inverted",
+        "FEMM_SPMSMPyleecanMuster_4Shaft_inverted.json",
+    )
+)
 # SPMSMMuster6Shaft = load(
 #     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_6_Shaft.json")
 # )
 # # Import ASM:
 # SCIM_motor = load(join(DATA_DIR, "Machine", "SCIM_L2EP_48s_2p.json"))
-# SPMSMMusterShaft_1 = load(
-#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_1.json")
-# )
-# SPMSMMusterShaft_2 = load(
-#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_2.json")
-# )
-# SPMSMMusterShaft_2_inverted = load(
-#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_2_inverted.json")
-# )
-# SPMSMMusterShaft_3 = load(
-#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_3.json")
-# )
-# SPMSMMusterShaft_3_inverted = load(
-#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_3_inverted.json")
-# )
-# SPMSMMusterShaft_4 = load(
-#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_4.json")
-# )
-# SPMSMMusterShaft_4_inverted = load(
-#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_4_inverted.json")
-# )
-# SPMSMMusterShaft_5 = load(
-#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_5.json")
-# )
-# SPMSMMusterShaft_5_inverted = load(
-#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_5_inverted.json")
-# )
+SPMSMMusterShaft_1 = load(
+    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_1.json")
+)
+SPMSMMusterShaft_2 = load(
+    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_2.json")
+)
+SPMSMMusterShaft_2_inverted = load(
+    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_2_inverted.json")
+)
+SPMSMMusterShaft_3 = load(
+    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_3.json")
+)
+SPMSMMusterShaft_3_inverted = load(
+    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_3_inverted.json")
+)
+SPMSMMusterShaft_4 = load(
+    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_4.json")
+)
+SPMSMMusterShaft_4_inverted = load(
+    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_4_inverted.json")
+)
+SPMSMMusterShaft_5 = load(
+    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_5.json")
+)
+SPMSMMusterShaft_5_inverted = load(
+    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_5_inverted.json")
+)
 
 MACHINE_DIR = join(DATA_DIR, "Machine")
 
@@ -152,13 +141,14 @@ rotorRint = machine.rotor.Rint
 statorRint = machine.stator.Rint
 statorRext = machine.stator.Rext
 
+
 # --------------------------
 # isInternalRotor detection:
 # --------------------------
 isInternalRotor = bool(statorRint > rotorRext)
 
 if isinstance(machine, MachineSIPMSM):
-    allBands, geometryList, movingband_r = buildMovingBand(
+    allBands, geometryList, movingband_r, magnetizationDict = buildMovingBand(
         machine=machine,
         rotorRint=rotorRint,
         rotorRext=rotorRext,
@@ -168,7 +158,7 @@ if isinstance(machine, MachineSIPMSM):
     )
 
 elif isinstance(machine, MachineIPMSM):
-    allBands, geometryList, movingband_r = buildMovingBand(
+    allBands, geometryList, movingband_r, magnetizationDict = buildMovingBand(
         machine=machine,
         rotorRint=rotorRint,
         rotorRext=rotorRext,

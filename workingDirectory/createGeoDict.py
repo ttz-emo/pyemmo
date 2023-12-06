@@ -36,6 +36,9 @@ def createGeoDict(
     rotorRint = machine.rotor.Rint
     statorRext = machine.stator.Rext
 
+    rotorRint = machine.rotor.Rint
+    statorRext = machine.stator.Rext
+
     
     # =======================================
     # Loop of translation for rotor surfaces:
@@ -174,4 +177,5 @@ def createGeoDict(
         statorContourLineList,
         lowestYPointRotor,
         biggestYPointRotor,
+        magnetizationDict,
     )
