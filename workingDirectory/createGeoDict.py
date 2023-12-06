@@ -173,4 +173,5 @@ def createGeoDict(
         statorContourLineList,
         lowestYPointRotor,
         biggestYPointRotor,
+        magnetizationDict,
     )
