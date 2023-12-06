@@ -13,26 +13,14 @@ import swat_em as swatem
 # =================
 from pyleecan.definitions import DATA_DIR
 from pyleecan.Functions.load import load
-import pyleecan.Classes.LamHole
-import pyleecan.Classes.LamSlotMag
-import pyleecan.Classes.LamSlotWind
-import pyleecan.Classes.LamSquirrelCage
-import pyleecan.Classes.Segment
-import pyleecan.Classes.Arc1
-import pyleecan.Classes.Arc2
-import pyleecan.Classes.Arc3
 from pyleecan.Classes.Machine import Machine
 from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
 from pyleecan.Classes.Simulation import Simulation
-from pyleecan.Classes.Simu1 import Simu1
 from pyleecan.Classes.Lamination import Lamination
 from pyleecan.Classes.LamHole import LamHole
 from pyleecan.Classes.LamSlotMag import LamSlotMag
 from pyleecan.Classes.OPdq import OPdq
-from pyleecan.Methods.Simulation.MagElmer import (
-    MagElmer_BP_dict,
-)
 
 # ===============
 # Imports pyemmo:
@@ -61,9 +49,9 @@ IPMSM_motor = load(join(DATA_DIR, "Machine", "IPMSM_B.json"))
 # # directory = "C:\Users\k49976\Desktop"
 # SPMSMMuster = load(join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster.json"))
 # SPMSMMuster2 = load(join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_2.json"))
-# SPMSMMuster2Shaft = load(
-#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_2Shaft.json")
-# )
+SPMSMMuster2Shaft = load(
+    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_2Shaft.json")
+)
 # SPMSMMuster2ShaftModified = load(
 #     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_2ShaftModified.json")
 # )
@@ -129,7 +117,7 @@ SPMSMMusterShaft_5_inverted = load(
 # ========================================
 # Festlegung der zu berechnenden Maschine:
 # ========================================
-machine = IPMSM_motor
+machine = SPMSMMusterShaft_2
 simulation = SPMSMMuster2ShaftSIMU
 
 # =====================================
@@ -148,7 +136,7 @@ statorRext = machine.stator.Rext
 isInternalRotor = bool(statorRint > rotorRext)
 
 if isinstance(machine, MachineSIPMSM):
-    allBands, geometryList, movingband_r = buildMovingBand(
+    allBands, geometryList, movingband_r, magnetizationDict = buildMovingBand(
         machine=machine,
         rotorRint=rotorRint,
         rotorRext=rotorRext,
@@ -158,7 +146,7 @@ if isinstance(machine, MachineSIPMSM):
     )
 
 elif isinstance(machine, MachineIPMSM):
-    allBands, geometryList, movingband_r = buildMovingBand(
+    allBands, geometryList, movingband_r, magnetizationDict = buildMovingBand(
         machine=machine,
         rotorRint=rotorRint,
         rotorRext=rotorRext,
@@ -326,7 +314,8 @@ def createParamDict(machine: Machine, pyleecanSimulation: Simulation) -> dict[st
         "id": Id,  # d-axis current in A
         "iq": Iq,  # q-axis current in A
         "modelName": machine.name,  # name of the model files
-        "magDirection": pyemmoMagType,  # magnetization Type/ type of permament magnets(“parallel”, “radial” or “tangential”)
+        "magType": pyemmoMagType,  # magnetization Type/ type of permament magnets(“parallel”, “radial” or “tangential”)
+        "magAngle": magnetizationDict, 
         "flag_openGUI": True,  # open Gmsh GUI after model generation (STANDARD = True)
         "calcIronLoss": False,
     }
