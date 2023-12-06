@@ -336,7 +336,7 @@ def createParamDict(
         "id": Id,  # d-axis current in A
         "iq": Iq,  # q-axis current in A
         "modelName": machine.name,  # name of the model files
-        "magDirection": pyemmoMagType,  # magnetization Type/ type of permament magnets(“parallel”, “radial” or “tangential”)
+        "magType": pyemmoMagType,  # magnetization Type/ type of permament magnets(“parallel”, “radial” or “tangential”)
         "magAngle": magnetizationDict, 
         "flag_openGUI": True,  # open Gmsh GUI after model generation (STANDARD = True)
         "calcIronLoss": False,
