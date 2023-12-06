@@ -13,16 +13,19 @@ def detectInnerOuterLimit(
 
     Attention when making the function call:\n
     If the machine has an external rotor:\n
-    ``rotorRint`` replaced with ``statorRint``\n
-    ``statorRext`` replaced with ``rotorRext``
+    ``innerRadius``: ``rotorRint`` or ``statorRint``\n
+    ``outerRadius``: ``statorRext`` or ``rotorRext``\n
+    Combinations that work:
+    * ``rotorRint`` and ``statorRext``
+    * ``statorRint`` and ``rotorRext``
 
     Args:
         geometryList (list[SurfaceAPI]): list of the machine surfaces
-        rotorRint (float): inner radius of the rotor
-        statorRext (float): outer radius of the stator
+        innerRadius (float): inner radius
+        outerRadius (float): outer radius
 
     Returns:
-        list[SurfaceAPI]: _description_
+        list[SurfaceAPI]: geometryList
     """
     for surf in geometryList:
         for curve in surf.curve:
