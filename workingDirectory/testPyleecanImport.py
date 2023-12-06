@@ -47,24 +47,24 @@ from pyemmo.definitions import ROOT_DIR
 # Import of Machines:
 # ===================
 # Import IPMSM
-IPMSM_motor = load(join(DATA_DIR, "Machine", "IPMSM_B.json"))
+# IPMSM_motor = load(join(DATA_DIR, "Machine", "IPMSM_B.json"))
 # # Import SPMSM:
 # SPMSM_motor = load(join(DATA_DIR, "Machine", "SPMSM_002.json"))
 # # directory = "C:\Users\k49976\Desktop"
 # SPMSMMuster = load(join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster.json"))
 # SPMSMMuster2 = load(join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_2.json"))
-SPMSMMuster2Shaft = load(
-    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_2Shaft.json")
-)
+# SPMSMMuster2Shaft = load(
+#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_2Shaft.json")
+# )
 # SPMSMMuster2ShaftModified = load(
 #     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_2ShaftModified.json")
 # )
-SPMSMMuster2ShaftSIMU = load(
-    join(
-        "C:\\Users\\k49976\\Desktop\\TEST_TRANSLATION\\2023_11_16-14h50min23s_FEMM_SPMSMPyleecanMuster_2Shaft",
-        "FEMM_SPMSMPyleecanMuster_2Shaft.json",
-    )
-)
+# SPMSMMuster2ShaftSIMU = load(
+#     join(
+#         "C:\\Users\\k49976\\Desktop\\TEST_TRANSLATION\\2023_11_16-14h50min23s_FEMM_SPMSMPyleecanMuster_2Shaft",
+#         "FEMM_SPMSMPyleecanMuster_2Shaft.json",
+#     )
+# )
 # # SPMSMMuster3Shaft = load(
 # #     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_3Shaft.json")
 # # )
@@ -77,47 +77,47 @@ SPMSMMuster2ShaftSIMU = load(
 #         "FEMM_SPMSMPyleecanMuster_4Shaft.json",
 #     )
 # )
-SPMSMMuster4Shaftinverted = load(
-    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_4Shaft_inverted.json")
-)
-SPMSMMuster4ShaftinvertedSIMU = load(
-    join(
-        "C:\\Users\\k49976\\Desktop\\TEST_TRANSLATION\\2023_11_21-16h00min55s_FEMM_SPMSMPyleecanMuster_4Shaft_inverted",
-        "FEMM_SPMSMPyleecanMuster_4Shaft_inverted.json",
-    )
-)
+# SPMSMMuster4Shaftinverted = load(
+#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_4Shaft_inverted.json")
+# )
+# SPMSMMuster4ShaftinvertedSIMU = load(
+#     join(
+#         "C:\\Users\\k49976\\Desktop\\TEST_TRANSLATION\\2023_11_21-16h00min55s_FEMM_SPMSMPyleecanMuster_4Shaft_inverted",
+#         "FEMM_SPMSMPyleecanMuster_4Shaft_inverted.json",
+#     )
+# )
 # SPMSMMuster6Shaft = load(
 #     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_6_Shaft.json")
 # )
 # # Import ASM:
 # SCIM_motor = load(join(DATA_DIR, "Machine", "SCIM_L2EP_48s_2p.json"))
-SPMSMMusterShaft_1 = load(
-    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_1.json")
-)
-SPMSMMusterShaft_2 = load(
-    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_2.json")
-)
-SPMSMMusterShaft_2_inverted = load(
-    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_2_inverted.json")
-)
-SPMSMMusterShaft_3 = load(
-    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_3.json")
-)
-SPMSMMusterShaft_3_inverted = load(
-    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_3_inverted.json")
-)
-SPMSMMusterShaft_4 = load(
-    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_4.json")
-)
-SPMSMMusterShaft_4_inverted = load(
-    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_4_inverted.json")
-)
-SPMSMMusterShaft_5 = load(
-    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_5.json")
-)
-SPMSMMusterShaft_5_inverted = load(
-    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_5_inverted.json")
-)
+# SPMSMMusterShaft_1 = load(
+#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_1.json")
+# )
+# SPMSMMusterShaft_2 = load(
+#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_2.json")
+# )
+# SPMSMMusterShaft_2_inverted = load(
+#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_2_inverted.json")
+# )
+# SPMSMMusterShaft_3 = load(
+#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_3.json")
+# )
+# SPMSMMusterShaft_3_inverted = load(
+#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_3_inverted.json")
+# )
+# SPMSMMusterShaft_4 = load(
+#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_4.json")
+# )
+# SPMSMMusterShaft_4_inverted = load(
+#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_4_inverted.json")
+# )
+# SPMSMMusterShaft_5 = load(
+#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_5.json")
+# )
+# SPMSMMusterShaft_5_inverted = load(
+#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_5_inverted.json")
+# )
 
 MACHINE_DIR = join(DATA_DIR, "Machine")
 
@@ -337,6 +337,7 @@ def createParamDict(
         "iq": Iq,  # q-axis current in A
         "modelName": machine.name,  # name of the model files
         "magDirection": pyemmoMagType,  # magnetization Type/ type of permament magnets(“parallel”, “radial” or “tangential”)
+        "magAngle": magnetizationDict, 
         "flag_openGUI": True,  # open Gmsh GUI after model generation (STANDARD = True)
         "calcIronLoss": False,
     }
