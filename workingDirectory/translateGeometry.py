@@ -8,12 +8,9 @@ import pyleecan.Classes.LamSlotWind
 import pyleecan.Classes.Surface
 
 from pyemmo.api.SurfaceJSON import SurfaceAPI
-from pyemmo.script.geometry.point import Point
-from pyemmo.script.geometry.circleArc import CircleArc
-from pyemmo.definitions import DEFAULT_GEO_TOL
 from .buildPyemmoMaterial import buildPyemmoMaterial
 from .buildPyemmoLineList import buildPyemmoLineList
-from .getMagnetizationAngle import getMagnetizationDict
+from .getMagnetizationDict import getMagnetizationDict
 
 
 # ===========================================
