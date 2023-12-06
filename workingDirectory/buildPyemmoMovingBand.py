@@ -15,7 +15,12 @@ from .createGeoDict import createGeoDict
 from .getCoordinatesForPoint import getXforPoint, getYforPoint
 
 
-def getMaterialAir():
+def getMaterialAir() -> Material:
+    """Get the pyemmo material of air
+
+    Returns:
+        Material: _description_
+    """
     # ===============
     # Material 'Air':
     # ===============
@@ -30,7 +35,6 @@ def getMaterialAir():
         thermalConductivity=None,
         thermalCapacity=None,
     )
-
     return materialAir
 
 
@@ -43,7 +47,22 @@ def buildBandsRotor(
     rotorContourLineList: list,
     nbrRotorSeg: int,
     angleRotor: float,
-) -> list[List]:
+) -> tuple[SurfaceAPI, SurfaceAPI, float]:
+    """Builds the air gap segments at the rotor side.
+
+    Args:
+        bandRadiusList (list): List with the radii of the bands
+        centerPoint (Point): Center point of machine
+        lowestYPointRotor (Point): 
+        biggestYPointRotor (Point): _description_
+        rotorSymAngle (float): _description_
+        rotorContourLineList (list): _description_
+        nbrRotorSeg (int): _description_
+        angleRotor (float): _description_
+
+    Returns:
+        tuple[SurfaceAPI, SurfaceAPI, float]: _description_
+    """
     # ================
     # Bands for rotor:
     # ================
@@ -168,7 +187,20 @@ def buildBandsStator(
     centerPoint: Point,
     nbrStatorSeg: int,
     angleStator: float,
-):
+) -> tuple[SurfaceAPI, SurfaceAPI]:
+    """_summary_
+
+    Args:
+        statorContourLineList (list): _description_
+        bandRadiusList (list): _description_
+        statorSymAngle (float): _description_
+        centerPoint (Point): _description_
+        nbrStatorSeg (int): _description_
+        angleStator (float): _description_
+
+    Returns:
+        tuple[SurfaceAPI, SurfaceAPI]: _description_
+    """
     # =================
     # Bands for stator:
     # =================
@@ -288,7 +320,7 @@ def buildMovingBand(
     statorRint: float,
     statorRext: float,
     isInternalRotor: bool,
-):
+) -> tuple[list, list[SurfaceAPI], float]:
     """_summary_
 
     Args:
@@ -362,6 +394,7 @@ def buildMovingBand(
         statorContourLineList,
         lowestYPointRotor,
         biggestYPointRotor,
+        magnetizationDict,
     ) = createGeoDict(
         machine,
         rotorSym,
@@ -369,7 +402,6 @@ def buildMovingBand(
         isInternalRotor,
     )
 
-    materialAir = getMaterialAir()
 
     # ====================================
     # Calculation of the MovingBand radii:
@@ -428,4 +460,4 @@ def buildMovingBand(
     print("Plot allBands: ")
     plot(allBands)
 
-    return allBands, geometryList, movingband_r
+    return allBands, geometryList, movingband_r, magnetizationDict
