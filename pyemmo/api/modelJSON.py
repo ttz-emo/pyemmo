@@ -1,5 +1,5 @@
 """This module is about the model generation via json api"""
-from math import ceil
+from math import radians
 from typing import Dict, List, Literal, Tuple, Union
 
 from numpy import pi, sign, array
@@ -543,10 +543,13 @@ def createMagnet(surf: SurfaceAPI, mat: Material, extInfo: dict) -> Magnet:
     # get magnet-IdExt and segment number
     idExtSplit = surf.idExt.split("_")
     magIdExt = idExtSplit[0]
-    segmentNbr = idExtSplit[1]
+    if idExtSplit[1].isdecimal():
+        segmentNbr = int(idExtSplit[1])
+    else:
+        raise ValueError("Could not determine segment number from idExt.")
     # identify magnetization direction
     # first segment (segmentNbr=0) must be north pole for dq-Offset calculation
-    magDir = 1 if (int(segmentNbr) + 1) % 2 else -1  # 1: north/outwards
+    magDir = 1 if (segmentNbr + 1) % 2 else -1  # 1: north/outwards
     # get magentization angle from magAngle dict by idExt
     magAngle = importJSON.getMagAngle(extInfo)[magIdExt]
     return Magnet(
@@ -555,7 +558,7 @@ def createMagnet(surf: SurfaceAPI, mat: Material, extInfo: dict) -> Magnet:
         material=mat,
         magDirection=magDir,
         magType=importJSON.getMagDir(extInfo),
-        magVectorAngle=magAngle,
+        magVectorAngle=magAngle + radians(360/surf.NbrSegments)*segmentNbr,
     )
 
 
