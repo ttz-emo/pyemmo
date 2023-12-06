@@ -1,6 +1,6 @@
 import pyleecan
 from os import path
-from os.path import join
+from os.path import join, abspath
 import sys
 import json
 import math
@@ -26,6 +26,9 @@ from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
 from pyleecan.Classes.Simulation import Simulation
 from pyleecan.Classes.Simu1 import Simu1
+from pyleecan.Classes.InputCurrent import InputCurrent
+from pyleecan.Classes.OPdq import OPdq
+from pyleecan.Classes.MagFEMM import MagFEMM
 from pyleecan.Classes.Lamination import Lamination
 from pyleecan.Classes.LamHole import LamHole
 from pyleecan.Classes.LamSlotMag import LamSlotMag
@@ -48,7 +51,7 @@ except:
 from pyemmo.functions.plot import plot
 from workingDirectory.buildPyemmoMovingBand import buildMovingBand
 from pyemmo.api.json import main
-from pyemmo.definitions import ROOT_DIR
+from pyemmo.definitions import ROOT_DIR, RESULT_DIR
 
 
 # ===================
@@ -67,12 +70,12 @@ IPMSM_motor = load(join(DATA_DIR, "Machine", "IPMSM_B.json"))
 # SPMSMMuster2ShaftModified = load(
 #     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_2ShaftModified.json")
 # )
-SPMSMMuster2ShaftSIMU = load(
-    join(
-        "C:\\Users\\k49976\\Desktop\\TEST_TRANSLATION\\2023_11_16-14h50min23s_FEMM_SPMSMPyleecanMuster_2Shaft",
-        "FEMM_SPMSMPyleecanMuster_2Shaft.json",
-    )
-)
+# SPMSMMuster2ShaftSIMU = load(
+#     join(
+#         "C:\\Users\\k49976\\Desktop\\TEST_TRANSLATION\\2023_11_16-14h50min23s_FEMM_SPMSMPyleecanMuster_2Shaft",
+#         "FEMM_SPMSMPyleecanMuster_2Shaft.json",
+#     )
+# )
 # # SPMSMMuster3Shaft = load(
 # #     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_3Shaft.json")
 # # )
@@ -85,52 +88,60 @@ SPMSMMuster2ShaftSIMU = load(
 #         "FEMM_SPMSMPyleecanMuster_4Shaft.json",
 #     )
 # )
-SPMSMMuster4Shaftinverted = load(
-    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_4Shaft_inverted.json")
-)
-SPMSMMuster4ShaftinvertedSIMU = load(
-    join(
-        "C:\\Users\\k49976\\Desktop\\TEST_TRANSLATION\\2023_11_21-16h00min55s_FEMM_SPMSMPyleecanMuster_4Shaft_inverted",
-        "FEMM_SPMSMPyleecanMuster_4Shaft_inverted.json",
-    )
-)
+# SPMSMMuster4Shaftinverted = load(
+#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_4Shaft_inverted.json")
+# )
+# SPMSMMuster4ShaftinvertedSIMU = load(
+#     join(
+#         "C:\\Users\\k49976\\Desktop\\TEST_TRANSLATION\\2023_11_21-16h00min55s_FEMM_SPMSMPyleecanMuster_4Shaft_inverted",
+#         "FEMM_SPMSMPyleecanMuster_4Shaft_inverted.json",
+#     )
+# )
 # SPMSMMuster6Shaft = load(
 #     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_6_Shaft.json")
 # )
 # # Import ASM:
 # SCIM_motor = load(join(DATA_DIR, "Machine", "SCIM_L2EP_48s_2p.json"))
-SPMSMMusterShaft_1 = load(
-    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_1.json")
-)
-SPMSMMusterShaft_2 = load(
-    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_2.json")
-)
-SPMSMMusterShaft_2_inverted = load(
-    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_2_inverted.json")
-)
-SPMSMMusterShaft_3 = load(
-    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_3.json")
-)
-SPMSMMusterShaft_3_inverted = load(
-    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_3_inverted.json")
-)
-SPMSMMusterShaft_4 = load(
-    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_4.json")
-)
-SPMSMMusterShaft_4_inverted = load(
-    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_4_inverted.json")
-)
-SPMSMMusterShaft_5 = load(
-    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_5.json")
-)
-SPMSMMusterShaft_5_inverted = load(
-    join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_5_inverted.json")
-)
+# SPMSMMusterShaft_1 = load(
+#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_1.json")
+# )
+# SPMSMMusterShaft_2 = load(
+#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_2.json")
+# )
+# SPMSMMusterShaft_2_inverted = load(
+#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_2_inverted.json")
+# )
+# SPMSMMusterShaft_3 = load(
+#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_3.json")
+# )
+# SPMSMMusterShaft_3_inverted = load(
+#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_3_inverted.json")
+# )
+# SPMSMMusterShaft_4 = load(
+#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_4.json")
+# )
+# SPMSMMusterShaft_4_inverted = load(
+#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_4_inverted.json")
+# )
+# SPMSMMusterShaft_5 = load(
+#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_5.json")
+# )
+# SPMSMMusterShaft_5_inverted = load(
+#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_5_inverted.json")
+# )
+
+MACHINE_DIR = join(DATA_DIR, "Machine")
+
 # ========================================
 # Festlegung der zu berechnenden Maschine:
 # ========================================
-machine = IPMSM_motor
-simulation = SPMSMMuster2ShaftSIMU
+machine = load(abspath(join(MACHINE_DIR, "SIPMSM_001.json")))
+
+simulation = Simu1(name="pyemmo_test_simu", machine=machine)
+simulation.mag = MagFEMM(is_periodicity_a=True, is_periodicity_t=True)
+
+simulation.input = InputCurrent()
+simulation.input.OP = OPdq(N0=1000, Id_ref=-10, Iq_ref=10)
 
 # =====================================
 # Festlegung der Simulations-Parameter:
@@ -140,11 +151,6 @@ rotorRext = machine.rotor.Rext
 rotorRint = machine.rotor.Rint
 statorRint = machine.stator.Rint
 statorRext = machine.stator.Rext
-
-# ========================================
-# Festlegung der zu berechnenden Maschine:
-# ========================================
-machine = SPMSMMuster4Shaftinverted
 
 # --------------------------
 # isInternalRotor detection:
@@ -213,7 +219,9 @@ def translateWinding(machine: Machine) -> list[int]:
     return windSwat
 
 
-def createParamDict(machine: Machine, pyleecanSimulation: Simulation) -> dict[str, any]:
+def createParamDict(
+    machine: Machine, pyleecanSimulation: Simulation
+) -> dict[str, any]:
     """
     This function builds a dictionary for communication between pyleecan and pyemmo.
 
@@ -233,7 +241,9 @@ def createParamDict(machine: Machine, pyleecanSimulation: Simulation) -> dict[st
     else:
         Id = 0
         Iq = 0
-        print('!! Warning: No Values set for "Id_ref" and "Iq_ref" -> Id = Iq = 0 !!')
+        print(
+            '!! Warning: No Values set for "Id_ref" and "Iq_ref" -> Id = Iq = 0 !!'
+        )
 
     # --------------------------------------------------------------------------------------
     # The following part of the function tests if rotor or stator have magnets and if so
@@ -248,7 +258,9 @@ def createParamDict(machine: Machine, pyleecanSimulation: Simulation) -> dict[st
 
     lamWithMag: Lamination = None
 
-    if pyleecanSimulation.machine.rotor.has_magnet():  # Test, if rotor has magnet(s)
+    if (
+        pyleecanSimulation.machine.rotor.has_magnet()
+    ):  # Test, if rotor has magnet(s)
         lamWithMag = pyleecanSimulation.machine.rotor
 
     elif (
@@ -308,7 +320,9 @@ def createParamDict(machine: Machine, pyleecanSimulation: Simulation) -> dict[st
         symFactor = symFactor[0]
 
     translationParameterDict = {
-        "winding": translateWinding(machine),  # winding layout for given geometry
+        "winding": translateWinding(
+            machine
+        ),  # winding layout for given geometry
         "wickSWAT": translateWinding(machine),
         "NpP": machine.stator.winding.Npcp,  # number of parallel paths per winding phase
         "Ntps": machine.stator.winding.Ntcoil,
@@ -319,9 +333,11 @@ def createParamDict(machine: Machine, pyleecanSimulation: Simulation) -> dict[st
         "axLen_R": machine.rotor.L1,  # axial length of rotor
         "symFactor": symFactor,  # symmetry factor for model (STANDARD = 1) has to be defined
         "startPos": 0,  # start rotor position in ° (STANDARD = 0°)
-        "endPos": pyleecanSimulation.input.Na_tot * 360,  # end rotor position in °
+        "endPos": pyleecanSimulation.input.Na_tot
+        * 360,  # end rotor position in °
         "nbrSteps": pyleecanSimulation.input.Nt_tot,  # number of time steps for simulation
-        "rot_freq": pyleecanSimulation.input.OP.N0 / 60,  # rotational frequency in Hz
+        "rot_freq": pyleecanSimulation.input.OP.N0
+        / 60,  # rotational frequency in Hz
         "parkAngleOffset": None,  # park transformation offset angle in elec. ° (STANDARD = None)
         "analysisType": 1,  # 0=static; 1=transient (STANDARD = 1)
         "tempMag": 20,  # magnet temperature °C (STANDARD = 20°C)
@@ -345,6 +361,5 @@ paramDict = createParamDict(machine, simulation)
 main(
     geo=geoTranslationDict,
     extInfo=paramDict,
-    model=join(ROOT_DIR, r"Results\pyleecanAPI\TEST_TRANSLATION"),
-    gmsh="C:\\Software\\Onelab\\gmsh.exe",
+    model=abspath(join(ROOT_DIR, "Results", "pyleecanAPI", machine.name)),
 )
