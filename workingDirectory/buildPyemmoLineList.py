@@ -14,10 +14,10 @@ import pyleecan.Classes.Arc2
 import pyleecan.Classes.Arc3
 from pyemmo.script.geometry.line import Line
 from pyemmo.script.geometry.circleArc import CircleArc
-from workingDirectory.buildPyemmoPoint import buildPyemmoPoint
-from workingDirectory.translateArc1 import translateArc1
-from workingDirectory.translateArc2 import translateArc2
-from workingDirectory.translateArc3 import translateArc3
+from .buildPyemmoPoint import buildPyemmoPoint
+from .translateArc1 import translateArc1
+from .translateArc2 import translateArc2
+from .translateArc3 import translateArc3
 
 # =============================================
 # Definition of function 'buildPyemmoLineList':

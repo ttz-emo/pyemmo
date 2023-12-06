@@ -1,38 +1,25 @@
-import sys
-from os.path import join
 from typing import List
-import math
 
-try:
-    from pyemmo.script.script import Script
-except:
-    rootname = "C:\\Users\\k49976\\Desktop\\repositoryGibLab\\pyemmo"
-    print(f"Could not determine root. Setting it manually to '{rootname}'")
-    print(f'rootname is "{rootname}"')
-    sys.path.append(rootname)
-
-from pyleecan.definitions import DATA_DIR
-from pyleecan.Functions.load import load
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
+from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
+from pyleecan.Classes.Machine import Machine
 
 from pyemmo.functions.plot import plot
 from pyemmo.api.SurfaceJSON import SurfaceAPI
-from workingDirectory.translateGeometry import translateGeometry
-from workingDirectory.getRotorStatorContour import getRotorContour, getStatorContour, getSurfacemagnetContour
+from .translateGeometry import translateGeometry
+from .getRotorStatorContour import (
+    getSurfMagContour,
+    getWindingContour,
+    getIPMSMContour,
+)
+from .detectInnerOuterLimit import detectInnerOuterLimit
 
-# from workingDirectory.buildPyemmoMovingBand import buildPyemmoMovingBand
-
-
-# ===========================================
-# Definition of function 'createGeoDict':
-# ===========================================
-def createGeoDict(machine, rotorSym, statorSym, isInternalRotor: bool, magnetFarthestRadius, magnetShortestRadius):
-    """_summary_
-
-    Args:
-        machine (_type_): _description_
-    """
-
+def createGeoDict(
+    machine: Machine,
+    rotorSym: int,
+    statorSym: int,
+    isInternalRotor: bool,
+):
     RotorSurf = machine.rotor.build_geometry(sym=rotorSym, alpha=0)
     StatorSurf = machine.stator.build_geometry(sym=statorSym, alpha=0)
 
@@ -44,6 +31,10 @@ def createGeoDict(machine, rotorSym, statorSym, isInternalRotor: bool, magnetFar
     StatorSurfLabelsSplit2 = []
 
     geometryList: List[SurfaceAPI] = []
+    magnetizationDict = {}
+
+    rotorRint = machine.rotor.Rint
+    statorRext = machine.stator.Rext
 
     
     # =======================================
@@ -55,22 +46,19 @@ def createGeoDict(machine, rotorSym, statorSym, isInternalRotor: bool, magnetFar
         RotorSurfLabels.append(surf.label)
         RotorSurfLabelsSplit1.extend(surf.label.split("_"))
 
-        for ii, split1 in enumerate(RotorSurfLabelsSplit1):
+        for split1 in RotorSurfLabelsSplit1:
             saveSpaceTemp.extend(split1.split("-"))
         RotorSurfLabelsSplit2.append(saveSpaceTemp)
         print(f"\nTranslation for {RotorSurfLabels[i]}:")
-        geometryList.append(
-            translateGeometry(
-                bauteil=RotorSurfLabelsSplit2[i][0],
-                detail=RotorSurfLabelsSplit2[i][2],
-                machine=machine,
-                label=RotorSurfLabels[i],
-                surface=RotorSurf[i],
-                isInternalRotor=isInternalRotor,
-                magnetFarthestRadius=magnetFarthestRadius,
-                magnetShortestRadius=magnetShortestRadius
-            )
+        pyemmoSurface, magnetizationDict = translateGeometry(
+            bauteil=RotorSurfLabelsSplit2[i][0],
+            detail=RotorSurfLabelsSplit2[i][2],
+            machine=machine,
+            label=RotorSurfLabels[i],
+            surface=surf,
+            magnetizationDict=magnetizationDict,
         )
+        geometryList.append(pyemmoSurface)
     print("=============================")
     print("End of Translation for Rotor.")
 
@@ -83,27 +71,24 @@ def createGeoDict(machine, rotorSym, statorSym, isInternalRotor: bool, magnetFar
         StatorSurfLabels.append(surf.label)
         StatorSurfLabelsSplit1.extend(surf.label.split("_"))
 
-        for ii, split1 in enumerate(StatorSurfLabelsSplit1):
+        for split1 in StatorSurfLabelsSplit1:
             saveSpaceTemp.extend(split1.split("-"))
 
         StatorSurfLabelsSplit2.append(saveSpaceTemp)
         print(f"\nTranslation for {StatorSurfLabels[i]}:")
-        geometryList.append(
-            translateGeometry(
-                bauteil=StatorSurfLabelsSplit2[i][0],
-                detail=StatorSurfLabelsSplit2[i][2],
-                machine=machine,
-                label=StatorSurfLabels[i],
-                surface=StatorSurf[i],
-                isInternalRotor=isInternalRotor,
-                magnetFarthestRadius=magnetFarthestRadius,
-                magnetShortestRadius=magnetShortestRadius
-            )
+        pyemmoSurface, magnetizationDict = translateGeometry(
+            bauteil=StatorSurfLabelsSplit2[i][0],
+            detail=StatorSurfLabelsSplit2[i][2],
+            machine=machine,
+            label=StatorSurfLabels[i],
+            surface=surf,
+            magnetizationDict=magnetizationDict,
         )
+        geometryList.append(pyemmoSurface)
 
-    # ===========================
-    # CutOuts in rotorLamination:
-    # ===========================
+    # =====================================
+    # CutOuts in rotorLamination if IPMSM:
+    # =====================================
     if isinstance(machine, MachineIPMSM):
         for surfToCutOut in geometryList:
             if surfToCutOut.name != "Rotor-0_Lamination":
@@ -127,29 +112,66 @@ def createGeoDict(machine, rotorSym, statorSym, isInternalRotor: bool, magnetFar
     # Generation of the rotor and stator contour:
     # -------------------------------------------
     print("Generate rotor and stator contour:")
-    rotorContourLineList = getSurfacemagnetContour(geometryList=geometryList, machine=machine, isInternal=False)
-    statorContourLineList = getStatorContour(geometryList=geometryList, machine=machine)
-    
+    if isinstance(machine, MachineIPMSM):
+        (
+            rotorContourLineList,
+            lowestYPointRotor,
+            biggestYPointRotor,
+        ) = getIPMSMContour(
+            geometryList=geometryList,
+            machine=machine,
+            isInternalRotor=isInternalRotor,
+        )
+        statorContourLineList = getWindingContour(
+            geometryList=geometryList,
+            machine=machine,
+            isInternalRotor=isInternalRotor,
+        )
+    elif isinstance(machine, MachineSIPMSM):
+        (
+            rotorContourLineList,
+            lowestYPointRotor,
+            biggestYPointRotor,
+        ) = getSurfMagContour(
+            geometryList=geometryList,
+            machine=machine,
+            isInternalRotor=isInternalRotor,
+        )
+        statorContourLineList = getWindingContour(
+            geometryList=geometryList,
+            machine=machine,
+            isInternalRotor=isInternalRotor,
+        )
+    else:
+        raise TypeError("Unable to translate machine type!")
+
     # ------------------------------------------------------
     # Change names of rotorRint-Curve and statorRext-Curve:
     # ------------------------------------------------------
-    rotorRint = machine.rotor.Rint
-    statorRext = machine.stator.Rext
-    if rotorRint > 0:
-        isShaft = True
-    else:
-        isShaft = False
 
-    for surf in geometryList:
-        for curve in surf.curve:
-            if isShaft:
-                if math.isclose(
-                    a=curve.startPoint.radius, b=rotorRint, abs_tol=1e-6
-                ) and math.isclose(a=curve.endPoint.radius, b=rotorRint, abs_tol=1e-6):
-                    curve.name = "InnerLimit"
-            if math.isclose(
-                a=curve.startPoint.radius, b=statorRext, abs_tol=1e-6
-            ) and math.isclose(a=curve.endPoint.radius, b=statorRext, abs_tol=1e-6):
-                curve.name = "OuterLimit"
-                
-    return geometryList, rotorContourLineList, statorContourLineList
+    isShaft = bool(rotorRint > 0)
+
+    if isInternalRotor:
+        geometryList = detectInnerOuterLimit(
+            geometryList=geometryList,
+            innerRadius=rotorRint,
+            outerRadius=statorRext,
+            isShaft=isShaft,
+        )
+    else:
+        rotorRext = machine.rotor.Rext
+        statorRint = machine.stator.Rint
+        geometryList = detectInnerOuterLimit(
+            geometryList=geometryList,
+            innerRadius=statorRint,
+            outerRadius=rotorRext,
+            isShaft=isShaft,
+        )
+
+    return (
+        geometryList,
+        rotorContourLineList,
+        statorContourLineList,
+        lowestYPointRotor,
+        biggestYPointRotor,
+    )

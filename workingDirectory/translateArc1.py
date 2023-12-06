@@ -9,7 +9,7 @@ except:
     print(f'rootname is "{rootname}"')
     sys.path.append(rootname)
 
-from workingDirectory.buildPyemmoPoint import buildPyemmoPoint
+from .buildPyemmoPoint import buildPyemmoPoint
 
 # =======================================
 # Definition of function 'translateArc1':

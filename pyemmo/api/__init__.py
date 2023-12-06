@@ -54,6 +54,7 @@ OuterLimitLineDict = {
     # if there is no housing, use stator iron outer line
     "StNut": [
         ["OuterLimit"],
+        ["InnerLimit"],
         ["SZ", "SN"],
     ],
 }
@@ -68,6 +69,7 @@ InnerLimitLineDict = {
     "Hul": ["H3", "H4"],
     "Pol": [
         ["InnerLimit"],
+        ["OuterLimit"],
         ["RMi", "RI"],  # first case:IPM
         ["RndI", "RndM"],  # second case:APM
     ],

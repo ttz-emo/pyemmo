@@ -1,5 +1,4 @@
 import sys
-
 try:
     from pyemmo.script.script import Script
 except:
@@ -9,11 +8,11 @@ except:
     sys.path.append(rootname)
     
 from pyemmo.script.material.material import Material
-
+from pyleecan.Classes.Material import Material as pyleecanMat
 # =============================================
 # Definition of function 'buildPyemmoMaterial':
 # =============================================
-def buildPyemmoMaterial(pyleecanMaterial):
+def buildPyemmoMaterial(pyleecanMaterial: pyleecanMat):
     """_summary_
 
     Args:
@@ -27,9 +26,10 @@ def buildPyemmoMaterial(pyleecanMaterial):
     except AttributeError:
         conductivity = None
     try:
+        #TODO: Abfangen, falls mur_lin und BH nicht gesetzt sind -> Fehler ausgeben. Falls BH gegeben ist, kein mur_lin benötigt. 
         relPermeability = pyleecanMaterial.mag.mur_lin
     except AttributeError:
-        relPermeability = None
+        relPermeability = 1.0
     try:
         remanence = pyleecanMaterial.mag.Brm20
     except AttributeError:
@@ -40,6 +40,7 @@ def buildPyemmoMaterial(pyleecanMaterial):
         alphaBr = None
     try:
         BH = pyleecanMaterial.mag.BH_curve.value
+        BH[:, [0, 1]] = BH[:, [1, 0]]
     except AttributeError:
         BH = None
     try:
