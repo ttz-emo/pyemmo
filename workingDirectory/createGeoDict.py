@@ -50,8 +50,7 @@ def createGeoDict(
         RotorSurfLabelsSplit2.append(saveSpaceTemp)
         print(f"\nTranslation for {RotorSurfLabels[i]}:")
         pyemmoSurface, magnetizationDict = translateGeometry(
-            bauteil=RotorSurfLabelsSplit2[i][0],
-            detail=RotorSurfLabelsSplit2[i][2],
+            nameSplitList=RotorSurfLabelsSplit2[i],
             machine=machine,
             label=RotorSurfLabels[i],
             surface=surf,
@@ -76,8 +75,7 @@ def createGeoDict(
         StatorSurfLabelsSplit2.append(saveSpaceTemp)
         print(f"\nTranslation for {StatorSurfLabels[i]}:")
         pyemmoSurface, magnetizationDict = translateGeometry(
-            bauteil=StatorSurfLabelsSplit2[i][0],
-            detail=StatorSurfLabelsSplit2[i][2],
+            nameSplitList=StatorSurfLabelsSplit2[i],
             machine=machine,
             label=StatorSurfLabels[i],
             surface=surf,
