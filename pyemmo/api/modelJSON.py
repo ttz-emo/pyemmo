@@ -558,7 +558,7 @@ def createMagnet(surf: SurfaceAPI, mat: Material, extInfo: dict) -> Magnet:
         material=mat,
         magDirection=magDir,
         magType=importJSON.getMagDir(extInfo),
-        magVectorAngle=magAngle + radians(360/surf.NbrSegments)*segmentNbr,
+        magVectorAngle=magAngle + radians(360 / surf.NbrSegments) * segmentNbr,
     )
 
 
@@ -655,17 +655,28 @@ def getSlotInfo(slotSurfName: str) -> Tuple[int, int]:
         # split up the surface name to get Slot side (0 odr 1) and segmentNbr (n)
         [slotSide, segmentNbr] = slotSurfName.lstrip("StCu").split("_")
         # if both strings are numbers
-        if slotSide.isdecimal() and segmentNbr.isdecimal():
-            if float(slotSide).is_integer() and float(segmentNbr).is_integer():
-                return int(slotSide), int(segmentNbr)  # return the int value
-            msg = f"slotSide ({slotSide}) and/or segmentNbr ({segmentNbr}) are not integers!"
-            raise ValueError(msg)
-        msg = (
-            f"Could not determine Slot infomations"
-            f"slotSide ({slotSide}) and/or segmentNbr ({segmentNbr}) are not decimal!"
-        )
-        raise ValueError(msg)
-    msg = f'Slot identifier "StCu" was not in Surfacename: {slotSurfName}'
+        if slotSide:  # if slotSide not empty
+            if slotSide.isdecimal():  # string is int
+                slotSide = int(slotSide)
+            else:
+                raise ValueError(
+                    f"Slot side was not decimal. Slot name: '{slotSurfName}'"
+                )
+        else:
+            # Slot side is empty -> there is one layer side
+            slotSide = 0  # 0 to index first/only winding layer
+        if segmentNbr:
+            if segmentNbr.isdecimal():
+                segmentNbr = int(segmentNbr)
+            else:
+                msg = f"Segment number was not decimal. Slot name: '{slotSurfName}'"
+                raise ValueError(msg)
+        else:
+            raise RuntimeError(
+                f"Could not determine segment number from '{slotSurfName}'."
+            )
+        return slotSide, segmentNbr
+    msg = f'Slot identifier "StCu" was not in surface name: {slotSurfName}'
     raise ValueError(msg)
 
 
