@@ -6,6 +6,7 @@ from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 from pyleecan.Classes.Machine import Machine
 
 from pyemmo.script.material.material import Material
+from pyemmo.api import air
 from pyemmo.script.geometry.point import Point
 from pyemmo.script.geometry.circleArc import CircleArc
 from pyemmo.script.geometry.line import Line
@@ -13,29 +14,6 @@ from pyemmo.api.SurfaceJSON import SurfaceAPI
 from pyemmo.functions.plot import plot
 from .createGeoDict import createGeoDict
 from .getCoordinatesForPoint import getXforPoint, getYforPoint
-
-
-def getMaterialAir() -> Material:
-    """Get the pyemmo material of air
-
-    Returns:
-        Material: _description_
-    """
-    # ===============
-    # Material 'Air':
-    # ===============
-    materialAir = Material(
-        name="AirMB",
-        conductivity=0,
-        relPermeability=1.0000004,
-        remanence=None,
-        tempCoefRem=None,
-        BH=None,
-        density=None,
-        thermalConductivity=None,
-        thermalCapacity=None,
-    )
-    return materialAir
 
 
 def buildBandsRotor(
@@ -66,7 +44,6 @@ def buildBandsRotor(
     # ================
     # Bands for rotor:
     # ================
-    materialAir = getMaterialAir()
 
     # -----------------
     # Rotor inner band:
@@ -108,7 +85,7 @@ def buildBandsRotor(
         name="Rotorluftspalt 1",
         idExt="LuR1",
         curves=Rotorluftspalt1Curves,
-        material=materialAir,
+        material=air,
         nbrSegments=nbrRotorSeg,
         angle=angleRotor,
         meshSize=1.0,
@@ -157,7 +134,7 @@ def buildBandsRotor(
         name="Rotorluftspalt 2",
         idExt="LuR2",
         curves=Rotorluftspalt2Curves,
-        material=materialAir,
+        material=air,
         nbrSegments=nbrRotorSeg,
         angle=angleRotor,
         meshSize=1.0,
@@ -204,7 +181,6 @@ def buildBandsStator(
     # =================
     # Bands for stator:
     # =================
-    materialAir = getMaterialAir()
     # ------------------
     # Stator outer band:
     # ------------------
@@ -254,7 +230,7 @@ def buildBandsStator(
         name="Statorluftspalt 1",
         idExt="StLu1",
         curves=stlu1curves,
-        material=materialAir,
+        material=air,
         nbrSegments=nbrStatorSeg,
         angle=angleStator,
         meshSize=1.0,
@@ -304,7 +280,7 @@ def buildBandsStator(
         name="Statorluftspalt 2",
         idExt="StLu2",
         curves=StLu2curves,
-        material=materialAir,
+        material=air,
         nbrSegments=nbrStatorSeg,
         angle=angleStator,
         meshSize=1.0,
