@@ -48,7 +48,7 @@ def generateSimulation(
     simu.input.OP = OPdq(Id_ref=Id, Iq_ref=Iq, N0=speed)
 
     # time discretization [s] -> one elec. period with # 32 timesteps
-    time = np.linspace(start=0, stop=60 / speed / p, num=32, endpoint=False)
+    time = np.linspace(start=0, stop=60 / speed / p, num=32, endpoint=True)
     simu.input.time = time
 
     # Angular discretization along the airgap circonference
