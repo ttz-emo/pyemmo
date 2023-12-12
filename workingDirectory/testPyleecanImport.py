@@ -1,4 +1,4 @@
-from os.path import join
+import os
 import sys
 
 # =================
@@ -6,6 +6,8 @@ import sys
 # =================
 from pyleecan.definitions import DATA_DIR
 from pyleecan.Functions.load import load
+from pyleecan.Classes.Simulation import Simulation
+from pyleecan.Classes.Machine import Machine
 from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
 
@@ -22,13 +24,35 @@ from workingDirectory.createParamDict import createParamDict
 # ========================================
 # Festlegung der zu berechnenden Maschine:
 # ========================================
+# machine = load(
+# 	DATA_DIR, "Machine", "SPMSM_002.json"
+#     )
+fileName = "IPMSM_Muster_2.json"
 machine = load(
-    join(ROOT_DIR, "workingDirectory\\machineData\\SPMSMPyleecanMuster_2Shaft_ZaW2.json")
+    os.path.abspath(
+        os.path.join(
+            ROOT_DIR,
+            f"workingDirectory\\machineData\\{fileName}",
+        )
+    )
 )
+# simulation = load(
+#     os.path.abspath(
+#         os.path.join(
+#             ROOT_DIR,
+#             f"workingDirectory\\machineData\\FEMM_{fileName}",
+#         )
+#     )
+# )
 simulation = load(
-    join(ROOT_DIR, "workingDirectory\\machineData\\FEMM_SPMSMPyleecanMuster_2Shaft_ZaW2.json")
+    os.path.abspath(
+        os.path.join(
+            ROOT_DIR,
+            f"workingDirectory\\machineData",
+            "FEMM_SPMSMPyleecanMuster_2Shaft.json",
+        )
+    )
 )
-
 # =====================================
 # Festlegung der Simulations-Parameter:
 # =====================================
@@ -84,6 +108,17 @@ paramDict = createParamDict(
 main(
     geo=geoTranslationDict,
     extInfo=paramDict,
-    model=join(ROOT_DIR, r"Results\pyleecanAPI\TEST_TRANSLATION"),
-    gmsh="C:\\Software\\Onelab\\gmsh.exe",
+    model=os.path.join(ROOT_DIR, r"Results\pyleecanAPI\TEST_TRANSLATION"),
 )
+
+
+def generateSimulation(machine: Machine) -> Simulation:
+    """Create a Simulation object from a given machine
+
+    Args:
+        machine (Machine): Actual pyleecan machine
+
+    Returns:
+        Simulation: _description_
+    """
+    ...
