@@ -25,7 +25,7 @@ def getMaterialAir() -> Material:
     # Material 'Air':
     # ===============
     materialAir = Material(
-        name="Air",
+        name="AirMB",
         conductivity=0,
         relPermeability=1.0000004,
         remanence=None,
