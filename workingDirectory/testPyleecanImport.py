@@ -1,12 +1,15 @@
 import os
-import sys
+import numpy as np
 
 # =================
 # Imports pyleecan:
 # =================
-from pyleecan.definitions import DATA_DIR
 from pyleecan.Functions.load import load
 from pyleecan.Classes.Simulation import Simulation
+from pyleecan.Classes.Simu1 import Simu1
+from pyleecan.Classes.InputCurrent import InputCurrent
+from pyleecan.Classes.OPdq import OPdq
+
 from pyleecan.Classes.Machine import Machine
 from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
@@ -21,38 +24,57 @@ from workingDirectory.buildPyemmoMovingBand import buildMovingBand
 from workingDirectory.createParamDict import createParamDict
 
 
+# Simulation Function
+def generateSimulation(
+    machine: Machine, Id: float = 0.0, Iq: float = 10.0, speed: float = 1000.0
+) -> Simulation:
+    """Create a Simulation object from a given machine
+
+    Args:
+        machine (Machine): Actual pyleecan machine
+
+    Returns:
+        Simulation: Pyleecan Simulation object
+    """
+    simu = Simu1(name="PyEMMO_Simulation", machine=machine)
+    # simu.path_result = "path/to/folder" Path to the Result folder to use
+    # (will contain FEMM files)
+    p = simu.machine.stator.winding.p
+    # qs = simu.machine.stator.winding.qs
+
+    # Defining Simulation Input
+    simu.input = InputCurrent()
+    # Rotor speed [rpm]
+    simu.input.OP = OPdq(Id_ref=Id, Iq_ref=Iq, N0=speed)
+
+    # time discretization [s] -> one elec. period with # 32 timesteps
+    time = np.linspace(start=0, stop=60 / speed / p, num=32, endpoint=False)
+    simu.input.time = time
+
+    # Angular discretization along the airgap circonference
+    angularDisc = np.linspace(
+        start=0, stop=2 * np.pi, num=2048, endpoint=False
+    )
+    simu.input.angle = angularDisc
+    return simu
+
+
 # ========================================
 # Festlegung der zu berechnenden Maschine:
 # ========================================
 # machine = load(
 # 	DATA_DIR, "Machine", "SPMSM_002.json"
 #     )
-fileName = "IPMSM_Muster_2.json"
-machine = load(
-    os.path.abspath(
-        os.path.join(
-            ROOT_DIR,
-            f"workingDirectory\\machineData\\{fileName}",
-        )
-    )
-)
-# simulation = load(
-#     os.path.abspath(
-#         os.path.join(
-#             ROOT_DIR,
-#             f"workingDirectory\\machineData\\FEMM_{fileName}",
-#         )
-#     )
-# )
-simulation = load(
-    os.path.abspath(
-        os.path.join(
-            ROOT_DIR,
-            f"workingDirectory\\machineData",
-            "FEMM_SPMSMPyleecanMuster_2Shaft.json",
-        )
-    )
-)
+machineFolder = os.path.join(ROOT_DIR, "workingDirectory/machineData")
+machineList = []
+for file in os.listdir(machineFolder):
+    if file.endswith('.json') and not "FEMM" in file:
+        machineList.append(file)
+
+fileName = machineList[0]
+print("Using machine: "+ fileName)
+machine = load(os.path.abspath(os.path.join(machineFolder, fileName)))
+simulation = generateSimulation(machine, Id=0, Iq=10, speed=1000)
 # =====================================
 # Festlegung der Simulations-Parameter:
 # =====================================
@@ -110,15 +132,3 @@ main(
     extInfo=paramDict,
     model=os.path.join(ROOT_DIR, r"Results\pyleecanAPI\TEST_TRANSLATION"),
 )
-
-
-def generateSimulation(machine: Machine) -> Simulation:
-    """Create a Simulation object from a given machine
-
-    Args:
-        machine (Machine): Actual pyleecan machine
-
-    Returns:
-        Simulation: _description_
-    """
-    ...
