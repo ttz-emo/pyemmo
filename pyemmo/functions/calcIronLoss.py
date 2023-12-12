@@ -12,7 +12,10 @@ from ..script.material import ElectricalSteel
 
 
 def main(
-    bFilePath: os.PathLike, lossFactor: dict, symFactor: int, axialLength: float = 1.0
+    bFilePath: os.PathLike,
+    lossFactor: dict,
+    symFactor: int,
+    axialLength: float = 1.0,
 ) -> Tuple[Dict[str, np.ndarray], List[float]]:
     ironLoss, time = calcTimeDomainIronLosses(
         bFilePath, lossFactor, symFactor, axialLength
@@ -37,7 +40,8 @@ def calcTimeDomainIronLosses(
         saveFields (bool, optional): _description_. Defaults to True.
 
     Returns:
-        Tuple[Dict[str, np.ndarray], List[float]]: Iron loss results-dict + time array
+        Tuple[Dict[str, np.ndarray], List[float]]: Iron loss results-dict +
+            time array
     """
     ironLoss = {}  # dict for loss results
     finGmsh = False  # determine if gmsh should be closed at the end
@@ -50,8 +54,8 @@ def calcTimeDomainIronLosses(
     nbrElements = len(elementTags)
     if saveFields:
         # extract filename from path
-        _,fileName = os.path.split(bFilePath) # get filename with ext
-        fileName, _=os.path.splitext(fileName) # get pure filename 
+        _, fileName = os.path.split(bFilePath)  # get filename with ext
+        fileName, _ = os.path.splitext(fileName)  # get pure filename
     # --------------------------- calc hysteresis loss ---------------------------
     if np.all(
         np.linalg.norm((bFieldData[0] - bFieldData[-1]), axis=(1))
@@ -73,7 +77,9 @@ def calcTimeDomainIronLosses(
     tStep = time[1] - time[0]
     freqs = np.fft.rfftfreq(np.shape(bFieldDataFFT)[0], tStep)
     nbrFreqs = len(freqs)
-    amp = np.concatenate(([amp[0] / nbrFreqs / 2], amp[1:] / (nbrFreqs)), axis=0)
+    amp = np.concatenate(
+        ([amp[0] / nbrFreqs / 2], amp[1:] / (nbrFreqs)), axis=0
+    )
     phase = np.angle(bfft)
     for elem in range(nbrElements):
         # FIXME: Assume that freq. of max. amplitude is the same for x and y comp.
@@ -83,7 +89,9 @@ def calcTimeDomainIronLosses(
 
     # fMaxIndex equals order of that spectral part
     phi = np.linspace(
-        phi0 + np.pi / 2, fMaxInd * (2 * np.pi) + phi0 + np.pi / 2, nbrTimeSteps - 1
+        phi0 + np.pi / 2,
+        fMaxInd * (2 * np.pi) + phi0 + np.pi / 2,
+        nbrTimeSteps - 1,
     )
     cosPhi = np.cos(phi)  # calc cos(phi)
     bmax = np.max(bFieldData, axis=0)
@@ -98,7 +106,9 @@ def calcTimeDomainIronLosses(
     if saveFields:
         # save the View to a pos file
         model = gmsh.model.getCurrent()  # or just get current model...
-        actView = gmsh.view.add(f"Hystersis Loss [W/m³] ({fileName})")  # get tag of new view
+        actView = gmsh.view.add(
+            f"Hystersis Loss [W/m³] ({fileName})"
+        )  # get tag of new view
         for step in range(len(time) - 1):
             gmsh.view.addHomogeneousModelData(
                 tag=actView,
@@ -122,13 +132,17 @@ def calcTimeDomainIronLosses(
     # ------------------------- Calculate eddy current losses ---------------------------
     eddyLossFactor = lossFactor["eddy"]  # loss parameter
     # loss function for eddy current loss from paper:
-    eddyLossField = np.sum(eddyLossFactor / 2 / (np.pi**2) * (dBdt**2), axis=2)
+    eddyLossField = np.sum(
+        eddyLossFactor / 2 / (np.pi**2) * (dBdt**2), axis=2
+    )
     # meanEddyLossField = np.mean(eddyLossField, axis=0)
     # eddyLoss = integrateField(np.array([meanEddyLossField]), [time[0]], elementTags)
     if saveFields:
         # save the View to a pos file
         model = gmsh.model.getCurrent()  # or just get current model...
-        actView = gmsh.view.add(f"Eddy current Loss [W/m³] ({fileName})")  # get tag of new view
+        actView = gmsh.view.add(
+            f"Eddy current Loss [W/m³] ({fileName})"
+        )  # get tag of new view
         for step in range(len(time) - 1):
             gmsh.view.addHomogeneousModelData(
                 tag=actView,
@@ -156,12 +170,15 @@ def calcTimeDomainIronLosses(
     if lossFactor["exc"] > 0:
         constExcFactor = 8.763363  # constant factor (from paper)
         excLossField = np.sum(
-            lossFactor["exc"] / constExcFactor * np.power(dBdt**2, 0.75), axis=2
+            lossFactor["exc"] / constExcFactor * np.power(dBdt**2, 0.75),
+            axis=2,
         )
         if saveFields:
             # save the View to a pos file
             model = gmsh.model.getCurrent()  # or just get current model...
-            actView = gmsh.view.add(f"Excess Loss [W/m³] ({fileName})")  #    get tag of new view
+            actView = gmsh.view.add(
+                f"Excess Loss [W/m³] ({fileName})"
+            )  #    get tag of new view
             for step in range(len(time) - 1):
                 gmsh.view.addHomogeneousModelData(
                     tag=actView,
@@ -190,12 +207,14 @@ def calcTimeDomainIronLosses(
         # set iron loss to 0
         ironLoss["exc"] = np.zeros(eddyLoss.shape)
         excLossField = np.zeros(eddyLossField.shape)
-    
+
     # Export total loss field
     if saveFields:
         # save the View to a pos file
         model = gmsh.model.getCurrent()
-        actView = gmsh.view.add(f"Total Loss [W/m³] ({fileName})")  # get tag of new view
+        actView = gmsh.view.add(
+            f"Total Loss [W/m³] ({fileName})"
+        )  # get tag of new view
         totalLossField = hystLossField + eddyLossField + excLossField
         for step in range(len(time) - 1):
             gmsh.view.addHomogeneousModelData(
@@ -220,7 +239,10 @@ def calcTimeDomainIronLosses(
 
 
 def calcFreqDomainIronLosses(
-    bFilePath: os.PathLike, lossFactor: dict, symFactor: int, axialLength: float = 1.0
+    bFilePath: os.PathLike,
+    lossFactor: dict,
+    symFactor: int,
+    axialLength: float = 1.0,
 ) -> Tuple[Dict[str, np.ndarray], List[float]]:
     ironLoss = {}  # dict for loss results
     finGmsh = False  # determine if gmsh should be closed at the end
@@ -251,12 +273,16 @@ def calcFreqDomainIronLosses(
     # we have to double the value for amp[0] and use only nbrFreqs for amp[1:]
     freqs = np.fft.rfftfreq(nbrTimeSteps, tStep)
     nbrFreqs = len(freqs)
-    amp = np.concatenate(([amp[0] / nbrFreqs / 2], amp[1:] / (nbrFreqs)), axis=0)
+    amp = np.concatenate(
+        ([amp[0] / nbrFreqs / 2], amp[1:] / (nbrFreqs)), axis=0
+    )
     # norm of xyz comp. -> hystLossField has shape (nbrElements, nbrFreqs)
     hystLossField = np.linalg.norm(
         hystLossFactor * freqs * (amp.transpose() ** 2), axis=0
     )
-    hystLoss = integrateField(hystLossField.transpose(), freqs, elementTags)[1:]
+    hystLoss = integrateField(hystLossField.transpose(), freqs, elementTags)[
+        1:
+    ]
     # skip first value, because its 0
     ironLoss["hyst"] = hystLoss * symFactor * axialLength  # correct values
 
@@ -266,8 +292,12 @@ def calcFreqDomainIronLosses(
     eddyLossField = np.linalg.norm(
         eddyLossFactor * (freqs**2) * (amp.transpose() ** 2), axis=0
     )
-    eddyLoss = integrateField(eddyLossField.transpose(), freqs, elementTags)[1:]
-    assert eddyLoss.size == nbrFreqs, f"Integration should result in {nbrFreqs} values!"
+    eddyLoss = integrateField(eddyLossField.transpose(), freqs, elementTags)[
+        1:
+    ]
+    assert (
+        eddyLoss.size == nbrFreqs
+    ), f"Integration should result in {nbrFreqs} values!"
     # skip first value, because its 0
     eddyLoss = eddyLoss * symFactor * axialLength  # correct values
     ironLoss["eddy"] = eddyLoss
@@ -275,11 +305,12 @@ def calcFreqDomainIronLosses(
     ## calculate excess loss
     excLossFactor = lossFactor["exc"]
     if excLossFactor:
-        constExcFactor = 8.763363  # constant factor (from paper)
         excLossField = np.linalg.norm(
             excLossFactor * (freqs**1.5) * (amp.transpose() ** 1.5)
         )
-        excLoss = integrateField(excLossField.transpose(), freqs, elementTags)[1:]
+        excLoss = integrateField(excLossField.transpose(), freqs, elementTags)[
+            1:
+        ]
         assert (
             excLoss.size == nbrFreqs
         ), f"Integration should result in {nbrFreqs} values!"
@@ -340,13 +371,17 @@ def integrateField(
     return integratedData[0][3:]
 
 
-def writeSimple(fName, time: List[float], data: Union[np.ndarray, List]) -> None:
-    """_summary_
+def writeSimple(
+    fName: os.PathLike, time: List[float], data: Union[np.ndarray, List]
+) -> None:
+    """Write time data to simple text file like:
+
+        *timestep* *data-vector* 
 
     Args:
-        fName (_type_): _description_
-        time (List[float]): _description_
-        data (Union[np.ndarray, List]): _description_
+        fName (os.PathLike): File name to existing folder.
+        time (List[float]): Time vector.
+        data (Union[np.ndarray, List]): Data vector or matrix.
     """
     nbrTimeSteps = len(time)
     if isinstance(data, np.ndarray):
@@ -354,7 +389,9 @@ def writeSimple(fName, time: List[float], data: Union[np.ndarray, List]) -> None
     elif isinstance(data, list):
         assert len(data) == nbrTimeSteps
     else:
-        raise TypeError(f"Data type was not numpy.ndarray or list, but {type(data)}.")
+        raise TypeError(
+            f"Data type was not numpy.ndarray or list, but {type(data)}."
+        )
     with open(fName, "w", encoding="utf-8") as resFile:
         for varStep in range(nbrTimeSteps):
             resFile.write(f"{time[varStep]} {data[varStep]}\n")
