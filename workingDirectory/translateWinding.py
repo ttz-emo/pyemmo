@@ -5,15 +5,18 @@ import swat_em as swatem
 
 def translateWinding(
     machine: Machine,
-) -> list[
+) -> tuple[swatem.datamodel, list[
     Union[
         list[Union[list[int], list[int]]],
         list[Union[list[int], list[int]]],
         list[Union[list[int], list[int]]],
-    ]
+    ]]
 ]:
     """Translates the winding from pyleecan to pyemmo.
 
+        TODO: Vielleicht hier nur das datamodel Objekt zurückgeben und dann
+                einfach direkt in createParamDict die Funktion get_phases()
+                aufrufen.
     Args:
         machine (Machine): Pyleecan machine
 
@@ -66,4 +69,4 @@ def translateWinding(
                     windTestSwat[2][0].append(slot + 1)
                 elif conductor[2] < 0:
                     windTestSwat[2][0].append(-(slot + 1))
-    return windSwat
+    return winding, windSwat
