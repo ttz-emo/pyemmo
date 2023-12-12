@@ -186,6 +186,7 @@ class Surface(Transformable):
         Args:
             color (str): _description_
         """
+        # FIXME: Add color check here!
         self._color = color
 
     def getMeshColor(self) -> str:
