@@ -22,6 +22,6 @@ def buildPyemmoPoint(pyleecanPoint):
     """
     coords = [pyleecanPoint.real, pyleecanPoint.imag]
 
-    pyemmoPoint = Point(name="test", x=coords[0], y=coords[1], z=0, meshLength=1.0)
+    pyemmoPoint = Point(name="test", x=coords[0], y=coords[1], z=0, meshLength=1e-3)
 
     return pyemmoPoint
