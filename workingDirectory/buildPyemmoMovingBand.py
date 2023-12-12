@@ -49,15 +49,16 @@ def buildBandsRotor(
     # Rotor inner band:
     # -----------------
     # Points:
+    mbMeshLen = 2*bandRadiusList[1]*math.pi/360
     pointM11 = Point(
-        name="PointM11", x=bandRadiusList[0], y=0, z=0, meshLength=1
+        name="PointM11", x=bandRadiusList[0], y=0, z=0, meshLength=mbMeshLen
     )
     pointM12 = Point(
         name="PointM12",
         x=getXforPoint(bandRadiusList[0], rotorSymAngle),
         y=getYforPoint(bandRadiusList[0], rotorSymAngle),
         z=0,
-        meshLength=1,
+        meshLength=mbMeshLen,
     )
 
     # Curves:
@@ -99,14 +100,14 @@ def buildBandsRotor(
     # -----------------
     # Points:
     PointM21 = Point(
-        name="PointM21", x=bandRadiusList[1], y=0, z=0, meshLength=1
+        name="PointM21", x=bandRadiusList[1], y=0, z=0, meshLength=mbMeshLen
     )
     PointM22 = Point(
         name="PointM22",
         x=getXforPoint(bandRadiusList[1], rotorSymAngle),
         y=getYforPoint(bandRadiusList[1], rotorSymAngle),
         z=0,
-        meshLength=1,
+        meshLength=mbMeshLen,
     )
     # Curves:
     rotorCircle2 = CircleArc(
@@ -194,15 +195,16 @@ def buildBandsStator(
                 lowestYPointStator = point
 
     # Points:
+    mbMeshLen = 2*bandRadiusList[2]*math.pi/360
     PointM41 = Point(
-        name="PointM41", x=bandRadiusList[3], y=0, z=0, meshLength=1
+        name="PointM41", x=bandRadiusList[3], y=0, z=0, meshLength=mbMeshLen
     )
     PointM42 = Point(
         name="PointM42",
         x=getXforPoint(bandRadiusList[3], statorSymAngle),
         y=getYforPoint(bandRadiusList[3], statorSymAngle),
         z=0,
-        meshLength=1,
+        meshLength=mbMeshLen,
     )
 
     # Curves:
@@ -245,14 +247,14 @@ def buildBandsStator(
     # ------------------
     # Points:
     PointM31 = Point(
-        name="PointM31", x=bandRadiusList[2], y=0, z=0, meshLength=1
+        name="PointM31", x=bandRadiusList[2], y=0, z=0, meshLength=mbMeshLen
     )
     PointM32 = Point(
         name="PointM22",
         x=getXforPoint(bandRadiusList[2], statorSymAngle),
         y=getYforPoint(bandRadiusList[2], statorSymAngle),
         z=0,
-        meshLength=1,
+        meshLength=mbMeshLen,
     )
     # Curves:
     statorCircle3 = CircleArc(
@@ -392,7 +394,7 @@ def buildMovingBand(
     print(f"bandRadiusList: {bandRadiusList}")
     print("---")
 
-    centerPoint = Point(name="centerPointBand", x=0, y=0, z=0, meshLength=1)
+    centerPoint = Point(name="centerPointBand", x=0, y=0, z=0, meshLength=1e-3)
     nbrStatorSeg = machine.stator.slot.Zs
     angleStator = 2 * math.pi / nbrStatorSeg
     nbrRotorSeg = machine.get_pole_pair_number() * 2
