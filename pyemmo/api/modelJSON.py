@@ -686,12 +686,16 @@ def getSlotPhase(
     """Gets the name (u, v, w) of the Phase with it's direction (+, -)
 
     Args:
-        windingLayout (list[list[int]]): Winding layout formatted for swat-em phases attribute (see
-         `this <https://swat-em.readthedocs.io/en/latest/reference.html#swat_em.datamodel.datamodel.set_phases>`__
-         SWAT-EM method for more details)
-        segmentNbr (int): Circumferderal model segment number starting with 0 on the x-axis (first segment).
-         Number increasing in math. positive direction.
-        slotSide (int): Slot side 0 = right side; 1 = left side (TODO: Specify upper and lower slot separation).
+        windingLayout (list[list[int]]): Winding layout formatted for swat-em
+            phases attribute (see `this <https://swat-em.readthedocs.io/en/latest/reference.html#swat_em.datamodel.datamodel.set_phases>`__
+            SWAT-EM method for more details)
+        segmentNbr (int): Circumferderal model segment number starting with 0
+            on the x-axis (first segment). Number increasing in math. positive
+            direction.
+        slotSide (int): Slot side 0 = right side or  slot bottom; 
+            1 = left side or slot opening. (Slot side can also be 2 or 3 but 
+            is merged into 0 and 1 by modulo operation. This is usefull when
+            you have multiple slot side (>2) per lamination segment.)
 
     Returns:
         Literal['p','n']: Winding direction (
@@ -706,7 +710,8 @@ def getSlotPhase(
     """
     for phaseIndex, phaseList in enumerate(windingLayout):
         # for slotSideList in phaseList:
-        for slotNumber in phaseList[slotSide]:
+        for slotNumber in phaseList[slotSide % 2]: # TODO: Test if multiple
+            # layer winding is working.
             if abs(slotNumber) == segmentNbr + 1:
                 if phaseIndex == 0:
                     phase = "u"
