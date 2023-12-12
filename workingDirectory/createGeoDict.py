@@ -22,6 +22,7 @@ def createGeoDict(
     statorSym: int,
     isInternalRotor: bool,
 ):
+    #TODO: Funktion heißt createGeoDict aber gibt Liste zurück...
     RotorSurf = machine.rotor.build_geometry(sym=rotorSym, alpha=0)
     StatorSurf = machine.stator.build_geometry(sym=statorSym, alpha=0)
 
