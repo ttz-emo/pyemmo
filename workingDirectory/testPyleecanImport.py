@@ -72,7 +72,7 @@ for file in os.listdir(machineFolder):
     if file.endswith(".json") and not "FEMM" in file:
         machineList.append(file)
 
-fileName = machineList[14] # SELECT MACHINE HERE BY INDEX OR NAME
+fileName = machineList[14]  # SELECT MACHINE HERE BY INDEX OR NAME
 print("Using machine: " + fileName)
 machine = load(os.path.abspath(os.path.join(machineFolder, fileName)))
 simulation = generateSimulation(machine, Id=0, Iq=10, speed=1000)
@@ -112,12 +112,17 @@ elif isinstance(machine, MachineIPMSM):
     )
 
 geoTranslationDict = {}
-for surfAPI in geometryList:
-    geoTranslationDict[surfAPI.idExt] = surfAPI
+for surf in geometryList:
+    if surf.idExt not in geoTranslationDict.keys():
+        geoTranslationDict[surf.idExt] = surf
+    else:
+        raise RuntimeError(
+            f"Surface ID '{surf.idExt}' allready in geometry dict!"
+        )
 
 geometryLineListFinish = []
 for surf in geometryList:
-    geometryLineListFinish.extend(surf.curves)
+    geometryLineListFinish.extend(surf.curve)
 
 print("Plot ENDE:")
 plot(geometryLineListFinish, linewidth=1, markersize=3, tag=True)
