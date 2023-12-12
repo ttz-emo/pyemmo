@@ -26,7 +26,9 @@ def translateWinding(
         Q=machine.stator.slot.Zs,
         P=machine.stator.winding.p * 2,
         m=machine.stator.winding.qs,
-        w=machine.stator.winding.coil_pitch,
+        w=machine.stator.winding.coil_pitch
+        if machine.stator.winding.Nlayer > 1
+        else -1,
         layers=machine.stator.winding.Nlayer,
         turns=machine.stator.winding.Ntcoil,
     )
@@ -64,5 +66,4 @@ def translateWinding(
                     windTestSwat[2][0].append(slot + 1)
                 elif conductor[2] < 0:
                     windTestSwat[2][0].append(-(slot + 1))
-            
     return windSwat
