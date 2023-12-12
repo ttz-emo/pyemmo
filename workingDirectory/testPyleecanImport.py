@@ -66,13 +66,14 @@ def generateSimulation(
 # 	DATA_DIR, "Machine", "SPMSM_002.json"
 #     )
 machineFolder = os.path.join(ROOT_DIR, "workingDirectory/machineData")
+resFolder = os.path.join(ROOT_DIR, r"Results\pyleecanAPI\TEST_TRANSLATION")
 machineList = []
 for file in os.listdir(machineFolder):
-    if file.endswith('.json') and not "FEMM" in file:
+    if file.endswith(".json") and not "FEMM" in file:
         machineList.append(file)
 
-fileName = machineList[0]
-print("Using machine: "+ fileName)
+fileName = machineList[14] # SELECT MACHINE HERE BY INDEX OR NAME
+print("Using machine: " + fileName)
 machine = load(os.path.abspath(os.path.join(machineFolder, fileName)))
 simulation = generateSimulation(machine, Id=0, Iq=10, speed=1000)
 # =====================================
@@ -116,8 +117,7 @@ for surfAPI in geometryList:
 
 geometryLineListFinish = []
 for surf in geometryList:
-    for line in surf.curve:
-        geometryLineListFinish.append(line)
+    geometryLineListFinish.extend(surf.curves)
 
 print("Plot ENDE:")
 plot(geometryLineListFinish, linewidth=1, markersize=3, tag=True)
@@ -130,5 +130,5 @@ paramDict = createParamDict(
 main(
     geo=geoTranslationDict,
     extInfo=paramDict,
-    model=os.path.join(ROOT_DIR, r"Results\pyleecanAPI\TEST_TRANSLATION"),
+    model=os.path.join(resFolder, fileName.split(".")[0]),
 )
