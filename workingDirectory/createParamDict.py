@@ -111,10 +111,9 @@ def createParamDict(
     else:
         symFactor = symFactor[0]
 
+    speed_rpm = pyleecanSimulation.input.OP.N0
     translationParameterDict = {
-        "winding": translateWinding(
-            machine
-        ),  # winding layout for given geometry
+        "winding": translateWinding(machine),  # winding layout
         "wickSWAT": translateWinding(machine),
         "NpP": machine.stator.winding.Npcp,  # number of parallel paths per winding phase
         "Ntps": machine.stator.winding.Ntcoil,
@@ -125,11 +124,9 @@ def createParamDict(
         "axLen_R": machine.rotor.L1,  # axial length of rotor
         "symFactor": symFactor,  # symmetry factor for model (STANDARD = 1) has to be defined
         "startPos": 0,  # start rotor position in ° (STANDARD = 0°)
-        "endPos": pyleecanSimulation.input.Na_tot
-        * 360,  # end rotor position in °
-        "nbrSteps": pyleecanSimulation.input.Nt_tot,  # number of time steps for simulation
-        "rot_freq": pyleecanSimulation.input.OP.N0
-        / 60,  # rotational frequency in Hz
+        "endPos": pyleecanSimulation.input.time.value[-1]*speed_rpm/60*360,  # end position in °
+        "nbrSteps": pyleecanSimulation.input.time.value.size,  # number of time steps for simulation
+        "rot_freq": speed_rpm / 60,  # mech freq in Hz
         "parkAngleOffset": None,  # park transformation offset angle in elec. ° (STANDARD = None)
         "analysisType": 1,  # 0=static; 1=transient (STANDARD = 1)
         "tempMag": 20,  # magnet temperature °C (STANDARD = 20°C)
