@@ -18,7 +18,15 @@ def getRotorSurfaces(geometryList):
             rotorLamSurfList.append(surf)
             print("rotorLamSurf:")
             print(f"gefunden: {surf.name}")
-        elif surf.idExt == "Mag":
+        elif surf.idExt == "Mag0":
+            rotorMagSurfList.append(surf)
+            print("rotorMagSurf:")
+            print(f"gefunden: {surf.name}")
+        elif surf.idExt == "Mag1":
+            rotorMagSurfList.append(surf)
+            print("rotorMagSurf:")
+            print(f"gefunden: {surf.name}")
+        elif surf.idExt == "Mag2":
             rotorMagSurfList.append(surf)
             print("rotorMagSurf:")
             print(f"gefunden: {surf.name}")
