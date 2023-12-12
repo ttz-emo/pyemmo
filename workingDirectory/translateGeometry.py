@@ -98,6 +98,10 @@ def translateGeometry(
                 else: 
                     idExt = "StCu0"  # "Stator-Nut"
             else: # nameSplitList[3] == "R1":
+                # BUG, FIXME: 'T0' kann für q=0.5 Wicklung mit Ober- und 
+                # Schicht vorkommen. Dann ist für R0 und R1 beides mal 'T0'
+                # Das führt dazu, dass beide StCu0 benannt werden und nur eins
+                # der beiden Segmente erzeugt wird!
                 if q == 0.5 and nameSplitList[4] == "T0":
                     idExt = "StCu0"  # "Stator-Nut"
                 elif q == 0.5 and nameSplitList[4] == "T1":
