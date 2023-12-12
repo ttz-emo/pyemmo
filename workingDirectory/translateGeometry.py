@@ -10,7 +10,6 @@ import pyleecan.Classes.Surface
 from pyemmo.api.SurfaceJSON import SurfaceAPI
 from .buildPyemmoMaterial import buildPyemmoMaterial
 from .buildPyemmoLineList import buildPyemmoLineList
-from .getMagnetizationDict import getMagnetizationDict
 
 
 # ===========================================
@@ -21,8 +20,9 @@ def translateGeometry(
     machine: pyleecan.Classes.Machine.Machine,  # Import of motor
     label: str,
     surface: pyleecan.Classes.Surface.Surface,
-    magnetizationDict: dict,
-) -> tuple[SurfaceAPI, dict]:
+    anglePointRefList: list,
+) -> tuple[SurfaceAPI, list]:
+    
     isMag = False
     if nameSplitList[0] == "Rotor":
         if nameSplitList[2] == "Lamination":
@@ -34,20 +34,24 @@ def translateGeometry(
             pyleecanMat = machine.rotor.magnet.mat_type
             idExt = "Mag"
             name = "Magnet"
-            anglePointRef = angle(surface.point_ref)
+            anglePointRefList.append(angle(surface.point_ref))
             isMag = True
 
         elif nameSplitList[2] == "Hole":
             pyleecanMat = machine.rotor.hole.mat_type
             idExt = "Mag"
             name = "Magnet"
-            anglePointRef = angle(surface.point_ref)
+            anglePointRefList.append(angle(surface.point_ref))
             isMag = True
 
         elif nameSplitList[2] == "HoleMag":
             pyleecanMat = machine.rotor.hole[0].magnet_0.mat_type
+            
             idExt = "Mag"  # "Magnet"
             name = "Magnet"
+            anglePointRefList.append(angle(surface.point_ref))
+            isMag = True
+            # magCounter += 1
 
         elif nameSplitList[2] == "HoleVoid":
             pyleecanMat = machine.rotor.hole[0].mat_void
@@ -70,16 +74,6 @@ def translateGeometry(
             meshSize=0,
         )
 
-        # ----------------------------------------------------
-        # Filling the magnetization dict if surface is magnet:
-        # ----------------------------------------------------
-        if isMag:
-            magnetizationDict = getMagnetizationDict(
-                magnetizationDict=magnetizationDict,
-                idExt=pyemmoSurface.idExt,
-                anglePointRef=anglePointRef,
-                magnetizationType=machine.rotor.magnet.type_magnetization,
-            )
 
     # stator
     elif nameSplitList[0] == "Stator":
@@ -91,10 +85,25 @@ def translateGeometry(
         elif nameSplitList[2] == "Winding":
             pyleecanMat = machine.stator.winding.conductor.cond_mat
             name = "Stator-Nut"
+            Q = machine.stator.slot.Zs
+            p = machine.stator.winding.p
+            m = machine.stator.winding.qs
+            q = Q / (2 * m * p)
             if nameSplitList[3] == "R0":
-                idExt = "StCu0"  # "Stator-Nut"
-            else:
-                idExt = "StCu1"  # "Stator-Nut"
+                if q == 0.5:
+                    if nameSplitList[4] == "T0":
+                        idExt = "StCu0"  # "Stator-Nut"
+                    else:
+                        idExt = "StCu1"  # "Stator-Nut"
+                else: 
+                    idExt = "StCu0"  # "Stator-Nut"
+            else: # nameSplitList[3] == "R1":
+                if q == 0.5 and nameSplitList[4] == "T0":
+                    idExt = "StCu0"  # "Stator-Nut"
+                elif q == 0.5 and nameSplitList[4] == "T1":
+                    idExt = "StCu1"  # "Stator-Nut"
+                else: 
+                    idExt = "StCu1"  # "Stator-Nut"
 
         else:
             raise ValueError(
@@ -118,4 +127,4 @@ def translateGeometry(
             f"Wrong input for 'bauteil'. 'bauteil' must be 'Rotor' or 'Stator'. Your input was '{nameSplitList[0]}'."
         )
 
-    return pyemmoSurface, magnetizationDict
+    return pyemmoSurface, anglePointRefList
