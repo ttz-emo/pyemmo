@@ -29,9 +29,10 @@ except FileNotFoundError:
 globalCenterPoint = defaultCenterPoint
 # Movingband line Identification dicts
 RotorMBLineDict = {
-    "LuR2": [["MB_CurveRotor"], ["LuA2", "LuM2"], ["LuAa", "LuBa"]],
-    "RoLu2": ["LuA2", "LuM2"],
-    "LuR": ["LuAa", "LuBa"],
+    "LuR2": [["LuA2", "LuM2"], ["LuAa", "LuBa"], "MB_CurveRotor"], # double airgap
+    "RoLu2": ["LuA2", "LuM2"], # double airgap
+    "RoLu": ["LuA", "LuM"], # single airgap
+    "LuR": ["LuAa", "LuBa"], # single airgap
 }
 StatorMBLineDict = {
     "StLu2": [["MB_CurveStator"], ["LuA2", "LuM2"]],

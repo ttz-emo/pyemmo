@@ -89,15 +89,14 @@ def createMachine(
         axLen=axLen["rotor"],
     )
     # create the stator
-    nbrSlotTotal = segmentSurfDict["StNut"].NbrSegments
     # create winding
-    windingSwat = modelJSON.createWinding(extendedInfo)
+    windingSWAT = modelJSON.createWinding(extendedInfo)
     statorAPI = Stator(
         name="stator created via json api",
-        nbrSlots=nbrSlotTotal,
+        nbrSlots=windingSWAT.get_num_slots(),
         physicalElements=statorPhysicals,
         axLen=axLen["stator"],
-        winding=windingSwat,
+        winding=windingSWAT,
     )
 
     # create the machine object

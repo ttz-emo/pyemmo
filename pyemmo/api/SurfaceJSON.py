@@ -186,7 +186,7 @@ class SurfaceAPI(Surface):
                 duplicatSurf.name = f"{parentName}_dup"
             else:
                 duplicatSurf.name = f"{parentName}_{duplicatSurf.id}"
-        duplicatSurf.setMeshColor(self.getMeshColor)
+        duplicatSurf.setMeshColor(self.getMeshColor())
         return duplicatSurf
 
     # def rotateDuplicate(self, symFactor: int) -> List["SurfaceAPI"]:
