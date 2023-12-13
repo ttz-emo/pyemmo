@@ -1,3 +1,4 @@
+# %%
 import os
 import numpy as np
 
@@ -59,6 +60,7 @@ def generateSimulation(
     return simu
 
 
+# %%
 # ========================================
 # Festlegung der zu berechnenden Maschine:
 # ========================================
@@ -66,20 +68,21 @@ def generateSimulation(
 # 	DATA_DIR, "Machine", "SPMSM_002.json"
 #     )
 machineFolder = os.path.join(ROOT_DIR, "workingDirectory/machineData")
-resFolder = os.path.join(ROOT_DIR, r"Results\pyleecanAPI\TEST_TRANSLATION")
+resFolder = os.path.join(ROOT_DIR, r"Results\pyleecanAPI")
 machineList = []
-for file in os.listdir(machineFolder):
+for i, file in enumerate(os.listdir(machineFolder)):
     if file.endswith(".json") and not "FEMM" in file:
         machineList.append(file)
+        print(f"{machineList.index(file)}: " + file)
 
-fileName = machineList[14]  # SELECT MACHINE HERE BY INDEX OR NAME
-print("Using machine: " + fileName)
+fileName = machineList[29]  # SELECT MACHINE HERE BY INDEX OR NAME
+print("\nUsing machine: " + fileName)
 machine = load(os.path.abspath(os.path.join(machineFolder, fileName)))
 simulation = generateSimulation(machine, Id=0, Iq=10, speed=1000)
 # =====================================
 # Festlegung der Simulations-Parameter:
 # =====================================
-
+# %%
 rotorRext = machine.rotor.Rext
 rotorRint = machine.rotor.Rint
 statorRint = machine.stator.Rint
@@ -136,4 +139,7 @@ main(
     geo=geoTranslationDict,
     extInfo=paramDict,
     model=os.path.join(resFolder, fileName.split(".")[0]),
+    results=os.path.join(resFolder, fileName.split(".")[0], "res"),
 )
+
+# %%
