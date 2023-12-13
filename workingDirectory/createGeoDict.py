@@ -1,4 +1,5 @@
 from typing import List
+from math import pi
 
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
 from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
@@ -14,12 +15,14 @@ from .getRotorStatorContour import (
 )
 from .detectInnerOuterLimit import detectInnerOuterLimit
 
+
 def createGeoDict(
     machine: Machine,
     rotorSym: int,
     statorSym: int,
     isInternalRotor: bool,
 ):
+    #TODO: Funktion heißt createGeoDict aber gibt Liste zurück...
     RotorSurf = machine.rotor.build_geometry(sym=rotorSym, alpha=0)
     StatorSurf = machine.stator.build_geometry(sym=statorSym, alpha=0)
 
@@ -31,6 +34,11 @@ def createGeoDict(
     StatorSurfLabelsSplit2 = []
 
     geometryList: List[SurfaceAPI] = []
+    magnetizationDict = {}
+    anglePointRefList = []
+
+    rotorRint = machine.rotor.Rint
+    statorRext = machine.stator.Rext
 
     # =======================================
     # Loop of translation for rotor surfaces:
@@ -45,16 +53,81 @@ def createGeoDict(
             saveSpaceTemp.extend(split1.split("-"))
         RotorSurfLabelsSplit2.append(saveSpaceTemp)
         print(f"\nTranslation for {RotorSurfLabels[i]}:")
-        geometryList.append(
-            translateGeometry(
-                bauteil=RotorSurfLabelsSplit2[i][0],
-                detail=RotorSurfLabelsSplit2[i][2],
-                motor=machine,
-                label=RotorSurfLabels[i],
-                surface=RotorSurf[i],
-            )
+        pyemmoSurface, anglePointRefList = translateGeometry(
+            nameSplitList=RotorSurfLabelsSplit2[i],
+            machine=machine,
+            label=RotorSurfLabels[i],
+            surface=surf,
+            anglePointRefList=anglePointRefList,
         )
         geometryList.append(pyemmoSurface)
+
+    # ----------------------------------------------------
+    # Filling the magnetization dict if surface is magnet:
+    # ----------------------------------------------------
+    # Changing the 'idExt' of the SurfaceAPI to 'Mag0', 'Mag1', 'Mag2', ...
+    # if the 'idExt' is 'Mag'
+    lplCounter = 0
+    for surfAPIRotor in geometryList:
+        if surfAPIRotor.idExt == "Lpl":
+            surfAPIRotor.setIdExt("Lpl" + str(lplCounter))
+            lplCounter += 1
+            
+    # Changing the 'idExt' of the SurfaceAPI to 'Mag0', 'Mag1', 'Mag2', ...
+    # if the 'idExt' is 'Mag'
+    magCounter = 0
+    for surfAPIRotor in geometryList:
+        if surfAPIRotor.idExt == "Mag":
+            surfAPIRotor.setIdExt("Mag" + str(magCounter))
+            magCounter += 1
+
+    if isinstance(machine, MachineSIPMSM):
+        anglePointRef = anglePointRefList[0]
+        magnetizationType = machine.rotor.magnet.type_magnetization
+
+        if magnetizationType in (0, 1):  # radial & parallel
+            magnetizationAngle = anglePointRef
+
+        elif magnetizationType == 3:  # tangential
+            magnetizationAngle = anglePointRef - 90 / pi
+
+        magnetizationDict["Mag0"] = magnetizationAngle
+
+    elif isinstance(machine, MachineIPMSM):
+        magAngleDict = machine.rotor.hole[0].comp_magnetization_dict()
+        if len(magAngleDict) == 1:
+            anglePointRef = anglePointRefList[0]
+            magnetizationType = machine.rotor.hole[
+                0
+            ].magnet_0.type_magnetization
+
+            if magnetizationType in (0, 1):  # radial & parallel
+                magnetizationAngle = anglePointRef
+
+            elif magnetizationType == 3:  # tangential
+                magnetizationAngle = anglePointRef - 90 / pi
+
+            magnetizationDict["Mag0"] = magnetizationAngle
+        else:
+            for surfAPIRotor in geometryList:
+                if surfAPIRotor.idExt == "Mag0":
+                    magnetizationAngle = (
+                        anglePointRefList[0] + magAngleDict["magnet_0"]
+                    )
+                    magnetizationDict[surfAPIRotor.idExt] = magnetizationAngle
+
+                elif surfAPIRotor.idExt == "Mag1":
+                    magnetizationAngle = (
+                        anglePointRefList[1] + magAngleDict["magnet_1"]
+                    )
+                    magnetizationDict[surfAPIRotor.idExt] = magnetizationAngle
+
+                elif surfAPIRotor.idExt == "Mag2":
+                    magnetizationAngle = (
+                        anglePointRefList[2] + magAngleDict["magnet_2"]
+                    )
+                    magnetizationDict[surfAPIRotor.idExt] = magnetizationAngle
+
     print("=============================")
     print("End of Translation for Rotor.")
 
@@ -72,14 +145,12 @@ def createGeoDict(
 
         StatorSurfLabelsSplit2.append(saveSpaceTemp)
         print(f"\nTranslation for {StatorSurfLabels[i]}:")
-        geometryList.append(
-            translateGeometry(
-                bauteil=StatorSurfLabelsSplit2[i][0],
-                detail=StatorSurfLabelsSplit2[i][2],
-                motor=machine,
-                label=StatorSurfLabels[i],
-                surface=StatorSurf[i],
-            )
+        pyemmoSurface, anglePointRefList = translateGeometry(
+            nameSplitList=StatorSurfLabelsSplit2[i],
+            machine=machine,
+            label=StatorSurfLabels[i],
+            surface=surf,
+            anglePointRefList=anglePointRefList,
         )
         geometryList.append(pyemmoSurface)
 

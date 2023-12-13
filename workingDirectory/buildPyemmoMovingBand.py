@@ -6,6 +6,7 @@ from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 from pyleecan.Classes.Machine import Machine
 
 from pyemmo.script.material.material import Material
+from pyemmo.api import air
 from pyemmo.script.geometry.point import Point
 from pyemmo.script.geometry.circleArc import CircleArc
 from pyemmo.script.geometry.line import Line
@@ -13,29 +14,6 @@ from pyemmo.api.SurfaceJSON import SurfaceAPI
 from pyemmo.functions.plot import plot
 from .createGeoDict import createGeoDict
 from .getCoordinatesForPoint import getXforPoint, getYforPoint
-
-
-def getMaterialAir() -> Material:
-    """Get the pyemmo material of air
-
-    Returns:
-        Material: _description_
-    """
-    # ===============
-    # Material 'Air':
-    # ===============
-    materialAir = Material(
-        name="Air",
-        conductivity=0,
-        relPermeability=1.0000004,
-        remanence=None,
-        tempCoefRem=None,
-        BH=None,
-        density=None,
-        thermalConductivity=None,
-        thermalCapacity=None,
-    )
-    return materialAir
 
 
 def buildBandsRotor(
@@ -66,21 +44,21 @@ def buildBandsRotor(
     # ================
     # Bands for rotor:
     # ================
-    materialAir = getMaterialAir()
 
     # -----------------
     # Rotor inner band:
     # -----------------
     # Points:
+    mbMeshLen = 2*bandRadiusList[1]*math.pi/360
     pointM11 = Point(
-        name="PointM11", x=bandRadiusList[0], y=0, z=0, meshLength=1
+        name="PointM11", x=bandRadiusList[0], y=0, z=0, meshLength=mbMeshLen
     )
     pointM12 = Point(
         name="PointM12",
         x=getXforPoint(bandRadiusList[0], rotorSymAngle),
         y=getYforPoint(bandRadiusList[0], rotorSymAngle),
         z=0,
-        meshLength=1,
+        meshLength=mbMeshLen,
     )
 
     # Curves:
@@ -108,7 +86,7 @@ def buildBandsRotor(
         name="Rotorluftspalt 1",
         idExt="LuR1",
         curves=Rotorluftspalt1Curves,
-        material=materialAir,
+        material=air,
         nbrSegments=nbrRotorSeg,
         angle=angleRotor,
         meshSize=1.0,
@@ -122,14 +100,14 @@ def buildBandsRotor(
     # -----------------
     # Points:
     PointM21 = Point(
-        name="PointM21", x=bandRadiusList[1], y=0, z=0, meshLength=1
+        name="PointM21", x=bandRadiusList[1], y=0, z=0, meshLength=mbMeshLen
     )
     PointM22 = Point(
         name="PointM22",
         x=getXforPoint(bandRadiusList[1], rotorSymAngle),
         y=getYforPoint(bandRadiusList[1], rotorSymAngle),
         z=0,
-        meshLength=1,
+        meshLength=mbMeshLen,
     )
     # Curves:
     rotorCircle2 = CircleArc(
@@ -157,7 +135,7 @@ def buildBandsRotor(
         name="Rotorluftspalt 2",
         idExt="LuR2",
         curves=Rotorluftspalt2Curves,
-        material=materialAir,
+        material=air,
         nbrSegments=nbrRotorSeg,
         angle=angleRotor,
         meshSize=1.0,
@@ -204,7 +182,6 @@ def buildBandsStator(
     # =================
     # Bands for stator:
     # =================
-    materialAir = getMaterialAir()
     # ------------------
     # Stator outer band:
     # ------------------
@@ -218,15 +195,16 @@ def buildBandsStator(
                 lowestYPointStator = point
 
     # Points:
+    mbMeshLen = 2*bandRadiusList[2]*math.pi/360
     PointM41 = Point(
-        name="PointM41", x=bandRadiusList[3], y=0, z=0, meshLength=1
+        name="PointM41", x=bandRadiusList[3], y=0, z=0, meshLength=mbMeshLen
     )
     PointM42 = Point(
         name="PointM42",
         x=getXforPoint(bandRadiusList[3], statorSymAngle),
         y=getYforPoint(bandRadiusList[3], statorSymAngle),
         z=0,
-        meshLength=1,
+        meshLength=mbMeshLen,
     )
 
     # Curves:
@@ -254,7 +232,7 @@ def buildBandsStator(
         name="Statorluftspalt 1",
         idExt="StLu1",
         curves=stlu1curves,
-        material=materialAir,
+        material=air,
         nbrSegments=nbrStatorSeg,
         angle=angleStator,
         meshSize=1.0,
@@ -269,14 +247,14 @@ def buildBandsStator(
     # ------------------
     # Points:
     PointM31 = Point(
-        name="PointM31", x=bandRadiusList[2], y=0, z=0, meshLength=1
+        name="PointM31", x=bandRadiusList[2], y=0, z=0, meshLength=mbMeshLen
     )
     PointM32 = Point(
         name="PointM22",
         x=getXforPoint(bandRadiusList[2], statorSymAngle),
         y=getYforPoint(bandRadiusList[2], statorSymAngle),
         z=0,
-        meshLength=1,
+        meshLength=mbMeshLen,
     )
     # Curves:
     statorCircle3 = CircleArc(
@@ -304,7 +282,7 @@ def buildBandsStator(
         name="Statorluftspalt 2",
         idExt="StLu2",
         curves=StLu2curves,
-        material=materialAir,
+        material=air,
         nbrSegments=nbrStatorSeg,
         angle=angleStator,
         meshSize=1.0,
@@ -416,7 +394,7 @@ def buildMovingBand(
     print(f"bandRadiusList: {bandRadiusList}")
     print("---")
 
-    centerPoint = Point(name="centerPointBand", x=0, y=0, z=0, meshLength=1)
+    centerPoint = Point(name="centerPointBand", x=0, y=0, z=0, meshLength=1e-3)
     nbrStatorSeg = machine.stator.slot.Zs
     angleStator = 2 * math.pi / nbrStatorSeg
     nbrRotorSeg = machine.get_pole_pair_number() * 2

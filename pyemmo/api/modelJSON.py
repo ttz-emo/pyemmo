@@ -1,5 +1,5 @@
 """This module is about the model generation via json api"""
-from math import ceil
+from math import radians
 from typing import Dict, List, Literal, Tuple, Union
 
 from numpy import pi, sign, array
@@ -543,10 +543,13 @@ def createMagnet(surf: SurfaceAPI, mat: Material, extInfo: dict) -> Magnet:
     # get magnet-IdExt and segment number
     idExtSplit = surf.idExt.split("_")
     magIdExt = idExtSplit[0]
-    segmentNbr = idExtSplit[1]
+    if idExtSplit[1].isdecimal():
+        segmentNbr = int(idExtSplit[1])
+    else:
+        raise ValueError("Could not determine segment number from idExt.")
     # identify magnetization direction
     # first segment (segmentNbr=0) must be north pole for dq-Offset calculation
-    magDir = 1 if (int(segmentNbr) + 1) % 2 else -1  # 1: north/outwards
+    magDir = 1 if (segmentNbr + 1) % 2 else -1  # 1: north/outwards
     # get magentization angle from magAngle dict by idExt
     magAngle = importJSON.getMagAngle(extInfo)[magIdExt]
     return Magnet(
@@ -555,7 +558,7 @@ def createMagnet(surf: SurfaceAPI, mat: Material, extInfo: dict) -> Magnet:
         material=mat,
         magDirection=magDir,
         magType=importJSON.getMagDir(extInfo),
-        magVectorAngle=magAngle,
+        magVectorAngle=magAngle + radians(360 / surf.NbrSegments) * segmentNbr,
     )
 
 
@@ -652,17 +655,28 @@ def getSlotInfo(slotSurfName: str) -> Tuple[int, int]:
         # split up the surface name to get Slot side (0 odr 1) and segmentNbr (n)
         [slotSide, segmentNbr] = slotSurfName.lstrip("StCu").split("_")
         # if both strings are numbers
-        if slotSide.isdecimal() and segmentNbr.isdecimal():
-            if float(slotSide).is_integer() and float(segmentNbr).is_integer():
-                return int(slotSide), int(segmentNbr)  # return the int value
-            msg = f"slotSide ({slotSide}) and/or segmentNbr ({segmentNbr}) are not integers!"
-            raise ValueError(msg)
-        msg = (
-            f"Could not determine Slot infomations"
-            f"slotSide ({slotSide}) and/or segmentNbr ({segmentNbr}) are not decimal!"
-        )
-        raise ValueError(msg)
-    msg = f'Slot identifier "StCu" was not in Surfacename: {slotSurfName}'
+        if slotSide:  # if slotSide not empty
+            if slotSide.isdecimal():  # string is int
+                slotSide = int(slotSide)
+            else:
+                raise ValueError(
+                    f"Slot side was not decimal. Slot name: '{slotSurfName}'"
+                )
+        else:
+            # Slot side is empty -> there is one layer side
+            slotSide = 0  # 0 to index first/only winding layer
+        if segmentNbr:
+            if segmentNbr.isdecimal():
+                segmentNbr = int(segmentNbr)
+            else:
+                msg = f"Segment number was not decimal. Slot name: '{slotSurfName}'"
+                raise ValueError(msg)
+        else:
+            raise RuntimeError(
+                f"Could not determine segment number from '{slotSurfName}'."
+            )
+        return slotSide, segmentNbr
+    msg = f'Slot identifier "StCu" was not in surface name: {slotSurfName}'
     raise ValueError(msg)
 
 
@@ -672,12 +686,16 @@ def getSlotPhase(
     """Gets the name (u, v, w) of the Phase with it's direction (+, -)
 
     Args:
-        windingLayout (list[list[int]]): Winding layout formatted for swat-em phases attribute (see
-         `this <https://swat-em.readthedocs.io/en/latest/reference.html#swat_em.datamodel.datamodel.set_phases>`__
-         SWAT-EM method for more details)
-        segmentNbr (int): Circumferderal model segment number starting with 0 on the x-axis (first segment).
-         Number increasing in math. positive direction.
-        slotSide (int): Slot side 0 = right side; 1 = left side (TODO: Specify upper and lower slot separation).
+        windingLayout (list[list[int]]): Winding layout formatted for swat-em
+            phases attribute (see `this <https://swat-em.readthedocs.io/en/latest/reference.html#swat_em.datamodel.datamodel.set_phases>`__
+            SWAT-EM method for more details)
+        segmentNbr (int): Circumferderal model segment number starting with 0
+            on the x-axis (first segment). Number increasing in math. positive
+            direction.
+        slotSide (int): Slot side 0 = right side or  slot bottom; 
+            1 = left side or slot opening. (Slot side can also be 2 or 3 but 
+            is merged into 0 and 1 by modulo operation. This is usefull when
+            you have multiple slot side (>2) per lamination segment.)
 
     Returns:
         Literal['p','n']: Winding direction (
@@ -692,7 +710,8 @@ def getSlotPhase(
     """
     for phaseIndex, phaseList in enumerate(windingLayout):
         # for slotSideList in phaseList:
-        for slotNumber in phaseList[slotSide]:
+        for slotNumber in phaseList[slotSide % 2]: # TODO: Test if multiple
+            # layer winding is working.
             if abs(slotNumber) == segmentNbr + 1:
                 if phaseIndex == 0:
                     phase = "u"

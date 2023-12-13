@@ -1,15 +1,16 @@
-from os import path
-from os.path import join, abspath
-import sys
-from numpy import pi
-from typing import List
-import swat_em as swatem
+# %%
+import os
+import numpy as np
 
 # =================
 # Imports pyleecan:
 # =================
-from pyleecan.definitions import DATA_DIR
 from pyleecan.Functions.load import load
+from pyleecan.Classes.Simulation import Simulation
+from pyleecan.Classes.Simu1 import Simu1
+from pyleecan.Classes.InputCurrent import InputCurrent
+from pyleecan.Classes.OPdq import OPdq
+
 from pyleecan.Classes.Machine import Machine
 from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
@@ -26,113 +27,71 @@ from pyleecan.Classes.OPdq import OPdq
 # ===============
 # Imports pyemmo:
 # ===============
-try:
-    from pyemmo.script.script import Script
-except:
-    rootname = "C:\\Users\\k49976\\Desktop\\repositoryGibLab\\pyemmo"
-    print(f"Could not determine root. Setting it manually to '{rootname}'")
-    print(f'rootname is "{rootname}"')
-    sys.path.append(rootname)
-
 from pyemmo.functions.plot import plot
-from workingDirectory.buildPyemmoMovingBand import buildMovingBand
 from pyemmo.api.json import main
 from pyemmo.definitions import ROOT_DIR
+from workingDirectory.buildPyemmoMovingBand import buildMovingBand
+from workingDirectory.createParamDict import createParamDict
 
 
-# ===================
-# Import of Machines:
-# ===================
-# Import IPMSM
-# IPMSM_motor = load(join(DATA_DIR, "Machine", "IPMSM_B.json"))
-# # Import SPMSM:
-# SPMSM_motor = load(join(DATA_DIR, "Machine", "SPMSM_002.json"))
-# # directory = "C:\Users\k49976\Desktop"
-# SPMSMMuster = load(join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster.json"))
-# SPMSMMuster2 = load(join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_2.json"))
-# SPMSMMuster2Shaft = load(
-#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_2Shaft.json")
-# )
-# SPMSMMuster2ShaftModified = load(
-#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_2ShaftModified.json")
-# )
-# SPMSMMuster2ShaftSIMU = load(
-#     join(
-#         "C:\\Users\\k49976\\Desktop\\TEST_TRANSLATION\\2023_11_16-14h50min23s_FEMM_SPMSMPyleecanMuster_2Shaft",
-#         "FEMM_SPMSMPyleecanMuster_2Shaft.json",
-#     )
-# )
-# # SPMSMMuster3Shaft = load(
-# #     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_3Shaft.json")
-# # )
-# SPMSMMuster4Shaft = load(
-#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_4Shaft.json")
-# )
-# SPMSMMuster4ShaftSIMU = load(
-#     join(
-#         "C:\\Users\\k49976\\Desktop\\TEST_TRANSLATION\\2023_11_15-13h38min47s_FEMM_SPMSMPyleecanMuster_4Shaft",
-#         "FEMM_SPMSMPyleecanMuster_4Shaft.json",
-#     )
-# )
-# SPMSMMuster4Shaftinverted = load(
-#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_4Shaft_inverted.json")
-# )
-# SPMSMMuster4ShaftinvertedSIMU = load(
-#     join(
-#         "C:\\Users\\k49976\\Desktop\\TEST_TRANSLATION\\2023_11_21-16h00min55s_FEMM_SPMSMPyleecanMuster_4Shaft_inverted",
-#         "FEMM_SPMSMPyleecanMuster_4Shaft_inverted.json",
-#     )
-# )
-# SPMSMMuster6Shaft = load(
-#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMuster_6_Shaft.json")
-# )
-# # Import ASM:
-# SCIM_motor = load(join(DATA_DIR, "Machine", "SCIM_L2EP_48s_2p.json"))
-# SPMSMMusterShaft_1 = load(
-#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_1.json")
-# )
-# SPMSMMusterShaft_2 = load(
-#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_2.json")
-# )
-# SPMSMMusterShaft_2_inverted = load(
-#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_2_inverted.json")
-# )
-# SPMSMMusterShaft_3 = load(
-#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_3.json")
-# )
-# SPMSMMusterShaft_3_inverted = load(
-#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_3_inverted.json")
-# )
-# SPMSMMusterShaft_4 = load(
-#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_4.json")
-# )
-# SPMSMMusterShaft_4_inverted = load(
-#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_4_inverted.json")
-# )
-# SPMSMMusterShaft_5 = load(
-#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_5.json")
-# )
-# SPMSMMusterShaft_5_inverted = load(
-#     join("C:\\Users\\k49976\\Desktop", "SPMSMPyleecanMusterShaft_5_inverted.json")
-# )
+# Simulation Function
+def generateSimulation(
+    machine: Machine, Id: float = 0.0, Iq: float = 10.0, speed: float = 1000.0
+) -> Simulation:
+    """Create a Simulation object from a given machine
 
-MACHINE_DIR = join(DATA_DIR, "Machine")
+    Args:
+        machine (Machine): Actual pyleecan machine
 
+    Returns:
+        Simulation: Pyleecan Simulation object
+    """
+    simu = Simu1(name="PyEMMO_Simulation", machine=machine)
+    # simu.path_result = "path/to/folder" Path to the Result folder to use
+    # (will contain FEMM files)
+    p = simu.machine.stator.winding.p
+    # qs = simu.machine.stator.winding.qs
+
+    # Defining Simulation Input
+    simu.input = InputCurrent()
+    # Rotor speed [rpm]
+    simu.input.OP = OPdq(Id_ref=Id, Iq_ref=Iq, N0=speed)
+
+    # time discretization [s] -> one elec. period with # 32 timesteps
+    time = np.linspace(start=0, stop=60 / speed / p, num=32, endpoint=True)
+    simu.input.time = time
+
+    # Angular discretization along the airgap circonference
+    angularDisc = np.linspace(
+        start=0, stop=2 * np.pi, num=2048, endpoint=False
+    )
+    simu.input.angle = angularDisc
+    return simu
+
+
+# %%
 # ========================================
 # Festlegung der zu berechnenden Maschine:
 # ========================================
-machine = load(abspath(join(MACHINE_DIR, "SPMSM_015.json")))
+# machine = load(
+# 	DATA_DIR, "Machine", "SPMSM_002.json"
+#     )
+machineFolder = os.path.join(ROOT_DIR, "workingDirectory/machineData")
+resFolder = os.path.join(ROOT_DIR, r"Results\pyleecanAPI")
+machineList = []
+for i, file in enumerate(os.listdir(machineFolder)):
+    if file.endswith(".json") and not "FEMM" in file:
+        machineList.append(file)
+        print(f"{machineList.index(file)}: " + file)
 
-simulation = Simu1(name="pyemmo_test_simu", machine=machine)
-simulation.mag = MagFEMM(is_periodicity_a=True, is_periodicity_t=True)
-
-simulation.input = InputCurrent()
-simulation.input.OP = OPdq(N0=1000, Id_ref=-10, Iq_ref=10)
-
+fileName = machineList[29]  # SELECT MACHINE HERE BY INDEX OR NAME
+print("\nUsing machine: " + fileName)
+machine = load(os.path.abspath(os.path.join(machineFolder, fileName)))
+simulation = generateSimulation(machine, Id=0, Iq=10, speed=1000)
 # =====================================
 # Festlegung der Simulations-Parameter:
 # =====================================
-
+# %%
 rotorRext = machine.rotor.Rext
 rotorRint = machine.rotor.Rint
 statorRint = machine.stator.Rint
@@ -165,189 +124,31 @@ elif isinstance(machine, MachineIPMSM):
     )
 
 geoTranslationDict = {}
-for surfAPI in geometryList:
-    geoTranslationDict[surfAPI.idExt] = surfAPI
+for surf in geometryList:
+    if surf.idExt not in geoTranslationDict.keys():
+        geoTranslationDict[surf.idExt] = surf
+    else:
+        raise RuntimeError(
+            f"Surface ID '{surf.idExt}' allready in geometry dict!"
+        )
 
 geometryLineListFinish = []
 for surf in geometryList:
-    for line in surf.curve:
-        geometryLineListFinish.append(line)
+    geometryLineListFinish.extend(surf.curve)
 
 print("Plot ENDE:")
 plot(geometryLineListFinish, linewidth=1, markersize=3, tag=True)
 print("---")
 
 
-def translateWinding(machine: Machine) -> list[int]:
-    """Translates the winding from pyleecan to pyemmo.
-
-    Args:
-        machine (Machine): Pyleecan machine
-
-    Returns:
-        list[int]: _description_
-    """
-    winding = swatem.datamodel()
-    Q = machine.stator.slot.Zs
-    P = machine.stator.winding.p * 2
-    m = machine.stator.winding.qs
-    layers = machine.stator.winding.Nlayer
-    turns = machine.stator.winding.Ntcoil
-
-    winding.genwdg(
-        Q=Q,
-        P=P,
-        m=m,
-        layers=layers,
-        turns=turns,
-    )
-    windSwat = winding.get_phases()
-
-    return windSwat
-
-
-def createParamDict(
-    machine: Machine, pyleecanSimulation: Simulation
-) -> dict[str, any]:
-    """
-    This function builds a dictionary for communication between pyleecan and pyemmo.
-
-    The following part of the function tests if 'Id_ref' and 'Iq_ref' are having values
-    and if so their values will directly be set in the dictionary under 'Id' and 'Iq'.
-    If only 'I0_Phi0' has a set value but 'Id_ref' and 'Iq_ref' don't 'Id' and 'Iq' will be
-    calculated.
-
-    """
-
-    op = pyleecanSimulation.input.OP
-
-    if isinstance(op, OPdq):
-        Id = op.Id_ref
-        Iq = op.Iq_ref
-
-    else:
-        Id = 0
-        Iq = 0
-        print(
-            '!! Warning: No Values set for "Id_ref" and "Iq_ref" -> Id = Iq = 0 !!'
-        )
-
-    # --------------------------------------------------------------------------------------
-    # The following part of the function tests if rotor or stator have magnets and if so
-    # if there are more than one magnet build in.
-    # If there are magnets, the type of the magnetization will be safed in 'pyemmoMagType'.
-    # 'pyemmoMagType': [0] : parallel
-    #                  [1] : radial
-    #                  [2] : Hallbach (!! not implemented in pyemmo !!)
-    #                  [3] : tangential
-    # If there are no magnets in rotor and stator, 'pyemmoMagType' will be set to 'None'.
-    # --------------------------------------------------------------------------------------
-
-    lamWithMag: Lamination = None
-
-    if (
-        pyleecanSimulation.machine.rotor.has_magnet()
-    ):  # Test, if rotor has magnet(s)
-        lamWithMag = pyleecanSimulation.machine.rotor
-
-    elif (
-        pyleecanSimulation.machine.stator.has_magnet()
-    ):  # Test, if stator has magnet(s)
-        lamWithMag = pyleecanSimulation.machine.stator
-
-    else:  # If rotor doesn't have magnets, pyemmoMagType = None
-        pyemmoMagType = None
-
-    if lamWithMag:
-        if isinstance(
-            lamWithMag, LamHole
-        ):  # Test, if lamWithMag has Holes where the magnet(s) sit(s) in
-            if isinstance(
-                lamWithMag.hole, list
-            ):  # Test, if lamWithMag has more than one magnet
-                # The magnetization Type for all magnets in the machine will be set
-                # in the same Type as the firt magnet in the list.
-
-                pyemmoMagType = lamWithMag.hole[0].magnet_0.type_magnetization
-
-            else:  # If lamWithMag has only one magnet
-                pyemmoMagType = lamWithMag.hole.magnet_0.type_magnetization
-
-        elif isinstance(
-            lamWithMag, LamSlotMag
-        ):  # Test, if lamWithMag has Slots where the magnet(s) sit(s) in
-            if isinstance(
-                lamWithMag.slot, list
-            ):  # Test, if lamWithMag has more than one magnet
-                # The magnetization Type for all magnets in the machine will be set
-                # in the same Type as the firt magnet in the list.
-
-                pyemmoMagType = lamWithMag.slot[0].magnet_0.type_magnetization
-
-            else:  # If rotor has only one magnet
-                pyemmoMagType = lamWithMag.magnet.type_magnetization
-
-        else:
-            # Error
-            raise RuntimeError(
-                f'Lamination of type "{str(type(lamWithMag))}" is not type LamHole or LamSlotMag.'
-            )
-    if pyemmoMagType == 0:
-        pyemmoMagType = "radial"
-    elif pyemmoMagType == 1:
-        pyemmoMagType = "parallel"
-    elif pyemmoMagType == 3:
-        pyemmoMagType = "tangential"
-
-    # ----------------------------------------------------------------------------------------------------------------
-    symFactor = machine.comp_periodicity_spatial()
-    if symFactor[1]:
-        symFactor = symFactor[0] * 2
-    else:
-        symFactor = symFactor[0]
-
-    translationParameterDict = {
-        "winding": translateWinding(
-            machine
-        ),  # winding layout for given geometry
-        "wickSWAT": translateWinding(machine),
-        "NpP": machine.stator.winding.Npcp,  # number of parallel paths per winding phase
-        "Ntps": machine.stator.winding.Ntcoil,
-        "z_pp": machine.stator.winding.p,  # number of pole pairs
-        "Qs": machine.stator.slot.Zs,  # number of stator slots
-        "movingband_r": movingband_r,  # moving band radius in meters
-        "axLen_S": machine.stator.L1,  # axial length of stator
-        "axLen_R": machine.rotor.L1,  # axial length of rotor
-        "symFactor": symFactor,  # symmetry factor for model (STANDARD = 1) has to be defined
-        "startPos": 0,  # start rotor position in ° (STANDARD = 0°)
-        "endPos": pyleecanSimulation.input.Na_tot
-        * 360,  # end rotor position in °
-        "nbrSteps": pyleecanSimulation.input.Nt_tot,  # number of time steps for simulation
-        "rot_freq": pyleecanSimulation.input.OP.N0
-        / 60,  # rotational frequency in Hz
-        "parkAngleOffset": None,  # park transformation offset angle in elec. ° (STANDARD = None)
-        "analysisType": 0,  # 0=static; 1=transient (STANDARD = 1)
-        "tempMag": 20,  # magnet temperature °C (STANDARD = 20°C)
-        "r_z": 0.7,  # tooth radius in meterm (STANDARD = None)
-        "r_j": 0.9,  # yoke radius in meter (STANDARD = None)
-        "id": Id,  # d-axis current in A
-        "iq": Iq,  # q-axis current in A
-        "modelName": machine.name,  # name of the model files
-        "magType": pyemmoMagType,  # magnetization Type/ type of permament magnets(“parallel”, “radial” or “tangential”)
-        "magAngle": magnetizationDict, 
-        "flag_openGUI": True,  # open Gmsh GUI after model generation (STANDARD = True)
-        "calcIronLoss": False,
-    }
-
-    # with open("translationDict.json", "w") as json_file:
-    #     json.dump(translationParameterDict, json_file, indent=4)
-
-    return translationParameterDict
-
-
-paramDict = createParamDict(machine, simulation)
+paramDict = createParamDict(
+    machine, simulation, movingband_r, magnetizationDict
+)
 main(
     geo=geoTranslationDict,
     extInfo=paramDict,
-    model=abspath(join(ROOT_DIR, "Results", "pyleecanAPI", machine.name)),
+    model=os.path.join(resFolder, fileName.split(".")[0]),
+    results=os.path.join(resFolder, fileName.split(".")[0], "res"),
 )
+
+# %%

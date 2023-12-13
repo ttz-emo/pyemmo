@@ -108,17 +108,22 @@ def plotTimeTableDat(
 ) -> List[Figure]:
     """Plot the data in the filePath .dat-file and save the figure optionally.
 
-    There can be several simulations in one .dat file. If so there will be one figure for each simulation.
+    There can be several simulations in one .dat file. If so there will be one
+    figure for each simulation.
 
     Args:
         filePath (str): path to the .dat-file in timetable-format
-        dataLabel (str, optional): label of the ploted data on the y-axis. Defaults to ""
+        dataLabel (str, optional): label of the ploted data on the y-axis.
+            Defaults to ""
         title (str, optional): title of the figure. Defaults to ""
-        savefig (bool, optional): flag to determine if the figure should be saved. Defaults to False.
-        showfig (bool, optional): flag to determine if the figure should be displayed. Defaults to True.
-        savePath (str, optional): path with filename and valid extension to save the figure.
-            Defaults to None. E.g. "C:\\Users\\Test\\Pictures\\Test.png". If savePath is None
-            figure will be saved with filePath and .png extension
+        savefig (bool, optional): flag to determine if the figure should be
+            saved. Defaults to False.
+        showfig (bool, optional): flag to determine if the figure should be
+            displayed. Defaults to True.
+        savePath (str, optional): path with filename and valid extension to
+            save the figure. Defaults to None. E.g.
+            "C:\\Users\\Test\\Pictures\\Test.png". If savePath is None figure
+            will be saved with filePath and .png extension
 
     Returns:
         List[Figure]: Returns a list of matplotlib Figure objects
@@ -127,24 +132,25 @@ def plotTimeTableDat(
     time, data = readTimeTableDat(filePath)
     nbrSim, timeArray, dataArray = splitData(time, data)
     # PLOT
-    figureList: List[Figure] = list()
+    figureList: List[Figure] = []
     plt.ioff()
     for sim in range(nbrSim):
-        with plt.ioff() if not showfig else plt.ion():
-            fig, axes = plt.subplots()
-            fig.set_dpi(200)
-            axes.plot(timeArray[sim], dataArray[sim], marker=".")
-            # show()
-            # ax.set_aspect("equal", adjustable="box")
-            # check that max or min is not close too close to zero to apply the y_lim
-            maxVal = max(dataArray[sim])
-            minVal = min(dataArray[sim])
-            if not (isclose(maxVal, 0, abs_tol=0.1) or isclose(minVal, 0, abs_tol=0.1)):
-                fig.axes[0].set_ylim(
-                    bottom=minVal * (1.1 if min(dataArray[sim]) < 0 else 0.9),
-                    top=maxVal * (1.1 if max(dataArray[sim]) > 0 else 0.9),
-                )
-            axes.set(ylabel=dataLabel, xlabel="time in s", title=title + f"_{sim}")
+        # FIXME: with plt.ioff() only works on Python 3.11
+        # with plt.ioff() if not showfig else plt.ion():
+        fig, axes = plt.subplots()
+        fig.set_dpi(200)
+        axes.plot(timeArray[sim], dataArray[sim], marker=".")
+        # show()
+        # ax.set_aspect("equal", adjustable="box")
+        # check that max or min is not close too close to zero to apply the y_lim
+        maxVal = max(dataArray[sim])
+        minVal = min(dataArray[sim])
+        if not (isclose(maxVal, 0, abs_tol=0.1) or isclose(minVal, 0, abs_tol=0.1)):
+            fig.axes[0].set_ylim(
+                bottom=minVal * (1.1 if min(dataArray[sim]) < 0 else 0.9),
+                top=maxVal * (1.1 if max(dataArray[sim]) > 0 else 0.9),
+            )
+        axes.set(ylabel=dataLabel, xlabel="time in s", title=title + f"_{sim}")
         if savefig:
             if not savePath:
                 savePath = path.abspath(path.splitext(filePath)[0])

@@ -471,12 +471,21 @@ def createBoundaries(
     if innerLimitLines is not None:
         rotorPhysicals.append(LimitLine("innerLimit", innerLimitLines))
     else:
-        # checkout if Wel has Center point
+        # checkout if most inner surface has center point
         noInnerLimit = False
-        for point in segmentSurfDict["Wel"].allPoints:
-            if point.isEqual(globalCenterPoint):
-                # no inner limit line
-                noInnerLimit = True
+        # Extract valid inner limit keys from innerLimitLineDict:
+        innerLimitSurfaceKeys = []
+        for key in InnerLimitLineDict:
+            if key in segmentSurfDict:
+                innerLimitSurfaceKeys.append(key)
+        # check if any of those surfaces contains the center point:
+        for innerLimitIdExt in innerLimitSurfaceKeys:
+            for point in segmentSurfDict[innerLimitIdExt].allPoints:
+                if point.isEqual(globalCenterPoint):
+                    noInnerLimit = True # no inner limit line
+                    break # break inner point loop
+            if noInnerLimit is True:
+                # if the center point was found, break the outer loop too.
                 break
         if not noInnerLimit:
             msg = (
