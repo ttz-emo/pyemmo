@@ -79,7 +79,7 @@ def createMachine(
             elif machineSide == "Rotor":
                 rotorPhysicals.extend(physSurfList)
             else:
-                ValueError(
+                raise ValueError(
                     f"MachineSide was whether rotor or stator: {machineSide}",
                 )
 
