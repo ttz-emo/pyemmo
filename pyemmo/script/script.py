@@ -1056,6 +1056,7 @@ class Script(object):
 
         # create stator domains
         # move domainC to domainCC
+        # TODO: Decide which domains should be calculatd with eddy currents
         statorPhysicalsDict["domainCC"].extend(statorPhysicalsDict["domainC"])
         statorPhysicalsDict["domainC"].clear()
 
