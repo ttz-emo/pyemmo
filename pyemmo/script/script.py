@@ -1056,6 +1056,7 @@ class Script(object):
 
         # create stator domains
         # move domainC to domainCC
+        # TODO: Decide which domains should be calculatd with eddy currents
         statorPhysicalsDict["domainCC"].extend(statorPhysicalsDict["domainC"])
         statorPhysicalsDict["domainC"].clear()
 
@@ -1709,11 +1710,9 @@ class Script(object):
                                 meshCompCode += str(geoElem.id) + ","
                         else:
                             logging.warning(
-                                (
-                                    'Creation of "Compound Mesh" for domain "%s" failed, because "%s" has only one surface.',
-                                    regionName,
-                                    physical.name,
-                                )
+                                'Creation of "Compound Mesh" for domain "%s" failed, because "%s" has only one surface.',
+                                regionName,
+                                physical.name,
                             )
                             return ""
                     else:
@@ -2027,12 +2026,14 @@ class Script(object):
             geoScript.write(movingGeoCode)
 
         logging.debug(
-            ("I found %d identical points. ", self.nbrIdedentPoints)
-            + ("There are %d points in the model.", len(self.pointArray))
+            "I found %d identical points. There are %d points in the model.",
+            self.nbrIdedentPoints,
+            len(self.pointArray),
         )
         logging.debug(
-            ("I found %d identical lines.", self.nbrIdedentLines)
-            + ("There are %d lines in the model.", len(self.curveList))
+            "I found %d identical lines. There are %d lines in the model.",
+            self.nbrIdedentLines,
+            len(self.curveList),
         )
 
     def _setParameters(self):
