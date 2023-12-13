@@ -456,8 +456,9 @@ def createPhysicalSurfaces(
         - Literal["Rotor", "Stator"]]: machine side to correctly assign the pE to the Rotor or
           Stator object.
     """
-    # determine if single point of surface is inside the Movingband radius, because if one point is
-    # inside, all the others have to be too:
+    # determine if single point of surface is inside the Movingband radius,
+    # because if one point is inside, all the others have to be too.
+    # FIXME: This assumes all machine are inner rotor!
     machineSide = (
         "Rotor"
         if surfList[0].curve[0].startPoint.calcDist() <= rotorMBRadius
