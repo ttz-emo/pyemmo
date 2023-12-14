@@ -1,13 +1,3 @@
-import sys
-
-try:
-    from pyemmo.script.script import Script
-except:
-    rootname = "C:\\Users\\k49976\\Desktop\\repositoryGibLab\\pyemmo"
-    print(f"Could not determine root. Setting it manually to '{rootname}'")
-    print(f'rootname is "{rootname}"')
-    sys.path.append(rootname)
-
 import pyleecan.Classes.Segment
 import pyleecan.Classes.Arc1
 import pyleecan.Classes.Arc2
@@ -19,35 +9,31 @@ from .translateArc1 import translateArc1
 from .translateArc2 import translateArc2
 from .translateArc3 import translateArc3
 
-# =============================================
-# Definition of function 'buildPyemmoLineList':
-# =============================================
-def buildPyemmoLineList(pyleecanLineList):
-    """_summary_
+
+def buildPyemmoLineList(pyleecanLineList: list) -> list:
+    """Translates the curves of a pyleecan-surface into Lines and CircleArcs of the pyemmo-surface.
 
     Args:
-        pyleecanLineList (_type_): _description_
+        pyleecanLineList (list): List of curves of the pyleecan-surface, contains (Segment, Arc1, Arc2, Arc3)
 
     Returns:
-        _type_: _description_
+        list: List of curves (Line, CircleArc) of the surface
     """
     pyemmoLineList = []
     returnlist = []
     for line in pyleecanLineList:
         if isinstance(line, pyleecan.Classes.Segment.Segment):
             pyemmoLineList = Line(
-                # name=list(line.prop_dict.values())[0],
-                name="test",
+                name="Line",
                 startPoint=buildPyemmoPoint(line.begin),
                 endPoint=buildPyemmoPoint(line.end),
             )
             returnlist.append(pyemmoLineList)
+
         elif isinstance(line, pyleecan.Classes.Arc1.Arc1):
             startPoint, endPoint, centerPoint = translateArc1(line=line)
-
-            # Erzeugung des Kreisobjekts
             pyemmoLineList = CircleArc(
-                name="test",
+                name="CircleArc",
                 startPoint=startPoint,
                 endPoint=endPoint,
                 centerPoint=centerPoint,
@@ -57,7 +43,7 @@ def buildPyemmoLineList(pyleecanLineList):
         elif isinstance(line, pyleecan.Classes.Arc2.Arc2):
             startPoint, endPoint, centerPoint = translateArc2(line=line)
             pyemmoLineList = CircleArc(
-                name="test",
+                name="CircleArc",
                 startPoint=startPoint,
                 endPoint=endPoint,
                 centerPoint=centerPoint,
@@ -65,16 +51,19 @@ def buildPyemmoLineList(pyleecanLineList):
             returnlist.append(pyemmoLineList)
 
         elif isinstance(line, pyleecan.Classes.Arc3.Arc3):
-            startPoint, endPoint, centerPoint, centerPointArc = translateArc3(line=line)
+            startPoint, endPoint, centerPoint, centerPointArc = translateArc3(
+                line=line
+            )
             pyemmoLineList = CircleArc(
-                name="test",
+                name="CircleArc",
                 startPoint=startPoint,
                 endPoint=centerPointArc,
                 centerPoint=centerPoint,
             )
+
             returnlist.append(pyemmoLineList)
             pyemmoLineList = CircleArc(
-                name="test",
+                name="CircleArc",
                 startPoint=centerPointArc,
                 endPoint=endPoint,
                 centerPoint=centerPoint,
