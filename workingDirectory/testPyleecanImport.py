@@ -1,7 +1,15 @@
 # %%
 import os
+import sys
 import numpy as np
 
+try:
+    from pyemmo.script.script import Script
+except:
+    rootname = "C:\\Users\\k49976\\Desktop\\repositoryGibLab\\pyemmo"
+    print(f"Could not determine root. Setting it manually to '{rootname}'")
+    print(f'rootname is "{rootname}"')
+    sys.path.append(rootname)
 # =================
 # Imports pyleecan:
 # =================
@@ -74,8 +82,7 @@ for i, file in enumerate(os.listdir(machineFolder)):
     if file.endswith(".json") and not "FEMM" in file:
         machineList.append(file)
         print(f"{machineList.index(file)}: " + file)
-
-fileName = machineList[29]  # SELECT MACHINE HERE BY INDEX OR NAME
+fileName = machineList[23]  # SELECT MACHINE HERE BY INDEX OR NAME
 print("\nUsing machine: " + fileName)
 machine = load(os.path.abspath(os.path.join(machineFolder, fileName)))
 simulation = generateSimulation(machine, Id=0, Iq=10, speed=1000)
@@ -120,7 +127,7 @@ for surf in geometryList:
         geoTranslationDict[surf.idExt] = surf
     else:
         raise RuntimeError(
-            f"Surface ID '{surf.idExt}' allready in geometry dict!"
+            f"Surface ID '{surf.idExt}' already in geometry dict!"
         )
 
 geometryLineListFinish = []
