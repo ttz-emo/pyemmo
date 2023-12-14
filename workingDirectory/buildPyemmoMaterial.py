@@ -1,32 +1,22 @@
-import sys
-try:
-    from pyemmo.script.script import Script
-except:
-    rootname = "C:\\Users\\k49976\\Desktop\\repositoryGibLab\\pyemmo"
-    print(f"Could not determine root. Setting it manually to '{rootname}'")
-    print(f'rootname is "{rootname}"')
-    sys.path.append(rootname)
-    
 from pyemmo.script.material.material import Material
 from pyleecan.Classes.Material import Material as pyleecanMat
-# =============================================
-# Definition of function 'buildPyemmoMaterial':
-# =============================================
-def buildPyemmoMaterial(pyleecanMaterial: pyleecanMat):
-    """_summary_
+
+
+def buildPyemmoMaterial(pyleecanMaterial: pyleecanMat) -> Material:
+    """Translates a pyleecan-material into a pyemmo-material.
 
     Args:
-        pyleecanMaterial (_type_): _description_
+        pyleecanMaterial (pyleecanMat): Material in pyleecan format
 
     Returns:
-        _type_: _description_
+        Material: Translated material in pyemmo format
     """
     try:
         conductivity = pyleecanMaterial.elec.rho
     except AttributeError:
         conductivity = None
     try:
-        #TODO: Abfangen, falls mur_lin und BH nicht gesetzt sind -> Fehler ausgeben. Falls BH gegeben ist, kein mur_lin benötigt. 
+        # TODO: Abfangen, falls mur_lin und BH nicht gesetzt sind -> Fehler ausgeben. Falls BH gegeben ist, kein mur_lin benötigt.
         relPermeability = pyleecanMaterial.mag.mur_lin
     except AttributeError:
         relPermeability = 1.0
@@ -59,4 +49,5 @@ def buildPyemmoMaterial(pyleecanMaterial: pyleecanMat):
         thermalConductivity=None,
         thermalCapacity=None,
     )
+
     return pyemmoMaterial
