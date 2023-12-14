@@ -1,3 +1,5 @@
+import logging
+
 from pyleecan.Classes.Machine import Machine
 from pyleecan.Classes.Simulation import Simulation
 from pyleecan.Classes.Lamination import Lamination
@@ -14,15 +16,24 @@ def createParamDict(
     movingband_r: float,
     magnetizationDict: dict,
 ) -> dict[str, any]:
-    """
-    This function builds a dictionary for communication between pyleecan and pyemmo.
+    """This function builds a dictionary for communication between pyleecan and pyemmo.
 
-    The following part of the function tests if 'Id_ref' and 'Iq_ref' are having values
-    and if so their values will directly be set in the dictionary under 'Id' and 'Iq'.
-    If only 'I0_Phi0' has a set value but 'Id_ref' and 'Iq_ref' don't 'Id' and 'Iq' will be
-    calculated.
+    Args:
+        machine (Machine): machine in pyleecan format
+        pyleecanSimulation (Simulation): simulation parameter in pyleecan format
+        movingband_r (float): radius of the movingBand 
+        magnetizationDict (dict): dictionary which contains the magnet with corresponding magnetizationangle
 
+    Raises:
+        RuntimeError: _description_
+
+    Returns:
+        dict[str, any]: _description_
     """
+    # The following part of the function tests if 'Id_ref' and 'Iq_ref' are having values
+    # and if so their values will directly be set in the dictionary under 'Id' and 'Iq'.
+    # If only 'I0_Phi0' has a set value but 'Id_ref' and 'Iq_ref' don't 'Id' and 'Iq' will be
+    # calculated.
 
     op = pyleecanSimulation.input.OP
 
@@ -33,7 +44,7 @@ def createParamDict(
     else:
         Id = 0
         Iq = 0
-        print(
+        logging.warning(
             '!! Warning: No Values set for "Id_ref" and "Iq_ref" -> Id = Iq = 0 !!'
         )
 
@@ -104,7 +115,7 @@ def createParamDict(
     elif pyemmoMagType == 3:
         pyemmoMagType = "tangential"
 
-    # ----------------------------------------------------------------------------------------------------------------
+
     symFactor = machine.comp_periodicity_spatial()
     if symFactor[1]:
         symFactor = symFactor[0] * 2
