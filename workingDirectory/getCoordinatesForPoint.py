@@ -1,6 +1,7 @@
 import math
 
-def getXforPoint(radius, angle):
+
+def getXforPoint(radius: float, angle: float) -> float:
     """Get the x-coordinate of the Point.
 
     Args:
@@ -8,13 +9,13 @@ def getXforPoint(radius, angle):
         angle (float): angle of rotor segment
 
     Returns:
-        float: _description_
+        float: ``x``: x-coordinate of point
     """
     x = radius * math.cos(angle)
     return x
 
 
-def getYforPoint(radius, angle):
+def getYforPoint(radius: float, angle: float) -> float:
     """Get the y-coordinate of the Point.
 
     Args:
@@ -22,7 +23,7 @@ def getYforPoint(radius, angle):
         angle (float): angle of rotor segment
 
     Returns:
-        float: _description_
+        float: ``y``: y-coordinate of point
     """
     y = radius * math.sin(angle)
     return y
