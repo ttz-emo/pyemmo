@@ -1,27 +1,19 @@
-import sys
-
-try:
-    from pyemmo.script.script import Script
-except:
-    rootname = "C:\\Users\\k49976\\Desktop\\repositoryGibLab\\pyemmo"
-    print(f"Could not determine root. Setting it manually to '{rootname}'")
-    print(f'rootname is "{rootname}"')
-    sys.path.append(rootname)
 from pyemmo.script.geometry.point import Point
-# ==========================================
-# Definition of function 'buildPyemmoPoint':
-# ==========================================
-def buildPyemmoPoint(pyleecanPoint):
-    """This function translates a ``point`` from ``pyleecan``-format into ``pyemmo``-format.
+
+
+def buildPyemmoPoint(pyleecanPoint: complex) -> Point:
+    """Translates the coordinates of a point in ``pyleecan`` into a ``pyemmo`` point.
 
     Args:
-        pyleecanPoint (_type_): _description_
+        pyleecanPoint (complex): coordinates of the pyleecan point
 
     Returns:
-        _type_: _description_
+        Point: ``pyemmoPoint``: pyemmo point
     """
     coords = [pyleecanPoint.real, pyleecanPoint.imag]
 
-    pyemmoPoint = Point(name="test", x=coords[0], y=coords[1], z=0, meshLength=1e-3)
+    pyemmoPoint = Point(
+        name="Point", x=coords[0], y=coords[1], z=0, meshLength=1e-3
+    )
 
     return pyemmoPoint
