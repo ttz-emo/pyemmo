@@ -54,22 +54,33 @@ def getPrimaryLines(
             startPoint = line.startPoint.coordinate[:]
             # get the coords of the endpoint
             endPoint = line.endPoint.coordinate[:]
-            # if the y-values are smaller than the maximal Distanz from y=0 (=Pinball radius)
-            #   -> it's a primaryline
-            if abs(startPoint[1]) < pinballRadius and abs(endPoint[1]) < pinballRadius:
-                # if x-values are smaller than airgap radius, then line is on the rotor
+            # if the y-values are smaller than the maximal Distanz from y=0
+            # (Pinball radius) which means they are on the x-axis AND their
+            # x-coordinate is positive (positive side of x-axis) -> it's a
+            # primary line
+            if (
+                abs(startPoint[1]) < pinballRadius
+                and abs(endPoint[1]) < pinballRadius
+                and (startPoint[0] > 0 and endPoint[0] > 0)
+            ):
+                # if x-values are smaller than airgap radius, line is on rotor
+                # FIXME: this is only true for inner rotor machines
                 if (
                     abs(startPoint[0]) <= rotorAirgapRadius
                     or abs(endPoint[0]) <= rotorAirgapRadius
                 ):
-                    rotorMLList.append(line.duplicate())  # it is a rotor primary line
+                    # it is a rotor primary line
+                    rotorMLList.append(line.duplicate())
                 else:  # otherwise its on the stator side
-                    statorMLList.append(line.duplicate())  # it is a stator primary line
+                    # it is a stator primary line
+                    statorMLList.append(line.duplicate())
     return statorMLList, rotorMLList
 
 
 def createSecondaryLines(
-    statorPrimaryLines: List[Line], rotorPrimaryLines: List[Line], symFactor: int
+    statorPrimaryLines: List[Line],
+    rotorPrimaryLines: List[Line],
+    symFactor: int,
 ) -> Tuple[List[Line], List[Line]]:
     """duplicate the stator and rotor primary lines to get the secondary lines. For primary lines
     see function "getPrimaryLines".
@@ -87,15 +98,13 @@ def createSecondaryLines(
     statorSLList: List[Line] = list()  # Stator slavelines
     for primaryLine in statorPrimaryLines:
         slaveLine = primaryLine.duplicate()  # duplicate
-        slaveLine.rotateZ(
-            angle=2 * pi / symFactor
-        )  # and rotate primaryline to get slaveline
+        # and rotate primaryline to get slaveline
+        slaveLine.rotateZ(angle=2 * pi / symFactor)
         statorSLList.append(slaveLine)
     for primaryLine in rotorPrimaryLines:
         slaveLine = primaryLine.duplicate()  # duplicate
-        slaveLine.rotateZ(
-            angle=2 * pi / symFactor
-        )  # and rotate primaryline to get slaveline
+        # and rotate primaryline to get slaveline
+        slaveLine.rotateZ(angle=2 * pi / symFactor)
         rotorSLList.append(slaveLine)
     return statorSLList, rotorSLList
 
@@ -160,7 +169,9 @@ def findLines(
         area for area in segmentSurfDict.values() if (surfID == area.idExt)
     ]
     if not areaOfSurfID:  # SurfID not in Surface Dict
-        jsonLogger.warning(f"Surface ID '{surfID}' not found in machine surface list.")
+        jsonLogger.warning(
+            "Surface ID '%s' not found in machine surface list.", surfID
+        )
         return None, None
     if len(areaOfSurfID) != 1:
         # there should only be one area in the list "areaOfSurfID"
@@ -211,7 +222,9 @@ def getBoundaryLines(
 
 
 def createMBLines(
-    movingBandLineDict: dict, segmentSurfDict: Dict[str, SurfaceAPI], symFactor: int
+    movingBandLineDict: dict,
+    segmentSurfDict: Dict[str, SurfaceAPI],
+    symFactor: int,
 ) -> List[Line]:
     """
     createMBLines finds the inner Movingband lines in the list of SurfaceAPI objects by the IDs
@@ -283,7 +296,9 @@ def createMBAux(
 
 
 def createMB(
-    segmentSurfDict: Dict[str, SurfaceAPI], symFactor: int, material: Material = air
+    segmentSurfDict: Dict[str, SurfaceAPI],
+    symFactor: int,
+    material: Material = air,
 ) -> Tuple[MovingBand, MovingBand, Union[List[MovingBand], None]]:
     """
     createMB generates all pyemmo Movingband objects needed for a simulation.
@@ -353,7 +368,8 @@ def getLimitLines(
             List of line IDs as values. The order of the surface IDs matters since the function
             directly returns the found lines! So the dict must be defined most outer to the most
             inner limit line. E.g. for the inner limit lines the limit lines dict would look like
-            TODO
+            
+                TODO: Create example for inner limit line dict
 
         machineSurfList (List[SurfaceAPI]): List of all surfaces that should be searched
         symFactor (int): symmetry factor for duplication.
@@ -436,13 +452,19 @@ def createBoundaries(
         movingBandMaterial = air
     except Exception as exept:
         raise exept
-    [movingBandStator, movingBandRotorInner, movingBandRotorAuxList] = createMB(
+    [
+        movingBandStator,
+        movingBandRotorInner,
+        movingBandRotorAuxList,
+    ] = createMB(
         segmentSurfDict=segmentSurfDict,
         symFactor=symFactor,
         material=movingBandMaterial,
     )
 
-    rotorPhysicals.append(movingBandRotorInner)  # rotor side of inner Movingband
+    rotorPhysicals.append(
+        movingBandRotorInner
+    )  # rotor side of inner Movingband
     if movingBandRotorAuxList:  # MB_Rotor_a is not None if sym>1
         for movingBandAux in movingBandRotorAuxList:
             rotorPhysicals.append(movingBandAux)  # outer movingband if sym>1
@@ -482,8 +504,8 @@ def createBoundaries(
         for innerLimitIdExt in innerLimitSurfaceKeys:
             for point in segmentSurfDict[innerLimitIdExt].allPoints:
                 if point.isEqual(globalCenterPoint):
-                    noInnerLimit = True # no inner limit line
-                    break # break inner point loop
+                    noInnerLimit = True  # no inner limit line
+                    break  # break inner point loop
             if noInnerLimit is True:
                 # if the center point was found, break the outer loop too.
                 break
