@@ -1,5 +1,6 @@
 import math
 import copy
+import logging
 from typing import Union
 
 from pyleecan.Classes.Machine import Machine
@@ -39,29 +40,46 @@ def calcSPMSMContGenerally(
     for curve in rotorLamSurfList[0].curve:
         if not (
             math.isclose(a=curve.startPoint.radius, b=radius, abs_tol=1e-6)
-        ) and not math.isclose(a=curve.endPoint.radius, b=radius, abs_tol=1e-6):
+        ) and not math.isclose(
+            a=curve.endPoint.radius, b=radius, abs_tol=1e-6
+        ):
             rotorContourLineList.append(curve)
-    print("---")
-    print("Plot Überprüfung des Löschens der Seitenlinien.")
+    logging.debug("---")
+    logging.debug("Plot Überprüfung des Löschens der Seitenlinien.")
     plot(rotorContourLineList, linewidth=1, markersize=3)
-    print("---")
+    logging.debug("---")
 
     # --------------------------------------------
     # Filtering the outermost points of the rotor:
     # --------------------------------------------
-    lowestYPointRotor = Point("lowestYPointRotor", x=0, y=0, z=0, meshLength=0)
-    biggestYPointRotor = Point("biggestYPointRotor", x=0, y=0, z=0, meshLength=0)
+    rPointRotorCont = Point("rPointRotorCont", x=0, y=0, z=0, meshLength=0)
+    lPointRotorCont = Point("lPointRotorCont", x=0, y=0, z=0, meshLength=0)
+    rotorSegAngle = 360 / machine.rotor.comp_periodicity_geo()[0]
+
+    if math.isclose(a=rotorSegAngle, b=0, abs_tol=1e-6):
+        rotorSegAngle = 180
+
     if isInternalRotor:
-        biggestPreviousYRotor = 0
         for curve in rotorContourLineList:
             for point in curve.points:
-                if point.coordinate[1] > biggestPreviousYRotor:
-                    biggestPreviousYRotor = point.coordinate[1]
-                    biggestYPointRotor = point
-                    # return biggestYPointRotor
-                elif point.coordinate[1] == 0:
-                    lowestYPointRotor = point
-                    # return lowestYPointRotor
+                anglePoint = (
+                    math.atan2(point.coordinate[1], point.coordinate[0])
+                    / math.pi
+                    * 180
+                )
+                if math.isclose(a=anglePoint, b=0, abs_tol=1e-6):
+                    anglePoint = 180
+                if (
+                    math.isclose(a=anglePoint, b=rotorSegAngle, abs_tol=1e-6)
+                    and point.radius <= machine.rotor.Rext
+                    and point.radius >= machine.rotor.Rint
+                ):
+                    lPointRotorCont = point
+                if (
+                    math.isclose(a=point.coordinate[1], b=0, abs_tol=1e-6)
+                    and point.coordinate[0] > radius
+                ):
+                    rPointRotorCont = point
 
     else:
         smallestPreviousXRotor = machine.rotor.Rext
@@ -69,18 +87,21 @@ def calcSPMSMContGenerally(
             for point in curve.points:
                 if point.coordinate[0] < smallestPreviousXRotor:
                     smallestPreviousXRotor = point.coordinate[0]
-                    biggestYPointRotor = point
-                    # return biggestYPointRotor
+                    lPointRotorCont = point
 
-                if math.isclose(a=point.coordinate[1], b=0, abs_tol=1e-6):
-                    lowestYPointRotor = point
+                if (
+                    math.isclose(a=point.coordinate[1], b=0, abs_tol=1e-6)
+                    and point.coordinate[0] > radius
+                ):
+                    rPointRotorCont = point
 
-    rotorContourLineList.extend(rotorMagSurfList[0].curve)
+    for magSurf in rotorMagSurfList:
+        rotorContourLineList.extend(magSurf.curve)
 
     return (
         rotorContourLineList,
-        lowestYPointRotor,
-        biggestYPointRotor,
+        rPointRotorCont,
+        lPointRotorCont,
     )
 
 
@@ -124,38 +145,40 @@ def calcSPMSMRotorContour(
     # ----------------------------------------------
     rotorContourLineListCopy = copy.copy(rotorContourLineList)
     for rotorLamCurve in rotorContourLineListCopy:
-        # Rotor-Lamination Curves
-        for rotorMagCurve in rotorMagSurfList[0].curve:
-            # Rotor-Magnet Curves
-            if (
-                math.isclose(
-                    a=rotorMagCurve.startPoint.coordinate[0],
-                    b=rotorLamCurve.endPoint.coordinate[0],
-                    abs_tol=1e-6,
-                )
-                and math.isclose(
-                    a=rotorMagCurve.endPoint.coordinate[1],
-                    b=rotorLamCurve.startPoint.coordinate[1],
-                    abs_tol=1e-6,
-                )
-                and math.isclose(
-                    a=rotorMagCurve.endPoint.coordinate[0],
-                    b=rotorLamCurve.startPoint.coordinate[0],
-                    abs_tol=1e-6,
-                )
-                and math.isclose(
-                    a=rotorMagCurve.endPoint.coordinate[1],
-                    b=rotorLamCurve.startPoint.coordinate[1],
-                    abs_tol=1e-6,
-                )
-            ):
-                print(f"gefiltert: {rotorLamCurve}")
-                print(f"gefiltert: {rotorMagCurve}")
-                rotorContourLineList.remove(rotorLamCurve)
-                rotorContourLineList.remove(rotorMagCurve)
+        for rotorMagSurf in rotorMagSurfList:
+            # Rotor-Lamination Curves
+            for rotorMagCurve in rotorMagSurf.curve:
+                # Rotor-Magnet Curves
+                if (
+                    math.isclose(
+                        a=rotorMagCurve.startPoint.coordinate[0],
+                        b=rotorLamCurve.endPoint.coordinate[0],
+                        abs_tol=1e-6,
+                    )
+                    and math.isclose(
+                        a=rotorMagCurve.endPoint.coordinate[1],
+                        b=rotorLamCurve.startPoint.coordinate[1],
+                        abs_tol=1e-6,
+                    )
+                    and math.isclose(
+                        a=rotorMagCurve.endPoint.coordinate[0],
+                        b=rotorLamCurve.startPoint.coordinate[0],
+                        abs_tol=1e-6,
+                    )
+                    and math.isclose(
+                        a=rotorMagCurve.endPoint.coordinate[1],
+                        b=rotorLamCurve.startPoint.coordinate[1],
+                        abs_tol=1e-6,
+                    )
+                ):
+                    logging.debug(f"gefiltert: {rotorLamCurve}")
+                    logging.debug(f"gefiltert: {rotorMagCurve}")
+                    rotorContourLineList.remove(rotorLamCurve)
+                    rotorContourLineList.remove(rotorMagCurve)
+                    # plot(rotorContourLineList, linewidth=1, markersize=3, tag=True)
 
-    print("Plot contourLineList ")
+    logging.debug("Plot contourLineList ")
     plot(rotorContourLineList, linewidth=1, markersize=3, tag=True)
-    print("---")
+    logging.debug("---")
 
     return rotorContourLineList, lowestYPointRotor, biggestYPointRotor
