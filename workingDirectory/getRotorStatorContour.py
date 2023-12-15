@@ -12,10 +12,10 @@ from .calcIPMSMContour import calcIPMSMRotorContour
 from .calcWindContour import calcWindContour
 
 
-def getSurfMagContour(
+def getSPMSMRotorContour(
     geometryList: list, machine: Machine, isInternalRotor: bool = True
 ) -> tuple[list[Union[Line, CircleArc]], Point, Point]:
-    """Get a list of curves of the contour of the rotor with a surfacemagnet. ``rotorContourLineList``
+    """Get a list of curves of the contour of the rotor with a surfacemagnet. 
 
     Args:
         geometryList (list): List with all surfaces of the machine (Pyemmo format)
@@ -23,7 +23,7 @@ def getSurfMagContour(
         isInternalRotor (bool, optional): Internal or external Rotor. Defaults to True.
 
     Returns:
-        list[Line, CircleArc]: _description_
+        tuple[list[Union[Line, CircleArc]], Point, Point]: _description_
     """
 
     rotorRint = machine.rotor.Rint
@@ -32,11 +32,12 @@ def getSurfMagContour(
     rotorLamSurfList, rotorMagSurfList = getRotorSurfaces(
         geometryList=geometryList
     )
+    
     if isInternalRotor:
         (
             rotorContourLineList,
-            lowestYPointRotor,
-            biggestYPointRotor,
+            rPointRotorCont,
+            lPointRotorCont,
         ) = calcSPMSMRotorContour(
             machine=machine,
             rotorLamSurfList=rotorLamSurfList,
@@ -47,8 +48,8 @@ def getSurfMagContour(
     else:
         (
             rotorContourLineList,
-            lowestYPointRotor,
-            biggestYPointRotor,
+            rPointRotorCont,
+            lPointRotorCont,
         ) = calcSPMSMRotorContour(
             machine=machine,
             rotorLamSurfList=rotorLamSurfList,
@@ -57,10 +58,10 @@ def getSurfMagContour(
             isInternalRotor=isInternalRotor,
         )
 
-    return rotorContourLineList, lowestYPointRotor, biggestYPointRotor
+    return rotorContourLineList, rPointRotorCont, lPointRotorCont
 
 
-def getIPMSMContour(
+def getIPMSMRotorContour(
     geometryList: list, machine: Machine, isInternalRotor: bool = True
 ) -> tuple[list[Union[Line, CircleArc]], Point, Point]:
     """Get a list of curves of the contour of the rotor with a interior magnets. ``rotorContourLineList``
@@ -86,8 +87,8 @@ def getIPMSMContour(
     if isInternalRotor:
         (
             rotorContourLineList,
-            lowestYPointRotor,
-            biggestYPointRotor,
+            rPointRotorCont,
+            lPointRotorCont,
         ) = calcIPMSMRotorContour(
             rotorLamSurfList=rotorLamSurfList,
             radius=rotorRint,
@@ -95,14 +96,14 @@ def getIPMSMContour(
     else:
         (
             rotorContourLineList,
-            lowestYPointRotor,
-            biggestYPointRotor,
+            rPointRotorCont,
+            lPointRotorCont,
         ) = calcIPMSMRotorContour(
             rotorLamSurfList=rotorLamSurfList,
             radius=rotorRext,
         )
 
-    return rotorContourLineList, lowestYPointRotor, biggestYPointRotor
+    return rotorContourLineList, rPointRotorCont, lPointRotorCont
 
 
 def getWindingContour(
