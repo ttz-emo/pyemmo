@@ -57,6 +57,8 @@ def createMachine(
     maschineSurfDict = modelJSON.createMachineGeometryFromSegment(
         segmentSurfDict, symFactor
     )
+    # Log winding layout for debugging *before* createSlot() is called.
+    logger.debug(f"Winding layout: {importJSON.getWindingList(extendedInfo)}")
     # create physical elements from the surfaces
     for idExt, surfList in maschineSurfDict.items():
         surfName = surfList[0].name
@@ -77,7 +79,7 @@ def createMachine(
             elif machineSide == "Rotor":
                 rotorPhysicals.extend(physSurfList)
             else:
-                ValueError(
+                raise ValueError(
                     f"MachineSide was whether rotor or stator: {machineSide}",
                 )
 
@@ -221,7 +223,9 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
     }.items():
         for quantity in ["b_radial", "b_tangent"]:
             sign = "-" if side == "rotor" else "+"
-            resFilePath = join("CAT_RESDIR", quantity + "_airgap_" + side + ".pos")
+            resFilePath = join(
+                "CAT_RESDIR", quantity + "_airgap_" + side + ".pos"
+            )
             # resFilePath = abspath(
             #     join(script.getResultsPath(), quantity + "_airgap_" + side + ".pos")
             # )
@@ -360,7 +364,9 @@ def main(
         mkdir(model)
     # Set logging path to model dir
     jsonLogFileHandler = logging.FileHandler(
-        filename=os.path.join(model, "pyemmo_jsonAPI.log"), mode="w", encoding="utf-8"
+        filename=os.path.join(model, "pyemmo_jsonAPI.log"),
+        mode="w",
+        encoding="utf-8",
     )
     jsonLogFileHandler.setLevel(logger.getEffectiveLevel())
     jsonLogFileHandler.setFormatter(logFmt)
@@ -378,37 +384,43 @@ def main(
     else:
         # if gmsh was given by the user, check that its valid
         if not isfile(gmsh):
-            raise FileNotFoundError(f"Provided gmsh executable was not found: {gmsh}")
+            raise FileNotFoundError(
+                f"Provided gmsh executable was not found: {gmsh}"
+            )
 
     # get geometry
-    if isinstance(geo,str):
+    if isinstance(geo, str):
         if isfile(geo):
             # import the segment surface list from the json file
             try:
                 with open(geo, encoding="utf-8") as jsonFile:
                     machineGeoList = json.load(jsonFile)
                     # create dict with surface api (segment) objects from the surface list
-                    segmentSurfDict = modelJSON.importMachineGeometry(machineGeoList)
+                    segmentSurfDict = modelJSON.importMachineGeometry(
+                        machineGeoList
+                    )
             except FileNotFoundError as fnfe:
                 raise fnfe
             except Exception as exept:
                 raise exept
         else:
-            raise(FileNotFoundError(f"Given file path {geo} was not a file."))
+            raise (FileNotFoundError(f"Given file path {geo} was not a file."))
     elif isinstance(geo, dict):
         segmentSurfDict = geo
     else:
         raise TypeError(
             f"Geometry file has to be type 'File' or 'dict', not {type(geo)}"
         )
-    
+
     # addition information
     if isinstance(extInfo, str):
         if isfile(extInfo):
             # import the extended information
             extendedInfo = importJSON.importExtInfo(extInfo)
         else:
-            raise(FileNotFoundError(f"Given file path {extInfo} was not a file."))
+            raise (
+                FileNotFoundError(f"Given file path {extInfo} was not a file.")
+            )
     elif isinstance(extInfo, dict):
         extendedInfo = extInfo
     else:
@@ -477,7 +489,8 @@ def main(
     if (
         importJSON.getFlagCalcIronLoss(extendedInfo)
         and isdir(resPath)
-        and simulationParameters["SYM"]["ANALYSIS_TYPE"] == 1  # transient simulation
+        and simulationParameters["SYM"]["ANALYSIS_TYPE"]
+        == 1  # transient simulation
     ):
         # FIXME: Implement better check for simulation status
         brFilePath = join(resPath, "b_rotor.pos")
@@ -502,8 +515,8 @@ def main(
             and isinstance(rotorMat, ElectricalSteel)
             and isinstance(statorMat, ElectricalSteel)
         ):
-            #FIXME: Material properties should be given valid
-            lossParams = rotorMat.lossParams 
+            # FIXME: Material properties should be given valid
+            lossParams = rotorMat.lossParams
             calcIronLoss.adaptIronLossParams(lossParams, rotorMat)
             ironLossR, _ = calcIronLoss.main(
                 brFilePath,
@@ -552,7 +565,8 @@ def main(
             )
     if (
         importJSON.getFlagCalcIronLoss(extendedInfo)
-        and simulationParameters["SYM"]["ANALYSIS_TYPE"] == 0  # static simulation
+        and simulationParameters["SYM"]["ANALYSIS_TYPE"]
+        == 0  # static simulation
     ):
         # FIXME: Improve check because simulation type can be changed in gmsh GUI
         logger.warning(
@@ -566,7 +580,9 @@ def main(
         resPath = apiScript.resultsPath
         if isdir(resPath):
             # if the folder for results exists
-            importResults.plt.set_loglevel(level="info") # avoid matplotlib debug infos
+            importResults.plt.set_loglevel(
+                level="info"
+            )  # avoid matplotlib debug infos
             for file in os.listdir(resPath):
                 filename, fileExt = os.path.splitext(file)
                 if fileExt == ".dat":
