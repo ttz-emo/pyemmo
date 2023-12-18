@@ -1,13 +1,4 @@
 import pyleecan.Classes.Arc1
-import sys
-
-try:
-    from pyemmo.script.script import Script
-except:
-    rootname = "C:\\Users\\k49976\\Desktop\\repositoryGibLab\\pyemmo"
-    print(f"Could not determine root. Setting it manually to '{rootname}'")
-    print(f'rootname is "{rootname}"')
-    sys.path.append(rootname)
 
 from .buildPyemmoPoint import buildPyemmoPoint
 
@@ -29,5 +20,6 @@ def translateArc1(line: pyleecan.Classes.Arc1.Arc1):
     startPoint = buildPyemmoPoint(line.begin)
     endPoint = buildPyemmoPoint(line.end)
     centerPoint = buildPyemmoPoint(line.get_center())
+    centerPointArc = buildPyemmoPoint(line.get_middle())
 
-    return startPoint, endPoint, centerPoint
+    return startPoint, endPoint, centerPoint, centerPointArc
