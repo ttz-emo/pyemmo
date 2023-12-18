@@ -16,14 +16,12 @@ from .getCoordinatesForPoint import getXforPoint, getYforPoint
 
 
 def buildBandsRotor(
+    machine: Machine,
     bandRadiusList: list,
     centerPoint: Point,
     rPointRotorCont: Point,
     lPointRotorCont: Point,
-    rotorSymAngle: float,
     rotorContourLineList: list,
-    nbrRotorSeg: int,
-    angleRotor: float,
 ) -> tuple[SurfaceAPI, SurfaceAPI, float]:
     """Builds the air gap segments at the rotor side.
 
@@ -40,9 +38,8 @@ def buildBandsRotor(
     Returns:
         tuple[SurfaceAPI, SurfaceAPI, float]: _description_
     """
-    # ================
-    # Bands for rotor:
-    # ================
+    nbrRotorSeg = machine.rotor.comp_periodicity_geo()[0]
+    angleRotor = 2 * math.pi / nbrRotorSeg  # [rad]
 
     # -----------------
     # Rotor inner band:
@@ -54,8 +51,8 @@ def buildBandsRotor(
     )
     pointM12 = Point(
         name="PointM12",
-        x=getXforPoint(bandRadiusList[0], rotorSymAngle),
-        y=getYforPoint(bandRadiusList[0], rotorSymAngle),
+        x=getXforPoint(bandRadiusList[0], angleRotor),
+        y=getYforPoint(bandRadiusList[0], angleRotor),
         z=0,
         meshLength=mbMeshLen,
     )
@@ -75,22 +72,22 @@ def buildBandsRotor(
     )
 
     # Adding curves to list:
-    Rotorluftspalt1Curves = rotorContourLineList
-    Rotorluftspalt1Curves.append(rotorCircle1)
-    Rotorluftspalt1Curves.append(lowerLine1)
-    Rotorluftspalt1Curves.append(upperLine1)
+    rotorAirgap1Curves = rotorContourLineList
+    rotorAirgap1Curves.append(rotorCircle1)
+    rotorAirgap1Curves.append(lowerLine1)
+    rotorAirgap1Curves.append(upperLine1)
 
     # Assginment of rotorBand1 as surface:
     Rotorluftspalt1 = SurfaceAPI(
         name="Rotorluftspalt 1",
         idExt="LuR1",
-        curves=Rotorluftspalt1Curves,
+        curves=rotorAirgap1Curves,
         material=air,
         nbrSegments=nbrRotorSeg,
         angle=angleRotor,
         meshSize=1.0,
     )
-    plot(Rotorluftspalt1Curves, linewidth=1, markersize=3, tag=True)
+    plot(rotorAirgap1Curves, linewidth=1, markersize=3, tag=True)
     # Rotorluftspalt1.plot()
     print("---")
 
@@ -103,8 +100,8 @@ def buildBandsRotor(
     )
     PointM22 = Point(
         name="PointM22",
-        x=getXforPoint(bandRadiusList[1], rotorSymAngle),
-        y=getYforPoint(bandRadiusList[1], rotorSymAngle),
+        x=getXforPoint(bandRadiusList[1], angleRotor),
+        y=getYforPoint(bandRadiusList[1], angleRotor),
         z=0,
         meshLength=mbMeshLen,
     )
@@ -123,17 +120,17 @@ def buildBandsRotor(
     )
 
     # Adding curves to list:
-    Rotorluftspalt2Curves = []
-    Rotorluftspalt2Curves.append(rotorCircle1)
-    Rotorluftspalt2Curves.append(rotorCircle2)
-    Rotorluftspalt2Curves.append(lowerLine2)
-    Rotorluftspalt2Curves.append(upperLine2)
+    rotorAirgap2Curves = []
+    rotorAirgap2Curves.append(rotorCircle1)
+    rotorAirgap2Curves.append(rotorCircle2)
+    rotorAirgap2Curves.append(lowerLine2)
+    rotorAirgap2Curves.append(upperLine2)
 
     # Assginment of rotorBand2 as surface:
     Rotorluftspalt2 = SurfaceAPI(
         name="Rotorluftspalt 2",
         idExt="LuR2",
-        curves=Rotorluftspalt2Curves,
+        curves=rotorAirgap2Curves,
         material=air,
         nbrSegments=nbrRotorSeg,
         angle=angleRotor,
@@ -145,8 +142,8 @@ def buildBandsRotor(
     # RotorBandsCurves:
     # -----------------
     RotorluftspaltCurves = []
-    RotorluftspaltCurves.append(Rotorluftspalt1Curves)
-    RotorluftspaltCurves.append(Rotorluftspalt2Curves)
+    RotorluftspaltCurves.append(rotorAirgap1Curves)
+    RotorluftspaltCurves.append(rotorAirgap2Curves)
     plot(RotorluftspaltCurves, linewidth=1, markersize=3, tag=True)
     print("---")
 
@@ -158,12 +155,10 @@ def buildBandsRotor(
 
 
 def buildBandsStator(
+    machine: Machine,
     statorContourLineList: list,
     bandRadiusList: list,
-    statorSymAngle: float,
     centerPoint: Point,
-    nbrStatorSeg: int,
-    angleStator: float,
 ) -> tuple[SurfaceAPI, SurfaceAPI]:
     """_summary_
 
@@ -178,9 +173,9 @@ def buildBandsStator(
     Returns:
         tuple[SurfaceAPI, SurfaceAPI]: _description_
     """
-    # =================
-    # Bands for stator:
-    # =================
+    nbrStatorSeg = machine.stator.slot.Zs
+    angleStator = 2 * math.pi / nbrStatorSeg  # [rad]
+    
     # ------------------
     # Stator outer band:
     # ------------------
@@ -200,8 +195,8 @@ def buildBandsStator(
     )
     PointM42 = Point(
         name="PointM42",
-        x=getXforPoint(bandRadiusList[3], statorSymAngle),
-        y=getYforPoint(bandRadiusList[3], statorSymAngle),
+        x=getXforPoint(bandRadiusList[3], angleStator),
+        y=getYforPoint(bandRadiusList[3], angleStator),
         z=0,
         meshLength=mbMeshLen,
     )
@@ -250,8 +245,8 @@ def buildBandsStator(
     )
     PointM32 = Point(
         name="PointM22",
-        x=getXforPoint(bandRadiusList[2], statorSymAngle),
-        y=getYforPoint(bandRadiusList[2], statorSymAngle),
+        x=getXforPoint(bandRadiusList[2], angleStator),
+        y=getYforPoint(bandRadiusList[2], angleStator),
         z=0,
         meshLength=mbMeshLen,
     )
@@ -292,10 +287,6 @@ def buildBandsStator(
 
 def buildMovingBand(
     machine: Machine,
-    rotorRint: float,
-    rotorRext: float,
-    statorRint: float,
-    statorRext: float,
     isInternalRotor: bool,
 ) -> tuple[list, list[SurfaceAPI], float]:
     """_summary_
@@ -316,6 +307,10 @@ def buildMovingBand(
     # &
     # Calculation of the distance between rotor/magnet and stator inner radius:
     # =========================================================================
+    rotorRint = machine.rotor.Rint
+    rotorRext = machine.rotor.Rext
+    statorRint = machine.stator.Rint
+    statorRext = machine.stator.Rext
     if isinstance(machine, MachineSIPMSM):
         H0 = machine.rotor.slot.H0
         H1 = machine.rotor.slot.H1
@@ -352,14 +347,6 @@ def buildMovingBand(
             maxRadius = rotorRint
             diffRadius = statorRext - maxRadius
 
-    # ==============================
-    # Calculation of the symmetries:
-    # ==============================
-    rotorSym = machine.rotor.comp_periodicity_geo()[0]
-    statorSym = machine.stator.slot.Zs
-    rotorSymAngle = 2 * math.pi / rotorSym  # [rad]
-    statorSymAngle = 2 * math.pi / statorSym  # [rad]
-
     # =================================================================
     # Translation of geometry and creation of rotor and stator contour:
     # =================================================================
@@ -372,8 +359,6 @@ def buildMovingBand(
         magnetizationDict,
     ) = createGeoDict(
         machine,
-        rotorSym,
-        statorSym,
         isInternalRotor,
     )
 
@@ -391,35 +376,27 @@ def buildMovingBand(
     print("---")
 
     centerPoint = Point(name="centerPointBand", x=0, y=0, z=0, meshLength=1e-3)
-    nbrStatorSeg = machine.stator.comp_periodicity_geo()[0]
-    angleStator = 2 * math.pi / nbrStatorSeg
-    nbrRotorSeg = machine.rotor.comp_periodicity_geo()[0]
-    angleRotor = 2 * math.pi / nbrRotorSeg
 
     (
         Rotorluftspalt1,
         Rotorluftspalt2,
         movingband_r,
     ) = buildBandsRotor(
+        machine=machine,
         bandRadiusList=bandRadiusList,
         centerPoint=centerPoint,
         rPointRotorCont=lowestYPointRotor,
         lPointRotorCont=biggestYPointRotor,
-        rotorSymAngle=rotorSymAngle,
         rotorContourLineList=rotorContourLineList,
-        nbrRotorSeg=nbrRotorSeg,
-        angleRotor=angleRotor,
     )
     (
         Statorluftspalt1,
         Statorluftspalt2,
     ) = buildBandsStator(
+        machine=machine,
         statorContourLineList=statorContourLineList,
         bandRadiusList=bandRadiusList,
-        statorSymAngle=statorSymAngle,
         centerPoint=centerPoint,
-        nbrStatorSeg=nbrStatorSeg,
-        angleStator=angleStator,
     )
 
     # ----------
