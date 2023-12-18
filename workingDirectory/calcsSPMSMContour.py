@@ -171,8 +171,8 @@ def calcSPMSMRotorContour(
                         abs_tol=1e-6,
                     )
                 ):
-                    logging.debug(f"gefiltert: {rotorLamCurve}")
-                    logging.debug(f"gefiltert: {rotorMagCurve}")
+                    logging.debug("gefiltert: %s", rotorLamCurve)
+                    logging.debug("gefiltert: %s", rotorMagCurve)
                     rotorContourLineList.remove(rotorLamCurve)
                     rotorContourLineList.remove(rotorMagCurve)
                     # plot(rotorContourLineList, linewidth=1, markersize=3, tag=True)
