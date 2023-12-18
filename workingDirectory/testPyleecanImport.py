@@ -22,6 +22,7 @@ from pyleecan.Classes.OPdq import OPdq
 from pyleecan.Classes.Machine import Machine
 from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
+from pyleecan.Classes.MachineSyRM import MachineSyRM
 
 # ===============
 # Imports pyemmo:
@@ -72,9 +73,7 @@ def generateSimulation(
 # ========================================
 # Festlegung der zu berechnenden Maschine:
 # ========================================
-# machine = load(
-# 	DATA_DIR, "Machine", "SPMSM_002.json"
-#     )
+
 machineFolder = os.path.join(ROOT_DIR, "workingDirectory/machineData")
 resFolder = os.path.join(ROOT_DIR, r"Results\pyleecanAPI")
 machineList = []
@@ -82,7 +81,7 @@ for i, file in enumerate(os.listdir(machineFolder)):
     if file.endswith(".json") and not "FEMM" in file:
         machineList.append(file)
         print(f"{machineList.index(file)}: " + file)
-fileName = machineList[23]  # SELECT MACHINE HERE BY INDEX OR NAME
+fileName = machineList[34]  # SELECT MACHINE HERE BY INDEX OR NAME
 print("\nUsing machine: " + fileName)
 machine = load(os.path.abspath(os.path.join(machineFolder, fileName)))
 simulation = generateSimulation(machine, Id=0, Iq=10, speed=1000)
@@ -101,7 +100,7 @@ statorRext = machine.stator.Rext
 # --------------------------
 isInternalRotor = bool(statorRint > rotorRext)
 
-if isinstance(machine, MachineSIPMSM):
+if isinstance(machine, (MachineSIPMSM, MachineIPMSM, MachineSyRM)):
     allBands, geometryList, movingband_r, magnetizationDict = buildMovingBand(
         machine=machine,
         rotorRint=rotorRint,
@@ -111,19 +110,12 @@ if isinstance(machine, MachineSIPMSM):
         isInternalRotor=isInternalRotor,
     )
 
-elif isinstance(machine, MachineIPMSM):
-    allBands, geometryList, movingband_r, magnetizationDict = buildMovingBand(
-        machine=machine,
-        rotorRint=rotorRint,
-        rotorRext=rotorRext,
-        statorRint=statorRint,
-        statorRext=statorRext,
-        isInternalRotor=isInternalRotor,
-    )
+else:
+    raise ValueError("Machine type is not translatable!")
 
 geoTranslationDict = {}
 for surf in geometryList:
-    if surf.idExt not in geoTranslationDict.keys():
+    if surf.idExt not in geoTranslationDict:
         geoTranslationDict[surf.idExt] = surf
     else:
         raise RuntimeError(
