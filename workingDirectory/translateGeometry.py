@@ -68,8 +68,8 @@ def translateGeometry(
             idExt=idExt,
             curves=buildPyemmoLineList(surface.line_list),
             material=pyemmoMaterial,
-            nbrSegments=machine.get_pole_pair_number() * 2,
-            angle=(2 * pi / (machine.get_pole_pair_number() * 2)),
+            nbrSegments=machine.rotor.comp_periodicity_geo()[0],
+            angle=(2 * pi / machine.rotor.comp_periodicity_geo()[0]),
             meshSize=0,
         )
 
@@ -125,8 +125,8 @@ def translateGeometry(
             idExt=idExt,
             curves=buildPyemmoLineList(surface.line_list),
             material=pyemmoMaterial,
-            nbrSegments=machine.stator.slot.Zs,
-            angle=(2 * pi / machine.stator.slot.Zs),
+            nbrSegments=machine.stator.comp_periodicity_geo()[0],
+            angle=(2 * pi / machine.stator.comp_periodicity_geo()[0]),
             meshSize=1.0,
         )
 
