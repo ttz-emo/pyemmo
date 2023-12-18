@@ -31,14 +31,36 @@ def buildPyemmoLineList(pyleecanLineList: list) -> list:
             returnlist.append(pyemmoLineList)
 
         elif isinstance(line, pyleecan.Classes.Arc1.Arc1):
-            startPoint, endPoint, centerPoint = translateArc1(line=line)
-            pyemmoLineList = CircleArc(
-                name="CircleArc",
-                startPoint=startPoint,
-                endPoint=endPoint,
-                centerPoint=centerPoint,
-            )
-            returnlist.append(pyemmoLineList)
+            print(line.get_angle(is_deg=True))
+            if line.get_angle(is_deg=True) > 90 or line.get_angle(is_deg=True) < -90:
+                startPoint, endPoint, centerPoint, centerPointArc = translateArc1(
+                    line=line
+                )
+                pyemmoLineList = CircleArc(
+                    name="CircleArc",
+                    startPoint=startPoint,
+                    endPoint=centerPointArc,
+                    centerPoint=centerPoint,
+                )
+                returnlist.append(pyemmoLineList)
+
+                pyemmoLineList = CircleArc(
+                    name="CircleArc",
+                    startPoint=centerPointArc,
+                    endPoint=endPoint,
+                    centerPoint=centerPoint,
+                )
+                returnlist.append(pyemmoLineList)
+
+            else:
+                startPoint, endPoint, centerPoint, centerPointArc = translateArc1(line=line)
+                pyemmoLineList = CircleArc(
+                    name="CircleArc",
+                    startPoint=startPoint,
+                    endPoint=endPoint,
+                    centerPoint=centerPoint,
+                )
+                returnlist.append(pyemmoLineList)
 
         elif isinstance(line, pyleecan.Classes.Arc2.Arc2):
             startPoint, endPoint, centerPoint = translateArc2(line=line)
