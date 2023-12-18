@@ -1,11 +1,10 @@
 import math
-from typing import List
 
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
 from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
+from pyleecan.Classes.MachineSyRM import MachineSyRM
 from pyleecan.Classes.Machine import Machine
 
-from pyemmo.script.material.material import Material
 from pyemmo.api import air
 from pyemmo.script.geometry.point import Point
 from pyemmo.script.geometry.circleArc import CircleArc
@@ -19,8 +18,8 @@ from .getCoordinatesForPoint import getXforPoint, getYforPoint
 def buildBandsRotor(
     bandRadiusList: list,
     centerPoint: Point,
-    lowestYPointRotor: Point,
-    biggestYPointRotor: Point,
+    rPointRotorCont: Point,
+    lPointRotorCont: Point,
     rotorSymAngle: float,
     rotorContourLineList: list,
     nbrRotorSeg: int,
@@ -31,7 +30,7 @@ def buildBandsRotor(
     Args:
         bandRadiusList (list): List with the radii of the bands
         centerPoint (Point): Center point of machine
-        lowestYPointRotor (Point): 
+        lowestYPointRotor (Point):
         biggestYPointRotor (Point): _description_
         rotorSymAngle (float): _description_
         rotorContourLineList (list): _description_
@@ -49,7 +48,7 @@ def buildBandsRotor(
     # Rotor inner band:
     # -----------------
     # Points:
-    mbMeshLen = 2*bandRadiusList[1]*math.pi/360
+    mbMeshLen = 2 * bandRadiusList[1] * math.pi / 360
     pointM11 = Point(
         name="PointM11", x=bandRadiusList[0], y=0, z=0, meshLength=mbMeshLen
     )
@@ -69,10 +68,10 @@ def buildBandsRotor(
         centerPoint=centerPoint,
     )
     lowerLine1 = Line(
-        name="lowerLine1", startPoint=lowestYPointRotor, endPoint=pointM11
+        name="lowerLine1", startPoint=rPointRotorCont, endPoint=pointM11
     )
     upperLine1 = Line(
-        name="upperLine1", startPoint=biggestYPointRotor, endPoint=pointM12
+        name="upperLine1", startPoint=lPointRotorCont, endPoint=pointM12
     )
 
     # Adding curves to list:
@@ -195,7 +194,7 @@ def buildBandsStator(
                 lowestYPointStator = point
 
     # Points:
-    mbMeshLen = 2*bandRadiusList[2]*math.pi/360
+    mbMeshLen = 2 * bandRadiusList[2] * math.pi / 360
     PointM41 = Point(
         name="PointM41", x=bandRadiusList[3], y=0, z=0, meshLength=mbMeshLen
     )
@@ -310,7 +309,7 @@ def buildMovingBand(
         isInternalRotor (bool): _description_
 
     Returns:
-        _type_: _description_
+        tuple[list, list[SurfaceAPI], float]: _description_
     """
     # =========================================================================
     # Calculation of the magnet-radii
@@ -345,20 +344,18 @@ def buildMovingBand(
                 diffRadius = statorRext - magnetShortestRadius
                 maxRadius = magnetShortestRadius
 
-    elif isinstance(machine, MachineIPMSM):
+    elif isinstance(machine, (MachineIPMSM, MachineSyRM)):
         if isInternalRotor:
             maxRadius = rotorRext
             diffRadius = statorRint - maxRadius
         else:
             maxRadius = rotorRint
             diffRadius = statorRext - maxRadius
+
     # ==============================
     # Calculation of the symmetries:
     # ==============================
-    if isinstance(machine, MachineSIPMSM):
-        rotorSym = machine.rotor.slot.Zs
-    elif isinstance(machine, MachineIPMSM):
-        rotorSym = machine.get_pole_pair_number() * 2
+    rotorSym = machine.rotor.comp_periodicity_geo()[0]
     statorSym = machine.stator.slot.Zs
     rotorSymAngle = 2 * math.pi / rotorSym  # [rad]
     statorSymAngle = 2 * math.pi / statorSym  # [rad]
@@ -380,7 +377,6 @@ def buildMovingBand(
         isInternalRotor,
     )
 
-
     # ====================================
     # Calculation of the MovingBand radii:
     # ====================================
@@ -395,9 +391,9 @@ def buildMovingBand(
     print("---")
 
     centerPoint = Point(name="centerPointBand", x=0, y=0, z=0, meshLength=1e-3)
-    nbrStatorSeg = machine.stator.slot.Zs
+    nbrStatorSeg = machine.stator.comp_periodicity_geo()[0]
     angleStator = 2 * math.pi / nbrStatorSeg
-    nbrRotorSeg = machine.get_pole_pair_number() * 2
+    nbrRotorSeg = machine.rotor.comp_periodicity_geo()[0]
     angleRotor = 2 * math.pi / nbrRotorSeg
 
     (
@@ -407,8 +403,8 @@ def buildMovingBand(
     ) = buildBandsRotor(
         bandRadiusList=bandRadiusList,
         centerPoint=centerPoint,
-        lowestYPointRotor=lowestYPointRotor,
-        biggestYPointRotor=biggestYPointRotor,
+        rPointRotorCont=lowestYPointRotor,
+        lPointRotorCont=biggestYPointRotor,
         rotorSymAngle=rotorSymAngle,
         rotorContourLineList=rotorContourLineList,
         nbrRotorSeg=nbrRotorSeg,
