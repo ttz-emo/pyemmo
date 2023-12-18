@@ -368,7 +368,7 @@ def getLimitLines(
             List of line IDs as values. The order of the surface IDs matters since the function
             directly returns the found lines! So the dict must be defined most outer to the most
             inner limit line. E.g. for the inner limit lines the limit lines dict would look like
-            
+
                 TODO: Create example for inner limit line dict
 
         machineSurfList (List[SurfaceAPI]): List of all surfaces that should be searched
@@ -447,7 +447,8 @@ def createBoundaries(
             movingBandMaterial: Material = segmentSurfDict["StLu2"].material
     except KeyError:
         jsonLogger.warning(
-            """Stator-Airgap Surface-ID was not "StLu","StLu1" or "StLu2". Can't determine Airgap material! Using air instead."""
+            """Stator-Airgap Surface-ID was not "StLu","StLu1" or "StLu2". """
+            "Can't determine Airgap material! Using air instead."
         )
         movingBandMaterial = air
     except Exception as exept:
