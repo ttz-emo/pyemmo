@@ -121,10 +121,10 @@ def createParamDict(
         symFactor = symFactor[0] * 2
     else:
         symFactor = symFactor[0]
-    print(f"Symmetry factor machine: {symFactor}")
+    logging.debug(f"Symmetry factor machine: {symFactor}")
     swatemWinding, windLayout = translateWinding(machine)
     symWinding = swatemWinding.get_periodicity_t()*2
-    print(f"Symmetry factor winding: {symWinding}")
+    logging.debug(f"Symmetry factor winding: {symWinding}")
     symFactor = min(symWinding, symFactor)
 
     speed_rpm = pyleecanSimulation.input.OP.N0
