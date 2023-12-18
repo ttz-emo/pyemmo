@@ -23,8 +23,6 @@ from .getMagnetizationDict import getMagnetizationDict
 
 def createGeoDict(
     machine: Machine,
-    rotorSym: int,
-    statorSym: int,
     isInternalRotor: bool,
 ) -> tuple[
     list[SurfaceAPI],
@@ -49,6 +47,8 @@ def createGeoDict(
         tuple[ list[SurfaceAPI], list[Union[Line, CircleArc]], list[Union[Line, CircleArc]], Point, Point, dict, ]: _description_
     """
     # TODO: Funktion heißt createGeoDict aber gibt Liste zurück...
+    rotorSym = machine.rotor.comp_periodicity_geo()[0]
+    statorSym = machine.stator.slot.Zs
     RotorSurf = machine.rotor.build_geometry(sym=rotorSym, alpha=0)
     StatorSurf = machine.stator.build_geometry(sym=statorSym, alpha=0)
 
@@ -79,7 +79,7 @@ def createGeoDict(
             saveSpaceTemp.extend(split1.split("-"))
         RotorSurfLabelsSplit2.append(saveSpaceTemp)
 
-        logging.debug(f"\nGeometry translation for {RotorSurfLabels[i]}:")
+        logging.debug("Geometry translation for %s:", RotorSurfLabels[i])
 
         pyemmoSurface, anglePointRefList = translateGeometry(
             nameSplitList=RotorSurfLabelsSplit2[i],
@@ -123,7 +123,7 @@ def createGeoDict(
 
         StatorSurfLabelsSplit2.append(saveSpaceTemp)
 
-        logging.debug(f"\nTranslation for {StatorSurfLabels[i]}:")
+        logging.debug("Translation for %s", StatorSurfLabels[i])
 
         pyemmoSurface, anglePointRefList = translateGeometry(
             nameSplitList=StatorSurfLabelsSplit2[i],
