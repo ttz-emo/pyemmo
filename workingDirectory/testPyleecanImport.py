@@ -10,9 +10,7 @@ except:
     print(f"Could not determine root. Setting it manually to '{rootname}'")
     print(f'rootname is "{rootname}"')
     sys.path.append(rootname)
-# =================
-# Imports pyleecan:
-# =================
+
 from pyleecan.Functions.load import load
 from pyleecan.Classes.Simulation import Simulation
 from pyleecan.Classes.Simu1 import Simu1
@@ -24,9 +22,6 @@ from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
 from pyleecan.Classes.MachineSyRM import MachineSyRM
 
-# ===============
-# Imports pyemmo:
-# ===============
 from pyemmo.functions.plot import plot
 from pyemmo.api.json import main
 from pyemmo.definitions import ROOT_DIR
@@ -70,9 +65,9 @@ def generateSimulation(
 
 
 # %%
-# ========================================
-# Festlegung der zu berechnenden Maschine:
-# ========================================
+# ==============================================
+# Determination of the machine to be calculated:
+# ==============================================
 
 machineFolder = os.path.join(ROOT_DIR, "workingDirectory/machineData")
 resFolder = os.path.join(ROOT_DIR, r"Results\pyleecanAPI")
@@ -85,9 +80,7 @@ fileName = machineList[34]  # SELECT MACHINE HERE BY INDEX OR NAME
 print("\nUsing machine: " + fileName)
 machine = load(os.path.abspath(os.path.join(machineFolder, fileName)))
 simulation = generateSimulation(machine, Id=0, Iq=10, speed=1000)
-# =====================================
-# Festlegung der Simulations-Parameter:
-# =====================================
+
 # %%
 rotorRext = machine.rotor.Rext
 rotorRint = machine.rotor.Rint
@@ -103,10 +96,6 @@ isInternalRotor = bool(statorRint > rotorRext)
 if isinstance(machine, (MachineSIPMSM, MachineIPMSM, MachineSyRM)):
     allBands, geometryList, movingband_r, magnetizationDict = buildMovingBand(
         machine=machine,
-        rotorRint=rotorRint,
-        rotorRext=rotorRext,
-        statorRint=statorRint,
-        statorRext=statorRext,
         isInternalRotor=isInternalRotor,
     )
 
