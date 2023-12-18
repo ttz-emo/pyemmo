@@ -1,19 +1,24 @@
-from typing import List
-from math import pi
+from typing import List, Union
+import logging
 
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
 from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
+from pyleecan.Classes.MachineSyRM import MachineSyRM
 from pyleecan.Classes.Machine import Machine
 
 from pyemmo.functions.plot import plot
 from pyemmo.api.SurfaceJSON import SurfaceAPI
+from pyemmo.script.geometry.line import Line
+from pyemmo.script.geometry.circleArc import CircleArc
+from pyemmo.script.geometry.point import Point
 from .translateGeometry import translateGeometry
 from .getRotorStatorContour import (
-    getSurfMagContour,
+    getSPMSMRotorContour,
     getWindingContour,
-    getIPMSMContour,
+    getIPMSMRotorContour,
 )
 from .detectInnerOuterLimit import detectInnerOuterLimit
+from .getMagnetizationDict import getMagnetizationDict
 
 
 def createGeoDict(
@@ -21,8 +26,29 @@ def createGeoDict(
     rotorSym: int,
     statorSym: int,
     isInternalRotor: bool,
-):
-    #TODO: Funktion heißt createGeoDict aber gibt Liste zurück...
+) -> tuple[
+    list[SurfaceAPI],
+    list[Union[Line, CircleArc]],
+    list[Union[Line, CircleArc]],
+    Point,
+    Point,
+    dict,
+]:
+    """_summary_
+
+    Args:
+        machine (Machine): _description_
+        rotorSym (int): _description_
+        statorSym (int): _description_
+        isInternalRotor (bool): _description_
+
+    Raises:
+        TypeError: _description_
+
+    Returns:
+        tuple[ list[SurfaceAPI], list[Union[Line, CircleArc]], list[Union[Line, CircleArc]], Point, Point, dict, ]: _description_
+    """
+    # TODO: Funktion heißt createGeoDict aber gibt Liste zurück...
     RotorSurf = machine.rotor.build_geometry(sym=rotorSym, alpha=0)
     StatorSurf = machine.stator.build_geometry(sym=statorSym, alpha=0)
 
@@ -52,7 +78,9 @@ def createGeoDict(
         for split1 in RotorSurfLabelsSplit1:
             saveSpaceTemp.extend(split1.split("-"))
         RotorSurfLabelsSplit2.append(saveSpaceTemp)
-        print(f"\nTranslation for {RotorSurfLabels[i]}:")
+
+        logging.debug(f"\nGeometry translation for {RotorSurfLabels[i]}:")
+
         pyemmoSurface, anglePointRefList = translateGeometry(
             nameSplitList=RotorSurfLabelsSplit2[i],
             machine=machine,
@@ -62,74 +90,25 @@ def createGeoDict(
         )
         geometryList.append(pyemmoSurface)
 
-    # ----------------------------------------------------
-    # Filling the magnetization dict if surface is magnet:
-    # ----------------------------------------------------
-    # Changing the 'idExt' of the SurfaceAPI to 'Mag0', 'Mag1', 'Mag2', ...
-    # if the 'idExt' is 'Mag'
-    lplCounter = 0
-    for surfAPIRotor in geometryList:
-        if surfAPIRotor.idExt == "Lpl":
-            surfAPIRotor.setIdExt("Lpl" + str(lplCounter))
-            lplCounter += 1
-            
-    # Changing the 'idExt' of the SurfaceAPI to 'Mag0', 'Mag1', 'Mag2', ...
-    # if the 'idExt' is 'Mag'
-    magCounter = 0
-    for surfAPIRotor in geometryList:
-        if surfAPIRotor.idExt == "Mag":
-            surfAPIRotor.setIdExt("Mag" + str(magCounter))
-            magCounter += 1
+    magnetizationDict = getMagnetizationDict(
+        machine=machine,
+        anglePointRefList=anglePointRefList,
+        geometryList=geometryList,
+        magnetizationDict=magnetizationDict
+    )
 
-    if isinstance(machine, MachineSIPMSM):
-        anglePointRef = anglePointRefList[0]
-        magnetizationType = machine.rotor.magnet.type_magnetization
+    logging.debug("=============================")
+    logging.debug("End of Translation for Rotor.")
 
-        if magnetizationType in (0, 1):  # radial & parallel
-            magnetizationAngle = anglePointRef
-
-        elif magnetizationType == 3:  # tangential
-            magnetizationAngle = anglePointRef - 90 / pi
-
-        magnetizationDict["Mag0"] = magnetizationAngle
-
-    elif isinstance(machine, MachineIPMSM):
-        magAngleDict = machine.rotor.hole[0].comp_magnetization_dict()
-        if len(magAngleDict) == 1:
-            anglePointRef = anglePointRefList[0]
-            magnetizationType = machine.rotor.hole[
-                0
-            ].magnet_0.type_magnetization
-
-            if magnetizationType in (0, 1):  # radial & parallel
-                magnetizationAngle = anglePointRef
-
-            elif magnetizationType == 3:  # tangential
-                magnetizationAngle = anglePointRef - 90 / pi
-
-            magnetizationDict["Mag0"] = magnetizationAngle
-        else:
-            for surfAPIRotor in geometryList:
-                if surfAPIRotor.idExt == "Mag0":
-                    magnetizationAngle = (
-                        anglePointRefList[0] + magAngleDict["magnet_0"]
-                    )
-                    magnetizationDict[surfAPIRotor.idExt] = magnetizationAngle
-
-                elif surfAPIRotor.idExt == "Mag1":
-                    magnetizationAngle = (
-                        anglePointRefList[1] + magAngleDict["magnet_1"]
-                    )
-                    magnetizationDict[surfAPIRotor.idExt] = magnetizationAngle
-
-                elif surfAPIRotor.idExt == "Mag2":
-                    magnetizationAngle = (
-                        anglePointRefList[2] + magAngleDict["magnet_2"]
-                    )
-                    magnetizationDict[surfAPIRotor.idExt] = magnetizationAngle
-
-    print("=============================")
-    print("End of Translation for Rotor.")
+    # ============================================
+    # CutOuts in rotorLamination if IPMSM or SyRM:
+    # ============================================
+    if isinstance(machine, (MachineIPMSM, MachineSyRM)):
+        for surfToCutOut in geometryList:
+            if surfToCutOut.name != "Rotor-0_Lamination":
+                surfToCutOutSplit = surfToCutOut.name.split("-")
+                if surfToCutOutSplit[0] == "Rotor":
+                    geometryList[0].cutOut(surfToCutOut)
 
     # ========================================
     # Loop of translation for stator surfaces:
@@ -139,12 +118,13 @@ def createGeoDict(
         StatorSurfLabelsSplit1 = []
         StatorSurfLabels.append(surf.label)
         StatorSurfLabelsSplit1.extend(surf.label.split("_"))
-
         for split1 in StatorSurfLabelsSplit1:
             saveSpaceTemp.extend(split1.split("-"))
 
         StatorSurfLabelsSplit2.append(saveSpaceTemp)
-        print(f"\nTranslation for {StatorSurfLabels[i]}:")
+
+        logging.debug(f"\nTranslation for {StatorSurfLabels[i]}:")
+
         pyemmoSurface, anglePointRefList = translateGeometry(
             nameSplitList=StatorSurfLabelsSplit2[i],
             machine=machine,
@@ -154,38 +134,28 @@ def createGeoDict(
         )
         geometryList.append(pyemmoSurface)
 
-    # =====================================
-    # CutOuts in rotorLamination if IPMSM:
-    # =====================================
-    if isinstance(machine, MachineIPMSM):
-        for surfToCutOut in geometryList:
-            if surfToCutOut.name != "Rotor-0_Lamination":
-                surfToCutOutSplit = surfToCutOut.name.split("-")
-                if surfToCutOutSplit[0] == "Rotor":
-                    geometryList[0].cutOut(surfToCutOut)
-
-    print("===============================")
-    print("End of Translation for Stator. ")
-    print("===============================")
-    print("End of Translation for machine.")
-    print("===============================")
+    logging.debug("===============================")
+    logging.debug("End of Translation for Stator. ")
+    logging.debug("===============================")
+    logging.debug("End of Translation for machine.")
+    logging.debug("===============================")
 
     plot(geoList=geometryList, linewidth=1, markersize=3)
 
-    print("Plot of machine")
-    print("End of function")
-    print("===============")
+    logging.debug("Plot of machine")
+    logging.debug("End of function")
+    logging.debug("===============")
 
-    # -------------------------------------------
-    # Generation of the rotor and stator contour:
-    # -------------------------------------------
-    print("Generate rotor and stator contour:")
-    if isinstance(machine, MachineIPMSM):
+    # --------------------------------------
+    # Generate the rotor and stator contour:
+    # --------------------------------------
+    logging.debug("Generating rotor and stator contour")
+    if isinstance(machine, (MachineIPMSM, MachineSyRM)):
         (
             rotorContourLineList,
             lowestYPointRotor,
             biggestYPointRotor,
-        ) = getIPMSMContour(
+        ) = getIPMSMRotorContour(
             geometryList=geometryList,
             machine=machine,
             isInternalRotor=isInternalRotor,
@@ -200,7 +170,7 @@ def createGeoDict(
             rotorContourLineList,
             lowestYPointRotor,
             biggestYPointRotor,
-        ) = getSurfMagContour(
+        ) = getSPMSMRotorContour(
             geometryList=geometryList,
             machine=machine,
             isInternalRotor=isInternalRotor,
@@ -211,7 +181,7 @@ def createGeoDict(
             isInternalRotor=isInternalRotor,
         )
     else:
-        raise TypeError("Unable to translate machine type!")
+        raise TypeError("Unable to generate contours of this machine type!")
 
     # ------------------------------------------------------
     # Change names of rotorRint-Curve and statorRext-Curve:
