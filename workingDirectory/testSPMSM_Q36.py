@@ -159,7 +159,9 @@ winding = datamodel()
 winding.genwdg(Q=NBR_SLOTS, P=NBR_POLES, m=3, layers=2, turns=23)
 SLOT_TYPE = 0
 if SLOT_TYPE == 0:
-    stator = SPMSM.addStatorToMachine("sheet01_standard", "slotForm_01", winding)
+    stator = SPMSM.addStatorToMachine(
+        "sheet01_standard", "slotForm_01", winding
+    )
     stator.addLaminationParameter(
         {
             "r_S_i": 65e-3,
@@ -266,3 +268,23 @@ print("I am done!")
 
 
 # %%
+from pyemmo.functions.importResults import getResFileList, readTimeTableDat
+from SciDataTool import DataTime, Data1D
+resPath = 'C:/Users/ganser/AppData/Local/Programs/pyemmo/Results/Baukasten/Test_SPMSM/res_Test_SPMSM_Baukasten'
+
+resultsList: list[DataTime] = []
+try:
+    datFiles, posFiles = getResFileList(resPath)
+    for datFile in datFiles:
+        time, data = readTimeTableDat(os.path.join(resPath ,datFile))
+        _, datFileName = os.path.split(datFile)
+        resQuantity, _ = os.path.splitext(datFileName)
+        timeData = Data1D(
+            values=time, symmetries=-1, name="time", symbol="t", unit="s"
+        )
+        valData = DataTime(axes=[timeData], values=data, name=resQuantity)
+        resultsList.append(valData)
+except FileNotFoundError:
+    print("No results from GetDP...")
+except Exception as exce:
+    raise exce
