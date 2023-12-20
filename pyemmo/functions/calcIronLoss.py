@@ -12,7 +12,10 @@ from ..script.material import ElectricalSteel
 
 
 def main(
-    bFilePath: os.PathLike, lossFactor: dict, symFactor: int, axialLength: float = 1.0
+    bFilePath: os.PathLike,
+    lossFactor: dict,
+    symFactor: int,
+    axialLength: float = 1.0,
 ) -> Tuple[Dict[str, np.ndarray], List[float]]:
     ironLoss, time = calcTimeDomainIronLosses(
         bFilePath, lossFactor, symFactor, axialLength
@@ -47,98 +50,11 @@ def calcTimeDomainIronLosses(
 
     elementTags, time, bFieldData = importPos(bFilePath)
     nbrTimeSteps = len(time)
-    nbrElements = len(elementTags)
     if saveFields:
         # extract filename from path
         _, fileName = os.path.split(bFilePath)  # get filename with ext
         fileName, _ = os.path.splitext(fileName)  # get pure filename
-    # --------------------------- calc hysteresis loss ---------------------------
-    if np.all(
-        np.linalg.norm((bFieldData[0] - bFieldData[-1]), axis=(1))
-        < np.linalg.norm(bFieldData, axis=(2, 0)) * 1e-3
-    ):
-        # value of last time step is nearly equal to first time step
-        # -> skip last time step!
-        bFieldDataFFT = bFieldData[:-1, :, :]
-    else:
-        bFieldDataFFT = bFieldData
-    # calculate element wise fft of b-field:
-    bfft = np.fft.rfft(bFieldDataFFT, axis=0)
-    amp = np.abs(bfft)
-    # to get correct amplitude regarding the specific frequencies, the amplitudes
-    # must be corrected by 1/nbrFreqs and DC-part by 1/(2*nbrFreqs) because its value
-    # is doubled since its part of the positive and negative side of the spectrum.
-    # Since I defined the number of frequencies to be only for the one sided spectrum,
-    # we have to double the value for amp[0] and use only nbrFreqs for amp[1:]
-    tStep = time[1] - time[0]
-    freqs = np.fft.rfftfreq(np.shape(bFieldDataFFT)[0], tStep)
-    nbrFreqs = len(freqs)
-    amp = np.concatenate(([amp[0] / nbrFreqs / 2], amp[1:] / (nbrFreqs)), axis=0)
-    phase = np.angle(bfft)
-    for elem in range(nbrElements):
-        # FIXME: Assume that freq. of max. amplitude is the same for x and y comp.
-        #   -> norm                                         +1 because skipping DC
-        fMaxInd = np.linalg.norm(amp[1:, elem, :], axis=1).argmax() + 1
-        phi0 = phase[fMaxInd, :, :]
-
-    # fMaxIndex equals order of that spectral part
-    phi = np.linspace(
-        phi0 + np.pi / 2, fMaxInd * (2 * np.pi) + phi0 + np.pi / 2, nbrTimeSteps - 1
-    )
-    cosPhi = np.cos(phi)  # calc cos(phi)
-    bmax = np.max(bFieldData, axis=0)
-    bmin = np.min(bFieldData, axis=0)
-    Bm = (bmax - bmin) / 2  # magnitude is (max-min)/2
-    dBdt = np.diff(bFieldData, axis=0) / tStep # calc dBdt
-
-    ## MAXWELL IMPLEMENTIERUNG ##
-    uex = np.zeros((nbrTimeSteps, nbrElements, 2))
-    Hm = np.zeros((nbrTimeSteps, nbrElements, 2))
-    H = np.zeros((nbrTimeSteps, nbrElements, 2))
-    for it in range(1, nbrTimeSteps):
-        # for each timestep
-        for ie, elemNum in enumerate(elementTags):
-            # for each element
-            for comp in (0, 1):
-                # for x,y, and not z
-                B_new = bFieldData[it, ie, comp]
-                B_old = bFieldData[it-1, ie, comp]
-                if (B_new < B_old) and (B_old > uex[it-1, ie, comp]):
-                    uex[it, ie, comp] = B_old
-                elif (B_new > B_old) and (B_old < uex[it-1, ie, comp]):
-                    uex[it, ie, comp] = B_old
-                else:
-                    uex[it, ie, comp] = uex[it-1, ie, comp]
-                # calc Hm
-
-                Hm[it, ie, comp] = (
-                    lossFactor["hyst"] / np.pi * uex[it, ie, comp]
-                )
-                if uex[it, ie, comp] == 0:
-                    H[it, ie, comp] = np.sqrt(Hm[it, ie, comp] ** 2)
-                else:
-                    H[it, ie, comp] = np.sqrt(
-                        np.abs(
-                            Hm[it, ie, comp] ** 2
-                            - (
-                                Hm[it, ie, comp]
-                                * bFieldData[it, ie, comp]
-                                / uex[it, ie, comp]
-                            )**2
-                        )
-                    )
-    # sum of x and y; abs of value (x,y)
-    hystLossField = np.sum(np.abs(H[1:,:,:]*dBdt[:,:,0:1]),axis=2)
-    ## MAXWELL IMPLEMENTIERUNG ##
-
-    Hm = lossFactor["hyst"] / np.pi * Bm  # magnitude of H according to paper
-    # Hirr = Hm * cosPhi
-    # Hdiff = np.nan_to_num(lossFactor["hyst"] / np.pi * Bm * dBdt / np.max(dBdt, axis=0))
-
-    # Hdiff = [Hdiff, Hdiff[-1]]
-    # hystLossField = np.sum(Hirr * dBdt, axis=2)
-    # hystLossField = np.sum(Hdiff * dBdt, axis=2)
-
+    hystLossField = calcHystLossUCP(time, bFieldData, lossFactor["hyst"])
     if saveFields:
         # save the View to a pos file
         model = gmsh.model.getCurrent()  # or just get current model...
@@ -168,15 +84,17 @@ def calcTimeDomainIronLosses(
     # ------------------------- Calculate eddy current losses ---------------------------
     eddyLossFactor = lossFactor["eddy"]  # loss parameter
     # loss function for eddy current loss from paper:
-    eddyLossField = np.sum(eddyLossFactor / 2 / (np.pi**2) * (dBdt**2), axis=2)
+    tStep = time[1] - time[0]
+    dBdt = np.diff(bFieldData, axis=0) / tStep  # calc dBdt
+    eddyLossField = np.sum(
+        eddyLossFactor / 2 / (np.pi**2) * (dBdt**2), axis=2
+    )
     # meanEddyLossField = np.mean(eddyLossField, axis=0)
     # eddyLoss = integrateField(np.array([meanEddyLossField]), [time[0]], elementTags)
     if saveFields:
         # save the View to a pos file
         model = gmsh.model.getCurrent()  # or just get current model...
-        actView = gmsh.view.add(
-            f"Eddy current Loss [W/m³] ({fileName})"
-        )
+        actView = gmsh.view.add(f"Eddy current Loss [W/m³] ({fileName})")
         for step in range(len(time) - 1):
             gmsh.view.addHomogeneousModelData(
                 tag=actView,
@@ -204,14 +122,13 @@ def calcTimeDomainIronLosses(
     if lossFactor["exc"] > 0:
         constExcFactor = 8.763363  # constant factor (from paper)
         excLossField = np.sum(
-            lossFactor["exc"] / constExcFactor * np.power(dBdt**2, 0.75), axis=2
+            lossFactor["exc"] / constExcFactor * np.power(dBdt**2, 0.75),
+            axis=2,
         )
         if saveFields:
             # save the View to a pos file
             model = gmsh.model.getCurrent()  # or just get current model...
-            actView = gmsh.view.add(
-                f"Excess Loss [W/m³] ({fileName})"
-            )
+            actView = gmsh.view.add(f"Excess Loss [W/m³] ({fileName})")
             for step in range(len(time) - 1):
                 gmsh.view.addHomogeneousModelData(
                     tag=actView,
@@ -245,9 +162,7 @@ def calcTimeDomainIronLosses(
     if saveFields:
         # save the View to a pos file
         model = gmsh.model.getCurrent()
-        actView = gmsh.view.add(
-            f"Total Loss [W/m³] ({fileName})"
-        )
+        actView = gmsh.view.add(f"Total Loss [W/m³] ({fileName})")
         totalLossField = hystLossField + eddyLossField + excLossField
         for step in range(len(time) - 1):
             gmsh.view.addHomogeneousModelData(
@@ -272,7 +187,10 @@ def calcTimeDomainIronLosses(
 
 
 def calcFreqDomainIronLosses(
-    bFilePath: os.PathLike, lossFactor: dict, symFactor: int, axialLength: float = 1.0
+    bFilePath: os.PathLike,
+    lossFactor: dict,
+    symFactor: int,
+    axialLength: float = 1.0,
 ) -> Tuple[Dict[str, np.ndarray], List[float]]:
     ironLoss = {}  # dict for loss results
     finGmsh = False  # determine if gmsh should be closed at the end
@@ -303,12 +221,16 @@ def calcFreqDomainIronLosses(
     # we have to double the value for amp[0] and use only nbrFreqs for amp[1:]
     freqs = np.fft.rfftfreq(nbrTimeSteps, tStep)
     nbrFreqs = len(freqs)
-    amp = np.concatenate(([amp[0] / nbrFreqs / 2], amp[1:] / (nbrFreqs)), axis=0)
+    amp = np.concatenate(
+        ([amp[0] / nbrFreqs / 2], amp[1:] / (nbrFreqs)), axis=0
+    )
     # norm of xyz comp. -> hystLossField has shape (nbrElements, nbrFreqs)
     hystLossField = np.linalg.norm(
         hystLossFactor * freqs * (amp.transpose() ** 2), axis=0
     )
-    hystLoss = integrateField(hystLossField.transpose(), freqs, elementTags)[1:]
+    hystLoss = integrateField(hystLossField.transpose(), freqs, elementTags)[
+        1:
+    ]
     # skip first value, because its 0
     ironLoss["hyst"] = hystLoss * symFactor * axialLength  # correct values
 
@@ -318,8 +240,12 @@ def calcFreqDomainIronLosses(
     eddyLossField = np.linalg.norm(
         eddyLossFactor * (freqs**2) * (amp.transpose() ** 2), axis=0
     )
-    eddyLoss = integrateField(eddyLossField.transpose(), freqs, elementTags)[1:]
-    assert eddyLoss.size == nbrFreqs, f"Integration should result in {nbrFreqs} values!"
+    eddyLoss = integrateField(eddyLossField.transpose(), freqs, elementTags)[
+        1:
+    ]
+    assert (
+        eddyLoss.size == nbrFreqs
+    ), f"Integration should result in {nbrFreqs} values!"
     # skip first value, because its 0
     eddyLoss = eddyLoss * symFactor * axialLength  # correct values
     ironLoss["eddy"] = eddyLoss
@@ -331,7 +257,9 @@ def calcFreqDomainIronLosses(
         excLossField = np.linalg.norm(
             excLossFactor * (freqs**1.5) * (amp.transpose() ** 1.5)
         )
-        excLoss = integrateField(excLossField.transpose(), freqs, elementTags)[1:]
+        excLoss = integrateField(excLossField.transpose(), freqs, elementTags)[
+            1:
+        ]
         assert (
             excLoss.size == nbrFreqs
         ), f"Integration should result in {nbrFreqs} values!"
@@ -345,6 +273,125 @@ def calcFreqDomainIronLosses(
         gmsh.finalize()
 
     return ironLoss, freqs
+
+
+def calcHystLossUCP(
+    time: list[float], bFieldData: np.ndarray, hystLossFactor: float
+) -> np.ndarray:
+    """Calculate the hysteresis loss field according to ANSYS Maxwell User-
+    Controll-Program"""
+    nbrElements = bFieldData.shape[1]
+    nbrTimeSteps = len(time)
+    tStep = time[1] - time[0]
+    dBdt = np.diff(bFieldData, axis=0) / tStep  # calc dBdt
+    uex = np.zeros((nbrTimeSteps, nbrElements, 2))
+    Hm = np.zeros((nbrTimeSteps, nbrElements, 2))
+    H = np.zeros((nbrTimeSteps, nbrElements, 2))
+    for it in range(1, nbrTimeSteps):
+        # for each timestep
+        for ie in range(nbrElements):
+            # for each element
+            for comp in (0, 1):
+                # for x,y, and not z
+                B_new = bFieldData[it, ie, comp]
+                B_old = bFieldData[it - 1, ie, comp]
+                if (B_new < B_old) and (B_old > uex[it - 1, ie, comp]):
+                    uex[it, ie, comp] = B_old
+                elif (B_new > B_old) and (B_old < uex[it - 1, ie, comp]):
+                    uex[it, ie, comp] = B_old
+                else:
+                    uex[it, ie, comp] = uex[it - 1, ie, comp]
+                # calc Hm
+                Hm[it, ie, comp] = hystLossFactor / np.pi * uex[it, ie, comp]
+                if uex[it, ie, comp] == 0:
+                    H[it, ie, comp] = np.sqrt(Hm[it, ie, comp] ** 2)
+                else:
+                    H[it, ie, comp] = np.sqrt(
+                        np.abs(
+                            Hm[it, ie, comp] ** 2
+                            - (
+                                Hm[it, ie, comp]
+                                * bFieldData[it, ie, comp]
+                                / uex[it, ie, comp]
+                            )
+                            ** 2
+                        )
+                    )
+    # sum of x and y; abs of value (x,y)
+    hystLossField = np.sum(np.abs(H[1:, :, :] * dBdt[:, :, 0:1]), axis=2)
+    return hystLossField
+
+
+def calcHystLossSin(
+    time: list[float], bFieldData: np.ndarray, hystLossFactor: float
+) -> np.ndarray:
+    """Calculate the hysteresis loss field by using the cosine of the
+    fundamental B field wave"""
+    nbrElements = bFieldData.shape[1]
+    nbrTimeSteps = len(time)
+    if np.all(
+        np.linalg.norm((bFieldData[0] - bFieldData[-1]), axis=1)
+        < np.linalg.norm(bFieldData, axis=(2, 0)) * 1e-3
+    ):
+        # value of last time step is nearly equal to first time step
+        # -> skip last time step!
+        bFieldDataFFT = bFieldData[:-1, :, :]
+    else:
+        bFieldDataFFT = bFieldData
+    # calculate element wise fft of b-field:
+    bfft = np.fft.rfft(bFieldDataFFT, axis=0)
+    amp = np.abs(bfft)
+    # to get correct amplitude regarding the specific frequencies, the amplitudes
+    # must be corrected by 1/nbrFreqs and DC-part by 1/(2*nbrFreqs) because its value
+    # is doubled since its part of the positive and negative side of the spectrum.
+    # Since I defined the number of frequencies to be only for the one sided spectrum,
+    # we have to double the value for amp[0] and use only nbrFreqs for amp[1:]
+    tStep = time[1] - time[0]
+    freqs = np.fft.rfftfreq(np.shape(bFieldDataFFT)[0], tStep)
+    nbrFreqs = len(freqs)
+    amp = np.concatenate(
+        ([amp[0] / nbrFreqs / 2], amp[1:] / (nbrFreqs)), axis=0
+    )
+    phase = np.angle(bfft)
+    for elem in range(nbrElements):
+        # FIXME: Assume that freq. of max. amplitude is the same for x and y comp.
+        #   -> norm                                         +1 because skipping DC
+        fMaxInd = np.linalg.norm(amp[1:, elem, :], axis=1).argmax() + 1
+        phi0 = phase[fMaxInd, :, :]
+
+    # fMaxIndex equals order of that spectral part
+    phi = np.linspace(
+        phi0 + np.pi / 2,
+        fMaxInd * (2 * np.pi) + phi0 + np.pi / 2,
+        nbrTimeSteps - 1,
+    )
+    cosPhi = np.cos(phi)  # calc cos(phi)
+    bmax = np.max(bFieldData, axis=0)
+    bmin = np.min(bFieldData, axis=0)
+    Bm = (bmax - bmin) / 2  # magnitude is (max-min)/2
+    dBdt = np.diff(bFieldData, axis=0) / tStep  # calc dBdt
+    Hm = hystLossFactor / np.pi * Bm  # magnitude of H according to paper
+    Hirr = Hm * cosPhi
+    hystLossField = np.sum(Hirr * dBdt, axis=2)
+    return hystLossField
+
+
+def calcHystLossdBdt(
+    time: list[float], bFieldData: np.ndarray, hystLossFactor: float
+) -> np.ndarray:
+    """Calculate the hysteresis loss field by defining Hirr as the same trace
+    as dBdt but with scaled amplitude"""
+    tStep = time[1] - time[0]
+    bmax = np.max(bFieldData, axis=0)
+    bmin = np.min(bFieldData, axis=0)
+    Bm = (bmax - bmin) / 2  # magnitude is (max-min)/2
+    dBdt = np.diff(bFieldData, axis=0) / tStep  # calc dBdt
+    Hdiff = np.nan_to_num(
+        hystLossFactor / np.pi * Bm * dBdt / np.max(dBdt, axis=0)
+    )
+    Hdiff = [Hdiff, Hdiff[-1]]
+    hystLossField = np.sum(Hdiff * dBdt, axis=2)
+    return hystLossField
 
 
 def integrateField(
@@ -392,7 +439,9 @@ def integrateField(
     return integratedData[0][3:]
 
 
-def writeSimple(fName, time: List[float], data: Union[np.ndarray, List]) -> None:
+def writeSimple(
+    fName, time: List[float], data: Union[np.ndarray, List]
+) -> None:
     """_summary_
 
     Args:
@@ -406,7 +455,9 @@ def writeSimple(fName, time: List[float], data: Union[np.ndarray, List]) -> None
     elif isinstance(data, list):
         assert len(data) == nbrTimeSteps
     else:
-        raise TypeError(f"Data type was not numpy.ndarray or list, but {type(data)}.")
+        raise TypeError(
+            f"Data type was not numpy.ndarray or list, but {type(data)}."
+        )
     with open(fName, "w", encoding="utf-8") as resFile:
         for varStep in range(nbrTimeSteps):
             resFile.write(f"{time[varStep]} {data[varStep]}\n")
