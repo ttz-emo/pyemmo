@@ -1056,6 +1056,7 @@ class Script(object):
 
         # create stator domains
         # move domainC to domainCC
+        # TODO: Decide which domains should be calculatd with eddy currents
         statorPhysicalsDict["domainCC"].extend(statorPhysicalsDict["domainC"])
         statorPhysicalsDict["domainC"].clear()
 
@@ -1891,7 +1892,9 @@ class Script(object):
                     # geo-elements are lines
                     for mbLine in physicalMovingband.geometricalElement:
                         # mbLine.setMeshLength()
-                        mbLineIDs += f"{mbLine.id},"  # add the line id
+                            # BUG, FIXME: Only add movingband line if the
+                            # arc has realy been added to the script!
+                            mbLineIDs += f"{mbLine.id},"  # add the line id
             # get approx. the min mesh length of the rotor movingband
             # (only checking first line of first movingband physical)
             mbMeshSize = (
