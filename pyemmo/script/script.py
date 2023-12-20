@@ -1892,6 +1892,7 @@ class Script(object):
                     # geo-elements are lines
                     for mbLine in physicalMovingband.geometricalElement:
                         # mbLine.setMeshLength()
+                        #FIXME BUG: Make sure that mb-lines are really in geo script!
                         mbLineIDs += f"{mbLine.id},"  # add the line id
             # get approx. the min mesh length of the rotor movingband
             # (only checking first line of first movingband physical)
