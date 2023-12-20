@@ -50,8 +50,8 @@ def calcTimeDomainIronLosses(
     nbrElements = len(elementTags)
     if saveFields:
         # extract filename from path
-        _,fileName = os.path.split(bFilePath) # get filename with ext
-        fileName, _=os.path.splitext(fileName) # get pure filename 
+        _, fileName = os.path.split(bFilePath)  # get filename with ext
+        fileName, _ = os.path.splitext(fileName)  # get pure filename
     # --------------------------- calc hysteresis loss ---------------------------
     if np.all(
         np.linalg.norm((bFieldData[0] - bFieldData[-1]), axis=(1))
@@ -89,16 +89,62 @@ def calcTimeDomainIronLosses(
     bmax = np.max(bFieldData, axis=0)
     bmin = np.min(bFieldData, axis=0)
     Bm = (bmax - bmin) / 2  # magnitude is (max-min)/2
+    dBdt = np.diff(bFieldData, axis=0) / tStep # calc dBdt
+
+    ## MAXWELL IMPLEMENTIERUNG ##
+    uex = np.zeros((nbrTimeSteps, nbrElements, 2))
+    Hm = np.zeros((nbrTimeSteps, nbrElements, 2))
+    H = np.zeros((nbrTimeSteps, nbrElements, 2))
+    for it in range(1, nbrTimeSteps):
+        # for each timestep
+        for ie, elemNum in enumerate(elementTags):
+            # for each element
+            for comp in (0, 1):
+                # for x,y, and not z
+                B_new = bFieldData[it, ie, comp]
+                B_old = bFieldData[it-1, ie, comp]
+                if (B_new < B_old) and (B_old > uex[it-1, ie, comp]):
+                    uex[it, ie, comp] = B_old
+                elif (B_new > B_old) and (B_old < uex[it-1, ie, comp]):
+                    uex[it, ie, comp] = B_old
+                else:
+                    uex[it, ie, comp] = uex[it-1, ie, comp]
+                # calc Hm
+
+                Hm[it, ie, comp] = (
+                    lossFactor["hyst"] / np.pi * uex[it, ie, comp]
+                )
+                if uex[it, ie, comp] == 0:
+                    H[it, ie, comp] = np.sqrt(Hm[it, ie, comp] ** 2)
+                else:
+                    H[it, ie, comp] = np.sqrt(
+                        np.abs(
+                            Hm[it, ie, comp] ** 2
+                            - (
+                                Hm[it, ie, comp]
+                                * bFieldData[it, ie, comp]
+                                / uex[it, ie, comp]
+                            )**2
+                        )
+                    )
+    # sum of x and y; abs of value (x,y)
+    hystLossField = np.sum(np.abs(H[1:,:,:]*dBdt[:,:,0:1]),axis=2)
+    ## MAXWELL IMPLEMENTIERUNG ##
 
     Hm = lossFactor["hyst"] / np.pi * Bm  # magnitude of H according to paper
-    Hirr = Hm * cosPhi
-    dBdt = np.diff(bFieldData, axis=0) / tStep
-    hystLossField = np.sum(Hirr * dBdt, axis=2)
+    # Hirr = Hm * cosPhi
+    # Hdiff = np.nan_to_num(lossFactor["hyst"] / np.pi * Bm * dBdt / np.max(dBdt, axis=0))
+
+    # Hdiff = [Hdiff, Hdiff[-1]]
+    # hystLossField = np.sum(Hirr * dBdt, axis=2)
+    # hystLossField = np.sum(Hdiff * dBdt, axis=2)
 
     if saveFields:
         # save the View to a pos file
         model = gmsh.model.getCurrent()  # or just get current model...
-        actView = gmsh.view.add(f"Hystersis Loss [W/m³] ({fileName})")  # get tag of new view
+        actView = gmsh.view.add(
+            f"Hystersis Loss [W/m³] ({fileName})"
+        )  # get tag of new view
         for step in range(len(time) - 1):
             gmsh.view.addHomogeneousModelData(
                 tag=actView,
@@ -128,7 +174,9 @@ def calcTimeDomainIronLosses(
     if saveFields:
         # save the View to a pos file
         model = gmsh.model.getCurrent()  # or just get current model...
-        actView = gmsh.view.add(f"Eddy current Loss [W/m³] ({fileName})")  # get tag of new view
+        actView = gmsh.view.add(
+            f"Eddy current Loss [W/m³] ({fileName})"
+        )
         for step in range(len(time) - 1):
             gmsh.view.addHomogeneousModelData(
                 tag=actView,
@@ -161,7 +209,9 @@ def calcTimeDomainIronLosses(
         if saveFields:
             # save the View to a pos file
             model = gmsh.model.getCurrent()  # or just get current model...
-            actView = gmsh.view.add(f"Excess Loss [W/m³] ({fileName})")  #    get tag of new view
+            actView = gmsh.view.add(
+                f"Excess Loss [W/m³] ({fileName})"
+            )
             for step in range(len(time) - 1):
                 gmsh.view.addHomogeneousModelData(
                     tag=actView,
@@ -190,12 +240,14 @@ def calcTimeDomainIronLosses(
         # set iron loss to 0
         ironLoss["exc"] = np.zeros(eddyLoss.shape)
         excLossField = np.zeros(eddyLossField.shape)
-    
+
     # Export total loss field
     if saveFields:
         # save the View to a pos file
         model = gmsh.model.getCurrent()
-        actView = gmsh.view.add(f"Total Loss [W/m³] ({fileName})")  # get tag of new view
+        actView = gmsh.view.add(
+            f"Total Loss [W/m³] ({fileName})"
+        )
         totalLossField = hystLossField + eddyLossField + excLossField
         for step in range(len(time) - 1):
             gmsh.view.addHomogeneousModelData(
