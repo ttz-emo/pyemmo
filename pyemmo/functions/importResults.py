@@ -36,9 +36,8 @@ def readTimeTableDat(filePath: str) -> Tuple[np.ndarray, np.ndarray]:
         valueList: List[str] = lines[0].strip().split(" ")
         # always use two values as pair
         nbrValues = len(valueList)
-        assert (
-            nbrValues % 2 == 0
-        )  # number of pairs must be int and dividable by 2
+        # number of pairs must be int and dividable by 2
+        assert nbrValues % 2 == 0
         nbrPairs = int(nbrValues / 2)
         time = np.zeros((nbrPairs,))
         values = np.zeros((nbrPairs,))
@@ -75,9 +74,8 @@ def splitData(
         List[List[float]]: 2D time array.
         List[List[float]]: 2D data array.
     """
-    assert len(time) == len(
-        data
-    )  # assert that the input vectors have the same size
+    # assert that the input vectors have the same size
+    assert len(time) == len(data)
     nbrSims = 0  # number of simulations
     # init lists and arrays:
     timeVec = []
@@ -237,9 +235,8 @@ def importSP(
     for line in dataLines:
         parsedValues = parse("SP({:g},{:g},{:g}){{{}}};\n", line)
         if parsedValues:
-            pos.append(
-                parsedValues[0:3]
-            )  # first 3 elements are the coordinate values
+            # first 3 elements are the coordinate values
+            pos.append(parsedValues[0:3])
             valueList = []  # empty list for values of one point
             for value in parsedValues[3].split(","):
                 valueList.append(float(value))
