@@ -1,5 +1,6 @@
-from pyemmo.script.material.material import Material
+"""imports"""
 from pyleecan.Classes.Material import Material as pyleecanMat
+from pyemmo.script.material.material import Material
 
 
 def buildPyemmoMaterial(pyleecanMaterial: pyleecanMat) -> Material:
