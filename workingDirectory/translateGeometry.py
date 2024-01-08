@@ -22,7 +22,7 @@ def translateGeometry(
     surface: pyleecan.Classes.Surface.Surface,
     anglePointRefList: list,
 ) -> tuple[SurfaceAPI, list]:
-    isMag = False
+    
     if nameSplitList[0] == "Rotor":
         if nameSplitList[2] == "Lamination":
             pyleecanMat = machine.rotor.mat_type
@@ -34,14 +34,14 @@ def translateGeometry(
             idExt = "Mag"
             name = "Magnet"
             anglePointRefList.append(angle(surface.point_ref))
-            isMag = True
+            
 
         elif nameSplitList[2] == "Hole":
             pyleecanMat = machine.rotor.hole.mat_type
             idExt = "Mag"
             name = "Magnet"
             anglePointRefList.append(angle(surface.point_ref))
-            isMag = True
+            
 
         elif nameSplitList[2] == "HoleMag":
             pyleecanMat = machine.rotor.hole[0].magnet_0.mat_type
@@ -49,8 +49,6 @@ def translateGeometry(
             idExt = "Mag"  # "Magnet"
             name = "Magnet"
             anglePointRefList.append(angle(surface.point_ref))
-            isMag = True
-            # magCounter += 1
 
         elif nameSplitList[2] == "HoleVoid":
             pyleecanMat = machine.rotor.hole[0].mat_void
