@@ -8,7 +8,7 @@ from pyemmo.api.SurfaceJSON import SurfaceAPI
 from pyemmo.functions.plot import plot
 
 
-def calcIPMSMRotorContour(
+def calcEvenRotorContour(
     rotorLamSurfList: list[SurfaceAPI],
     radius: float,
 ) -> tuple[list[Union[Line, CircleArc]], Point, Point]:

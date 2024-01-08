@@ -8,7 +8,7 @@ from pyemmo.script.geometry.line import Line
 from pyemmo.script.geometry.point import Point
 from .getRotorStatorSurfaces import getRotorSurfaces
 from .calcsSPMSMContour import calcSPMSMRotorContour
-from .calcIPMSMContour import calcIPMSMRotorContour
+from .calcIPMSMContour import calcEvenRotorContour
 from .calcWindContour import calcWindContour
 
 
@@ -61,7 +61,7 @@ def getSPMSMRotorContour(
     return rotorContourLineList, rPointRotorCont, lPointRotorCont
 
 
-def getIPMSMRotorContour(
+def getEvenRotorContour(
     geometryList: list, machine: Machine, isInternalRotor: bool = True
 ) -> tuple[list[Union[Line, CircleArc]], Point, Point]:
     """Get a list of curves of the contour of the rotor with a interior magnets. ``rotorContourLineList``
@@ -89,7 +89,7 @@ def getIPMSMRotorContour(
             rotorContourLineList,
             rPointRotorCont,
             lPointRotorCont,
-        ) = calcIPMSMRotorContour(
+        ) = calcEvenRotorContour(
             rotorLamSurfList=rotorLamSurfList,
             radius=rotorRint,
         )
@@ -98,7 +98,7 @@ def getIPMSMRotorContour(
             rotorContourLineList,
             rPointRotorCont,
             lPointRotorCont,
-        ) = calcIPMSMRotorContour(
+        ) = calcEvenRotorContour(
             rotorLamSurfList=rotorLamSurfList,
             radius=rotorRext,
         )

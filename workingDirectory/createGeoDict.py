@@ -16,7 +16,7 @@ from .translateGeometry import translateGeometry
 from .getRotorStatorContour import (
     getSPMSMRotorContour,
     getWindingContour,
-    getIPMSMRotorContour,
+    getEvenRotorContour,
 )
 from .detectInnerOuterLimit import detectInnerOuterLimit
 from .getMagnetizationDict import getMagnetizationDict
@@ -123,7 +123,7 @@ def createGeoDict(
             rotorContourLineList,
             lowestYPointRotor,
             biggestYPointRotor,
-        ) = getIPMSMRotorContour(
+        ) = getEvenRotorContour(
             geometryList=geometryList,
             machine=machine,
             isInternalRotor=isInternalRotor,
