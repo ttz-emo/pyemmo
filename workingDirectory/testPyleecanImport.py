@@ -3,6 +3,16 @@ import os
 import sys
 import numpy as np
 
+from pyleecan.Functions.load import load
+from pyleecan.Classes.Simulation import Simulation
+from pyleecan.Classes.Simu1 import Simu1
+from pyleecan.Classes.InputCurrent import InputCurrent
+from pyleecan.Classes.OPdq import OPdq
+from pyleecan.Classes.Machine import Machine
+from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
+from pyleecan.Classes.MachineIPMSM import MachineIPMSM
+from pyleecan.Classes.MachineSyRM import MachineSyRM
+
 try:
     from pyemmo.script.script import Script
 except:
@@ -10,18 +20,6 @@ except:
     print(f"Could not determine root. Setting it manually to '{rootname}'")
     print(f'rootname is "{rootname}"')
     sys.path.append(rootname)
-
-from pyleecan.Functions.load import load
-from pyleecan.Classes.Simulation import Simulation
-from pyleecan.Classes.Simu1 import Simu1
-from pyleecan.Classes.InputCurrent import InputCurrent
-from pyleecan.Classes.OPdq import OPdq
-
-from pyleecan.Classes.Machine import Machine
-from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
-from pyleecan.Classes.MachineIPMSM import MachineIPMSM
-from pyleecan.Classes.MachineSyRM import MachineSyRM
-
 from pyemmo.functions.plot import plot
 from pyemmo.api.json import main
 from pyemmo.definitions import ROOT_DIR
@@ -118,7 +116,6 @@ for surf in geometryList:
 print("Plot ENDE:")
 plot(geometryLineListFinish, linewidth=1, markersize=3, tag=True)
 print("---")
-
 
 paramDict = createParamDict(
     machine, simulation, movingband_r, magnetizationDict
