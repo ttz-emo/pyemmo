@@ -316,18 +316,16 @@ def buildMovingBand(
         if isInternalRotor:
             magnetFarthestRadius = rotorRext + H1 - H0
             magnetShortestRadius = rotorRext - H0
-        else:
-            magnetFarthestRadius = rotorRint + H0
-            magnetShortestRadius = rotorRint + H0 - H1
-
-        if isInternalRotor:
             if rotorRext > magnetFarthestRadius:
                 diffRadius = statorRint - rotorRext
                 maxRadius = rotorRext
             else:
                 diffRadius = statorRint - magnetFarthestRadius
                 maxRadius = magnetFarthestRadius
+                
         else:
+            magnetFarthestRadius = rotorRint + H0
+            magnetShortestRadius = rotorRint + H0 - H1
             statorRext = machine.stator.Rext
             rotorRint = machine.rotor.Rint
             if rotorRint < magnetShortestRadius:
@@ -336,6 +334,7 @@ def buildMovingBand(
             else:
                 diffRadius = statorRext - magnetShortestRadius
                 maxRadius = magnetShortestRadius
+            
 
     elif isinstance(machine, (MachineIPMSM, MachineSyRM)):
         if isInternalRotor:
