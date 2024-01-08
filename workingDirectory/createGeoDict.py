@@ -95,11 +95,8 @@ def createGeoDict(
         machine=machine,
         anglePointRefList=anglePointRefList,
         geometryList=geometryList,
-        magnetizationDict=magnetizationDict
+        magnetizationDict=magnetizationDict,
     )
-
-    logging.debug("=============================")
-    logging.debug("End of Translation for Rotor.")
 
     # ============================================
     # CutOuts in rotorLamination if IPMSM or SyRM:
@@ -110,6 +107,9 @@ def createGeoDict(
                 surfToCutOutSplit = surfToCutOut.name.split("-")
                 if surfToCutOutSplit[0] == "Rotor":
                     geometryList[0].cutOut(surfToCutOut)
+
+    logging.debug("=============================")
+    logging.debug("End of Translation for Rotor.")
 
     # ========================================
     # Loop of translation for stator surfaces:
