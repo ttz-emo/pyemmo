@@ -50,15 +50,12 @@ def createGeoDict(
     # TODO: Funktion heißt createGeoDict aber gibt Liste zurück...
     rotorSym = machine.rotor.comp_periodicity_geo()[0]
     statorSym = machine.stator.slot.Zs
-    rotorSurf = machine.rotor.build_geometry(sym=rotorSym, alpha=0)
-    statorSurf = machine.stator.build_geometry(sym=statorSym, alpha=0)
-
-    rotorSurfLabels = []
-    statorSurfLabels = []
-    rotorSurfLabelsSplit1 = []
-    statorSurfLabelsSplit1 = []
-    rotorSurfLabelsSplit2 = []
-    statorSurfLabelsSplit2 = []
+    allSurfaces = []
+    allSurfaces.extend(machine.rotor.build_geometry(sym=rotorSym, alpha=0))
+    allSurfaces.extend(machine.stator.build_geometry(sym=statorSym, alpha=0))
+    
+    allSurfacesLabels = []
+    allSurfacesLabelsSplit2 = []
 
     geometryList: List[SurfaceAPI] = []
     magnetizationDict = {}
@@ -67,29 +64,27 @@ def createGeoDict(
     rotorRint = machine.rotor.Rint
     statorRext = machine.stator.Rext
 
-    # =======================================
-    # Loop of translation for rotor surfaces:
-    # =======================================
-    for i, surf in enumerate(rotorSurf):
+    for i, surf in enumerate(allSurfaces):
         saveSpaceTemp = []
-        rotorSurfLabelsSplit1 = []
-        rotorSurfLabels.append(surf.label)
-        rotorSurfLabelsSplit1.extend(surf.label.split("_"))
+        allSurfacesLabelsSplit1 = []
+        allSurfacesLabels.append(surf.label)
+        allSurfacesLabelsSplit1.extend(surf.label.split("_"))
 
-        for split1 in rotorSurfLabelsSplit1:
+        for split1 in allSurfacesLabelsSplit1:
             saveSpaceTemp.extend(split1.split("-"))
-        rotorSurfLabelsSplit2.append(saveSpaceTemp)
+        allSurfacesLabelsSplit2.append(saveSpaceTemp)
 
-        logging.debug("Geometry translation for %s:", rotorSurfLabels[i])
+        logging.debug("Geometry translation for %s:", allSurfacesLabels[i])
 
         pyemmoSurface, anglePointRefList = translateGeometry(
-            nameSplitList=rotorSurfLabelsSplit2[i],
+            nameSplitList=allSurfacesLabelsSplit2[i],
             machine=machine,
-            label=rotorSurfLabels[i],
+            label=allSurfacesLabels[i],
             surface=surf,
             anglePointRefList=anglePointRefList,
         )
         geometryList.append(pyemmoSurface)
+    
 
     magnetizationDict = getMagnetizationDict(
         machine=machine,
@@ -98,9 +93,9 @@ def createGeoDict(
         magnetizationDict=magnetizationDict,
     )
 
-    # ============================================
-    # CutOuts in rotorLamination if IPMSM or SyRM:
-    # ============================================
+    # =============================================
+    # CutOuts in rotorLamination if IPMSM or SynRM:
+    # =============================================
     if isinstance(machine, (MachineIPMSM, MachineSyRM)):
         for surfToCutOut in geometryList:
             if surfToCutOut.name != "Rotor-0_Lamination":
@@ -108,44 +103,16 @@ def createGeoDict(
                 if surfToCutOutSplit[0] == "Rotor":
                     geometryList[0].cutOut(surfToCutOut)
 
-    logging.debug("=============================")
-    logging.debug("End of Translation for Rotor.")
-
-    # ========================================
-    # Loop of translation for stator surfaces:
-    # ========================================
-    for i, surf in enumerate(statorSurf):
-        saveSpaceTemp = []
-        statorSurfLabelsSplit1 = []
-        statorSurfLabels.append(surf.label)
-        statorSurfLabelsSplit1.extend(surf.label.split("_"))
-        for split1 in statorSurfLabelsSplit1:
-            saveSpaceTemp.extend(split1.split("-"))
-
-        statorSurfLabelsSplit2.append(saveSpaceTemp)
-
-        logging.debug("Translation for %s", statorSurfLabels[i])
-
-        pyemmoSurface, anglePointRefList = translateGeometry(
-            nameSplitList=statorSurfLabelsSplit2[i],
-            machine=machine,
-            label=statorSurfLabels[i],
-            surface=surf,
-            anglePointRefList=anglePointRefList,
-        )
-        geometryList.append(pyemmoSurface)
-
-    logging.debug("===============================")
-    logging.debug("End of Translation for Stator. ")
-    logging.debug("===============================")
-    logging.debug("End of Translation for machine.")
-    logging.debug("===============================")
+    logging.debug("==============================")
+    logging.debug("End of Translation of machine.")
+    logging.debug("==============================")
 
     plot(geoList=geometryList, linewidth=1, markersize=3)
 
     logging.debug("Plot of machine")
-    logging.debug("End of function")
     logging.debug("===============")
+    logging.debug("End of geometry translation")
+    logging.debug("===========================")
 
     # --------------------------------------
     # Generate the rotor and stator contour:
