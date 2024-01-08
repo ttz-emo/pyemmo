@@ -78,7 +78,7 @@ for i, file in enumerate(os.listdir(machineFolder)):
         print(f"{machineList.index(file)}: " + file)
 fileName = machineList[34]  # SELECT MACHINE HERE BY INDEX OR NAME
 print("\nUsing machine: " + fileName)
-machine = load(os.path.abspath(os.path.join(machineFolder, fileName)))
+machine: Machine = load(os.path.abspath(os.path.join(machineFolder, fileName)))
 simulation = generateSimulation(machine, Id=0, Iq=10, speed=1000)
 
 # %%
@@ -91,7 +91,7 @@ statorRext = machine.stator.Rext
 # --------------------------
 # isInternalRotor detection:
 # --------------------------
-isInternalRotor = bool(statorRint > rotorRext)
+isInternalRotor = machine.rotor.is_internal
 
 if isinstance(machine, (MachineSIPMSM, MachineIPMSM, MachineSyRM)):
     allBands, geometryList, movingband_r, magnetizationDict = buildMovingBand(
@@ -123,6 +123,7 @@ print("---")
 paramDict = createParamDict(
     machine, simulation, movingband_r, magnetizationDict
 )
+
 main(
     geo=geoTranslationDict,
     extInfo=paramDict,
