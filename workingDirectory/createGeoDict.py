@@ -48,12 +48,13 @@ def createGeoDict(
         tuple[ list[SurfaceAPI], list[Union[Line, CircleArc]], list[Union[Line, CircleArc]], Point, Point, dict, ]: _description_
     """
     # TODO: Funktion heißt createGeoDict aber gibt Liste zurück...
+
     rotorSym = machine.rotor.comp_periodicity_geo()[0]
     statorSym = machine.stator.slot.Zs
     allSurfaces = []
     allSurfaces.extend(machine.rotor.build_geometry(sym=rotorSym, alpha=0))
     allSurfaces.extend(machine.stator.build_geometry(sym=statorSym, alpha=0))
-    
+
     allSurfacesLabels = []
     allSurfacesLabelsSplit2 = []
 
@@ -84,7 +85,6 @@ def createGeoDict(
             anglePointRefList=anglePointRefList,
         )
         geometryList.append(pyemmoSurface)
-    
 
     magnetizationDict = getMagnetizationDict(
         machine=machine,
@@ -155,23 +155,21 @@ def createGeoDict(
     # Change names of rotorRint-Curve and statorRext-Curve:
     # ------------------------------------------------------
 
-    isShaft = bool(rotorRint > 0)
+    hasShaft = bool(rotorRint > 0)
 
     if isInternalRotor:
         geometryList = detectInnerOuterLimit(
             geometryList=geometryList,
             innerRadius=rotorRint,
             outerRadius=statorRext,
-            isShaft=isShaft,
+            hasShaft=hasShaft,
         )
     else:
-        rotorRext = machine.rotor.Rext
-        statorRint = machine.stator.Rint
         geometryList = detectInnerOuterLimit(
             geometryList=geometryList,
-            innerRadius=statorRint,
-            outerRadius=rotorRext,
-            isShaft=isShaft,
+            innerRadius=machine.stator.Rint,
+            outerRadius=machine.rotor.Rext,
+            hasShaft=hasShaft,
         )
 
     return (

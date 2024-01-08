@@ -7,7 +7,7 @@ def detectInnerOuterLimit(
     geometryList: list[SurfaceAPI],
     innerRadius: float,
     outerRadius: float,
-    isShaft: bool,
+    hasShaft: bool,
 ) -> list[SurfaceAPI]:
     """Overwrites the name of the curve, if its the most outlying curve (-> ``OuterLimit``) or the most innerlying curve (-> ``InnerLimit``).
 
@@ -29,7 +29,7 @@ def detectInnerOuterLimit(
     """
     for surf in geometryList:
         for curve in surf.curve:
-            if isShaft:
+            if hasShaft:
                 if math.isclose(
                     a=curve.startPoint.radius, b=innerRadius, abs_tol=1e-6
                 ) and math.isclose(
