@@ -72,33 +72,32 @@ def buildBandsRotor(
     )
 
     # Adding curves to list:
-    rotorAirgap1Curves = rotorContourLineList
-    rotorAirgap1Curves.append(rotorCircle1)
-    rotorAirgap1Curves.append(lowerLine1)
-    rotorAirgap1Curves.append(upperLine1)
+    rotorAirGap1Curves = rotorContourLineList
+    rotorAirGap1Curves.append(rotorCircle1)
+    rotorAirGap1Curves.append(lowerLine1)
+    rotorAirGap1Curves.append(upperLine1)
 
     # Assginment of rotorBand1 as surface:
-    Rotorluftspalt1 = SurfaceAPI(
-        name="Rotorluftspalt 1",
+    rotorAirGap1 = SurfaceAPI(
+        name="rotorAirGap1",
         idExt="LuR1",
-        curves=rotorAirgap1Curves,
+        curves=rotorAirGap1Curves,
         material=air,
         nbrSegments=nbrRotorSeg,
         angle=angleRotor,
         meshSize=1.0,
     )
-    plot(rotorAirgap1Curves, linewidth=1, markersize=3, tag=True)
-    # Rotorluftspalt1.plot()
+    plot(rotorAirGap1Curves, linewidth=1, markersize=3, tag=True)
     print("---")
 
     # -----------------
     # Rotor outer band:
     # -----------------
     # Points:
-    PointM21 = Point(
+    pointM21 = Point(
         name="PointM21", x=bandRadiusList[1], y=0, z=0, meshLength=mbMeshLen
     )
-    PointM22 = Point(
+    pointM22 = Point(
         name="PointM22",
         x=getXforPoint(bandRadiusList[1], angleRotor),
         y=getYforPoint(bandRadiusList[1], angleRotor),
@@ -108,49 +107,49 @@ def buildBandsRotor(
     # Curves:
     rotorCircle2 = CircleArc(
         name="MB_CurveRotor",
-        startPoint=PointM21,
-        endPoint=PointM22,
+        startPoint=pointM21,
+        endPoint=pointM22,
         centerPoint=centerPoint,
     )
     lowerLine2 = Line(
-        name="lowerLine2", startPoint=pointM11, endPoint=PointM21
+        name="lowerLine2", startPoint=pointM11, endPoint=pointM21
     )
     upperLine2 = Line(
-        name="upperLine2", startPoint=pointM12, endPoint=PointM22
+        name="upperLine2", startPoint=pointM12, endPoint=pointM22
     )
 
     # Adding curves to list:
-    rotorAirgap2Curves = []
-    rotorAirgap2Curves.append(rotorCircle1)
-    rotorAirgap2Curves.append(rotorCircle2)
-    rotorAirgap2Curves.append(lowerLine2)
-    rotorAirgap2Curves.append(upperLine2)
+    rotorAirGap2Curves = []
+    rotorAirGap2Curves.append(rotorCircle1)
+    rotorAirGap2Curves.append(rotorCircle2)
+    rotorAirGap2Curves.append(lowerLine2)
+    rotorAirGap2Curves.append(upperLine2)
 
     # Assginment of rotorBand2 as surface:
-    Rotorluftspalt2 = SurfaceAPI(
-        name="Rotorluftspalt 2",
+    rotorAirGap2 = SurfaceAPI(
+        name="rotorAirGap2",
         idExt="LuR2",
-        curves=rotorAirgap2Curves,
+        curves=rotorAirGap2Curves,
         material=air,
         nbrSegments=nbrRotorSeg,
         angle=angleRotor,
         meshSize=1.0,
     )
-    movingband_r = rotorCircle2.startPoint.radius
+    movingbandR = rotorCircle2.startPoint.radius
 
-    # -----------------
-    # RotorBandsCurves:
-    # -----------------
-    RotorluftspaltCurves = []
-    RotorluftspaltCurves.append(rotorAirgap1Curves)
-    RotorluftspaltCurves.append(rotorAirgap2Curves)
-    plot(RotorluftspaltCurves, linewidth=1, markersize=3, tag=True)
+    # --------------------------------
+    # RotorBandsCurves only for plots:
+    # --------------------------------
+    rotorAirGapCurves = []
+    rotorAirGapCurves.append(rotorAirGap1Curves)
+    rotorAirGapCurves.append(rotorAirGap2Curves)
+    plot(rotorAirGapCurves, linewidth=1, markersize=3, tag=True)
     print("---")
 
     return (
-        Rotorluftspalt1,
-        Rotorluftspalt2,
-        movingband_r,
+        rotorAirGap1,
+        rotorAirGap2,
+        movingbandR,
     )
 
 
@@ -175,7 +174,6 @@ def buildBandsStator(
     """
     nbrStatorSeg = machine.stator.slot.Zs
     angleStator = 2 * math.pi / nbrStatorSeg  # [rad]
-    
     # ------------------
     # Stator outer band:
     # ------------------
@@ -190,10 +188,10 @@ def buildBandsStator(
 
     # Points:
     mbMeshLen = 2 * bandRadiusList[2] * math.pi / 360
-    PointM41 = Point(
+    pointM41 = Point(
         name="PointM41", x=bandRadiusList[3], y=0, z=0, meshLength=mbMeshLen
     )
-    PointM42 = Point(
+    pointM42 = Point(
         name="PointM42",
         x=getXforPoint(bandRadiusList[3], angleStator),
         y=getYforPoint(bandRadiusList[3], angleStator),
@@ -204,47 +202,47 @@ def buildBandsStator(
     # Curves:
     statorCircle4 = CircleArc(
         name="statorCircle4",
-        startPoint=PointM41,
-        endPoint=PointM42,
+        startPoint=pointM41,
+        endPoint=pointM42,
         centerPoint=centerPoint,
     )
     lowerLine4 = Line(
-        name="lowerLine4", startPoint=lowestYPointStator, endPoint=PointM41
+        name="lowerLine4", startPoint=lowestYPointStator, endPoint=pointM41
     )
     upperLine4 = Line(
-        name="upperLine4", startPoint=biggestYPointStator, endPoint=PointM42
+        name="upperLine4", startPoint=biggestYPointStator, endPoint=pointM42
     )
 
     # Adding curves to list:
-    stlu1curves = statorContourLineList
-    stlu1curves.append(statorCircle4)
-    stlu1curves.append(lowerLine4)
-    stlu1curves.append(upperLine4)
+    curvesStLu1 = statorContourLineList
+    curvesStLu1.append(statorCircle4)
+    curvesStLu1.append(lowerLine4)
+    curvesStLu1.append(upperLine4)
 
-    # Assginment of Statorluftspalt2 as surface:
-    Statorluftspalt1 = SurfaceAPI(
-        name="Statorluftspalt 1",
+    # Assginment of statorAirGap1 as surface:
+    statorAirGap1 = SurfaceAPI(
+        name="statorAirGap1",
         idExt="StLu1",
-        curves=stlu1curves,
+        curves=curvesStLu1,
         material=air,
         nbrSegments=nbrStatorSeg,
         angle=angleStator,
         meshSize=1.0,
     )
 
-    plot(stlu1curves, linewidth=1, markersize=3, tag=True)
-    Statorluftspalt1.plot()
+    plot(curvesStLu1, linewidth=1, markersize=3, tag=True)
+    statorAirGap1.plot()
     print("---")
 
     # ------------------
     # Stator inner band:
     # ------------------
     # Points:
-    PointM31 = Point(
+    pointM31 = Point(
         name="PointM31", x=bandRadiusList[2], y=0, z=0, meshLength=mbMeshLen
     )
-    PointM32 = Point(
-        name="PointM22",
+    pointM32 = Point(
+        name="PointM32",
         x=getXforPoint(bandRadiusList[2], angleStator),
         y=getYforPoint(bandRadiusList[2], angleStator),
         z=0,
@@ -253,36 +251,36 @@ def buildBandsStator(
     # Curves:
     statorCircle3 = CircleArc(
         name="MB_CurveStator",
-        startPoint=PointM31,
-        endPoint=PointM32,
+        startPoint=pointM31,
+        endPoint=pointM32,
         centerPoint=centerPoint,
     )
     lowerLine3 = Line(
-        name="lowerLine3", startPoint=PointM31, endPoint=PointM41
+        name="lowerLine3", startPoint=pointM31, endPoint=pointM41
     )
     upperLine3 = Line(
-        name="upperLine3", startPoint=PointM32, endPoint=PointM42
+        name="upperLine3", startPoint=pointM32, endPoint=pointM42
     )
 
-    # Adding curves to list:
-    StLu2curves = []
-    StLu2curves.append(statorCircle4)
-    StLu2curves.append(statorCircle3)
-    StLu2curves.append(lowerLine3)
-    StLu2curves.append(upperLine3)
+    # Adding curves to list 'curvesStLu2':
+    curvesStLu2 = []
+    curvesStLu2.append(statorCircle4)
+    curvesStLu2.append(statorCircle3)
+    curvesStLu2.append(lowerLine3)
+    curvesStLu2.append(upperLine3)
 
     # Assginment of statorBand3 as surface:
-    Statorluftspalt2 = SurfaceAPI(
-        name="Statorluftspalt 2",
+    statorAirGap2 = SurfaceAPI(
+        name="statorAirGap2",
         idExt="StLu2",
-        curves=StLu2curves,
+        curves=curvesStLu2,
         material=air,
         nbrSegments=nbrStatorSeg,
         angle=angleStator,
         meshSize=1.0,
     )
 
-    return Statorluftspalt1, Statorluftspalt2
+    return statorAirGap1, statorAirGap2
 
 
 def buildMovingBand(
@@ -378,9 +376,9 @@ def buildMovingBand(
     centerPoint = Point(name="centerPointBand", x=0, y=0, z=0, meshLength=1e-3)
 
     (
-        Rotorluftspalt1,
-        Rotorluftspalt2,
-        movingband_r,
+        rotorAirGap1,
+        rotorAirGap2,
+        movingbandR,
     ) = buildBandsRotor(
         machine=machine,
         bandRadiusList=bandRadiusList,
@@ -390,8 +388,8 @@ def buildMovingBand(
         rotorContourLineList=rotorContourLineList,
     )
     (
-        Statorluftspalt1,
-        Statorluftspalt2,
+        statorAirGap1,
+        statorAirGap2,
     ) = buildBandsStator(
         machine=machine,
         statorContourLineList=statorContourLineList,
@@ -403,12 +401,12 @@ def buildMovingBand(
     # All bands:
     # ----------
     allBands = []
-    allBands.append(Rotorluftspalt1)
-    allBands.append(Rotorluftspalt2)
-    allBands.append(Statorluftspalt1)
-    allBands.append(Statorluftspalt2)
+    allBands.append(rotorAirGap1)
+    allBands.append(rotorAirGap2)
+    allBands.append(statorAirGap1)
+    allBands.append(statorAirGap2)
     geometryList.extend(allBands)
     print("Plot allBands: ")
     plot(allBands)
 
-    return allBands, geometryList, movingband_r, magnetizationDict
+    return allBands, geometryList, movingbandR, magnetizationDict
