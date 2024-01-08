@@ -18,7 +18,6 @@ from .getCoordinatesForPoint import getXforPoint, getYforPoint
 def buildBandsRotor(
     machine: Machine,
     bandRadiusList: list,
-    centerPoint: Point,
     rPointRotorCont: Point,
     lPointRotorCont: Point,
     rotorContourLineList: list,
@@ -40,7 +39,8 @@ def buildBandsRotor(
     """
     nbrRotorSeg = machine.rotor.comp_periodicity_geo()[0]
     angleRotor = 2 * math.pi / nbrRotorSeg  # [rad]
-
+    centerPoint = Point(name="centerPointBand", x=0, y=0, z=0, meshLength=1e-3)
+    
     # -----------------
     # Rotor inner band:
     # -----------------
@@ -64,18 +64,16 @@ def buildBandsRotor(
         endPoint=pointM12,
         centerPoint=centerPoint,
     )
-    lowerLine1 = Line(
-        name="lowerLine1", startPoint=rPointRotorCont, endPoint=pointM11
-    )
-    upperLine1 = Line(
-        name="upperLine1", startPoint=lPointRotorCont, endPoint=pointM12
-    )
 
     # Adding curves to list:
     rotorAirGap1Curves = rotorContourLineList
     rotorAirGap1Curves.append(rotorCircle1)
-    rotorAirGap1Curves.append(lowerLine1)
-    rotorAirGap1Curves.append(upperLine1)
+    rotorAirGap1Curves.append(
+        Line(name="lowerLine1", startPoint=rPointRotorCont, endPoint=pointM11)
+    )
+    rotorAirGap1Curves.append(
+        Line(name="upperLine1", startPoint=lPointRotorCont, endPoint=pointM12)
+    )
 
     # Assginment of rotorBand1 as surface:
     rotorAirGap1 = SurfaceAPI(
@@ -111,19 +109,17 @@ def buildBandsRotor(
         endPoint=pointM22,
         centerPoint=centerPoint,
     )
-    lowerLine2 = Line(
-        name="lowerLine2", startPoint=pointM11, endPoint=pointM21
-    )
-    upperLine2 = Line(
-        name="upperLine2", startPoint=pointM12, endPoint=pointM22
-    )
 
     # Adding curves to list:
     rotorAirGap2Curves = []
     rotorAirGap2Curves.append(rotorCircle1)
     rotorAirGap2Curves.append(rotorCircle2)
-    rotorAirGap2Curves.append(lowerLine2)
-    rotorAirGap2Curves.append(upperLine2)
+    rotorAirGap2Curves.append(
+        Line(name="lowerLine2", startPoint=pointM11, endPoint=pointM21)
+    )
+    rotorAirGap2Curves.append(
+        Line(name="upperLine2", startPoint=pointM12, endPoint=pointM22)
+    )
 
     # Assginment of rotorBand2 as surface:
     rotorAirGap2 = SurfaceAPI(
@@ -157,7 +153,6 @@ def buildBandsStator(
     machine: Machine,
     statorContourLineList: list,
     bandRadiusList: list,
-    centerPoint: Point,
 ) -> tuple[SurfaceAPI, SurfaceAPI]:
     """_summary_
 
@@ -174,6 +169,7 @@ def buildBandsStator(
     """
     nbrStatorSeg = machine.stator.slot.Zs
     angleStator = 2 * math.pi / nbrStatorSeg  # [rad]
+    centerPoint = Point(name="centerPointBand", x=0, y=0, z=0, meshLength=1e-3)
     # ------------------
     # Stator outer band:
     # ------------------
@@ -322,7 +318,7 @@ def buildMovingBand(
             else:
                 diffRadius = statorRint - magnetFarthestRadius
                 maxRadius = magnetFarthestRadius
-                
+
         else:
             magnetFarthestRadius = rotorRint + H0
             magnetShortestRadius = rotorRint + H0 - H1
@@ -334,7 +330,6 @@ def buildMovingBand(
             else:
                 diffRadius = statorRext - magnetShortestRadius
                 maxRadius = magnetShortestRadius
-            
 
     elif isinstance(machine, (MachineIPMSM, MachineSyRM)):
         if isInternalRotor:
@@ -372,8 +367,6 @@ def buildMovingBand(
     print(f"bandRadiusList: {bandRadiusList}")
     print("---")
 
-    centerPoint = Point(name="centerPointBand", x=0, y=0, z=0, meshLength=1e-3)
-
     (
         rotorAirGap1,
         rotorAirGap2,
@@ -381,7 +374,6 @@ def buildMovingBand(
     ) = buildBandsRotor(
         machine=machine,
         bandRadiusList=bandRadiusList,
-        centerPoint=centerPoint,
         rPointRotorCont=lowestYPointRotor,
         lPointRotorCont=biggestYPointRotor,
         rotorContourLineList=rotorContourLineList,
@@ -393,7 +385,6 @@ def buildMovingBand(
         machine=machine,
         statorContourLineList=statorContourLineList,
         bandRadiusList=bandRadiusList,
-        centerPoint=centerPoint,
     )
 
     # ----------
