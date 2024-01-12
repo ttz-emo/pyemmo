@@ -54,6 +54,12 @@ def translateGeometry(
             pyleecanMat = machine.rotor.hole[0].mat_void
             idExt = "Lpl"  # "Loch (Pollueke)"
             name = "Loch"
+        
+        elif nameSplitList[2] == "Ventilation":
+            pyleecanMat = machine.rotor.axial_vent[0].mat_void
+            idExt = "Lpl"  # "Loch (Pollueke)"
+            name = "Loch"
+            
         else:
             raise ValueError(
                 f"Wrong input for 'detail'. Your input was '{nameSplitList[2]}'."
