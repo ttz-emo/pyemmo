@@ -8,8 +8,8 @@ from pyemmo.api.SurfaceJSON import SurfaceAPI
 from pyemmo.functions.plot import plot
 
 
-def calcEvenRotorContour(
-    rotorLamSurfList: list[SurfaceAPI],
+def calc_even_rotor_cont(
+    rotor_lam_surf_list: list[SurfaceAPI],
     radius: float,
 ) -> tuple[list[Union[Line, CircleArc]], Point, Point]:
     """Calculation for the rotor contour of an IPMSM machine.
@@ -22,28 +22,28 @@ def calcEvenRotorContour(
         tuple[list[Union[Line, CircleArc]], Point, Point]: _description_
     """
 
-    rotorContourLineList = []
+    rotor_cont_line_list = []
 
     # --------------------------------------------
     # Filtering the lines that lie at the air gap:
     # --------------------------------------------
     # rotor lamination:
-    for curve in rotorLamSurfList[0].curve:
+    for curve in rotor_lam_surf_list[0].curve:
         if not (
             math.isclose(a=curve.startPoint.radius, b=radius, abs_tol=1e-6)
         ) and not math.isclose(
             a=curve.endPoint.radius, b=radius, abs_tol=1e-6
         ):
-            rotorContourLineList.append(curve)
+            rotor_cont_line_list.append(curve)
     print("---")
     print("Plot Überprüfung des Löschens der Seitenlinien.")
-    plot(rotorContourLineList, linewidth=1, markersize=3)
+    plot(rotor_cont_line_list, linewidth=1, markersize=3)
     print("---")
 
-    for point in rotorContourLineList[0].points:
+    for point in rotor_cont_line_list[0].points:
         if math.isclose(a=point.coordinate[1], b=0, abs_tol=1e-6):
-            lowestYPointRotor = point
+            r_point_rotor_cont = point
         else:
-            biggestYPointRotor = point
+            l_point_rotor_cont = point
 
-    return rotorContourLineList, lowestYPointRotor, biggestYPointRotor
+    return rotor_cont_line_list, r_point_rotor_cont, l_point_rotor_cont

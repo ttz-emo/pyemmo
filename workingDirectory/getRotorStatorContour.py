@@ -7,107 +7,102 @@ from pyemmo.script.geometry.circleArc import CircleArc
 from pyemmo.script.geometry.line import Line
 from pyemmo.script.geometry.point import Point
 from .getRotorStatorSurfaces import getRotorSurfaces
-from .calcsSPMSMContour import calcSPMSMRotorContour
-from .calcIPMSMContour import calcEvenRotorContour
+from .calcsSPMSMContour import calc_spmsm_rotor_cont
+from .calcIPMSMContour import calc_even_rotor_cont
 from .calcWindContour import calcWindContour
 
 
-def getSPMSMRotorContour(
-    geometryList: list, machine: Machine, isInternalRotor: bool = True
+def get_spmsm_rotor_cont(
+    geometry_list: list, machine: Machine, is_internal_rotor: bool = True
 ) -> tuple[list[Union[Line, CircleArc]], Point, Point]:
-    """Get a list of curves of the contour of the rotor with a surfacemagnet. 
+    """Get a list of curves of the contour of the rotor with a surfacemagnet.
 
     Args:
-        geometryList (list): List with all surfaces of the machine (Pyemmo format)
+        geometry_list (list): List with all surfaces of the machine (Pyemmo format)
         machine (Machine): Pyleecan machine
-        isInternalRotor (bool, optional): Internal or external Rotor. Defaults to True.
+        is_internal_rotor (bool, optional): Internal or external Rotor. Defaults to True.
 
     Returns:
         tuple[list[Union[Line, CircleArc]], Point, Point]: _description_
     """
 
-    rotorRint = machine.rotor.Rint
-    rotorRext = machine.rotor.Rext
-
-    rotorLamSurfList, rotorMagSurfList = getRotorSurfaces(
-        geometryList=geometryList
+    rotor_lam_surf_list, rotor_mag_surf_list = getRotorSurfaces(
+        geometryList=geometry_list
     )
-    
-    if isInternalRotor:
+
+    if is_internal_rotor:
         (
-            rotorContourLineList,
-            rPointRotorCont,
-            lPointRotorCont,
-        ) = calcSPMSMRotorContour(
+            rotor_cont_line_list,
+            r_point_rotor_cont,
+            l_point_rotor_cont,
+        ) = calc_spmsm_rotor_cont(
             machine=machine,
-            rotorLamSurfList=rotorLamSurfList,
-            rotorMagSurfList=rotorMagSurfList,
-            radius=rotorRint,
-            isInternalRotor=isInternalRotor,
+            rotor_lam_surf_list=rotor_lam_surf_list,
+            rotor_mag_surf_list=rotor_mag_surf_list,
+            radius=machine.rotor.Rint,
+            is_internal_rotor=is_internal_rotor,
         )
     else:
         (
-            rotorContourLineList,
-            rPointRotorCont,
-            lPointRotorCont,
-        ) = calcSPMSMRotorContour(
+            rotor_cont_line_list,
+            r_point_rotor_cont,
+            l_point_rotor_cont,
+        ) = calc_spmsm_rotor_cont(
             machine=machine,
-            rotorLamSurfList=rotorLamSurfList,
-            rotorMagSurfList=rotorMagSurfList,
-            radius=rotorRext,
-            isInternalRotor=isInternalRotor,
+            rotor_lam_surf_list=rotor_lam_surf_list,
+            rotor_mag_surf_list=rotor_mag_surf_list,
+            radius=machine.rotor.Rext,
+            is_internal_rotor=is_internal_rotor,
         )
 
-    return rotorContourLineList, rPointRotorCont, lPointRotorCont
+    return rotor_cont_line_list, r_point_rotor_cont, l_point_rotor_cont
 
 
-def getEvenRotorContour(
-    geometryList: list, machine: Machine, isInternalRotor: bool = True
+def get_even_rotor_cont(
+    geometry_list: list, machine: Machine, is_internal_rotor: bool = True
 ) -> tuple[list[Union[Line, CircleArc]], Point, Point]:
-    """Get a list of curves of the contour of the rotor with a interior magnets. ``rotorContourLineList``
+    """Get a list of curves of the contour of the rotor.
+    machine types: IPMSM, SynRM
 
     Args:
-        geometryList (list): List with all surfaces of the machine (Pyemmo format)
+        geometry_list (list): List with all surfaces of the machine (Pyemmo format)
         machine (Machine): Pyleecan machine
-        isInternalRotor (bool, optional): Internal or external Rotor. Defaults to True.
+        is_internal_rotor (bool, optional): Internal or external Rotor. Defaults to True.
 
     Returns:
         list[Line, CircleArc]: _description_
     """
 
-    rotorRint = machine.rotor.Rint
-    rotorRext = machine.rotor.Rext
+    rotor_lam_surf_list = []
 
-    rotorLamSurfList = []
-    
-    for surf in geometryList:
+    for surf in geometry_list:
         if surf.idExt == "Pol":
-            rotorLamSurfList.append(surf)
-            
-    if isInternalRotor:
+            rotor_lam_surf_list.append(surf)
+
+    if is_internal_rotor:
         (
-            rotorContourLineList,
-            rPointRotorCont,
-            lPointRotorCont,
-        ) = calcEvenRotorContour(
-            rotorLamSurfList=rotorLamSurfList,
-            radius=rotorRint,
+            rotor_cont_line_list,
+            r_point_rotor_cont,
+            l_point_rotor_cont,
+        ) = calc_even_rotor_cont(
+            rotor_lam_surf_list=rotor_lam_surf_list,
+            radius=machine.rotor.Rint,
         )
     else:
         (
-            rotorContourLineList,
-            rPointRotorCont,
-            lPointRotorCont,
-        ) = calcEvenRotorContour(
-            rotorLamSurfList=rotorLamSurfList,
-            radius=rotorRext,
+            rotor_cont_line_list,
+            r_point_rotor_cont,
+            l_point_rotor_cont,
+        ) = calc_even_rotor_cont(
+            rotor_lam_surf_list=rotor_lam_surf_list,
+            radius=machine.rotor.Rext,
         )
 
-    return rotorContourLineList, rPointRotorCont, lPointRotorCont
+    return rotor_cont_line_list, r_point_rotor_cont, l_point_rotor_cont
 
 
-def getWindingContour(
-    geometryList: list, machine: Machine, isInternalRotor: bool
+def get_winding_cont(
+    geometry_list: list, machine: Machine, is_internal_rotor: bool
 ) -> list[Union[Line, CircleArc]]:
     """Get a list of curves of the contour of the lamination with a winding.
 
@@ -119,21 +114,22 @@ def getWindingContour(
     Returns:
         list[Union[Line, CircleArc]]: _description_
     """
-    statorRint = machine.stator.Rint
-    statorRext = machine.stator.Rext
-    if isInternalRotor:
-        statorContourLineList = calcWindContour(
-            geometryList=geometryList,
-            statorRint=statorRint,
-            statorRext=statorRext,
+    stator_rint = machine.stator.Rint
+    stator_rext = machine.stator.Rext
+
+    if is_internal_rotor:
+        stator_cont_line_list = calcWindContour(
+            geometryList=geometry_list,
+            statorRint=stator_rint,
+            statorRext=stator_rext,
         )
     elif isinstance(machine, MachineSCIM):
         pass
     else:
-        statorContourLineList = calcWindContour(
-            geometryList=geometryList,
-            statorRint=statorRext,
-            statorRext=statorRint,
+        stator_cont_line_list = calcWindContour(
+            geometryList=geometry_list,
+            statorRint=stator_rext,
+            statorRext=stator_rint,
         )
 
-    return statorContourLineList
+    return stator_cont_line_list
