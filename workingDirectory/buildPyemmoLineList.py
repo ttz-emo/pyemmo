@@ -27,43 +27,43 @@ def build_pyemmo_line_list(
 
     pyemmo_line_list = []
 
-    for line in pyleecan_line_list:
-        if isinstance(line, Segment):
+    for geo_element in pyleecan_line_list:
+        if isinstance(geo_element, Segment):
             # translate a Segment into a Line
             translated_line = Line(
                 name="Line",
-                startPoint=buildPyemmoPoint(line.begin),
-                endPoint=buildPyemmoPoint(line.end),
+                startPoint=buildPyemmoPoint(geo_element.begin),
+                endPoint=buildPyemmoPoint(geo_element.end),
             )
             pyemmo_line_list.append(translated_line)
 
         else:
             # translate an Arc1, Arc2 into CircleArc
             if (
-                abs(line.get_angle(is_deg=True)) >= 180
+                abs(geo_element.get_angle(is_deg=True)) >= 180
             ):
                 translated_line = CircleArc(
                     name="CircleArc",
-                    startPoint=buildPyemmoPoint(line.get_begin()),
-                    endPoint=buildPyemmoPoint(line.get_middle()),
-                    centerPoint=buildPyemmoPoint(line.get_center()),
+                    startPoint=buildPyemmoPoint(geo_element.get_begin()),
+                    endPoint=buildPyemmoPoint(geo_element.get_middle()),
+                    centerPoint=buildPyemmoPoint(geo_element.get_center()),
                 )
                 pyemmo_line_list.append(translated_line)
 
                 translated_line = CircleArc(
                     name="CircleArc",
-                    startPoint=buildPyemmoPoint(line.get_middle()),
-                    endPoint=buildPyemmoPoint(line.get_end()),
-                    centerPoint=buildPyemmoPoint(line.get_center()),
+                    startPoint=buildPyemmoPoint(geo_element.get_middle()),
+                    endPoint=buildPyemmoPoint(geo_element.get_end()),
+                    centerPoint=buildPyemmoPoint(geo_element.get_center()),
                 )
                 pyemmo_line_list.append(translated_line)
 
             else:
                 translated_line = CircleArc(
                     name="CircleArc",
-                    startPoint=buildPyemmoPoint(line.get_begin()),
-                    endPoint=buildPyemmoPoint(line.get_end()),
-                    centerPoint=buildPyemmoPoint(line.get_center()),
+                    startPoint=buildPyemmoPoint(geo_element.get_begin()),
+                    endPoint=buildPyemmoPoint(geo_element.get_end()),
+                    centerPoint=buildPyemmoPoint(geo_element.get_center()),
                 )
                 pyemmo_line_list.append(translated_line)
 
