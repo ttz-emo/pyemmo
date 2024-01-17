@@ -11,8 +11,8 @@ from pyemmo.script.geometry.circleArc import CircleArc
 from .buildPyemmoPoint import buildPyemmoPoint
 
 
-def buildPyemmoLineList(
-    pyleecanLineList: list[Union[Segment, Arc1, Arc2, Arc3]],
+def build_pyemmo_line_list(
+    pyleecan_line_list: list[Union[Segment, Arc1, Arc2, Arc3]],
 ) -> list[Union[Line, CircleArc]]:
     """Translates the line list (Segment, Arc1, Arc2, Arc3) of a pyleecan-surface
     into line list (Line, CircleArc) of the pyemmo-surface.
@@ -25,75 +25,46 @@ def buildPyemmoLineList(
         list[Union[Line, CircleArc]]: List of curves of the surface
     """
 
-    pyemmoLineList = []
+    pyemmo_line_list = []
 
-    for line in pyleecanLineList:
+    for line in pyleecan_line_list:
         if isinstance(line, Segment):
             # translate a Segment into a Line
-            translatedLine = Line(
+            translated_line = Line(
                 name="Line",
                 startPoint=buildPyemmoPoint(line.begin),
                 endPoint=buildPyemmoPoint(line.end),
             )
-            pyemmoLineList.append(translatedLine)
+            pyemmo_line_list.append(translated_line)
 
-        elif isinstance(line, Arc1):
-            # translate an Arc1 into CircleArc
+        else:
+            # translate an Arc1, Arc2 into CircleArc
             if (
-                line.get_angle(is_deg=True) > 90
-                or line.get_angle(is_deg=True) < -90
+                abs(line.get_angle(is_deg=True)) >= 180
             ):
-                translatedLine = CircleArc(
+                translated_line = CircleArc(
                     name="CircleArc",
-                    startPoint=buildPyemmoPoint(line.begin),
+                    startPoint=buildPyemmoPoint(line.get_begin()),
                     endPoint=buildPyemmoPoint(line.get_middle()),
                     centerPoint=buildPyemmoPoint(line.get_center()),
                 )
-                pyemmoLineList.append(translatedLine)
+                pyemmo_line_list.append(translated_line)
 
-                translatedLine = CircleArc(
+                translated_line = CircleArc(
                     name="CircleArc",
                     startPoint=buildPyemmoPoint(line.get_middle()),
-                    endPoint=buildPyemmoPoint(line.end),
+                    endPoint=buildPyemmoPoint(line.get_end()),
                     centerPoint=buildPyemmoPoint(line.get_center()),
                 )
-                pyemmoLineList.append(translatedLine)
+                pyemmo_line_list.append(translated_line)
 
             else:
-                translatedLine = CircleArc(
+                translated_line = CircleArc(
                     name="CircleArc",
-                    startPoint=buildPyemmoPoint(line.begin),
-                    endPoint=buildPyemmoPoint(line.end),
+                    startPoint=buildPyemmoPoint(line.get_begin()),
+                    endPoint=buildPyemmoPoint(line.get_end()),
                     centerPoint=buildPyemmoPoint(line.get_center()),
                 )
-                pyemmoLineList.append(translatedLine)
+                pyemmo_line_list.append(translated_line)
 
-        elif isinstance(line, Arc2):
-            # translate an Arc2 into CircleArc
-            translatedLine = CircleArc(
-                name="CircleArc",
-                startPoint=buildPyemmoPoint(line.begin),
-                endPoint=buildPyemmoPoint(line.get_end()),
-                centerPoint=buildPyemmoPoint(line.center),
-            )
-            pyemmoLineList.append(translatedLine)
-
-        elif isinstance(line, Arc3):
-            # translate an Arc3 into CircleArc
-            translatedLine = CircleArc(
-                name="CircleArc",
-                startPoint=buildPyemmoPoint(line.begin),
-                endPoint=buildPyemmoPoint(line.get_middle()),
-                centerPoint=buildPyemmoPoint(line.get_center()),
-            )
-
-            pyemmoLineList.append(translatedLine)
-            translatedLine = CircleArc(
-                name="CircleArc",
-                startPoint=buildPyemmoPoint(line.get_middle()),
-                endPoint=buildPyemmoPoint(line.end),
-                centerPoint=buildPyemmoPoint(line.get_center()),
-            )
-            pyemmoLineList.append(translatedLine)
-
-    return pyemmoLineList
+    return pyemmo_line_list

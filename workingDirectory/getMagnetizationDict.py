@@ -8,11 +8,11 @@ from pyleecan.Classes.Machine import Machine
 from pyemmo.api.SurfaceJSON import SurfaceAPI
 
 
-def getMagnetizationDict(
+def get_magnetization_dict(
     machine: Machine,
-    anglePointRefList: list[float],
-    magnetizationDict: dict,
-    geometryList: list[SurfaceAPI],
+    angle_point_ref_list: list[float],
+    magnetization_dict: dict,
+    geometry_list: list[SurfaceAPI],
 ) -> dict:
     """Get the magnetization dict with the magnet and the magnetization angle.
 
@@ -30,85 +30,84 @@ def getMagnetizationDict(
     # ----------------------------------------------------
     # Changing the 'idExt' of the SurfaceAPI to 'Mag0', 'Mag1', 'Mag2', ...
     # if the 'idExt' is 'Mag'
-    lplCounter = 0
-    for surfAPIRotor in geometryList:
-        if surfAPIRotor.idExt == "Lpl":
-            surfAPIRotor.setIdExt("Lpl" + str(lplCounter))
-            lplCounter += 1
+    lpl_counter = 0
+    mag_counter = 0
 
-    # Changing the 'idExt' of the SurfaceAPI to 'Mag0', 'Mag1', 'Mag2', ...
-    # if the 'idExt' is 'Mag'
-    magCounter = 0
-    for surfAPIRotor in geometryList:
-        if surfAPIRotor.idExt == "Mag":
-            surfAPIRotor.setIdExt("Mag" + str(magCounter))
-            magCounter += 1
+    for surf_api in geometry_list:
+        if surf_api.idExt == "Lpl":
+            surf_api.setIdExt("Lpl" + str(lpl_counter))
+            lpl_counter += 1
+
+        elif surf_api.idExt == "Mag":
+            surf_api.setIdExt("Mag" + str(mag_counter))
+            mag_counter += 1
 
     if isinstance(machine, MachineSIPMSM):
-        anglePointRef = anglePointRefList[0]
-        magnetizationType = machine.rotor.magnet.type_magnetization
+        angle_point_ref = angle_point_ref_list[0]
+        magnetization_type = machine.rotor.magnet.type_magnetization
 
-        if len(anglePointRefList) == 1:
-            if magnetizationType in (0, 1):  # radial & parallel
-                magnetizationAngle = anglePointRef
+        if len(angle_point_ref_list) == 1:
+            if magnetization_type in (0, 1):  # radial & parallel
+                magnetization_angle = angle_point_ref
 
-            elif magnetizationType == 3:  # tangential
-                magnetizationAngle = anglePointRef - 90 / pi
+            elif magnetization_type == 3:  # tangential
+                magnetization_angle = angle_point_ref - 90 / pi
 
-            magnetizationDict["Mag0"] = magnetizationAngle
+            magnetization_dict["Mag0"] = magnetization_angle
+
         else:
-            for surfAPIRotor in geometryList:
-                if surfAPIRotor.idExt == "Mag0":
-                    if magnetizationType in (0, 1):  # radial & parallel
-                        magnetizationAngle = anglePointRefList[0]
+            for surf_api in geometry_list:
+                if surf_api.idExt == "Mag0":
+                    if magnetization_type in (0, 1):  # radial & parallel
+                        magnetization_angle = angle_point_ref_list[0]
 
-                    elif magnetizationType == 3:  # tangential
-                        magnetizationAngle = anglePointRefList[0] - 90 / pi
+                    elif magnetization_type == 3:  # tangential
+                        magnetization_angle = angle_point_ref_list[0] - 90 / pi
 
-                    magnetizationDict["Mag0"] = magnetizationAngle
+                    magnetization_dict["Mag0"] = magnetization_angle
 
-                elif surfAPIRotor.idExt == "Mag1":
-                    if magnetizationType in (0, 1):  # radial & parallel
-                        magnetizationAngle = anglePointRefList[1]
+                elif surf_api.idExt == "Mag1":
+                    if magnetization_type in (0, 1):  # radial & parallel
+                        magnetization_angle = angle_point_ref_list[1]
 
-                    elif magnetizationType == 3:  # tangential
-                        magnetizationAngle = anglePointRefList[1] - 90 / pi
+                    elif magnetization_type == 3:  # tangential
+                        magnetization_angle = angle_point_ref_list[1] - 90 / pi
 
-                    magnetizationDict["Mag1"] = -magnetizationAngle
+                    magnetization_dict["Mag1"] = -magnetization_angle
 
     elif isinstance(machine, MachineIPMSM):
-        magAngleDict = machine.rotor.hole[0].comp_magnetization_dict()
-        if len(magAngleDict) == 1:
-            anglePointRef = anglePointRefList[0]
-            magnetizationType = machine.rotor.hole[
+        mag_angle_dict = machine.rotor.hole[0].comp_magnetization_dict()
+        if len(mag_angle_dict) == 1:
+            angle_point_ref = angle_point_ref_list[0]
+            magnetization_type = machine.rotor.hole[
                 0
             ].magnet_0.type_magnetization
 
-            if magnetizationType in (0, 1):  # radial & parallel
-                magnetizationAngle = anglePointRef
+            if magnetization_type in (0, 1):  # radial & parallel
+                magnetization_angle = angle_point_ref
 
-            elif magnetizationType == 3:  # tangential
-                magnetizationAngle = anglePointRef - 90 / pi
+            elif magnetization_type == 3:  # tangential
+                magnetization_angle = angle_point_ref - 90 / pi
 
-            magnetizationDict["Mag0"] = magnetizationAngle
+            magnetization_dict["Mag0"] = magnetization_angle
         else:
-            for surfAPIRotor in geometryList:
-                if surfAPIRotor.idExt == "Mag0":
-                    magnetizationAngle = (
-                        anglePointRefList[0] + magAngleDict["magnet_0"]
+            for surf_api in geometry_list:
+                if surf_api.idExt == "Mag0":
+                    magnetization_angle = (
+                        angle_point_ref_list[0] + mag_angle_dict["magnet_0"]
                     )
-                    magnetizationDict[surfAPIRotor.idExt] = magnetizationAngle
+                    magnetization_dict[surf_api.idExt] = magnetization_angle
 
-                elif surfAPIRotor.idExt == "Mag1":
-                    magnetizationAngle = (
-                        anglePointRefList[1] + magAngleDict["magnet_1"]
+                elif surf_api.idExt == "Mag1":
+                    magnetization_angle = (
+                        angle_point_ref_list[1] + mag_angle_dict["magnet_1"]
                     )
-                    magnetizationDict[surfAPIRotor.idExt] = magnetizationAngle
+                    magnetization_dict[surf_api.idExt] = magnetization_angle
 
-                elif surfAPIRotor.idExt == "Mag2":
-                    magnetizationAngle = (
-                        anglePointRefList[2] + magAngleDict["magnet_2"]
+                elif surf_api.idExt == "Mag2":
+                    magnetization_angle = (
+                        angle_point_ref_list[2] + mag_angle_dict["magnet_2"]
                     )
-                    magnetizationDict[surfAPIRotor.idExt] = magnetizationAngle
+                    magnetization_dict[surf_api.idExt] = magnetization_angle
 
-    return magnetizationDict
+    return magnetization_dict
