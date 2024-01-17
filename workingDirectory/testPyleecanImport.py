@@ -23,13 +23,16 @@ except:
 from pyemmo.functions.plot import plot
 from pyemmo.api.json import main
 from pyemmo.definitions import ROOT_DIR
-from workingDirectory.buildPyemmoMovingBand import buildMovingBand
+from workingDirectory.buildPyemmoMovingBand import translate_machine_geo
 from workingDirectory.createParamDict import createParamDict
 
 
 # Simulation Function
 def generateSimulation(
-    machine: Machine, Id: float = 0.0, Iq: float = 10.0, speed: float = 1000.0
+    machine: Machine,
+    i_d: float = 0.0,
+    i_q: float = 10.0,
+    speed: float = 1000.0,
 ) -> Simulation:
     """Create a Simulation object from a given machine
 
@@ -48,7 +51,7 @@ def generateSimulation(
     # Defining Simulation Input
     simu.input = InputCurrent()
     # Rotor speed [rpm]
-    simu.input.OP = OPdq(Id_ref=Id, Iq_ref=Iq, N0=speed)
+    simu.input.OP = OPdq(Id_ref=i_d, Iq_ref=i_q, N0=speed)
 
     # time discretization [s] -> one elec. period with # 32 timesteps
     time = np.linspace(start=0, stop=60 / speed / p, num=32, endpoint=True)
@@ -74,17 +77,10 @@ for i, file in enumerate(os.listdir(machineFolder)):
     if file.endswith(".json") and not "FEMM" in file:
         machineList.append(file)
         print(f"{machineList.index(file)}: " + file)
-fileName = machineList[34]  # SELECT MACHINE HERE BY INDEX OR NAME
+fileName = machineList[1]  # SELECT MACHINE HERE BY INDEX OR NAME
 print("\nUsing machine: " + fileName)
 machine: Machine = load(os.path.abspath(os.path.join(machineFolder, fileName)))
-simulation = generateSimulation(machine, Id=0, Iq=10, speed=1000)
-
-# %%
-rotorRext = machine.rotor.Rext
-rotorRint = machine.rotor.Rint
-statorRint = machine.stator.Rint
-statorRext = machine.stator.Rext
-
+simulation = generateSimulation(machine, i_d=0, i_q=10, speed=1000)
 
 # --------------------------
 # isInternalRotor detection:
@@ -92,9 +88,14 @@ statorRext = machine.stator.Rext
 isInternalRotor = machine.rotor.is_internal
 
 if isinstance(machine, (MachineSIPMSM, MachineIPMSM, MachineSyRM)):
-    allBands, geometryList, movingband_r, magnetizationDict = buildMovingBand(
+    (
+        allBands,
+        geometryList,
+        movingband_r,
+        magnetizationDict,
+    ) = translate_machine_geo(
         machine=machine,
-        isInternalRotor=isInternalRotor,
+        is_internal_rotor=isInternalRotor,
     )
 
 else:
@@ -114,7 +115,7 @@ for surf in geometryList:
     geometryLineListFinish.extend(surf.curve)
 
 print("Plot ENDE:")
-plot(geometryLineListFinish, linewidth=1, markersize=3, tag=True)
+# plot(geometryLineListFinish, linewidth=1, markersize=3, tag=True)
 print("---")
 
 paramDict = createParamDict(
