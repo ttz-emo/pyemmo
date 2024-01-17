@@ -11,7 +11,7 @@ from pyemmo.script.geometry.circleArc import CircleArc
 from pyemmo.script.geometry.line import Line
 from pyemmo.api.SurfaceJSON import SurfaceAPI
 from pyemmo.functions.plot import plot
-from .createGeoDict import createGeoDict
+from .createGeoDict import create_geo_dict
 from .getCoordinatesForPoint import getXforPoint, getYforPoint
 
 
@@ -318,28 +318,17 @@ def build_bands_stator(
     return stator_air_gap1, stator_air_gap2
 
 
-def translate_machine_geo(
-    machine: Machine,
-    is_internal_rotor: bool,
-) -> tuple[list, list[SurfaceAPI], float]:
-    """_summary_
+def calcs_radii(machine: Machine, is_internal_rotor: bool) -> tuple[float, float]:
+    """Calculation of the magnet-radii and of the distance between rotor/magnet and stator inner radius
 
     Args:
-        machine (Machine): _description_
-        rotorRint (float): _description_
-        rotorRext (float): _description_
-        statorRint (float): _description_
-        statorRext (float): _description_
-        isInternalRotor (bool): _description_
+        machine (Machine): Pyleecan machine
+        is_internal_rotor (bool): Is rotor internal or not
 
     Returns:
-        tuple[list, list[SurfaceAPI], float]: _description_
+        tuple[float, float]: Gives back the 
     """
-    # =========================================================================
-    # Calculation of the magnet-radii
-    # &
-    # Calculation of the distance between rotor/magnet and stator inner radius:
-    # =========================================================================
+    
     rotor_rint = machine.rotor.Rint
     rotor_rext = machine.rotor.Rext
     stator_rint = machine.stator.Rint
@@ -364,8 +353,6 @@ def translate_machine_geo(
         else:
             magnet_farthest_radius = rotor_rint + h0
             magnet_shortest_radius = rotor_rint + h0 - h1
-            stator_rext = machine.stator.Rext
-            rotor_rint = machine.rotor.Rint
 
             if rotor_rint < magnet_shortest_radius:
                 diff_radius = stator_rext - rotor_rint
@@ -383,6 +370,30 @@ def translate_machine_geo(
             max_radius = rotor_rint
             diff_radius = stator_rext - max_radius
 
+    return diff_radius, max_radius
+
+
+def get_translated_machine(
+    machine: Machine,
+    is_internal_rotor: bool,
+) -> tuple[list, list[SurfaceAPI], float]:
+    """_summary_
+
+    Args:
+        machine (Machine): _description_
+        is_internal_rotor (bool): _description_
+
+    Raises:
+        RuntimeError: _description_
+
+    Returns:
+        tuple[list, list[SurfaceAPI], float]: _description_
+    """
+
+    diff_radius, max_radius = calcs_radii(
+        machine=machine, is_internal_rotor=is_internal_rotor
+    )
+
     # =================================================================
     # Translation of geometry and creation of rotor and stator contour:
     # =================================================================
@@ -393,7 +404,7 @@ def translate_machine_geo(
         r_point_rotor_cont,
         l_point_rotor_cont,
         magnetization_dict,
-    ) = createGeoDict(
+    ) = create_geo_dict(
         machine,
         is_internal_rotor,
     )
@@ -438,7 +449,19 @@ def translate_machine_geo(
     all_bands.append(stator_air_gap2)
     geometry_list.extend(all_bands)
 
-    print("Plot allBands: ")
-    # plot(allBands)
+    geo_translation_dict = {}
+    for surf in geometry_list:
+        if surf.idExt not in geo_translation_dict:
+            geo_translation_dict[surf.idExt] = surf
+        else:
+            raise RuntimeError(
+                f"Surface ID '{surf.idExt}' already in geometry dict!"
+            )
 
-    return all_bands, geometry_list, mb_radius, magnetization_dict
+    return (
+        all_bands,
+        geometry_list,
+        mb_radius,
+        magnetization_dict,
+        geo_translation_dict,
+    )

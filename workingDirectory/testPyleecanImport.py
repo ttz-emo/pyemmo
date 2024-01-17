@@ -93,6 +93,7 @@ if isinstance(machine, (MachineSIPMSM, MachineIPMSM, MachineSyRM)):
         geometryList,
         movingband_r,
         magnetizationDict,
+        geo_translation_dict,
     ) = translate_machine_geo(
         machine=machine,
         is_internal_rotor=isInternalRotor,
@@ -101,14 +102,6 @@ if isinstance(machine, (MachineSIPMSM, MachineIPMSM, MachineSyRM)):
 else:
     raise ValueError("Machine type is not translatable!")
 
-geoTranslationDict = {}
-for surf in geometryList:
-    if surf.idExt not in geoTranslationDict:
-        geoTranslationDict[surf.idExt] = surf
-    else:
-        raise RuntimeError(
-            f"Surface ID '{surf.idExt}' already in geometry dict!"
-        )
 
 geometryLineListFinish = []
 for surf in geometryList:
@@ -123,7 +116,7 @@ paramDict = createParamDict(
 )
 
 main(
-    geo=geoTranslationDict,
+    geo=geo_translation_dict,
     extInfo=paramDict,
     model=os.path.join(resFolder, fileName.split(".")[0]),
     results=os.path.join(resFolder, fileName.split(".")[0], "res"),
