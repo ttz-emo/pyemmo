@@ -11,7 +11,6 @@ from pyemmo.api.SurfaceJSON import SurfaceAPI
 def get_magnetization_dict(
     machine: Machine,
     angle_point_ref_list: list[float],
-    magnetization_dict: dict,
     geometry_list: list[SurfaceAPI],
 ) -> dict:
     """Get the magnetization dict with the magnet and the magnetization angle.
@@ -28,6 +27,8 @@ def get_magnetization_dict(
     # ----------------------------------------------------
     # Filling the magnetization dict if surface is magnet:
     # ----------------------------------------------------
+    magnetization_dict = {}
+
     # Changing the 'idExt' of the SurfaceAPI to 'Mag0', 'Mag1', 'Mag2', ...
     # if the 'idExt' is 'Mag'
     lpl_counter = 0
