@@ -3,7 +3,7 @@ from pyleecan.Classes.Material import Material as pyleecanMat
 from pyemmo.script.material.material import Material
 
 
-def buildPyemmoMaterial(pyleecanMaterial: pyleecanMat) -> Material:
+def build_pyemmo_material(pyleecan_material: pyleecanMat) -> Material:
     """Translates a pyleecan-material into a pyemmo-material.
 
     Args:
@@ -13,42 +13,42 @@ def buildPyemmoMaterial(pyleecanMaterial: pyleecanMat) -> Material:
         Material: Translated material in pyemmo format
     """
     try:
-        conductivity = pyleecanMaterial.elec.rho
+        conductivity = pyleecan_material.elec.rho
     except AttributeError:
         conductivity = None
     try:
         # TODO: Abfangen, falls mur_lin und BH nicht gesetzt sind -> Fehler ausgeben. Falls BH gegeben ist, kein mur_lin benötigt.
-        relPermeability = pyleecanMaterial.mag.mur_lin
+        rel_permeability = pyleecan_material.mag.mur_lin
     except AttributeError:
-        relPermeability = 1.0
+        rel_permeability = 1.0
     try:
-        remanence = pyleecanMaterial.mag.Brm20
+        remanence = pyleecan_material.mag.Brm20
     except AttributeError:
         remanence = None
     try:
-        alphaBr = pyleecanMaterial.mag.alpha_Br
+        alpha_br = pyleecan_material.mag.alpha_Br
     except AttributeError:
-        alphaBr = None
+        alpha_br = None
     try:
-        BH = pyleecanMaterial.mag.BH_curve.value
-        BH[:, [0, 1]] = BH[:, [1, 0]]
+        bh = pyleecan_material.mag.BH_curve.value
+        bh[:, [0, 1]] = bh[:, [1, 0]]
     except AttributeError:
-        BH = None
+        bh = None
     try:
-        density = pyleecanMaterial.struct.rho
+        density = pyleecan_material.struct.rho
     except AttributeError:
         density = None
 
-    pyemmoMaterial = Material(
-        name=pyleecanMaterial.desc,
+    pyemmo_material = Material(
+        name=pyleecan_material.desc,
         conductivity=conductivity,
-        relPermeability=relPermeability,
+        relPermeability=rel_permeability,
         remanence=remanence,
-        tempCoefRem=alphaBr,
-        BH=BH,
+        tempCoefRem=alpha_br,
+        BH=bh,
         density=density,
         thermalConductivity=None,
         thermalCapacity=None,
     )
 
-    return pyemmoMaterial
+    return pyemmo_material
