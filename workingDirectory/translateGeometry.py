@@ -9,126 +9,126 @@ import pyleecan.Classes.Surface
 
 from pyemmo.api.SurfaceJSON import SurfaceAPI
 from .buildPyemmoMaterial import buildPyemmoMaterial
-from .buildPyemmoLineList import buildPyemmoLineList
+from .buildPyemmoLineList import build_pyemmo_line_list
 
 
 # ===========================================
 # Definition of function 'translateGeometry':
 # ===========================================
-def translateGeometry(
-    nameSplitList: list[str],  # list with the splitted names
+def translate_surfs(
+    name_split_list: list[str],  # list with the splitted names
     machine: pyleecan.Classes.Machine.Machine,  # Import of motor
     label: str,
     surface: pyleecan.Classes.Surface.Surface,
-    anglePointRefList: list,
+    angle_point_ref_list: list,
 ) -> tuple[SurfaceAPI, list]:
     
-    if nameSplitList[0] == "Rotor":
-        if nameSplitList[2] == "Lamination":
-            pyleecanMat = machine.rotor.mat_type
-            idExt = "Pol"  # "RoNut" "Rotorblech"
+    if name_split_list[0] == "Rotor":
+        if name_split_list[2] == "Lamination":
+            pyleecan_mat = machine.rotor.mat_type
+            id_ext = "Pol"  # "RoNut" "Rotorblech"
             name = "Rotorblech"
 
-        elif nameSplitList[2] == "Magnet":
-            pyleecanMat = machine.rotor.magnet.mat_type
-            idExt = "Mag"
+        elif name_split_list[2] == "Magnet":
+            pyleecan_mat = machine.rotor.magnet.mat_type
+            id_ext = "Mag"
             name = "Magnet"
-            anglePointRefList.append(angle(surface.point_ref))
+            angle_point_ref_list.append(angle(surface.point_ref))
             
 
-        elif nameSplitList[2] == "Hole":
-            pyleecanMat = machine.rotor.hole.mat_type
-            idExt = "Mag"
+        elif name_split_list[2] == "Hole":
+            pyleecan_mat = machine.rotor.hole.mat_type
+            id_ext = "Mag"
             name = "Magnet"
-            anglePointRefList.append(angle(surface.point_ref))
+            angle_point_ref_list.append(angle(surface.point_ref))
             
 
-        elif nameSplitList[2] == "HoleMag":
-            pyleecanMat = machine.rotor.hole[0].magnet_0.mat_type
+        elif name_split_list[2] == "HoleMag":
+            pyleecan_mat = machine.rotor.hole[0].magnet_0.mat_type
 
-            idExt = "Mag"  # "Magnet"
+            id_ext = "Mag"  # "Magnet"
             name = "Magnet"
-            anglePointRefList.append(angle(surface.point_ref))
+            angle_point_ref_list.append(angle(surface.point_ref))
 
-        elif nameSplitList[2] == "HoleVoid":
-            pyleecanMat = machine.rotor.hole[0].mat_void
-            idExt = "Lpl"  # "Loch (Pollueke)"
+        elif name_split_list[2] == "HoleVoid":
+            pyleecan_mat = machine.rotor.hole[0].mat_void
+            id_ext = "Lpl"  # "Loch (Pollueke)"
             name = "Loch"
         
-        elif nameSplitList[2] == "Ventilation":
-            pyleecanMat = machine.rotor.axial_vent[0].mat_void
-            idExt = "Lpl"  # "Loch (Pollueke)"
+        elif name_split_list[2] == "Ventilation":
+            pyleecan_mat = machine.rotor.axial_vent[0].mat_void
+            id_ext = "Lpl"  # "Loch (Pollueke)"
             name = "Loch"
             
         else:
             raise ValueError(
-                f"Wrong input for 'detail'. Your input was '{nameSplitList[2]}'."
+                f"Wrong input for 'detail'. Your input was '{name_split_list[2]}'."
             )
 
-        pyemmoMaterial = buildPyemmoMaterial(pyleecanMat)
+        pyemmo_mat = buildPyemmoMaterial(pyleecan_mat)
 
-        pyemmoSurface = SurfaceAPI(
+        pyemmo_surf = SurfaceAPI(
             name=label,
-            idExt=idExt,
-            curves=buildPyemmoLineList(surface.line_list),
-            material=pyemmoMaterial,
+            idExt=id_ext,
+            curves=build_pyemmo_line_list(surface.line_list),
+            material=pyemmo_mat,
             nbrSegments=machine.rotor.comp_periodicity_geo()[0],
             angle=(2 * pi / machine.rotor.comp_periodicity_geo()[0]),
             meshSize=0,
         )
 
     # stator
-    elif nameSplitList[0] == "Stator":
-        if nameSplitList[2] == "Lamination":
-            pyleecanMat = machine.stator.mat_type
-            idExt = "StNut"  # "Statorblech"
+    elif name_split_list[0] == "Stator":
+        if name_split_list[2] == "Lamination":
+            pyleecan_mat = machine.stator.mat_type
+            id_ext = "StNut"  # "Statorblech"
             name = "Statorblech"
 
-        elif nameSplitList[2] == "Winding":
-            pyleecanMat = machine.stator.winding.conductor.cond_mat
+        elif name_split_list[2] == "Winding":
+            pyleecan_mat = machine.stator.winding.conductor.cond_mat
             name = "Stator-Nut"
-            Q = machine.stator.slot.Zs
+            z = machine.stator.slot.Zs
             p = machine.stator.winding.p
             m = machine.stator.winding.qs
-            q = Q / (2 * m * p)
-            if nameSplitList[3] == "R0":
+            q = z / (2 * m * p)
+            if name_split_list[3] == "R0":
                 if q == 0.5:
-                    if nameSplitList[4] == "T0":
-                        idExt = "StCu0"  # "Stator-Nut"
+                    if name_split_list[4] == "T0":
+                        id_ext = "StCu0"  # "Stator-Nut"
                     else:
-                        idExt = "StCu1"  # "Stator-Nut"
+                        id_ext = "StCu1"  # "Stator-Nut"
                 else:
-                    idExt = "StCu0"  # "Stator-Nut"
-            elif nameSplitList[3] == "R1":
+                    id_ext = "StCu0"  # "Stator-Nut"
+            elif name_split_list[3] == "R1":
                 # BUG, FIXME: 'T0' kann für q=0.5 Wicklung mit Ober- und
                 # Schicht vorkommen. Dann ist für R0 und R1 beides mal 'T0'
                 # Das führt dazu, dass beide StCu0 benannt werden und nur eins
                 # der beiden Segmente erzeugt wird!
-                if q == 0.5 and nameSplitList[4] == "T0":
-                    idExt = "StCu1"  # "Stator-Nut"
-                elif q == 0.5 and nameSplitList[4] == "T1":
+                if q == 0.5 and name_split_list[4] == "T0":
+                    id_ext = "StCu1"  # "Stator-Nut"
+                elif q == 0.5 and name_split_list[4] == "T1":
                     # TODO: Außen liegende und linke Nuthälfte... Geht das? Mehr als 
                     # zwei Wicklungen pro Nut?
-                    idExt = "StCu1"  # "Stator-Nut"
+                    id_ext = "StCu1"  # "Stator-Nut"
                 else:
-                    idExt = "StCu1"  # "Stator-Nut"
+                    id_ext = "StCu1"  # "Stator-Nut"
             else:
                 raise ValueError(
-                    f"Radial Index of '{nameSplitList.join('_')}' was not R0 or R1, but '{nameSplitList[3]}'"
+                    f"Radial Index of '{name_split_list.join('_')}' was not R0 or R1, but '{name_split_list[3]}'"
                 )
 
         else:
             raise ValueError(
-                f"Wrong input for 'detail'. Your input was '{nameSplitList[2]}'."
+                f"Wrong input for 'detail'. Your input was '{name_split_list[2]}'."
             )
 
-        pyemmoMaterial = buildPyemmoMaterial(pyleecanMat)
+        pyemmo_mat = buildPyemmoMaterial(pyleecan_mat)
 
-        pyemmoSurface = SurfaceAPI(
+        pyemmo_surf = SurfaceAPI(
             name=name,
-            idExt=idExt,
-            curves=buildPyemmoLineList(surface.line_list),
-            material=pyemmoMaterial,
+            idExt=id_ext,
+            curves=build_pyemmo_line_list(surface.line_list),
+            material=pyemmo_mat,
             nbrSegments=machine.stator.comp_periodicity_geo()[0],
             angle=(2 * pi / machine.stator.comp_periodicity_geo()[0]),
             meshSize=1.0,
@@ -136,7 +136,7 @@ def translateGeometry(
 
     else:
         raise ValueError(
-            f"Wrong input for 'bauteil'. 'bauteil' must be 'Rotor' or 'Stator'. Your input was '{nameSplitList[0]}'."
+            f"Wrong input for 'bauteil'. 'bauteil' must be 'Rotor' or 'Stator'. Your input was '{name_split_list[0]}'."
         )
 
-    return pyemmoSurface, anglePointRefList
+    return pyemmo_surf, angle_point_ref_list
