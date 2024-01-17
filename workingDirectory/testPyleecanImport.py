@@ -23,7 +23,7 @@ except:
 from pyemmo.functions.plot import plot
 from pyemmo.api.json import main
 from pyemmo.definitions import ROOT_DIR
-from workingDirectory.buildPyemmoMovingBand import translate_machine_geo
+from workingDirectory.buildPyemmoMovingBand import get_translated_machine
 from workingDirectory.createParamDict import createParamDict
 
 
@@ -94,7 +94,7 @@ if isinstance(machine, (MachineSIPMSM, MachineIPMSM, MachineSyRM)):
         movingband_r,
         magnetizationDict,
         geo_translation_dict,
-    ) = translate_machine_geo(
+    ) = get_translated_machine(
         machine=machine,
         is_internal_rotor=isInternalRotor,
     )
@@ -102,14 +102,9 @@ if isinstance(machine, (MachineSIPMSM, MachineIPMSM, MachineSyRM)):
 else:
     raise ValueError("Machine type is not translatable!")
 
-
-geometryLineListFinish = []
-for surf in geometryList:
-    geometryLineListFinish.extend(surf.curve)
-
-print("Plot ENDE:")
+# print("Plot ENDE:")
 # plot(geometryLineListFinish, linewidth=1, markersize=3, tag=True)
-print("---")
+# print("---")
 
 paramDict = createParamDict(
     machine, simulation, movingband_r, magnetizationDict
