@@ -8,7 +8,7 @@ import pyleecan.Classes.LamSlotWind
 import pyleecan.Classes.Surface
 
 from pyemmo.api.SurfaceJSON import SurfaceAPI
-from .buildPyemmoMaterial import buildPyemmoMaterial
+from .buildPyemmoMaterial import build_pyemmo_material
 from .buildPyemmoLineList import build_pyemmo_line_list
 
 
@@ -18,11 +18,9 @@ from .buildPyemmoLineList import build_pyemmo_line_list
 def translate_surfs(
     name_split_list: list[str],  # list with the splitted names
     machine: pyleecan.Classes.Machine.Machine,  # Import of motor
-    label: str,
     surface: pyleecan.Classes.Surface.Surface,
     angle_point_ref_list: list,
 ) -> tuple[SurfaceAPI, list]:
-    
     if name_split_list[0] == "Rotor":
         if name_split_list[2] == "Lamination":
             pyleecan_mat = machine.rotor.mat_type
@@ -34,14 +32,12 @@ def translate_surfs(
             id_ext = "Mag"
             name = "Magnet"
             angle_point_ref_list.append(angle(surface.point_ref))
-            
 
         elif name_split_list[2] == "Hole":
             pyleecan_mat = machine.rotor.hole.mat_type
             id_ext = "Mag"
             name = "Magnet"
             angle_point_ref_list.append(angle(surface.point_ref))
-            
 
         elif name_split_list[2] == "HoleMag":
             pyleecan_mat = machine.rotor.hole[0].magnet_0.mat_type
@@ -54,28 +50,18 @@ def translate_surfs(
             pyleecan_mat = machine.rotor.hole[0].mat_void
             id_ext = "Lpl"  # "Loch (Pollueke)"
             name = "Loch"
-        
+
         elif name_split_list[2] == "Ventilation":
             pyleecan_mat = machine.rotor.axial_vent[0].mat_void
             id_ext = "Lpl"  # "Loch (Pollueke)"
             name = "Loch"
-            
+
         else:
             raise ValueError(
                 f"Wrong input for 'detail'. Your input was '{name_split_list[2]}'."
             )
 
-        pyemmo_mat = buildPyemmoMaterial(pyleecan_mat)
-
-        pyemmo_surf = SurfaceAPI(
-            name=label,
-            idExt=id_ext,
-            curves=build_pyemmo_line_list(surface.line_list),
-            material=pyemmo_mat,
-            nbrSegments=machine.rotor.comp_periodicity_geo()[0],
-            angle=(2 * pi / machine.rotor.comp_periodicity_geo()[0]),
-            meshSize=0,
-        )
+        nbr_seg = machine.rotor.comp_periodicity_geo()[0]
 
     # stator
     elif name_split_list[0] == "Stator":
@@ -107,7 +93,7 @@ def translate_surfs(
                 if q == 0.5 and name_split_list[4] == "T0":
                     id_ext = "StCu1"  # "Stator-Nut"
                 elif q == 0.5 and name_split_list[4] == "T1":
-                    # TODO: Außen liegende und linke Nuthälfte... Geht das? Mehr als 
+                    # TODO: Außen liegende und linke Nuthälfte... Geht das? Mehr als
                     # zwei Wicklungen pro Nut?
                     id_ext = "StCu1"  # "Stator-Nut"
                 else:
@@ -122,21 +108,23 @@ def translate_surfs(
                 f"Wrong input for 'detail'. Your input was '{name_split_list[2]}'."
             )
 
-        pyemmo_mat = buildPyemmoMaterial(pyleecan_mat)
-
-        pyemmo_surf = SurfaceAPI(
-            name=name,
-            idExt=id_ext,
-            curves=build_pyemmo_line_list(surface.line_list),
-            material=pyemmo_mat,
-            nbrSegments=machine.stator.comp_periodicity_geo()[0],
-            angle=(2 * pi / machine.stator.comp_periodicity_geo()[0]),
-            meshSize=1.0,
-        )
+        nbr_seg = machine.stator.comp_periodicity_geo()[0]
 
     else:
         raise ValueError(
             f"Wrong input for 'bauteil'. 'bauteil' must be 'Rotor' or 'Stator'. Your input was '{name_split_list[0]}'."
         )
+
+    angle_seg = 2 * pi / nbr_seg
+    pyemmo_mat = build_pyemmo_material(pyleecan_mat)
+    pyemmo_surf = SurfaceAPI(
+        name=name,
+        idExt=id_ext,
+        curves=build_pyemmo_line_list(surface.line_list),
+        material=pyemmo_mat,
+        nbrSegments=nbr_seg,
+        angle=angle_seg,
+        meshSize=0,
+    )
 
     return pyemmo_surf, angle_point_ref_list
