@@ -13,13 +13,13 @@ from pyemmo.script.geometry.line import Line
 from pyemmo.script.geometry.circleArc import CircleArc
 from pyemmo.script.geometry.point import Point
 from .translateGeometry import translate_surfs
-from .getRotorStatorContour import (
+from .get_rotor_stator_cont import (
     get_spmsm_rotor_cont,
     get_winding_cont,
     get_even_rotor_cont,
 )
 from .detectInnerOuterLimit import detectInnerOuterLimit
-from .getMagnetizationDict import get_magnetization_dict
+from .get_magnetization_dict import get_magnetization_dict
 
 
 def create_geo_dict(
