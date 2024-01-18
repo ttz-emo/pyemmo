@@ -1,7 +1,7 @@
 import math
 
 
-def getXforPoint(radius: float, angle: float) -> float:
+def get_x_for_point(radius: float, angle: float) -> float:
     """Get the x-coordinate of the Point.
 
     Args:
@@ -15,7 +15,7 @@ def getXforPoint(radius: float, angle: float) -> float:
     return x
 
 
-def getYforPoint(radius: float, angle: float) -> float:
+def get_y_for_point(radius: float, angle: float) -> float:
     """Get the y-coordinate of the Point.
 
     Args:
