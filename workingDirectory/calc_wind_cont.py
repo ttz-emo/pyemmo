@@ -5,7 +5,7 @@ from pyemmo.script.geometry.line import Line
 from pyemmo.script.geometry.circleArc import CircleArc
 from pyemmo.script.geometry.point import Point
 from pyemmo.functions.plot import plot
-from .getRotorStatorSurfaces import getStatorSurfaces
+from .get_rotor_stator_surfs import get_stator_surfs
 
 
 def calc_wind_contour(
@@ -24,7 +24,7 @@ def calc_wind_contour(
         list[Union[Line, CircleArc]]: _description_
     """
     stator_cont_line_list = []
-    stator_lam_surf_list = getStatorSurfaces(geometryList=geometry_list)
+    stator_lam_surf_list = get_stator_surfs(geometry_list=geometry_list)
 
     # =================================================
     # Erstellung der Rotor-Konturlinie fuer MovingBand:
