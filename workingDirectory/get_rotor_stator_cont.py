@@ -6,10 +6,10 @@ from pyleecan.Classes.MachineSCIM import MachineSCIM
 from pyemmo.script.geometry.circleArc import CircleArc
 from pyemmo.script.geometry.line import Line
 from pyemmo.script.geometry.point import Point
-from .getRotorStatorSurfaces import getRotorSurfaces
-from .calcsSPMSMContour import calc_spmsm_rotor_cont
-from .calcIPMSMContour import calc_even_rotor_cont
-from .calcWindContour import calcWindContour
+from .get_rotor_stator_surfs import get_rotor_surfs
+from .calcs_rotor_spmsm_cont import calc_spmsm_rotor_cont
+from .calcs_even_rotor_cont import calc_even_rotor_cont
+from .calc_wind_cont import calc_wind_contour
 
 
 def get_spmsm_rotor_cont(
@@ -26,8 +26,8 @@ def get_spmsm_rotor_cont(
         tuple[list[Union[Line, CircleArc]], Point, Point]: _description_
     """
 
-    rotor_lam_surf_list, rotor_mag_surf_list = getRotorSurfaces(
-        geometryList=geometry_list
+    rotor_lam_surf_list, rotor_mag_surf_list = get_rotor_surfs(
+        geometry_list=geometry_list
     )
 
     if is_internal_rotor:
@@ -118,18 +118,18 @@ def get_winding_cont(
     stator_rext = machine.stator.Rext
 
     if is_internal_rotor:
-        stator_cont_line_list = calcWindContour(
-            geometryList=geometry_list,
-            statorRint=stator_rint,
-            statorRext=stator_rext,
+        stator_cont_line_list = calc_wind_contour(
+            geometry_list=geometry_list,
+            stator_rint=stator_rint,
+            stator_rext=stator_rext,
         )
     elif isinstance(machine, MachineSCIM):
         pass
     else:
-        stator_cont_line_list = calcWindContour(
-            geometryList=geometry_list,
-            statorRint=stator_rext,
-            statorRext=stator_rint,
+        stator_cont_line_list = calc_wind_contour(
+            geometry_list=geometry_list,
+            stator_rint=stator_rext,
+            stator_rext=stator_rint,
         )
 
     return stator_cont_line_list
