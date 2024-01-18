@@ -1,7 +1,7 @@
 from pyemmo.script.geometry.point import Point
 
 
-def buildPyemmoPoint(pyleecanPoint: complex) -> Point:
+def build_pyemmo_point(pyleecan_point: complex) -> Point:
     """Translates the coordinates of a point in ``pyleecan`` into a ``pyemmo`` point.
 
     Args:
@@ -10,10 +10,10 @@ def buildPyemmoPoint(pyleecanPoint: complex) -> Point:
     Returns:
         Point: ``pyemmoPoint``: pyemmo point
     """
-    coords = [pyleecanPoint.real, pyleecanPoint.imag]
+    coords = [pyleecan_point.real, pyleecan_point.imag]
 
-    pyemmoPoint = Point(
+    pyemmo_point = Point(
         name="Point", x=coords[0], y=coords[1], z=0, meshLength=1e-3
     )
 
-    return pyemmoPoint
+    return pyemmo_point
