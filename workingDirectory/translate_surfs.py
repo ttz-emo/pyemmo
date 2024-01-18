@@ -8,8 +8,8 @@ import pyleecan.Classes.LamSlotWind
 import pyleecan.Classes.Surface
 
 from pyemmo.api.SurfaceJSON import SurfaceAPI
-from .buildPyemmoMaterial import build_pyemmo_material
-from .buildPyemmoLineList import build_pyemmo_line_list
+from .build_pyemmo_material import build_pyemmo_material
+from .build_pyemmo_line_list import build_pyemmo_line_list
 
 
 # ===========================================
@@ -21,6 +21,21 @@ def translate_surfs(
     surface: pyleecan.Classes.Surface.Surface,
     angle_point_ref_list: list,
 ) -> tuple[SurfaceAPI, list]:
+    """_summary_
+
+    Args:
+        name_split_list (list[str]): _description_
+        angle_point_ref_list (list): _description_
+
+    Raises:
+        ValueError: _description_
+        ValueError: _description_
+        ValueError: _description_
+        ValueError: _description_
+
+    Returns:
+        tuple[SurfaceAPI, list]: _description_
+    """
     if name_split_list[0] == "Rotor":
         if name_split_list[2] == "Lamination":
             pyleecan_mat = machine.rotor.mat_type
