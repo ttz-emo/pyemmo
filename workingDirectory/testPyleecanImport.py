@@ -23,12 +23,12 @@ except:
 from pyemmo.functions.plot import plot
 from pyemmo.api.json import main
 from pyemmo.definitions import ROOT_DIR
-from workingDirectory.buildPyemmoMovingBand import get_translated_machine
-from workingDirectory.createParamDict import createParamDict
+from workingDirectory.get_translated_machine import get_translated_machine
+from workingDirectory.create_param_dict import create_param_dict
 
 
 # Simulation Function
-def generateSimulation(
+def generate_simulation(
     machine: Machine,
     i_d: float = 0.0,
     i_q: float = 10.0,
@@ -58,10 +58,10 @@ def generateSimulation(
     simu.input.time = time
 
     # Angular discretization along the airgap circonference
-    angularDisc = np.linspace(
+    angular_disc = np.linspace(
         start=0, stop=2 * np.pi, num=2048, endpoint=False
     )
-    simu.input.angle = angularDisc
+    simu.input.angle = angular_disc
     return simu
 
 
@@ -80,7 +80,7 @@ for i, file in enumerate(os.listdir(machineFolder)):
 fileName = machineList[1]  # SELECT MACHINE HERE BY INDEX OR NAME
 print("\nUsing machine: " + fileName)
 machine: Machine = load(os.path.abspath(os.path.join(machineFolder, fileName)))
-simulation = generateSimulation(machine, i_d=0, i_q=10, speed=1000)
+simulation = generate_simulation(machine, i_d=0, i_q=10, speed=1000)
 
 # --------------------------
 # isInternalRotor detection:
@@ -106,7 +106,7 @@ else:
 # plot(geometryLineListFinish, linewidth=1, markersize=3, tag=True)
 # print("---")
 
-paramDict = createParamDict(
+paramDict = create_param_dict(
     machine, simulation, movingband_r, magnetizationDict
 )
 
