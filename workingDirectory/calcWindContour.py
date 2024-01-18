@@ -8,10 +8,10 @@ from pyemmo.functions.plot import plot
 from .getRotorStatorSurfaces import getStatorSurfaces
 
 
-def calcWindContour(
-    geometryList: list,
-    statorRint: float,
-    statorRext: float,
+def calc_wind_contour(
+    geometry_list: list,
+    stator_rint: float,
+    stator_rext: float,
 ) -> list[Union[Line, CircleArc]]:
     """Calculation for the contour of a slot with winding.
 
@@ -23,8 +23,8 @@ def calcWindContour(
     Returns:
         list[Union[Line, CircleArc]]: _description_
     """
-    statorContourLineList = []
-    statorLamSurfList = getStatorSurfaces(geometryList=geometryList)
+    stator_cont_line_list = []
+    stator_lam_surf_list = getStatorSurfaces(geometryList=geometry_list)
 
     # =================================================
     # Erstellung der Rotor-Konturlinie fuer MovingBand:
@@ -33,58 +33,59 @@ def calcWindContour(
     # -----------------------------------------------------------
     # Aussortieren der Linien die nicht an der Oberfläche liegen:
     # -----------------------------------------------------------
-    for curve in statorLamSurfList[0].curve:
+    for curve in stator_lam_surf_list[0].curve:
         if (
             math.isclose(
                 a=curve.startPoint.radius,
-                b=statorRint,
+                b=stator_rint,
                 abs_tol=1e-6,
             )
             or math.isclose(
                 a=curve.endPoint.radius,
-                b=statorRint,
+                b=stator_rint,
                 abs_tol=1e-6,
             )
         ) and (
             math.isclose(
                 a=curve.endPoint.radius,
-                b=statorRext,
+                b=stator_rext,
                 abs_tol=1e-6,
             )
             is False
             and math.isclose(
                 a=curve.startPoint.radius,
-                b=statorRext,
+                b=stator_rext,
                 abs_tol=1e-6,
             )
             is False
         ):
-            statorContourLineList.append(curve)
+            stator_cont_line_list.append(curve)
 
-    statorLinePointList = []
-    for curve in statorContourLineList:
+    stator_line_point_list = []
+    
+    for curve in stator_cont_line_list:
         if (
-            curve.startPoint.radius > statorRint or curve.startPoint.radius > statorRext
+            curve.startPoint.radius > stator_rint or curve.startPoint.radius > stator_rext
         ) and math.isclose(
-            a=curve.startPoint.radius, b=statorRint, abs_tol=1e-6
+            a=curve.startPoint.radius, b=stator_rint, abs_tol=1e-6
         ) is False:
-            statorLinePointList.append(curve.startPoint)
+            stator_line_point_list.append(curve.startPoint)
         elif (
-            curve.endPoint.radius > statorRint or curve.endPoint.radius > statorRext
+            curve.endPoint.radius > stator_rint or curve.endPoint.radius > stator_rext
         ) and math.isclose(
-            a=curve.endPoint.radius, b=statorRint, abs_tol=1e-6
+            a=curve.endPoint.radius, b=stator_rint, abs_tol=1e-6
         ) is False:
-            statorLinePointList.append(curve.endPoint)
+            stator_line_point_list.append(curve.endPoint)
 
-    centerPoint = Point(name="centerPoint", x=0, y=0, z=0, meshLength=1)
-    statorNewLine = CircleArc(
+    center_point = Point(name="centerPoint", x=0, y=0, z=0, meshLength=1)
+    stator_new_line = CircleArc(
         name="windNewCircleArc",
-        startPoint=statorLinePointList[0],
-        endPoint=statorLinePointList[1],
-        centerPoint=centerPoint,
+        startPoint=stator_line_point_list[0],
+        endPoint=stator_line_point_list[1],
+        centerPoint=center_point,
     )
-    statorContourLineList.append(statorNewLine)
+    stator_cont_line_list.append(stator_new_line)
     print("windContourLineList:")
-    plot(statorContourLineList, linewidth=1, markersize=3, tag=True)
+    plot(stator_cont_line_list, linewidth=1, markersize=3, tag=True)
     print("---")
-    return statorContourLineList
+    return stator_cont_line_list
