@@ -12,7 +12,7 @@ from pyemmo.script.geometry.line import Line
 from pyemmo.api.SurfaceJSON import SurfaceAPI
 from pyemmo.functions.plot import plot
 from .createGeoDict import create_geo_dict
-from .getCoordinatesForPoint import getXforPoint, getYforPoint
+from .get_coords_for_point import get_x_for_point, get_y_for_point
 
 
 def build_bands_rotor(
@@ -57,8 +57,8 @@ def build_bands_rotor(
     )
     point_m12 = Point(
         name="PointM12",
-        x=getXforPoint(band_radius_list[0], angle_rotor),
-        y=getYforPoint(band_radius_list[0], angle_rotor),
+        x=get_x_for_point(band_radius_list[0], angle_rotor),
+        y=get_y_for_point(band_radius_list[0], angle_rotor),
         z=0,
         meshLength=mb_mesh_len,
     )
@@ -115,8 +115,8 @@ def build_bands_rotor(
     )
     point_m22 = Point(
         name="PointM22",
-        x=getXforPoint(band_radius_list[1], angle_rotor),
-        y=getYforPoint(band_radius_list[1], angle_rotor),
+        x=get_x_for_point(band_radius_list[1], angle_rotor),
+        y=get_y_for_point(band_radius_list[1], angle_rotor),
         z=0,
         meshLength=mb_mesh_len,
     )
@@ -216,8 +216,8 @@ def build_bands_stator(
 
     point_m42 = Point(
         name="PointM42",
-        x=getXforPoint(band_radius_list[3], angle_stator),
-        y=getYforPoint(band_radius_list[3], angle_stator),
+        x=get_x_for_point(band_radius_list[3], angle_stator),
+        y=get_y_for_point(band_radius_list[3], angle_stator),
         z=0,
         meshLength=mb_mesh_len,
     )
@@ -275,8 +275,8 @@ def build_bands_stator(
 
     point_m32 = Point(
         name="PointM32",
-        x=getXforPoint(band_radius_list[2], angle_stator),
-        y=getYforPoint(band_radius_list[2], angle_stator),
+        x=get_x_for_point(band_radius_list[2], angle_stator),
+        y=get_y_for_point(band_radius_list[2], angle_stator),
         z=0,
         meshLength=mb_mesh_len,
     )
