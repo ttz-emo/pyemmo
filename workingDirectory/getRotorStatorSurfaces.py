@@ -2,8 +2,8 @@ import logging
 from pyemmo.api.SurfaceJSON import SurfaceAPI
 
 
-def getRotorSurfaces(
-    geometryList: list[SurfaceAPI],
+def get_rotor_surfs(
+    geometry_list: list[SurfaceAPI],
 ) -> tuple[list[SurfaceAPI], list[SurfaceAPI]]:
     """Get the surfaces of the rotor.
 
@@ -16,32 +16,25 @@ def getRotorSurfaces(
     # =========================================
     # Zuweisung der Surfaces zu den Kategorien:
     # =========================================
-    rotorLamSurfList = []
-    rotorMagSurfList = []
+    rotor_lam_surf_list = []
+    rotor_mag_surf_list = []
 
-    for surf in geometryList:
-        if surf.idExt == "Pol":
-            rotorLamSurfList.append(surf)
-            logging.debug("rotorLamSurf:")
-            logging.debug(f"gefunden: {surf.name}")
-        elif surf.idExt == "Mag0":
-            rotorMagSurfList.append(surf)
-            logging.debug("rotorMagSurf:")
-            logging.debug(f"gefunden: {surf.name}")
-        elif surf.idExt == "Mag1":
-            rotorMagSurfList.append(surf)
-            logging.debug("rotorMagSurf:")
-            logging.debug(f"gefunden: {surf.name}")
-        elif surf.idExt == "Mag2":
-            rotorMagSurfList.append(surf)
-            logging.debug("rotorMagSurf:")
-            logging.debug(f"gefunden: {surf.name}")
+    for surf in geometry_list:
+        if surf.idExt in ("Pol", "Mag0", "Mag1", "Mag2"):
+            if surf.idExt == "Pol":
+                rotor_lam_surf_list.append(surf)
+                logging.debug("rotorLamSurf:")
+            elif surf.idExt in ("Mag0", "Mag1", "Mag2"):
+                rotor_mag_surf_list.append(surf)
+                logging.debug("rotorMagSurf:")
 
-    return rotorLamSurfList, rotorMagSurfList
+            logging.debug("gefunden: %s", {surf.name})
+
+    return rotor_lam_surf_list, rotor_mag_surf_list
 
 
-def getStatorSurfaces(
-    geometryList: list[SurfaceAPI],
+def get_stator_surfs(
+    geometry_list: list[SurfaceAPI],
 ) -> list[SurfaceAPI]:
     """Get the surface of the stator lamination.
 
@@ -54,13 +47,13 @@ def getStatorSurfaces(
     # =========================================
     # Zuweisung der Surfaces zu den Kategorien:
     # =========================================
-    statorLamSurfList = []
-    statorWindSurfList = []
+    stator_lam_surf_list = []
+    # statorWindSurfList = []
 
-    for surf in geometryList:
+    for surf in geometry_list:
         if surf.idExt == "StNut":
-            statorLamSurfList.append(surf)
+            stator_lam_surf_list.append(surf)
             logging.debug("statorLamSurf:")
-            logging.debug(f"gefunden: {surf.name}")
+            logging.debug("gefunden: %s", {surf.name})
 
-    return statorLamSurfList
+    return stator_lam_surf_list
