@@ -7,7 +7,7 @@ from pyleecan.Classes.LamHole import LamHole
 from pyleecan.Classes.LamSlotMag import LamSlotMag
 from pyleecan.Classes.OPdq import OPdq
 
-from .translateWinding import translateWinding
+from .translate_winding import translate_winding
 
 
 def create_param_dict(
@@ -122,7 +122,7 @@ def create_param_dict(
     else:
         sym_factor = sym_factor[0]
     logging.debug("Symmetry factor machine: %s", {sym_factor})
-    swatem_winding, wind_layout = translateWinding(machine)
+    swatem_winding, wind_layout = translate_winding(machine)
     sym_winding = swatem_winding.get_periodicity_t()*2
     logging.debug("Symmetry factor winding: %s",{sym_winding})
     sym_factor = min(sym_winding, sym_factor)
