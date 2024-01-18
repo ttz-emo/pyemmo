@@ -12,7 +12,7 @@ from pyemmo.api.SurfaceJSON import SurfaceAPI
 from pyemmo.script.geometry.line import Line
 from pyemmo.script.geometry.circleArc import CircleArc
 from pyemmo.script.geometry.point import Point
-from .translateGeometry import translate_surfs
+from .translate_surfs import translate_surfs
 from .get_rotor_stator_cont import (
     get_spmsm_rotor_cont,
     get_winding_cont,
