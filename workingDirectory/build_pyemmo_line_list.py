@@ -18,14 +18,16 @@ def build_pyemmo_line_list(
     into line list (Line, CircleArc) of the pyemmo-surface.
 
     Args:
-        pyleecanLineList (list[Union[Segment, Arc1, Arc2, Arc3]]): List of curves of 
+        pyleecanLineList (list[Union[Segment, Arc1, Arc2, Arc3]]): List of curves of
         the pyleecan-surface
 
     Returns:
         list[Union[Line, CircleArc]]: List of curves of the surface
     """
-
     pyemmo_line_list = []
+
+    if len(pyleecan_line_list) == 0:
+        raise IndexError("The pyleecan_line_list provided is empty. No translation possible.")
 
     for geo_element in pyleecan_line_list:
         if isinstance(geo_element, Segment):
@@ -39,9 +41,7 @@ def build_pyemmo_line_list(
 
         else:
             # translate an Arc1, Arc2 into CircleArc
-            if (
-                abs(geo_element.get_angle(is_deg=True)) >= 180
-            ):
+            if abs(geo_element.get_angle(is_deg=True)) >= 180:
                 translated_line = CircleArc(
                     name="CircleArc",
                     startPoint=build_pyemmo_point(geo_element.get_begin()),
