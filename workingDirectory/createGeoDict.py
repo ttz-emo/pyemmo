@@ -12,7 +12,7 @@ from pyemmo.api.SurfaceJSON import SurfaceAPI
 from pyemmo.script.geometry.line import Line
 from pyemmo.script.geometry.circleArc import CircleArc
 from pyemmo.script.geometry.point import Point
-from .translate_surfs import translate_surfs
+from .translate_surfs import translate_surface
 from .get_rotor_stator_cont import (
     get_spmsm_rotor_cont,
     get_winding_cont,
@@ -76,7 +76,7 @@ def create_geo_dict(
         )
 
         # translating the surface
-        pyemmo_surf, angle_point_ref_list = translate_surfs(
+        pyemmo_surf, angle_point_ref_list = translate_surface(
             name_split_list=all_surfs_labels_split2[i],
             machine=machine,
             surface=surf,
