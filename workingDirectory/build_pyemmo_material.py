@@ -40,7 +40,7 @@ def build_pyemmo_material(pyleecan_material: pyleecanMat) -> Material:
         density = None
 
     pyemmo_material = Material(
-        name=pyleecan_material.desc,
+        name=pyleecan_material.name,
         conductivity=conductivity,
         relPermeability=rel_permeability,
         remanence=remanence,
