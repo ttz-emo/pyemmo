@@ -456,8 +456,9 @@ def createPhysicalSurfaces(
         - Literal["Rotor", "Stator"]]: machine side to correctly assign the pE to the Rotor or
           Stator object.
     """
-    # determine if single point of surface is inside the Movingband radius, because if one point is
-    # inside, all the others have to be too:
+    # determine if single point of surface is inside the Movingband radius,
+    # because if one point is inside, all the others have to be too.
+    # FIXME: This assumes all machine are inner rotor!
     machineSide = (
         "Rotor"
         if surfList[0].curve[0].startPoint.calcDist() <= rotorMBRadius
@@ -789,6 +790,10 @@ def createWinding(extendedInfo: dict) -> datamodel:
     
     )
     swatemWinding.analyse_wdg()  # analyse winding to make sure its valid and all parameters are set
+    # make sure that number of parallel paths does not exceed max. possible paths of winding:
+    if max(swatemWinding.get_parallel_connections()) < importJSON.getNbrParalellPaths(extendedInfo):
+        logger.warning("The given number of parallel windings paths (%i) exceeds possible paths of the winding layout (%i)!", importJSON.getNbrParalellPaths(extendedInfo), max(swatemWinding.get_parallel_connections()) )
+
     return swatemWinding
 
 

@@ -9,6 +9,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 from parse import parse
 import gmsh
+from .. import rootLogger as logger
 
 
 def readTimeTableDat(filePath: str) -> Tuple[np.ndarray, np.ndarray]:
@@ -35,7 +36,8 @@ def readTimeTableDat(filePath: str) -> Tuple[np.ndarray, np.ndarray]:
         valueList: List[str] = lines[0].strip().split(" ")
         # always use two values as pair
         nbrValues = len(valueList)
-        assert nbrValues % 2 == 0  # number of pairs must be int and dividable by 2
+        # number of pairs must be int and dividable by 2
+        assert nbrValues % 2 == 0
         nbrPairs = int(nbrValues / 2)
         time = np.zeros((nbrPairs,))
         values = np.zeros((nbrPairs,))
@@ -72,7 +74,8 @@ def splitData(
         List[List[float]]: 2D time array.
         List[List[float]]: 2D data array.
     """
-    assert len(time) == len(data)  # assert that the input vectors have the same size
+    # assert that the input vectors have the same size
+    assert len(time) == len(data)
     nbrSims = 0  # number of simulations
     # init lists and arrays:
     timeVec = []
@@ -145,7 +148,9 @@ def plotTimeTableDat(
         # check that max or min is not close too close to zero to apply the y_lim
         maxVal = max(dataArray[sim])
         minVal = min(dataArray[sim])
-        if not (isclose(maxVal, 0, abs_tol=0.1) or isclose(minVal, 0, abs_tol=0.1)):
+        if not (
+            isclose(maxVal, 0, abs_tol=0.1) or isclose(minVal, 0, abs_tol=0.1)
+        ):
             fig.axes[0].set_ylim(
                 bottom=minVal * (1.1 if min(dataArray[sim]) < 0 else 0.9),
                 top=maxVal * (1.1 if max(dataArray[sim]) > 0 else 0.9),
@@ -186,7 +191,9 @@ def plotAllDat(dirPath: str) -> None:
 
 def importSP(
     posFilePath: str,
-) -> Tuple[str, List[float], List[Tuple[float, float, float]], List[List[float]]]:
+) -> Tuple[
+    str, List[float], List[Tuple[float, float, float]], List[List[float]]
+]:
     """Import values of POS files with the "Scalar Point" (SP) format
 
     Args:
@@ -228,7 +235,8 @@ def importSP(
     for line in dataLines:
         parsedValues = parse("SP({:g},{:g},{:g}){{{}}};\n", line)
         if parsedValues:
-            pos.append(parsedValues[0:3])  # first 3 elements are the coordinate values
+            # first 3 elements are the coordinate values
+            pos.append(parsedValues[0:3])
             valueList = []  # empty list for values of one point
             for value in parsedValues[3].split(","):
                 valueList.append(float(value))
@@ -279,7 +287,9 @@ def importPos(
             f"Given file '{posFile}' did not result in a Gmsh view. Is file in gmsh POS-format?"
         )
     # get number of time steps in SIMULATION (not all time steps have to be saved)
-    nbrSteps = int(gmsh.view.option.getNumber(tag=viewTags[-1], name="NbTimeStep"))
+    nbrSteps = int(
+        gmsh.view.option.getNumber(tag=viewTags[-1], name="NbTimeStep")
+    )
     time = []  # init time vector
     # init data containers with first time step
     _, elementTags, cdata, ctime, numComp = gmsh.view.getModelData(
@@ -289,11 +299,15 @@ def importPos(
     #   vector: number of components = 3
     #   scalar: number of components = 1
     if not cdata:
-        _, _, cdata, ctime, numComp = gmsh.view.getModelData(viewTags[-1], nbrSteps - 1)
+        _, _, cdata, ctime, numComp = gmsh.view.getModelData(
+            viewTags[-1], nbrSteps - 1
+        )
         if not cdata:
             gmsh.finalize()
             raise ValueError(f"No data found in {posFile}!")
-        warnings.warn(f"Import file '{posFile}' did only contain last timestep!")
+        warnings.warn(
+            f"Import file '{posFile}' did only contain last timestep!"
+        )
         # Only last time step happens if PostProcessing is called at runtime (in 'Resolution').
         # Return only that timestep
         if finGmsh:
@@ -312,3 +326,32 @@ def importPos(
         # if gmsh wasn't init before:
         gmsh.finalize()
     return (elementTags, time, data)
+
+
+def getResFileList(
+    resDir: os.PathLike,
+) -> tuple[list[os.PathLike], list[os.PathLike]]:
+    """Return a list of GetDP result files from the folder ``resDir``.
+    GetDP results can be .pos or .dat files.
+
+    Args:
+        resDir (os.PathLike): Path to GetDP results.
+
+    Returns:
+        list[os.PathLike]: List of importable result file paths.
+    """
+    assert isinstance(resDir, str)
+    if os.path.isdir(resDir):
+        datFileList = []
+        posFileList = []
+        for resFile in os.listdir(resDir):
+            _, ext = os.path.splitext(resFile)
+            if ext == ".dat":
+                # file is valid results file
+                datFileList.append(resFile)
+            if ext == ".pos":
+                posFileList.append(resFile)
+        if len(datFileList) == 0:
+            logger.warning("No result files found in '%s'", resDir)
+        return datFileList, resFile
+    raise FileNotFoundError(f"Results folder {resDir} does not exist.")
