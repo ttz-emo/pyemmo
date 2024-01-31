@@ -4,7 +4,7 @@ from pyemmo.definitions import DEFAULT_GEO_TOL
 from pyemmo.script.geometry.point import Point
 from pyemmo.script.geometry.circleArc import CircleArc
 from pyemmo.api.SurfaceJSON import SurfaceAPI
-from .getCoordinatesForPoint import getXforPoint, getYforPoint
+from .get_coords_for_point import get_x_for_point, get_y_for_point
 
 
 
@@ -34,8 +34,8 @@ def createS1S2(
         ):
             S1 = Point(
                 name="S1",
-                x=getXforPoint(magnetShortestRadius, anglePointRef),
-                y=getYforPoint(magnetShortestRadius, anglePointRef),
+                x=get_x_for_point(magnetShortestRadius, anglePointRef),
+                y=get_y_for_point(magnetShortestRadius, anglePointRef),
                 z=0,
                 meshLength=1.0,
             )
@@ -63,8 +63,8 @@ def createS1S2(
         ):
             S2 = Point(
                 name="S2",
-                x=getXforPoint(magnetFarthestRadius, anglePointRef),
-                y=getYforPoint(magnetFarthestRadius, anglePointRef),
+                x=get_x_for_point(magnetFarthestRadius, anglePointRef),
+                y=get_y_for_point(magnetFarthestRadius, anglePointRef),
                 z=0,
                 meshLength=1.0,
             )
