@@ -788,6 +788,10 @@ def createWinding(extendedInfo: dict) -> datamodel:
         S=windLayout, turns=(importJSON.getNbrOfTurns(extendedInfo))
     )
     swatemWinding.analyse_wdg()  # analyse winding to make sure its valid and all parameters are set
+    # make sure that number of parallel paths does not exceed max. possible paths of winding:
+    if max(swatemWinding.get_parallel_connections()) < importJSON.getNbrParalellPaths(extendedInfo):
+        logger.warning("The given number of parallel windings paths (%i) exceeds possible paths of the winding layout (%i)!", importJSON.getNbrParalellPaths(extendedInfo), max(swatemWinding.get_parallel_connections()) )
+
     return swatemWinding
 
 
