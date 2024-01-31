@@ -110,10 +110,8 @@ def create_geo_dict(
         if isinstance(machine, (MachineIPMSM, MachineSyRM)):
             # CutOuts in rotorLamination if IPMSM or SynRM:
             for surf_to_cutout in geometry_list:
-                if surf_to_cutout.name != "Rotor-0_Lamination":
-                    surf_name_split = surf_to_cutout.name.split("-")
-                    if surf_name_split[0] == "Rotor":
-                        geometry_list[0].cutOut(surf_to_cutout)
+                if surf_to_cutout.name in ("Loch", "Magnet"):
+                    geometry_list[0].cutOut(surf_to_cutout)
             (
                 rotor_contour_line_list,
                 r_point_rotor_cont,
