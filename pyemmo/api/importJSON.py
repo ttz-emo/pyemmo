@@ -267,6 +267,7 @@ def getSimuParams(extendedInfo: dict) -> Dict[str, float]:
             "SPEED_RPM": getRotFreq(extendedInfo, "rpm"),
             "ParkAngOffset": extendedInfo["parkAngleOffset"],
             "ANALYSIS_TYPE": extendedInfo["analysisType"],
+            "NBR_PARALLEL_PATHS": extendedInfo["NpP"],
         },
         "MAT": {
             "TEMP_MAG": getMagTemperature(extendedInfo),
