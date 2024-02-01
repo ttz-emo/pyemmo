@@ -318,7 +318,9 @@ def build_bands_stator(
     return stator_air_gap1, stator_air_gap2
 
 
-def calcs_radii(machine: Machine, is_internal_rotor: bool) -> tuple[float, float]:
+def calcs_radii(
+    machine: Machine, is_internal_rotor: bool
+) -> tuple[float, float]:
     """Calculation of the magnet-radii and of the distance between rotor/magnet and stator inner radius
 
     Args:
@@ -326,9 +328,9 @@ def calcs_radii(machine: Machine, is_internal_rotor: bool) -> tuple[float, float
         is_internal_rotor (bool): Is rotor internal or not
 
     Returns:
-        tuple[float, float]: Gives back the 
+        tuple[float, float]: Gives back the
     """
-    
+
     rotor_rint = machine.rotor.Rint
     rotor_rext = machine.rotor.Rext
     stator_rint = machine.stator.Rint
@@ -412,17 +414,17 @@ def get_translated_machine(
     # ====================================
     # Calculation of the MovingBand radii:
     # ====================================
-    number_of_bands = 5
-    wp = diff_radius / number_of_bands
+
+    wp = diff_radius / 5
     band_radius_list = []
 
-    for i in range(1, number_of_bands + 1):
+    for i in range(1, 5 + 1):
         band_radius_list.append(max_radius + wp * i)
 
     (
         rotor_air_gap1,
         rotor_air_gap2,
-        mb_radius,
+        movingband_r,
     ) = build_bands_rotor(
         machine=machine,
         band_radius_list=band_radius_list,
@@ -442,11 +444,12 @@ def get_translated_machine(
     # ----------
     # All bands:
     # ----------
-    all_bands = []
-    all_bands.append(rotor_air_gap1)
-    all_bands.append(rotor_air_gap2)
-    all_bands.append(stator_air_gap1)
-    all_bands.append(stator_air_gap2)
+    all_bands = [
+        rotor_air_gap1,
+        rotor_air_gap2,
+        stator_air_gap1,
+        stator_air_gap2,
+    ]
     geometry_list.extend(all_bands)
 
     geo_translation_dict = {}
@@ -461,7 +464,7 @@ def get_translated_machine(
     return (
         all_bands,
         geometry_list,
-        mb_radius,
+        movingband_r,
         magnetization_dict,
         geo_translation_dict,
     )
