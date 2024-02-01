@@ -81,10 +81,10 @@ def translate_surface(
         elif name_split_list[2] in ("HoleVoid", "Ventilation"):
             id_ext = "Lpl"  # "Loch (Pollueke)"
             name = "Loch"
-            
+
             if name_split_list[2] == "HoleVoid":
                 pyleecan_mat = machine.rotor.hole[0].mat_void
-            
+
             elif name_split_list[2] == "Ventilation":
                 pyleecan_mat = machine.rotor.axial_vent[0].mat_void
 
