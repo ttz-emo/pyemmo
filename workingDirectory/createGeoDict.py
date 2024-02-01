@@ -18,7 +18,7 @@ from .get_rotor_stator_cont import (
     get_winding_cont,
     get_even_rotor_cont,
 )
-from .detectInnerOuterLimit import detectInnerOuterLimit
+from .detectInnerOuterLimit import detect_inner_outer_limit
 from .get_magnetization_dict import get_magnetization_dict
 
 
@@ -148,18 +148,18 @@ def create_geo_dict(
     has_shaft = bool(machine.rotor.Rint > 0)
 
     if is_internal_rotor:
-        geometry_list = detectInnerOuterLimit(
-            geometryList=geometry_list,
-            innerRadius=machine.rotor.Rint,
-            outerRadius=machine.stator.Rext,
-            hasShaft=has_shaft,
+        geometry_list = detect_inner_outer_limit(
+            geometry_list=geometry_list,
+            inner_radius=machine.rotor.Rint,
+            outer_radius=machine.stator.Rext,
+            has_shaft=has_shaft,
         )
     else:
-        geometry_list = detectInnerOuterLimit(
-            geometryList=geometry_list,
-            innerRadius=machine.stator.Rint,
-            outerRadius=machine.rotor.Rext,
-            hasShaft=has_shaft,
+        geometry_list = detect_inner_outer_limit(
+            geometry_list=geometry_list,
+            inner_radius=machine.stator.Rint,
+            outer_radius=machine.rotor.Rext,
+            has_shaft=has_shaft,
         )
 
     return (

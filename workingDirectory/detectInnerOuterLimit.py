@@ -3,11 +3,11 @@ import math
 from pyemmo.api.SurfaceJSON import SurfaceAPI
 
 
-def detectInnerOuterLimit(
-    geometryList: list[SurfaceAPI],
-    innerRadius: float,
-    outerRadius: float,
-    hasShaft: bool,
+def detect_inner_outer_limit(
+    geometry_list: list[SurfaceAPI],
+    inner_radius: float,
+    outer_radius: float,
+    has_shaft: bool,
 ) -> list[SurfaceAPI]:
     """Overwrites the name of the curve, if its the most outlying curve (-> ``OuterLimit``) or the most innerlying curve (-> ``InnerLimit``).
 
@@ -27,19 +27,20 @@ def detectInnerOuterLimit(
     Returns:
         list[SurfaceAPI]: geometryList
     """
-    for surf in geometryList:
+    for surf in geometry_list:
         for curve in surf.curve:
-            if hasShaft:
+            if has_shaft:
                 if math.isclose(
-                    a=curve.startPoint.radius, b=innerRadius, abs_tol=1e-6
+                    a=curve.startPoint.radius, b=inner_radius, abs_tol=1e-6
                 ) and math.isclose(
-                    a=curve.endPoint.radius, b=innerRadius, abs_tol=1e-6
+                    a=curve.endPoint.radius, b=inner_radius, abs_tol=1e-6
                 ):
                     curve.name = "InnerLimit"
             if math.isclose(
-                a=curve.startPoint.radius, b=outerRadius, abs_tol=1e-6
+                a=curve.startPoint.radius, b=outer_radius, abs_tol=1e-6
             ) and math.isclose(
-                a=curve.endPoint.radius, b=outerRadius, abs_tol=1e-6
+                a=curve.endPoint.radius, b=outer_radius, abs_tol=1e-6
             ):
                 curve.name = "OuterLimit"
-    return geometryList
+
+    return geometry_list
