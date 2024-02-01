@@ -20,11 +20,11 @@ def get_rotor_surfs(
     rotor_mag_surf_list = []
 
     for surf in geometry_list:
-        if surf.idExt in ("Pol", "Mag0", "Mag1", "Mag2"):
+        if surf.idExt in ("Pol","Mag", "Mag0", "Mag1", "Mag2"):
             if surf.idExt == "Pol":
                 rotor_lam_surf_list.append(surf)
                 logging.debug("rotorLamSurf:")
-            elif surf.idExt in ("Mag0", "Mag1", "Mag2"):
+            elif surf.idExt in ("Mag","Mag0", "Mag1", "Mag2"):
                 rotor_mag_surf_list.append(surf)
                 logging.debug("rotorMagSurf:")
 
