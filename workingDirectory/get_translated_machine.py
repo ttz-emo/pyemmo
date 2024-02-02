@@ -378,13 +378,11 @@ def calcs_radii(
 
 def get_translated_machine(
     machine: Machine,
-    is_internal_rotor: bool,
 ) -> tuple[list, list[SurfaceAPI], float]:
     """_summary_
 
     Args:
         machine (Machine): _description_
-        is_internal_rotor (bool): _description_
 
     Raises:
         RuntimeError: _description_
@@ -392,7 +390,7 @@ def get_translated_machine(
     Returns:
         tuple[list, list[SurfaceAPI], float]: _description_
     """
-
+    is_internal_rotor = machine.rotor.is_internal
     diff_radius, max_radius = calcs_radii(
         machine=machine, is_internal_rotor=is_internal_rotor
     )
