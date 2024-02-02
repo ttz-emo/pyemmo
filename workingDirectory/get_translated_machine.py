@@ -371,7 +371,8 @@ def calcs_radii(
         else:
             max_radius = rotor_rint
             diff_radius = stator_rext - max_radius
-
+    else:
+        raise ValueError("Wrong machine type!")  # TODO: Optimize error message
     return diff_radius, max_radius
 
 
