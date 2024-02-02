@@ -4,7 +4,7 @@ import logging
 from typing import List
 
 from pyleecan.Classes.Machine import Machine
-from pyleecan.Functions.load import load
+from pyleecan.Functions import load
 
 try:
     from pyemmo.script.script import Script
@@ -23,7 +23,7 @@ import workingDirectory.get_magnetization_dict
 
 
 def test_get_magnetization_dict():
-    machine: Machine = load(
+    machine: Machine = load.load(
         os.path.abspath(
             os.path.join(TEST_DIR, "data", "00_prius_machine.json")
         )
