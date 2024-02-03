@@ -40,9 +40,7 @@ for machineFile in os.listdir(MACHINE_FILE_DIR):
                 f"Machine could not be translated. Error: {exce}"
             )
         else:
-            machine_test_dict[machineFile] = (
-                f"Machine successfully translated!"
-            )
+            machine_test_dict[machineFile] = "Machine successfully translated!"
 
 # Write results to "Results" folder because its not tracked by Git.
 with open(
