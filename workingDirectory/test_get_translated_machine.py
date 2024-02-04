@@ -34,7 +34,6 @@ def test_get_translated_machine():
         geo_translation_dict,
     ) = workingDirectory.get_translated_machine.get_translated_machine(
         machine=machine,
-        is_internal_rotor=machine.rotor.is_internal,
     )
 
     assert len(all_bands) == 4  # make sure there are 4 movingband objects
@@ -42,9 +41,26 @@ def test_get_translated_machine():
     # check movingband radius
     assert math.isclose(movingband_r, 0.0797, abs_tol=1e-16)
     # check magnetization directions
-    assert math.isclose(magnetization_dict["Mag0"], 0.5462703245568578, rel_tol=1e-3)
-    assert math.isclose(magnetization_dict["Mag1"], 0.2391278388405909, rel_tol=1e-3)
-    for key in ('Pol', 'Lpl0', 'Mag0', 'Lpl1', 'Mag1', 'Lpl2', 'StNut', 'StCu0', 'LuR1', 'LuR2', 'StLu1', 'StLu2'):
+    assert math.isclose(
+        magnetization_dict["Mag0"], 0.5462703245568578, rel_tol=1e-3
+    )
+    assert math.isclose(
+        magnetization_dict["Mag1"], 0.2391278388405909, rel_tol=1e-3
+    )
+    for key in (
+        "Pol",
+        "Lpl0",
+        "Mag0",
+        "Lpl1",
+        "Mag1",
+        "Lpl2",
+        "StNut",
+        "StCu0",
+        "LuR1",
+        "LuR2",
+        "StLu1",
+        "StLu2",
+    ):
         assert key in geo_translation_dict.keys()
 
     # logging.debug("-------------------")
