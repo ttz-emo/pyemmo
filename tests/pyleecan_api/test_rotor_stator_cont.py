@@ -101,11 +101,23 @@ def test_get_rotor_cont(get_rotor_cont_function, machine_file):
     print("Plot rotor contour")
 
 
-@pytest.mark.parametrize("test_function", [
-    (workingDirectory.get_rotor_stator_cont.get_spmsm_rotor_cont, "02_spmsm_muster_02.json"),
-    (workingDirectory.get_rotor_stator_cont.get_even_rotor_cont, "03_synrm_muster_Bachelor.json"),
-    (workingDirectory.get_rotor_stator_cont.get_winding_cont, "03_synrm_muster_Bachelor.json"),
-])
+@pytest.mark.parametrize(
+    "test_function",
+    [
+        (
+            workingDirectory.get_rotor_stator_cont.get_spmsm_rotor_cont,
+            "02_spmsm_muster_02.json",
+        ),
+        (
+            workingDirectory.get_rotor_stator_cont.get_even_rotor_cont,
+            "03_synrm_muster_Bachelor.json",
+        ),
+        (
+            workingDirectory.get_rotor_stator_cont.get_winding_cont,
+            "03_synrm_muster_Bachelor.json",
+        ),
+    ],
+)
 def test_main_functions(test_function):
     add_pyemmo_path()
     get_rotor_cont_function, machine_file = test_function

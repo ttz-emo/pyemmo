@@ -3,6 +3,7 @@ Following functions are included in this module:
 * test_normal_point()
 * test_center_point()
 """
+
 import pytest
 
 from pyemmo.script.geometry.point import Point

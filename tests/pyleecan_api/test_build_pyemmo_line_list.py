@@ -259,4 +259,6 @@ def test_build_pyemmo_line_list_with_mixed_elements(
     )
     assert len(pyemmo_line_list) == 9
     assert isinstance(pyemmo_line_list, list)
-    assert all(isinstance(item, (Line, CircleArc)) for item in pyemmo_line_list)
+    assert all(
+        isinstance(item, (Line, CircleArc)) for item in pyemmo_line_list
+    )
