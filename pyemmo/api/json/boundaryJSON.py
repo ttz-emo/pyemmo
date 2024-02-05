@@ -4,15 +4,15 @@ from numpy import pi
 
 # from matplotlib import pyplot as plt
 # from ..functions.plot import plot
-from ..script.geometry.transformable import Transformable
-from ..script.geometry import physicalsDict
-from ..script.geometry.limitLine import LimitLine
-from ..script.geometry.line import Line
-from ..script.geometry.primaryLine import PrimaryLine
-from ..script.geometry.movingBand import MovingBand
-from ..script.geometry.physicalElement import PhysicalElement
-from ..script.geometry.slaveLine import SlaveLine
-from ..script.material.material import Material
+from ...script.geometry.transformable import Transformable
+from ...script.geometry import physicalsDict
+from ...script.geometry.limitLine import LimitLine
+from ...script.geometry.line import Line
+from ...script.geometry.primaryLine import PrimaryLine
+from ...script.geometry.movingBand import MovingBand
+from ...script.geometry.physicalElement import PhysicalElement
+from ...script.geometry.slaveLine import SlaveLine
+from ...script.material.material import Material
 from . import logger as jsonLogger
 from . import (
     InnerLimitLineDict,

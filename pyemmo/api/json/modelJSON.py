@@ -6,21 +6,21 @@ from numpy import pi, sign, array
 from numpy.linalg import norm
 from swat_em import datamodel
 
-from ..script.geometry.airArea import AirArea
-from ..script.geometry.airGap import AirGap
-from ..script.geometry.circleArc import CircleArc
-from ..script.geometry.line import Line
-from ..script.geometry.magnet import Magnet
-from ..script.geometry.physicalElement import PhysicalElement
-from ..script.geometry.point import Point
-from ..script.geometry.rotorLamination import RotorLamination
-from ..script.geometry.slot import Slot
-from ..script.geometry.spline import Spline
-from ..script.geometry.statorLamination import StatorLamination
-from ..script.geometry.surface import Surface
-from ..script.geometry.transformable import Transformable
-from ..script.material.material import Material
-from ..definitions import DEFAULT_GEO_TOL
+from ...script.geometry.airArea import AirArea
+from ...script.geometry.airGap import AirGap
+from ...script.geometry.circleArc import CircleArc
+from ...script.geometry.line import Line
+from ...script.geometry.magnet import Magnet
+from ...script.geometry.physicalElement import PhysicalElement
+from ...script.geometry.point import Point
+from ...script.geometry.rotorLamination import RotorLamination
+from ...script.geometry.slot import Slot
+from ...script.geometry.spline import Spline
+from ...script.geometry.statorLamination import StatorLamination
+from ...script.geometry.surface import Surface
+from ...script.geometry.transformable import Transformable
+from ...script.material.material import Material
+from ...definitions import DEFAULT_GEO_TOL
 from . import importJSON, globalCenterPoint, logger
 from .SurfaceJSON import SurfaceAPI
 

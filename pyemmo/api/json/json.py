@@ -8,19 +8,19 @@ from os import mkdir
 from os.path import isdir, isfile, join
 from typing import Dict, List, Tuple
 import logging
-import json
+import json as pyJson
 import datetime
-from . import logger, ch
-from .. import logFmt
-from ..definitions import RESULT_DIR
-from ..functions import runOnelab, calcIronLoss, importResults
-from ..script.geometry.machineAllType import MachineAllType
-from ..script.geometry.rotor import Rotor
-from ..script.geometry.stator import Stator
-from ..script.script import Script
-from ..script.material import ElectricalSteel
+from ...definitions import RESULT_DIR
+from ...functions import runOnelab, calcIronLoss, importResults
+from ...script.geometry.machineAllType import MachineAllType
+from ...script.geometry.rotor import Rotor
+from ...script.geometry.stator import Stator
+from ...script.script import Script
+from ... import logFmt
+from ...script.material import ElectricalSteel
 from . import boundaryJSON, importJSON, modelJSON, apiNameDict
 from .SurfaceJSON import SurfaceAPI
+from . import logger, ch
 
 # from swat_em import analyse
 # from .. import calcPhaseangleStarvoltageCorr
@@ -394,7 +394,7 @@ def main(
             # import the segment surface list from the json file
             try:
                 with open(geo, encoding="utf-8") as jsonFile:
-                    machineGeoList = json.load(jsonFile)
+                    machineGeoList = pyJson.load(jsonFile)
                     # create dict with surface api (segment) objects from the surface list
                     segmentSurfDict = modelJSON.importMachineGeometry(
                         machineGeoList

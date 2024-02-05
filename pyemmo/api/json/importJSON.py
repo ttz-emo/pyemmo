@@ -9,9 +9,9 @@ from typing import Dict, List, Tuple, Union, Literal, Any
 from numpy import pi, zeros
 from numpy.linalg import norm
 
-from ..functions.cleanName import cleanName
-from ..script.material.material import Material
-from ..script.material.electricalSteel import ElectricalSteel
+from ...functions.cleanName import cleanName
+from ...script.material.material import Material
+from ...script.material.electricalSteel import ElectricalSteel
 from . import air
 
 # ================================ START EXTENDED INFO FUNCTIONS ===================================

@@ -2,11 +2,11 @@
 from typing import List, Union
 
 from numpy import pi
-from ..script.geometry.line import Line
-from ..script.geometry.circleArc import CircleArc
-from ..script.geometry.spline import Spline
-from ..script.geometry.surface import Surface
-from ..script.material.material import Material
+from ...script.geometry.line import Line
+from ...script.geometry.circleArc import CircleArc
+from ...script.geometry.spline import Spline
+from ...script.geometry.surface import Surface
+from ...script.material.material import Material
 
 
 class SurfaceAPI(Surface):
