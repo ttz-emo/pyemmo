@@ -3,10 +3,11 @@ Following functions are included in this module:
 * test_normal_point()
 * test_center_point()
 """
+
 import pytest
 
 from pyemmo.script.geometry.point import Point
-from .build_pyemmo_point import build_pyemmo_point
+from workingDirectory.build_pyemmo_point import build_pyemmo_point
 
 
 @pytest.mark.parametrize(

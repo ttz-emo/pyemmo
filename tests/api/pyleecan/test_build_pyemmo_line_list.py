@@ -8,8 +8,7 @@ from pyleecan.Classes.Arc3 import Arc3
 from pyemmo.script.geometry.line import Line
 from pyemmo.script.geometry.circleArc import CircleArc
 
-from .build_pyemmo_point import build_pyemmo_point
-from .build_pyemmo_line_list import build_pyemmo_line_list
+from workingDirectory.build_pyemmo_line_list import build_pyemmo_line_list
 
 
 # =======================
@@ -259,4 +258,6 @@ def test_build_pyemmo_line_list_with_mixed_elements(
     )
     assert len(pyemmo_line_list) == 9
     assert isinstance(pyemmo_line_list, list)
-    assert all(isinstance(item, (Line, CircleArc)) for item in pyemmo_line_list)
+    assert all(
+        isinstance(item, (Line, CircleArc)) for item in pyemmo_line_list
+    )

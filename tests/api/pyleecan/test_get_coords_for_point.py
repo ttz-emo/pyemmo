@@ -15,7 +15,10 @@ Test Functions:
 
 import math
 import pytest
-from .get_coords_for_point import get_x_for_point, get_y_for_point
+from workingDirectory.get_coords_for_point import (
+    get_x_for_point,
+    get_y_for_point,
+)
 
 
 # Fixture for general test data
@@ -23,12 +26,7 @@ from .get_coords_for_point import get_x_for_point, get_y_for_point
 def general_test_data():
     """Fixture providing general test data for get_x_for_point and get_y_for_point."""
     return [
-        {
-            "radius": 2.5,
-            "angle": 0.0, 
-            "expected_x": 2.5,
-            "expected_y": 0.0
-         },
+        {"radius": 2.5, "angle": 0.0, "expected_x": 2.5, "expected_y": 0.0},
         {
             "radius": 3.0,
             "angle": math.pi / 2,
