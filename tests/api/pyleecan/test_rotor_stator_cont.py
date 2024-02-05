@@ -97,8 +97,8 @@ def test_get_rotor_cont(get_rotor_cont_function, machine_file):
     assert result is not None
 
     # Plot für visuelle Überprüfung
-    plot(result, tag=True)
-    print("Plot rotor contour")
+    # plot(result, tag=True)
+    # print("Plot rotor contour")
 
 
 @pytest.mark.parametrize(

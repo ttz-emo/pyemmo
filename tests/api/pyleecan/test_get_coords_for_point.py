@@ -15,7 +15,10 @@ Test Functions:
 
 import math
 import pytest
-from .get_coords_for_point import get_x_for_point, get_y_for_point
+from workingDirectory.get_coords_for_point import (
+    get_x_for_point,
+    get_y_for_point,
+)
 
 
 # Fixture for general test data
