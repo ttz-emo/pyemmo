@@ -20,7 +20,7 @@ from ... import logFmt
 from ...script.material import ElectricalSteel
 from . import boundaryJSON, importJSON, modelJSON, apiNameDict
 from .SurfaceJSON import SurfaceAPI
-from . import logger, ch
+from .. import logger, ch
 
 # from swat_em import analyse
 # from .. import calcPhaseangleStarvoltageCorr

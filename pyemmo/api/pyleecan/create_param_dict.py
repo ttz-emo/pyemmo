@@ -1,5 +1,3 @@
-import logging
-
 from pyleecan.Classes.Machine import Machine
 from pyleecan.Classes.Simulation import Simulation
 from pyleecan.Classes.Lamination import Lamination
@@ -7,6 +5,7 @@ from pyleecan.Classes.LamHole import LamHole
 from pyleecan.Classes.LamSlotMag import LamSlotMag
 from pyleecan.Classes.OPdq import OPdq
 
+from .. import logger
 from .translate_winding import translate_winding
 
 
@@ -44,7 +43,7 @@ def create_param_dict(
     else:
         id = 0
         iq = 0
-        logging.warning(
+        logger.warning(
             '!! Warning: No Values set for "Id_ref" and "Iq_ref" -> Id = Iq = 0 !!'
         )
 
@@ -121,10 +120,10 @@ def create_param_dict(
         sym_factor = sym_factor[0] * 2
     else:
         sym_factor = sym_factor[0]
-    logging.debug("Symmetry factor machine: %s", {sym_factor})
+    logger.debug("Symmetry factor machine: %s", {sym_factor})
     swatem_winding, wind_layout = translate_winding(machine)
     sym_winding = swatem_winding.get_periodicity_t()*2
-    logging.debug("Symmetry factor winding: %s",{sym_winding})
+    logger.debug("Symmetry factor winding: %s",{sym_winding})
     sym_factor = min(sym_winding, sym_factor)
 
     speed_rpm = pyleecan_simulation.input.OP.N0

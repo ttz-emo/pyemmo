@@ -14,7 +14,7 @@ from ...script.geometry.physicalElement import PhysicalElement
 from ...script.geometry.slaveLine import SlaveLine
 from ...script.material.material import Material
 from .. import air
-from . import logger as jsonLogger
+from .. import logger as apiLogger
 from . import (
     InnerLimitLineDict,
     OuterLimitLineDict,
@@ -169,7 +169,7 @@ def findLines(
         area for area in segmentSurfDict.values() if (surfID == area.idExt)
     ]
     if not areaOfSurfID:  # SurfID not in Surface Dict
-        jsonLogger.warning(
+        apiLogger.warning(
             "Surface ID '%s' not found in machine surface list.", surfID
         )
         return None, None
@@ -446,7 +446,7 @@ def createBoundaries(
         else:
             movingBandMaterial: Material = segmentSurfDict["StLu2"].material
     except KeyError:
-        jsonLogger.warning(
+        apiLogger.warning(
             """Stator-Airgap Surface-ID was not "StLu","StLu1" or "StLu2". """
             "Can't determine Airgap material! Using air instead."
         )

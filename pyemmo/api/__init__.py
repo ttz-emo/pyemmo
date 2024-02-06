@@ -1,4 +1,6 @@
 """Init for API subpackage"""
+import logging
+from .. import logFmt, rootLogger
 from ..script.material.material import Material
 
 try:
@@ -17,3 +19,10 @@ except FileNotFoundError:
         thermalCapacity=1.005,
     )
 air.name = "PYEMMO_AIR"
+
+
+logger = rootLogger  # test to get script.py log in local model log file
+# logger = logging.getLogger("pyemmo.api.json")  # init module logger
+ch = logging.StreamHandler()
+ch.setFormatter(logFmt)
+logger.addHandler(ch)

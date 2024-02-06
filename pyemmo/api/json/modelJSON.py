@@ -21,7 +21,8 @@ from ...script.geometry.surface import Surface
 from ...script.geometry.transformable import Transformable
 from ...script.material.material import Material
 from ...definitions import DEFAULT_GEO_TOL
-from . import importJSON, globalCenterPoint, logger
+from . import importJSON, globalCenterPoint
+from .. import logger
 from .SurfaceJSON import SurfaceAPI
 
 # from .. import calc_phaseangle_starvoltageV2

@@ -1,6 +1,5 @@
-import logging
 from ..json.SurfaceJSON import SurfaceAPI
-
+from .. import logger
 
 def get_rotor_surfs(
     geometry_list: list[SurfaceAPI],
@@ -23,12 +22,12 @@ def get_rotor_surfs(
         if surf.idExt in ("Pol","Mag", "Mag0", "Mag1", "Mag2"):
             if surf.idExt == "Pol":
                 rotor_lam_surf_list.append(surf)
-                logging.debug("rotorLamSurf:")
+                logger.debug("rotorLamSurf:")
             elif surf.idExt in ("Mag","Mag0", "Mag1", "Mag2"):
                 rotor_mag_surf_list.append(surf)
-                logging.debug("rotorMagSurf:")
+                logger.debug("rotorMagSurf:")
 
-            logging.debug("gefunden: %s", {surf.name})
+            logger.debug("gefunden: %s", {surf.name})
 
     return rotor_lam_surf_list, rotor_mag_surf_list
 
@@ -53,7 +52,7 @@ def get_stator_surfs(
     for surf in geometry_list:
         if surf.idExt == "StNut":
             stator_lam_surf_list.append(surf)
-            logging.debug("statorLamSurf:")
-            logging.debug("gefunden: %s", {surf.name})
+            logger.debug("statorLamSurf:")
+            logger.debug("gefunden: %s", {surf.name})
 
     return stator_lam_surf_list

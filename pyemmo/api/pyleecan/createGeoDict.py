@@ -1,7 +1,6 @@
 """imports"""
 
 from typing import List, Union
-import logging
 
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
 from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
@@ -13,6 +12,7 @@ from ...script.geometry.line import Line
 from ...script.geometry.circleArc import CircleArc
 from ...script.geometry.point import Point
 from ..json.SurfaceJSON import SurfaceAPI
+from .. import logger
 from .translate_surfs import translate_surface
 from .get_rotor_stator_cont import (
     get_spmsm_rotor_cont,
@@ -60,7 +60,7 @@ def create_geo_dict(
     geometry_list: List[SurfaceAPI] = []
     angle_point_ref_list = []
 
-    logging.debug("Geometry translation started")
+    logger.debug("Geometry translation started")
 
     for i, surf in enumerate(all_surfaces):
         save_space_temp = []
@@ -72,7 +72,7 @@ def create_geo_dict(
             save_space_temp.extend(split1.split("-"))
         all_surfs_labels_split2.append(save_space_temp)
 
-        logging.debug(
+        logger.debug(
             "Geometry translation of %s started:", all_surfs_labels[i]
         )
 
@@ -94,19 +94,19 @@ def create_geo_dict(
         geometry_list=geometry_list,
     )
 
-    logging.debug("=======================================")
-    logging.debug("End of geometry translation of machine.")
-    logging.debug("=======================================")
+    logger.debug("=======================================")
+    logger.debug("End of geometry translation of machine.")
+    logger.debug("=======================================")
 
     plot(geoList=geometry_list, linewidth=1, markersize=3)
 
-    logging.debug("End of geometry translation")
-    logging.debug("===========================")
+    logger.debug("End of geometry translation")
+    logger.debug("===========================")
 
     # --------------------------------------
     # Generate the rotor and stator contour:
     # --------------------------------------
-    logging.debug("Generating rotor and stator contour")
+    logger.debug("Generating rotor and stator contour")
     if isinstance(machine, (MachineIPMSM, MachineSIPMSM, MachineSyRM)):
         if isinstance(machine, (MachineIPMSM, MachineSyRM)):
             # CutOuts in rotorLamination if IPMSM or SynRM:
