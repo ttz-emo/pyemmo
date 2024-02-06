@@ -44,7 +44,7 @@ from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
 from pyleecan.Classes.Machine import Machine
 
-from pyemmo.api.SurfaceJSON import SurfaceAPI
+from ..json.SurfaceJSON import SurfaceAPI
 
 
 def get_magnetization_dict(

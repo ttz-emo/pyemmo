@@ -2,7 +2,7 @@
 import pyleecan.Classes.Arc2
 
 from pyemmo.script.geometry.point import Point
-from .buildPyemmoPoint import buildPyemmoPoint
+from .build_pyemmo_point import build_pyemmo_point
 
 
 # =======================================
@@ -22,9 +22,9 @@ def translateArc2(
     # Calculation for Arc2
     # (An arc between two points (defined by the begin  point and a center and angle))
 
-    startPoint = buildPyemmoPoint(line.begin)
-    centerPoint = buildPyemmoPoint(line.center)
-    middlePoint = buildPyemmoPoint(line.get_middle())
-    endPoint = buildPyemmoPoint(line.get_end())
+    startPoint = build_pyemmo_point(line.begin)
+    centerPoint = build_pyemmo_point(line.center)
+    middlePoint = build_pyemmo_point(line.get_middle())
+    endPoint = build_pyemmo_point(line.get_end())
 
     return startPoint, endPoint, centerPoint, middlePoint

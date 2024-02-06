@@ -1,4 +1,4 @@
-from pyemmo.script.geometry.point import Point
+from ...script.geometry.point import Point
 
 
 def build_pyemmo_point(pyleecan_point: complex) -> Point:

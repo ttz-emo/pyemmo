@@ -1,10 +1,10 @@
 import math
 from typing import Union
 
-from pyemmo.script.geometry.line import Line
-from pyemmo.script.geometry.circleArc import CircleArc
-from pyemmo.script.geometry.point import Point
-from pyemmo.functions.plot import plot
+from ...script.geometry.line import Line
+from ...script.geometry.circleArc import CircleArc
+from ...script.geometry.point import Point
+from ...functions.plot import plot
 from .get_rotor_stator_surfs import get_stator_surfs
 
 

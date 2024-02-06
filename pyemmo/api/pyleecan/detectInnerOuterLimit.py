@@ -1,6 +1,6 @@
 import math
 
-from pyemmo.api.SurfaceJSON import SurfaceAPI
+from ..json.SurfaceJSON import SurfaceAPI
 
 
 def detect_inner_outer_limit(

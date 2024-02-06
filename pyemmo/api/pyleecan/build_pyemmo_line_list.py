@@ -6,8 +6,8 @@ from pyleecan.Classes.Arc1 import Arc1
 from pyleecan.Classes.Arc2 import Arc2
 from pyleecan.Classes.Arc3 import Arc3
 
-from pyemmo.script.geometry.line import Line
-from pyemmo.script.geometry.circleArc import CircleArc
+from ...script.geometry.line import Line
+from ...script.geometry.circleArc import CircleArc
 from .build_pyemmo_point import build_pyemmo_point
 
 

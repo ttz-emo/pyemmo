@@ -2,7 +2,7 @@
 import pyleecan.Classes.Arc1
 
 from pyemmo.script.geometry.point import Point
-from .buildPyemmoPoint import buildPyemmoPoint
+from .build_pyemmo_point import build_pyemmo_point
 
 
 # =======================================
@@ -23,10 +23,10 @@ def translateArc1(
     # Translation for Pyleecan Arc1 to Pyemmo CircleArc
     # (An arc between two points (defined by a radius)):
 
-    startPoint = buildPyemmoPoint(line.begin)
-    endPoint = buildPyemmoPoint(line.end)
-    centerPoint = buildPyemmoPoint(line.get_center())
-    centerPointArc = buildPyemmoPoint(line.get_middle())
+    startPoint = build_pyemmo_point(line.begin)
+    endPoint = build_pyemmo_point(line.end)
+    centerPoint = build_pyemmo_point(line.get_center())
+    centerPointArc = build_pyemmo_point(line.get_middle())
 
     
     

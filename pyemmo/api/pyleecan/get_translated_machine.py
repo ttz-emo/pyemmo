@@ -5,12 +5,12 @@ from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 from pyleecan.Classes.MachineSyRM import MachineSyRM
 from pyleecan.Classes.Machine import Machine
 
-from pyemmo.api import air
-from pyemmo.script.geometry.point import Point
-from pyemmo.script.geometry.circleArc import CircleArc
-from pyemmo.script.geometry.line import Line
-from pyemmo.api.SurfaceJSON import SurfaceAPI
-from pyemmo.functions.plot import plot
+from ...script.geometry.point import Point
+from ...script.geometry.circleArc import CircleArc
+from ...script.geometry.line import Line
+from ...functions.plot import plot
+from ..json.SurfaceJSON import SurfaceAPI
+from .. import air
 from .createGeoDict import create_geo_dict
 from .get_coords_for_point import get_x_for_point, get_y_for_point
 

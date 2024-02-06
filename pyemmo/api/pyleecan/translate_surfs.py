@@ -32,7 +32,7 @@ import pyleecan.Classes.LamSlotMag
 import pyleecan.Classes.LamSlotWind
 import pyleecan.Classes.Surface
 
-from pyemmo.api.SurfaceJSON import SurfaceAPI
+from ..json.SurfaceJSON import SurfaceAPI
 from .build_pyemmo_material import build_pyemmo_material
 from .build_pyemmo_line_list import build_pyemmo_line_list
 

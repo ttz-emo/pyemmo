@@ -1,4 +1,5 @@
 """imports"""
+
 from typing import List, Union
 import logging
 
@@ -7,11 +8,11 @@ from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 from pyleecan.Classes.MachineSyRM import MachineSyRM
 from pyleecan.Classes.Machine import Machine
 
-from pyemmo.functions.plot import plot
-from pyemmo.api.SurfaceJSON import SurfaceAPI
-from pyemmo.script.geometry.line import Line
-from pyemmo.script.geometry.circleArc import CircleArc
-from pyemmo.script.geometry.point import Point
+from ...functions.plot import plot
+from ...script.geometry.line import Line
+from ...script.geometry.circleArc import CircleArc
+from ...script.geometry.point import Point
+from ..json.SurfaceJSON import SurfaceAPI
 from .translate_surfs import translate_surface
 from .get_rotor_stator_cont import (
     get_spmsm_rotor_cont,

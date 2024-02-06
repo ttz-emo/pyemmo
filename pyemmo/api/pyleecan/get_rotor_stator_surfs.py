@@ -1,5 +1,5 @@
 import logging
-from pyemmo.api.SurfaceJSON import SurfaceAPI
+from ..json.SurfaceJSON import SurfaceAPI
 
 
 def get_rotor_surfs(

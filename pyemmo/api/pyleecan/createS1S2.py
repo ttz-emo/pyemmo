@@ -3,7 +3,7 @@ from math import isclose
 from pyemmo.definitions import DEFAULT_GEO_TOL
 from pyemmo.script.geometry.point import Point
 from pyemmo.script.geometry.circleArc import CircleArc
-from pyemmo.api.SurfaceJSON import SurfaceAPI
+from ..json.SurfaceJSON import SurfaceAPI
 from .get_coords_for_point import get_x_for_point, get_y_for_point
 
 

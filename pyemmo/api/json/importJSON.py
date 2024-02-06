@@ -12,7 +12,7 @@ from numpy.linalg import norm
 from ...functions.cleanName import cleanName
 from ...script.material.material import Material
 from ...script.material.electricalSteel import ElectricalSteel
-from . import air
+from .. import air
 
 # ================================ START EXTENDED INFO FUNCTIONS ===================================
 

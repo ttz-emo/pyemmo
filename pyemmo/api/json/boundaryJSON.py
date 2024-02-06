@@ -13,13 +13,13 @@ from ...script.geometry.movingBand import MovingBand
 from ...script.geometry.physicalElement import PhysicalElement
 from ...script.geometry.slaveLine import SlaveLine
 from ...script.material.material import Material
+from .. import air
 from . import logger as jsonLogger
 from . import (
     InnerLimitLineDict,
     OuterLimitLineDict,
     RotorMBLineDict,
     StatorMBLineDict,
-    air,
     globalCenterPoint,
 )
 from .modelJSON import rotateDuplicate

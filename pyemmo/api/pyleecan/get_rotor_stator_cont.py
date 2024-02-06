@@ -3,9 +3,9 @@ from typing import Union
 from pyleecan.Classes.Machine import Machine
 from pyleecan.Classes.MachineSCIM import MachineSCIM
 
-from pyemmo.script.geometry.circleArc import CircleArc
-from pyemmo.script.geometry.line import Line
-from pyemmo.script.geometry.point import Point
+from ...script.geometry.circleArc import CircleArc
+from ...script.geometry.line import Line
+from ...script.geometry.point import Point
 from .get_rotor_stator_surfs import get_rotor_surfs
 from .calcs_rotor_spmsm_cont import calc_spmsm_rotor_cont
 from .calcs_even_rotor_cont import calc_even_rotor_cont

@@ -5,11 +5,11 @@ from typing import Union
 
 from pyleecan.Classes.Machine import Machine
 
-from pyemmo.api.SurfaceJSON import SurfaceAPI
-from pyemmo.script.geometry.point import Point
-from pyemmo.script.geometry.line import Line
-from pyemmo.script.geometry.circleArc import CircleArc
-from pyemmo.functions.plot import plot
+from ..json.SurfaceJSON import SurfaceAPI
+from ...script.geometry.point import Point
+from ...script.geometry.line import Line
+from ...script.geometry.circleArc import CircleArc
+from ...functions.plot import plot
 
 
 def general_calc_spmsm_cont(
