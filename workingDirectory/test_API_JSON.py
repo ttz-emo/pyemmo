@@ -1,19 +1,8 @@
 # %% Imports
 from sys import path
-from os.path import abspath, dirname, isfile, join
-import json
+import os
+from os.path import abspath, dirname, isfile, join, isdir
 
-# Add Software_V2 to Path so pyemmo can be found
-# This must be done since this is a script (not really a module) and we cannot guarante where it will run from
-#   If it will be run as a module (from command line) __file__ will be the actual file path
-#   But if its run cellwise, like in an interactive pyhton (IPython) shell, __file__ variable will not exist and we have to add the path manually
-try:
-    rootname = abspath(join(dirname(__file__), ".."))
-except:
-    rootname = "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\Software_V2"
-    print(f"Could not determine root. Setting it manually to '{rootname}'")
-print(f'rootname is "{rootname}"')
-path.append(rootname)
 # from pyemmo.definitions import RESULT_DIR, MAIN_DIR
 # from pyemmo.script.script import Script
 # from pyemmo.script.geometry.primaryLine import PrimaryLine
@@ -22,8 +11,9 @@ path.append(rootname)
 # from pyemmo.script.geometry.rotor import Rotor
 # from pyemmo.script.geometry.stator import Stator
 # from pyemmo.script.geometry.machineAllType import MachineAllType
-from pyemmo.api.json import main
+from pyemmo.api.json.json import main 
 from pyemmo.functions.runOnelab import findGmsh
+from pyemmo.definitions import TEST_DIR, ROOT_DIR
 
 # import subprocess
 # from matplotlib import pyplot as plt
@@ -32,16 +22,22 @@ from pyemmo.functions.runOnelab import findGmsh
 # %%
 # try to find gmsh in system path
 gmshExe = findGmsh()
-if not gmshExe:  # if gmsh was not found set manually
-    gmshExe = r"C:\Users\ganser\AppData\Local\Programs\onelab-Windows64-210904\gmsh.exe"
-    print(f"Did not find gmsh executable. Setting it manually to '{gmshExe}'")
-else:
-    print(f'gmsh exe is "{gmshExe}"')
+print(f'gmsh exe is "{gmshExe}"')
 
-workingDir = abspath(join(rootname, "Results", "Test_API_JSON"))
+workingDir = abspath(join(ROOT_DIR, "Results", "Test_API_JSON"))
+if not isdir(workingDir):
+    os.mkdir(workingDir)
 modelFileDir = join(workingDir, "model_files")
-geoJsonFile = join(workingDir, "test_API_geometry.json")
-infoJsonFile = join(workingDir, "test_API_simuInfo.json")
+if not isdir(modelFileDir):
+    os.mkdir(modelFileDir)
+geoJsonFile = join(
+    TEST_DIR, "data", "reluctance_json", "reluctance_machine.json"
+)
+infoJsonFile = join(
+    TEST_DIR, "data", "reluctance_json", "reluctance_info.json"
+)
+assert os.path.isfile(geoJsonFile)
+assert os.path.isfile(infoJsonFile)
 # %% NEW API ALGO
 # check if json files exist
 if isfile(geoJsonFile) and isfile(infoJsonFile):
@@ -61,4 +57,4 @@ else:
         )
     )
 
-#%%
+# %%
