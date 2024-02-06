@@ -13,7 +13,7 @@ from pyleecan.Classes.MachineAsync import MachineAsync
 from pyleecan.Classes.MachineSync import MachineSync
 
 from pyemmo.definitions import ROOT_DIR
-from workingDirectory.get_translated_machine import get_translated_machine
+from pyemmo.api.pyleecan.get_translated_machine import get_translated_machine
 
 MACHINE_FILE_DIR = os.path.join(DATA_DIR, "Machine")
 machine_test_dict = {}

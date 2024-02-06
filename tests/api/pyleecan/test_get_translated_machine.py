@@ -1,22 +1,11 @@
 import os
-import sys
-import logging
 import math
 from pyleecan.Classes.Machine import Machine
 from pyleecan.Functions.load import load
 
-try:
-    from pyemmo.script.script import Script
-except:
-    rootname = "C:\\Users\\k49976\\Desktop\\repositoryGibLab\\pyemmo"
-    print(f"Could not determine root. Setting it manually to '{rootname}'")
-    print(f'rootname is "{rootname}"')
-    sys.path.append(rootname)
-    # sys.path.append("C:\\Users\\k49976\\Desktop\\repositoryGibLab\\pyemmo\\tests")
-
 from pyemmo.functions.plot import plot
 from pyemmo.definitions import TEST_DIR
-import workingDirectory.get_translated_machine
+import pyemmo.api.pyleecan.get_translated_machine
 
 
 def test_get_translated_machine():
@@ -32,7 +21,7 @@ def test_get_translated_machine():
         movingband_r,
         magnetization_dict,
         geo_translation_dict,
-    ) = workingDirectory.get_translated_machine.get_translated_machine(
+    ) = pyemmo.api.pyleecan.get_translated_machine.get_translated_machine(
         machine=machine,
     )
 

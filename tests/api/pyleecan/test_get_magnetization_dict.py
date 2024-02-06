@@ -6,20 +6,11 @@ from typing import List
 from pyleecan.Classes.Machine import Machine
 from pyleecan.Functions import load
 
-try:
-    from pyemmo.script.script import Script
-except:
-    rootname = "C:\\Users\\k49976\\Desktop\\repositoryGibLab\\pyemmo"
-    print(f"Could not determine root. Setting it manually to '{rootname}'")
-    print(f'rootname is "{rootname}"')
-    sys.path.append(rootname)
-    # sys.path.append("C:\\Users\\k49976\\Desktop\\repositoryGibLab\\pyemmo\\tests")
-
 from pyemmo.functions.plot import plot
 from pyemmo.definitions import TEST_DIR
-from pyemmo.api.modelJSON import SurfaceAPI
-import workingDirectory.translate_surfs
-import workingDirectory.get_magnetization_dict
+from pyemmo.api.json.modelJSON import SurfaceAPI
+import pyemmo.api.pyleecan.translate_surfs
+import pyemmo.api.pyleecan.get_magnetization_dict
 
 
 def test_get_magnetization_dict():
@@ -61,7 +52,7 @@ def test_get_magnetization_dict():
         (
             pyemmo_surf,
             angle_point_ref_list,
-        ) = workingDirectory.translate_surfs.translate_surface(
+        ) = pyemmo.api.pyleecan.translate_surfs.translate_surface(
             name_split_list=all_surfs_labels_split2[i],
             machine=machine,
             surface=surf,
@@ -70,7 +61,7 @@ def test_get_magnetization_dict():
         geometry_list.append(pyemmo_surf)
 
     magnetization_dict = (
-        workingDirectory.get_magnetization_dict.get_magnetization_dict(
+        pyemmo.api.pyleecan.get_magnetization_dict.get_magnetization_dict(
             machine=machine,
             angle_point_ref_list=angle_point_ref_list,
             geometry_list=geometry_list,

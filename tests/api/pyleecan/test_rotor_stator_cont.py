@@ -4,13 +4,13 @@ from typing import List
 import pytest
 from pyleecan.Classes.Machine import Machine
 from pyleecan.Functions.load import load
-from pyemmo.api.modelJSON import SurfaceAPI
+from pyemmo.api.json.modelJSON import SurfaceAPI
 from pyemmo.functions.plot import plot
 from pyemmo.definitions import TEST_DIR
 
-import workingDirectory.translate_surfs
-import workingDirectory.get_rotor_stator_cont
-import workingDirectory.get_translated_machine
+import pyemmo.api.pyleecan.translate_surfs
+import pyemmo.api.pyleecan.get_rotor_stator_cont
+import pyemmo.api.pyleecan.get_translated_machine
 
 
 def add_pyemmo_path():
@@ -35,7 +35,7 @@ def get_translated_surface(
     (
         pyemmo_surf,
         angle_point_ref_list,
-    ) = workingDirectory.translate_surfs.translate_surface(
+    ) = pyemmo.api.pyleecan.translate_surfs.translate_surface(
         name_split_list=all_surfs_labels_split2,
         machine=machine,
         surface=surf,
@@ -71,7 +71,7 @@ def get_translated_machine(machine: Machine):
         (
             pyemmo_surf,
             angle_point_ref_list,
-        ) = workingDirectory.translate_surfs.translate_surface(
+        ) = pyemmo.api.pyleecan.translate_surfs.translate_surface(
             name_split_list=all_surfs_labels_split2[i],
             machine=machine,
             surface=surf,
@@ -105,15 +105,15 @@ def test_get_rotor_cont(get_rotor_cont_function, machine_file):
     "test_function",
     [
         (
-            workingDirectory.get_rotor_stator_cont.get_spmsm_rotor_cont,
+            pyemmo.api.pyleecan.get_rotor_stator_cont.get_spmsm_rotor_cont,
             "02_spmsm_muster_02.json",
         ),
         (
-            workingDirectory.get_rotor_stator_cont.get_even_rotor_cont,
+            pyemmo.api.pyleecan.get_rotor_stator_cont.get_even_rotor_cont,
             "03_synrm_muster_Bachelor.json",
         ),
         (
-            workingDirectory.get_rotor_stator_cont.get_winding_cont,
+            pyemmo.api.pyleecan.get_rotor_stator_cont.get_winding_cont,
             "03_synrm_muster_Bachelor.json",
         ),
     ],

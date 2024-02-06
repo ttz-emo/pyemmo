@@ -26,7 +26,7 @@ from pyleecan.Classes.MatStructural import MatStructural
 from pyleecan.Classes.MatMagnetics import MatMagnetics
 from pyleecan.Classes.MatElectrical import MatElectrical
 
-from workingDirectory.build_pyemmo_material import build_pyemmo_material
+from pyemmo.api.pyleecan.build_pyemmo_material import build_pyemmo_material
 
 
 @pytest.fixture

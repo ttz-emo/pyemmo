@@ -5,18 +5,10 @@ from typing import List
 from pyleecan.Classes.Machine import Machine
 from pyleecan.Functions.load import load
 
-try:
-    from pyemmo.script.script import Script
-except:
-    rootname = "C:\\Users\\k49976\\Desktop\\repositoryGibLab\\pyemmo"
-    print(f"Could not determine root. Setting it manually to '{rootname}'")
-    print(f'rootname is "{rootname}"')
-    sys.path.append(rootname)
-    # sys.path.append("C:\\Users\\k49976\\Desktop\\repositoryGibLab\\pyemmo\\tests")
-from pyemmo.api.modelJSON import SurfaceAPI
+from pyemmo.api.json.modelJSON import SurfaceAPI
 from pyemmo.functions.plot import plot
 from pyemmo.definitions import TEST_DIR
-import workingDirectory.translate_surfs
+import pyemmo.api.pyleecan.translate_surfs
 
 
 def test_translate_surfs():
@@ -50,7 +42,7 @@ def test_translate_surfs():
         (
             pyemmo_surf,
             angle_point_ref_list,
-        ) = workingDirectory.translate_surfs.translate_surface(
+        ) = pyemmo.api.pyleecan.translate_surfs.translate_surface(
             name_split_list=all_surfs_labels_split2[i],
             machine=machine,
             surface=surf,

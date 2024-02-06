@@ -4,18 +4,9 @@ import logging
 from pyleecan.Classes.Machine import Machine
 from pyleecan.Functions.load import load
 
-try:
-    from pyemmo.script.script import Script
-except:
-    rootname = "C:\\Users\\k49976\\Desktop\\repositoryGibLab\\pyemmo"
-    print(f"Could not determine root. Setting it manually to '{rootname}'")
-    print(f'rootname is "{rootname}"')
-    sys.path.append(rootname)
-    # sys.path.append("C:\\Users\\k49976\\Desktop\\repositoryGibLab\\pyemmo\\tests")
-
 from pyemmo.functions.plot import plot
 from pyemmo.definitions import TEST_DIR
-import workingDirectory.createGeoDict
+import pyemmo.api.pyleecan.createGeoDict
 
 
 def test_create_geo_dict():
@@ -25,7 +16,7 @@ def test_create_geo_dict():
         )
     )
 
-    result = workingDirectory.createGeoDict.create_geo_dict(
+    result = pyemmo.api.pyleecan.createGeoDict.create_geo_dict(
         machine, machine.rotor.is_internal
     )
 

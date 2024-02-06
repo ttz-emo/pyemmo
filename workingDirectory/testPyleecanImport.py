@@ -13,18 +13,11 @@ from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
 from pyleecan.Classes.MachineSyRM import MachineSyRM
 
-try:
-    from pyemmo.script.script import Script
-except:
-    rootname = "C:\\Users\\k49976\\Desktop\\repositoryGibLab\\pyemmo"
-    print(f"Could not determine root. Setting it manually to '{rootname}'")
-    print(f'rootname is "{rootname}"')
-    sys.path.append(rootname)
 from pyemmo.functions.plot import plot
-from pyemmo.api.json import main
+from pyemmo.api.json.json import main
 from pyemmo.definitions import ROOT_DIR
-from workingDirectory.get_translated_machine import get_translated_machine
-from workingDirectory.create_param_dict import create_param_dict
+from pyemmo.api.pyleecan.get_translated_machine import get_translated_machine
+from pyemmo.api.pyleecan.create_param_dict import create_param_dict
 
 
 # Simulation Function
@@ -96,7 +89,6 @@ if isinstance(machine, (MachineSIPMSM, MachineIPMSM, MachineSyRM)):
         geo_translation_dict,
     ) = get_translated_machine(
         machine=machine,
-        is_internal_rotor=isInternalRotor,
     )
 
 else:
