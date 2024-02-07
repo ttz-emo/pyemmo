@@ -34,5 +34,5 @@ def test_build_pyemmo_point(pyleecan_point: complex) -> None:
     assert pyemmo_point.coordinate[0] == numpy.real(pyleecan_point)
     assert pyemmo_point.coordinate[1] == numpy.imag(pyleecan_point)
     assert pyemmo_point.coordinate[2] == 0
-    assert pyemmo_point.name == "Point"
+    assert pyemmo_point.name == "point_pylc"
     assert pyemmo_point.meshLength == 1e-3
