@@ -28,7 +28,7 @@ r"""Path: RESULT_DIR is "pyemmo" default result directory to store model files a
 For Windows this is something like: 'C:\\Users\\Username\\AppData\\Roaming\\pyemmo\\Results' """
 if not isdir(RESULT_DIR):
     mkdir(RESULT_DIR)
-TEST_DIR = join(MAIN_DIR, "tests").replace("\\", "/")
+TEST_DIR = join(ROOT_DIR, "tests").replace("\\", "/")
 
 CONF_PATH = join(USER_DIR, "main_config_dict.json").replace("\\", "/")
 
