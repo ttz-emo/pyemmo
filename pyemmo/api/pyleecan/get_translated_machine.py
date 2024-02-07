@@ -72,7 +72,8 @@ def build_bands_rotor(
     )
 
     # Adding curves to list:
-    rotor_air_gap1_curves = rotor_cont_line_list
+    rotor_air_gap1_curves = []
+    rotor_air_gap1_curves.extend(rotor_cont_line_list)
     rotor_air_gap1_curves.append(rotor_circle1)
     rotor_air_gap1_curves.append(
         Line(
@@ -241,7 +242,8 @@ def build_bands_stator(
     )
 
     # Adding curves to list:
-    curves_stlu1 = stator_cont_line_list
+    curves_stlu1 = []
+    curves_stlu1.extend(stator_cont_line_list)
     curves_stlu1.append(stator_circle4)
     curves_stlu1.append(lower_line4)
     curves_stlu1.append(upper_line4)
@@ -257,9 +259,9 @@ def build_bands_stator(
         meshSize=1.0,
     )
 
-    plot(curves_stlu1, linewidth=1, markersize=3, tag=True)
-    stator_air_gap1.plot()
-    print("---")
+    # plot(curves_stlu1, linewidth=1, markersize=3, tag=True)
+    # stator_air_gap1.plot()
+    # print("---")
 
     # ------------------
     # Stator inner band:
