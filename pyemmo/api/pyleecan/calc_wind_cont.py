@@ -3,7 +3,6 @@ from typing import Union
 
 from ...script.geometry.line import Line
 from ...script.geometry.circleArc import CircleArc
-from ...script.geometry.point import Point
 from ...functions.plot import plot
 from .get_rotor_stator_surfs import get_stator_surfs
 
@@ -89,13 +88,13 @@ def calc_wind_contour(
     #     endPoint=stator_line_point_list[1],
     #     centerPoint=center_point,
     # )
-    
+
     stator_new_line = Line(
         name="test_line_contour",
         startPoint=stator_line_point_list[0],
         endPoint=stator_line_point_list[1],
     )
-    
+
     stator_cont_line_list.append(stator_new_line)
     print("windContourLineList:")
     plot(stator_cont_line_list, linewidth=1, markersize=3, tag=True)
