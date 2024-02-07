@@ -17,6 +17,7 @@ from pyemmo.api.pyleecan.get_translated_machine import get_translated_machine
 
 MACHINE_FILE_DIR = os.path.join(DATA_DIR, "Machine")
 machine_test_dict = {}
+nbrTranslatedMaschines = 0
 for machineFile in os.listdir(MACHINE_FILE_DIR):
     machinePath = os.path.join(MACHINE_FILE_DIR, machineFile)
     try:
@@ -41,7 +42,11 @@ for machineFile in os.listdir(MACHINE_FILE_DIR):
             )
         else:
             machine_test_dict[machineFile] = "Machine successfully translated!"
-
+            nbrTranslatedMaschines += 1
+nbrMachinesTotal = len(os.listdir(MACHINE_FILE_DIR))
+nbrFails = nbrMachinesTotal - nbrTranslatedMaschines
+machine_test_dict["FINAL_RESULT"] = f"{nbrMachinesTotal} machines, {nbrTranslatedMaschines} tranlated, {nbrFails} failed"
+print(machine_test_dict["FINAL_RESULT"])
 # Write results to "Results" folder because its not tracked by Git.
 with open(
     os.path.join(ROOT_DIR, "Results", "pyleecan_machine_test.json"),
