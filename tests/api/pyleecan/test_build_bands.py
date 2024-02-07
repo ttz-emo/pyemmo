@@ -1,5 +1,5 @@
 import os
-import logging
+import math
 
 from pyleecan.Classes.Machine import Machine
 from pyleecan.Functions.load import load
@@ -10,6 +10,7 @@ import pyemmo.api.pyleecan.translate_surfs
 import pyemmo.api.pyleecan.get_magnetization_dict
 import pyemmo.api.pyleecan.get_translated_machine
 import pyemmo.api.pyleecan.createGeoDict
+from pyemmo.api.json.SurfaceJSON import SurfaceAPI
 
 
 def test_build_bands():
@@ -78,13 +79,27 @@ def test_build_bands():
         stator_air_gap2,
     ]
     geometry_list.extend(all_bands)
-    logging.debug("-------------------")
-    logging.debug("Plot all_bands:")
-    plot(all_bands)
-    logging.debug("-------------------")
-    logging.debug("Plot geometry_list:")
-    plot(geometry_list)
-    logging.debug("-------------------")
 
-
-test_build_bands()
+    assert isinstance(all_bands, list)
+    assert number_of_bands == 5
+    assert len(all_bands) == 4
+    assert math.isclose(diff_radius, 0.0005, abs_tol=1e-6)
+    assert len(geometry_list) == 12
+    assert is_internal_rotor is True
+    assert math.isclose(
+        magnetization_dict["Mag0"], 0.5462703245568578, rel_tol=1e-6
+    )
+    assert math.isclose(
+        magnetization_dict["Mag1"], 0.2391278388405909, rel_tol=1e-6
+    )
+    assert math.isclose(max_radius, 0.0795, abs_tol=1e-6)
+    assert math.isclose(movingband_r, 0.07970000000000001, abs_tol=1e-6)
+    assert rotor_air_gap1.idExt == "LuR1"
+    assert len(rotor_air_gap1.curve) == 4
+    assert rotor_air_gap2.idExt == "LuR2"
+    assert len(rotor_air_gap2.curve) == 4
+    assert stator_air_gap1.idExt == "StLu1"
+    assert len(stator_air_gap1.curve) == 8
+    assert stator_air_gap2.idExt == "StLu2"
+    assert len(stator_air_gap2.curve) == 4
+    assert len(stator_cont_line_list) == 5

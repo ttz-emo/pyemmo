@@ -50,7 +50,7 @@ def test_get_translated_machine():
         "StLu1",
         "StLu2",
     ):
-        assert key in geo_translation_dict.keys()
+        assert key in geo_translation_dict
 
     # logging.debug("-------------------")
     # logging.debug("Plot geometry_list:")

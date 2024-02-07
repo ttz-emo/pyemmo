@@ -1,4 +1,5 @@
 """imports"""
+
 from typing import Union
 
 from pyleecan.Classes.Segment import Segment
@@ -26,8 +27,15 @@ def build_pyemmo_line_list(
     """
     pyemmo_line_list = []
 
+    if not isinstance(pyleecan_line_list, list):
+        raise TypeError(
+            "Type of pyleecan_line_list is not 'list'. No translation possible."
+        )
+
     if len(pyleecan_line_list) == 0:
-        raise IndexError("The pyleecan_line_list provided is empty. No translation possible.")
+        raise IndexError(
+            "The pyleecan_line_list provided is empty. No translation possible."
+        )
 
     for geo_element in pyleecan_line_list:
         if isinstance(geo_element, Segment):

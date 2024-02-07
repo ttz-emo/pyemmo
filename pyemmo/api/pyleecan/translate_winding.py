@@ -5,12 +5,15 @@ import swat_em as swatem
 
 def translate_winding(
     machine: Machine,
-) -> tuple[swatem.datamodel, list[
-    Union[
-        list[Union[list[int], list[int]]],
-        list[Union[list[int], list[int]]],
-        list[Union[list[int], list[int]]],
-    ]]
+) -> tuple[
+    swatem.datamodel,
+    list[
+        Union[
+            list[Union[list[int], list[int]]],
+            list[Union[list[int], list[int]]],
+            list[Union[list[int], list[int]]],
+        ]
+    ],
 ]:
     """Translates the winding from pyleecan to pyemmo.
 
@@ -29,9 +32,11 @@ def translate_winding(
         Q=machine.stator.slot.Zs,
         P=machine.stator.winding.p * 2,
         m=machine.stator.winding.qs,
-        w=machine.stator.winding.coil_pitch
-        if machine.stator.winding.Nlayer > 1
-        else -1,
+        w=(
+            machine.stator.winding.coil_pitch
+            if machine.stator.winding.Nlayer > 1
+            else -1
+        ),
         layers=machine.stator.winding.Nlayer,
         turns=machine.stator.winding.Ntcoil,
     )
