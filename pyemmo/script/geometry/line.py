@@ -1,4 +1,5 @@
 """Module of geometry class Line"""
+
 from random import random
 from typing import Tuple, Literal, TYPE_CHECKING
 
@@ -32,7 +33,11 @@ class Line(Transformable):
     ID: int = 0
 
     def __init__(
-        self, name: str, startPoint: Point, endPoint: Point, force: bool = False
+        self,
+        name: str,
+        startPoint: Point,
+        endPoint: Point,
+        force: bool = False,
     ):
         ###Name der Linie.
         self.name = name
@@ -168,7 +173,7 @@ class Line(Transformable):
         """
         assert isinstance(newEndPoint, Point)
         self._endPoint = newEndPoint
-    
+
     @property
     def points(self) -> Tuple["Point", "Point"]:
         """get the start and end point of a line
@@ -179,6 +184,25 @@ class Line(Transformable):
         startPoint = self.startPoint
         endPoint = self.endPoint
         return (startPoint, endPoint)
+    
+    @property
+    def middlePoint(self) -> Point:
+        """Get the center point between start and end point.
+
+        Returns:
+            Point: Center point in the middle between start and end point.
+        """
+        return Point(
+            name=f"Middle point of {self.name}",
+            x=(self.startPoint.coordinate[0] + self.endPoint.coordinate[0])
+            / 2,
+            y=(self.startPoint.coordinate[1] + self.endPoint.coordinate[1])
+            / 2,
+            z=(self.startPoint.coordinate[2] + self.endPoint.coordinate[2])
+            / 2,
+            meshLength=(self.startPoint.meshLength + self.endPoint.meshLength)
+            / 2,
+        )
 
     def switchPoints(self) -> None:
         """switch start and end point of curve (revert direction)
@@ -409,10 +433,18 @@ class Line(Transformable):
             )
         if marker is not None:
             startPoint.plot(
-                fig=fig, marker=marker, markersize=markersize, color=color, tag=tag
+                fig=fig,
+                marker=marker,
+                markersize=markersize,
+                color=color,
+                tag=tag,
             )
             endPoint.plot(
-                fig=fig, marker=marker, markersize=markersize, color=color, tag=tag
+                fig=fig,
+                marker=marker,
+                markersize=markersize,
+                color=color,
+                tag=tag,
             )
 
     def arePointsEqual(self, compLine: "Line", tol=DEFAULT_GEO_TOL) -> bool:
@@ -466,7 +498,9 @@ class Line(Transformable):
             Trying to identify the point if its not given.
         """
         # pylint: disable=locally-disabled, unidiomatic-typecheck
-        if not type(addLine) == type(self):  # make sure the line types are equal
+        if not type(addLine) == type(
+            self
+        ):  # make sure the line types are equal
             raise (
                 TypeError(
                     (
@@ -515,3 +549,25 @@ class Line(Transformable):
                     )
                 )
             )
+
+    def containsPoint(
+        self, refPoint: Point, tol: float = DEFAULT_GEO_TOL
+    ) -> bool:
+        """This function checks if start or end point coordinates are equal to the given reference
+        point.
+
+        Args:
+            refPoint (Point): Reference point to check for.
+            tol (float): Geometric tolerance for the comparison of the coordinates.
+
+        Returns:
+            bool: True if line contains point, False if not.
+        """
+        assert isinstance(refPoint, Point)
+        assert isinstance(tol, (int, float))
+        for p in self.points:
+            if p.isEqual(refPoint, tol=tol):
+                return True
+        return False
+
+
