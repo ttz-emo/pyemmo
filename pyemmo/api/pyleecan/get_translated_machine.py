@@ -323,7 +323,8 @@ def build_bands_stator(
 def calcs_radii(
     machine: Machine, is_internal_rotor: bool
 ) -> tuple[float, float]:
-    """Calculation of the magnet-radii and of the distance between rotor/magnet and stator inner radius
+    """Calculation of the magnet-radii and of the distance between rotor/magnet and stator
+    inner radius
 
     Args:
         machine (Machine): Pyleecan machine

@@ -2,7 +2,7 @@
 import os
 import numpy as np
 
-from pyleecan.Functions import load  # pylint: disable=locally-disabled, E0611
+from pyleecan.Functions import load
 
 from pyleecan.Classes.Simulation import Simulation
 from pyleecan.Classes.Simu1 import Simu1
@@ -75,7 +75,7 @@ for i, file in enumerate(os.listdir(machineFolder)):
         print(f"{machineList.index(file)}: " + file)
 fileName = machineList[22]  # SELECT MACHINE HERE BY INDEX OR NAME
 print("\nUsing machine: " + fileName)
-machine: Machine = load.load(
+machine: Machine = load.load(  # pylint: disable=locally-disabled, no-member
     os.path.abspath(os.path.join(machineFolder, fileName))
 )
 simulation = generate_simulation(machine, i_d=0, i_q=10, speed=1000)
