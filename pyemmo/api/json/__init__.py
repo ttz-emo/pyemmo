@@ -2,13 +2,7 @@
 import logging
 from ...script.material.material import Material
 from ...script.geometry import defaultCenterPoint
-from ... import logFmt, rootLogger
 
-logger = rootLogger  # test to get script.py log in local model log file
-# logger = logging.getLogger("pyemmo.api.json")  # init module logger
-ch = logging.StreamHandler()
-ch.setFormatter(logFmt)
-logger.addHandler(ch)
 
 globalCenterPoint = defaultCenterPoint
 # Movingband line Identification dicts

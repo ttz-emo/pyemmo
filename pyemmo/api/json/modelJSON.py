@@ -21,7 +21,8 @@ from ...script.geometry.surface import Surface
 from ...script.geometry.transformable import Transformable
 from ...script.material.material import Material
 from ...definitions import DEFAULT_GEO_TOL
-from . import importJSON, globalCenterPoint, logger
+from . import importJSON, globalCenterPoint
+from .. import logger
 from .SurfaceJSON import SurfaceAPI
 
 # from .. import calc_phaseangle_starvoltageV2
@@ -790,6 +791,10 @@ def createWinding(extendedInfo: dict) -> datamodel:
     
     )
     swatemWinding.analyse_wdg()  # analyse winding to make sure its valid and all parameters are set
+    # make sure that number of parallel paths does not exceed max. possible paths of winding:
+    if max(swatemWinding.get_parallel_connections()) < importJSON.getNbrParalellPaths(extendedInfo):
+        logger.warning("The given number of parallel windings paths (%i) exceeds possible paths of the winding layout (%i)!", importJSON.getNbrParalellPaths(extendedInfo), max(swatemWinding.get_parallel_connections()) )
+
     return swatemWinding
 
 

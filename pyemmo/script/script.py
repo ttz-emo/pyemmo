@@ -1892,9 +1892,9 @@ class Script(object):
                     # geo-elements are lines
                     for mbLine in physicalMovingband.geometricalElement:
                         # mbLine.setMeshLength()
-                            # BUG, FIXME: Only add movingband line if the
-                            # arc has realy been added to the script!
-                            mbLineIDs += f"{mbLine.id},"  # add the line id
+                        # BUG, FIXME: Only add movingband line if the
+                        # arc has realy been added to the script!
+                        mbLineIDs += f"{mbLine.id},"  # add the line id
             # get approx. the min mesh length of the rotor movingband
             # (only checking first line of first movingband physical)
             mbMeshSize = (
@@ -2054,7 +2054,8 @@ class Script(object):
         # TODO: Improve check here...
         # assert len(geometryParams) == len(simuParamDict.GEO) # assert there
         # is the correct number of parameters
-        # update machine parameters
+
+        # update machine parameters:
         simuParamDict["GEO"] = simuParamDict["GEO"] | geometryParams
 
         # 2. Set simulation parameters
@@ -2081,6 +2082,8 @@ class Script(object):
         if not hasMagnets:
             # if there where no magnet physical elements, set flag to false
             # even if its set to true...
+            logging.warning("Unsetting the flag 'CALC_MAGNET_LOSSES', because"
+                            " no magnets where found in the machine.")
             simuParamDict["SYM"]["CALC_MAGNET_LOSSES"] = 0
 
         # machine.getStator().winding.plot_star('plot_star.png',None,False,True)

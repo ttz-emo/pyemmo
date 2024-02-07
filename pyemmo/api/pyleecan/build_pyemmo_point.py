@@ -13,7 +13,7 @@ def build_pyemmo_point(pyleecan_point: complex) -> Point:
     coords = [pyleecan_point.real, pyleecan_point.imag]
 
     pyemmo_point = Point(
-        name="Point", x=coords[0], y=coords[1], z=0, meshLength=1e-3
+        name="point_pylc", x=coords[0], y=coords[1], z=0, meshLength=1e-3
     )
 
     return pyemmo_point

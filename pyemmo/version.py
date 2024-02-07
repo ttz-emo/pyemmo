@@ -19,4 +19,4 @@ else:
     except InvalidGitRepositoryError:
         sha = "Repo not found"
 
-__version__ = "1.3.1.a1"
+__version__ = "1.3.1.a2"

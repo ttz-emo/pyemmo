@@ -1,6 +1,5 @@
 import math
 import copy
-import logging
 from typing import Union
 
 from pyleecan.Classes.Machine import Machine
@@ -10,7 +9,7 @@ from ...script.geometry.point import Point
 from ...script.geometry.line import Line
 from ...script.geometry.circleArc import CircleArc
 from ...functions.plot import plot
-
+from .. import logger
 
 def general_calc_spmsm_cont(
     machine: Machine,
@@ -44,10 +43,10 @@ def general_calc_spmsm_cont(
             a=curve.endPoint.radius, b=radius, abs_tol=1e-6
         ):
             rotor_cont_line_list.append(curve)
-    logging.debug("---")
-    logging.debug("Plot Überprüfung des Löschens der Seitenlinien.")
+    logger.debug("---")
+    logger.debug("Plot Überprüfung des Löschens der Seitenlinien.")
     plot(rotor_cont_line_list, linewidth=1, markersize=3)
-    logging.debug("---")
+    logger.debug("---")
 
     # --------------------------------------------
     # Filtering the outermost points of the rotor:
@@ -171,14 +170,14 @@ def calc_spmsm_rotor_cont(
                         abs_tol=1e-6,
                     )
                 ):
-                    logging.debug("gefiltert: %s", rotor_lam_curve)
-                    logging.debug("gefiltert: %s", rotor_mag_curve)
+                    logger.debug("gefiltert: %s", rotor_lam_curve)
+                    logger.debug("gefiltert: %s", rotor_mag_curve)
                     rotor_cont_line_list.remove(rotor_lam_curve)
                     rotor_cont_line_list.remove(rotor_mag_curve)
                     # plot(rotorContourLineList, linewidth=1, markersize=3, tag=True)
 
-    logging.debug("Plot contourLineList ")
+    logger.debug("Plot contourLineList ")
     plot(rotor_cont_line_list, linewidth=1, markersize=3, tag=True)
-    logging.debug("---")
+    logger.debug("---")
 
     return rotor_cont_line_list, r_point_rotor_cont, l_point_rotor_cont

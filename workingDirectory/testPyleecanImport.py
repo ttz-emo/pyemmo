@@ -1,9 +1,9 @@
 # %%
 import os
-import sys
 import numpy as np
 
-from pyleecan.Functions.load import load
+from pyleecan.Functions import load  # pylint: disable=locally-disabled, E0611
+
 from pyleecan.Classes.Simulation import Simulation
 from pyleecan.Classes.Simu1 import Simu1
 from pyleecan.Classes.InputCurrent import InputCurrent
@@ -12,8 +12,9 @@ from pyleecan.Classes.Machine import Machine
 from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
 from pyleecan.Classes.MachineSyRM import MachineSyRM
+from pyleecan.definitions import DATA_DIR
 
-from pyemmo.functions.plot import plot
+# from pyemmo.functions.plot import plot
 from pyemmo.api.json.json import main
 from pyemmo.definitions import ROOT_DIR
 from pyemmo.api.pyleecan.get_translated_machine import get_translated_machine
@@ -62,23 +63,25 @@ def generate_simulation(
 # ==============================================
 # Determination of the machine to be calculated:
 # ==============================================
-
+# machine folder pyemmo
 machineFolder = os.path.join(ROOT_DIR, "workingDirectory/machineData")
+# machine folder pyleecan:
+machineFolder = os.path.join(DATA_DIR, "Machine")
 resFolder = os.path.join(ROOT_DIR, r"Results\pyleecanAPI")
 machineList = []
 for i, file in enumerate(os.listdir(machineFolder)):
     if file.endswith(".json") and not "FEMM" in file:
         machineList.append(file)
         print(f"{machineList.index(file)}: " + file)
-fileName = machineList[1]  # SELECT MACHINE HERE BY INDEX OR NAME
+fileName = machineList[22]  # SELECT MACHINE HERE BY INDEX OR NAME
 print("\nUsing machine: " + fileName)
-machine: Machine = load(os.path.abspath(os.path.join(machineFolder, fileName)))
+machine: Machine = load.load(
+    os.path.abspath(os.path.join(machineFolder, fileName))
+)
 simulation = generate_simulation(machine, i_d=0, i_q=10, speed=1000)
 
-# --------------------------
-# isInternalRotor detection:
-# --------------------------
-isInternalRotor = machine.rotor.is_internal
+# %%
+
 
 if isinstance(machine, (MachineSIPMSM, MachineIPMSM, MachineSyRM)):
     (
