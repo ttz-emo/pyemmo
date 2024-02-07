@@ -5,6 +5,7 @@ from pyleecan.Classes.Segment import Segment
 from pyleecan.Classes.Arc1 import Arc1
 from pyleecan.Classes.Arc2 import Arc2
 from pyleecan.Classes.Arc3 import Arc3
+
 from pyemmo.script.geometry.line import Line
 from pyemmo.script.geometry.circleArc import CircleArc
 
@@ -53,36 +54,38 @@ def sample_arc3():
 # =================
 # Testing functions
 # =================
-@pytest.mark.xfail
-def test_build_pyemmo_line_list_empty_list():
-    """Expected failure test for build_pyemmo_line_list with an empty input list.
-
-    This test is marked as an expected failure using pytest's @pytest.mark.xfail.
-    The purpose is to check the behavior of build_pyemmo_line_list when provided with
-    an empty input list. The test expects the function to raise an IndexError since
-    the input list does not contain any curves for translation.
-
-    Returns:
-        None: The function is expected to fail, and the xfail marker ensures that
-        the test is considered successful even if the failure occurs.
+def test_build_pyemmo_line_list_empty_list() -> None:
     """
-    build_pyemmo_line_list([])
+    Test case to verify the behavior of build_pyemmo_line_list function when provided an empty list.
 
-
-@pytest.mark.xfail
-def test_build_pyemmo_line_list_segment_fail() -> None:
-    """Expected failure test for build_pyemmo_line_list with an invalid Segment.
-
-    This test is marked as an expected failure using pytest's @pytest.mark.xfail.
-    The purpose is to check the behavior of build_pyemmo_line_list when provided with
-    an invalid Segment (specified with incorrect argument types). The test expects
-    the function to raise an exception or produce incorrect results.
-
-    Returns:
-        None: The function is expected to fail, and the xfail marker ensures that
-        the test is considered successful even if the failure occurs.
+    Raises:
+        IndexError: If the function fails to handle an empty list input correctly.
     """
-    build_pyemmo_line_list(Segment(begin=0 + 0j, end=0 + 0j))
+    with pytest.raises(IndexError):
+        build_pyemmo_line_list([])
+
+
+def test_build_pyemmo_line_list_segment_error() -> None:
+    """
+    Test case to verify the behavior of build_pyemmo_line_list function when provided a list containing a Segment
+    object with invalid parameters.
+
+    Raises:
+        ValueError: If the function fails to handle the provided Segment object correctly.
+    """
+    with pytest.raises(ValueError):
+        build_pyemmo_line_list([Segment(begin=0 + 0j, end=0 + 0j)])
+
+
+def test_build_pyemmo_line_list_wrong_imput_type() -> None:
+    """
+    Test case to verify the behavior of build_pyemmo_line_list function when provided an invalid input type.
+
+    Raises:
+        TypeError: If the function fails to handle the provided input type correctly.
+    """
+    with pytest.raises(TypeError):
+        build_pyemmo_line_list(Segment(begin=0 + 0j, end=0 + 0j))
 
 
 def test_build_pyemmo_line_list_with_segment(sample_segment: Segment) -> None:
