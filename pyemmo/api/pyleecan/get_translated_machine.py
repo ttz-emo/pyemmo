@@ -11,7 +11,7 @@ from ...script.geometry.line import Line
 from ...functions.plot import plot
 from ..json.SurfaceJSON import SurfaceAPI
 from .. import air
-from .createGeoDict import create_geo_dict
+from .create_geo_dict import create_geo_dict
 from .get_coords_for_point import get_x_for_point, get_y_for_point
 
 
@@ -323,7 +323,8 @@ def build_bands_stator(
 def calcs_radii(
     machine: Machine, is_internal_rotor: bool
 ) -> tuple[float, float]:
-    """Calculation of the magnet-radii and of the distance between rotor/magnet and stator inner radius
+    """Calculation of the magnet-radii and of the distance between rotor/magnet and stator
+    inner radius
 
     Args:
         machine (Machine): Pyleecan machine
