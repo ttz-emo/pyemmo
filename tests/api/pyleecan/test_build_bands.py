@@ -9,7 +9,7 @@ from pyemmo.definitions import TEST_DIR
 import pyemmo.api.pyleecan.translate_surfs
 import pyemmo.api.pyleecan.get_magnetization_dict
 import pyemmo.api.pyleecan.get_translated_machine
-import pyemmo.api.pyleecan.createGeoDict
+import pyemmo.api.pyleecan.create_geo_dict
 from pyemmo.api.json.SurfaceJSON import SurfaceAPI
 
 
@@ -37,7 +37,7 @@ def test_build_bands():
         r_point_rotor_cont,
         l_point_rotor_cont,
         magnetization_dict,
-    ) = pyemmo.api.pyleecan.createGeoDict.create_geo_dict(
+    ) = pyemmo.api.pyleecan.create_geo_dict.create_geo_dict(
         machine,
         is_internal_rotor,
     )

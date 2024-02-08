@@ -6,7 +6,7 @@ from pyleecan.Functions.load import load
 
 from pyemmo.functions.plot import plot
 from pyemmo.definitions import TEST_DIR
-import pyemmo.api.pyleecan.createGeoDict
+import pyemmo.api.pyleecan.create_geo_dict
 
 
 def test_create_geo_dict():
@@ -16,7 +16,7 @@ def test_create_geo_dict():
         )
     )
 
-    result = pyemmo.api.pyleecan.createGeoDict.create_geo_dict(
+    result = pyemmo.api.pyleecan.create_geo_dict.create_geo_dict(
         machine, machine.rotor.is_internal
     )
 
