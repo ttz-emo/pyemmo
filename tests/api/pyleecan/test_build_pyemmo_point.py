@@ -4,7 +4,6 @@ Following functions are included in this module:
 * test_center_point()
 """
 
-import pytest
 import numpy
 from hypothesis import given, settings, strategies as st
 
