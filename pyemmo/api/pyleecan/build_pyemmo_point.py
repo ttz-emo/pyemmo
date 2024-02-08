@@ -1,3 +1,15 @@
+"""
+This module provides functions for translating points between different geometric libraries.
+
+Functions:
+    build_pyemmo_point(pyleecan_point: complex) -> Point:
+        Translates the coordinates of a point in ``pyleecan`` into a ``pyemmo`` point.
+
+Classes:
+    Point: Represents a point in 3D space.
+
+"""
+
 from ...script.geometry.point import Point
 
 
