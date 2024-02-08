@@ -11,12 +11,13 @@ from ...script.geometry.circleArc import CircleArc
 from ...functions.plot import plot
 from .. import logger
 
+
 def general_calc_spmsm_cont(
     machine: Machine,
     rotor_lam_surf_list: list[SurfaceAPI],
     rotor_mag_surf_list: list[SurfaceAPI],
     radius: float,
-    isInternalRotor: bool,
+    is_internal_rotor: bool,
 ) -> tuple[list[Union[Line, CircleArc]], Point, Point]:
     """General calculations for creating the rotor contour: \n
     * Filtering the lines that lie on the air gap
@@ -26,7 +27,7 @@ def general_calc_spmsm_cont(
         machine (Machine): Pyleecan machine
         rotorLamSurfList (list[SurfaceAPI]): List of the pyemmo-surfaces of the rotor
         radius (float): Internal Rotor -> ``rotorRint`` | External Rotor -> ``rotorRext``
-        isInternalRotor (bool): Internal or external rotor
+        is_internal_rotor (bool): Internal or external rotor
 
     Returns:
         tuple[list[Union[Line, CircleArc]], Point, Point]: _description_
@@ -43,6 +44,7 @@ def general_calc_spmsm_cont(
             a=curve.endPoint.radius, b=radius, abs_tol=1e-6
         ):
             rotor_cont_line_list.append(curve)
+
     logger.debug("---")
     logger.debug("Plot Überprüfung des Löschens der Seitenlinien.")
     plot(rotor_cont_line_list, linewidth=1, markersize=3)
@@ -58,7 +60,7 @@ def general_calc_spmsm_cont(
     if math.isclose(a=rotor_seg_angle, b=0, abs_tol=1e-6):
         rotor_seg_angle = 180
 
-    if isInternalRotor:
+    if is_internal_rotor:
         for curve in rotor_cont_line_list:
             for point in curve.points:
                 angle_point = (
@@ -69,7 +71,9 @@ def general_calc_spmsm_cont(
                 if math.isclose(a=angle_point, b=0, abs_tol=1e-6):
                     angle_point = 180
                 if (
-                    math.isclose(a=angle_point, b=rotor_seg_angle, abs_tol=1e-6)
+                    math.isclose(
+                        a=angle_point, b=rotor_seg_angle, abs_tol=1e-6
+                    )
                     and point.radius <= machine.rotor.Rext
                     and point.radius >= machine.rotor.Rint
                 ):
@@ -136,7 +140,7 @@ def calc_spmsm_rotor_cont(
         rotor_lam_surf_list=rotor_lam_surf_list,
         rotor_mag_surf_list=rotor_mag_surf_list,
         radius=radius,
-        isInternalRotor=is_internal_rotor,
+        is_internal_rotor=is_internal_rotor,
     )
 
     # ----------------------------------------------
