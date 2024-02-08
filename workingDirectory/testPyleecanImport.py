@@ -1,9 +1,11 @@
 # %%
 import os
+import logging
+import json
+
 import numpy as np
 
 from pyleecan.Functions import load
-
 from pyleecan.Classes.Simulation import Simulation
 from pyleecan.Classes.Simu1 import Simu1
 from pyleecan.Classes.InputCurrent import InputCurrent
@@ -19,6 +21,9 @@ from pyemmo.api.json.json import main
 from pyemmo.definitions import ROOT_DIR
 from pyemmo.api.pyleecan.get_translated_machine import get_translated_machine
 from pyemmo.api.pyleecan.create_param_dict import create_param_dict
+
+# disable messages of matplotlib
+logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
 
 
 # Simulation Function
@@ -68,22 +73,52 @@ machineFolder = os.path.join(ROOT_DIR, "workingDirectory/machineData")
 # machine folder pyleecan:
 machineFolder = os.path.join(DATA_DIR, "Machine")
 resFolder = os.path.join(ROOT_DIR, r"Results\pyleecanAPI")
+if not os.path.isdir(resFolder):
+    os.makedirs(resFolder)
 machineList = []
 for i, file in enumerate(os.listdir(machineFolder)):
     if file.endswith(".json") and not "FEMM" in file:
         machineList.append(file)
         print(f"{machineList.index(file)}: " + file)
-fileName = machineList[22]  # SELECT MACHINE HERE BY INDEX OR NAME
-print("\nUsing machine: " + fileName)
-machine: Machine = load.load(  # pylint: disable=locally-disabled, no-member
-    os.path.abspath(os.path.join(machineFolder, fileName))
+# %%working machines
+# Load data with info about working machine names
+pylcn_machine_testfile = os.path.join(
+    ROOT_DIR, r"Results\pyleecan_machine_test.json"
 )
-simulation = generate_simulation(machine, i_d=0, i_q=10, speed=1000)
+if os.path.isfile(pylcn_machine_testfile):
+    # define filter function
+    def filter_success(keyVal):
+        """Filter function to search test for successfully translated machines"""
+        _, value = keyVal
+        if "success" in value:
+            return True
+
+    # load data from file
+    with open(pylcn_machine_testfile, encoding="utf-8") as infile:
+        pyleecan_machine_results_dict = json.load(infile)
+
+    # Filter original dict for working machiness
+    workingMachineDict = dict(
+        filter(filter_success, pyleecan_machine_results_dict.items())
+    )
+    # get list IDs and print them
+    for machineName in workingMachineDict.keys():
+        print(f"{machineList.index(machineName)}: " + machineName)
+
+# %%
+fileName = machineList[33]  # SELECT MACHINE HERE BY INDEX OR NAME
+print("\nUsing machine: " + fileName)
+machineName: Machine = (
+    load.load(  # pylint: disable=locally-disabled, no-member
+        os.path.abspath(os.path.join(machineFolder, fileName))
+    )
+)
+simulation = generate_simulation(machineName, i_d=0, i_q=10, speed=1000)
 
 # %%
 
 
-if isinstance(machine, (MachineSIPMSM, MachineIPMSM, MachineSyRM)):
+if isinstance(machineName, (MachineSIPMSM, MachineIPMSM, MachineSyRM)):
     (
         allBands,
         geometryList,
@@ -91,7 +126,7 @@ if isinstance(machine, (MachineSIPMSM, MachineIPMSM, MachineSyRM)):
         magnetizationDict,
         geo_translation_dict,
     ) = get_translated_machine(
-        machine=machine,
+        machine=machineName,
     )
 
 else:
@@ -102,7 +137,7 @@ else:
 # print("---")
 
 paramDict = create_param_dict(
-    machine, simulation, movingband_r, magnetizationDict
+    machineName, simulation, movingband_r, magnetizationDict
 )
 
 main(
