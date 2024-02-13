@@ -46,12 +46,22 @@ def plot(
                 tag=tag,
             )
         else:
-            geoObj.plot(
-                fig,
-                linewidth=linewidth,
-                color=color,
-                marker=marker,
-                markersize=markersize,
-                tag=tag,
-            )
+            if isinstance(geoObj, Point):
+                # plot points separatly because they have no linewidth
+                geoObj.plot(
+                    fig=fig,
+                    marker=marker,
+                    markersize=markersize,
+                    color=color,
+                    tag=tag,
+                )
+            else:
+                geoObj.plot(
+                    fig,
+                    linewidth=linewidth,
+                    color=color,
+                    marker=marker,
+                    markersize=markersize,
+                    tag=tag,
+                )
     return fig, ax
