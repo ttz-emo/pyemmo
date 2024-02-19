@@ -53,8 +53,8 @@ def general_calc_spmsm_cont(
     # --------------------------------------------
     # Filtering the outermost points of the rotor:
     # --------------------------------------------
-    r_point_rotor_cont = Point("rPointRotorCont", x=0, y=0, z=0, meshLength=0)
-    l_point_rotor_cont = Point("lPointRotorCont", x=0, y=0, z=0, meshLength=0)
+    # r_point_rotor_cont = Point("rPointRotorCont", x=0, y=0, z=0, meshLength=0)
+    # l_point_rotor_cont = Point("lPointRotorCont", x=0, y=0, z=0, meshLength=0)
     rotor_seg_angle = 360 / machine.rotor.comp_periodicity_geo()[0]
 
     if math.isclose(a=rotor_seg_angle, b=0, abs_tol=1e-6):
@@ -74,8 +74,22 @@ def general_calc_spmsm_cont(
                     math.isclose(
                         a=angle_point, b=rotor_seg_angle, abs_tol=1e-6
                     )
-                    and point.radius <= machine.rotor.Rext
-                    and point.radius >= machine.rotor.Rint
+                    and (
+                        (point.radius < machine.rotor.Rext)
+                        or (
+                            math.isclose(
+                                point.radius, machine.rotor.Rext, abs_tol=1e-6
+                            )
+                        )
+                    )
+                    and (
+                        point.radius > machine.rotor.Rint
+                        or (
+                            math.isclose(
+                                point.radius, machine.rotor.Rint, abs_tol=1e-6
+                            )
+                        )
+                    )
                 ):
                     l_point_rotor_cont = point
                 if (
