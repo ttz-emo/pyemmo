@@ -50,8 +50,19 @@ def test_translate_surfs():
         )
         geometry_list.append(pyemmo_surf)
 
-    plot(geometry_list)
-    print("Plot")
+    assert len(geometry_list) == 8
 
+    expected_data = [
+        ("Pol", 4),
+        ("Lpl", 5),
+        ("Mag", 6),
+        ("Lpl", 4),
+        ("Mag", 6),
+        ("Lpl", 5),
+        ("StNut", 13),
+        ("StCu0", 7),
+    ]
 
-test_translate_surfs()
+    for i, (expected_id_ext, expected_len) in enumerate(expected_data):
+        assert geometry_list[i].idExt == expected_id_ext
+        assert len(geometry_list[i].curve) == expected_len

@@ -1,47 +1,20 @@
 import os
-import sys
+import math
 from typing import List
 import pytest
 from pyleecan.Classes.Machine import Machine
 from pyleecan.Functions.load import load
+from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
+from pyleecan.Classes.MachineSyRM import MachineSyRM
 from pyemmo.api.json.modelJSON import SurfaceAPI
-from pyemmo.functions.plot import plot
+from pyemmo.script.geometry.point import Point
 from pyemmo.definitions import TEST_DIR
-
-import pyemmo.api.pyleecan.translate_surfs
-import pyemmo.api.pyleecan.get_rotor_stator_cont
-import pyemmo.api.pyleecan.get_translated_machine
-
-
-def add_pyemmo_path():
-    try:
-        from pyemmo.script.script import Script
-    except ImportError:
-        rootname = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), "pyemmo")
-        )
-        print(f"Could not determine root. Setting it manually to '{rootname}'")
-        print(f'rootname is "{rootname}"')
-        sys.path.append(rootname)
-
-
-def split_labels(label):
-    return [part.split("-") for part in label.split("_")]
-
-
-def get_translated_surface(
-    machine, surf, all_surfs_labels_split2, angle_point_ref_list
-):
-    (
-        pyemmo_surf,
-        angle_point_ref_list,
-    ) = pyemmo.api.pyleecan.translate_surfs.translate_surface(
-        name_split_list=all_surfs_labels_split2,
-        machine=machine,
-        surface=surf,
-        angle_point_ref_list=angle_point_ref_list,
-    )
-    return pyemmo_surf, angle_point_ref_list
+from pyemmo.api.pyleecan.translate_surfs import translate_surface
+from pyemmo.api.pyleecan.get_rotor_stator_cont import (
+    get_even_rotor_cont,
+    get_spmsm_rotor_cont,
+    get_winding_cont,
+)
 
 
 def get_translated_machine(machine: Machine):
@@ -71,7 +44,7 @@ def get_translated_machine(machine: Machine):
         (
             pyemmo_surf,
             angle_point_ref_list,
-        ) = pyemmo.api.pyleecan.translate_surfs.translate_surface(
+        ) = translate_surface(
             name_split_list=all_surfs_labels_split2[i],
             machine=machine,
             surface=surf,
@@ -82,7 +55,7 @@ def get_translated_machine(machine: Machine):
     return geometry_list, machine.rotor.is_internal
 
 
-def test_get_rotor_cont(get_rotor_cont_function, machine_file):
+def get_cont(get_rotor_cont_function, machine_file):
     machine: Machine = load(
         os.path.abspath(os.path.join(TEST_DIR, "data", machine_file))
     )
@@ -93,37 +66,79 @@ def test_get_rotor_cont(get_rotor_cont_function, machine_file):
         is_internal_rotor=is_internal,
     )
 
-    # Verwende pytest, um die erwarteten Ergebnisse zu überprüfen
+    # general asserts
     assert result is not None
+    assert isinstance(geometry_list, list)
+    assert is_internal == machine.rotor.is_internal
 
-    # Plot für visuelle Überprüfung
-    # plot(result, tag=True)
-    # print("Plot rotor contour")
+    # asserts for spmsm
+    # result[0] = rotor_cont_line_list,
+    # result[1] = r_point_rotor_cont,
+    # result[2] = l_point_rotor_cont
+    if isinstance(machine, MachineSIPMSM):
+        assert len(geometry_list) == 4
+        assert len(result[0]) == 9
+        # asserts for r_point_rotor_cont
+        assert math.isclose(result[1].coordinate[0], 0.059, abs_tol=1e-6)
+        assert math.isclose(result[1].coordinate[1], 0, abs_tol=1e-6)
+        assert math.isclose(result[1].coordinate[2], 0, abs_tol=1e-6)
+        assert result[1].meshLength == 0.001
+
+        # asserts for l_point_rotor_cont
+        assert math.isclose(
+            result[2].coordinate[0], 0.047732002668121894, abs_tol=1e-6
+        )
+        assert math.isclose(
+            result[2].coordinate[1], 0.03467932988525591, abs_tol=1e-6
+        )
+        assert math.isclose(result[2].coordinate[2], 0, abs_tol=1e-6)
+        assert result[2].meshLength == 0.001
+
+    # asserts for SyRM
+    # result[0] = rotor_cont_line_list,
+    # result[1] = r_point_rotor_cont,
+    # result[2] = l_point_rotor_cont
+    elif isinstance(machine, MachineSyRM):
+        assert len(geometry_list) == 6
+
+        if get_rotor_cont_function == get_even_rotor_cont:
+            assert len(result[0]) == 1
+
+            # asserts for r_point_rotor_cont
+            assert math.isclose(result[1].coordinate[0], 0.0406, abs_tol=1e-6)
+            assert math.isclose(result[1].coordinate[1], 0, abs_tol=1e-6)
+            assert math.isclose(result[1].coordinate[2], 0, abs_tol=1e-6)
+            assert result[1].meshLength == 0.001
+
+            # asserts for l_point_rotor_cont
+            assert math.isclose(
+                result[2].coordinate[0], 2.486033002269127e-18, abs_tol=1e-6
+            )
+            assert math.isclose(result[2].coordinate[1], 0.0406, abs_tol=1e-6)
+            assert math.isclose(result[2].coordinate[2], 0, abs_tol=1e-6)
+            assert result[2].meshLength == 0.001
+
+        elif get_rotor_cont_function == get_winding_cont:
+            assert len(result) == 5
 
 
 @pytest.mark.parametrize(
     "test_function",
     [
         (
-            pyemmo.api.pyleecan.get_rotor_stator_cont.get_spmsm_rotor_cont,
+            get_spmsm_rotor_cont,
             "02_spmsm_muster_02.json",
         ),
         (
-            pyemmo.api.pyleecan.get_rotor_stator_cont.get_even_rotor_cont,
+            get_even_rotor_cont,
             "03_synrm_muster_Bachelor.json",
         ),
         (
-            pyemmo.api.pyleecan.get_rotor_stator_cont.get_winding_cont,
+            get_winding_cont,
             "03_synrm_muster_Bachelor.json",
         ),
     ],
 )
 def test_main_functions(test_function):
-    add_pyemmo_path()
     get_rotor_cont_function, machine_file = test_function
-    test_get_rotor_cont(get_rotor_cont_function, machine_file)
-
-
-# Führe die Tests nur aus, wenn dieses Skript direkt ausgeführt wird
-if __name__ == "__main__":
-    test_main_functions()
+    get_cont(get_rotor_cont_function, machine_file)

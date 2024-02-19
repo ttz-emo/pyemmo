@@ -3,7 +3,6 @@ import math
 from pyleecan.Classes.Machine import Machine
 from pyleecan.Functions.load import load
 
-from pyemmo.functions.plot import plot
 from pyemmo.definitions import TEST_DIR
 import pyemmo.api.pyleecan.get_translated_machine
 
@@ -31,10 +30,10 @@ def test_get_translated_machine():
     assert math.isclose(movingband_r, 0.0797, abs_tol=1e-16)
     # check magnetization directions
     assert math.isclose(
-        magnetization_dict["Mag0"], 0.5462703245568578, rel_tol=1e-3
+        magnetization_dict["Mag0"], 0.5462703245568578, rel_tol=1e-12
     )
     assert math.isclose(
-        magnetization_dict["Mag1"], 0.2391278388405909, rel_tol=1e-3
+        magnetization_dict["Mag1"], 0.2391278388405909, rel_tol=1e-12
     )
     for key in (
         "Pol",
@@ -51,23 +50,3 @@ def test_get_translated_machine():
         "StLu2",
     ):
         assert key in geo_translation_dict
-
-    # logging.debug("-------------------")
-    # logging.debug("Plot geometry_list:")
-    # plot(geometry_list)
-    # logging.debug("------------------------------")
-    # logging.debug("Plot all_bands:")
-    # plot(all_bands)
-    # logging.debug("------------------------------")
-    # logging.debug("movingband_r:")
-    # logging.debug(movingband_r)
-    # logging.debug("------------------------------")
-    # logging.debug("magnetization_dict:")
-    # logging.debug(magnetization_dict)
-    # logging.debug("------------------------------")
-    # logging.debug("geo_translation_dict:")
-    # logging.debug(geo_translation_dict)
-    # logging.debug("------------------------------")
-
-
-test_get_translated_machine()
