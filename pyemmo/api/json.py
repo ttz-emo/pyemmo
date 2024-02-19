@@ -1,4 +1,5 @@
 """This is the main module of the json api to create a machine model in Onelab."""
+
 # import debugpy
 # debugpy.debug_this_thread()
 import os
@@ -10,6 +11,9 @@ from typing import Dict, List, Tuple
 import logging
 import json
 import datetime
+
+import debugpy
+
 from . import logger, ch
 from .. import logFmt
 from ..definitions import RESULT_DIR
@@ -21,6 +25,8 @@ from ..script.script import Script
 from ..script.material import ElectricalSteel
 from . import boundaryJSON, importJSON, modelJSON, apiNameDict
 from .SurfaceJSON import SurfaceAPI
+
+debugpy.debug_this_thread()
 
 # from swat_em import analyse
 # from .. import calcPhaseangleStarvoltageCorr
