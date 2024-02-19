@@ -71,7 +71,7 @@ def create_param_dict(
         lam_with_mag = pyleecan_simulation.machine.stator
 
     else:  # If rotor doesn't have magnets, pyemmoMagType = None
-        pyemmp_mag_type = None
+        pyemmo_mag_type = None
 
     if lam_with_mag:
         if isinstance(
@@ -83,10 +83,10 @@ def create_param_dict(
                 # The magnetization Type for all magnets in the machine will be set
                 # in the same Type as the firt magnet in the list.
 
-                pyemmp_mag_type = lam_with_mag.hole[0].magnet_0.type_magnetization
+                pyemmo_mag_type = lam_with_mag.hole[0].magnet_0.type_magnetization
 
             else:  # If lamWithMag has only one magnet
-                pyemmp_mag_type = lam_with_mag.hole.magnet_0.type_magnetization
+                pyemmo_mag_type = lam_with_mag.hole.magnet_0.type_magnetization
 
         elif isinstance(
             lam_with_mag, LamSlotMag
@@ -97,22 +97,22 @@ def create_param_dict(
                 # The magnetization Type for all magnets in the machine will be set
                 # in the same Type as the firt magnet in the list.
 
-                pyemmp_mag_type = lam_with_mag.slot[0].magnet_0.type_magnetization
+                pyemmo_mag_type = lam_with_mag.slot[0].magnet_0.type_magnetization
 
             else:  # If rotor has only one magnet
-                pyemmp_mag_type = lam_with_mag.magnet.type_magnetization
+                pyemmo_mag_type = lam_with_mag.magnet.type_magnetization
 
         else:
             # Error
             raise RuntimeError(
                 f'Lamination of type "{str(type(lam_with_mag))}" is not type LamHole or LamSlotMag.'
             )
-    if pyemmp_mag_type == 0:
-        pyemmp_mag_type = "radial"
-    elif pyemmp_mag_type == 1:
-        pyemmp_mag_type = "parallel"
-    elif pyemmp_mag_type == 3:
-        pyemmp_mag_type = "tangential"
+    if pyemmo_mag_type == 0:
+        pyemmo_mag_type = "radial"
+    elif pyemmo_mag_type == 1:
+        pyemmo_mag_type = "parallel"
+    elif pyemmo_mag_type == 3:
+        pyemmo_mag_type = "tangential"
 
 
     sym_factor = machine.comp_periodicity_spatial()
@@ -153,7 +153,7 @@ def create_param_dict(
         "id": id,  # d-axis current in A
         "iq": iq,  # q-axis current in A
         "modelName": machine.name,  # name of the model files
-        "magType": pyemmp_mag_type,  # magnetization Type/ type of permament magnets(“parallel”, “radial” or “tangential”)
+        "magType": pyemmo_mag_type,  # magnetization Type/ type of permament magnets(“parallel”, “radial” or “tangential”)
         "magAngle": magnetization_dict,
         "flag_openGUI": True,  # open Gmsh GUI after model generation (STANDARD = True)
         "calcIronLoss": False,
