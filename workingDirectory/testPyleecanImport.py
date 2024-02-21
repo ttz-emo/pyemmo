@@ -14,7 +14,7 @@ from pyleecan.Classes.Machine import Machine
 from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
 from pyleecan.Classes.MachineSyRM import MachineSyRM
-from pyleecan.definitions import DATA_DIR
+from pyleecan.definitions import DATA_DIR, USER_DIR
 
 # from pyemmo.functions.plot import plot
 from pyemmo.api.json.json import main
@@ -24,6 +24,7 @@ from pyemmo.api.pyleecan.create_param_dict import create_param_dict
 
 # disable messages of matplotlib
 logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
+logging.getLogger().setLevel(logging.INFO)
 
 
 # Simulation Function
@@ -76,10 +77,10 @@ resFolder = os.path.join(ROOT_DIR, r"Results\pyleecanAPI")
 if not os.path.isdir(resFolder):
     os.makedirs(resFolder)
 machineList = []
-for i, file in enumerate(os.listdir(machineFolder)):
-    if file.endswith(".json") and not "FEMM" in file:
-        machineList.append(file)
-        print(f"{machineList.index(file)}: " + file)
+for i, filename in enumerate(os.listdir(machineFolder)):
+    if filename.endswith(".json") and not "FEMM" in filename:
+        machineList.append(filename)
+        print(f"{machineList.index(filename)}: " + filename)
 # %%working machines
 # Load data with info about working machine names
 pylcn_machine_testfile = os.path.join(
@@ -106,19 +107,24 @@ if os.path.isfile(pylcn_machine_testfile):
         print(f"{machineList.index(machineName)}: " + machineName)
 
 # %%
-fileName = machineList[33]  # SELECT MACHINE HERE BY INDEX OR NAME
+# Use machines: 
+    # 4 (IPMSM, (missing wedge))
+    # 17 (SIPMSM, SlotW22 + SlotM11) - full model
+    # 31 (SynRM, SlotW11 (missing wedge) + HoleM54) - 1/4 model
+    # 34 (Prius, SlotW11 + HoleM50)
+fileName = machineList[34]  # SELECT MACHINE HERE BY INDEX OR NAME
+# fileName = "SIPMSM_002.json"  # SELECT MACHINE HERE BY INDEX OR NAME
 print("\nUsing machine: " + fileName)
-machineName: Machine = (
+pyleecan_machine: Machine = (
     load.load(  # pylint: disable=locally-disabled, no-member
         os.path.abspath(os.path.join(machineFolder, fileName))
     )
 )
-simulation = generate_simulation(machineName, i_d=0, i_q=10, speed=1000)
-
+simulation = generate_simulation(pyleecan_machine, i_d=0, i_q=10, speed=1000)
 # %%
 
 
-if isinstance(machineName, (MachineSIPMSM, MachineIPMSM, MachineSyRM)):
+if isinstance(pyleecan_machine, (MachineSIPMSM, MachineIPMSM, MachineSyRM)):
     (
         allBands,
         geometryList,
@@ -126,7 +132,7 @@ if isinstance(machineName, (MachineSIPMSM, MachineIPMSM, MachineSyRM)):
         magnetizationDict,
         geo_translation_dict,
     ) = get_translated_machine(
-        machine=machineName,
+        machine=pyleecan_machine,
     )
 
 else:
@@ -137,7 +143,7 @@ else:
 # print("---")
 
 paramDict = create_param_dict(
-    machineName, simulation, movingband_r, magnetizationDict
+    pyleecan_machine, simulation, movingband_r, magnetizationDict
 )
 
 main(
