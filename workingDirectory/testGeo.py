@@ -36,9 +36,20 @@ s2 = Surface("s2", [l5, l6, l7, l8])
 s1.addToScript(myScript)
 s2.addToScript(myScript)
 
+#%% sort lines by center
+curveList = s1.curve.copy()
+curveDict = {}
+for c in curveList:
+    print(c.middlePoint().radius, c.name)
+# print(curveDict)
+for key in sorted(curveDict):
+    print(key, curveDict[key])
+#%% 
 # add spline
 spline = Spline("spline", p1, p3, [p2, p4], SplineType=0)
 spline.addControlPoint(p8,1)
+
+#%%
 spline.addToScript(myScript)
 
 myScript.generateScript(mode=1)  # only geo file

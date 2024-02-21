@@ -139,22 +139,22 @@ class Script(object):
             )
         )
         ###Punkte in Gmsh-Syntax
-        self.pointCode: str = ""
+        self.pointCode: str = "\n// Points\n"
         ###Alle erzeugten Punkte
         self.pointArray: List[Point] = []
         ###Alle Linien in Gmsh-Syntax
-        self.curveCode: str = ""
+        self.curveCode: str = "\n// Lines and Curves\n"
         ###Alle erzeugten Linien
         self._curveList: List[Union[Line, CircleArc, Spline]] = []
         ###Alle Flächen in Gmsh-Syntax
-        self.areaCode: str = ""
+        self.areaCode: str = "\n// Surfaces\n"
         ###Alle erzeugten Flächen
         self.areaArray: List[Surface] = []
 
         self.colorCode: str = ""  # code for mesh colors
 
         ###Alle erzeugenten Physicals in Gmsh-Syntax
-        self.physicalElementCode: str = ""
+        self.physicalElementCode: str = "\n// Physical Elements\n"
         ###Alle erzeugten Physicals
         self.physicalElementArray: List[PhysicalElement] = []
 
@@ -892,7 +892,7 @@ class Script(object):
         """
         if surface not in self.areaArray:
             self._addLineCode(surface)
-            code: str = str()
+            code: str = "\n"
             toolIDCode: str = (
                 ", "  # string for tool surfaces that should be subtracted
             )
@@ -974,7 +974,7 @@ class Script(object):
         self.physicalElementArray: List[PhysicalElement] = []
 
         # reset colors
-        self.colorCode: str = ""  # code for mesh colors
+        self.colorCode: str = "\n"  # code for mesh colors
 
     # -------------------------------------------------------------------------
     # -------------------------- END OF GEO FUNCTIONS -------------------------
@@ -1277,15 +1277,15 @@ class Script(object):
         Returns:
             str: Gmsh style physical element code.
         """
-
         if physicalElement not in self.physicalElementArray:
+            code = f"// {physicalElement.name}\n"
             # raises error if not Surface or Line
             geoElmType = physicalElement.geoElementType
             if geoElmType == Surface:
                 elementType = "Surface"
             elif geoElmType == Line:
                 elementType = "Curve"
-            code = (
+            code += (
                 "Physical "
                 + elementType
                 + f'("{physicalElement.name}", {physicalElement.id}) = {{'
@@ -1641,14 +1641,14 @@ class Script(object):
         # 1. Non-contacting surfaces (at segment boundary)
         rotorPhysDict = self.machine.rotor.sortPhysicals()
         rotorIdStr = ""
-        geoCode = ""
+        geoCode = "// Create boundary lines for moving rotor contour plot\n"
         for domainName in ["domainS", "domainM"]:  # only surface domains
             for rotorPhys in rotorPhysDict[domainName]:
                 if rotorPhys.geoElementType == Surface:
                     rotorIdStr += str(rotorPhys.id) + ","
         if rotorIdStr:
             rotorIdStr = rotorIdStr[0:-1]
-            geoCode = f"rotorBndLines[] = Boundary{{ Physical Surface{{ {rotorIdStr} }}; }};\n"
+            geoCode += f"rotorBndLines[] = Boundary{{ Physical Surface{{ {rotorIdStr} }}; }};\n"
         # 2. surfaces with contact between segments
         for domainName in ["domainLam", "airGap"]:  # only surface domains
             rotorIdStr = ""
@@ -1673,7 +1673,7 @@ class Script(object):
         self.group.add("DomainPlotMovingGeo", [plotID])
         geoCode += (
             f"statorBndLines[] = Boundary{{ Physical Surface{{ {statorIdStr} }}; }};\n"
-            + f"Physical Line({plotID}) = {{rotorBndLines[], statorBndLines[]}}; \n"
+            + f"""Physical Line("DomainPlotMovingGeo",{plotID}) = {{rotorBndLines[], statorBndLines[]}}; \n"""
             # f"Hide {{ Line{{ Line '*' }}; }} \n"
             # + f"Hide {{ Point{{ Point '*' }}; }} \n"
             # + f"Show{{ Line {{rotorBndLines[], statorBndLines[]}}; }} \n"
@@ -1816,12 +1816,12 @@ class Script(object):
         stator = self.machine.stator
         statorDict = stator.sortPhysicals()
 
-        meshModCode = "// Mesh operations\n"
+        meshModCode = "\n// Mesh operations\n\n"
         # 1. add compound mesh for domain
         meshModCode += (
-            "Mesh.AlgorithmSwitchOnFailure = 0; "
-            + "// Do not switch mesh algorithm on failure, "
+            "// Do not switch mesh algorithm on failure, "
             + "because this led to mesh errors in the past.\n"
+            + "Mesh.AlgorithmSwitchOnFailure = 0;"
         )
         meshModCode += (
             "DefineConstant[Flag_CompoundMesh = {0, "
@@ -1974,8 +1974,8 @@ class Script(object):
         # add the code for the mesh settings and mesh modification
         meshSettingsCode = 'INPUT_MESH = "Input/03Mesh/";\n'
         meshSettingsCode += (
-            "DefineConstant["
-            + "gmsf = {1, "
+            "DefineConstant[\n"
+            + "\tgmsf = {1, "
             + 'Name StrCat[INPUT_MESH, "00Mesh size factor"], '
             # + "Visible Flag_ExpertMode, "
             + (
@@ -1985,16 +1985,16 @@ class Script(object):
             + "},\n"
         )
         meshSettingsCode += (
-            "Flag_individualColoring = {0,"
+            "\nFlag_individualColoring = {0,"
             + 'Name StrCat[INPUT_MESH, "09Individual Mesh Coloring"], '
-            + "Choices {0, 1}}];\n"
+            + "Choices {0, 1}}\n];\n"
         )
         # show mesh Lines without lighting
         meshSettingsCode += (
             "Mesh.SurfaceEdges = 1;\nMesh.Light = 0;\nMesh.SurfaceFaces = 1;\n"
         )
         meshSettingsCode += (
-            "Mesh.Algorithm = 6; // Frontal-Delaunay for 2D meshes\n"
+            "Mesh.Algorithm = 6; // Frontal-Delaunay for 2D meshes\n\n"
         )
         meshModCode = ""
         movingGeoCode = ""
@@ -2005,19 +2005,22 @@ class Script(object):
             movingGeoCode = self._createMovingGeoCode()
 
         with open(geoFilePath, "w", encoding="utf-8") as geoScript:
-            geoScript.write(versionStr)
+            geoScript.write(versionStr) # write the pyemmo version number 
+            # set the geometry kernel
             if self.factory == "OpenCASCADE":
                 geoScript.write('SetFactory("OpenCASCADE");\n')
+            # create Expert Mode Flag 
             geoScript.write(
                 """DefineConstant[\n Flag_ExpertMode = {1,"""
-                + """Name '01View/Expert Mode', Choices {0, 1}}];\n"""
+                + """Name '01View/Expert Mode', Choices {0, 1}}\n];\n\n"""
             )
-            geoScript.write(meshSettingsCode)
+            geoScript.write(meshSettingsCode) # write code for mesh variables
             geoScript.write(self.pointCode)
             geoScript.write(self.curveCode)
             geoScript.write(self.areaCode)
             geoScript.write(
-                """If (!Flag_individualColoring)\n"""
+                "\n// Color code\n"
+                + """If (!Flag_individualColoring)\n"""
                 + self.colorCode
                 + """EndIf\n"""
             )
