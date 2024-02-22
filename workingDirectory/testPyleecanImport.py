@@ -17,11 +17,12 @@ from pyleecan.Classes.MachineSyRM import MachineSyRM
 from pyleecan.definitions import DATA_DIR, USER_DIR
 
 # from pyemmo.functions.plot import plot
-from pyemmo.api.json.json import main
+# from pyemmo.api.json.json import main
 from pyemmo.definitions import ROOT_DIR
 from pyemmo.api.pyleecan.get_translated_machine import get_translated_machine
 from pyemmo.api.pyleecan.create_pyleecan_simulation import create_simulation
 from pyemmo.api.pyleecan.create_param_dict import create_param_dict
+from pyemmo.api.pyleecan.main import main
 
 # disable messages of matplotlib
 logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
@@ -69,11 +70,11 @@ if os.path.isfile(pylcn_machine_testfile):
         print(f"{machineList.index(machineName)}: " + machineName)
 
 # %%
-# Use machines: 
-    # 4 (IPMSM, (missing wedge))
-    # 17 (SIPMSM, SlotW22 + SlotM11) - full model
-    # 31 (SynRM, SlotW11 (missing wedge) + HoleM54) - 1/4 model
-    # 34 (Prius, SlotW11 + HoleM50)
+# Use machines:
+# 4 (IPMSM, (missing wedge))
+# 17 (SIPMSM, SlotW22 + SlotM11) - full model
+# 31 (SynRM, SlotW11 (missing wedge) + HoleM54) - 1/4 model
+# 34 (Prius, SlotW11 + HoleM50)
 fileName = machineList[34]  # SELECT MACHINE HERE BY INDEX OR NAME
 # fileName = "SIPMSM_002.json"  # SELECT MACHINE HERE BY INDEX OR NAME
 print("\nUsing machine: " + fileName)
@@ -82,37 +83,8 @@ pyleecan_machine: Machine = (
         os.path.abspath(os.path.join(machineFolder, fileName))
     )
 )
-simulation = create_simulation(pyleecan_machine, i_d=0, i_q=0, speed=1000)
-# %%
-
-
-if isinstance(pyleecan_machine, (MachineSIPMSM, MachineIPMSM, MachineSyRM)):
-    (
-        allBands,
-        geometryList,
-        movingband_r,
-        magnetizationDict,
-        geo_translation_dict,
-    ) = get_translated_machine(
-        machine=pyleecan_machine,
-    )
-
-else:
-    raise ValueError("Machine type is not translatable!")
-
-# print("Plot ENDE:")
-# plot(geometryLineListFinish, linewidth=1, markersize=3, tag=True)
-# print("---")
-
-paramDict = create_param_dict(
-    pyleecan_machine, simulation, movingband_r, magnetizationDict
-)
-
 main(
-    geo=geo_translation_dict,
-    extInfo=paramDict,
-    model=os.path.join(resFolder, fileName.split(".")[0]),
-    results=os.path.join(resFolder, fileName.split(".")[0], "res"),
+    pyleecan_machine, model_dir=os.path.join(resFolder, pyleecan_machine.name)
 )
 
 # %%
