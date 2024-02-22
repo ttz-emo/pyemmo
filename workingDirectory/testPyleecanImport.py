@@ -20,50 +20,12 @@ from pyleecan.definitions import DATA_DIR, USER_DIR
 from pyemmo.api.json.json import main
 from pyemmo.definitions import ROOT_DIR
 from pyemmo.api.pyleecan.get_translated_machine import get_translated_machine
+from pyemmo.api.pyleecan.create_pyleecan_simulation import create_simulation
 from pyemmo.api.pyleecan.create_param_dict import create_param_dict
 
 # disable messages of matplotlib
 logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
 logging.getLogger().setLevel(logging.INFO)
-
-
-# Simulation Function
-def generate_simulation(
-    machine: Machine,
-    i_d: float = 0.0,
-    i_q: float = 10.0,
-    speed: float = 1000.0,
-) -> Simulation:
-    """Create a Simulation object from a given machine
-
-    Args:
-        machine (Machine): Actual pyleecan machine
-
-    Returns:
-        Simulation: Pyleecan Simulation object
-    """
-    simu = Simu1(name="PyEMMO_Simulation", machine=machine)
-    # simu.path_result = "path/to/folder" Path to the Result folder to use
-    # (will contain FEMM files)
-    p = simu.machine.stator.winding.p
-    # qs = simu.machine.stator.winding.qs
-
-    # Defining Simulation Input
-    simu.input = InputCurrent()
-    # Rotor speed [rpm]
-    simu.input.OP = OPdq(Id_ref=i_d, Iq_ref=i_q, N0=speed)
-
-    # time discretization [s] -> one elec. period with # 32 timesteps
-    time = np.linspace(start=0, stop=60 / speed / p, num=32, endpoint=True)
-    simu.input.time = time
-
-    # Angular discretization along the airgap circonference
-    angular_disc = np.linspace(
-        start=0, stop=2 * np.pi, num=2048, endpoint=False
-    )
-    simu.input.angle = angular_disc
-    return simu
-
 
 # %%
 # ==============================================
@@ -120,7 +82,7 @@ pyleecan_machine: Machine = (
         os.path.abspath(os.path.join(machineFolder, fileName))
     )
 )
-simulation = generate_simulation(pyleecan_machine, i_d=0, i_q=10, speed=1000)
+simulation = create_simulation(pyleecan_machine, i_d=0, i_q=0, speed=1000)
 # %%
 
 
