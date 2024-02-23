@@ -11,7 +11,7 @@ except:
 print(f'rootname is "{rootname}"')
 path.append(rootname)
 
-from pyemmo.functions.importResults import plotTimeTableDat, readTimeTableDat, splitData
+from pyemmo.functions.importResults import plotTimeTableDat, read_timetable_dat, split_data
 from pyemmo.definitions import RESULT_DIR, MAIN_DIR
 
 simDir = join(r"C:\Users\ganser\AppData\Local\Programs\pyemmo\Results\matlab", ...) # FIXME: CREATE TESTFILE DIRECTORY
@@ -39,7 +39,7 @@ indVoltage = dict()
 fig, ax = plt.subplots()
 fig.set_dpi(300)
 for phase in "ABC":
-    time[phase], indVoltage[phase] = readTimeTableDat(
+    time[phase], indVoltage[phase] = read_timetable_dat(
         join(simDir, "InducedVoltage" + phase + ".dat")
     )
     ax.plot(time[phase], indVoltage[phase])

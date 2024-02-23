@@ -100,7 +100,7 @@ if timedomain:
 # %%
 lossGetdpFile = os.path.join(resDir, "Pec_Lam.dat")
 if os.path.isfile(lossGetdpFile):
-    time, eddyLossOnelab = importResults.readTimeTableDat(lossGetdpFile)
+    time, eddyLossOnelab = importResults.read_timetable_dat(lossGetdpFile)
     print(
         "\nOnelab eddy current loss results:\n"
         f"{'Eddy Current:':<14} {np.mean(eddyLossOnelab) : 8.3f} W"

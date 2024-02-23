@@ -1,4 +1,5 @@
 """Module to import simulation results from GetDP (Onelab)"""
+
 import os
 from os import path
 from cmath import isclose
@@ -12,93 +13,110 @@ import gmsh
 from .. import rootLogger as logger
 
 
-def readTimeTableDat(filePath: str) -> Tuple[np.ndarray, np.ndarray]:
-    """returns the Data from the the .*dat file witten in the TimeTable Format and returns
-    the time and the corresponding data.
+def read_timetable_dat(
+    file_path: os.PathLike,
+) -> Tuple[np.ndarray, np.ndarray]:
+    """returns the Data from the the .*dat file witten in the TimeTable Format
+    and returns the time and the corresponding data.
+
+    TimeTable format is a whitespace separated list of time-value pairs and
+    looks like:
+
+        time0 val0_0 (val0_1 ...)\n
+        time1 val1_0 (val1_1 ...)\n
+        ...\n
+
+    For most result types (torque, induced voltage, flux (all integral typ
+    results)) there is only one value per time step. But for special results,
+    like rotor bar current, there can be multiple values per time step (like
+    rotor current per bar).
 
     Args:
-        filePath (str): path to a file with .dat extension containing data in GetDP TimeTable format
+        file_path (str): path to a file with .dat extension containing data in
+        GetDP TimeTable format
 
     Returns:
-        Tuple[np.ndarray, np.ndarray]: time and data vectors -> (time, data)
+        Tuple[np.ndarray, np.ndarray]: time and data array -> (time, data)
 
     """
-
-    with open(filePath, "r", encoding="utf-8") as datFile:
-        lines = []
-        # remove comment lines
-        for line in datFile.readlines():
-            if line[0] != "#":
-                lines.append(line)
-    nbrLines = len(lines)
-    if nbrLines == 1:
-        # only one line -> probably RegionValue format (Virtual Work)
-        valueList: List[str] = lines[0].strip().split(" ")
-        # always use two values as pair
-        nbrValues = len(valueList)
-        # number of pairs must be int and dividable by 2
-        assert nbrValues % 2 == 0
-        nbrPairs = int(nbrValues / 2)
-        time = np.zeros((nbrPairs,))
-        values = np.zeros((nbrPairs,))
-        for i in range(nbrPairs):
-            time[i] = valueList[2 * i]
-            values[i] = valueList[2 * i + 1]
-    elif nbrLines > 1:
-        time = np.zeros((nbrLines,))
-        values = np.zeros((nbrLines,))
-        for i, line in enumerate(lines):
-            lineArr = line.strip().split(sep=" ")
-            assert len(lineArr) == 2  # there must be two values in a line
-            time[i] = float(lineArr[0])
-            values[i] = float(lineArr[1])
-    else:
-        raise ValueError(f"Data imported from '{filePath}' was invalid!")
+    # make sure dat file exists
+    if not os.path.isfile(file_path):
+        raise FileNotFoundError(
+            f"Given results file '{file_path}' did not exist!"
+        )
+    # Try to import the data via numpy. Should work for most cases!
+    # standard 'delemiter' is whitespace.
+    data_array = np.loadtxt(file_path, dtype=float, comments="#")
+    time = data_array[:, 0]
+    values = data_array[:, 1:]
     return (time, values)
 
+# pylint: disable=locally-disabled, invalid-name
+def read_RegionValue_dat(
+    file_path: os.PathLike,
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Import data from 'RegionValue' formatted .dat-file (GetDP resutl file).
+    This usually only applies to torque results computed with the virtual works
+    method.
+    RegionValue format looks like:
+        'time0 val0 time1 val1 ...'
 
-def splitData(
-    time: List[float], data: List[float]
-) -> Tuple[int, List[List[float]], List[List[float]]]:
+    Args:
+        file_path (os.PathLike): Path to results file.
+
+    Returns:
+        Tuple[np.ndarray, np.ndarray]: time and data vector with shape:
+        (nbr_timesteps,)
+    """
+    # make sure dat file exists
+    if not os.path.isfile(file_path):
+        raise FileNotFoundError(
+            f"Given results file '{file_path}' did not exist!"
+        )
+    # import the data via numpy. Should work for most cases!
+    # standard 'delemiter' is whitespace.
+    data_array = np.loadtxt(file_path, dtype=float, comments="#")
+    # make sure there is only one line of data in the results file
+    assert len(data_array.shape) == 1, "Multiple lines in 'RegionValue' format"
+    assert data_array.shape[0] > 0, f"No data in {file_path} results file!"
+    assert data_array.shape[0] % 2 == 0, "Odd number of values!"
+    time = data_array[0::2]  # numpy slicing [start:stop:step]
+    data = data_array[1::2]
+    return time, data
+
+
+def split_data(
+    time: np.ndarray, data: np.ndarray
+) -> Tuple[int, List[np.ndarray], List[np.ndarray]]:
     """Split up the time-data value pairs if there are multiple time vectors
     (e.g. time=[0,1,2,3,0,1,2] -> time[0]=[0,1,2,3], time[1]=[0,1,2]).
     Time-vectors must be increasing.
 
-
     Args:
-        time (List[float]): 1D-Array with time values.
-        data (List[float]): 1D-Array with data values.
+        time (np.ndarray): 1D-Array with time values.
+        data (np.ndarray): 1D- ord 2D-Array with data values.
 
     Returns:
         int: Number of simulations in the data set. (Number of splits).
-        List[List[float]]: 2D time array.
-        List[List[float]]: 2D data array.
+        list(np.ndarray): 2D time array.
+        list(np.ndarray): 2D data array.
     """
-    # assert that the input vectors have the same size
-    assert len(time) == len(data)
-    nbrSims = 0  # number of simulations
-    # init lists and arrays:
-    timeVec = []
-    timeArray = []
-    dataVec = []
-    dataArray = []
-    startTime = time[0]  # init first element
-    for i, actTime in enumerate(time):
-        if actTime < startTime:  # if the next time value is smaller
-            nbrSims += 1  # its a new simulation
-            # append last nbrSims values to array
-            timeArray.append(timeVec.copy())
-            dataArray.append(dataVec.copy())
-            # clear vectors so they can be refilled
-            timeVec.clear()
-            dataVec.clear()
-        timeVec.append(actTime)
-        dataVec.append(data[i])
-        startTime = actTime
-    # append last simulation to array
-    timeArray.append(timeVec)
-    dataArray.append(dataVec)
-    return (nbrSims + 1, timeArray, dataArray)
+    # make sure time and data are type ndarray
+    if not isinstance(time, np.ndarray) or not isinstance(data, np.ndarray):
+        raise TypeError("Time and data array must be numpy ndarray!")
+    assert len(time.shape) == 1, "Given time array is not a vector!"
+    # assert that data shape has number of timesteps
+    assert time.shape[0] in data.shape, "Time and data array have diverent len"
+    time_axis = data.shape.index(time.shape[0])  # get time axis
+    # get the indices where time values are equal (e.g. time = [0, 0]) or the
+    # difference of the time vector is negative (e.g. time = [0,1,2,0], so
+    # diff(time) = [1,1,-2] -> split at third index)
+    # +1 because diff gives (nbr_time - 1) values!
+    split_indices = np.where(np.diff(time) <= 0)[0] + 1
+    time_vec_list = np.split(time, split_indices)  # split time
+    data_list = np.split(data, split_indices, axis=time_axis)  # split data
+    nbrSims = len(time_vec_list)  # number of simulations
+    return nbrSims, time_vec_list, data_list
 
 
 def plotTimeTableDat(
@@ -127,11 +145,11 @@ def plotTimeTableDat(
         List[Figure]: Returns a list of matplotlib Figure objects
 
     """
-    time, data = readTimeTableDat(filePath)
-    nbrSim, timeArray, dataArray = splitData(time, data)
+    time, data = read_timetable_dat(filePath)
+    nbrSim, timeArray, dataArray = split_data(time, data)
     # PLOT
     figureList: List[Figure] = list()
-    plt.ioff()
+    # plt.ioff()
     for sim in range(nbrSim):
         # FIXME: with plt.ioff() only works on Python 3.11
         # with plt.ioff() if not showfig else plt.ion():
