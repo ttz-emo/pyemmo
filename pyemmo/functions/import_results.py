@@ -1,7 +1,7 @@
 """Module to import simulation results from GetDP (Onelab)"""
 
 import os
-from os import path
+from os import path, PathLike
 from cmath import isclose
 from typing import List, Tuple, Union
 import warnings
@@ -14,7 +14,7 @@ from .. import rootLogger as logger
 
 
 def read_timetable_dat(
-    file_path: os.PathLike,
+    file_path: PathLike,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """returns the Data from the the .*dat file witten in the TimeTable Format
     and returns the time and the corresponding data.
@@ -51,9 +51,10 @@ def read_timetable_dat(
     values = data_array[:, 1:]
     return (time, values)
 
+
 # pylint: disable=locally-disabled, invalid-name
 def read_RegionValue_dat(
-    file_path: os.PathLike,
+    file_path: PathLike,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """Import data from 'RegionValue' formatted .dat-file (GetDP resutl file).
     This usually only applies to torque results computed with the virtual works
@@ -62,7 +63,7 @@ def read_RegionValue_dat(
         'time0 val0 time1 val1 ...'
 
     Args:
-        file_path (os.PathLike): Path to results file.
+        file_path (PathLike): Path to results file.
 
     Returns:
         Tuple[np.ndarray, np.ndarray]: time and data vector with shape:
@@ -119,8 +120,8 @@ def split_data(
     return nbrSims, time_vec_list, data_list
 
 
-def plotTimeTableDat(
-    filePath: str,
+def plot_timetable_dat(
+    file_path: str,
     dataLabel: str = "",
     title: str = "",
     savefig: bool = False,
@@ -129,23 +130,28 @@ def plotTimeTableDat(
 ) -> List[Figure]:
     """Plot the data in the filePath .dat-file and save the figure optionally.
 
-    There can be several simulations in one .dat file. If so there will be one figure for each simulation.
+    There can be several simulations in one .dat file. If so there will be one
+    figure for each simulation.
 
     Args:
         filePath (str): path to the .dat-file in timetable-format
-        dataLabel (str, optional): label of the ploted data on the y-axis. Defaults to ""
+        dataLabel (str, optional): label of the ploted data on the y-axis.
+            Defaults to "".
         title (str, optional): title of the figure. Defaults to ""
-        savefig (bool, optional): flag to determine if the figure should be saved. Defaults to False.
-        showfig (bool, optional): flag to determine if the figure should be displayed. Defaults to True.
-        savePath (str, optional): path with filename and valid extension to save the figure.
-            Defaults to None. E.g. "C:\\Users\\Test\\Pictures\\Test.png". If savePath is None
-            figure will be saved with filePath and .png extension
+        savefig (bool, optional): flag to determine if the figure should be
+            saved. Defaults to False.
+        showfig (bool, optional): flag to determine if the figure should be
+            displayed. Defaults to True.
+        savePath (str, optional): path with filename and valid extension to
+            save the figure. Defaults to None. E.g. "C:\\Users\\Test\\Pictures
+            \\Test.png". If savePath is None figure will be saved with filePath
+            and .png extension
 
     Returns:
-        List[Figure]: Returns a list of matplotlib Figure objects
+        List[Figure]: Returns a list of matplotlib Figure objects.
 
     """
-    time, data = read_timetable_dat(filePath)
+    time, data = read_timetable_dat(file_path)
     nbrSim, timeArray, dataArray = split_data(time, data)
     # PLOT
     figureList: List[Figure] = list()
@@ -158,7 +164,7 @@ def plotTimeTableDat(
         axes.plot(timeArray[sim], dataArray[sim], marker=".")
         # show()
         # ax.set_aspect("equal", adjustable="box")
-        # check that max or min is not close too close to zero to apply the y_lim
+        # check that max or min is not too close to zero to apply the y_lim
         maxVal = max(dataArray[sim])
         minVal = min(dataArray[sim])
         if not (
@@ -171,7 +177,7 @@ def plotTimeTableDat(
         axes.set(ylabel=dataLabel, xlabel="time in s", title=title + f"_{sim}")
         if savefig:
             if not savePath:
-                savePath = path.abspath(path.splitext(filePath)[0])
+                savePath = path.abspath(path.splitext(file_path)[0])
             fig.savefig(savePath + f"_{sim}" + ".png")
         figureList.append(fig)
         # if showfig:
@@ -182,24 +188,26 @@ def plotTimeTableDat(
     return figureList
 
 
-def plotAllDat(dirPath: str) -> None:
+def plot_all_dat(dir_path: PathLike) -> None:
     """Plot all .dat files as png in the folder dirPath
 
     Args:
-        dirPath (str): path to the folder containing the .dat files
+        dirPath (PathLike): Path to the folder containing the .dat files.
     """
-    if path.isdir(dirPath):
+    if path.isdir(dir_path):
         # if the folder for results exists
-        for file in os.listdir(dirPath):
-            filePath = os.path.join(dirPath, file)
-            filename, fileExt = path.splitext(file)
-            if fileExt == ".dat" and os.stat(filePath).st_size != 0:
-                plotTimeTableDat(
-                    path.abspath(filePath),
+        for file in os.listdir(dir_path):
+            file_path = os.path.join(dir_path, file)
+            filename, extention = path.splitext(file)
+            if extention == ".dat" and os.stat(file_path).st_size != 0:
+                plot_timetable_dat(
+                    path.abspath(file_path),
                     filename,
                     title=filename,
                     savefig=True,
                 )
+    else:
+        raise RuntimeError(f"Given result foler '{dir_path}'did not exist!")
 
 
 def importSP(
@@ -216,8 +224,10 @@ def importSP(
         Tuple:
             - str: PostOperation quantity name
             - List[float]: List of time values
-            - List[Tuple[float, float, float]]: List of tuple of position coordinates (x,y,z)
-            - List[List[float]]]: List of List of quantity values for each point, and each timestep
+            - List[Tuple[float, float, float]]: List of tuple of position
+                coordinates (x,y,z)
+            - List[List[float]]]: List of List of quantity values for each
+                point, and each timestep
 
     """
     _, filename = path.split(posFilePath)
@@ -230,7 +240,9 @@ def importSP(
     if not parsedName:
         raise (
             RuntimeError(
-                f"""Given file '{posFilePath}' did not contain correct first line: 'View "POS NAME" {{'. POS name could not be identified"""
+                f"Given file '{posFilePath}' did not contain correct first "
+                """line: 'View "POS NAME" {{'. """
+                "POS name could not be identified"
             )
         )
     dataLines.pop(-1)  # remove last line (no information)
@@ -259,20 +271,23 @@ def importSP(
             # if the parse function did not return values, the format was wrong
             raise (
                 RuntimeError(
-                    f"Given file '{posFilePath}' did not contain SP formatted values!"
+                    f"Given file '{posFilePath}' did not contain "
+                    "SP formatted values!"
                 )
             )
     return parsedName[0], time, pos, values
 
 
 def importPos(
-    posFile: Union[str, os.PathLike]
-) -> Tuple[np.ndarray, List[float], np.ndarray]:
+    pos_file: Union[str, PathLike]
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Import POS file via gmsh api.
 
-    TODO: Does not work for SP-formatted pos files. -> Use function getListData()
+    TODO: Does not work for SP-formatted pos files.
+        -> Use function getListData()
+
     Args:
-        posFile (Union[str, os.PathLike]): _description_
+        pos_file (Union[str, PathLike]): _description_
 
     Returns:
         Tuple[np.ndarray, List[float], np.ndarray]:
@@ -281,90 +296,98 @@ def importPos(
             - data array
     """
     # check file extension
-    _, filename = path.split(posFile)
+    _, filename = path.split(pos_file)
     filename, ext = filename.split(".")
     if ext != "pos":
-        raise ValueError(f"Given filepath '{posFile}' is not a POS-file!")
+        raise ValueError(f"Given filepath '{pos_file}' is not a POS-file!")
 
-    finGmsh = False
+    finalize_gmsh = False
     if not gmsh.isInitialized():
         gmsh.initialize()  # init gmsh
-        finGmsh = True  # if gmsh wasn't init before -> close it a the end
-    gmsh.open(posFile)  # load view
+        # if gmsh wasn't init before -> close it a the end
+        finalize_gmsh = True
+    gmsh.open(pos_file)  # load view
 
     # check that view was loaded:
-    viewTags = gmsh.view.getTags()
-    if viewTags.size == 0:
+    view_tags = gmsh.view.getTags()
+    if view_tags.size == 0:
         gmsh.finalize()
         raise ValueError(
-            f"Given file '{posFile}' did not result in a Gmsh view. Is file in gmsh POS-format?"
+            f"Given file '{pos_file}' did not result in a Gmsh view. Is file "
+            "in gmsh POS-format?"
         )
-    # get number of time steps in SIMULATION (not all time steps have to be saved)
-    nbrSteps = int(
-        gmsh.view.option.getNumber(tag=viewTags[-1], name="NbTimeStep")
+    # get number of time steps in SIMULATION (not all time steps have to be
+    # saved)
+    nbr_steps = int(
+        gmsh.view.option.getNumber(tag=view_tags[-1], name="NbTimeStep")
     )
     time = []  # init time vector
     # init data containers with first time step
-    _, elementTags, cdata, ctime, numComp = gmsh.view.getModelData(
-        tag=viewTags[-1], step=0
+    _, element_tags, cdata, ctime, nbr_components = gmsh.view.getModelData(
+        tag=view_tags[-1], step=0
     )
     # data format of 'cdata':
     #   vector: number of components = 3
     #   scalar: number of components = 1
     if not cdata:
-        _, _, cdata, ctime, numComp = gmsh.view.getModelData(
-            viewTags[-1], nbrSteps - 1
+        _, element_tags, cdata, ctime, nbr_components = gmsh.view.getModelData(
+            view_tags[-1], nbr_steps - 1
         )
         if not cdata:
             gmsh.finalize()
-            raise ValueError(f"No data found in {posFile}!")
+            raise ValueError(f"No data found in {pos_file}!")
         warnings.warn(
-            f"Import file '{posFile}' did only contain last timestep!"
+            f"Import file '{pos_file}' did only contain last timestep!"
         )
-        # Only last time step happens if PostProcessing is called at runtime (in 'Resolution').
+        # Only last time step happens if PostProcessing is called at runtime
+        # (in 'Resolution').
         # Return only that timestep
-        if finGmsh:
+        if finalize_gmsh:
             gmsh.finalize()
-        return (ctime, np.array(cdata)[:, :numComp])
-    # else: there was data for the first timestep
-    data = np.zeros((nbrSteps, len(cdata), numComp))  # init data array
-    data[0] = np.array(cdata)[:, :numComp]  # set init value of first time step
+        return (
+            element_tags,
+            np.array(ctime),
+            np.array(cdata)[:, :nbr_components],
+        )
+    # else: there was data for the first timestep...
+    data = np.zeros((nbr_steps, len(cdata), nbr_components))  # init data array
+    # set init value of first time step:
+    data[0] = np.array(cdata)[:, :nbr_components]
     time.append(ctime)  # add first time step
     # loop through time steps an extract data
-    for step in range(1, nbrSteps):
-        _, _, cdata, ctime, _ = gmsh.view.getModelData(viewTags[-1], step)
-        data[step] = np.array(cdata)[:, :numComp]
+    for step in range(1, nbr_steps):
+        _, _, cdata, ctime, _ = gmsh.view.getModelData(view_tags[-1], step)
+        data[step] = np.array(cdata)[:, :nbr_components]
         time.append(ctime)
-    if finGmsh:
+    if finalize_gmsh:
         # if gmsh wasn't init before:
         gmsh.finalize()
-    return (elementTags, time, data)
+    return element_tags, np.array(time), data
 
 
-def getResFileList(
-    resDir: os.PathLike,
-) -> tuple[list[os.PathLike], list[os.PathLike]]:
+def get_result_files(
+    result_folder: PathLike,
+) -> Tuple[list[PathLike], list[PathLike]]:
     """Return a list of GetDP result files from the folder ``resDir``.
     GetDP results can be .pos or .dat files.
 
     Args:
-        resDir (os.PathLike): Path to GetDP results.
+        result_folder (PathLike): Path to GetDP results.
 
     Returns:
-        list[os.PathLike]: List of importable result file paths.
+        Tuple[list[PathLike], list[PathLike]]: List of .pos and list of .dat
+            files in the given folder.
     """
-    assert isinstance(resDir, str)
-    if os.path.isdir(resDir):
-        datFileList = []
-        posFileList = []
-        for resFile in os.listdir(resDir):
-            _, ext = os.path.splitext(resFile)
+    if os.path.isdir(result_folder):
+        dat_file_list = []
+        pos_file_list = []
+        for results_file in os.listdir(result_folder):
+            _, ext = os.path.splitext(results_file)
             if ext == ".dat":
-                # file is valid results file
-                datFileList.append(resFile)
-            if ext == ".pos":
-                posFileList.append(resFile)
-        if len(datFileList) == 0:
-            logger.warning("No result files found in '%s'", resDir)
-        return datFileList, resFile
-    raise FileNotFoundError(f"Results folder {resDir} does not exist.")
+                dat_file_list.append(results_file)
+            elif ext == ".pos":
+                pos_file_list.append(results_file)
+        if len(dat_file_list) == 0:
+            logger.warning("No result files found in '%s'", result_folder)
+        return dat_file_list, pos_file_list
+    raise FileNotFoundError(f"Results folder {result_folder} does not exist.")

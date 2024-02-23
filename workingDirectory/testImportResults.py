@@ -6,9 +6,9 @@ from genericpath import isfile
 import numpy as np
 from matplotlib import pyplot as plt
 from pyemmo.definitions import ROOT_DIR
-from pyemmo.functions import importResults as resimport
-from pyemmo.functions.importResults import (
-    plotTimeTableDat,
+from pyemmo.functions import import_results as resimport
+from pyemmo.functions.import_results import (
+    plot_timetable_dat,
     read_timetable_dat,
     split_data,
     # plotAllDat,
@@ -24,8 +24,8 @@ time, torque = read_timetable_dat(file_path=datFileTorque)
 # split up data if needed
 nbrSims, timeArray, torqueArray = split_data(time, torque)
 # plot the torque data
-plotTimeTableDat(
-    filePath=datFileTorque,
+plot_timetable_dat(
+    file_path=datFileTorque,
     dataLabel="Torque in Nm",
     title="Torque of TestMachineAPI",
     savefig=True,
@@ -42,8 +42,8 @@ time, torque = read_timetable_dat(file_path=datFileTorque)
 # split up data if needed
 nbrSims, timeArray, torqueArray = split_data(time, torque)
 # plot the torque data
-plotTimeTableDat(
-    filePath=datFileTorque,
+plot_timetable_dat(
+    file_path=datFileTorque,
     dataLabel="Torque in Nm",
     title="Torque of TestMachineAPI",
     savefig=True,

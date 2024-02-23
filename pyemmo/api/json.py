@@ -13,7 +13,7 @@ import datetime
 from . import logger, ch
 from .. import logFmt
 from ..definitions import RESULT_DIR
-from ..functions import runOnelab, calcIronLoss, importResults
+from ..functions import import_results, runOnelab, calcIronLoss
 from ..script.geometry.machineAllType import MachineAllType
 from ..script.geometry.rotor import Rotor
 from ..script.geometry.stator import Stator
@@ -561,11 +561,11 @@ def main(
         resPath = apiScript.resultsPath
         if isdir(resPath):
             # if the folder for results exists
-            importResults.plt.set_loglevel(level="info") # avoid matplotlib debug infos
+            import_results.plt.set_loglevel(level="info") # avoid matplotlib debug infos
             for file in os.listdir(resPath):
                 filename, fileExt = os.path.splitext(file)
                 if fileExt == ".dat":
-                    importResults.plotTimeTableDat(
+                    import_results.plot_timetable_dat(
                         os.path.abspath(join(resPath, file)),
                         filename,
                         title=filename,

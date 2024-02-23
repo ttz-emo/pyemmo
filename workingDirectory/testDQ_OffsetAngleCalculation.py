@@ -6,7 +6,7 @@ from genericpath import isdir
 from numpy import rad2deg, where, gcd
 from swat_em import datamodel, analyse
 from pyemmo.functions.runOnelab import createCmdCommand
-from pyemmo.functions.importResults import plotAllDat
+from pyemmo.functions.import_results import plot_all_dat
 from pyemmo.script.script import Script
 from pyemmo.definitions import RESULT_DIR
 from pyemmo.script.geometry.point import Point
@@ -181,5 +181,5 @@ os.system(
         paramDict={"Flag_ClearResults": 1},
     )
 )
-plotAllDat(myScript.getResultsPath())
+plot_all_dat(myScript.getResultsPath())
 # %%

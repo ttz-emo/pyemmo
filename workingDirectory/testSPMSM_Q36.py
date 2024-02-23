@@ -268,13 +268,13 @@ print("I am done!")
 
 
 # %%
-from pyemmo.functions.importResults import getResFileList, read_timetable_dat
+from pyemmo.functions.import_results import get_result_files, read_timetable_dat
 from SciDataTool import DataTime, Data1D
 resPath = 'C:/Users/ganser/AppData/Local/Programs/pyemmo/Results/Baukasten/Test_SPMSM/res_Test_SPMSM_Baukasten'
 
 resultsList: list[DataTime] = []
 try:
-    datFiles, posFiles = getResFileList(resPath)
+    datFiles, posFiles = get_result_files(resPath)
     for datFile in datFiles:
         time, data = read_timetable_dat(os.path.join(resPath ,datFile))
         _, datFileName = os.path.split(datFile)

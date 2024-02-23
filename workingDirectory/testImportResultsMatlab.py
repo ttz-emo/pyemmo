@@ -11,12 +11,12 @@ except:
 print(f'rootname is "{rootname}"')
 path.append(rootname)
 
-from pyemmo.functions.importResults import plotTimeTableDat, read_timetable_dat, split_data
+from pyemmo.functions.import_results import plot_timetable_dat, read_timetable_dat, split_data
 from pyemmo.definitions import RESULT_DIR, MAIN_DIR
 
 simDir = join(r"C:\Users\ganser\AppData\Local\Programs\pyemmo\Results\matlab", ...) # FIXME: CREATE TESTFILE DIRECTORY
 # TORQUE
-plotTimeTableDat(join(simDir, "Ts.dat"),"Torque in Nm", title="Torque of IPM_1FE1051_modMagnet", savefig=True)
+plot_timetable_dat(join(simDir, "Ts.dat"),"Torque in Nm", title="Torque of IPM_1FE1051_modMagnet", savefig=True)
 # time, torque = readTimeTableDat()
 # # SPLIT SIM-DATA
 # nbrSims, timeArray, torqueArray = splitData(time, torque)
