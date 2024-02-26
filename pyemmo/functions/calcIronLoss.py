@@ -86,9 +86,7 @@ def calcTimeDomainIronLosses(
     # loss function for eddy current loss from paper:
     tStep = time[1] - time[0]
     dBdt = np.diff(bFieldData, axis=0) / tStep  # calc dBdt
-    eddyLossField = np.sum(
-        eddyLossFactor / 2 / (np.pi**2) * (dBdt**2), axis=2
-    )
+    eddyLossField = np.sum(eddyLossFactor / 2 / (np.pi**2) * (dBdt**2), axis=2)
     # meanEddyLossField = np.mean(eddyLossField, axis=0)
     # eddyLoss = integrateField(np.array([meanEddyLossField]), [time[0]], elementTags)
     if saveFields:
@@ -295,12 +293,7 @@ def calcHystLossUCP(
                 # for x,y, and not z
                 B_new = bFieldData[it, ie, comp]
                 B_old = bFieldData[it - 1, ie, comp]
-                if (B_new < B_old) and (B_old > uex[it - 1, ie, comp]):
-                    uex[it, ie, comp] = B_old
-                elif (B_new > B_old) and (B_old < uex[it - 1, ie, comp]):
-                    uex[it, ie, comp] = B_old
-                else:
-                    uex[it, ie, comp] = uex[it - 1, ie, comp]
+                find_ext(it, ie, comp, B_old, B_new, uex)
                 # calc Hm
                 Hm[it, ie, comp] = hystLossFactor / np.pi * uex[it, ie, comp]
                 if uex[it, ie, comp] == 0:
@@ -320,6 +313,48 @@ def calcHystLossUCP(
     # sum of x and y; abs of value (x,y)
     hystLossField = np.sum(np.abs(H[1:, :, :] * dBdt[:, :, 0:1]), axis=2)
     return hystLossField
+
+
+def find_ext(i_time, i_elem, i_comp, b_old, b_new, uex):
+    if (b_new < b_old) and (b_old > uex[i_time - 1, i_elem, i_comp]):
+        uex[i_time, i_elem, i_comp] = b_old
+    elif (b_new > b_old) and (b_old < uex[i_time - 1, i_elem, i_comp]):
+        uex[i_time, i_elem, i_comp] = b_old
+    else:
+        uex[i_time, i_elem, i_comp] = uex[i_time - 1, i_elem, i_comp]
+
+
+def calc_Hm(bFieldData: np.ndarray, time: list[float], hystLossFactor):
+    nbrElements = bFieldData.shape[1]
+    nbrTimeSteps = len(time)
+    uex = np.zeros((nbrTimeSteps, nbrElements, 2))
+    Hm = np.zeros((nbrTimeSteps, nbrElements, 2))
+    H = np.zeros((nbrTimeSteps, nbrElements, 2))
+    for it in range(1, nbrTimeSteps):
+        # for each timestep
+        for ie in range(nbrElements):
+            # for each element
+            for comp in (0, 1):
+                # for x,y, and not z
+                B_new = bFieldData[it, ie, comp]
+                B_old = bFieldData[it - 1, ie, comp]
+                find_ext(it, ie, comp, B_old, B_new, uex)
+                # calc Hm
+                Hm[it, ie, comp] = hystLossFactor / np.pi * uex[it, ie, comp]
+                if uex[it, ie, comp] == 0:
+                    H[it, ie, comp] = np.sqrt(Hm[it, ie, comp] ** 2)
+                else:
+                    H[it, ie, comp] = np.sqrt(
+                        np.abs(
+                            Hm[it, ie, comp] ** 2
+                            - (
+                                Hm[it, ie, comp]
+                                * bFieldData[it, ie, comp]
+                                / uex[it, ie, comp]
+                            )
+                            ** 2
+                        )
+                    )
 
 
 def calcHystLossSin(
