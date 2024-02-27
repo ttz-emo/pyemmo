@@ -381,7 +381,7 @@ def calcs_radii(
 
 def get_translated_machine(
     machine: Machine,
-) -> tuple[list, list[SurfaceAPI], float]:
+) -> tuple[list[SurfaceAPI], list[SurfaceAPI], float, dict, dict]:
     """_summary_
 
     Args:

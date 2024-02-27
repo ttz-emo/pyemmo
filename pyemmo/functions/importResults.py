@@ -107,7 +107,7 @@ def plotTimeTableDat(
     title: str = "",
     savefig: bool = False,
     showfig: bool = True,
-    savePath: str = None,
+    savePath: Union[str, None] = None,
 ) -> List[Figure]:
     """Plot the data in the filePath .dat-file and save the figure optionally.
 

@@ -6,7 +6,7 @@ import os
 import subprocess
 from os import mkdir
 from os.path import isdir, isfile, join
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 import logging
 import json
 import datetime
@@ -323,35 +323,40 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
 
 
 def main(
-    geo: str,
-    extInfo: str,
-    model: str,
-    gmsh: str = "",
-    getdp: str = "",
-    results: str = "",
+    geo: Union[str, dict],
+    extInfo: Union[str, dict],
+    model: Union[str, os.PathLike],
+    gmsh: Union[str, os.PathLike] = "",
+    getdp: Union[str, os.PathLike] = "",
+    results: Union[str, os.PathLike] = "",
 ):
-    """The main function reads the JSON files and creates the .geo and .pro scripts for a onelab
-    simulation.
+    """The main function reads the JSON files (if given) and creates the .geo
+    and .pro scripts for a onelab simulation.
 
     Program sequence:
-        1. Check that both json files are given and gmsh is installed. Import the geo segments and
-           the additional machine information.
-        2. Create a pyemmo Machine-object by rotating and duplicating the given surface segments
-           with :func:`createMachine() <pyemmo.api.json.createMachine>`
-        3. Create a pyemmo Script-object with the Machine and the simulation parameters.
-        4. Add additional code for the API specific B-field PostOperation (on line evaluation) and
-           the surface mesh size setting via the GUI.
-        5. Create the .geo and .pro script files by calling :meth:`Script.generateScript()
-           <pyemmo.script.script.Script.generateScript>`
-        6. Create command line call for gmsh/getdp with :func:`createCmdCommand()
-           <pyemmo.functions.runOnelab.createCmdCommand>` and start with :code:`subprocess.run`
+        1. Check that both json files are given and gmsh is installed. Import
+            the geo segments and the additional machine information.
+        2. Create a pyemmo Machine-object by rotating and duplicating the given
+            surface segments with
+            :func:`createMachine() <pyemmo.api.json.createMachine>`
+        3. Create a pyemmo Script-object with the Machine and the simulation
+            parameters.
+        4. Add additional code for the API specific B-field PostOperation (on
+            line evaluation) and the surface mesh size setting via the GUI.
+        5. Create the .geo and .pro script files by calling
+            :meth:`Script.generateScript() <pyemmo.script.script.Script.generateScript>`
+        6. Create command line call for gmsh/getdp with
+            :func:`createCmdCommand() <pyemmo.functions.runOnelab.createCmdCommand>`
+            and start with :code:`subprocess.run`
 
-    TODO: Update docstring - main also accepts list of surface dicts instead of filename
 
     Args:
-        geo (str): File path to JSON formatted geometry file.
-        extInfo (str): File path to JSON formatted extended information file.
-        model (str): Folder path where the resulting model files should be placed.
+        geo (str or dict): File path to JSON formatted geometry file OR segment
+            surface dict with IdExt as keys and SurfaceAPI objects as values.
+        extInfo (str or dict): File path to JSON formatted extended information
+            file or directly given info dict.
+        model (str): Folder path where the resulting model files should be
+            placed.
         gmsh (str, optional): Gmsh executable path. If nothing is provieded the
             executable will be searched.
         getdp (str, optional): GetDP executable path. Defaults to "".
