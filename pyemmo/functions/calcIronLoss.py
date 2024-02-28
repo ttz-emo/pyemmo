@@ -5,6 +5,7 @@ from typing import List, Union, Dict, Tuple
 import os
 import gmsh
 import numpy as np
+import numpy.typing as npt
 
 # from matplotlib import pyplot as plt
 from .importResults import importPos
@@ -12,23 +13,35 @@ from ..script.material import ElectricalSteel
 
 
 def main(
-    bFilePath: os.PathLike,
-    lossFactor: dict,
-    symFactor: int,
-    axialLength: float = 1.0,
+    b_filepath: Union[str, os.PathLike],
+    loss_factor: dict[str, float],
+    sym_factor: int,
+    axial_length: float = 1.0,
 ) -> Tuple[Dict[str, np.ndarray], List[float]]:
-    ironLoss, time = calcTimeDomainIronLosses(
-        bFilePath, lossFactor, symFactor, axialLength
+    """The main of core loss calculation. This calls the time domain core loss
+    calculation. For more info see :meth TODO
+
+    Args: TODO...
+        b_filepath (Union[str, os.PathLike]): _description_
+        loss_factor (dict[str, float]): _description_
+        sym_factor (int): _description_
+        axial_length (float, optional): _description_. Defaults to 1.0.
+
+    Returns:
+        Tuple[Dict[str, np.ndarray], List[float]]: _description_
+    """
+    core_loss, time = calc_time_domain_core_loss(
+        b_filepath, loss_factor, sym_factor, axial_length
     )
-    return ironLoss, time
+    return core_loss, time
 
 
-def calcTimeDomainIronLosses(
-    bFilePath: os.PathLike,
-    lossFactor: dict,
-    symFactor: int,
-    axialLength: float = 1.0,
-    saveFields: bool = True,
+def calc_time_domain_core_loss(
+    b_filepath: Union[str, os.PathLike],
+    loss_factor: dict,
+    sym_factor: int,
+    axial_length: float = 1.0,
+    save_fields: bool = True,
 ) -> Tuple[Dict[str, np.ndarray], List[float]]:
     """TODO: _summary_
 
@@ -42,154 +55,158 @@ def calcTimeDomainIronLosses(
     Returns:
         Tuple[Dict[str, np.ndarray], List[float]]: Iron loss results-dict + time array
     """
-    ironLoss = {}  # dict for loss results
-    finGmsh = False  # determine if gmsh should be closed at the end
+    core_loss = {}  # dict for loss results
+    close_gmsh = False  # determine if gmsh should be closed at the end
     if not gmsh.isInitialized():
         gmsh.initialize()
-        finGmsh = True
+        close_gmsh = True
 
-    elementTags, time, bFieldData = importPos(bFilePath)
-    nbrTimeSteps = len(time)
-    if saveFields:
+    element_tags, time, b_field_data = importPos(b_filepath)
+    nbr_timesteps = len(time)
+    if save_fields:
         # extract filename from path
-        _, fileName = os.path.split(bFilePath)  # get filename with ext
-        fileName, _ = os.path.splitext(fileName)  # get pure filename
-    hystLossField = calcHystLossUCP(time, bFieldData, lossFactor["hyst"])
-    if saveFields:
+        _, filename = os.path.split(b_filepath)  # get filename with ext
+        filename, _ = os.path.splitext(filename)  # get pure filename
+    hyst_loss_field = calcHystLossUCP(time, b_field_data, loss_factor["hyst"])
+    if save_fields:
         # save the View to a pos file
         model = gmsh.model.getCurrent()  # or just get current model...
-        actView = gmsh.view.add(
-            f"Hystersis Loss [W/m³] ({fileName})"
+        actual_view = gmsh.view.add(
+            f"Hystersis Loss [W/m³] ({filename})"
         )  # get tag of new view
         for step in range(len(time) - 1):
             gmsh.view.addHomogeneousModelData(
-                tag=actView,
+                tag=actual_view,
                 step=step + 1,
                 modelName=model,
                 dataType="ElementData",
-                tags=elementTags,
-                data=hystLossField[step, :],
+                tags=element_tags,
+                data=hyst_loss_field[step, :],
                 time=time[step],
             )
-        # save p_hyst-field to file:
-        pFilePath = os.path.join(
-            os.path.dirname(bFilePath), f"p_hyst_from_{fileName}.pos"
+        # save loss density "p_hyst"-field to file:
+        p_filepath = os.path.join(
+            os.path.dirname(b_filepath), f"p_hyst_from_{filename}.pos"
         )
-        gmsh.view.write(actView, pFilePath)
+        gmsh.view.write(actual_view, p_filepath)
     # integrate field over area for each time step
-    hystLoss = integrateField(hystLossField, time[1:], elementTags)
+    hysteresis_loss: npt.NDArray[np.float64] = integrateField(
+        hyst_loss_field, time[1:], element_tags
+    )
     # skip first value, because its 0:
-    ironLoss["hyst"] = hystLoss[1:] * symFactor * axialLength  # correct values
+    core_loss["hyst"] = (
+        hysteresis_loss[1:] * sym_factor * axial_length
+    )  # correct values
 
     # ------------------------- Calculate eddy current losses ---------------------------
-    eddyLossFactor = lossFactor["eddy"]  # loss parameter
+    eddyLossFactor = loss_factor["eddy"]  # loss parameter
     # loss function for eddy current loss from paper:
     tStep = time[1] - time[0]
-    dBdt = np.diff(bFieldData, axis=0) / tStep  # calc dBdt
+    dBdt = np.diff(b_field_data, axis=0) / tStep  # calc dBdt
     eddyLossField = np.sum(eddyLossFactor / 2 / (np.pi**2) * (dBdt**2), axis=2)
     # meanEddyLossField = np.mean(eddyLossField, axis=0)
     # eddyLoss = integrateField(np.array([meanEddyLossField]), [time[0]], elementTags)
-    if saveFields:
+    if save_fields:
         # save the View to a pos file
         model = gmsh.model.getCurrent()  # or just get current model...
-        actView = gmsh.view.add(f"Eddy current Loss [W/m³] ({fileName})")
+        actual_view = gmsh.view.add(f"Eddy current Loss [W/m³] ({filename})")
         for step in range(len(time) - 1):
             gmsh.view.addHomogeneousModelData(
-                tag=actView,
+                tag=actual_view,
                 step=step + 1,
                 modelName=model,
                 dataType="ElementData",
-                tags=elementTags,
+                tags=element_tags,
                 data=eddyLossField[step, :],
                 time=time[step],
             )
         # save p_hyst-field to file:
-        pFilePath = os.path.join(
-            os.path.dirname(bFilePath), f"p_eddy_from_{fileName}.pos"
+        p_filepath = os.path.join(
+            os.path.dirname(b_filepath), f"p_eddy_from_{filename}.pos"
         )
-        gmsh.view.write(actView, pFilePath)
-    eddyLoss = integrateField(np.array(eddyLossField), time[1:], elementTags)
+        gmsh.view.write(actual_view, p_filepath)
+    eddyLoss = integrateField(np.array(eddyLossField), time[1:], element_tags)
     assert (
-        eddyLoss.size == nbrTimeSteps
-    ), f"Integration should result in {nbrTimeSteps} values!"
+        eddyLoss.size == nbr_timesteps
+    ), f"Integration should result in {nbr_timesteps} values!"
     # skip first value, because its 0:
-    eddyLoss = eddyLoss[1:] * symFactor * axialLength  # correct values
-    ironLoss["eddy"] = eddyLoss
+    eddyLoss = eddyLoss[1:] * sym_factor * axial_length  # correct values
+    core_loss["eddy"] = eddyLoss
 
     # --------------------------- calculate excess loss ---------------------------
-    if lossFactor["exc"] > 0:
+    if loss_factor["exc"] > 0:
         constExcFactor = 8.763363  # constant factor (from paper)
         excLossField = np.sum(
-            lossFactor["exc"] / constExcFactor * np.power(dBdt**2, 0.75),
+            loss_factor["exc"] / constExcFactor * np.power(dBdt**2, 0.75),
             axis=2,
         )
-        if saveFields:
+        if save_fields:
             # save the View to a pos file
             model = gmsh.model.getCurrent()  # or just get current model...
-            actView = gmsh.view.add(f"Excess Loss [W/m³] ({fileName})")
+            actual_view = gmsh.view.add(f"Excess Loss [W/m³] ({filename})")
             for step in range(len(time) - 1):
                 gmsh.view.addHomogeneousModelData(
-                    tag=actView,
+                    tag=actual_view,
                     step=step + 1,
                     modelName=model,
                     dataType="ElementData",
-                    tags=elementTags,
+                    tags=element_tags,
                     data=excLossField[step, :],
                     time=time[step],
                 )
             # save p_hyst-field to file:
-            pFilePath = os.path.join(
-                os.path.dirname(bFilePath), f"p_exc_from_{fileName}.pos"
+            p_filepath = os.path.join(
+                os.path.dirname(b_filepath), f"p_exc_from_{filename}.pos"
             )
-            gmsh.view.write(actView, pFilePath)
+            gmsh.view.write(actual_view, p_filepath)
         # meanExcLossField = np.mean(excLossField, axis=0)
         # excLoss = integrateField(np.array([meanExcLossField]), [time[0]], elementTags)
-        excLoss = integrateField(np.array(excLossField), time, elementTags)
+        excLoss = integrateField(np.array(excLossField), time, element_tags)
         assert (
-            excLoss.size == nbrTimeSteps
-        ), f"Integration should result in {nbrTimeSteps} values!"
+            excLoss.size == nbr_timesteps
+        ), f"Integration should result in {nbr_timesteps} values!"
         # skip first value, because its 0:
-        excLoss = excLoss[1:] * symFactor * axialLength  # correct values
-        ironLoss["exc"] = excLoss
+        excLoss = excLoss[1:] * sym_factor * axial_length  # correct values
+        core_loss["exc"] = excLoss
     else:
         # set iron loss to 0
-        ironLoss["exc"] = np.zeros(eddyLoss.shape)
+        core_loss["exc"] = np.zeros(eddyLoss.shape)
         excLossField = np.zeros(eddyLossField.shape)
 
     # Export total loss field
-    if saveFields:
+    if save_fields:
         # save the View to a pos file
         model = gmsh.model.getCurrent()
-        actView = gmsh.view.add(f"Total Loss [W/m³] ({fileName})")
-        totalLossField = hystLossField + eddyLossField + excLossField
+        actual_view = gmsh.view.add(f"Total Loss [W/m³] ({filename})")
+        totalLossField = hyst_loss_field + eddyLossField + excLossField
         for step in range(len(time) - 1):
             gmsh.view.addHomogeneousModelData(
-                tag=actView,
+                tag=actual_view,
                 step=step + 1,
                 modelName=model,
                 dataType="ElementData",
-                tags=elementTags,
+                tags=element_tags,
                 data=totalLossField[step, :],
                 time=time[step],
             )
         # save p_hyst-field to file:
-        pFilePath = os.path.join(
-            os.path.dirname(bFilePath), f"p_core_from_{fileName}.pos"
+        p_filepath = os.path.join(
+            os.path.dirname(b_filepath), f"p_core_from_{filename}.pos"
         )
-        gmsh.view.write(actView, pFilePath)
+        gmsh.view.write(actual_view, p_filepath)
 
-    if finGmsh:
+    if close_gmsh:
         gmsh.finalize()
 
-    return ironLoss, time[0:-1]
+    return core_loss, time[0:-1]
 
 
 def calcFreqDomainIronLosses(
-    bFilePath: os.PathLike,
+    bFilePath: Union[str, os.PathLike],
     lossFactor: dict,
     symFactor: int,
     axialLength: float = 1.0,
-) -> Tuple[Dict[str, np.ndarray], List[float]]:
+) -> Tuple[Dict[str, np.ndarray], npt.NDArray[np.float64]]:
     ironLoss = {}  # dict for loss results
     finGmsh = False  # determine if gmsh should be closed at the end
     if not gmsh.isInitialized():
@@ -430,11 +447,11 @@ def calcHystLossdBdt(
 
 
 def integrateField(
-    fieldData: np.ndarray,
+    fieldData: npt.NDArray,
     time: List[float],
-    elemTags: List[int],
-    meshFile: os.PathLike = "",
-):
+    elemTags: npt.NDArray,
+    meshFile: Union[str, os.PathLike] = "",
+) -> npt.NDArray[np.float64]:
     finGmsh = False
     if not gmsh.isInitialized():
         gmsh.initialize()
@@ -471,7 +488,8 @@ def integrateField(
     if finGmsh:
         gmsh.finalize()
     # only return data values (skip SP coordinates)
-    return integratedData[0][3:]
+    data: npt.NDArray[np.float64] = integratedData[0][3:]
+    return data
 
 
 def writeSimple(

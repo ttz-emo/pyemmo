@@ -1,4 +1,5 @@
 """Module to import simulation results from GetDP (Onelab)"""
+
 import os
 from os import path
 from cmath import isclose
@@ -7,6 +8,7 @@ import warnings
 from matplotlib.figure import Figure
 from matplotlib import pyplot as plt
 import numpy as np
+import numpy.typing as npt
 from parse import parse
 import gmsh
 from .. import rootLogger as logger
@@ -249,7 +251,7 @@ def importSP(
 
 def importPos(
     posFile: Union[str, os.PathLike]
-) -> Tuple[np.ndarray, List[float], np.ndarray]:
+) -> Tuple[npt.NDArray[np.uint64], List[float], npt.NDArray]:
     """Import POS file via gmsh api.
 
     TODO: Does not work for SP-formatted pos files. -> Use function getListData()
@@ -290,11 +292,13 @@ def importPos(
     _, elementTags, cdata, ctime, numComp = gmsh.view.getModelData(
         tag=viewTags[-1], step=0
     )
+    elementTags: npt.NDArray[np.uint64] = elementTags
     # data format of 'cdata':
     #   vector: number of components = 3
     #   scalar: number of components = 1
     if not cdata:
-        _, _, cdata, ctime, numComp = gmsh.view.getModelData(
+        # sometimes only the last timestep is saved to the pos file
+        _, elementTags, cdata, ctime, numComp = gmsh.view.getModelData(
             viewTags[-1], nbrSteps - 1
         )
         if not cdata:
@@ -307,7 +311,11 @@ def importPos(
         # Return only that timestep
         if finGmsh:
             gmsh.finalize()
-        return (ctime, np.array(cdata)[:, :numComp])
+        return (
+            elementTags,
+            [ctime],
+            np.array(cdata)[:, :numComp],
+        )
     # else: there was data for the first timestep
     data = np.zeros((nbrSteps, len(cdata), numComp))  # init data array
     data[0] = np.array(cdata)[:, :numComp]  # set init value of first time step

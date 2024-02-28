@@ -492,13 +492,13 @@ def runCalcforCurrent(param: dict):
                 bFilePath = os.path.join(simulation_res_dir, f"b_{side}.pos")
                 lossDict, time = calcIronLoss.main(
                     bFilePath,
-                    lossFactor={
+                    loss_factor={
                         "hyst": param["hyst"],
                         "eddy": param["eddy"],
                         "exc": param["exc"],
                     },
-                    symFactor=param["sym"],
-                    axialLength=param["axLen"],
+                    sym_factor=param["sym"],
+                    axial_length=param["axLen"],
                 )
                 totalLoss += sum(lossDict.values())
                 # print(f"Iron losses for {paramDict['ResId']} on {side} are: {lossDict}")
