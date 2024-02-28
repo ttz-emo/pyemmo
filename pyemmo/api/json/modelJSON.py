@@ -1,27 +1,28 @@
 """This module is about the model generation via json api"""
-from math import ceil
+from math import radians
 from typing import Dict, List, Literal, Tuple, Union
 
 from numpy import pi, sign, array
 from numpy.linalg import norm
 from swat_em import datamodel
 
-from ..script.geometry.airArea import AirArea
-from ..script.geometry.airGap import AirGap
-from ..script.geometry.circleArc import CircleArc
-from ..script.geometry.line import Line
-from ..script.geometry.magnet import Magnet
-from ..script.geometry.physicalElement import PhysicalElement
-from ..script.geometry.point import Point
-from ..script.geometry.rotorLamination import RotorLamination
-from ..script.geometry.slot import Slot
-from ..script.geometry.spline import Spline
-from ..script.geometry.statorLamination import StatorLamination
-from ..script.geometry.surface import Surface
-from ..script.geometry.transformable import Transformable
-from ..script.material.material import Material
-from ..definitions import DEFAULT_GEO_TOL
-from . import importJSON, globalCenterPoint, logger
+from ...script.geometry.airArea import AirArea
+from ...script.geometry.airGap import AirGap
+from ...script.geometry.circleArc import CircleArc
+from ...script.geometry.line import Line
+from ...script.geometry.magnet import Magnet
+from ...script.geometry.physicalElement import PhysicalElement
+from ...script.geometry.point import Point
+from ...script.geometry.rotorLamination import RotorLamination
+from ...script.geometry.slot import Slot
+from ...script.geometry.spline import Spline
+from ...script.geometry.statorLamination import StatorLamination
+from ...script.geometry.surface import Surface
+from ...script.geometry.transformable import Transformable
+from ...script.material.material import Material
+from ...definitions import DEFAULT_GEO_TOL
+from . import importJSON, globalCenterPoint
+from .. import logger
 from .SurfaceJSON import SurfaceAPI
 
 # from .. import calc_phaseangle_starvoltageV2
@@ -73,7 +74,11 @@ def createLine(
         # in json api Bezier curves can only have one control point yet!
         controlPointName = lineDict["MpName"]
         # import control point coordinates
-        controlPointCoords = (lineDict["MpX"], lineDict["MpY"], lineDict["MpZ"])
+        controlPointCoords = (
+            lineDict["MpX"],
+            lineDict["MpY"],
+            lineDict["MpZ"],
+        )
         controlPoint = Point(
             controlPointName,
             controlPointCoords[0],
@@ -97,7 +102,8 @@ def createLine(
 
 
 def getSurfaceLineList(
-    lineDictList: List[Union[Dict[str, float], Dict[str, str]]], meshLen: float = None
+    lineDictList: List[Union[Dict[str, float], Dict[str, str]]],
+    meshLen: float = None,
 ) -> List[Line]:
     """
     This function takes a list of dicts with surface-line-information (lineloop structure)
@@ -149,14 +155,18 @@ def getSurfaceLineList(
     .. - 'MpDesc'
     """
     if not isinstance(lineDictList, list):
-        raise ValueError(f"line dict list has wrong type: {type(lineDictList)}")
+        raise ValueError(
+            f"line dict list has wrong type: {type(lineDictList)}"
+        )
     if meshLen is not None and not isinstance(meshLen, (int, float)):
         raise ValueError(
             f"mesh size has wrong type: {type(meshLen)}. Should be float, int or None."
         )
     lineList: List[Line] = []
     pointList: List[Point] = []
-    for lineID, lineDict in enumerate(lineDictList):  # for each line in lineDict
+    for lineID, lineDict in enumerate(
+        lineDictList
+    ):  # for each line in lineDict
         # import line-point coordinates
         # start point
         coordsP1 = (lineDict["ApX"], lineDict["ApY"], lineDict["ApZ"])
@@ -238,7 +248,9 @@ def createAPISurf(areaDict: dict) -> SurfaceAPI:
     try:
         surf = SurfaceAPI(
             name=areaDict["Name"],
-            idExt=areaDict["IdExt"],  # get short area name ("IdExt") as dict key
+            idExt=areaDict[
+                "IdExt"
+            ],  # get short area name ("IdExt") as dict key
             curves=getSurfaceLineList(
                 lineDictList=areaDict["Lines"], meshLen=areaDict["Meshsize"]
             ),
@@ -258,8 +270,8 @@ def importMachineGeometry(machineGeoList: list[dict]) -> Dict[str, SurfaceAPI]:
     """import one segment of the whole machine geometry from the geo.json file
 
     Args:
-        machineGeoList (list[dict]): List of surface dictionaries with api geo info. 
-        TODO: describe surface dict structure! 
+        machineGeoList (list[dict]): List of surface dictionaries with api geo info.
+        TODO: describe surface dict structure!
 
     Returns:
         Dict[str, SurfaceAPI]: Segment Surface dict with short IDs (IdExt) as keys and
@@ -419,7 +431,10 @@ def createMachineGeometryFromSegment(
 
 
 def createPhysicalSurfaces(
-    idExt: str, surfList: List[SurfaceAPI], rotorMBRadius: float, extendedInfo: dict
+    idExt: str,
+    surfList: List[SurfaceAPI],
+    rotorMBRadius: float,
+    extendedInfo: dict,
 ) -> Tuple[List[PhysicalElement], Literal["Rotor", "Stator"]]:
     """create a PhysicalElement (PhysicalSurface) from the given surface and determine the machine
     side (rotor or stator). The type of PhysicalElement (Slot, Magnet, Airgap,...) is determined by
@@ -442,8 +457,9 @@ def createPhysicalSurfaces(
         - Literal["Rotor", "Stator"]]: machine side to correctly assign the pE to the Rotor or
           Stator object.
     """
-    # determine if single point of surface is inside the Movingband radius, because if one point is
-    # inside, all the others have to be too:
+    # determine if single point of surface is inside the Movingband radius,
+    # because if one point is inside, all the others have to be too.
+    # FIXME: This assumes all machine are inner rotor!
     machineSide = (
         "Rotor"
         if surfList[0].curve[0].startPoint.calcDist() <= rotorMBRadius
@@ -461,11 +477,12 @@ def createPhysicalSurfaces(
     if "Mag" in idExt:  # if is magnet
         magList = list()
         for surf in surfList:
+            # create magnet object
             mag = createMagnet(
                 surf=surf,
-                material=surf.material,
-                magType=importJSON.getMagDir(extendedInfo),
-            )  # create magnet object
+                mat=surf.material,
+                extInfo=extendedInfo,
+            )
             magList.append(mag)
         return magList, machineSide
     if "Lu" in idExt:
@@ -489,12 +506,16 @@ def createPhysicalSurfaces(
     #     pass
     if any(identifier in idExt for identifier in ("Pol", "RoNut")):
         lam = RotorLamination(
-            name=idExt, geometricalElement=surfList, material=surfList[0].material
+            name=idExt,
+            geometricalElement=surfList,
+            material=surfList[0].material,
         )
         return [lam], machineSide
     if "StNut" in idExt:
         lam = StatorLamination(
-            name=idExt, geometricalElement=surfList, material=surfList[0].material
+            name=idExt,
+            geometricalElement=surfList,
+            material=surfList[0].material,
         )
         return [lam], machineSide
     physElem = PhysicalElement(
@@ -505,78 +526,42 @@ def createPhysicalSurfaces(
     return [physElem], machineSide
 
 
-def createMagnet(surf: SurfaceAPI, material: Material, magType: str) -> Magnet:
+def createMagnet(surf: SurfaceAPI, mat: Material, extInfo: dict) -> Magnet:
     """create a Magnet (PhysicalElement) object.
         The magnet name will be the surface IdExt.
-        The magnetization direction is determined by the segment number. Segment number 0 will lead
-        to a "south pole" magnet (south pole facing towards the airgap)
+        The magnetization direction is determined by the segment number.
+        Segment number 0 will lead to a "south pole" magnet (south pole facing
+        towards the airgap)
 
     Args:
         surf (SurfaceAPI): magnet geometry
         material (Material): material of the magnet. Shoud have Br defined!
-        magType (str): magnetization type. Options are:
-
-            * "parallel"
-            * "radial"
-            * "tangential"
+        extInfo (dict): dict with additional simulation information.
+            E.g. Winding configuration, symmetry factor, rotational speed,...
 
     Returns:
         Magnet: The Magnet object generated from the above information.
     """
-    # get segment number
-    segmentNbr = surf.idExt.split("_")[1]
-    # identify magnetization direction:
-    magDir = 1 if (int(segmentNbr) + 1) % 2 else -1
+    # get magnet-IdExt and segment number
+    idExtSplit = surf.idExt.split("_")
+    magIdExt = idExtSplit[0]
+    if idExtSplit[1].isdecimal():
+        segmentNbr = int(idExtSplit[1])
+    else:
+        raise ValueError("Could not determine segment number from idExt.")
+    # identify magnetization direction
+    # first segment (segmentNbr=0) must be north pole for dq-Offset calculation
+    magDir = 1 if (segmentNbr + 1) % 2 else -1  # 1: north/outwards
+    # get magentization angle from magAngle dict by idExt
+    magAngle = importJSON.getMagAngle(extInfo)[magIdExt]
     return Magnet(
         name=surf.idExt,
         geoElements=[surf],
-        material=material,
+        material=mat,
         magDirection=magDir,
-        magType=magType,
-        magVectorAngle=getMagVec(surf),
+        magType=importJSON.getMagDir(extInfo),
+        magVectorAngle=magAngle + radians(360 / surf.NbrSegments) * segmentNbr,
     )
-
-
-def getMagVec(magSurface: Surface) -> float:
-    """
-    Get the basic magnetisation vector angle (normally perpendicular to longer edge) from
-    a magnet surface.
-
-    The Surface must contain two Points with name "S1" (inner magnet center point) and "S2" (outer
-    magnet center point) to determine the magnetisation vector.
-    The vector angle is determined by transforming the coordinates of point S1 to the origin
-    (same translation for S2) and calculating the angle of point S2 to the x-axis.
-
-    Args:
-        magSurface (Surface): magnet surface geometry
-
-    Returns:
-        float: magnetization vector angle in radians within [0, 2*Pi]
-
-    Raises:
-        NameError: if S1 or S2 are not found in surfaces points.
-    """
-    magnetPointList = magSurface.points
-    for point in magnetPointList:
-        # S1 is inner magnet point, S2 is outer
-        if "S1" in point.name:
-            pInner = point.duplicate()
-        elif "S2" in point.name:
-            pOuter = point.duplicate()
-    try:
-        innerPointCoords = pInner.coordinate
-        # translate the outer point like the inner point would be in the coordinate center
-        # by appliing a translation with vector \vec{-pInner}. Now the angle between the x-axis
-        # and the outer point is the magnetisation vector
-        if pOuter.translate(
-            -innerPointCoords[0], -innerPointCoords[1], -innerPointCoords[2]
-        ):
-            # TODO: getAngleToX takes the center point as argument -> Verify thats working!
-            return pOuter.getAngleToX()
-    except NameError as exc:
-        raise NameError("Could not find Magnet Points") from exc
-    except Exception as exc:
-        raise exc
 
 
 def phase2angle(phaseChar: Literal["u", "v", "w"]) -> float:
@@ -607,10 +592,14 @@ def phase2angle(phaseChar: Literal["u", "v", "w"]) -> float:
         raise ValueError(
             f'Phase ID "{phaseChar}" is not uvw! Can not determine phase angle!'
         )
-    raise ValueError(f'Phase ID "{phaseChar}"is not a single character!', phaseChar)
+    raise ValueError(
+        f'Phase ID "{phaseChar}"is not a single character!', phaseChar
+    )
 
 
-def phase2color(phaseChar: Literal["u", "v", "w"]) -> Literal["IndianRed", "Yellow", "Aquamarine"]:
+def phase2color(
+    phaseChar: Literal["u", "v", "w"]
+) -> Literal["IndianRed", "Yellow", "Aquamarine"]:
     """Get gmsh mesh color name for a phase-character. See `gmsh colors
     <https://gitlab.onelab.info/gmsh/gmsh/blob/gmsh_4_11_0/src/common/Colors.h>`_
     for all available colors.
@@ -641,7 +630,9 @@ def phase2color(phaseChar: Literal["u", "v", "w"]) -> Literal["IndianRed", "Yell
             f'Phase ID "{phaseChar}" is not uvw! Can not determine phase angle!'
         )
 
-    raise ValueError(f'Phase ID "{phaseChar}"is not a single character!', phaseChar)
+    raise ValueError(
+        f'Phase ID "{phaseChar}"is not a single character!', phaseChar
+    )
 
 
 def getSlotInfo(slotSurfName: str) -> Tuple[int, int]:
@@ -666,17 +657,28 @@ def getSlotInfo(slotSurfName: str) -> Tuple[int, int]:
         # split up the surface name to get Slot side (0 odr 1) and segmentNbr (n)
         [slotSide, segmentNbr] = slotSurfName.lstrip("StCu").split("_")
         # if both strings are numbers
-        if slotSide.isdecimal() and segmentNbr.isdecimal():
-            if float(slotSide).is_integer() and float(segmentNbr).is_integer():
-                return int(slotSide), int(segmentNbr)  # return the int value
-            msg = f"slotSide ({slotSide}) and/or segmentNbr ({segmentNbr}) are not integers!"
-            raise ValueError(msg)
-        msg = (
-            f"Could not determine Slot infomations"
-            f"slotSide ({slotSide}) and/or segmentNbr ({segmentNbr}) are not decimal!"
-        )
-        raise ValueError(msg)
-    msg = f'Slot identifier "StCu" was not in Surfacename: {slotSurfName}'
+        if slotSide:  # if slotSide not empty
+            if slotSide.isdecimal():  # string is int
+                slotSide = int(slotSide)
+            else:
+                raise ValueError(
+                    f"Slot side was not decimal. Slot name: '{slotSurfName}'"
+                )
+        else:
+            # Slot side is empty -> there is one layer side
+            slotSide = 0  # 0 to index first/only winding layer
+        if segmentNbr:
+            if segmentNbr.isdecimal():
+                segmentNbr = int(segmentNbr)
+            else:
+                msg = f"Segment number was not decimal. Slot name: '{slotSurfName}'"
+                raise ValueError(msg)
+        else:
+            raise RuntimeError(
+                f"Could not determine segment number from '{slotSurfName}'."
+            )
+        return slotSide, segmentNbr
+    msg = f'Slot identifier "StCu" was not in surface name: {slotSurfName}'
     raise ValueError(msg)
 
 
@@ -686,12 +688,16 @@ def getSlotPhase(
     """Gets the name (u, v, w) of the Phase with it's direction (+, -)
 
     Args:
-        windingLayout (list[list[int]]): Winding layout formatted for swat-em phases attribute (see
-         `this <https://swat-em.readthedocs.io/en/latest/reference.html#swat_em.datamodel.datamodel.set_phases>`__
-         SWAT-EM method for more details)
-        segmentNbr (int): Circumferderal model segment number starting with 0 on the x-axis (first segment).
-         Number increasing in math. positive direction.
-        slotSide (int): Slot side 0 = right side; 1 = left side (TODO: Specify upper and lower slot separation).
+        windingLayout (list[list[int]]): Winding layout formatted for swat-em
+            phases attribute (see `this <https://swat-em.readthedocs.io/en/latest/reference.html#swat_em.datamodel.datamodel.set_phases>`__
+            SWAT-EM method for more details)
+        segmentNbr (int): Circumferderal model segment number starting with 0
+            on the x-axis (first segment). Number increasing in math. positive
+            direction.
+        slotSide (int): Slot side 0 = right side or  slot bottom; 
+            1 = left side or slot opening. (Slot side can also be 2 or 3 but 
+            is merged into 0 and 1 by modulo operation. This is usefull when
+            you have multiple slot side (>2) per lamination segment.)
 
     Returns:
         Literal['p','n']: Winding direction (
@@ -706,7 +712,8 @@ def getSlotPhase(
     """
     for phaseIndex, phaseList in enumerate(windingLayout):
         # for slotSideList in phaseList:
-        for slotNumber in phaseList[slotSide]:
+        for slotNumber in phaseList[slotSide % 2]: # TODO: Test if multiple
+            # layer winding is working.
             if abs(slotNumber) == segmentNbr + 1:
                 if phaseIndex == 0:
                     phase = "u"
@@ -732,7 +739,9 @@ def getSlotPhase(
     raise RuntimeError("Could not determine phase index by slot number.")
 
 
-def createSlot(surf: SurfaceAPI, material: Material, extendedInfo: dict) -> Slot:
+def createSlot(
+    surf: SurfaceAPI, material: Material, extendedInfo: dict
+) -> Slot:
     """create a Physical Element of type Slot.
 
     Args:
@@ -777,10 +786,17 @@ def createWinding(extendedInfo: dict) -> datamodel:
     # format winding layout for swat_em
     windLayout = importJSON.getWindingList(extendedInfo)
     swatemWinding.set_phases(
+        
         S=windLayout, turns=(importJSON.getNbrOfTurns(extendedInfo))
+    
     )
     swatemWinding.analyse_wdg()  # analyse winding to make sure its valid and all parameters are set
+    # make sure that number of parallel paths does not exceed max. possible paths of winding:
+    if max(swatemWinding.get_parallel_connections()) < importJSON.getNbrParalellPaths(extendedInfo):
+        logger.warning("The given number of parallel windings paths (%i) exceeds possible paths of the winding layout (%i)!", importJSON.getNbrParalellPaths(extendedInfo), max(swatemWinding.get_parallel_connections()) )
+
     return swatemWinding
+
 
 # ==================================================================================================
 # ======================================= END MODEL GENERATION =====================================

@@ -113,17 +113,22 @@ def plotTimeTableDat(
 ) -> List[Figure]:
     """Plot the data in the filePath .dat-file and save the figure optionally.
 
-    There can be several simulations in one .dat file. If so there will be one figure for each simulation.
+    There can be several simulations in one .dat file. If so there will be one
+    figure for each simulation.
 
     Args:
         filePath (str): path to the .dat-file in timetable-format
-        dataLabel (str, optional): label of the ploted data on the y-axis. Defaults to ""
+        dataLabel (str, optional): label of the ploted data on the y-axis.
+            Defaults to ""
         title (str, optional): title of the figure. Defaults to ""
-        savefig (bool, optional): flag to determine if the figure should be saved. Defaults to False.
-        showfig (bool, optional): flag to determine if the figure should be displayed. Defaults to True.
-        savePath (str, optional): path with filename and valid extension to save the figure.
-            Defaults to None. E.g. "C:\\Users\\Test\\Pictures\\Test.png". If savePath is None
-            figure will be saved with filePath and .png extension
+        savefig (bool, optional): flag to determine if the figure should be
+            saved. Defaults to False.
+        showfig (bool, optional): flag to determine if the figure should be
+            displayed. Defaults to True.
+        savePath (str, optional): path with filename and valid extension to
+            save the figure. Defaults to None. E.g.
+            "C:\\Users\\Test\\Pictures\\Test.png". If savePath is None figure
+            will be saved with filePath and .png extension
 
     Returns:
         List[Figure]: Returns a list of matplotlib Figure objects
@@ -132,7 +137,7 @@ def plotTimeTableDat(
     time, data = readTimeTableDat(filePath)
     nbrSim, timeArray, dataArray = splitData(time, data)
     # PLOT
-    figureList: List[Figure] = list()
+    figureList: List[Figure] = []
     plt.ioff()
     for sim in range(nbrSim):
         # FIXME: with plt.ioff() only works on Python 3.11

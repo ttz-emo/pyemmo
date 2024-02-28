@@ -1,24 +1,23 @@
 """This is the main module of the json api to create a machine model in Onelab."""
+
 # import debugpy
 # debugpy.debug_this_thread()
 import os
 import subprocess
-import argparse
 from os import mkdir
 from os.path import isdir, isfile, join
 from typing import Dict, List, Tuple
 import logging
 import json
 import datetime
-from . import logger, ch
-from .. import logFmt
-from ..definitions import RESULT_DIR
-from ..functions import runOnelab, calcIronLoss, importResults
-from ..script.geometry.machineAllType import MachineAllType
-from ..script.geometry.rotor import Rotor
-from ..script.geometry.stator import Stator
-from ..script.script import Script
-from ..script.material import ElectricalSteel
+from ... import logFmt
+from ...functions import runOnelab, calcIronLoss, importResults
+from ...script.geometry.machineAllType import MachineAllType
+from ...script.geometry.rotor import Rotor
+from ...script.geometry.stator import Stator
+from ...script.script import Script
+from ...script.material import ElectricalSteel
+from .. import logger
 from . import boundaryJSON, importJSON, modelJSON, apiNameDict
 from .SurfaceJSON import SurfaceAPI
 
@@ -57,6 +56,8 @@ def createMachine(
     maschineSurfDict = modelJSON.createMachineGeometryFromSegment(
         segmentSurfDict, symFactor
     )
+    # Log winding layout for debugging *before* createSlot() is called.
+    logger.debug(f"Winding layout: {importJSON.getWindingList(extendedInfo)}")
     # create physical elements from the surfaces
     for idExt, surfList in maschineSurfDict.items():
         surfName = surfList[0].name
@@ -77,7 +78,7 @@ def createMachine(
             elif machineSide == "Rotor":
                 rotorPhysicals.extend(physSurfList)
             else:
-                ValueError(
+                raise ValueError(
                     f"MachineSide was whether rotor or stator: {machineSide}",
                 )
 
@@ -89,15 +90,14 @@ def createMachine(
         axLen=axLen["rotor"],
     )
     # create the stator
-    nbrSlotTotal = segmentSurfDict["StNut"].NbrSegments
     # create winding
-    windingSwat = modelJSON.createWinding(extendedInfo)
+    windingSWAT = modelJSON.createWinding(extendedInfo)
     statorAPI = Stator(
         name="stator created via json api",
-        nbrSlots=nbrSlotTotal,
+        nbrSlots=windingSWAT.get_num_slots(),
         physicalElements=statorPhysicals,
         axLen=axLen["stator"],
-        winding=windingSwat,
+        winding=windingSWAT,
     )
 
     # create the machine object
@@ -222,7 +222,9 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
     }.items():
         for quantity in ["b_radial", "b_tangent"]:
             sign = "-" if side == "rotor" else "+"
-            resFilePath = join("CAT_RESDIR", quantity + "_airgap_" + side + ".pos")
+            resFilePath = join(
+                "CAT_RESDIR", quantity + "_airgap_" + side + ".pos"
+            )
             # resFilePath = abspath(
             #     join(script.getResultsPath(), quantity + "_airgap_" + side + ".pos")
             # )
@@ -361,7 +363,9 @@ def main(
         mkdir(model)
     # Set logging path to model dir
     jsonLogFileHandler = logging.FileHandler(
-        filename=os.path.join(model, "pyemmo_jsonAPI.log"), mode="w", encoding="utf-8"
+        filename=os.path.join(model, "pyemmo_jsonAPI.log"),
+        mode="w",
+        encoding="utf-8",
     )
     jsonLogFileHandler.setLevel(logger.getEffectiveLevel())
     jsonLogFileHandler.setFormatter(logFmt)
@@ -379,31 +383,43 @@ def main(
     else:
         # if gmsh was given by the user, check that its valid
         if not isfile(gmsh):
-            raise FileNotFoundError(f"Provided gmsh executable was not found: {gmsh}")
+            raise FileNotFoundError(
+                f"Provided gmsh executable was not found: {gmsh}"
+            )
 
     # get geometry
-    if isfile(geo):
-        # import the segment surface list from the json file
-        try:
-            with open(geo, encoding="utf-8") as jsonFile:
-                machineGeoList = json.load(jsonFile)
-        except FileNotFoundError as fnfe:
-            raise fnfe
-        except Exception as exept:
-            raise exept
-    elif isinstance(geo, list):
-        machineGeoList = geo
+    if isinstance(geo, str):
+        if isfile(geo):
+            # import the segment surface list from the json file
+            try:
+                with open(geo, encoding="utf-8") as jsonFile:
+                    machineGeoList = json.load(jsonFile)
+                    # create dict with surface api (segment) objects from the surface list
+                    segmentSurfDict = modelJSON.importMachineGeometry(
+                        machineGeoList
+                    )
+            except FileNotFoundError as fnfe:
+                raise fnfe
+            except Exception as exept:
+                raise exept
+        else:
+            raise (FileNotFoundError(f"Given file path {geo} was not a file."))
+    elif isinstance(geo, dict):
+        segmentSurfDict = geo
     else:
         raise TypeError(
             f"Geometry file has to be type 'File' or 'dict', not {type(geo)}"
         )
-    # create dict with surface api (segment) objects from the surface list
-    segmentSurfDict = modelJSON.importMachineGeometry(machineGeoList)
 
     # addition information
-    if isfile(extInfo):
-        # import the extended information
-        extendedInfo = importJSON.importExtInfo(extInfo)
+    if isinstance(extInfo, str):
+        if isfile(extInfo):
+            # import the extended information
+            extendedInfo = importJSON.importExtInfo(extInfo)
+        else:
+            raise (
+                FileNotFoundError(f"Given file path {extInfo} was not a file.")
+            )
     elif isinstance(extInfo, dict):
         extendedInfo = extInfo
     else:
@@ -413,6 +429,12 @@ def main(
 
     # generate the machine geometry
     machine, machineSurfDict = createMachine(segmentSurfDict, extendedInfo)
+
+    # set function mesh
+    if "useFunctionMesh" in extendedInfo.keys():
+        if extendedInfo["useFunctionMesh"]:
+            machine.setFunctionMesh("linear", meshGainFactor=20)
+
     # get the simulation pareameters
     simulationParameters = importJSON.getSimuParams(extendedInfo=extendedInfo)
     logger.info("Generating the Script object in JSON API.")
@@ -472,7 +494,8 @@ def main(
     if (
         importJSON.getFlagCalcIronLoss(extendedInfo)
         and isdir(resPath)
-        and simulationParameters["SYM"]["ANALYSIS_TYPE"] == 1  # transient simulation
+        and simulationParameters["SYM"]["ANALYSIS_TYPE"]
+        == 1  # transient simulation
     ):
         # FIXME: Implement better check for simulation status
         brFilePath = join(resPath, "b_rotor.pos")
@@ -497,8 +520,8 @@ def main(
             and isinstance(rotorMat, ElectricalSteel)
             and isinstance(statorMat, ElectricalSteel)
         ):
-            #FIXME: Material properties should be given valid
-            lossParams = rotorMat.lossParams 
+            # FIXME: Material properties should be given valid
+            lossParams = rotorMat.lossParams
             calcIronLoss.adaptIronLossParams(lossParams, rotorMat)
             ironLossR, _ = calcIronLoss.main(
                 brFilePath,
@@ -547,7 +570,8 @@ def main(
             )
     if (
         importJSON.getFlagCalcIronLoss(extendedInfo)
-        and simulationParameters["SYM"]["ANALYSIS_TYPE"] == 0  # static simulation
+        and simulationParameters["SYM"]["ANALYSIS_TYPE"]
+        == 0  # static simulation
     ):
         # FIXME: Improve check because simulation type can be changed in gmsh GUI
         logger.warning(
@@ -561,7 +585,9 @@ def main(
         resPath = apiScript.resultsPath
         if isdir(resPath):
             # if the folder for results exists
-            importResults.plt.set_loglevel(level="info") # avoid matplotlib debug infos
+            importResults.plt.set_loglevel(
+                level="info"
+            )  # avoid matplotlib debug infos
             for file in os.listdir(resPath):
                 filename, fileExt = os.path.splitext(file)
                 if fileExt == ".dat":
@@ -573,76 +599,3 @@ def main(
                         showfig=False,
                         savePath=None,
                     )
-
-
-if __name__ == "__main__":
-    # 1. Check that all argvs are valid!
-    parser = argparse.ArgumentParser(
-        description="Process Motor-JSON files to generate a Onelab Simulation."
-    )
-    parser.add_argument(
-        "geo",
-        help="path to the JSON geometry file ('geometry.json')",
-        type=str,
-    )
-    parser.add_argument(
-        "extInfo",
-        help="path to the extended info JSON file ('extendedInfo.json')",
-        type=str,
-    )
-    parser.add_argument(
-        "--gmsh",
-        help="path to the Gmsh executable",
-        type=str,
-        default="",
-    )
-    parser.add_argument(
-        "--getdp", help="path to the GetDP executable", type=str, default=""
-    )
-    parser.add_argument(
-        "--mod",
-        help="path where the model files should be stored",
-        type=str,
-        default=RESULT_DIR,
-    )
-    parser.add_argument(
-        "--res",
-        help="path where the simulation results should be stored",
-        type=str,
-        default="",
-    )
-
-    parser.add_argument(
-        "--log",
-        help="logging level for execution. Options are: error, warning, info, debug. default is warning",
-        type=str,
-        default="WARNING",
-    )
-
-    parser.add_argument(
-        "-v",
-        help="set execution to verbose. Verbosity level equals logging level.",
-        action=argparse.BooleanOptionalAction,
-    )
-
-    args = parser.parse_args()
-
-    # remove commandline handler if verbose
-    if args.v:
-        logger.removeHandler(ch)
-
-    # set log level
-    loglevel = args.log
-    logLevelNum = getattr(logging, loglevel.upper(), None)
-    if not isinstance(logLevelNum, int):
-        raise ValueError(f"Invalid log level: {loglevel}")
-    logger.setLevel(logLevelNum)
-
-    main(
-        geo=args.geo,
-        extInfo=args.extInfo,
-        gmsh=args.gmsh,
-        getdp=args.getdp,
-        model=args.mod,
-        results=args.res,
-    )

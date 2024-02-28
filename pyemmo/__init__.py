@@ -10,6 +10,9 @@ import datetime
 from swat_em import analyse
 import numpy as np
 
+# import debugpy
+# debugpy.debug_this_thread()
+
 PACKAGE_NAME = "pyemmo"
 # User folder (to store machine/materials/config)
 if platform.system() == "Windows":

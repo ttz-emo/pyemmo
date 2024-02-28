@@ -53,7 +53,8 @@ def calc_time_domain_core_loss(
         saveFields (bool, optional): _description_. Defaults to True.
 
     Returns:
-        Tuple[Dict[str, np.ndarray], List[float]]: Iron loss results-dict + time array
+        Tuple[Dict[str, np.ndarray], List[float]]: Iron loss results-dict +
+            time array
     """
     core_loss = {}  # dict for loss results
     close_gmsh = False  # determine if gmsh should be closed at the end
@@ -173,6 +174,7 @@ def calc_time_domain_core_loss(
         core_loss["exc"] = np.zeros(eddyLoss.shape)
         excLossField = np.zeros(eddyLossField.shape)
 
+
     # Export total loss field
     if save_fields:
         # save the View to a pos file
@@ -239,10 +241,16 @@ def calcFreqDomainIronLosses(
     amp = np.concatenate(
         ([amp[0] / nbrFreqs / 2], amp[1:] / (nbrFreqs)), axis=0
     )
+    amp = np.concatenate(
+        ([amp[0] / nbrFreqs / 2], amp[1:] / (nbrFreqs)), axis=0
+    )
     # norm of xyz comp. -> hystLossField has shape (nbrElements, nbrFreqs)
     hystLossField = np.linalg.norm(
         hystLossFactor * freqs * (amp.transpose() ** 2), axis=0
     )
+    hystLoss = integrateField(hystLossField.transpose(), freqs, elementTags)[
+        1:
+    ]
     hystLoss = integrateField(hystLossField.transpose(), freqs, elementTags)[
         1:
     ]
@@ -261,6 +269,12 @@ def calcFreqDomainIronLosses(
     assert (
         eddyLoss.size == nbrFreqs
     ), f"Integration should result in {nbrFreqs} values!"
+    eddyLoss = integrateField(eddyLossField.transpose(), freqs, elementTags)[
+        1:
+    ]
+    assert (
+        eddyLoss.size == nbrFreqs
+    ), f"Integration should result in {nbrFreqs} values!"
     # skip first value, because its 0
     eddyLoss = eddyLoss * symFactor * axialLength  # correct values
     ironLoss["eddy"] = eddyLoss
@@ -268,10 +282,12 @@ def calcFreqDomainIronLosses(
     ## calculate excess loss
     excLossFactor = lossFactor["exc"]
     if excLossFactor:
-        constExcFactor = 8.763363  # constant factor (from paper)
         excLossField = np.linalg.norm(
             excLossFactor * (freqs**1.5) * (amp.transpose() ** 1.5)
         )
+        excLoss = integrateField(excLossField.transpose(), freqs, elementTags)[
+            1:
+        ]
         excLoss = integrateField(excLossField.transpose(), freqs, elementTags)[
             1:
         ]
@@ -498,9 +514,9 @@ def writeSimple(
     """_summary_
 
     Args:
-        fName (_type_): _description_
-        time (List[float]): _description_
-        data (Union[np.ndarray, List]): _description_
+        fName (os.PathLike): File name to existing folder.
+        time (List[float]): Time vector.
+        data (Union[np.ndarray, List]): Data vector or matrix.
     """
     nbrTimeSteps = len(time)
     if isinstance(data, np.ndarray):
@@ -508,6 +524,9 @@ def writeSimple(
     elif isinstance(data, list):
         assert len(data) == nbrTimeSteps
     else:
+        raise TypeError(
+            f"Data type was not numpy.ndarray or list, but {type(data)}."
+        )
         raise TypeError(
             f"Data type was not numpy.ndarray or list, but {type(data)}."
         )
@@ -523,6 +542,7 @@ def adaptIronLossParams(
     assert isinstance(steelMat, ElectricalSteel), "Material should be steel"
     freq = steelMat.referenceFrequency  # frequency in Hz
     ind = steelMat.referenceFluxDensity  # induction in T
+    dens = steelMat.density  # density in kg/m³
     dens = steelMat.density  # density in kg/m³
     lossParams[0] = lossParams[0] * dens / freq / (ind**2)
     lossParams[1] = lossParams[1] * dens / ((freq * ind) ** 2)

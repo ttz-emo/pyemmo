@@ -1,14 +1,7 @@
-"""init module of json api"""
+"""Init for API subpackage"""
 import logging
-from ..script.material.material import Material
-from ..script.geometry import defaultCenterPoint
 from .. import logFmt, rootLogger
-
-logger = rootLogger  # test to get script.py log in local model log file
-# logger = logging.getLogger("pyemmo.api.json")  # init module logger
-ch = logging.StreamHandler()
-ch.setFormatter(logFmt)
-logger.addHandler(ch)
+from ..script.material.material import Material
 
 try:
     air = Material()
@@ -25,79 +18,11 @@ except FileNotFoundError:
         thermalConductivity=0.0261,
         thermalCapacity=1.005,
     )
+air.name = "PYEMMO_AIR"
 
-globalCenterPoint = defaultCenterPoint
-# Movingband line Identification dicts
-RotorMBLineDict = {
-    "LuR2": [["LuA2", "LuM2"], ["LuAa", "LuBa"], "MB_CurveRotor"],
-    "RoLu2": ["LuA2", "LuM2"],
-    "LuR": ["LuAa", "LuBa"],
-}
-StatorMBLineDict = {
-    "StLu2": [["LuA2", "LuM2"], "MB_CurveStator"],
-    "StLu": ["LuA", "LuM"],
-}
 
-# Outer limit lines
-OuterLimitLineDict = {
-    "Geh": [  # first case: no inner shaft radius; second case: with radius
-        ["G1", "G3"],  # first case: zylindrical housing
-        [
-            ["G1", "G2a"],  # second case: quadratic or "kreuzprofil" with rounding
-            ["G2a", "G2e"],
-            ["G2e", "G3"],
-            ["G2", "G1"],  # without rounding
-            ["G2", "G3"],
-        ],
-        "OuterLimit",
-    ],
-    # if there is no housing, use stator iron outer line
-    "StNut": [
-        ["SZ", "SN"],
-        "OuterLimit",
-    ],
-}
-
-# Inner limit lines
-InnerLimitLineDict = {
-    "Wel": [
-        # ["W2", "MP"], # first case: no inner shaft radius -> no limit line!
-        ["W4", "W3"],  # second case: with radius -> inner limit line
-        "InnerLimit",
-    ],
-    "Hul": ["H3", "H4"],
-    "Pol": [
-        ["RMi", "RI"],  # first case:IPM
-        ["RndI", "RndM"],  # second case:APM
-        "InnerLimit",
-    ],
-    "RoNut": ["SZ", "SN"],
-}
-
-# order defines user defined mesh setting order.
-apiNameDict = {
-    # rotor
-    "Wel": "Welle",
-    "Hul": "Huelse",
-    "Lpl": "Loch (Polluecke)",
-    "Mag": "Magnet",
-    "RoCu": "Rotor-Nut",
-    "RoNuS": "Rotor-Nutschlitz",
-    "RoNuL": "Rotor-Nutschlitzluft",
-    "Pol": "Rotorblech",
-    "RoNut": "Rotorblech",
-    "LuR": "Rotorluftspalt",  # case 3 airgap segments
-    "LuR1": "Rotorluftspalt 1",
-    "RoLu1": "Rotorluftspalt 1",
-    "LuR2": "Rotorluftspalt 2",
-    "RoLu2": "Rotorluftspalt 2",
-    # stator
-    "Geh": "Gehaeuse",
-    "StCu": "Stator-Nut",
-    "StNuS": "Stator-Nutschlitz",
-    "StNuL": "Stator-Nutschlitzluft",
-    "StNut": "Statorblech",
-    "StLu": "Statorluftspalt",  # case 3 airgap segments
-    "StLu1": "Statorluftspalt 1",  # case 5 airgap segments
-    "StLu2": "Statorluftspalt 2",
-}
+logger = rootLogger  # test to get script.py log in local model log file
+# logger = logging.getLogger("pyemmo.api.json")  # init module logger
+ch = logging.StreamHandler()
+ch.setFormatter(logFmt)
+logger.addHandler(ch)

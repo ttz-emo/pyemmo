@@ -2,11 +2,11 @@
 from typing import List, Union
 
 from numpy import pi
-from ..script.geometry.line import Line
-from ..script.geometry.circleArc import CircleArc
-from ..script.geometry.spline import Spline
-from ..script.geometry.surface import Surface
-from ..script.material.material import Material
+from ...script.geometry.line import Line
+from ...script.geometry.circleArc import CircleArc
+from ...script.geometry.spline import Spline
+from ...script.geometry.surface import Surface
+from ...script.material.material import Material
 
 
 class SurfaceAPI(Surface):
@@ -186,7 +186,7 @@ class SurfaceAPI(Surface):
                 duplicatSurf.name = f"{parentName}_dup"
             else:
                 duplicatSurf.name = f"{parentName}_{duplicatSurf.id}"
-        duplicatSurf.setMeshColor(self.getMeshColor)
+        duplicatSurf.setMeshColor(self.getMeshColor())
         return duplicatSurf
 
     # def rotateDuplicate(self, symFactor: int) -> List["SurfaceAPI"]:
