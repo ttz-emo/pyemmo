@@ -545,22 +545,22 @@ def main(
                 sym_factor=importJSON.getSymFactor(extendedInfo),
                 axial_length=importJSON.getAxialLength(extendedInfo)["stator"],
             )
-            calcIronLoss.writeSimple(
+            calcIronLoss.write_simple(
                 join(resPath, "Pv_hyst_R.dat"), time, ironLossR["hyst"]
             )
-            calcIronLoss.writeSimple(
+            calcIronLoss.write_simple(
                 join(resPath, "Pv_hyst_S.dat"), time, ironLossS["hyst"]
             )
-            calcIronLoss.writeSimple(
+            calcIronLoss.write_simple(
                 join(resPath, "Pv_eddy_R.dat"), time, ironLossR["eddy"]
             )
-            calcIronLoss.writeSimple(
+            calcIronLoss.write_simple(
                 join(resPath, "Pv_eddy_S.dat"), time, ironLossS["eddy"]
             )
-            calcIronLoss.writeSimple(
+            calcIronLoss.write_simple(
                 join(resPath, "Pv_exc_R.dat"), time, ironLossR["exc"]
             )
-            calcIronLoss.writeSimple(
+            calcIronLoss.write_simple(
                 join(resPath, "Pv_exc_S.dat"), time, ironLossS["exc"]
             )
         else:

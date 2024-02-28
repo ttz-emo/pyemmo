@@ -68,7 +68,9 @@ def calc_time_domain_core_loss(
         # extract filename from path
         _, filename = os.path.split(b_filepath)  # get filename with ext
         filename, _ = os.path.splitext(filename)  # get pure filename
-    hyst_loss_field = calcHystLossUCP(time, b_field_data, loss_factor["hyst"])
+    hyst_loss_field = calc_hyst_loss_ucp(
+        time, b_field_data, loss_factor["hyst"]
+    )
     if save_fields:
         # save the View to a pos file
         model = gmsh.model.getCurrent()  # or just get current model...
@@ -91,7 +93,7 @@ def calc_time_domain_core_loss(
         )
         gmsh.view.write(actual_view, p_filepath)
     # integrate field over area for each time step
-    hysteresis_loss: npt.NDArray[np.float64] = integrateField(
+    hysteresis_loss: npt.NDArray[np.float64] = integrate_field(
         hyst_loss_field, time[1:], element_tags
     )
     # skip first value, because its 0:
@@ -100,11 +102,13 @@ def calc_time_domain_core_loss(
     )  # correct values
 
     # ------------------------- Calculate eddy current losses ---------------------------
-    eddyLossFactor = loss_factor["eddy"]  # loss parameter
+    eddy_factor = loss_factor["eddy"]  # loss parameter
     # loss function for eddy current loss from paper:
-    tStep = time[1] - time[0]
-    dBdt = np.diff(b_field_data, axis=0) / tStep  # calc dBdt
-    eddyLossField = np.sum(eddyLossFactor / 2 / (np.pi**2) * (dBdt**2), axis=2)
+    step_time = time[1] - time[0]
+    diff_b = np.diff(b_field_data, axis=0) / step_time  # calc dBdt
+    eddy_loss_field = np.sum(
+        eddy_factor / 2 / (np.pi**2) * (diff_b**2), axis=2
+    )
     # meanEddyLossField = np.mean(eddyLossField, axis=0)
     # eddyLoss = integrateField(np.array([meanEddyLossField]), [time[0]], elementTags)
     if save_fields:
@@ -118,7 +122,7 @@ def calc_time_domain_core_loss(
                 modelName=model,
                 dataType="ElementData",
                 tags=element_tags,
-                data=eddyLossField[step, :],
+                data=eddy_loss_field[step, :],
                 time=time[step],
             )
         # save p_hyst-field to file:
@@ -126,19 +130,23 @@ def calc_time_domain_core_loss(
             os.path.dirname(b_filepath), f"p_eddy_from_{filename}.pos"
         )
         gmsh.view.write(actual_view, p_filepath)
-    eddyLoss = integrateField(np.array(eddyLossField), time[1:], element_tags)
+    eddy_loss = integrate_field(
+        np.array(eddy_loss_field), time[1:], element_tags
+    )
     assert (
-        eddyLoss.size == nbr_timesteps
+        eddy_loss.size == nbr_timesteps
     ), f"Integration should result in {nbr_timesteps} values!"
     # skip first value, because its 0:
-    eddyLoss = eddyLoss[1:] * sym_factor * axial_length  # correct values
-    core_loss["eddy"] = eddyLoss
+    eddy_loss = eddy_loss[1:] * sym_factor * axial_length  # correct values
+    core_loss["eddy"] = eddy_loss
 
     # --------------------------- calculate excess loss ---------------------------
     if loss_factor["exc"] > 0:
-        constExcFactor = 8.763363  # constant factor (from paper)
-        excLossField = np.sum(
-            loss_factor["exc"] / constExcFactor * np.power(dBdt**2, 0.75),
+        excess_loss_constant = 8.763363  # constant factor (from paper)
+        exc_loss_field = np.sum(
+            loss_factor["exc"]
+            / excess_loss_constant
+            * np.power(diff_b**2, 0.75),
             axis=2,
         )
         if save_fields:
@@ -152,7 +160,7 @@ def calc_time_domain_core_loss(
                     modelName=model,
                     dataType="ElementData",
                     tags=element_tags,
-                    data=excLossField[step, :],
+                    data=exc_loss_field[step, :],
                     time=time[step],
                 )
             # save p_hyst-field to file:
@@ -162,25 +170,26 @@ def calc_time_domain_core_loss(
             gmsh.view.write(actual_view, p_filepath)
         # meanExcLossField = np.mean(excLossField, axis=0)
         # excLoss = integrateField(np.array([meanExcLossField]), [time[0]], elementTags)
-        excLoss = integrateField(np.array(excLossField), time, element_tags)
+        exc_loss = integrate_field(
+            np.array(exc_loss_field), time, element_tags
+        )
         assert (
-            excLoss.size == nbr_timesteps
+            exc_loss.size == nbr_timesteps
         ), f"Integration should result in {nbr_timesteps} values!"
         # skip first value, because its 0:
-        excLoss = excLoss[1:] * sym_factor * axial_length  # correct values
-        core_loss["exc"] = excLoss
+        exc_loss = exc_loss[1:] * sym_factor * axial_length  # correct values
+        core_loss["exc"] = exc_loss
     else:
         # set iron loss to 0
-        core_loss["exc"] = np.zeros(eddyLoss.shape)
-        excLossField = np.zeros(eddyLossField.shape)
-
+        core_loss["exc"] = np.zeros(eddy_loss.shape)
+        exc_loss_field = np.zeros(eddy_loss_field.shape)
 
     # Export total loss field
     if save_fields:
         # save the View to a pos file
         model = gmsh.model.getCurrent()
         actual_view = gmsh.view.add(f"Total Loss [W/m³] ({filename})")
-        totalLossField = hyst_loss_field + eddyLossField + excLossField
+        sum_loss_field = hyst_loss_field + eddy_loss_field + exc_loss_field
         for step in range(len(time) - 1):
             gmsh.view.addHomogeneousModelData(
                 tag=actual_view,
@@ -188,7 +197,7 @@ def calc_time_domain_core_loss(
                 modelName=model,
                 dataType="ElementData",
                 tags=element_tags,
-                data=totalLossField[step, :],
+                data=sum_loss_field[step, :],
                 time=time[step],
             )
         # save p_hyst-field to file:
@@ -203,149 +212,151 @@ def calc_time_domain_core_loss(
     return core_loss, time[0:-1]
 
 
-def calcFreqDomainIronLosses(
-    bFilePath: Union[str, os.PathLike],
-    lossFactor: dict,
-    symFactor: int,
-    axialLength: float = 1.0,
+def calc_freq_domain_core_loss(
+    b_filepath: Union[str, os.PathLike],
+    loss_factor: dict,
+    sym_factor: int,
+    axial_length: float = 1.0,
 ) -> Tuple[Dict[str, np.ndarray], npt.NDArray[np.float64]]:
-    ironLoss = {}  # dict for loss results
-    finGmsh = False  # determine if gmsh should be closed at the end
+    core_loss = {}  # dict for loss results
+    close_gmsh = False  # determine if gmsh should be closed at the end
     if not gmsh.isInitialized():
         gmsh.initialize()
-        finGmsh = True
+        close_gmsh = True
 
-    elementTags, time, bFieldData = importPos(bFilePath)
+    elem_tags, time, b_field_data = importPos(b_filepath)
     ## calculate hysteresis losses
-    hystLossFactor = lossFactor["hyst"]  # hysteresis loss factor
+    hyst_loss_factor = loss_factor["hyst"]  # hysteresis loss factor
     # beta = 2  # hysteresis loss exponent
     # calculate element wise fft of b-field
     if np.all(
-        np.linalg.norm((bFieldData[0] - bFieldData[-1]), axis=(1))
-        < np.linalg.norm(bFieldData, axis=(2, 0)) * 1e-3
+        np.linalg.norm((b_field_data[0] - b_field_data[-1]), axis=(1))
+        < np.linalg.norm(b_field_data, axis=(2, 0)) * 1e-3
     ):
         # value of last time step is nearly equal to first time step
         # -> skip last time step!
-        bFieldData = bFieldData[:-1, :, :]
+        b_field_data = b_field_data[:-1, :, :]
         time = time[:-1]
-    tStep = time[1] - time[0]
-    nbrTimeSteps = len(time)
-    amp = np.abs(np.fft.rfft(bFieldData[:, :, :], axis=0))
+    timestep = time[1] - time[0]
+    nbr_timesteps = len(time)
+    amp = np.abs(np.fft.rfft(b_field_data[:, :, :], axis=0))
     # to get correct amplitude regarding the specific frequencies, the amplitudes
     # must be corrected by 1/nbrFreqs and DC-part by 1/(2*nbrFreqs) because its value
     # is doubled since its part of the positive and negative side of the spectrum.
     # Since I defined the number of frequencies to be only for the one sided spectrum,
     # we have to double the value for amp[0] and use only nbrFreqs for amp[1:]
-    freqs = np.fft.rfftfreq(nbrTimeSteps, tStep)
-    nbrFreqs = len(freqs)
+    freqs = np.fft.rfftfreq(nbr_timesteps, timestep)
+    nbr_freqs = len(freqs)
     amp = np.concatenate(
-        ([amp[0] / nbrFreqs / 2], amp[1:] / (nbrFreqs)), axis=0
+        ([amp[0] / nbr_freqs / 2], amp[1:] / (nbr_freqs)), axis=0
     )
     amp = np.concatenate(
-        ([amp[0] / nbrFreqs / 2], amp[1:] / (nbrFreqs)), axis=0
+        ([amp[0] / nbr_freqs / 2], amp[1:] / (nbr_freqs)), axis=0
     )
     # norm of xyz comp. -> hystLossField has shape (nbrElements, nbrFreqs)
-    hystLossField = np.linalg.norm(
-        hystLossFactor * freqs * (amp.transpose() ** 2), axis=0
+    hyst_loss_field = np.linalg.norm(
+        hyst_loss_factor * freqs * (amp.transpose() ** 2), axis=0
     )
-    hystLoss = integrateField(hystLossField.transpose(), freqs, elementTags)[
+    hyst_loss = integrate_field(hyst_loss_field.transpose(), freqs, elem_tags)[
         1:
     ]
-    hystLoss = integrateField(hystLossField.transpose(), freqs, elementTags)[
+    hyst_loss = integrate_field(hyst_loss_field.transpose(), freqs, elem_tags)[
         1:
     ]
     # skip first value, because its 0
-    ironLoss["hyst"] = hystLoss * symFactor * axialLength  # correct values
+    core_loss["hyst"] = hyst_loss * sym_factor * axial_length  # correct values
 
     # ------------------------- Calculate eddy current losses -------------------------
-    eddyLossFactor = lossFactor["eddy"]  # loss parameter
+    eddy_loss_factor = loss_factor["eddy"]  # loss parameter
     # loss function for eddy current loss from paper:
-    eddyLossField = np.linalg.norm(
-        eddyLossFactor * (freqs**2) * (amp.transpose() ** 2), axis=0
+    eddy_loss_field = np.linalg.norm(
+        eddy_loss_factor * (freqs**2) * (amp.transpose() ** 2), axis=0
     )
-    eddyLoss = integrateField(eddyLossField.transpose(), freqs, elementTags)[
+    eddy_loss = integrate_field(eddy_loss_field.transpose(), freqs, elem_tags)[
         1:
     ]
     assert (
-        eddyLoss.size == nbrFreqs
-    ), f"Integration should result in {nbrFreqs} values!"
-    eddyLoss = integrateField(eddyLossField.transpose(), freqs, elementTags)[
+        eddy_loss.size == nbr_freqs
+    ), f"Integration should result in {nbr_freqs} values!"
+    eddy_loss = integrate_field(eddy_loss_field.transpose(), freqs, elem_tags)[
         1:
     ]
     assert (
-        eddyLoss.size == nbrFreqs
-    ), f"Integration should result in {nbrFreqs} values!"
+        eddy_loss.size == nbr_freqs
+    ), f"Integration should result in {nbr_freqs} values!"
     # skip first value, because its 0
-    eddyLoss = eddyLoss * symFactor * axialLength  # correct values
-    ironLoss["eddy"] = eddyLoss
+    eddy_loss = eddy_loss * sym_factor * axial_length  # correct values
+    core_loss["eddy"] = eddy_loss
 
     ## calculate excess loss
-    excLossFactor = lossFactor["exc"]
-    if excLossFactor:
-        excLossField = np.linalg.norm(
-            excLossFactor * (freqs**1.5) * (amp.transpose() ** 1.5)
+    exc_loss_factor = loss_factor["exc"]
+    if exc_loss_factor:
+        exc_loss_field = np.linalg.norm(
+            exc_loss_factor * (freqs**1.5) * (amp.transpose() ** 1.5)
         )
-        excLoss = integrateField(excLossField.transpose(), freqs, elementTags)[
-            1:
-        ]
-        excLoss = integrateField(excLossField.transpose(), freqs, elementTags)[
-            1:
-        ]
+        exc_loss = integrate_field(
+            exc_loss_field.transpose(), freqs, elem_tags
+        )[1:]
+        exc_loss = integrate_field(
+            exc_loss_field.transpose(), freqs, elem_tags
+        )[1:]
         assert (
-            excLoss.size == nbrFreqs
-        ), f"Integration should result in {nbrFreqs} values!"
+            exc_loss.size == nbr_freqs
+        ), f"Integration should result in {nbr_freqs} values!"
         # skip first value, because its 0:
-        excLoss = excLoss * symFactor * axialLength  # correct values
-        ironLoss["exc"] = excLoss
+        exc_loss = exc_loss * sym_factor * axial_length  # correct values
+        core_loss["exc"] = exc_loss
     else:
-        ironLoss["exc"] = np.zeros(eddyLoss.shape)
+        core_loss["exc"] = np.zeros(eddy_loss.shape)
 
-    if finGmsh:
+    if close_gmsh:
         gmsh.finalize()
 
-    return ironLoss, freqs
+    return core_loss, freqs
 
 
-def calcHystLossUCP(
-    time: list[float], bFieldData: np.ndarray, hystLossFactor: float
+def calc_hyst_loss_ucp(
+    time: list[float], b_field_data: np.ndarray, hyst_loss_factor: float
 ) -> np.ndarray:
     """Calculate the hysteresis loss field according to ANSYS Maxwell User-
     Controll-Program"""
-    nbrElements = bFieldData.shape[1]
-    nbrTimeSteps = len(time)
-    tStep = time[1] - time[0]
-    dBdt = np.diff(bFieldData, axis=0) / tStep  # calc dBdt
-    uex = np.zeros((nbrTimeSteps, nbrElements, 2))
-    Hm = np.zeros((nbrTimeSteps, nbrElements, 2))
-    H = np.zeros((nbrTimeSteps, nbrElements, 2))
-    for it in range(1, nbrTimeSteps):
+    nbr_elements = b_field_data.shape[1]
+    nbr_steps = len(time)
+    timestep = time[1] - time[0]
+    diff_b = np.diff(b_field_data, axis=0) / timestep  # calc dBdt
+    uex = np.zeros((nbr_steps, nbr_elements, 2))
+    h_m = np.zeros((nbr_steps, nbr_elements, 2))
+    H = np.zeros((nbr_steps, nbr_elements, 2))
+    for it in range(1, nbr_steps):
         # for each timestep
-        for ie in range(nbrElements):
+        for ie in range(nbr_elements):
             # for each element
             for comp in (0, 1):
                 # for x,y, and not z
-                B_new = bFieldData[it, ie, comp]
-                B_old = bFieldData[it - 1, ie, comp]
-                find_ext(it, ie, comp, B_old, B_new, uex)
+                b_new = b_field_data[it, ie, comp]
+                b_old = b_field_data[it - 1, ie, comp]
+                find_ext(it, ie, comp, b_old, b_new, uex)
                 # calc Hm
-                Hm[it, ie, comp] = hystLossFactor / np.pi * uex[it, ie, comp]
+                h_m[it, ie, comp] = (
+                    hyst_loss_factor / np.pi * uex[it, ie, comp]
+                )
                 if uex[it, ie, comp] == 0:
-                    H[it, ie, comp] = np.sqrt(Hm[it, ie, comp] ** 2)
+                    H[it, ie, comp] = np.sqrt(h_m[it, ie, comp] ** 2)
                 else:
                     H[it, ie, comp] = np.sqrt(
                         np.abs(
-                            Hm[it, ie, comp] ** 2
+                            h_m[it, ie, comp] ** 2
                             - (
-                                Hm[it, ie, comp]
-                                * bFieldData[it, ie, comp]
+                                h_m[it, ie, comp]
+                                * b_field_data[it, ie, comp]
                                 / uex[it, ie, comp]
                             )
                             ** 2
                         )
                     )
     # sum of x and y; abs of value (x,y)
-    hystLossField = np.sum(np.abs(H[1:, :, :] * dBdt[:, :, 0:1]), axis=2)
-    return hystLossField
+    hyst_loss_field = np.sum(np.abs(H[1:, :, :] * diff_b[:, :, 0:1]), axis=2)
+    return hyst_loss_field
 
 
 def find_ext(i_time, i_elem, i_comp, b_old, b_new, uex):
@@ -358,30 +369,30 @@ def find_ext(i_time, i_elem, i_comp, b_old, b_new, uex):
 
 
 def calc_Hm(bFieldData: np.ndarray, time: list[float], hystLossFactor):
-    nbrElements = bFieldData.shape[1]
-    nbrTimeSteps = len(time)
-    uex = np.zeros((nbrTimeSteps, nbrElements, 2))
-    Hm = np.zeros((nbrTimeSteps, nbrElements, 2))
-    H = np.zeros((nbrTimeSteps, nbrElements, 2))
-    for it in range(1, nbrTimeSteps):
+    nbr_elements = bFieldData.shape[1]
+    nbr_timesteps = len(time)
+    uex = np.zeros((nbr_timesteps, nbr_elements, 2))
+    h_m = np.zeros((nbr_timesteps, nbr_elements, 2))
+    H = np.zeros((nbr_timesteps, nbr_elements, 2))
+    for it in range(1, nbr_timesteps):
         # for each timestep
-        for ie in range(nbrElements):
+        for ie in range(nbr_elements):
             # for each element
             for comp in (0, 1):
                 # for x,y, and not z
-                B_new = bFieldData[it, ie, comp]
-                B_old = bFieldData[it - 1, ie, comp]
-                find_ext(it, ie, comp, B_old, B_new, uex)
+                b_new = bFieldData[it, ie, comp]
+                b_old = bFieldData[it - 1, ie, comp]
+                find_ext(it, ie, comp, b_old, b_new, uex)
                 # calc Hm
-                Hm[it, ie, comp] = hystLossFactor / np.pi * uex[it, ie, comp]
+                h_m[it, ie, comp] = hystLossFactor / np.pi * uex[it, ie, comp]
                 if uex[it, ie, comp] == 0:
-                    H[it, ie, comp] = np.sqrt(Hm[it, ie, comp] ** 2)
+                    H[it, ie, comp] = np.sqrt(h_m[it, ie, comp] ** 2)
                 else:
                     H[it, ie, comp] = np.sqrt(
                         np.abs(
-                            Hm[it, ie, comp] ** 2
+                            h_m[it, ie, comp] ** 2
                             - (
-                                Hm[it, ie, comp]
+                                h_m[it, ie, comp]
                                 * bFieldData[it, ie, comp]
                                 / uex[it, ie, comp]
                             )
@@ -390,148 +401,149 @@ def calc_Hm(bFieldData: np.ndarray, time: list[float], hystLossFactor):
                     )
 
 
-def calcHystLossSin(
-    time: list[float], bFieldData: np.ndarray, hystLossFactor: float
+def calc_hyst_loss_sin(
+    time: list[float], b_field_data: np.ndarray, hystLossFactor: float
 ) -> np.ndarray:
     """Calculate the hysteresis loss field by using the cosine of the
     fundamental B field wave"""
-    nbrElements = bFieldData.shape[1]
-    nbrTimeSteps = len(time)
+    nbr_elements = b_field_data.shape[1]
+    nbr_timesteps = len(time)
     if np.all(
-        np.linalg.norm((bFieldData[0] - bFieldData[-1]), axis=1)
-        < np.linalg.norm(bFieldData, axis=(2, 0)) * 1e-3
+        np.linalg.norm((b_field_data[0] - b_field_data[-1]), axis=1)
+        < np.linalg.norm(b_field_data, axis=(2, 0)) * 1e-3
     ):
         # value of last time step is nearly equal to first time step
         # -> skip last time step!
-        bFieldDataFFT = bFieldData[:-1, :, :]
+        b_field_data_fft = b_field_data[:-1, :, :]
     else:
-        bFieldDataFFT = bFieldData
+        b_field_data_fft = b_field_data
     # calculate element wise fft of b-field:
-    bfft = np.fft.rfft(bFieldDataFFT, axis=0)
-    amp = np.abs(bfft)
+    b_fft = np.fft.rfft(b_field_data_fft, axis=0)
+    amp = np.abs(b_fft)
     # to get correct amplitude regarding the specific frequencies, the amplitudes
     # must be corrected by 1/nbrFreqs and DC-part by 1/(2*nbrFreqs) because its value
     # is doubled since its part of the positive and negative side of the spectrum.
     # Since I defined the number of frequencies to be only for the one sided spectrum,
     # we have to double the value for amp[0] and use only nbrFreqs for amp[1:]
-    tStep = time[1] - time[0]
-    freqs = np.fft.rfftfreq(np.shape(bFieldDataFFT)[0], tStep)
-    nbrFreqs = len(freqs)
+    timestep = time[1] - time[0]
+    freqs = np.fft.rfftfreq(np.shape(b_field_data_fft)[0], timestep)
+    nbr_freqs = len(freqs)
     amp = np.concatenate(
-        ([amp[0] / nbrFreqs / 2], amp[1:] / (nbrFreqs)), axis=0
+        ([amp[0] / nbr_freqs / 2], amp[1:] / (nbr_freqs)), axis=0
     )
-    phase = np.angle(bfft)
-    for elem in range(nbrElements):
+    phase = np.angle(b_fft)
+    for elem in range(nbr_elements):
         # FIXME: Assume that freq. of max. amplitude is the same for x and y comp.
         #   -> norm                                         +1 because skipping DC
-        fMaxInd = np.linalg.norm(amp[1:, elem, :], axis=1).argmax() + 1
-        phi0 = phase[fMaxInd, :, :]
+        index_f_max = np.linalg.norm(amp[1:, elem, :], axis=1).argmax() + 1
+        phi0 = phase[index_f_max, :, :]
 
     # fMaxIndex equals order of that spectral part
     phi = np.linspace(
         phi0 + np.pi / 2,
-        fMaxInd * (2 * np.pi) + phi0 + np.pi / 2,
-        nbrTimeSteps - 1,
+        index_f_max * (2 * np.pi) + phi0 + np.pi / 2,
+        nbr_timesteps - 1,
     )
-    cosPhi = np.cos(phi)  # calc cos(phi)
-    bmax = np.max(bFieldData, axis=0)
-    bmin = np.min(bFieldData, axis=0)
-    Bm = (bmax - bmin) / 2  # magnitude is (max-min)/2
-    dBdt = np.diff(bFieldData, axis=0) / tStep  # calc dBdt
-    Hm = hystLossFactor / np.pi * Bm  # magnitude of H according to paper
-    Hirr = Hm * cosPhi
-    hystLossField = np.sum(Hirr * dBdt, axis=2)
-    return hystLossField
+    cos_phi = np.cos(phi)  # calc cos(phi)
+    bmax = np.max(b_field_data, axis=0)
+    bmin = np.min(b_field_data, axis=0)
+    b_m = (bmax - bmin) / 2  # magnitude is (max-min)/2
+    diff_b = np.diff(b_field_data, axis=0) / timestep  # calc dBdt
+    h_m = hystLossFactor / np.pi * b_m  # magnitude of H according to paper
+    h_irr = h_m * cos_phi
+    hyst_loss_field = np.sum(h_irr * diff_b, axis=2)
+    return hyst_loss_field
 
 
-def calcHystLossdBdt(
-    time: list[float], bFieldData: np.ndarray, hystLossFactor: float
+def calc_hyst_loss_diff_b(
+    time: list[float], b_field_data: np.ndarray, hyst_loss_factor: float
 ) -> np.ndarray:
     """Calculate the hysteresis loss field by defining Hirr as the same trace
     as dBdt but with scaled amplitude"""
-    tStep = time[1] - time[0]
-    bmax = np.max(bFieldData, axis=0)
-    bmin = np.min(bFieldData, axis=0)
-    Bm = (bmax - bmin) / 2  # magnitude is (max-min)/2
-    dBdt = np.diff(bFieldData, axis=0) / tStep  # calc dBdt
-    Hdiff = np.nan_to_num(
-        hystLossFactor / np.pi * Bm * dBdt / np.max(dBdt, axis=0)
+    timestep = time[1] - time[0]
+    bmax = np.max(b_field_data, axis=0)
+    bmin = np.min(b_field_data, axis=0)
+    b_m = (bmax - bmin) / 2  # magnitude is (max-min)/2
+    diff_b = np.diff(b_field_data, axis=0) / timestep  # calc dBdt
+    h_diff = np.nan_to_num(
+        hyst_loss_factor / np.pi * b_m * diff_b / np.max(diff_b, axis=0)
     )
-    Hdiff = [Hdiff, Hdiff[-1]]
-    hystLossField = np.sum(Hdiff * dBdt, axis=2)
-    return hystLossField
+    h_diff = [h_diff, h_diff[-1]]
+    hyst_loss_filed = np.sum(h_diff * diff_b, axis=2)
+    return hyst_loss_filed
 
 
-def integrateField(
-    fieldData: npt.NDArray,
+def integrate_field(
+    field_data: npt.NDArray,
     time: List[float],
-    elemTags: npt.NDArray,
-    meshFile: Union[str, os.PathLike] = "",
+    elem_tags: npt.NDArray,
+    mesh_file: Union[str, os.PathLike] = "",
 ) -> npt.NDArray[np.float64]:
-    finGmsh = False
+    close_gmsh = False
     if not gmsh.isInitialized():
         gmsh.initialize()
-        finGmsh = True
-    originVerbose = gmsh.option.getNumber("General.Verbosity")
+        close_gmsh = True
+    origin_verbosity = gmsh.option.getNumber("General.Verbosity")
     gmsh.option.setNumber("General.Verbosity", 1)
 
     try:
-        if meshFile:
-            gmsh.open(meshFile)
+        if mesh_file:
+            gmsh.open(mesh_file)
         model = gmsh.model.getCurrent()
-        viewTag = gmsh.view.add("FieldToIntegrate")
-        for step, timeVal in enumerate(time):
+        view_tag = gmsh.view.add("FieldToIntegrate")
+        for step, time_val in enumerate(time):
             gmsh.view.addHomogeneousModelData(
-                tag=viewTag,
+                tag=view_tag,
                 step=step + 1,  # steps must start at 1...
                 modelName=model,
                 dataType="ElementData",
-                tags=elemTags,
-                data=fieldData[step, :],
-                time=timeVal,
+                tags=elem_tags,
+                data=field_data[step, :],
+                time=time_val,
             )
         # integrate:
-        gmsh.plugin.setNumber("Integrate", "View", gmsh.view.getIndex(viewTag))
-        integratedView = gmsh.plugin.run("Integrate")
-        _, _, integratedData = gmsh.view.getListData(integratedView)
+        gmsh.plugin.setNumber(
+            "Integrate", "View", gmsh.view.getIndex(view_tag)
+        )
+        integrate_view = gmsh.plugin.run("Integrate")
+        _, _, integrated_data = gmsh.view.getListData(integrate_view)
         # dataType is allways SP after integration
         # number of elements after integration should be 1
         # set original verbosity after integration
-        gmsh.option.setNumber("General.Verbosity", originVerbose)
+        gmsh.option.setNumber("General.Verbosity", origin_verbosity)
     except Exception as exce:
         gmsh.finalize()
         raise exce
-    if finGmsh:
+    if close_gmsh:
         gmsh.finalize()
     # only return data values (skip SP coordinates)
-    data: npt.NDArray[np.float64] = integratedData[0][3:]
+    data: npt.NDArray[np.float64] = integrated_data[0][3:]
     return data
 
 
-def writeSimple(
-    fName, time: List[float], data: Union[np.ndarray, List]
+def write_simple(
+    filename: Union[str, os.PathLike],
+    time: List[float],
+    data: Union[np.ndarray, List],
 ) -> None:
     """_summary_
-
+    TODO
     Args:
         fName (os.PathLike): File name to existing folder.
         time (List[float]): Time vector.
         data (Union[np.ndarray, List]): Data vector or matrix.
     """
-    nbrTimeSteps = len(time)
+    nbr_timesteps = len(time)
     if isinstance(data, np.ndarray):
-        assert np.any(np.equal(data.shape, nbrTimeSteps))
+        assert np.any(np.equal(data.shape, nbr_timesteps))
     elif isinstance(data, list):
-        assert len(data) == nbrTimeSteps
+        assert len(data) == nbr_timesteps
     else:
         raise TypeError(
             f"Data type was not numpy.ndarray or list, but {type(data)}."
         )
-        raise TypeError(
-            f"Data type was not numpy.ndarray or list, but {type(data)}."
-        )
-    with open(fName, "w", encoding="utf-8") as resFile:
-        for varStep in range(nbrTimeSteps):
+    with open(filename, "w", encoding="utf-8") as resFile:
+        for varStep in range(nbr_timesteps):
             resFile.write(f"{time[varStep]} {data[varStep]}\n")
 
 

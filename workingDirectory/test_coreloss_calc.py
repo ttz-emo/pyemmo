@@ -1,4 +1,5 @@
 """Module to test the core loss calculation functions"""
+
 # %% imports
 # import gmsh
 import os
@@ -13,17 +14,18 @@ from matplotlib import pyplot as plt
 # from pyemmo.definitions import ROOT_DIR
 from pyemmo.functions import calcIronLoss
 from pyemmo.functions import importResults
+from pyemmo.definitions import TEST_DIR
 
 TIME_DOMAIN = True
 FREQ_DOMAIN = False
 loss_factors = {"hyst": 172.04, "eddy": 1.047, "exc": 0.0}
 # resDir = r"C:\TEMP\res_Id=0_Iq=0_1000rpm"
-RES_DIR = r"C:\temp"
+RES_DIR = os.path.join(TEST_DIR, "data", "core_loss")
 AX_LEN = 0.05
 SYM = 4
 
 # resDir = r"C:\Users\ganser\Documents\PyEMMO\Austausch Siemens\230321_DebugEis
-#enverlusteReluktanz\Results\res__1PH8138_7xD0_Reluktanz_182Steps"
+# enverlusteReluktanz\Results\res__1PH8138_7xD0_Reluktanz_182Steps"
 # lossParams = {"hyst": 165.9694, "eddy": 1.0529, "exc": 0.0}
 # axLen = 0.31
 # symFactor = 4
@@ -34,7 +36,7 @@ if FREQ_DOMAIN:
     for side in ("rotor", "stator"):
         print(f"run freq. domain iron loss calculation for {side}")
         tstart = clockTime.time()
-        lossesFreq[side], freqs = calcIronLoss.calcFreqDomainIronLosses(
+        lossesFreq[side], freqs = calcIronLoss.calc_freq_domain_core_loss(
             os.path.join(RES_DIR, f"b_{side}.pos"), loss_factors, SYM, AX_LEN
         )
         print(
@@ -58,7 +60,7 @@ if FREQ_DOMAIN:
 if TIME_DOMAIN:
     # run time domain iron loss calculation
     losses = {}
-    for side in ["rotor"]:#, "stator"]:
+    for side in ["rotor", "stator"]:
         print(f"run time domain iron loss calculation for {side}")
         tstart = clockTime.time()
         losses[side], time = calcIronLoss.calc_time_domain_core_loss(
@@ -119,6 +121,8 @@ if os.path.isfile(lossGetdpFile):
         "\nOnelab eddy current loss results:\n"
         f"{'Eddy Current:':<14} {np.mean(eddyLossOnelab) : 8.3f} W"
     )
+else:
+    eddyLossOnelab = None
 
 # %%
 # Do some plots...
@@ -141,20 +145,21 @@ if TIME_DOMAIN:
     fig, ax = plt.subplots()
     # fig.suptitle("")
     ax.plot(
-        time[:-1],
+        time,
         losses["rotor"]["eddy"] + losses["stator"]["eddy"],
         label="time domain",
     )
-    PvEddyFreqSum = np.sum(
-        lossesFreq["rotor"]["eddy"] + lossesFreq["stator"]["eddy"]
+    PvEddySum = np.sum(
+        losses["rotor"]["eddy"] + losses["stator"]["eddy"]
     )
-    ax.plot(
-        [time[0], time[-1]],
-        [PvEddyFreqSum, PvEddyFreqSum],
-        label="freq. domain",
-    )
-    ax.plot(time[1:], eddyLossOnelab[1:], label="GetDP (direct)")
-    ax.set_xlabel("time in s")
-    ax.set_ylabel("Eddy current losses in W")
-    ax.legend()
+    # ax.plot(
+    #     [time[0], time[-1]],
+    #     [PvEddySum, PvEddySum],
+    #     label="freq. domain",
+    # )
+    if eddyLossOnelab:
+        ax.plot(time[1:], eddyLossOnelab[1:], label="GetDP (direct)")
+        ax.set_xlabel("time in s")
+        ax.set_ylabel("Eddy current losses in W")
+        ax.legend()
 # %%

@@ -509,7 +509,7 @@ def runCalcforCurrent(param: dict):
                         simulation_res_dir,
                         str(loss_type) + f"Loss_{side}" + ".dat",
                     )
-                    calcIronLoss.writeSimple(
+                    calcIronLoss.write_simple(
                         core_loss_res_file, time, loss_data
                     )
                     # with open(ironLossResFile, mode="w+", encoding="utf-8") as file:

@@ -8,7 +8,7 @@ import tkinter as tk
 from tkinter import filedialog
 
 from pyemmo.definitions import ROOT_DIR
-from pyemmo.functions.calcIronLoss import writeSimple
+from pyemmo.functions.calcIronLoss import write_simple
 
 viewPos = [2, 3, 4, 5]
 
@@ -55,7 +55,7 @@ def intAndPlot(viewTag, symFactor, axLen, time, filePath, plotName: str):
 
     # save integral data as .dat file
     # gmsh.view.write(P_hystView, pFilePath)
-    writeSimple(filePath, time, intData[3:])  # skip point coordinates in export
+    write_simple(filePath, time, intData[3:])  # skip point coordinates in export
     # had to write new function here because gmsh newer version .dat format does not match
     # the old getdp format for import with matlab
     return intViewTag, intData
@@ -594,7 +594,7 @@ def ironLossInteractive(
 
     # save integral data as .dat file
     pFilePath = os.path.join(resDir, f"p_hyst_freq_{machineSide}.dat")
-    writeSimple(pFilePath, [0], PHystFreq[3:])  # skip point coordinates in export
+    write_simple(pFilePath, [0], PHystFreq[3:])  # skip point coordinates in export
 
     # %% Calculate EDDY CURRENT LOSSES ---------------------------------------------------
     print("Calculating eddy current losses...")
@@ -677,7 +677,7 @@ def ironLossInteractive(
 
     # save integral values to file
     pFilePath = os.path.join(resDir, f"p_eddy_{machineSide}.dat")
-    writeSimple(pFilePath, time, P_eddyData[3:])
+    write_simple(pFilePath, time, P_eddyData[3:])
 
     # %% Calculate EXCESS LOSS ---------------------------------------------------
     ke = lossParams[2]  # factor was 0 in model... used greater value for testing
@@ -728,7 +728,7 @@ def ironLossInteractive(
 
         # save integral values to file
         pFilePath = os.path.join(resDir, f"P_exc_{machineSide}.dat")
-        writeSimple(pFilePath, time, P_excData[3:])
+        write_simple(pFilePath, time, P_excData[3:])
     else:
         pe = np.zeros(ph.shape)
         P_excData = np.zeros(P_HystData.shape)
@@ -776,7 +776,7 @@ def ironLossInteractive(
     gmsh.view.option.setNumber(viewPsum, "AutoPosition", 5)  # 5: bottom right
 
     pFilePath = os.path.join(resDir, "p_total.dat")
-    writeSimple(pFilePath, time, Ptotal[3:])
+    write_simple(pFilePath, time, Ptotal[3:])
 
     tend = clockTime.time()
     # print(f"\nTotal iron loss calculation and plotting took {tend-tstart} seconds.\n")
