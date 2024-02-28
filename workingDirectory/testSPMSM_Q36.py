@@ -1,4 +1,5 @@
 """Test module for spmsm toolkit machine model"""
+
 # %%
 import os
 from os import mkdir, path
@@ -268,15 +269,22 @@ print("I am done!")
 
 
 # %%
-from pyemmo.functions.importResults import getResFileList, readTimeTableDat
+from pyemmo.functions.importResults import (
+    getResFileList,
+    readTimeTableDat,
+    importSP,
+)
 from SciDataTool import DataTime, Data1D
-resPath = 'C:/Users/ganser/AppData/Local/Programs/pyemmo/Results/Baukasten/Test_SPMSM/res_Test_SPMSM_Baukasten'
+
+resPath = (
+    myScript.resultsPath
+)  # 'C:/Users/ganser/AppData/Local/Programs/pyemmo/Results/Baukasten/Test_SPMSM/res_Test_SPMSM_Baukasten'
 
 resultsList: list[DataTime] = []
 try:
     datFiles, posFiles = getResFileList(resPath)
     for datFile in datFiles:
-        time, data = readTimeTableDat(os.path.join(resPath ,datFile))
+        time, data = readTimeTableDat(os.path.join(resPath, datFile))
         _, datFileName = os.path.split(datFile)
         resQuantity, _ = os.path.splitext(datFileName)
         timeData = Data1D(
@@ -288,3 +296,11 @@ except FileNotFoundError:
     print("No results from GetDP...")
 except Exception as exce:
     raise exce
+
+# %%
+from SciDataTool.Functions.Plot.plot_2D import plot_2D
+import matplotlib.pyplot as plt
+
+plt.plot(resultsList[00].values, resultsList[00].axes[0].values)
+plt.show()
+print("ENDE")

@@ -1,3 +1,25 @@
+"""
+Module to translate winding data from Pyleecan to Pyemmo.
+
+This module provides functions to translate winding data from Pyleecan, an open-source Python library for the design and optimization of electrical machines, to Pyemmo, a library for electromagnetic modeling and simulation developed by Swat-EM.
+
+Functions:
+    translate_winding(machine: Machine) -> Tuple[swatem.datamodel, List[Union[List[Union[List[int], List[int]]], List[Union[List[int], List[int]]], List[Union[List[int], List[int]]]]]]: Translates the winding from Pyleecan to Pyemmo format.
+
+    The `translate_winding` function takes a Pyleecan `Machine` object as input and returns a tuple containing the translated winding data model and the winding connections in the SWATEM format.
+
+    Args:
+        machine (Machine): A Pyleecan machine object containing the winding information.
+
+    Returns:
+        tuple[swatem.datamodel, list[Union[list[Union[list[int], list[int]]], list[Union[list[int], list[int]]], list[Union[list[int], list[int]]]]]]: A tuple containing the translated winding data model and the winding connections in the SWATEM format.
+
+    Note:
+        The winding translation process involves generating a winding data model using the Pyemmo `datamodel` class, extracting winding information from the Pyleecan machine object, and formatting it according to the SWATEM conventions.
+
+        TODO: Perhaps return only the data model object and call the `get_phases()` function directly in `createParamDict`.
+"""
+
 from typing import Union
 from pyleecan.Classes.Machine import Machine
 import swat_em as swatem
@@ -15,16 +37,23 @@ def translate_winding(
         ]
     ],
 ]:
-    """Translates the winding from pyleecan to pyemmo.
+    """
+    Translates the winding from Pyleecan to PyEMMO.
 
-        TODO: Vielleicht hier nur das datamodel Objekt zurückgeben und dann
-                einfach direkt in createParamDict die Funktion get_phases()
-                aufrufen.
     Args:
-        machine (Machine): Pyleecan machine
+        machine (Machine): The Pyleecan machine.
 
     Returns:
-        list[ Union[ list[Union[list[int], list[int]]], list[Union[list[int], list[int]]], list[Union[list[int], list[int]]], ] ]: ``windSwat``
+        tuple: A tuple containing the following elements:
+            - swatem.datamodel: The data model representing the winding.
+            - list: A list containing information about the winding in the following format:
+                - List of lists representing the winding layout for each phase. Each inner list contains:
+                    - List of integers: Positive integers representing active slots.
+                    - List of integers: Negative integers representing inactive slots.
+
+    Notes:
+        - TODO: It might be possible to only return the data model object and then call the 'get_phases()' function directly in 'createParamDict'.
+
     """
     winding = swatem.datamodel()
 

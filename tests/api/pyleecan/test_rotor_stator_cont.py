@@ -112,7 +112,7 @@ def get_cont(get_rotor_cont_function, machine_file):
 
             # asserts for l_point_rotor_cont
             assert math.isclose(
-                result[2].coordinate[0], 2.486033002269127e-18, abs_tol=1e-6
+                result[2].coordinate[0], 2.486033002269127e-18, abs_tol=1e-18
             )
             assert math.isclose(result[2].coordinate[1], 0.0406, abs_tol=1e-6)
             assert math.isclose(result[2].coordinate[2], 0, abs_tol=1e-6)

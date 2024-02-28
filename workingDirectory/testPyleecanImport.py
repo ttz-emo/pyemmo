@@ -10,7 +10,7 @@ from pyleecan.Classes.Simulation import Simulation
 from pyleecan.Classes.Simu1 import Simu1
 from pyleecan.Classes.InputCurrent import InputCurrent
 from pyleecan.Classes.OPdq import OPdq
-from pyleecan.Classes.Machine import Machine
+from pyleecan.Classes.Machine import Machine as PyleecanMachine
 from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
 from pyleecan.Classes.MachineSyRM import MachineSyRM
@@ -35,7 +35,7 @@ logging.getLogger().setLevel(logging.INFO)
 # machine folder pyemmo
 machineFolder = os.path.join(ROOT_DIR, "workingDirectory/machineData")
 # machine folder pyleecan:
-machineFolder = os.path.join(DATA_DIR, "Machine")
+# machineFolder = os.path.join(DATA_DIR, "Machine")
 resFolder = os.path.join(ROOT_DIR, r"Results\pyleecanAPI")
 if not os.path.isdir(resFolder):
     os.makedirs(resFolder)

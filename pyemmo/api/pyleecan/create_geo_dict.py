@@ -1,4 +1,15 @@
-"""imports"""
+"""
+translate_geo Module
+
+This module provides functions to translate the geometry of a machine from Pyleecan to pyemmo format.
+
+Functions:
+- create_geo_dict: Translates the machine geometry into a format suitable for communication with pyemmo.
+
+Classes:
+None
+
+"""
 
 from typing import List, Union
 
@@ -34,19 +45,25 @@ def create_geo_dict(
     Point,
     dict,
 ]:
-    """_summary_
+    """
+    Creates a dictionary containing geometry information for communication between Pyleecan and pyemmo.
+
+    This function translates the machine geometry into a format suitable for communication with pyemmo.
+    It generates geometry objects, contour lines, and magnetization dictionaries for the machine.
 
     Args:
-        machine (Machine): _description_
-        is_internal_rotor (bool): _description_
-
-    Raises:
-        TypeError: _description_
+        machine (Machine): The machine object to translate into pyemmo-compatible geometry.
+        is_internal_rotor (bool): True if the rotor is internal, False otherwise.
 
     Returns:
-        tuple[ list[SurfaceAPI], list[Union[Line, CircleArc]], list[Union[Line, CircleArc]], Point, Point, dict, ]: _description_
+        tuple: A tuple containing:
+            - list[SurfaceAPI]: List of geometry surfaces.
+            - list[Union[Line, CircleArc]]: List of rotor contour lines.
+            - list[Union[Line, CircleArc]]: List of stator contour lines.
+            - Point: Rightmost point of the rotor contour.
+            - Point: Leftmost point of the rotor contour.
+            - dict: Dictionary containing magnetization information.
     """
-
     all_surfaces: list = machine.rotor.build_geometry(
         sym=machine.rotor.comp_periodicity_geo()[0], alpha=0
     )

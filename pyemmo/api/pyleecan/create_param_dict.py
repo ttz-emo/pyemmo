@@ -15,19 +15,26 @@ def create_param_dict(
     mb_radius: float,
     magnetization_dict: dict,
 ) -> dict[str, any]:
-    """This function builds a dictionary for communication between pyleecan and pyemmo.
+    """
+    Builds a dictionary for communication between PYLEECAN, PyEMMO and ONELAB.
+
+    This function constructs a dictionary containing various parameters related
+    to the Pyleecan machine and simulation, which are necessary for communication
+    with the pyemmo module. The dictionary is needed for setting the simulation
+    parameters in ONELAB.
 
     Args:
-        machine (Machine): machine in pyleecan format
-        pyleecanSimulation (Simulation): simulation parameter in pyleecan format
-        movingband_r (float): radius of the movingBand 
-        magnetizationDict (dict): dictionary which contains the magnet with corresponding magnetizationangle
+        machine (Machine): The machine in Pyleecan format.
+        pyleecan_simulation (Simulation): The simulation parameter in Pyleecan format.
+        mb_radius (float): The radius of the moving band.
+        magnetization_dict (dict): A dictionary containing the magnet with corresponding magnetization angle.
 
     Raises:
-        RuntimeError: _description_
+        RuntimeError: Raised when encountering errors during execution.
+        ValueError: Raised when the magnetization type is not 0, 1 or 3
 
     Returns:
-        dict[str, any]: _description_
+        dict[str, any]: A dictionary containing the parameters for communication with pyemmo and ONELAB.
     """
     # The following part of the function tests if 'Id_ref' and 'Iq_ref' are having values
     # and if so their values will directly be set in the dictionary under 'Id' and 'Iq'.
@@ -72,6 +79,7 @@ def create_param_dict(
 
     else:  # If rotor doesn't have magnets, pyemmoMagType = None
         pyemmo_mag_type = None
+        pyemmo_mag_type = None
 
     if lam_with_mag:
         if isinstance(
@@ -83,9 +91,12 @@ def create_param_dict(
                 # The magnetization Type for all magnets in the machine will be set
                 # in the same Type as the firt magnet in the list.
 
-                pyemmo_mag_type = lam_with_mag.hole[0].magnet_0.type_magnetization
+                pyemmo_mag_type = lam_with_mag.hole[
+                    0
+                ].magnet_0.type_magnetization
 
             else:  # If lamWithMag has only one magnet
+                pyemmo_mag_type = lam_with_mag.hole.magnet_0.type_magnetization
                 pyemmo_mag_type = lam_with_mag.hole.magnet_0.type_magnetization
 
         elif isinstance(
@@ -97,9 +108,12 @@ def create_param_dict(
                 # The magnetization Type for all magnets in the machine will be set
                 # in the same Type as the firt magnet in the list.
 
-                pyemmo_mag_type = lam_with_mag.slot[0].magnet_0.type_magnetization
+                pyemmo_mag_type = lam_with_mag.slot[
+                    0
+                ].magnet_0.type_magnetization
 
             else:  # If rotor has only one magnet
+                pyemmo_mag_type = lam_with_mag.magnet.type_magnetization
                 pyemmo_mag_type = lam_with_mag.magnet.type_magnetization
 
         else:
@@ -114,7 +128,6 @@ def create_param_dict(
     elif pyemmo_mag_type == 3:
         pyemmo_mag_type = "tangential"
 
-
     sym_factor = machine.comp_periodicity_spatial()
     if sym_factor[1]:
         sym_factor = sym_factor[0] * 2
@@ -122,8 +135,8 @@ def create_param_dict(
         sym_factor = sym_factor[0]
     logger.debug("Symmetry factor machine: %s", {sym_factor})
     swatem_winding, wind_layout = translate_winding(machine)
-    sym_winding = swatem_winding.get_periodicity_t()*2
-    logger.debug("Symmetry factor winding: %s",{sym_winding})
+    sym_winding = swatem_winding.get_periodicity_t() * 2
+    logger.debug("Symmetry factor winding: %s", {sym_winding})
     sym_factor = min(sym_winding, sym_factor)
 
     speed_rpm = pyleecan_simulation.input.OP.N0

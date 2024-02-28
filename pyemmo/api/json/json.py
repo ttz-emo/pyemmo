@@ -434,12 +434,8 @@ def main(
 
     # generate the machine geometry
     machine, machineSurfDict = createMachine(segmentSurfDict, extendedInfo)
-
-    # set function mesh
-    if "useFunctionMesh" in extendedInfo.keys():
-        if extendedInfo["useFunctionMesh"]:
-            machine.setFunctionMesh("linear", meshGainFactor=20)
-
+    # set function mesh size
+    # machine
     # get the simulation pareameters
     simulationParameters = importJSON.getSimuParams(extendedInfo=extendedInfo)
     logger.info("Generating the Script object in JSON API.")

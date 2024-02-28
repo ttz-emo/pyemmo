@@ -1,3 +1,5 @@
+"""Module: wind_contour_calculation"""
+
 import math
 from typing import Union
 
@@ -21,22 +23,31 @@ def calc_wind_contour(
         TODO: Filterung der Konturlinien anpassen. Wicklungskontur(en) von der
         Innenkontur der Statorblechs abziehen. Die Interface-Linie zwischen Nutschlitz
         und Wicklung ist diejenige Linie, die nicht in der Wicklungs- UND Statorkontur
-        vorkommt. 
+        vorkommt.
 
     Args:
-        geometryList (list): List with all surfaces of the machine (Pyemmo format)
-        statorRint (float): Inner radius of stator
-        statorRext (float): Outer radius of stator
+        geometry_list (list): A list of geometry elements.
+        stator_rint (float): The inner radius of the stator.
+        stator_rext (float): The outer radius of the stator.
 
     Returns:
-        list[Union[Line, CircleArc]]: list of the stator contour lines
+        list[Union[Line, CircleArc]]: A list of wind contour lines for the stator.
+
+    Notes:
+        - The wind contour lines are calculated based on the provided geometry list
+          and stator inner and outer radii.
+        - The wind contour lines are plotted for visualization.
     """
     stator_cont_line_list: list[Union[Line, CircleArc]] = []
     stator_lam_surf_list = get_stator_surfs(geometry_list=geometry_list)
 
-    # -----------------------------------------------------------
-    # Fügt Linien die an der Oberfläche liegen hinzu:
-    # -----------------------------------------------------------
+    # ==================================================
+    # Creation of the rotor contour line for MovingBand:
+    # ==================================================
+
+    # --------------------------------------------------------------------------
+    # Filtering out the lines that do not lie on the surface facing the air gap:
+    # --------------------------------------------------------------------------
     for curve in stator_lam_surf_list[0].curve:
         # if one point is on rInt (airgap) and none of the curve points
         # is on rExt (outer radius)
@@ -50,7 +61,7 @@ def calc_wind_contour(
                 a=curve.endPoint.radius,
                 b=stator_rint,
                 abs_tol=1e-6,
-            ) 
+            )
         ) and (
             not math.isclose(
                 a=curve.endPoint.radius,

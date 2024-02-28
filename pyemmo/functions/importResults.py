@@ -1,4 +1,5 @@
 """Module to import simulation results from GetDP (Onelab)"""
+
 import os
 from os import path
 from cmath import isclose
@@ -263,9 +264,9 @@ def importPos(
 
     Returns:
         Tuple[np.ndarray, List[float], np.ndarray]:
-            - gmsh mesh element tags
-            - time
-            - data array
+            * gmsh mesh element tags
+            * time
+            * data array
     """
     # check file extension
     _, filename = path.split(posFile)

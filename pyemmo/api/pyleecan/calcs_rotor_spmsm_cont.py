@@ -1,8 +1,10 @@
+"""Module: spmsm_rotor_contour_calculation"""
+
 import math
 import copy
 from typing import Union
 
-from pyleecan.Classes.Machine import Machine
+from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 
 from ..json.SurfaceJSON import SurfaceAPI
 from ...script.geometry.point import Point
@@ -13,7 +15,7 @@ from .. import logger
 
 
 def general_calc_spmsm_cont(
-    machine: Machine,
+    machine: MachineSIPMSM,
     rotor_lam_surf_list: list[SurfaceAPI],
     rotor_mag_surf_list: list[SurfaceAPI],
     radius: float,
@@ -24,13 +26,16 @@ def general_calc_spmsm_cont(
     * Detecting the outer points of the rotor contour facing the air gap
 
     Args:
-        machine (Machine): Pyleecan machine
+        machine (MachineSIPMSM): Pyleecan machine
         rotorLamSurfList (list[SurfaceAPI]): List of the pyemmo-surfaces of the rotor
-        radius (float): Internal Rotor -> ``rotorRint`` | External Rotor -> ``rotorRext``
+        radius (float): Internal Rotor -> ``rotor_rint`` | External Rotor -> ``rotor_rext``
         is_internal_rotor (bool): Internal or external rotor
 
     Returns:
-        tuple[list[Union[Line, CircleArc]], Point, Point]: _description_
+        Tuple[List[Union[Line, CircleArc]], Point, Point]: A tuple containing:
+            - A list of contour lines for the SPMSM rotor.
+            - The right point of the rotor contour.
+            - The left point of the rotor contour.
     """
     rotor_cont_line_list = []
     # --------------------------------------------
@@ -123,28 +128,40 @@ def general_calc_spmsm_cont(
 
 
 def calc_spmsm_rotor_cont(
-    machine: Machine,
+    machine: MachineSIPMSM,
     rotor_lam_surf_list: list,
     rotor_mag_surf_list: list,
     radius: float,
     is_internal_rotor: bool,
 ) -> tuple[list, Point, Point]:
-    """_summary_
+    """
+    Calculates the contour lines for the surface permanent magnet synchronous machine (SPMSM) rotor.
+
+    This function calculates the contour lines for the SPMSM rotor based on
+    the provided machine, rotor lamination surface list, rotor magnet surface list,
+    radius, and whether the rotor is internal or external.
 
     Args:
-        machine (Machine): _description_
-        rotorLamSurfList (list): _description_
-        rotorMagSurfList (list): _description_
-        radius (float): _description_
-        isInternalRotor (bool): _description_
+        machine (MachineSIPMSM): The PYLEECAN SPMSM machine.
+        rotor_lam_surf_list (List[Surface]): A list of rotor lamination surfaces.
+        rotor_mag_surf_list (List[Surface]): A list of rotor magnet surfaces.
+        radius (float): The radius of the rotor.
+        is_internal_rotor (bool): Whether the rotor is internal or external.
 
     Returns:
-        tuple[list, list, Point]: _description_
+        tuple[List, Point, Point]: A tuple containing:
+            - A list of contour lines for the SPMSM rotor.
+            - The right point of the rotor contour.
+            - The left point of the rotor contour.
+
+    Notes:
+        - The contour lines are calculated based on the provided machine, rotor lamination
+          surface list, rotor magnet surface list, radius, and whether the rotor is internal or external.
+        - Duplicate lines or circle arcs are filtered out based on the intersection points between
+          rotor lamination and magnet surfaces.
+        - The contour lines are plotted for visualization.
     """
 
-    # =================================================
-    # Erstellung der Rotor-Konturlinie fuer MovingBand:
-    # =================================================
     (
         rotor_cont_line_list,
         r_point_rotor_cont,

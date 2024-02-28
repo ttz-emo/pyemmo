@@ -1,16 +1,26 @@
-"""imports"""
+"""Module: pyemmo_material_conversion"""
+
 from pyleecan.Classes.Material import Material as pyleecanMat
 from ...script.material.material import Material
 
 
 def build_pyemmo_material(pyleecan_material: pyleecanMat) -> Material:
-    """Translates a pyleecan-material into a pyemmo-material.
+    """Translates a pyleecan material into a pyemmo material.
+
+    This function translates a pyleecan material into a pyemmo material.
 
     Args:
-        pyleecanMaterial (pyleecanMat): Material in pyleecan format
+        pyleecan_material (pyleecanMat): The pyleecan material to be translated.
 
     Returns:
-        Material: Translated material in pyemmo format
+        Material: The translated pyemmo material.
+
+    Notes:
+        - Conductivity, relPermeability, remanence, tempCoefRem, BH, and density
+          are extracted from the pyleecan material to construct the pyemmo material.
+        - If any attribute is missing from the pyleecan material, it is set to None
+          in the pyemmo material.
+
     """
     try:
         conductivity = pyleecan_material.elec.rho

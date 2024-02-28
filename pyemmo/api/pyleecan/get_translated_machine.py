@@ -1,3 +1,19 @@
+"""
+Moving Band Builder Module
+
+This module provides functions for building moving bands at the rotor and stator side of an electric machine.
+
+Functions:
+- build_bands_rotor: Builds the air gap segments at the rotor side.
+- build_bands_stator: Builds the air gap segments at the stator side.
+- calcs_radii: Calculates the magnet radii and the distance between rotor/magnet and stator inner radius.
+- get_translated_machine: Translates the geometry and creates rotor and stator contours.
+
+Classes:
+None
+
+"""
+
 import math
 
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
@@ -22,20 +38,18 @@ def build_bands_rotor(
     l_point_rotor_cont: Point,
     rotor_cont_line_list: list,
 ) -> tuple[SurfaceAPI, SurfaceAPI, float]:
-    """Builds the air gap segments at the rotor side.
+    """
+    Builds the air gap segments at the rotor side.
 
     Args:
-        bandRadiusList (list): List with the radii of the bands
-        centerPoint (Point): Center point of machine
-        lowestYPointRotor (Point):
-        biggestYPointRotor (Point): _description_
-        rotorSymAngle (float): _description_
-        rotorContourLineList (list): _description_
-        nbrRotorSeg (int): _description_
-        angleRotor (float): _description_
+        machine (Machine): Pyleecan machine.
+        band_radius_list (list): List with the radii of the bands.
+        r_point_rotor_cont (Point): Rightmost point of rotor contour.
+        l_point_rotor_cont (Point): Leftmost point of rotor contour.
+        rotor_cont_line_list (list): List of rotor contour lines.
 
     Returns:
-        tuple[SurfaceAPI, SurfaceAPI, float]: _description_
+        tuple[SurfaceAPI, SurfaceAPI, float]: Tuple containing two air gap surfaces and the radius of the moving band.
     """
     nbr_rotor_seg = machine.rotor.comp_periodicity_geo()[0]
     angle_rotor = 2 * math.pi / nbr_rotor_seg  # [rad]
@@ -173,18 +187,16 @@ def build_bands_stator(
     stator_cont_line_list: list,
     band_radius_list: list,
 ) -> tuple[SurfaceAPI, SurfaceAPI]:
-    """_summary_
+    """
+    Builds the air gap segments at the stator side.
 
     Args:
-        statorContourLineList (list): _description_
-        bandRadiusList (list): _description_
-        statorSymAngle (float): _description_
-        centerPoint (Point): _description_
-        nbrStatorSeg (int): _description_
-        angleStator (float): _description_
+        machine (Machine): Pyleecan machine.
+        stator_cont_line_list (list): List of stator contour lines.
+        band_radius_list (list): List with the radii of the bands.
 
     Returns:
-        tuple[SurfaceAPI, SurfaceAPI]: _description_
+        tuple[SurfaceAPI, SurfaceAPI]: Tuple containing two air gap surfaces at the stator side.
     """
     nbr_stator_seg = machine.stator.slot.Zs
     angle_stator = 2 * math.pi / nbr_stator_seg  # [rad]
@@ -327,11 +339,11 @@ def calcs_radii(
     inner radius
 
     Args:
-        machine (Machine): Pyleecan machine
-        is_internal_rotor (bool): Is rotor internal or not
+        machine (Machine): Pyleecan machine.
+        is_internal_rotor (bool): Indicates whether the rotor is internal or not.
 
     Returns:
-        tuple[float, float]: Gives back the
+        tuple[float, float]: Tuple containing the distance between rotor/magnet and stator inner radius, and the maximum radius.
     """
 
     rotor_rint = machine.rotor.Rint
@@ -385,13 +397,13 @@ def get_translated_machine(
     """_summary_
 
     Args:
-        machine (Machine): _description_
+        machine (Machine): Pyleecan machine.
 
     Raises:
-        RuntimeError: _description_
+        RuntimeError: If a surface ID is already present in the geometry dictionary.
 
     Returns:
-        tuple[list, list[SurfaceAPI], float]: _description_
+        tuple[list, list[SurfaceAPI], float]: Tuple containing lists of all bands, geometry list, and moving band radius.
     """
     is_internal_rotor = machine.rotor.is_internal
     diff_radius, max_radius = calcs_radii(

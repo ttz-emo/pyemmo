@@ -1,4 +1,4 @@
-"""imports"""
+"""Module: pyemmo_geometry_conversion"""
 
 from typing import Union
 
@@ -15,15 +15,21 @@ from .build_pyemmo_point import build_pyemmo_point
 def build_pyemmo_line_list(
     pyleecan_line_list: list[Union[Segment, Arc1, Arc2, Arc3]],
 ) -> list[Union[Line, CircleArc]]:
-    """Translates the line list (Segment, Arc1, Arc2, Arc3) of a pyleecan-surface
-    into line list (Line, CircleArc) of the pyemmo-surface.
+    """Translates a list of pyleecan curves into a list of pyemmo curves.
+
+    This function translates a list of pyleecan curves (Segment, Arc1, Arc2, Arc3)
+    into a list of pyemmo curves (Line, CircleArc).
 
     Args:
-        pyleecanLineList (list[Union[Segment, Arc1, Arc2, Arc3]]): List of curves of
-        the pyleecan-surface
+        pyleecan_line_list (list[Union[Segment, Arc1, Arc2, Arc3]]): A list of curves
+            from a pyleecan-surface.
 
     Returns:
-        list[Union[Line, CircleArc]]: List of curves of the surface
+        list[Union[Line, CircleArc]]: A list of curves for the pyemmo-surface.
+
+    Raises:
+        TypeError: If pyleecan_line_list is not of type 'list'.
+        IndexError: If pyleecan_line_list is empty.
     """
     pyemmo_line_list = []
 
