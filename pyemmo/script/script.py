@@ -1111,7 +1111,7 @@ class Script(object):
         # append domain for lamination
         laminationDomainID = "domainLam"
         laminationDomain = Domain(
-            "DomainLam",
+            "Domain_Lam",
             rotorPhysicalsDict[laminationDomainID]
             + statorPhysicalsDict[laminationDomainID],
         )

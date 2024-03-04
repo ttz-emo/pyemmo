@@ -84,9 +84,9 @@ def runCalcforCurrent(stromdq):
         try:
             ironLoss, _ = calcIronLoss.main(
                 bFilePath,
-                lossFactor={"hyst": 172.04, "eddy": 1.05, "exc": 0},
-                symFactor=4,
-                axialLength=0.05,
+                loss_factor={"hyst": 172.04, "eddy": 1.05, "exc": 0},
+                sym_factor=4,
+                axial_length=0.05,
             )
             for _, lossVals in ironLoss.items():
                 totalLoss += lossVals.mean()

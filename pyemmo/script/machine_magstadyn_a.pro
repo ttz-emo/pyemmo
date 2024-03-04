@@ -703,7 +703,7 @@ Formulation {
 
       // Uncomment here if the eddy-current reaction field should be taken into account
       // If (Flag_Lam)
-      //     Galerkin { DtDof [ Fac_Lam[] * Dof{d a} , {d a} ] ; In DomainLam ; Jacobian Vol ; Integration I1 ; }
+      //     Galerkin { DtDof [ Fac_Lam[] * Dof{d a} , {d a} ] ; In Domain_Lam ; Jacobian Vol ; Integration I1 ; }
       // EndIf
 
       Galerkin { [ -NbWires[]/SurfCoil[] * Dof{ir} , {a} ] ;
@@ -1079,8 +1079,8 @@ PostProcessing {
       { Name I_n ; Value { Term { [ CompZ[js[]] * SurfaceArea[] / NbWires[]  ]; In DomainS ; Jacobian Vol ; } } } // Shows the actual current in the specified coil region [A]
       { Name ir ; Value { Term { [ {ir} ] ; In Inds ; Jacobian Vol ; } } }
       // eddy currents in laminations:
-      { Name p_Lam ; Value { Term { [ 1/density[]*Fac_Lam[]*SquNorm[Dt[{d a}]] ] ; In DomainLam ; Jacobian Vol ; } } }
-      { Name P_Lam ; Value { Integral { [ SymmetryFactor*axialLength[]*Fac_Lam[]*SquNorm[Dt[{d a}]] ]; In DomainLam ; Jacobian Vol ; Integration I1 ; } } }
+      { Name p_Lam ; Value { Term { [ 1/density[]*Fac_Lam[]*SquNorm[Dt[{d a}]] ] ; In Domain_Lam ; Jacobian Vol ; } } }
+      { Name P_Lam ; Value { Integral { [ SymmetryFactor*axialLength[]*Fac_Lam[]*SquNorm[Dt[{d a}]] ]; In Domain_Lam ; Jacobian Vol ; Integration I1 ; } } }
       // Inertia
 	    { Name Inertia; Value { Integral { [ SymmetryFactor*SquNorm[XYZ[]]*density[]*axialLength[] ]; In Rotor; Jacobian Vol; Integration I1;}}}
       { 
@@ -1261,7 +1261,7 @@ PostOperation Get_LocalFields UsingPost MagStaDyn_a_2D {
   Echo[ Str["l=PostProcessing.NbViews-1;", "View[l].IntervalsType = 1;", "View[l].NbIso = 30;", "View[l].Light = 0;", "View[l].LineWidth = 2;"], File StrCat[ResDir,"tmp.geo"], LastTimeStepOnly] ;
   
   If (Flag_Lam)
-    Print[ p_Lam, OnElementsOf DomainLam, File StrCat[ResDir,"p_Lam.pos"], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps ] ;
+    Print[ p_Lam, OnElementsOf Domain_Lam, File StrCat[ResDir,"p_Lam.pos"], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps ] ;
   EndIf
   If (Flag_EC_Magnets)
     Print[ p_Joule, OnElementsOf Rotor_Magnets, File StrCat[ResDir,"p_EC_Mag.pos"], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps ] ;
@@ -1274,7 +1274,7 @@ PostOperation GetInertia UsingPost MagStaDyn_a_2D {
 }
 
 PostOperation PrintBFields UsingPost MagStaDyn_a_2D {
-    Print[ b,  OnElementsOf DomainLam, File StrCat[ResDir,"b_Iron",ExtGmsh]] ;
+    Print[ b,  OnElementsOf Domain_Lam, File StrCat[ResDir,"b_Iron",ExtGmsh]] ;
 }
 
 PostOperation GetInducedCurrentDensity UsingPost MagStaDyn_a_2D {
@@ -1319,7 +1319,7 @@ PostOperation GetShortCircuitCurrent UsingPost MagStaDyn_a_2D {
 
 PostOperation Get_GlobalQuantities UsingPost MagStaDyn_a_2D {
   If (Flag_Lam)
-    Print[ P_Lam[DomainLam], OnGlobal, Format TimeTable, LastTimeStepOnly,
+    Print[ P_Lam[Domain_Lam], OnGlobal, Format TimeTable, LastTimeStepOnly,
       File > StrCat[ResDir,Sprintf("Pec_Lam.dat")],
       SendToServer StrCat["Results/EDC/",  Sprintf("43stat lam. losses (W)")] ];
   EndIf

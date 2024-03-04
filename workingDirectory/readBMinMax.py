@@ -6,7 +6,7 @@ import sys, os
 from pyemmo.definitions import ROOT_DIR
 import numpy as np
 from matplotlib import pyplot as plt
-from pyemmo.functions.calcIronLoss import writeSimple
+from pyemmo.functions.calcIronLoss import write_simple
 
 #%%
 gmsh.initialize(sys.argv)
@@ -228,7 +228,7 @@ pFilePath = os.path.join(
     ROOT_DIR, "workingDirectory", "testPosImport", "res", "P_hyst.dat"
 )
 # gmsh.view.write(P_hystView, pFilePath)
-writeSimple(pFilePath, time, P_HystData[3:])  # skip point coordinates in export
+write_simple(pFilePath, time, P_HystData[3:])  # skip point coordinates in export
 
 
 #%% Calculate EDDY CURRENT LOSSES
@@ -357,7 +357,7 @@ gmsh.view.option.setNumber(viewPsum, "AutoPosition", 5) #5: bottom right
 pFilePath = os.path.join(
     ROOT_DIR, "workingDirectory", "testPosImport", "res", "P_tot.dat"
 )
-writeSimple(pFilePath, time, Ptotal[3:])
+write_simple(pFilePath, time, Ptotal[3:])
 
 #%%
 # get all model entitys (imported)

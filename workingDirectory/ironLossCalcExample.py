@@ -8,7 +8,7 @@ import tkinter as tk
 from tkinter import filedialog
 
 from pyemmo.definitions import ROOT_DIR
-from pyemmo.functions.calcIronLoss import writeSimple
+from pyemmo.functions.calcIronLoss import write_simple
 
 viewPos = [2, 3, 4, 5]
 
@@ -55,7 +55,7 @@ def intAndPlot(viewTag, symFactor, axLen, time, filePath, plotName: str):
 
     # save integral data as .dat file
     # gmsh.view.write(P_hystView, pFilePath)
-    writeSimple(filePath, time, intData[3:])  # skip point coordinates in export
+    write_simple(filePath, time, intData[3:])  # skip point coordinates in export
     # had to write new function here because gmsh newer version .dat format does not match
     # the old getdp format for import with matlab
     return intViewTag, intData
@@ -369,7 +369,7 @@ def ironLossInteractive(
     ax1.plot(time, bMeanFree[:, elemId, 1])
     ax1.set_xlabel("time in s")
     ax1.set_ylabel("B in T")
-    ax1.legend(["x","y"])
+    ax1.legend(["x", "y"])
     # ax1.set_title("B field in T")
     ax1.grid()
     ax2 = axes[1]
@@ -377,11 +377,10 @@ def ironLossInteractive(
     ax2.plot(time, Hirr[:, elemId, 1])
     ax2.set_xlabel("time in s")
     ax2.set_ylabel("H in A/m")
-    ax2.legend(["x","y"])
+    ax2.legend(["x", "y"])
     # ax2.set_title("$H_{\mathrm{irr}}$ in A/m")
     ax2.grid()
     fig.tight_layout()
-
 
     # Plot Ellipsis
     fig, ax = plt.subplots()
@@ -595,7 +594,7 @@ def ironLossInteractive(
 
     # save integral data as .dat file
     pFilePath = os.path.join(resDir, f"p_hyst_freq_{machineSide}.dat")
-    writeSimple(pFilePath, [0], PHystFreq[3:])  # skip point coordinates in export
+    write_simple(pFilePath, [0], PHystFreq[3:])  # skip point coordinates in export
 
     # %% Calculate EDDY CURRENT LOSSES ---------------------------------------------------
     print("Calculating eddy current losses...")
@@ -678,7 +677,7 @@ def ironLossInteractive(
 
     # save integral values to file
     pFilePath = os.path.join(resDir, f"p_eddy_{machineSide}.dat")
-    writeSimple(pFilePath, time, P_eddyData[3:])
+    write_simple(pFilePath, time, P_eddyData[3:])
 
     # %% Calculate EXCESS LOSS ---------------------------------------------------
     ke = lossParams[2]  # factor was 0 in model... used greater value for testing
@@ -729,13 +728,29 @@ def ironLossInteractive(
 
         # save integral values to file
         pFilePath = os.path.join(resDir, f"P_exc_{machineSide}.dat")
-        writeSimple(pFilePath, time, P_excData[3:])
+        write_simple(pFilePath, time, P_excData[3:])
     else:
         pe = np.zeros(ph.shape)
         P_excData = np.zeros(P_HystData.shape)
-    # %%
-    # Calc mean of all losses on elements ---------------------------------------------------
-    pTotal_mean = np.mean(ph + pc + pe, axis=0)
+    # %% Print sum of all losses
+    totalLossView = gmsh.view.add("Total Core Loss [W/m³]")  # get tag of new view
+    pCore = ph + pc + pe
+    for step in range(len(time) - 1):
+        # write every time step (except first, because derivative) to view
+        gmsh.view.addHomogeneousModelData(
+            tag=totalLossView,
+            step=step + 1,
+            modelName=model,
+            dataType="ElementData",
+            tags=btags,
+            data=pCore[step, :],
+            time=time[step],
+        )
+    # save new view data in pos file
+    pFilePath = os.path.join(resDir, f"p_core_{machineSide}.pos")
+    gmsh.view.write(totalLossView, pFilePath)
+    # %% Calc mean of all losses on elements ---------------------------------------------------
+    pTotal_mean = np.mean(pCore, axis=0)
     # Export mean data
     model = gmsh.model.getCurrent()  # or just get current model...
     pHystView = gmsh.view.add("Mean Total Loss [W/m³]")  # get tag of new view
@@ -761,7 +776,7 @@ def ironLossInteractive(
     gmsh.view.option.setNumber(viewPsum, "AutoPosition", 5)  # 5: bottom right
 
     pFilePath = os.path.join(resDir, "p_total.dat")
-    writeSimple(pFilePath, time, Ptotal[3:])
+    write_simple(pFilePath, time, Ptotal[3:])
 
     tend = clockTime.time()
     # print(f"\nTotal iron loss calculation and plotting took {tend-tstart} seconds.\n")
@@ -793,8 +808,8 @@ if __name__ == "__main__":
     # }
     RES_DIR = "C:/temp"
     elemId = {
-        "rotor": 1642,
-        "stator": 4573,
+        "rotor": 7767,
+        "stator": 18605,
     }
 
     # lossParams = (165.9694, 1.0529, 0)

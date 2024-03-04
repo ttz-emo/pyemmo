@@ -135,9 +135,9 @@ for iStrom, stromdq in enumerate(idq.transpose()):
         bFilePath = os.path.join(resDir, f"b_{side}.pos")
         ironLoss = calcIronLoss.main(
             bFilePath,
-            lossFactor={"hyst": 172, "eddy": 1, "exc": 0},
-            symFactor=4,
-            axialLength=0.05,
+            loss_factor={"hyst": 172, "eddy": 1, "exc": 0},
+            sym_factor=4,
+            axial_length=0.05,
         )
         # logging.debug("iron loss for simulation '%s' is:", resId)
         # (f"Iron losses for {resId} on {side} are: {ironLoss}")
