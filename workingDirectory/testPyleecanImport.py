@@ -22,7 +22,7 @@ from pyemmo.definitions import ROOT_DIR
 from pyemmo.api.pyleecan.get_translated_machine import get_translated_machine
 from pyemmo.api.pyleecan.create_pyleecan_simulation import create_simulation
 from pyemmo.api.pyleecan.create_param_dict import create_param_dict
-from pyemmo.api.pyleecan.main import main
+from pyemmo.api.pyleecan import main as pyleecanAPI
 
 # disable messages of matplotlib
 logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
@@ -83,7 +83,7 @@ pyleecan_machine: Machine = (
         os.path.abspath(os.path.join(machineFolder, fileName))
     )
 )
-main(
+pyleecanAPI.main(
     pyleecan_machine, model_dir=os.path.join(resFolder, pyleecan_machine.name)
 )
 

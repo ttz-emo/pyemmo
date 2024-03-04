@@ -1,4 +1,5 @@
 import sys
+import os
 from os import listdir, walk
 from os.path import abspath, expanduser, isdir, isfile, join, normpath, splitext
 from typing import Dict, Union, List
@@ -120,9 +121,9 @@ def mergeAllGeoFiles(folderPath, gmshExe):
 def createCmdCommand(
     onelabFile: str,
     useGUI: bool,
-    gmshPath: str = "",
-    getdpPath: str = "",
-    logFileName: str = "",
+    gmshPath: Union[str ,os.PathLike] = "",
+    getdpPath: Union[str ,os.PathLike] = "",
+    logFileName: Union[str ,os.PathLike] = "",
     paramDict: Dict[str, Union[str, int, float]] = None,
     postOperations: List[str] = None,
 ) -> str:

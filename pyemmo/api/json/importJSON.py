@@ -249,7 +249,7 @@ def getMagTemperature(extendedInfo: dict) -> Union[float, None]:
     return None
 
 
-def getSimuParams(extendedInfo: dict) -> Dict[str, float]:
+def getSimuParams(extendedInfo: dict) -> Dict[str, Dict[str, float]]:
     """
     Return the simulation parameter dictionary needed for script class. See class :class:`Script
     <pyemmo.script.script.Script>` for details about the simulation dict.

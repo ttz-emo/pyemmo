@@ -12,7 +12,7 @@ from ..script.material import ElectricalSteel
 
 
 def main(
-    bFilePath: os.PathLike,
+    bFilePath: Union[str ,os.PathLike],
     lossFactor: dict,
     symFactor: int,
     axialLength: float = 1.0,
@@ -24,7 +24,7 @@ def main(
 
 
 def calcTimeDomainIronLosses(
-    bFilePath: os.PathLike,
+    bFilePath: Union[str ,os.PathLike],
     lossFactor: dict,
     symFactor: int,
     axialLength: float = 1.0,
@@ -372,7 +372,7 @@ def integrateField(
 
 
 def writeSimple(
-    fName: os.PathLike, time: List[float], data: Union[np.ndarray, List]
+    fName: Union[str ,os.PathLike], time: List[float], data: Union[np.ndarray, List]
 ) -> None:
     """Write time data to simple text file like:
 
@@ -398,7 +398,7 @@ def writeSimple(
 
 
 def adaptIronLossParams(
-    lossParams: List[float], steelMat: ElectricalSteel
+    lossParams: Tuple[float,float,float], steelMat: ElectricalSteel
 ) -> List[float]:
     assert len(lossParams) == 3, "Number of loss parameters should be 3!"
     assert isinstance(steelMat, ElectricalSteel), "Material should be steel"
