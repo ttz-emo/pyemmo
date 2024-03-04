@@ -9,7 +9,7 @@ from argparse import ArgumentParser
 import numpy as np
 
 from . import calcIronLoss
-from .importResults import readTimeTableDat
+from .import_results import read_timetable_dat
 
 
 def findGmsh(verbosity: bool = True) -> str:
@@ -388,7 +388,7 @@ def runCalcforCurrent(param: dict):
         if os.path.isfile(res_file):
             # get first char in machine side to index rotor and stator results
             results_dict["time"], results_dict["current"][index] = (
-                readTimeTableDat(res_file)
+                read_timetable_dat(res_file)
             )
         else:
             # Error because we need to import time here!
@@ -403,12 +403,12 @@ def runCalcforCurrent(param: dict):
         res_file = os.path.join(simulation_res_dir, f"T{side[0]}.dat")
         if os.path.isfile(res_file):
             # get first char in machine side to index rotor and stator results
-            _, results_dict["torque"][side] = readTimeTableDat(res_file)
+            _, results_dict["torque"][side] = read_timetable_dat(res_file)
         # Virtual Work results
         res_file = os.path.join(simulation_res_dir, f"T{side[0]}_vw.dat")
         if os.path.isfile(res_file):
             # get first char in machine side to index rotor and stator results
-            _, results_dict["torque_vw"][side] = readTimeTableDat(res_file)
+            _, results_dict["torque_vw"][side] = read_timetable_dat(res_file)
 
     # 3. Flux results
     results_dict["flux"] = {}
@@ -416,7 +416,7 @@ def runCalcforCurrent(param: dict):
         res_file = os.path.join(simulation_res_dir, f"Flux_{index}.dat")
         if os.path.isfile(res_file):
             # get first char in machine side to index rotor and stator results
-            time, results_dict["flux"][index] = readTimeTableDat(res_file)
+            time, results_dict["flux"][index] = read_timetable_dat(res_file)
 
     # 4. Induced voltage
     results_dict["inducedVoltage"] = {}
@@ -426,7 +426,7 @@ def runCalcforCurrent(param: dict):
         )
         if os.path.isfile(res_file):
             # get first char in machine side to index rotor and stator results
-            _, results_dict["inducedVoltage"][index] = readTimeTableDat(
+            _, results_dict["inducedVoltage"][index] = read_timetable_dat(
                 res_file
             )
 
@@ -434,7 +434,7 @@ def runCalcforCurrent(param: dict):
     res_file = os.path.join(simulation_res_dir, "RotorPos_deg.dat")
     if os.path.isfile(res_file):
         # get first char in machine side to index rotor and stator results
-        _, results_dict["rotorPos"] = readTimeTableDat(res_file)
+        _, results_dict["rotorPos"] = read_timetable_dat(res_file)
 
     # 6. Core loss
     # Check if file hystLoss_rotor.dat allready exists -> loss allready calculated
@@ -481,7 +481,7 @@ def runCalcforCurrent(param: dict):
         for side in ["rotor", "stator"]:
             core_loss_dict[side] = {}
             for loss_type in ("hyst", "eddy", "exc"):
-                time, core_loss_dict[side][loss_type] = readTimeTableDat(
+                time, core_loss_dict[side][loss_type] = read_timetable_dat(
                     os.path.join(
                         simulation_res_dir,
                         str(loss_type) + f"Loss_{side}" + ".dat",
@@ -580,7 +580,7 @@ def runCalcforCurrent(param: dict):
         if os.path.isfile(res_file):
             # get first char in machine side to index rotor and stator results
             results_dict["time"], results_dict["current"][index] = (
-                readTimeTableDat(res_file)
+                read_timetable_dat(res_file)
             )
         else:
             # Error because we need to import time here!
@@ -595,12 +595,12 @@ def runCalcforCurrent(param: dict):
         res_file = os.path.join(simulation_res_dir, f"T{side[0]}.dat")
         if os.path.isfile(res_file):
             # get first char in machine side to index rotor and stator results
-            _, results_dict["torque"][side] = readTimeTableDat(res_file)
+            _, results_dict["torque"][side] = read_timetable_dat(res_file)
         # Virtual Work results
         res_file = os.path.join(simulation_res_dir, f"T{side[0]}_vw.dat")
         if os.path.isfile(res_file):
             # get first char in machine side to index rotor and stator results
-            _, results_dict["torque_vw"][side] = readTimeTableDat(res_file)
+            _, results_dict["torque_vw"][side] = read_timetable_dat(res_file)
 
     # 3. Flux results
     results_dict["flux"] = {}
@@ -608,7 +608,7 @@ def runCalcforCurrent(param: dict):
         res_file = os.path.join(simulation_res_dir, f"Flux_{index}.dat")
         if os.path.isfile(res_file):
             # get first char in machine side to index rotor and stator results
-            time, results_dict["flux"][index] = readTimeTableDat(res_file)
+            time, results_dict["flux"][index] = read_timetable_dat(res_file)
 
     # 4. Induced voltage
     results_dict["inducedVoltage"] = {}
@@ -618,7 +618,7 @@ def runCalcforCurrent(param: dict):
         )
         if os.path.isfile(res_file):
             # get first char in machine side to index rotor and stator results
-            _, results_dict["inducedVoltage"][index] = readTimeTableDat(
+            _, results_dict["inducedVoltage"][index] = read_timetable_dat(
                 res_file
             )
 
@@ -626,7 +626,7 @@ def runCalcforCurrent(param: dict):
     res_file = os.path.join(simulation_res_dir, "RotorPos_deg.dat")
     if os.path.isfile(res_file):
         # get first char in machine side to index rotor and stator results
-        _, results_dict["rotorPos"] = readTimeTableDat(res_file)
+        _, results_dict["rotorPos"] = read_timetable_dat(res_file)
 
     # 6. Core loss
     # Check if file hystLoss_rotor.dat allready exists -> loss allready calculated
@@ -673,7 +673,7 @@ def runCalcforCurrent(param: dict):
         for side in ["rotor", "stator"]:
             core_loss_dict[side] = {}
             for loss_type in ("hyst", "eddy", "exc"):
-                time, core_loss_dict[side][loss_type] = readTimeTableDat(
+                time, core_loss_dict[side][loss_type] = read_timetable_dat(
                     os.path.join(
                         simulation_res_dir,
                         str(loss_type) + f"Loss_{side}" + ".dat",
