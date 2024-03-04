@@ -7,7 +7,7 @@ import gmsh
 import numpy as np
 
 # from matplotlib import pyplot as plt
-from .importResults import importPos
+from .import_results import importPos
 from ..script.material import ElectricalSteel
 
 

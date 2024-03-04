@@ -5,7 +5,7 @@ import numpy as np
 from numpy.linalg import norm
 import math
 from matplotlib import pyplot as plt
-from pyemmo.functions.importResults import importPos
+from pyemmo.functions.import_results import importPos
 
 POS_FILE_PATH = r"C:\Users\ganser\AppData\Local\Programs\pyemmo\workingDirectory\testPosImport\brad.pos"
 # filepathRotor = r"C:\Users\ganser\AppData\Local\Programs\pyemmo_git\pyemmo\workingDirectory\testPosImport\res\brad.pos"

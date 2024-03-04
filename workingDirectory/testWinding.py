@@ -143,7 +143,7 @@ myScript = Script(
 myScript.generateScript()
 # %%
 from pyemmo.functions.runOnelab import createCmdCommand, findGmsh, findGetDP
-from pyemmo.functions.importResults import plotAllDat
+from pyemmo.functions.import_results import plot_all_dat
 import os
 
 os.system(
