@@ -157,7 +157,7 @@ class ElectricalSteel(Material):
         """print electrical steel material to stdout"""
         table = [
             ["Name:", self.name],
-            ["Is linear:", "Yes" if self.isLinear() else "No"],
+            ["Is linear:", "Yes" if self.linear else "No"],
             ["Electrical Conductivity [S/m]:", self.conductivity],
             ["Relative Permeability []:", self.relPermeability],
             ["Remanence Flux Density[T]:", self.remanence],

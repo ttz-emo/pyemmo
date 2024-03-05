@@ -1,4 +1,5 @@
 """Module for Material-class"""
+
 # pylint: disable=line-too-long
 
 from typing import Union
@@ -38,15 +39,16 @@ class Material(object):
                 f"in Material {name}!"
             )
         if isinstance(BH, numpy.ndarray):
+            # material is linear if BH curve is given AND not empty
             self._BH = BH
-            linear = (
-                False if BH.size else True
-            )  # material is linear if BH curve is given AND not empty
+            linear = False if BH.size else True
         elif BH is None:
             self._BH = numpy.empty(0)
             linear = True
         else:
-            raise ValueError(f"BH curve must be numpy.ndarray, but is {type(BH)}!")
+            raise ValueError(
+                f"BH curve must be numpy.ndarray, but is {type(BH)}!"
+            )
 
         self.density = density
         self.thermalConductivity = thermalConductivity
@@ -112,35 +114,35 @@ class Material(object):
             self.remanence = 0
         else:
             self.remanence = rawMat["remanence"]
-        self.setLinear(rawMat["linear"])
-        if not self.isLinear():
+        self.linear = rawMat["linear"]
+        if not self.linear:
             # if material is nonlinear load BH
             self.BH = rawMat["BH"]
 
-    def isLinear(self) -> bool:
-        """check if the material is linear or has BH curve
+    # def isLinear(self) -> bool:
+    #     """check if the material is linear or has BH curve
 
-        Returns:
-            bool: True if material doesn't have a BH curve, but a relative permeability.
-            Otherwise Flase
-        """
-        if self._linear and self.BH.size:
-            # pylint: disable=locally-disabled,  line-too-long
-            warnings.warn(
-                f"Linearity flag of material '{self.name}' is True although BH-curve is not empty!"
-            )
-        return self._linear
+    #     Returns:
+    #         bool: True if material doesn't have a BH curve, but a relative permeability.
+    #         Otherwise Flase
+    #     """
+    #     if self._linear and self.BH.size:
+    #         # pylint: disable=locally-disabled,  line-too-long
+    #         warnings.warn(
+    #             f"Linearity flag of material '{self.name}' is True although BH-curve is not empty!"
+    #         )
+    #     return self._linear
 
-    def setLinear(self, linear: bool) -> None:
-        """set the linearity of the material
+    # def setLinear(self, linear: bool) -> None:
+    #     """set the linearity of the material
 
-        Args:
-            linear (bool): True if material is linear, otherwise False
-        """
-        if isinstance(linear, bool):
-            self._linear = linear
-        else:
-            raise ValueError("Attribute linear must be type bool.")
+    #     Args:
+    #         linear (bool): True if material is linear, otherwise False
+    #     """
+    #     if isinstance(linear, bool):
+    #         self._linear = linear
+    #     else:
+    #         raise ValueError("Attribute linear must be type bool.")
 
     @property
     def name(self) -> str:
@@ -301,7 +303,10 @@ class Material(object):
         Args:
             relPermeability (Union[float, int]): relative permeability
         """
-        if isinstance(relPermeability, (int, float)) or relPermeability is None:
+        if (
+            isinstance(relPermeability, (int, float))
+            or relPermeability is None
+        ):
             self._relPermeability = relPermeability
         else:
             raise ValueError("Relative permeability must be numeric.")
@@ -436,11 +441,37 @@ class Material(object):
                 )
             )
 
+    @property
+    def linear(self) -> bool:
+        """Property for linearity of material. Material is linear if it has no
+        ferromagnetic BH curve defined.
+
+        Returns:
+            bool: Flag if material is linear
+        """
+        return self._linear
+
+    @linear.setter
+    def linear(self, is_linear: bool):
+        """setter of property linear
+
+        Args:
+            is_linear (bool): flag if material is linear (has no BH curve).
+        """
+        if isinstance(is_linear, bool):
+            if is_linear and self.BH.size:
+                logger.warning(
+                    "Material %s was set linear and has BH curve!", self.name
+                )
+            self._linear = is_linear
+        else:
+            raise ValueError("Attribute linear must be type bool.")
+
     def print(self) -> None:
         """print material to stdout"""
         table = [
             ["Name:", self.name],
-            ["Is linear:", "Yes" if self.isLinear() else "No"],
+            ["Is linear:", "Yes" if self.linear else "No"],
             ["Electrical Conductivity [S/m]:", self.conductivity],
             ["Relative Permeability []:", self.relPermeability],
             ["Remanence Flux Density[T]:", self.remanence],
@@ -450,6 +481,8 @@ class Material(object):
         ]
         for row in table:
             if row[1] is None:
-                row[1] = "None"  # set to string because formatting None not supported
+                row[1] = (
+                    "None"  # set to string because formatting None not supported
+                )
             print(f"{row[0]: >30} {row[1]: <15}")
         print("\n")

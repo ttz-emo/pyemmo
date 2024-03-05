@@ -489,9 +489,9 @@ class RotorIPMSM(Rotor):
     #         if geoElem[0].getType() == "Surface":
     #             phy_domain.append(s)
     #             mat = s.getMaterial()
-    #             if mat != None and mat.isLinear() == True:
+    #             if mat != None and mat.linear == True:
     #                 phy_domainL.append(s)
-    #             elif mat != None and mat.isLinear() == False:
+    #             elif mat != None and mat.linear == False:
     #                 phy_domainNL.append(s)
     #             phy_rotor_Moving.append(s)
 

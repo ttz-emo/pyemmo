@@ -1477,7 +1477,7 @@ class Script(object):
             matFun.add("sigma", "sigma_" + matName, "group_" + matName)
 
             # Wenn linear True, nonlinear False
-            if mat.isLinear():
+            if mat.linear:
                 # add mue_r
                 mueR = mat.relPermeability
                 matFun.add_params({"muR_" + matName: (mueR if mueR else 0)})
@@ -2076,7 +2076,7 @@ class Script(object):
             for physicalElement in domain.physicals:
                 if physicalElement.geoElementType == Surface:
                     mat = physicalElement.material
-                    if not mat.isLinear():
+                    if not mat.linear:
                         flagCalcNL = 1
                         break  # if one BH curve is found, we can stop the loop
                     if isinstance(physicalElement, Magnet):

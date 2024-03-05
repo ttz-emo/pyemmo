@@ -371,7 +371,7 @@ class Stator(object):
                     else:
                         phy_domainCC.append(physicalElement)
                     # if material is linear
-                    if material.isLinear():
+                    if material.linear:
                         phy_domainL.append(physicalElement)
                     else:
                         phy_domainNL.append(physicalElement)

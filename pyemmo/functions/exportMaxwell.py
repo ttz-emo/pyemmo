@@ -14,7 +14,7 @@ def exportBH2Maxwell(material: Material, filepath: str = None) -> None:
         filepath (str, optional): File path to write the results to. File extension must be ".tab"!
             Defaults to PYEMMO_RESULTS_FOLDER/MATERIAL_NAME.tab .
     """
-    assert not material.isLinear()
+    assert not material.linear
     bh = material.getBH()
     b = bh[:, 0]
     h = bh[:, 1]

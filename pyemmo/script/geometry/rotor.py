@@ -242,7 +242,7 @@ class Rotor:
                     else:
                         domainCC.append(physElem)
                     # if material is linear
-                    if material.isLinear():
+                    if material.linear:
                         domainL.append(physElem)
                     else:
                         domainNL.append(physElem)
