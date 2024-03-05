@@ -3,7 +3,7 @@ This module provides functions for translating points between different geometri
 
 Functions:
     build_pyemmo_point(pyleecan_point: complex) -> Point:
-        Translates the coordinates of a point in ``pyleecan`` into a ``pyemmo`` point.
+        Translates the coordinates of a point in pyleecan`` into a ``pyemmo point.
 
 Classes:
     Point: Represents a point in 3D space.
@@ -14,13 +14,13 @@ from ...script.geometry.point import Point
 
 
 def build_pyemmo_point(pyleecan_point: complex) -> Point:
-    """Translates the coordinates of a point in ``pyleecan`` into a ``pyemmo`` point.
+    """Translates the coordinates of a point in pyleecan into a pyemmo point.
 
     Args:
         pyleecanPoint (complex): coordinates of the pyleecan point
 
     Returns:
-        Point: ``pyemmoPoint``: pyemmo point
+        Point: pyemmoPoint: pyemmo point
     """
     coords = [pyleecan_point.real, pyleecan_point.imag]
 
