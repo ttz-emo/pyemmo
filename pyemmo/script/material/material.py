@@ -227,7 +227,7 @@ class Material(object):
             self._BH = (numpy.empty(0),)
         elif isinstance(BH, list):
             # if list is given, set numpy array
-            self.setLinear(False)
+            self.linear= False
             self.BH = numpy.array(BH)  # recall setter to check valid BH shape
         elif isinstance(BH, numpy.ndarray):
             if BH.ndim == 2:
@@ -249,7 +249,7 @@ class Material(object):
                         )
                     # set BH curve
                     self._BH = BH
-                    self.setLinear(False)
+                    self.linear = False
                 else:
                     raise (
                         ValueError(

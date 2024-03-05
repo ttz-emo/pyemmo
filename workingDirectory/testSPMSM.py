@@ -3,7 +3,7 @@
 import os
 from os import mkdir, path
 
-# from pyemmo.functions.importResults import plotAllDat
+from  pyemmo.functions.import_results import plot_all_dat
 # from numpy import rad2deg, where
 import math
 from swat_em import datamodel
@@ -230,6 +230,9 @@ resDir = os.path.join(ROOT_DIR, r"Results\Baukasten")
 modelDir = path.abspath(path.join(resDir, "Test_SPMSM"))
 if not path.isdir(modelDir):
     mkdir(modelDir)
+else:
+    # remove results folder 
+    pass
 
 myScript = Script(
     name="Test_SPMSM_Baukasten",
@@ -253,11 +256,11 @@ myScript.generateScript()
 os.system(
     createCmdCommand(
         onelabFile=myScript.proFilePath,
-        useGUI=True,
+        useGUI=False,
         paramDict={"Flag_ClearResults": 1},
     )
 )
-# plotAllDat(myScript.getResultsPath())
+plot_all_dat(myScript.resultsPath)
 print("I am done!")
 
 
