@@ -17,7 +17,7 @@ class TestScript(unittest.TestCase):
         Nützlich für beispielsweise zeitintensives Setup von Dingen die nicht verändert werden.
         Konkret z.B. Laden von vordefinierter, verifizierter Testgeometrie
         """
-        # cls.maxDiff = None 
+        # cls.maxDiff = None
 
     @classmethod
     def tearDownClass(cls):
@@ -71,7 +71,7 @@ class TestScript(unittest.TestCase):
         # Sicherstellen, dass init Funktion Werte richtig setzt
         self.assertEqual(self.scriptObj.name, "testScript")
         self.assertEqual(self.scriptObj.scriptPath, save_path)
-        self.assertEqual(self.scriptObj.factory, "Built-in")
+        self.assertEqual(self.scriptObj.factory, "Build-in")
         # Test that the initial parameters are in the resulting param dict
         self.assertEqual(
             self.scriptObj.simParams["SYM"],

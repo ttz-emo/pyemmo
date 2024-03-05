@@ -1,4 +1,4 @@
-#%% imports
+# %% imports
 import json
 import gmsh
 from typing import List, Union
@@ -6,9 +6,9 @@ import sys, os
 from pyemmo.definitions import ROOT_DIR
 import numpy as np
 from matplotlib import pyplot as plt
-from pyemmo.functions.calcIronLoss import writeSimple
+from pyemmo.functions.calcIronLoss import write_simple
 
-#%%
+# %%
 gmsh.initialize(sys.argv)
 gmsh.option.setNumber("General.Verbosity", 5)
 # modelFilePath = os.path.join(
@@ -27,7 +27,7 @@ bFilePath = os.path.join(
     "workingDirectory",
     "testPosImport",
     "res",
-    "b_stator.pos"
+    "b_stator.pos",
     # ROOT_DIR, "workingDirectory", "testPosImport", "res_fullPeriod180Steps", "b_stator.pos"
 )
 # hFilePath = os.path.join(
@@ -48,7 +48,7 @@ if gmsh.view.getTags().size == 0:
 #     gmsh.merge(hFilePath)
 # else:
 #     raise FileNotFoundError(f"File '{hFilePath}' could not be found!")
-#%% Import data from view
+# %% Import data from view
 # number of time steps
 NBR_STEPS = int(gmsh.view.option.getNumber(tag=1, name="NbTimeStep"))
 if NBR_STEPS < 2:
@@ -72,8 +72,10 @@ for step in range(1, NBR_STEPS):
     bmax = np.maximum(bmax, B_Data[step])
     bmin = np.minimum(bmin, B_Data[step])
     time.append(ctime)
-    dBdt[step - 1] = (B_Data[step] - B_Data[step - 1]) / (time[step] - time[step - 1])
-#%%
+    dBdt[step - 1] = (B_Data[step] - B_Data[step - 1]) / (
+        time[step] - time[step - 1]
+    )
+# %%
 # nodeTagDict = {}
 # # ELEM_TYPE = 2  # 2 = triangle
 # for triTag in btags:
@@ -83,7 +85,7 @@ for step in range(1, NBR_STEPS):
 
 # nodeTagDictJson = json.dumps(nodeTagDict, indent=4)
 # print(nodeTagDictJson)
-#%%
+# %%
 fig, axes = plt.subplots(nrows=1, ncols=2)
 ax = axes[0]
 ax.plot(ctags, bmax[:, 0])
@@ -127,7 +129,7 @@ ax.grid(True)
 #     # dType, ctags, cdata, ctime, numComp = gmsh.view.getHomogeneousModelData(1, step)
 #     H_Data[step] = np.array(cdata)[:, 0:3]
 #     assert all(btags == ctags)
-#%% Calculate hysteresis losses
+# %% Calculate hysteresis losses
 symFactor = 4
 machineLength = 0.05  # meter
 
@@ -152,7 +154,7 @@ beta = 2
 ph = np.abs(Hm[:, 0] * dBdt[:, :, 0]) + np.abs(Hm[:, 1] * dBdt[:, :, 1])
 # fig, ax = plt.subplots()
 # ax.plot(time[1:], ph)
-#%%
+# %%
 # Calc mean of ph on elements
 ph_mean = np.mean(ph, axis=0)
 # Export mean data
@@ -168,7 +170,7 @@ gmsh.view.addHomogeneousModelData(
     time=0,
 )
 
-#%% Export data to gmsh
+# %% Export data to gmsh
 # gmsh.model.add("Test p_hyst export") # new model for view??
 model = gmsh.model.getCurrent()  # or just get current model...
 pHystView = gmsh.view.add("Hystersis Loss [W/m³]")  # get tag of new view
@@ -188,19 +190,19 @@ pFilePath = os.path.join(
     ROOT_DIR, "workingDirectory", "testPosImport", "res", "p_hyst.pos"
 )
 gmsh.view.write(pHystView, pFilePath)
-#%% Integrate
+# %% Integrate
 gmsh.plugin.setNumber("Integrate", "View", pHystView - 1)
 P_hystView = gmsh.plugin.run("Integrate")
 # get list data from integral to determine maximum and set y limits in plot
 dtype, numElem, P_HystData = gmsh.view.getListData(P_hystView)
-#%%
+# %%
 # skip unnecessary list and scale results by symmmetry and machine length:
 assert len(P_HystData) == 1  # make sure there is only one element
 # P_HystData = P_HystData[0] * symFactor * machineLength
 P_HystData = P_HystData[0]  # extract data from list
 P_HystData[3:] = P_HystData[3:] * symFactor * machineLength
 
-#%%
+# %%
 # replace data in view with recalculated data
 gmsh.view.remove(P_hystView)
 P_hystView = gmsh.view.add("Hystersis Loss [W]")
@@ -228,10 +230,12 @@ pFilePath = os.path.join(
     ROOT_DIR, "workingDirectory", "testPosImport", "res", "P_hyst.dat"
 )
 # gmsh.view.write(P_hystView, pFilePath)
-writeSimple(pFilePath, time, P_HystData[3:])  # skip point coordinates in export
+write_simple(
+    pFilePath, time, P_HystData[3:]
+)  # skip point coordinates in export
 
 
-#%% Calculate EDDY CURRENT LOSSES
+# %% Calculate EDDY CURRENT LOSSES
 kc = 1.05  # loss parameter
 # loss fucntion for hysteresis from paper:
 pc = (
@@ -262,7 +266,7 @@ pFilePath = os.path.join(
 gmsh.view.write(eddyCurrentView, pFilePath)
 
 
-#%% Integrate
+# %% Integrate
 # Integrate Eddy Current losses
 gmsh.plugin.setNumber("Integrate", "View", gmsh.view.getIndex(eddyCurrentView))
 integralView = gmsh.plugin.run("Integrate")
@@ -292,11 +296,16 @@ pFilePath = os.path.join(
 )
 gmsh.view.write(integralView, pFilePath)
 
-#%% Calculate EXCESS LOSS
+# %% Calculate EXCESS LOSS
 ke = 0  # factor was 0 in model... used greater value for testing
 Ce = 8.763363  # constant factor (from paper)
-pe = 1 / Ce * ke * np.power((np.square(dBdt[:, :, 0]) + np.square(dBdt[:, :, 1])), 0.75)
-#% Export data to gmsh
+pe = (
+    1
+    / Ce
+    * ke
+    * np.power((np.square(dBdt[:, :, 0]) + np.square(dBdt[:, :, 1])), 0.75)
+)
+# % Export data to gmsh
 model = gmsh.model.getCurrent()  # get current model ID
 excessView = gmsh.view.add("Excess Loss")  # get tag of new view
 for step in range(len(time) - 1):
@@ -314,7 +323,7 @@ pFilePath = os.path.join(
     ROOT_DIR, "workingDirectory", "testPosImport", "res", "p_exc.pos"
 )
 gmsh.view.write(excessView, pFilePath)
-#%% Integrate Excess losses
+# %% Integrate Excess losses
 gmsh.plugin.setNumber("Integrate", "View", gmsh.view.getIndex(excessView))
 integralView = gmsh.plugin.run("Integrate")
 
@@ -338,13 +347,13 @@ gmsh.view.option.setNumber(integralView, "CustomMax", np.max(P_excData) * 1.2)
 # 6: top, 7: bottom, 8: left, 9: right, 10: full, 11: top third, 12: in model coordinatess
 gmsh.view.option.setNumber(integralView, "AutoPosition", 4)
 
-#%% save integral values to file
+# %% save integral values to file
 pFilePath = os.path.join(
     ROOT_DIR, "workingDirectory", "testPosImport", "res", "P_exc.dat"
 )
 gmsh.view.write(integralView, pFilePath)
 
-#%% sum of Losses
+# %% sum of Losses
 # Add up iron losses and plot
 Ptotal = P_HystData + P_eddyData + P_excData
 viewPsum = gmsh.view.add("Total Iron Losses [W]")
@@ -352,18 +361,18 @@ gmsh.view.addListData(viewPsum, dtype[0], numElem[0], Ptotal)
 # gmsh.view.option.setString(integralView,"Type",)
 gmsh.view.option.copy(integralView, viewPsum)
 gmsh.view.option.setNumber(viewPsum, "CustomMax", np.max(Ptotal) * 1.2)
-gmsh.view.option.setNumber(viewPsum, "AutoPosition", 5) #5: bottom right
+gmsh.view.option.setNumber(viewPsum, "AutoPosition", 5)  # 5: bottom right
 
 pFilePath = os.path.join(
     ROOT_DIR, "workingDirectory", "testPosImport", "res", "P_tot.dat"
 )
-writeSimple(pFilePath, time, Ptotal[3:])
+write_simple(pFilePath, time, Ptotal[3:])
 
-#%%
+# %%
 # get all model entitys (imported)
 # entities = gmsh.model.getEntities()  # results in 77 surfaces for view bn
 
-#%% SOME TESTING ON ENITITIES
+# %% SOME TESTING ON ENITITIES
 # for e in entities:
 #     # Dimension and tag of the entity:
 #     dim = e[0] # is allways =2 here because just surfaces
@@ -389,7 +398,7 @@ writeSimple(pFilePath, time, Ptotal[3:])
 #         print(" - Element type: " + name + ", order " + str(order) + " (" +
 #               str(numv) + " nodes in param coord: " + str(parv) + ")")
 
-#%%
+# %%
 # Launch the GUI to see the results:
 if "-nopopup" not in sys.argv:
     gmsh.fltk.run()

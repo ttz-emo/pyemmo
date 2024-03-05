@@ -1,4 +1,5 @@
 """Module for Material-class"""
+
 # pylint: disable=line-too-long
 
 from typing import Union
@@ -25,16 +26,17 @@ class Material(object):
         thermalCapacity: float = None,
     ):
         # FIXME: Check input values for valid type
-        self._name = name
-        self._conductivity = conductivity
-        self._relPermeability = relPermeability
-        self._remanence = remanence
+        self.name = name
+        self.conductivity = conductivity
+        self.relPermeability = relPermeability
+        self.remanence = remanence
         self._tempCoefRem = (
             tempCoefRem  # coefficient for temperature dependency of remanent B
         )
         if tempCoefRem and not remanence:
             warnings.warn(
-                "Temperature coefficient for Br is given without value for Br!"
+                "Temperature coefficient for Br is given without value for Br "
+                f"in Material {name}!"
             )
         if isinstance(BH, numpy.ndarray):
             self._BH = BH
@@ -45,12 +47,14 @@ class Material(object):
             self._BH = numpy.empty(0)
             linear = True
         else:
-            raise ValueError(f"BH curve must be numpy.ndarray, but is {type(BH)}!")
+            raise ValueError(
+                f"BH curve must be numpy.ndarray, but is {type(BH)}!"
+            )
 
-        self._density = density
-        self._thermalConductivity = thermalConductivity
-        self._thermalCapacity = thermalCapacity
-        self._linear = linear
+        self.density = density
+        self.thermalConductivity = thermalConductivity
+        self.thermalCapacity = thermalCapacity
+        self.linear = linear
 
     def __eq__(self, __o: object) -> bool:
         if isinstance(__o, self.__class__):
@@ -300,7 +304,10 @@ class Material(object):
         Args:
             relPermeability (Union[float, int]): relative permeability
         """
-        if isinstance(relPermeability, (int, float)) or relPermeability is None:
+        if (
+            isinstance(relPermeability, (int, float))
+            or relPermeability is None
+        ):
             self._relPermeability = relPermeability
         else:
             raise ValueError("Relative permeability must be numeric.")
@@ -449,6 +456,8 @@ class Material(object):
         ]
         for row in table:
             if row[1] is None:
-                row[1] = "None"  # set to string because formatting None not supported
+                row[1] = (
+                    "None"  # set to string because formatting None not supported
+                )
             print(f"{row[0]: >30} {row[1]: <15}")
         print("\n")

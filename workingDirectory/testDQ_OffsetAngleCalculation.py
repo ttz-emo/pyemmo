@@ -6,7 +6,7 @@ from genericpath import isdir
 from numpy import rad2deg, where, gcd
 from swat_em import datamodel, analyse
 from pyemmo.functions.runOnelab import createCmdCommand
-from pyemmo.functions.importResults import plotAllDat
+from pyemmo.functions.import_results import plot_all_dat
 from pyemmo.script.script import Script
 from pyemmo.definitions import RESULT_DIR
 from pyemmo.script.geometry.point import Point
@@ -128,7 +128,9 @@ SPMSM.setFunctionMesh("linear", 8)
 SPMSM.plot()
 # SPMSM.createMachineDomains -> MachineAllType function
 # %% calc angle offset
-dAxisAngle = polteilung / 2 * nbrPolePairs  # center angle of north pole -> d-Axis
+dAxisAngle = (
+    polteilung / 2 * nbrPolePairs
+)  # center angle of north pole -> d-Axis
 print(f"d-Axis (rotor north pole) angle (elec): {rad2deg(dAxisAngle)}°")
 nu, amp, angle = SPMSM.stator.winding.get_MMF_harmonics()
 # Stator Winkel für I_U = 1 p.u., I_V = -1/2, I_W = -1/2
@@ -181,5 +183,5 @@ os.system(
         paramDict={"Flag_ClearResults": 1},
     )
 )
-plotAllDat(myScript.getResultsPath())
+plot_all_dat(myScript.getResultsPath())
 # %%

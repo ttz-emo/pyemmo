@@ -11,7 +11,7 @@ import logging
 import json
 import datetime
 from ... import logFmt
-from ...functions import runOnelab, calcIronLoss, importResults
+from ...functions import runOnelab, calcIronLoss, import_results
 from ...script.geometry.machineAllType import MachineAllType
 from ...script.geometry.rotor import Rotor
 from ...script.geometry.stator import Stator
@@ -526,42 +526,42 @@ def main(
             calcIronLoss.adaptIronLossParams(lossParams, rotorMat)
             ironLossR, _ = calcIronLoss.main(
                 brFilePath,
-                lossFactor={
+                loss_factor={
                     "hyst": lossParams[0],
                     "eddy": lossParams[1],
                     "exc": lossParams[2],
                 },
-                symFactor=importJSON.getSymFactor(extendedInfo),
-                axialLength=importJSON.getAxialLength(extendedInfo)["rotor"],
+                sym_factor=importJSON.getSymFactor(extendedInfo),
+                axial_length=importJSON.getAxialLength(extendedInfo)["rotor"],
             )
             lossParams = statorMat.lossParams
             calcIronLoss.adaptIronLossParams(lossParams, statorMat)
             ironLossS, time = calcIronLoss.main(
                 bsFilePath,
-                lossFactor={
+                loss_factor={
                     "hyst": lossParams[0],
                     "eddy": lossParams[1],
                     "exc": lossParams[2],
                 },
-                symFactor=importJSON.getSymFactor(extendedInfo),
-                axialLength=importJSON.getAxialLength(extendedInfo)["stator"],
+                sym_factor=importJSON.getSymFactor(extendedInfo),
+                axial_length=importJSON.getAxialLength(extendedInfo)["stator"],
             )
-            calcIronLoss.writeSimple(
+            calcIronLoss.write_simple(
                 join(resPath, "Pv_hyst_R.dat"), time, ironLossR["hyst"]
             )
-            calcIronLoss.writeSimple(
+            calcIronLoss.write_simple(
                 join(resPath, "Pv_hyst_S.dat"), time, ironLossS["hyst"]
             )
-            calcIronLoss.writeSimple(
+            calcIronLoss.write_simple(
                 join(resPath, "Pv_eddy_R.dat"), time, ironLossR["eddy"]
             )
-            calcIronLoss.writeSimple(
+            calcIronLoss.write_simple(
                 join(resPath, "Pv_eddy_S.dat"), time, ironLossS["eddy"]
             )
-            calcIronLoss.writeSimple(
+            calcIronLoss.write_simple(
                 join(resPath, "Pv_exc_R.dat"), time, ironLossR["exc"]
             )
-            calcIronLoss.writeSimple(
+            calcIronLoss.write_simple(
                 join(resPath, "Pv_exc_S.dat"), time, ironLossS["exc"]
             )
         else:
@@ -586,13 +586,13 @@ def main(
         resPath = apiScript.resultsPath
         if isdir(resPath):
             # if the folder for results exists
-            importResults.plt.set_loglevel(
+            import_results.plt.set_loglevel(
                 level="info"
             )  # avoid matplotlib debug infos
             for file in os.listdir(resPath):
                 filename, fileExt = os.path.splitext(file)
                 if fileExt == ".dat":
-                    importResults.plotTimeTableDat(
+                    import_results.plot_timetable_dat(
                         os.path.abspath(join(resPath, file)),
                         filename,
                         title=filename,

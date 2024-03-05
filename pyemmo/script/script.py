@@ -1111,7 +1111,7 @@ class Script(object):
         # append domain for lamination
         laminationDomainID = "domainLam"
         laminationDomain = Domain(
-            "DomainLam",
+            "Domain_Lam",
             rotorPhysicalsDict[laminationDomainID]
             + statorPhysicalsDict[laminationDomainID],
         )
@@ -2005,16 +2005,16 @@ class Script(object):
             movingGeoCode = self._createMovingGeoCode()
 
         with open(geoFilePath, "w", encoding="utf-8") as geoScript:
-            geoScript.write(versionStr) # write the pyemmo version number 
+            geoScript.write(versionStr)  # write the pyemmo version number
             # set the geometry kernel
             if self.factory == "OpenCASCADE":
                 geoScript.write('SetFactory("OpenCASCADE");\n')
-            # create Expert Mode Flag 
+            # create Expert Mode Flag
             geoScript.write(
                 """DefineConstant[\n Flag_ExpertMode = {1,"""
                 + """Name '01View/Expert Mode', Choices {0, 1}}\n];\n\n"""
             )
-            geoScript.write(meshSettingsCode) # write code for mesh variables
+            geoScript.write(meshSettingsCode)  # write code for mesh variables
             geoScript.write(self.pointCode)
             geoScript.write(self.curveCode)
             geoScript.write(self.areaCode)
@@ -2085,8 +2085,10 @@ class Script(object):
         if not hasMagnets:
             # if there where no magnet physical elements, set flag to false
             # even if its set to true...
-            logging.warning("Unsetting the flag 'CALC_MAGNET_LOSSES', because"
-                            " no magnets where found in the machine.")
+            logging.warning(
+                "Unsetting the flag 'CALC_MAGNET_LOSSES', because"
+                " no magnets where found in the machine."
+            )
             simuParamDict["SYM"]["CALC_MAGNET_LOSSES"] = 0
 
         # machine.getStator().winding.plot_star('plot_star.png',None,False,True)

@@ -88,7 +88,9 @@ from swat_em import datamodel, analyse
 myWinding = datamodel()
 myWinding.genwdg(Q=nbrSlots, P=int(nbrPoles / 2), m=3, layers=2, turns=30)
 stator = SPMSM.addStatorToMachine(
-    laminationType="sheet01_standard", slotType="slotForm_01", winding=myWinding
+    laminationType="sheet01_standard",
+    slotType="slotForm_01",
+    winding=myWinding,
 )
 stator.addLaminationParameter(
     {
@@ -143,7 +145,7 @@ myScript = Script(
 myScript.generateScript()
 # %%
 from pyemmo.functions.runOnelab import createCmdCommand, findGmsh, findGetDP
-from pyemmo.functions.importResults import plotAllDat
+from pyemmo.functions.import_results import plot_all_dat
 import os
 
 os.system(

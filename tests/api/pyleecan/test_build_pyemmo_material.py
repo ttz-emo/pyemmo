@@ -81,7 +81,7 @@ def test_build_pyemmo_material(sample_pyleecan_material: pyleecanMat) -> None:
     pyemmo_material = build_pyemmo_material(sample_pyleecan_material)
     assert pyemmo_material.name == "sample_pyleecan_material"
     assert pyemmo_material.density == 7650
-    assert pyemmo_material.conductivity == 0.01
+    assert pyemmo_material.conductivity == 1 / 0.01
     assert pyemmo_material.relPermeability == 0.000345
     assert pyemmo_material.tempCoefRem == -0.001
     assert pyemmo_material.remanence == 1.5
