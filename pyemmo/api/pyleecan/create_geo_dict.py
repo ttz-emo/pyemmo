@@ -1,14 +1,41 @@
-"""
-translate_geo Module
+"""Module: pyemmo_create_geo_dict
 
-This module provides functions to translate the geometry of a machine from Pyleecan to pyemmo format.
+This module provides functions to convert geometry elements from pyleecan to pyemmo format.
+
+Module dependencies:
+    - pyleecan.Classes.MachineIPMSM.MachineIPMSM
+    - pyleecan.Classes.MachineSIPMSM.MachineSIPMSM
+    - pyleecan.Classes.MachineSyRM.MachineSyRM
+    - pyleecan.Classes.Machine.Machine
+    - ...functions.plot.plot
+    - ...script.geometry.line.Line
+    - ...script.geometry.circleArc.CircleArc
+    - ...script.geometry.point.Point
+    - ..json.SurfaceJSON.SurfaceAPI
+    - ..logger
 
 Functions:
-- create_geo_dict: Translates the machine geometry into a format suitable for communication with pyemmo.
+    - create_geo_dict(
+        machine: Machine,
+        is_internal_rotor: bool,
+    ) -> tuple[
+        list[SurfaceAPI],
+        list[Union[Line, CircleArc]],
+        list[Union[Line, CircleArc]],
+        Point,
+        Point,
+        dict,
+    ]:
+        Creates a dictionary containing geometry information for communication between Pyleecan and pyemmo.
 
-Classes:
-None
+Example:
+    machine = MachineIPMSM(...)
+    is_internal_rotor = True
+    geometry_list, rotor_contour_lines, stator_contour_lines, r_point_rotor_cont, l_point_rotor_cont, magnetization_dict = create_geo_dict(machine, is_internal_rotor)
+    # Returns geometry objects, contour lines, and magnetization dictionary suitable for pyemmo.
 
+Raises:
+    TypeError: If unable to generate contours of the given machine type.
 """
 
 from typing import List, Union
@@ -30,7 +57,7 @@ from .get_rotor_stator_cont import (
     get_winding_cont,
     get_even_rotor_cont,
 )
-from .detectInnerOuterLimit import detect_inner_outer_limit
+from .detect_inner_outer_limit import detect_inner_outer_limit
 from .get_magnetization_dict import get_magnetization_dict
 
 
