@@ -21,7 +21,7 @@ def test_create_geo_dict():
         r_point_rotor_cont,
         l_point_rotor_cont,
         magnetization_dict,
-    ) = pyemmo.api.pyleecan.createGeoDict.create_geo_dict(
+    ) = pyemmo.api.pyleecan.create_geo_dict.create_geo_dict(
         machine, machine.rotor.is_internal
     )
     # assert for geometry_list
