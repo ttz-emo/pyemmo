@@ -4,9 +4,9 @@ Rotor and Stator Contour Calculation Module
 This module provides functions to calculate the rotor and stator contours of electric machines.
 
 Functions:
-- get_spmsm_rotor_cont: Calculates the rotor contour for Surface Permanent Magnet Synchronous Machine (SPMSM).
-- get_even_rotor_cont: Calculates the rotor contour for Interior Permanent Magnet Synchronous Machine (IPMSM) and Synchronous Reluctance Machine (SynRM).
-- get_winding_cont: Calculates the stator contour with winding.
+    - get_spmsm_rotor_cont: Calculates the rotor contour for Surface Permanent Magnet Synchronous Machine (SPMSM).
+    - get_even_rotor_cont: Calculates the rotor contour for Interior Permanent Magnet Synchronous Machine (IPMSM) and Synchronous Reluctance Machine (SynRM).
+    - get_winding_cont: Calculates the stator contour with winding.
 
 Classes:
 None
