@@ -23,7 +23,7 @@ else:
 
 # generate user dir if not exists
 if not isdir(USER_DIR):
-    os.mkdir(USER_DIR)
+    os.makedirs(USER_DIR)
 
 # init root logger:
 # global logging format
