@@ -47,8 +47,16 @@ def read_timetable_dat(
     # Try to import the data via numpy. Should work for most cases!
     # standard 'delemiter' is whitespace.
     data_array = np.loadtxt(file_path, dtype=float, comments="#")
-    time = data_array[:, 0]
-    values = data_array[:, 1:]
+    if len(data_array.shape)==1:
+        # static simulation
+        assert data_array.size > 1 # there must be at least one time + value
+        time = np.reshape(data_array[0],(1))
+        values = data_array[1:]
+    else:
+        # multi static or transient simulation(s)
+        time = data_array[:,0]
+        values = data_array[:, 1:]
+
     return (time, values)
 
 
