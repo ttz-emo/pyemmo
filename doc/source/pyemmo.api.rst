@@ -150,7 +150,7 @@ There can be more infos like the copper fill factor or the stator resistance, wh
 json module
 -------------------
 
-.. automodule:: pyemmo.api.json
+.. automodule:: pyemmo.api.json.json
    :members:
    :undoc-members:
    :show-inheritance:
@@ -158,7 +158,7 @@ json module
 importJSON module
 -----------------
 
-.. automodule:: pyemmo.api.importJSON
+.. automodule:: pyemmo.api.json.importJSON
    :members:
    :undoc-members:
    :show-inheritance:
@@ -166,7 +166,7 @@ importJSON module
 modelJSON module
 ----------------
 
-.. automodule:: pyemmo.api.modelJSON
+.. automodule:: pyemmo.api.json.modelJSON
    :members:
    :undoc-members:
    :show-inheritance:
@@ -174,7 +174,7 @@ modelJSON module
 SurfaceJSON module
 ------------------
 
-.. automodule:: pyemmo.api.SurfaceJSON
+.. automodule:: pyemmo.api.json.SurfaceJSON
    :members:
    :undoc-members:
    :show-inheritance:
@@ -182,7 +182,7 @@ SurfaceJSON module
 boundaryJSON module
 -------------------
 
-.. automodule:: pyemmo.api.boundaryJSON
+.. automodule:: pyemmo.api.json.boundaryJSON
    :members:
    :undoc-members:
    :show-inheritance:

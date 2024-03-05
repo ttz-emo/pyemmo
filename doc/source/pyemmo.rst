@@ -18,6 +18,7 @@ PyEMMO Subpackages
    :maxdepth: 2
 
    pyemmo.api
+   pyemmo.api.pyleecan
    pyemmo.functions
    pyemmo.script
 
