@@ -144,7 +144,7 @@ def create_geo_dict(
     logger.debug("End of geometry translation of machine.")
     logger.debug("=======================================")
 
-    plot(geoList=geometry_list, linewidth=1, markersize=3)
+    # plot(geoList=geometry_list, linewidth=1, markersize=3)
 
     logger.debug("End of geometry translation")
     logger.debug("===========================")

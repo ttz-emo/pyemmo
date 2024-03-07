@@ -9,7 +9,9 @@ from pyemmo.definitions import TEST_DIR
 
 from pyemmo.api.json.SurfaceJSON import SurfaceAPI
 from pyemmo.api.pyleecan.translate_surfs import translate_surface
-from pyemmo.api.pyleecan.detectInnerOuterLimit import detect_inner_outer_limit
+from pyemmo.api.pyleecan.detect_inner_outer_limit import (
+    detect_inner_outer_limit,
+)
 
 
 @pytest.mark.parametrize(

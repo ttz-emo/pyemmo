@@ -136,7 +136,7 @@ def calc_wind_contour(
         raise RuntimeError("Could not determine slot opening curve type.")
 
     stator_cont_line_list.append(stator_slot_opening_line)
-    print("windContourLineList:")
-    plot(stator_cont_line_list, linewidth=1, markersize=3, tag=True)
-    print("---")
+    # print("windContourLineList:")
+    # plot(stator_cont_line_list, linewidth=1, markersize=3, tag=True)
+    # print("---")
     return stator_cont_line_list

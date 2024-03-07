@@ -51,10 +51,10 @@ def general_calc_spmsm_cont(
         ):
             rotor_cont_line_list.append(curve)
 
-    logger.debug("---")
-    logger.debug("Plot Überprüfung des Löschens der Seitenlinien.")
-    plot(rotor_cont_line_list, linewidth=1, markersize=3)
-    logger.debug("---")
+    # logger.debug("---")
+    # logger.debug("Plot Überprüfung des Löschens der Seitenlinien.")
+    # plot(rotor_cont_line_list, linewidth=1, markersize=3)
+    # logger.debug("---")
 
     # --------------------------------------------
     # Filtering the outermost points of the rotor:
@@ -212,8 +212,8 @@ def calc_spmsm_rotor_cont(
                     rotor_cont_line_list.remove(rotor_mag_curve)
                     # plot(rotorContourLineList, linewidth=1, markersize=3, tag=True)
 
-    logger.debug("Plot contourLineList ")
-    plot(rotor_cont_line_list, linewidth=1, markersize=3, tag=True)
-    logger.debug("---")
+    # logger.debug("Plot contourLineList ")
+    # plot(rotor_cont_line_list, linewidth=1, markersize=3, tag=True)
+    # logger.debug("---")
 
     return rotor_cont_line_list, r_point_rotor_cont, l_point_rotor_cont
