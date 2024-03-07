@@ -48,8 +48,6 @@ def main(
         pyleecan_machine, (MachineSIPMSM, MachineIPMSM, MachineSyRM)
     ):
         (
-            allBands,
-            geometryList,
             movingband_r,
             magnetizationDict,
             geo_translation_dict,

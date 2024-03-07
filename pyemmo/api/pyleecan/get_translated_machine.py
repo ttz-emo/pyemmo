@@ -24,8 +24,10 @@ from pyleecan.Classes.Machine import Machine as PyleecanMachine
 from ...script.geometry.point import Point
 from ...script.geometry.circleArc import CircleArc
 from ...script.geometry.line import Line
+
 # from ...functions.plot import plot
 from ..json.SurfaceJSON import SurfaceAPI
+from ..json.modelJSON import createSurfaceDict
 from .. import air
 from .create_geo_dict import create_geo_dict
 from .get_coords_for_point import get_x_for_point, get_y_for_point
@@ -393,23 +395,24 @@ def calcs_radii(
 
 def get_translated_machine(
     machine: PyleecanMachine,
-) -> tuple[list[SurfaceAPI], list[SurfaceAPI], float, dict, dict]:
+) -> tuple[float, dict[str, any], dict[str, SurfaceAPI]]:
     """TODO
 
     Args:
-        machine (PyleecanMachine): Pyleecan machine.
+        machine (PyleecanMachine): Pyleecan Machine object.
 
     Raises:
         RuntimeError: If a surface ID is already present in the geometry
             dictionary.
 
     Returns:
-        tuple[list, list[SurfaceAPI], float]: Tuple containing lists of all
-        bands, geometry list, and moving band radius.
+        tuple[list, list[SurfaceAPI], float]: Tuple containing
+            - Moving band radius.
+            - Magnetization dict.
+            - Geometry dict for PyEMMO JSON-api.
     """
-    is_internal_rotor = machine.rotor.is_internal
     diff_radius, max_radius = calcs_radii(
-        machine=machine, is_internal_rotor=is_internal_rotor
+        machine=machine, is_internal_rotor=machine.rotor.is_internal
     )
     # Translation of geometry and creation of rotor and stator contour:
     (
@@ -421,7 +424,7 @@ def get_translated_machine(
         magnetization_dict,
     ) = create_geo_dict(
         machine,
-        is_internal_rotor,
+        machine.rotor.is_internal,
     )
     # Calculation of the MovingBand radii:
     wp = diff_radius / 5
@@ -441,35 +444,31 @@ def get_translated_machine(
         l_point_rotor_cont=l_point_rotor_cont,
         rotor_cont_line_list=rotor_cont_line_list,
     )
-    (
-        stator_air_gap1,
-        stator_air_gap2,
-    ) = build_bands_stator(
-        machine=machine,
-        stator_cont_line_list=stator_cont_line_list,
-        band_radius_list=band_radius_list,
+    # add rotor airgaps to geo-list:
+    geometry_list.extend([rotor_air_gap1, rotor_air_gap2])
+    # add stator airgaps to geo-list:
+    geometry_list.extend(
+        build_bands_stator(
+            machine=machine,
+            stator_cont_line_list=stator_cont_line_list,
+            band_radius_list=band_radius_list,
+        )
     )
-    # All bands:
-    all_bands = [
-        rotor_air_gap1,
-        rotor_air_gap2,
-        stator_air_gap1,
-        stator_air_gap2,
-    ]
-    geometry_list.extend(all_bands)
 
-    geo_translation_dict = {}
-    for surf in geometry_list:
-        if surf.idExt not in geo_translation_dict:
-            geo_translation_dict[surf.idExt] = surf
-        else:
-            raise RuntimeError(
-                f"Surface ID '{surf.idExt}' already in geometry dict!"
-            )
+    # OLD CODE:
+    # geo_translation_dict = {}
+    # for surf in geometry_list:
+    #     if surf.idExt not in geo_translation_dict:
+    #         geo_translation_dict[surf.idExt] = surf
+    #     else:
+    #         raise RuntimeError(
+    #             f"Surface ID '{surf.idExt}' already in geometry dict!"
+    #         )
 
+    # Try to reuse function from json api:
+    geo_translation_dict = createSurfaceDict(geometry_list)
+    
     return (
-        all_bands,
-        geometry_list,
         movingband_r,
         magnetization_dict,
         geo_translation_dict,

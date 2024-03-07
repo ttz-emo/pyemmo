@@ -30,8 +30,6 @@ for machineFile in os.listdir(MACHINE_FILE_DIR):
     else:
         try:
             (
-                all_bands,
-                geometry_list,
                 movingband_r,
                 magnetization_dict,
                 geo_translation_dict,
