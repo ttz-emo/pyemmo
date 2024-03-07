@@ -5,5 +5,28 @@ repos:
     rev: 24.1.1
     hooks:
     -   id: black
-        language_version: python3.11.7
+        language_version: python3.9.13
         # args: [--safe]
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+    -   id: check-added-large-files
+    -   id: check-merge-conflict
+    -   id: check-yaml
+    -   id: end-of-file-fixer
+    -   id: fix-encoding-pragma
+    -   id: trailing-whitespace
+    -   id: debug-statements
+
+-   repo: https://github.com/asottile/pyupgrade
+    rev: v3.15.1
+    hooks:
+    -   id: pyupgrade
+        args: [--py36-plus]
+
+# -   repo: https://github.com/pre-commit/mirrors-mypy
+#     rev: '1.8.0'
+#     hooks:
+#     -   id: mypy
+#         files: pyemmo
+#         args: []
