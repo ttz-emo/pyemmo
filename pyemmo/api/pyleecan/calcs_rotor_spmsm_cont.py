@@ -28,7 +28,8 @@ def general_calc_spmsm_cont(
     Args:
         machine (MachineSIPMSM): Pyleecan machine
         rotorLamSurfList (list[SurfaceAPI]): List of the pyemmo-surfaces of the rotor
-        radius (float): Internal Rotor -> ``rotor_rint`` | External Rotor -> ``rotor_rext``
+        radius (float): if inner rotor ``rotor_rint``, if external rotor
+            ``rotor_rext``
         is_internal_rotor (bool): Internal or external rotor
 
     Returns:

@@ -20,11 +20,6 @@ def calc_wind_contour(
 ) -> list[Union[Line, CircleArc]]:
     """Calculation for the contour of a slot with winding.
 
-        TODO: Filterung der Konturlinien anpassen. Wicklungskontur(en) von der
-        Innenkontur der Statorblechs abziehen. Die Interface-Linie zwischen Nutschlitz
-        und Wicklung ist diejenige Linie, die nicht in der Wicklungs- UND Statorkontur
-        vorkommt.
-
     Args:
         geometry_list (list): A list of geometry elements.
         stator_rint (float): The inner radius of the stator.
@@ -37,17 +32,18 @@ def calc_wind_contour(
         - The wind contour lines are calculated based on the provided geometry list
           and stator inner and outer radii.
         - The wind contour lines are plotted for visualization.
-    """
+    # """
+    # TODO: Filterung der Konturlinien anpassen. Wicklungskontur(en) von der
+    # Innenkontur der Statorblechs abziehen. Die Interface-Linie zwischen
+    # Nutschlitz und Wicklung ist diejenige Linie, die nicht in der Wicklungs-
+    # UND Statorkontur vorkommt.
+    
     stator_cont_line_list: list[Union[Line, CircleArc]] = []
     stator_lam_surf_list = get_stator_surfs(geometry_list=geometry_list)
 
-    # ==================================================
     # Creation of the rotor contour line for MovingBand:
-    # ==================================================
 
-    # --------------------------------------------------------------------------
     # Filtering out the lines that do not lie on the surface facing the air gap:
-    # --------------------------------------------------------------------------
     for curve in stator_lam_surf_list[0].curve:
         # if one point is on rInt (airgap) and none of the curve points
         # is on rExt (outer radius)
@@ -96,9 +92,7 @@ def calc_wind_contour(
         ) is False:
             slot_op_points.append(curve.endPoint)
 
-    # ------------------------
     # For translating SlotW22:
-    # ------------------------
     # center_point = Point(name="centerPoint", x=0, y=0, z=0, meshLength=1)
     # stator_new_line = CircleArc(
     #     name="windNewCircleArc",

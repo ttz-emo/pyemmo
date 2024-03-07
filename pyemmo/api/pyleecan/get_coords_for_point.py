@@ -1,15 +1,11 @@
-"""
-Coordinate Calculation Module
+"""Coordinate Calculation Module
 
-This module provides functions to calculate the x and y coordinates of a point on a circle given its radius and angle.
+This module provides functions to calculate the x and y coordinates of a point
+on a circle given its radius and angle.
 
 Functions:
     - get_x_for_point: Calculates the x-coordinate of a point on a circle.
     - get_y_for_point: Calculates the y-coordinate of a point on a circle.
-
-Classes:
-None
-
 """
 
 import math

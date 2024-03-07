@@ -1,23 +1,20 @@
-"""
-Module to translate winding data from Pyleecan to Pyemmo.
+"""Module to translate winding data from Pyleecan to PyEMMO.
 
-This module provides functions to translate winding data from Pyleecan, an open-source Python library for the design and optimization of electrical machines, to Pyemmo, a library for electromagnetic modeling and simulation developed by Swat-EM.
+This module provides functions to translate winding data from Pyleecan, to 
+PyEMMO by the SWAT-EM package.
 
 Functions:
-    translate_winding(machine: Machine) -> Tuple[swatem.datamodel, List[Union[List[Union[List[int], List[int]]], List[Union[List[int], List[int]]], List[Union[List[int], List[int]]]]]]: Translates the winding from Pyleecan to Pyemmo format.
+    -   ``translate_winding``: Translates the winding from Pyleecan to PyEMMO
+        format.
 
-    The `translate_winding` function takes a Pyleecan `Machine` object as input and returns a tuple containing the translated winding data model and the winding connections in the SWATEM format.
+Note:
+    The winding translation process involves generating a winding data model
+    using the PyEMMO `datamodel` class, extracting winding information from the
+    Pyleecan machine object, and formatting it according to the SWAT-EM
+    conventions.
 
-    Args:
-        machine (Machine): A Pyleecan machine object containing the winding information.
-
-    Returns:
-        tuple[swatem.datamodel, list[Union[list[Union[list[int], list[int]]], list[Union[list[int], list[int]]], list[Union[list[int], list[int]]]]]]: A tuple containing the translated winding data model and the winding connections in the SWATEM format.
-
-    Note:
-        The winding translation process involves generating a winding data model using the Pyemmo `datamodel` class, extracting winding information from the Pyleecan machine object, and formatting it according to the SWATEM conventions.
-
-        TODO: Perhaps return only the data model object and call the `get_phases()` function directly in `createParamDict`.
+    TODO: Perhaps return only the data model object and call the `get_phases()`
+    function directly in `createParamDict`.
 """
 
 from typing import Union
@@ -45,16 +42,16 @@ def translate_winding(
 
     Returns:
         tuple: A tuple containing the following elements:
-            - swatem.datamodel: The data model representing the winding.
-            - list: A list containing information about the winding in the following format:
-                - List of lists representing the winding layout for each phase. Each inner list contains:
+
+            - swatem.datamodel: The datamodel object representing the winding.
+            - list: A list containing information about the winding in a list of
+              lists representing the winding layout for each phase. Each inner
+              list contains:
                     - List of integers: Positive integers representing active slots.
                     - List of integers: Negative integers representing inactive slots.
-
-    Notes:
-        - TODO: It might be possible to only return the data model object and then call the 'get_phases()' function directly in 'createParamDict'.
-
     """
+    # TODO: It might be possible to only return the data model object and
+    # then call the 'get_phases()' function directly in 'createParamDict'.
     winding = swatem.datamodel()
 
     winding.genwdg(

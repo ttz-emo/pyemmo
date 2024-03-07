@@ -1,20 +1,15 @@
-"""
-detectInnerOuterLimit Module
+"""detect_inner_outer_limit Module
 
-This module provides a function to detect and label the most inner and outer curves of the machine geometry.
+This module provides a function to detect and label the most inner and outer
+curves of the machine geometry.
 
 Functions:
-- detect_inner_outer_limit: Detects and labels the most inner and outer curves of the machine geometry.
-
-Classes:
-None
-
+    -   detect_inner_outer_limit: Detects and labels the most inner and outer
+        curves of the machine geometry.
 """
 
 import math
-
 from ..json.SurfaceJSON import SurfaceAPI
-
 
 def detect_inner_outer_limit(
     geometry_list: list[SurfaceAPI],
@@ -28,12 +23,14 @@ def detect_inner_outer_limit(
     and to "OuterLimit" if it is the most outer curve.
 
     Attention when making the function call:\n
-    If the machine has an external rotor:\n
+    If the machine has an **outer rotor**:\n
     ``inner_radius``: ``rotorRint`` or ``statorRint``\n
     ``outer_radius``: ``statorRext`` or ``rotorRext``\n
+
     Combinations that work:
-    * ``rotorRint`` and ``statorRext``
-    * ``statorRint`` and ``rotorRext``
+    
+        - ``rotorRint`` and ``statorRext``
+        - ``statorRint`` and ``rotorRext``
 
     Args:
         geometry_list (list[SurfaceAPI]): List of the machine surfaces.
@@ -42,7 +39,8 @@ def detect_inner_outer_limit(
         has_shaft (bool): Indicates whether the machine has a shaft or not.
 
     Returns:
-        list[SurfaceAPI]: Updated geometry list with curves labeled as "InnerLimit" or "OuterLimit".
+        list[SurfaceAPI]: Updated geometry list with curves labeled as
+        "InnerLimit" or "OuterLimit".
     """
     for surf in geometry_list:
         for curve in surf.curve:

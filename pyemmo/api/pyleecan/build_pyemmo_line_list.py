@@ -12,15 +12,16 @@ Module dependencies:
     - .build_pyemmo_point.build_pyemmo_point
 
 Functions:
-    - build_pyemmo_line_list(
-        pyleecan_line_list: list[Union[Segment, Arc1, Arc2, Arc3]]
-    ) -> list[Union[Line, CircleArc]]:
-        Translates a list of pyleecan curves into a list of pyemmo curves.
+    -   ``build_pyemmo_line_list``: Translates a list of pyleecan curves into a 
+        list of pyemmo curves.
 
 Example:
-    pyleecan_line_list = [Segment(...), Arc1(...), ...]
-    pyemmo_line_list = build_pyemmo_line_list(pyleecan_line_list)
-    # Returns a list of pyemmo curves corresponding to the input pyleecan curves.
+
+    .. code:: python
+
+        pyleecan_line_list = [Segment(...), Arc1(...), ...]
+        pyemmo_line_list = build_pyemmo_line_list(pyleecan_line_list)
+        # Returns a list of pyemmo curves corresponding to the input pyleecan curves.
 
 Raises:
     TypeError: If pyleecan_line_list is not of type 'list'.

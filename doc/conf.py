@@ -19,6 +19,7 @@ extensions = [
     "sphinx.ext.coverage",
     "sphinx.ext.napoleon",
     "sphinx.ext.autosummary",
+    "sphinx.ext.autosectionlabel",
 ]
 
 templates_path = ["_templates"]

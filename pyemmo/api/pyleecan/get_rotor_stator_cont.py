@@ -1,21 +1,21 @@
-"""
-Rotor and Stator Contour Calculation Module
+"""Rotor and Stator Contour Calculation Module
 
-This module provides functions to calculate the rotor and stator contours of electric machines.
+This module provides functions to calculate the rotor and stator contours of
+electric machines.
 
 Functions:
-    - get_spmsm_rotor_cont: Calculates the rotor contour for Surface Permanent Magnet Synchronous Machine (SPMSM).
-    - get_even_rotor_cont: Calculates the rotor contour for Interior Permanent Magnet Synchronous Machine (IPMSM) and Synchronous Reluctance Machine (SynRM).
-    - get_winding_cont: Calculates the stator contour with winding.
-
-Classes:
-None
+    -   ``get_spmsm_rotor_cont``: Calculates the rotor contour for Surface
+        Permanent Magnet Synchronous Machine (SPMSM).
+    -   ``get_even_rotor_cont``: Calculates the rotor contour for Interior
+        Permanent Magnet Synchronous Machine (IPMSM) and Synchronous Reluctance
+        Machine (SynRM).
+    -   ``get_winding_cont``: Calculates the stator contour with winding.
 
 """
 
 from typing import Union
 
-from pyleecan.Classes.Machine import Machine
+from pyleecan.Classes.Machine import Machine as PyleecanMachine
 from pyleecan.Classes.MachineSCIM import MachineSCIM
 
 from ...script.geometry.circleArc import CircleArc
@@ -28,18 +28,23 @@ from .calc_wind_cont import calc_wind_contour
 
 
 def get_spmsm_rotor_cont(
-    geometry_list: list, machine: Machine, is_internal_rotor: bool = True
+    geometry_list: list,
+    machine: PyleecanMachine,
+    is_internal_rotor: bool = True,
 ) -> tuple[list[Union[Line, CircleArc]], Point, Point]:
     """
     Get the list of curves of the contour of the rotor with a surface magnet.
 
     Args:
-        geometry_list (list): List of all surfaces of the machine (Pyemmo format).
-        machine (Machine): Pyleecan machine.
-        is_internal_rotor (bool, optional): True if the rotor is internal, False otherwise. Defaults to True.
+        geometry_list (list): List of all surfaces of the machine (PyEMMO format).
+        machine (PyleecanMachine): Pyleecan Machine object.
+        is_internal_rotor (bool, optional): True if the rotor is internal,
+            False if not. Defaults to True.
 
     Returns:
-        tuple[list[Union[Line, CircleArc]], Point, Point]: List of rotor contour lines, right point of the rotor contour, and left point of the rotor contour.
+        tuple[list[Union[Line, CircleArc]], Point, Point]: List of rotor contour
+        lines, right point of the rotor contour, and left point of the rotor
+        contour.
     """
 
     rotor_lam_surf_list, rotor_mag_surf_list = get_rotor_surfs(
@@ -75,18 +80,24 @@ def get_spmsm_rotor_cont(
 
 
 def get_even_rotor_cont(
-    geometry_list: list, machine: Machine, is_internal_rotor: bool = True
+    geometry_list: list,
+    machine: PyleecanMachine,
+    is_internal_rotor: bool = True,
 ) -> tuple[list[Union[Line, CircleArc]], Point, Point]:
     """
-    Get the list of curves of the contour of the rotor for Interior Permanent Magnet Synchronous Machine (IPMSM) and Synchronous Reluctance Machine (SynRM).
+    Get the list of curves of the contour of the rotor for Interior Permanent
+    Magnet Synchronous Machine (IPMSM) and Synchronous Reluctance Machine (SynRM).
 
     Args:
-        geometry_list (list): List of all surfaces of the machine (Pyemmo format).
-        machine (Machine): Pyleecan machine.
-        is_internal_rotor (bool, optional): True if the rotor is internal, False otherwise. Defaults to True.
+        geometry_list (list): List of all surfaces of the machine (PyEMMO format).
+        machine (PyleecanMachine): Pyleecan Machine object.
+        is_internal_rotor (bool, optional): True if the rotor is internal,
+            False otherwise. Defaults to True.
 
     Returns:
-        tuple[list[Union[Line, CircleArc]], Point, Point]: List of rotor contour lines, right point of the rotor contour, and left point of the rotor contour.
+        tuple[list[Union[Line, CircleArc]], Point, Point]: List of rotor contour
+        lines, right point of the rotor contour, and left point of the rotor
+        contour.
     """
 
     rotor_lam_surf_list = []
@@ -118,14 +129,14 @@ def get_even_rotor_cont(
 
 
 def get_winding_cont(
-    geometry_list: list, machine: Machine, is_internal_rotor: bool
+    geometry_list: list, machine: PyleecanMachine, is_internal_rotor: bool
 ) -> list[Union[Line, CircleArc]]:
     """
     Get the list of curves of the contour of the stator with winding.
 
     Args:
         geometry_list (list): List of all surfaces of the machine (Pyemmo format).
-        machine (Machine): Pyleecan machine.
+        machine (PyleecanMachine): Pyleecan machine.
         is_internal_rotor (bool): True if the rotor is internal, False otherwise.
 
     Returns:

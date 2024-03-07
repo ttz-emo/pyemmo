@@ -1,18 +1,18 @@
 """Module: pyemmo_material_conversion"""
 
 from numpy import Inf
-from pyleecan.Classes.Material import Material as pyleecanMat
+from pyleecan.Classes.Material import Material as PyleecanMaterial
 from pyleecan.Classes.MatMagnetics import MatMagnetics
 from ...script.material.material import Material
 
 
-def build_pyemmo_material(pyleecan_material: pyleecanMat) -> Material:
+def build_pyemmo_material(pyleecan_material: PyleecanMaterial) -> Material:
     """Translates a pyleecan material into a pyemmo material.
 
     This function translates a pyleecan material into a pyemmo material.
 
     Args:
-        pyleecan_material (pyleecanMat): The pyleecan material to be translated.
+        pyleecan_material (PyleecanMaterial): The pyleecan material to be translated.
 
     Returns:
         Material: The translated pyemmo material.

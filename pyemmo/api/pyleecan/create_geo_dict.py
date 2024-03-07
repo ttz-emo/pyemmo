@@ -15,24 +15,24 @@ Module dependencies:
     - ..logger
 
 Functions:
-    - create_geo_dict(
-        machine: Machine,
-        is_internal_rotor: bool,
-    ) -> tuple[
-        list[SurfaceAPI],
-        list[Union[Line, CircleArc]],
-        list[Union[Line, CircleArc]],
-        Point,
-        Point,
-        dict,
-    ]:
-        Creates a dictionary containing geometry information for communication between Pyleecan and pyemmo.
+    -   ``create_geo_dict``: Creates a dictionary containing geometry
+        information for communication between Pyleecan and pyemmo.
 
 Example:
-    machine = MachineIPMSM(...)
-    is_internal_rotor = True
-    geometry_list, rotor_contour_lines, stator_contour_lines, r_point_rotor_cont, l_point_rotor_cont, magnetization_dict = create_geo_dict(machine, is_internal_rotor)
-    # Returns geometry objects, contour lines, and magnetization dictionary suitable for pyemmo.
+
+    .. code:: python
+
+        machine = MachineIPMSM(...)
+        is_internal_rotor = True
+        (
+            geometry_list,
+            rotor_contour_lines, 
+            stator_contour_lines, 
+            r_point_rotor_cont, 
+            l_point_rotor_cont, 
+            magnetization_dict
+        ) = create_geo_dict(machine, is_internal_rotor)
+        # Returns geometry objects, contour lines, and magnetization dictionary suitable for pyemmo.
 
 Raises:
     TypeError: If unable to generate contours of the given machine type.
@@ -43,7 +43,7 @@ from typing import List, Union
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
 from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 from pyleecan.Classes.MachineSyRM import MachineSyRM
-from pyleecan.Classes.Machine import Machine
+from pyleecan.Classes.Machine import Machine as PyleecanMachine
 
 from ...functions.plot import plot
 from ...script.geometry.line import Line
@@ -62,7 +62,7 @@ from .get_magnetization_dict import get_magnetization_dict
 
 
 def create_geo_dict(
-    machine: Machine,
+    machine: PyleecanMachine,
     is_internal_rotor: bool,
 ) -> tuple[
     list[SurfaceAPI],
@@ -73,13 +73,15 @@ def create_geo_dict(
     dict,
 ]:
     """
-    Creates a dictionary containing geometry information for communication between Pyleecan and pyemmo.
+    Creates a dictionary containing geometry information for communication
+    between Pyleecan and pyemmo.
 
-    This function translates the machine geometry into a format suitable for communication with pyemmo.
+    This function translates the machine geometry into a format suitable for
+    communication with pyemmo.
     It generates geometry objects, contour lines, and magnetization dictionaries for the machine.
 
     Args:
-        machine (Machine): The machine object to translate into pyemmo-compatible geometry.
+        machine (PyleecanMachine): The machine object to translate into pyemmo-compatible geometry.
         is_internal_rotor (bool): True if the rotor is internal, False otherwise.
 
     Returns:

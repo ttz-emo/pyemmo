@@ -1,26 +1,17 @@
 """
 Module: translate_surfs
 
-This module provides functions for translating surfaces from pyleecan format to pyemmo format.
-
-Classes:
-    - SurfaceAPI: Represents a surface in pyemmo format.
+This module provides functions for translating surfaces from pyleecan format to 
+pyemmo format.
 
 Functions:
-    - build_pyemmo_material(pyleecan_material: pyleecan.Classes.Material) -> Material:
-        Translates a pyleecan-material into a pyemmo-material.
+    -   ``build_pyemmo_material``: Translates a pyleecan-material into a pyemmo-
+        material.
 
-    - build_pyemmo_line_list(pyleecan_line_list: list) -> list:
-        Translates a list of pyleecan curves into a list of pyemmo curves.
+    -   ``build_pyemmo_line_list``: Translates a list of pyleecan curves into a
+        list of pyemmo curves.
 
-    - translate_surfs(
-        name_split_list: list[str],
-        machine: pyleecan.Classes.Machine.Machine,
-        surface: pyleecan.Classes.Surface.Surface,
-        angle_point_ref_list: list
-    ) -> tuple[SurfaceAPI, list]:
-        Translates pyleecan surfaces into pyemmo surfaces.
-
+    -   ``translate_surfs``: Translates pyleecan surfaces into pyemmo surfaces.
 """
 
 from math import pi
@@ -49,14 +40,16 @@ def translate_surface(
     Args:
         name_split_list (list[str]): List with the splitted names.
         machine (pyleecan.Classes.Machine.Machine): Import of the motor.
-        surface (pyleecan.Classes.Surface.Surface): Pyleecan surface to be translated.
+        surface (pyleecan.Classes.Surface.Surface): Pyleecan surface to be
+            translated.
         angle_point_ref_list (list): List of angle point references.
 
     Raises:
         ValueError: If there is an issue with the input values.
 
     Returns:
-        tuple[SurfaceAPI, list]: Translated pyemmo surface and updated angle point reference list.
+        tuple[SurfaceAPI, list]: Translated pyemmo surface and updated angle
+        point reference list.
     """
     if name_split_list[0] == "Rotor":
         if name_split_list[2] == "Lamination":

@@ -12,32 +12,27 @@ Module dependencies:
     - pyemmo.api.SurfaceJSON.SurfaceAPI
 
 Functions:
-    - get_magnetization_dict(
-        machine: Machine,
-        angle_point_ref_list: list[float],
-        geometry_list: list[SurfaceAPI]
-    ) -> dict
+    - ``get_magnetization_dict``: Return magnetization info of magnets in model.
 
 Example:
-    machine = MachineSIPMSM(...)
-    angle_point_ref_list = [30, 60]
-    geometry_list = [SurfaceAPI(...), SurfaceAPI(...), ...]
+    .. code:: python
+
+        machine = MachineSIPMSM(...)
+        angle_point_ref_list = [30, 60]
+        geometry_list = [SurfaceAPI(...), SurfaceAPI(...), ...]
     
-    magnetization_dict = get_magnetization_dict(machine, angle_point_ref_list, geometry_list)
+        magnetization_dict = get_magnetization_dict(
+            machine,
+            angle_point_ref_list,
+            geometry_list
+        )
 
-    Note: This function generates a magnetization dictionary for the specified 
-    machine geometry, supporting both SIPMSM and IPMSM.
-
-Args:
-    machine (Machine): The machine object representing the geometry.
-    angle_point_ref_list (list[float]): List of angle values corresponding to 
-        reference points for magnetization.
-    geometry_list (list[SurfaceAPI]): List of surface geometry elements.
-
-Returns:
-    dict: A dictionary containing magnetization information for each magnet in the geometry.
+    .. note::
+        This function generates a magnetization dictionary for the specified 
+        machine geometry, supporting both SIPMSM and IPMSM.
 
 """
+
 from numpy import pi
 
 from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
@@ -52,7 +47,8 @@ def get_magnetization_dict(
     angle_point_ref_list: list[float],
     geometry_list: list[SurfaceAPI],
 ) -> dict:
-    """Generate a dictionary mapping magnets to their respective magnetization angles.
+    """Generate a dictionary mapping magnets to their respective magnetization
+    angles.
 
     This function calculates and returns a dictionary containing information about
     the magnetization of magnets in the specified machine geometry. The resulting
@@ -61,11 +57,13 @@ def get_magnetization_dict(
 
     Args:
         machine (Machine): The machine object representing the geometry.
-        angle_point_ref_list (list[float]): List of angle values corresponding to reference points for magnetization.
+        angle_point_ref_list (list[float]): List of angle values corresponding
+            to reference points for magnetization.
         geometry_list (list[SurfaceAPI]): List of surface geometry elements.
 
     Returns:
-        dict: A dictionary containing magnetization information for each magnet in the geometry.
+        dict: A dictionary containing magnetization information for each magnet
+        in the geometry.
 
     Raises:
         ValueError: If the magnetization type is unsupported.
@@ -74,16 +72,18 @@ def get_magnetization_dict(
         The function supports both SIPMSM and IPMSM.
 
     Example:
-        ```
-        machine = MachineSIPMSM(...)
-        angle_point_ref_list = [30, 60]
-        geometry_list = [SurfaceAPI(...), SurfaceAPI(...), ...]
-        magnetization_dict = get_magnetization_dict(machine, angle_point_ref_list, geometry_list)
-        ```
+        .. code:: python
+
+            machine = MachineSIPMSM(...)
+            angle_point_ref_list = [30, 60]
+            geometry_list = [SurfaceAPI(...), SurfaceAPI(...), ...]
+            magnetization_dict = get_magnetization_dict(
+                machine,
+                angle_point_ref_list,
+                geometry_list
+            )
     """
-    # ----------------------------------------------------
     # Filling the magnetization dict if surface is magnet:
-    # ----------------------------------------------------
     magnetization_dict = {}
 
     # Changing the 'idExt' of the SurfaceAPI to 'Mag0', 'Mag1', 'Mag2', ...

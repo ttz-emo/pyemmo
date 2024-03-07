@@ -700,9 +700,11 @@ def getSlotPhase(
             you have multiple slot side (>2) per lamination segment.)
 
     Returns:
-        Literal['p','n']: Winding direction (
-            'p' = positiv = +z-direction;
-            'n' = negative = -z-direction)
+        Literal['p','n']: Winding direction
+
+            -   'p' = positiv = +z-direction
+            -   'n' = negative = -z-direction
+            
         Literal["u", "v", "w"]: Phase indicator
 
     Raises:

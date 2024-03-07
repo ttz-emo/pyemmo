@@ -17,7 +17,7 @@ PyEMMO Subpackages
 .. toctree::
    :maxdepth: 2
 
-   pyemmo.api
+   pyemmo.api.json
    pyemmo.api.pyleecan
    pyemmo.functions
    pyemmo.script
