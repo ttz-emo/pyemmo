@@ -1,8 +1,47 @@
 [build-system]
-requires = [
-    "setuptools>=42",
-    "wheel"
-]
+requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyemmo"
+authors = [
+    { name = "AG-EM TTZ-EMO" },
+    { name = "Max Schuler", email = "max.schuler@thws.de" },
+    { name = "Sasithon Koenig" },
+]
+maintainers = [{ name = "Max Schuler", email = "max.schuler@thws.de" }]
+readme = "README.md"
+description = "PyEMMO is a interface for modeling electrical machines in the open-source FEA software Onelab"
+urls = { Repository = "https://gitlab.ttz-emo.thws.de/ag-em/pyemmo" }
+requires-python = ">=3.6"
+license = { file = "LICENSE" }
+keywords = [
+    "electrical machine",
+    "simulation",
+    "onelab",
+    "getdp",
+    "gmsh",
+    "fea",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+]
+# dependencies = []
+# try to find version and dependencies automatically
+dynamic = ["version", "dependencies"]
+
+# Optional dependencies
+[project.optional-dependencies]
+GIT = ['GitPython; python_version>="3.7"'] # requires python>=3.7 since 3.1.23!
+
+# find packages in source directory
+[tool.setuptools.packages.find]
+where = ["pyemmo"]
+# include = ["pkg*"]
+# exclude = ["additional*"]`
+namespaces = false
+
 [tool.black]
-line-length = 79 
+line-length = 79
