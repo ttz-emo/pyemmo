@@ -1,4 +1,5 @@
 from cmath import pi
+from math import gcd
 from typing import List, Literal, Union
 from matplotlib import pyplot as plt
 
@@ -17,11 +18,10 @@ from ...script import default_param_dict
 # Für die Verwendung des Baukastens, ist die Spezifizierung der Maschine sinnvoll.
 # Hierfür sollte man deshalb bspw. die Klasse machineSPMSM (für Oberflächenmagnete) benutzen.
 ###
-class MachineAllType(object):
+class MachineAllType:
     def __init__(
         self,
         nbrPolePairs: Union[int, float],
-        symmetryFactor: int,
         rotor: Rotor,
         stator: Stator,
         name: str = "",
@@ -42,7 +42,6 @@ class MachineAllType(object):
         ###Name des Objektes.
         self.name = name if name else "machine"
         self.nbrPolePairs = nbrPolePairs
-        self.symmetryFactor = symmetryFactor
         ###Objekt der Klasse Rotor.
         self.rotor = rotor
         ###Objekt der Klasse Stator.
@@ -187,17 +186,25 @@ class MachineAllType(object):
         Returns:
             int: Symmetry Factor
         """
-        return self._symmetryFactor
+        if self.rotor and self.stator:
+            sym_machine = gcd(self.stator.nbrSlots, self.nbrPolePairs / 2)
+            sym_winding = self.stator.winding.get_periodicity_t() * 2
+            # logger.debug("Symmetry factor winding: %s",{sym_winding})
+            sym_factor = min(sym_winding, sym_machine)
+            return sym_factor
+        raise RuntimeError(
+            "Tried to compute sym factor, but rotor/stator not defined!"
+        )
 
-    @symmetryFactor.setter
-    def symmetryFactor(self, symFactor: int):
-        """Setter for Symmetry Factor
+    # @symmetryFactor.setter
+    # def symmetryFactor(self, symFactor: int):
+    #     """Setter for Symmetry Factor
 
-        Args:
-            symFactor (int): Symmetry Factor
-        """
-        assert type(symFactor) == int
-        self._symmetryFactor = symFactor
+    #     Args:
+    #         symFactor (int): Symmetry Factor
+    #     """
+    #     assert type(symFactor) == int
+    #     self._symmetryFactor = symFactor
 
     @property
     def nbrPolePairs(self) -> int:
@@ -332,17 +339,12 @@ class MachineAllType(object):
 
     @property
     def physicalElements(self) -> List[PhysicalElement]:
-        """_summary_
+        """Get a list of all physical elements
 
         Returns:
-            List[PhysicalElement]: _description_
+            List[PhysicalElement]: List of physical elements
         """
-        physicals: List[PhysicalElement] = list()
-        for physical in (
-            self.stator.physicalElements + self.rotor.physicalElements
-        ):
-            physicals.append(physical)
-        return physicals
+        return self.stator.physicalElements + self.rotor.physicalElements
 
     def setFunctionMesh(
         self,
@@ -350,13 +352,21 @@ class MachineAllType(object):
         meshGainFactor: float,
         basisMeshsize: float = None,
     ):
-        """add functional mesh size setting for machine if you don't want to specify mesh sizes individually. Mesh size is set to increase from airgap to both sides (rotor and stator). Maximal mesh size will be basisMeshsize * meshGainFactor.
-        If basisMeshsize is not given, its set to 2*Pi* Rotor_Movingband_Radius / 360.
+        """add functional mesh size setting for machine if you don't want to
+        specify mesh sizes individually. Mesh size is set to increase from
+        airgap to both sides (rotor and stator). Maximal mesh size will be
+        basisMeshsize * meshGainFactor.
+        If basisMeshsize is not given, its set to
+        2 * Pi * Rotor_Movingband_Radius / 360.
 
         Args:
-            functionType (Literal[&quot;linear&quot;, &quot;quad&quot;]): linear or quadratic function for mesh size.
-            meshGainFactor (float): Gain factor for mesh size from airgap to outer machine limit.
-            basisMeshsize (float, optional): Basis mesh size to use near the airgap (minimal mesh size). Defaults to None = 2*Pi* Rotor_Movingband_Radius / 360.
+            functionType (Literal[&quot;linear&quot;, &quot;quad&quot;]):
+                linear or quadratic function for mesh size.
+            meshGainFactor (float): Gain factor for mesh size from airgap to
+                outer machine limit.
+            basisMeshsize (float, optional): Basis mesh size to use near the
+                airgap (minimal mesh size).
+                Defaults to 2 * Pi * Rotor_Movingband_Radius / 360.
         """
         rMb = self.rotor.movingBandRadius
         # get max. stator radius:
@@ -368,11 +378,14 @@ class MachineAllType(object):
                         if p.radius > rS:
                             rS = p.radius
         if not basisMeshsize:
+            #  FIXME: Here Movingband height should be considered! Basis mesh
+            # size should not be bigger than 2x MB height!
             basisMeshsize = 2 * pi * rMb / 360
             # calc movingband hight
-            h_mb = abs(self.rotor.movingBandRadius - self.stator.movingBandRadius)
+            h_mb = abs(
+                self.rotor.movingBandRadius - self.stator.movingBandRadius
+            )
             basisMeshsize = h_mb
-            
 
         # calculate linear mesh size functions (ax+b)
         if functionType == "linear":
