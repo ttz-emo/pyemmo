@@ -1,4 +1,5 @@
 """Module for Class Rotor"""
+
 from typing import Dict, List, Union
 from matplotlib import pyplot as plt
 from .magnet import Magnet
@@ -12,14 +13,14 @@ from ...definitions import DEFAULT_GEO_TOL
 
 
 class Rotor:
-    """Eine Instanz der Klasse Rotor beschreibt den Rotor eine elektrische Maschine im
-    dreidimensionalen Raum. Diese Klasse wird in Verbindung mit der Klasse machineAllType
-    verwendet. Um welchen Typ Maschine es sich handelt, definiert der Nutzer selbst, durch die
-    Definition seiner Physical Elements. Diese Klasse sollte man nur verwenden, wenn die Geometrie
-    der Maschine als Import (bspw. Step) weiter verarbeitet wird. Für die Verwendung des Baukastens,
-    ist die Spezifizierung der Maschine zunächst sinnvoll. Hierfür sollte man deshalb spezifische
-    Klassen bspw. machineSPMSM (für Oberflächenmagnete) benutzen und die dazugehörige Klasse
-    RotorSPMSM verwenden.
+    """An instance of the Rotor class describes the rotor of an electrical
+    machine in three-dimensional space. This class is used in conjunction with
+    the class machineAllType. The user himself defines the type of machine by
+    defining his physical elements. This class should only be used if the
+    geometry of the machine is further processed as an import (e.g. Step). To
+    use the construction kit, it makes sense to specify the machine first. You
+    should therefore use specific classes for this, e.g. machineSPMSM (for
+    surface magnets) and the associated class RotorSPMSM.
     """
 
     def __init__(
@@ -31,12 +32,12 @@ class Rotor:
         """
         Constructor of class Rotor
         Args:
-            physicalElements (List[PhysicalElement]): List of PhysicalElement objects defining geometry and materials.
+            physicalElements (List[PhysicalElement]): List of PhysicalElement
+                objects defining geometry and materials.
             name (str): Defaults to "".
-            axLen (float): Active axial length of stator lamination in [m]. Defaults to 1.0
+            axLen (float): Active axial length of stator lamination in [m].
+                Defaults to 1.0
 
-        Raises:
-            Nothing
         """
         self.name = name if name else "Rotor"  # rotor name
         self.physicalElements = physicalElementList  # rotor physical elements
@@ -103,7 +104,9 @@ class Rotor:
         return self._physicalElements
 
     @physicalElements.setter
-    def physicalElements(self, physicalElementsList: List[PhysicalElement]) -> None:
+    def physicalElements(
+        self, physicalElementsList: List[PhysicalElement]
+    ) -> None:
         """Setter of PhysicalElements-List
 
         Args:
@@ -125,7 +128,9 @@ class Rotor:
             self._physicalElements = [physicalElementsList]
             self._createDomainForRotor()  # recreate domains for rotor with new elements
             return None
-        raise TypeError(f"physicalElementList- type: {type(physicalElementsList)}.")
+        raise TypeError(
+            f"physicalElementList- type: {type(physicalElementsList)}."
+        )
 
     def addPhysicalElements(self, physicalElementList: List[PhysicalElement]):
         """Append PhysicalElements to the rotor and recreate domains"""
@@ -223,7 +228,9 @@ class Rotor:
         domainNL = []  # Alle nicht linearen Flächen
         domainL = []  # Alle linearen Flächen
 
-        domainMoving = []  # Alle Teile die sich drehen, inkl. Moving Band (alle)
+        domainMoving = (
+            []
+        )  # Alle Teile die sich drehen, inkl. Moving Band (alle)
         movingBandAux = []  # Bei Teilmodell -> die restlichen Moving Band
         domainAirgap = []  # Luftspalt im Rotor
 
@@ -252,7 +259,8 @@ class Rotor:
                 else:
                     physName = physElem.name
                     raise RuntimeError(
-                        f"No Material defined: ({physName})", f"Material is {material}"
+                        f"No Material defined: ({physName})",
+                        f"Material is {material}",
                     )
 
                 # domainM zuweisen
