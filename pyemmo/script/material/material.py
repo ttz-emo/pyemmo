@@ -5,6 +5,7 @@
 from typing import Union
 import warnings
 import numpy
+from numpy.typing import NDArray
 
 from .materialManagement import getMaterial
 from ... import rootLogger as logger
@@ -20,7 +21,7 @@ class Material:
         relPermeability: float = None,
         remanence: float = None,
         tempCoefRem: float = None,
-        BH: numpy.ndarray = None,
+        BH: NDArray = None,
         density: float = None,
         thermalConductivity: float = None,
         thermalCapacity: float = None,
@@ -38,22 +39,11 @@ class Material:
                 "Temperature coefficient for Br is given without value for Br "
                 f"in Material {name}!"
             )
-        if isinstance(BH, numpy.ndarray):
-            # material is linear if BH curve is given AND not empty
-            self._BH = BH
-            linear = False if BH.size else True
-        elif BH is None:
-            self._BH = numpy.empty(0)
-            linear = True
-        else:
-            raise ValueError(
-                f"BH curve must be numpy.ndarray, but is {type(BH)}!"
-            )
+        self.BH = BH
 
         self.density = density
         self.thermalConductivity = thermalConductivity
         self.thermalCapacity = thermalCapacity
-        self.linear = linear
 
     def __eq__(self, __o: object) -> bool:
         if isinstance(__o, self.__class__):
@@ -191,7 +181,7 @@ class Material:
         return self._tempCoefRem
 
     @property
-    def BH(self, temperature: float = None) -> numpy.ndarray:
+    def BH(self, temperature: float = None) -> NDArray:
         """getter of BH
 
         Args:
@@ -215,7 +205,7 @@ class Material:
 
     # pylint: disable=invalid-name
     @BH.setter
-    def BH(self, newBH: numpy.ndarray):
+    def BH(self, newBH: NDArray):
         """setter of BH curve.
 
         Args:
@@ -224,13 +214,14 @@ class Material:
         """
         if newBH is None:
             # if BH is None, set empty array
-            self._BH = (numpy.empty(0),)
+            self._BH = numpy.empty(0)
+            self.linear = True
         elif isinstance(newBH, list):
             # if list is given, set numpy array
-            self.linear = False
-            self._BH = numpy.array(
-                newBH
-            )  # recall setter to check valid BH shape
+            # RECALL SETTER to check valid BH shape
+            # self.linear = False # no need to set here because setter is
+            # recalled
+            self.BH = numpy.array(newBH)
         elif isinstance(newBH, numpy.ndarray):
             if newBH.ndim == 2:
                 # number of dimensions must be 2
@@ -461,7 +452,7 @@ class Material:
             is_linear (bool): flag if material is linear (has no BH curve).
         """
         if isinstance(is_linear, bool):
-            if is_linear and self.BH.size:
+            if is_linear and self.BH.size != 0:
                 logger.warning(
                     "Material %s was set linear and has BH curve!", self.name
                 )
