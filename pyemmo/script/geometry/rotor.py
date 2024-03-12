@@ -1,13 +1,33 @@
 """Module for Class Rotor"""
 
+import copy
 from typing import Dict, List, Union
 from matplotlib import pyplot as plt
+from . import default_domain_dict
 from .magnet import Magnet
 from .movingBand import MovingBand
 from .surface import Surface
 from .line import Line
 from .domain import Domain
 from .physicalElement import PhysicalElement
+from .. import (
+    DOMAIN_PRIMARY,
+    DOMAIN_SECONDARY,
+    DOMAIN_LIMIT,
+    DOMAIN_MOVINGBAND,
+    DOMAIN_MOVINGBAND_AUX,
+    DOMAIN_AIRGAP,
+    DOMAIN_ROTOR,
+    DOMAIN_STRANDED,
+    DOMAIN_MAGNET,
+    DOMAIN_LAMINATION,
+    DOMAIN_BAR,
+    DOMAIN_CONDUCTING,
+    DOMAIN_NON_CONDUCTING,
+    DOMAIN,
+    DOMAIN_NON_LINEAR,
+    DOMAIN_LINEAR,
+)
 from ..material.electricalSteel import ElectricalSteel
 from ...definitions import DEFAULT_GEO_TOL
 
@@ -195,6 +215,7 @@ class Rotor:
     def sortPhysicals(self) -> Dict[str, List[PhysicalElement]]:
         """Create a dict with the physical elements sorted into different domains with
         domain names as keys
+
             The dict will look like
             {
                 "domainS": phy_domainS,
@@ -217,26 +238,30 @@ class Rotor:
         Returns:
             Dict[str, List[PhysicalElement]]: Sorted Physicals Dict
         """
-        domainS = []  # Eingeprägte Ströme
-        domainM = []  # Magnete
-        domainLam = []  # Lamination (part with material specified lamination)
-        domainC = []  # Leitende Flächen z. B. Stäbe ASM
-        domainCC = []  # alle elektrisch nicht leitenden Flächen
-        allMbLines = []  # Moving Band
+        domain_dict: Dict[str, List[PhysicalElement]] = copy.deepcopy(
+            default_domain_dict
+        )
+        # domainS = []  # Eingeprägte Ströme
+        # domainM = []  # Magnete
+        # domainLam = []  # Lamination (part with material specified lamination)
+        # domainBar = []  # Conducting rotor bars of ASM
+        # domainC = []  # Leitende Flächen z. B. Stäbe ASM
+        # domainCC = []  # alle elektrisch nicht leitenden Flächen
+        # allMbLines = []  # Moving Band
 
-        domain = []  # Alle Flächen
-        domainNL = []  # Alle nicht linearen Flächen
-        domainL = []  # Alle linearen Flächen
+        # domain = []  # Alle Flächen
+        # domainNL = []  # Alle nicht linearen Flächen
+        # domainL = []  # Alle linearen Flächen
 
-        domainMoving = (
-            []
-        )  # Alle Teile die sich drehen, inkl. Moving Band (alle)
-        movingBandAux = []  # Bei Teilmodell -> die restlichen Moving Band
-        domainAirgap = []  # Luftspalt im Rotor
+        # domainMoving = (
+        # []
+        # )  # Alle Teile die sich drehen, inkl. Moving Band (alle)
+        # movingBandAux = []  # Bei Teilmodell -> die restlichen Moving Band
+        # domainAirgap = []  # Luftspalt im Rotor
 
-        primaryLines = []  # Teilmodell primarykante
-        slaveLines = []  # Teilmodell Slavekante
-        limitLines = []  # Randlinien ohne Primär- und Sekundärkanten
+        # primaryLines = []  # Teilmodell primarykante
+        # slaveLines = []  # Teilmodell Slavekante
+        # limitLines = []  # Randlinien ohne Primär- und Sekundärkanten
         for physElem in self.physicalElements:
             geoType = physElem.geoElementType
             if geoType == Surface:
@@ -245,17 +270,17 @@ class Rotor:
                 if material:
                     # if conductivity not None add to domainC
                     if material.conductivity:
-                        domainC.append(physElem)
+                        domain_dict[DOMAIN_CONDUCTING].append(physElem)
                     else:
-                        domainCC.append(physElem)
+                        domain_dict[DOMAIN_NON_CONDUCTING].append(physElem)
                     # if material is linear
                     if material.linear:
-                        domainL.append(physElem)
+                        domain_dict[DOMAIN_LINEAR].append(physElem)
                     else:
-                        domainNL.append(physElem)
+                        domain_dict[DOMAIN_NON_LINEAR].append(physElem)
                     # if material is laminated
                     if isinstance(material, ElectricalSteel):
-                        domainLam.append(physElem)
+                        domain_dict[DOMAIN_LAMINATION].append(physElem)
                 else:
                     physName = physElem.name
                     raise RuntimeError(
@@ -266,73 +291,65 @@ class Rotor:
                 # domainM zuweisen
                 if physElem.type == "Magnet":
                     magnet: Magnet = physElem
-                    domainM.append(magnet)
-                    # remove magnet from C or CC because assignment is done by getdp
-                    if magnet in domainC:
-                        domainC.remove(magnet)
-                    elif magnet in domainCC:
-                        domainCC.remove(magnet)
+                    domain_dict[DOMAIN_MAGNET].append(magnet)
+                    # remove magnet from C or CC because assignment is done by
+                    # getdp. TODO: Improve this!
+                    if magnet in domain_dict[DOMAIN_CONDUCTING]:
+                        domain_dict[DOMAIN_CONDUCTING].remove(magnet)
+                    elif magnet in domain_dict[DOMAIN_NON_CONDUCTING]:
+                        domain_dict[DOMAIN_NON_CONDUCTING].remove(magnet)
                     continue
 
-                # domainS zuweisen
-                if physElem.type == "Slot":
-                    domainS.append(physElem)
-                    continue
+                # # domainS zuweisen
+                # if physElem.type == "Slot":
+                #     domainS.append(physElem)
+                #     continue
 
                 # airgap
                 if physElem.type == "AirGap":
-                    domainAirgap.append(physElem)
+                    domain_dict[DOMAIN_AIRGAP].append(physElem)
 
                 # Stator lamination if not allready defined
                 if physElem.type == "Lamination":
                     # pE could allready been added due to material
-                    if physElem not in domainLam:
-                        domainLam.append(physElem)
+                    if physElem not in domain_dict[DOMAIN_LAMINATION]:
+                        domain_dict[DOMAIN_LAMINATION].append(physElem)
 
-                domain.append(physElem)  # append Surface to main Domain
-                # append Surface to rotorMoving Domain (rotorMoving also includes movingband lines!)
-                domainMoving.append(physElem)
+                # Stator lamination if not allready defined
+                if physElem.type == "Bar":
+                    domain_dict[DOMAIN_BAR].append(physElem)
+
+                # append Surface to main Domain
+                domain_dict[DOMAIN].append(physElem)
+
+                # # append Surface to rotorMoving Domain (rotorMoving also
+                # # includes movingband lines!)
+                # domainMoving.append(physElem)
+
             ## GEOTYPE LINE:
             elif geoType == Line:
                 # MB zuweisen
                 if physElem.type == "MovingBand":
-                    allMbLines.append(physElem)
+                    domain_dict[DOMAIN_MOVINGBAND].append(physElem)
                     if physElem.auxiliary:
-                        movingBandAux.append(physElem)
+                        domain_dict[DOMAIN_MOVINGBAND_AUX].append(physElem)
 
-                    domainMoving.append(physElem)
-                    continue  # continue after because it cant be any other physicalElement type
+                    # domainMoving.append(physElem)
+                    # # continue after because it can't be any other
+                    # # physicalElement type
+                    continue
 
                 if physElem.type == "PrimaryLine":
-                    primaryLines.append(physElem)
+                    domain_dict[DOMAIN_PRIMARY].append(physElem)
                     continue
 
                 if physElem.type == "SlaveLine":
-                    slaveLines.append(physElem)
+                    domain_dict[DOMAIN_SECONDARY].append(physElem)
                     continue
 
                 if physElem.type == "LimitLine":
-                    limitLines.append(physElem)
-
-        sortedPhy = {
-            "primary": primaryLines,
-            "slave": slaveLines,
-            "limit": limitLines,
-            "mb_all": allMbLines,
-            "mb_Mbaux": movingBandAux,
-            "airGap": domainAirgap,
-            "rotor_moving": domainMoving,
-            "domainS": domainS,
-            "domainM": domainM,
-            "domainLam": domainLam,
-            "domainC": domainC,
-            "domainCC": domainCC,
-            "domain": domain,
-            "domainNL": domainNL,
-            "domainL": domainL,
-        }
-
-        return sortedPhy
+                    domain_dict[DOMAIN_LIMIT].append(physElem)
+        return domain_dict
 
     @property
     def movingBand(self) -> List[MovingBand]:
