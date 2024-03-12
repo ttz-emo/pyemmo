@@ -215,59 +215,61 @@ class Material:
 
     # pylint: disable=invalid-name
     @BH.setter
-    def BH(self, BH: numpy.ndarray):
+    def BH(self, newBH: numpy.ndarray):
         """setter of BH curve.
 
         Args:
             BH (numpy.ndarray): BH curve (2D array) with shape (X,2) ->
             [[B1, H1],[B2, H2],[B3, H3],...]
         """
-        if BH is None:
+        if newBH is None:
             # if BH is None, set empty array
             self._BH = (numpy.empty(0),)
-        elif isinstance(BH, list):
+        elif isinstance(newBH, list):
             # if list is given, set numpy array
             self.linear = False
-            self._BH = numpy.array(BH)  # recall setter to check valid BH shape
-        elif isinstance(BH, numpy.ndarray):
-            if BH.ndim == 2:
+            self._BH = numpy.array(
+                newBH
+            )  # recall setter to check valid BH shape
+        elif isinstance(newBH, numpy.ndarray):
+            if newBH.ndim == 2:
                 # number of dimensions must be 2
-                if BH.shape[1] == 2:
+                if newBH.shape[1] == 2:
                     # number of coloums must be 2 for B and H
-                    if BH.shape[0] < 2:
+                    if newBH.shape[0] < 2:
                         raise ValueError(
                             (
                                 "Too view points in BH curve of material %s! At least specify 3 value pairs.",
                                 self.name,
                             )
                         )
-                    if BH.shape[0] < 6:
+                    if newBH.shape[0] < 6:
                         logger.warning(
                             "Only %i point in BH curve of material %s! Results might be inaccurate.",
-                            BH.shape[0],
+                            newBH.shape[0],
                             self.name,
                         )
                     # set BH curve
-                    self._BH = BH
+                    self._BH = newBH
                     self.linear = False
                 else:
                     raise (
                         ValueError(
-                            f"Wrong shape of array BH. Must be (X,2) but is {BH.shape}. "
+                            f"Wrong shape of array BH. Must be (X,2) but is {newBH.shape}. "
                             + "BH must look like [[B1, H1],[B2, H2],[B3, H3],...]"
                         )
                     )
             else:
                 raise (
                     ValueError(
-                        f"Wrong number of dimensions of array BH. 'ndim' must be 2 but is {BH.ndim}. "
+                        f"Wrong number of dimensions of array BH. 'ndim' must be 2 but is {newBH.ndim}. "
                         + "BH must look like [[B1, H1],[B2, H2],[B3, H3],...]"
                     )
                 )
         else:
             raise (
                 ValueError(
-                    f"Wrong type for BH curve ({type(BH)}). BH curve must be type numpy.ndarraywith shape: "
+                    f"Wrong type for BH curve ({type(newBH)}). BH curve must be type numpy.ndarraywith shape: "
                     + "[[B1, H1],[B2, H2],[B3, H3],...]"
                 )
             )
