@@ -10,7 +10,7 @@ from .materialManagement import getMaterial
 from ... import rootLogger as logger
 
 
-class Material(object):
+class Material:
     """Class Material defines a material for the simulation with onelab"""
 
     def __init__(
@@ -227,8 +227,8 @@ class Material(object):
             self._BH = (numpy.empty(0),)
         elif isinstance(BH, list):
             # if list is given, set numpy array
-            self.linear= False
-            self.BH = numpy.array(BH)  # recall setter to check valid BH shape
+            self.linear = False
+            self._BH = numpy.array(BH)  # recall setter to check valid BH shape
         elif isinstance(BH, numpy.ndarray):
             if BH.ndim == 2:
                 # number of dimensions must be 2
