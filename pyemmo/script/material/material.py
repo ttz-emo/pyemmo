@@ -5,12 +5,13 @@
 from typing import Union
 import warnings
 import numpy
+from numpy.typing import NDArray
 
 from .materialManagement import getMaterial
 from ... import rootLogger as logger
 
 
-class Material(object):
+class Material:
     """Class Material defines a material for the simulation with onelab"""
 
     def __init__(
@@ -20,7 +21,7 @@ class Material(object):
         relPermeability: float = None,
         remanence: float = None,
         tempCoefRem: float = None,
-        BH: numpy.ndarray = None,
+        BH: NDArray = None,
         density: float = None,
         thermalConductivity: float = None,
         thermalCapacity: float = None,
@@ -38,22 +39,11 @@ class Material(object):
                 "Temperature coefficient for Br is given without value for Br "
                 f"in Material {name}!"
             )
-        if isinstance(BH, numpy.ndarray):
-            # material is linear if BH curve is given AND not empty
-            self._BH = BH
-            linear = False if BH.size else True
-        elif BH is None:
-            self._BH = numpy.empty(0)
-            linear = True
-        else:
-            raise ValueError(
-                f"BH curve must be numpy.ndarray, but is {type(BH)}!"
-            )
+        self.BH = BH
 
         self.density = density
         self.thermalConductivity = thermalConductivity
         self.thermalCapacity = thermalCapacity
-        self.linear = linear
 
     def __eq__(self, __o: object) -> bool:
         if isinstance(__o, self.__class__):
@@ -191,7 +181,7 @@ class Material(object):
         return self._tempCoefRem
 
     @property
-    def BH(self, temperature: float = None) -> numpy.ndarray:
+    def BH(self, temperature: float = None) -> NDArray:
         """getter of BH
 
         Args:
@@ -215,59 +205,62 @@ class Material(object):
 
     # pylint: disable=invalid-name
     @BH.setter
-    def BH(self, BH: numpy.ndarray):
+    def BH(self, newBH: NDArray):
         """setter of BH curve.
 
         Args:
             BH (numpy.ndarray): BH curve (2D array) with shape (X,2) ->
             [[B1, H1],[B2, H2],[B3, H3],...]
         """
-        if BH is None:
+        if newBH is None:
             # if BH is None, set empty array
-            self._BH = (numpy.empty(0),)
-        elif isinstance(BH, list):
+            self._BH = numpy.empty(0)
+            self.linear = True
+        elif isinstance(newBH, list):
             # if list is given, set numpy array
-            self.linear= False
-            self.BH = numpy.array(BH)  # recall setter to check valid BH shape
-        elif isinstance(BH, numpy.ndarray):
-            if BH.ndim == 2:
+            # RECALL SETTER to check valid BH shape
+            # self.linear = False # no need to set here because setter is
+            # recalled
+            self.BH = numpy.array(newBH)
+        elif isinstance(newBH, numpy.ndarray):
+            if newBH.ndim == 2:
                 # number of dimensions must be 2
-                if BH.shape[1] == 2:
+                if newBH.shape[1] == 2:
                     # number of coloums must be 2 for B and H
-                    if BH.shape[0] < 2:
+                    if newBH.shape[0] < 2:
                         raise ValueError(
                             (
                                 "Too view points in BH curve of material %s! At least specify 3 value pairs.",
                                 self.name,
                             )
                         )
-                    if BH.shape[0] < 6:
+                    if newBH.shape[0] < 6:
                         logger.warning(
                             "Only %i point in BH curve of material %s! Results might be inaccurate.",
-                            BH.shape[0],
+                            newBH.shape[0],
                             self.name,
                         )
                     # set BH curve
-                    self._BH = BH
+                    self._BH = newBH
                     self.linear = False
                 else:
                     raise (
                         ValueError(
-                            f"Wrong shape of array BH. Must be (X,2) but is {BH.shape}. "
+                            f"Wrong shape of array BH. Must be (X,2) but is {newBH.shape}. "
                             + "BH must look like [[B1, H1],[B2, H2],[B3, H3],...]"
                         )
                     )
             else:
                 raise (
                     ValueError(
-                        f"Wrong number of dimensions of array BH. 'ndim' must be 2 but is {BH.ndim}. "
+                        f"Wrong number of dimensions of array BH. 'ndim' must be 2 but is {newBH.ndim}. "
                         + "BH must look like [[B1, H1],[B2, H2],[B3, H3],...]"
                     )
                 )
         else:
             raise (
                 ValueError(
-                    f"Wrong type for BH curve ({type(BH)}). BH curve must be type numpy.ndarraywith shape: "
+                    f"Wrong type for BH curve ({type(newBH)}). BH curve must be type numpy.ndarraywith shape: "
                     + "[[B1, H1],[B2, H2],[B3, H3],...]"
                 )
             )
@@ -459,7 +452,7 @@ class Material(object):
             is_linear (bool): flag if material is linear (has no BH curve).
         """
         if isinstance(is_linear, bool):
-            if is_linear and self.BH.size:
+            if is_linear and self.BH.size != 0:
                 logger.warning(
                     "Material %s was set linear and has BH curve!", self.name
                 )
