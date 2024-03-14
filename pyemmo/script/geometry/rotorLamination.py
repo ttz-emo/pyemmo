@@ -28,6 +28,6 @@ class RotorLamination(PhysicalElement):
             geometricalElement=geometricalElement,
             phyID=phyID,
         )
-
-        self.physicalElementType = "RotorLamination"  # the physical element type can be used to identify physical elements
+        # the physical element type can be used to identify physical elements
+        self.physicalElementType = "Lamination"
         self.setColor("SteelBlue")
