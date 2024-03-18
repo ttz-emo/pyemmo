@@ -54,33 +54,33 @@ DefineConstant[
         Name StrCat[INPUT_ANA_SETTINGS, "02Source Input Type"],
         Choices{1 = "Current Source"}, // Only current source for now
      //    Choices{1 = "Current Source", 2 = "Voltage Source", 0 = "back EMF in Circuit"},
-        Visible Flag_ExpertMode},    
+        Visible Flag_ExpertMode},
 
-    Flag_SaveAllSteps = {0, 
-        Name StrCat[INPUT_ANA_SETTINGS, "03Save all time steps"], 
+    Flag_SaveAllSteps = {0,
+        Name StrCat[INPUT_ANA_SETTINGS, "03Save all time steps"],
         Choices {0,1},
         Visible Flag_ExpertMode && Flag_AnalysisType==1},
-    
-    Flag_ClearResults = {0, 
-        Name StrCat[INPUT_ANA_SETTINGS, "03Delete previous result files"], 
-        Choices {0,1},
-        Visible Flag_ExpertMode},
-    
-    Flag_Calculate_ONELAB = {1, 
-        Name StrCat[INPUT_ANA_SETTINGS, "03Calculate torque through Arrkios method (ONELAB implementation)"], 
+
+    Flag_ClearResults = {0,
+        Name StrCat[INPUT_ANA_SETTINGS, "03Delete previous result files"],
         Choices {0,1},
         Visible Flag_ExpertMode},
 
-    Flag_Calculate_VW = {0, 
-        Name StrCat[INPUT_ANA_SETTINGS, "03Calculate torque through virtual work"], 
+    Flag_Calculate_ONELAB = {1,
+        Name StrCat[INPUT_ANA_SETTINGS, "03Calculate torque through Arrkios method (ONELAB implementation)"],
         Choices {0,1},
         Visible Flag_ExpertMode},
-    
+
+    Flag_Calculate_VW = {0,
+        Name StrCat[INPUT_ANA_SETTINGS, "03Calculate torque through virtual work"],
+        Choices {0,1},
+        Visible Flag_ExpertMode},
+
     initrotor_pos = {INIT_ROTOR_POS,
                      Name StrCat[INPUT_ANA_SETTINGS, "04Initial rotor position"],
                      Visible Flag_ExpertMode,
                      Units "deg mech"},
-                     
+
     d_theta = {ANGLE_INCREMENT,
                Name StrCat[INPUT_ANA_SETTINGS, "05Angle Increment [mech deg]"],
                Visible Flag_ExpertMode && Flag_AnalysisType},
@@ -97,17 +97,17 @@ DefineConstant[
     RPM = {SPEED_RPM,
         Name StrCat[INPUT_ANA_SETTINGS, "08Rotational Speed [RPM]"],
         Visible Flag_ExpertMode &&Flag_AnalysisType},
-    
-    NbSteps = {Ceil[(finalrotor_pos - initrotor_pos) / (d_theta) + 1], 
-        Name StrCat[INPUT_ANA_SETTINGS, "09Number of Time Steps"], 
+
+    NbSteps = {Ceil[(finalrotor_pos - initrotor_pos) / (d_theta) + 1],
+        Name StrCat[INPUT_ANA_SETTINGS, "09Number of Time Steps"],
         Visible Flag_ExpertMode &&Flag_AnalysisType,
         ReadOnly 1},
 
-    Flag_SecondOrder = {0, 
-        Name StrCat[INPUT_ANA_SETTINGS, "10Second Order Basis Function"], 
-        Choices {0,1}, 
+    Flag_SecondOrder = {0,
+        Name StrCat[INPUT_ANA_SETTINGS, "10Second Order Basis Function"],
+        Choices {0,1},
         Visible Flag_ExpertMode}, // Flag to set second order basis function
-    
+
     SymmetryFactor = SYMMETRY_FACTOR,
     Flag_Symmetry = SymmetryFactor > 1,
     /*Flag_Symmetry = {SymmetryFactor > 1,
@@ -133,8 +133,8 @@ DefineConstant[
                          Name StrCat[INPUT_ANA_SETTINGS_SOLVER, "Relaxation factor"],
                         //  Visible Flag_NL,
                          Help "Relaxation Factor for Newton-Raphson method."},
-    
-    // ================ RESULT PARAMETERS ================ 
+
+    // ================ RESULT PARAMETERS ================
     // Whats to be calculated?
     ResId = {"/",
              Name StrCat[INPUT_ANA_SETTINGS, "Results folder name"],
@@ -148,7 +148,7 @@ DefineConstant[
                 Choices{0, 1},
                 Name StrCat[INPUT_ANA_SETTINGS, "Calc Eddy Current losses in laminations"],
                 Visible Flag_ExpertMode && Flag_AnalysisType},
-    
+
     Flag_EC_Magnets = {CALC_MAGNET_LOSSES,
         Name StrCat[INPUT_ANA_SETTINGS, "Eddy Current in Magnets (2D)"],
         Visible Flag_ExpertMode,
@@ -174,9 +174,9 @@ DefineConstant[
     //     ];
     // EndIf
 // ================ END OF ANALYSIS AND SOLVER PARAMETERS ================
-    
+
 // In order to be able to use the machine_magstadyn_a.pro file which is included in onelab, we will have to define some additional constants number of NbrPolesTot in the model
-DefineConstant[ 
+DefineConstant[
     nbSlots = NBR_SLOTS,
     NbrPolesTot = NBR_POLE_PAIRS * 2,
     NbrPolesInModel = (Flag_Symmetry) ? NbrPolesTot / SymmetryFactor : NbrPolesTot,
@@ -236,7 +236,7 @@ DefineConstant[ // Exitation parameters
     ID = {ID_RMS * Sqrt[2],
           Name StrCat[INPUT_ELEC_EXCITATION, "02ID"],
           Units "A",
-          Visible Flag_Debug && Flag_SrcType_Stator == 1, 
+          Visible Flag_Debug && Flag_SrcType_Stator == 1,
           ReadOnly 1},
 
     IQ_RMS = {Iq_eff,
@@ -247,7 +247,7 @@ DefineConstant[ // Exitation parameters
     IQ = {IQ_RMS * Sqrt[2],
           Name StrCat[INPUT_ELEC_EXCITATION, "03IQ"],
           Units "A",
-          Visible Flag_Debug && Flag_SrcType_Stator == 1, 
+          Visible Flag_Debug && Flag_SrcType_Stator == 1,
           ReadOnly 1},
 
     I0 = {0,
@@ -268,7 +268,7 @@ DefineConstant[ // Exitation parameters
 
     nbTurns = {NBR_TURNS_IN_FACE,
                Name StrCat[INPUT_ELEC_WINDINGS, "nbTurns in one slot side"]},
-    
+
     NbrParallelPaths = {NBR_PARALLEL_PATHS,
             Name StrCat[INPUT_ELEC_WINDINGS, "number of parallel paths per phase"],
             ReadOnly 1},
@@ -330,10 +330,13 @@ Printf("Flag_ImposedCurrentDensity = %g", Flag_ImposedCurrentDensity);
 
 Group
 {
-    DefineGroup[Domain_Lam, // part of the domain which is laminated
-                Rotor_Magnets,
-                Stator_Ind_Am, Stator_Ind_Bm, Stator_Ind_Cm,
-                Stator_Ind_Ap, Stator_Ind_Bp, Stator_Ind_Cp];
+    DefineGroup[
+        Domain_Lam, // part of the domain which is laminated
+        Rotor_Magnets,
+        Stator_Ind_Am, Stator_Ind_Bm, Stator_Ind_Cm,
+        Stator_Ind_Ap, Stator_Ind_Bp, Stator_Ind_Cp,
+        Rotor_Bars
+    ];
 }
 
 GROUP_CODE
@@ -371,7 +374,7 @@ Group
         Stator_IndsP = Region[{Stator_Ind_Ap, Stator_Ind_Bp, Stator_Ind_Cp}];
     Else
         // unused for now!
-        For i In{0 : nbSlots - 1} 
+        For i In{0 : nbSlots - 1}
             If(Phases(i) == 1)
                 If(CoilDir(i) == 1)
                     Stator_Ind_Ap += Region[{Coil ~{i + 1}}];
@@ -488,6 +491,46 @@ Group
     //     EndIf
     // EndIf
 }
+// Set number of rotor bars after group definition
+DefineConstant[
+    nbRotorBars = NbrRegions[Rotor_Bars],
+    Flag_Cir_RotorCage = {(nbRotorBars > 0) , Choices{0,1},
+        Name StrCat(
+            INPUT_ANA_SETTINGS,"Circuit/10Use circuit in rotor cage"
+            ),
+        Visible (nbRotorBars > 0)
+        // ReadOnly (Flag_SrcType_Stator==1)
+    }
+    R_endring_segment = {0.836e-6,
+        Name StrCat[
+            INPUT_ANA_SETTINGS,
+            "Circuit/11Resistance of endring segment [Ohm]"
+        ],
+        ReadOnly !Flag_Cir_RotorCage,
+        Visible (nbRotorBars>0)
+    },
+    L_endring_segment = {4.8e-9,
+        Name StrCat[
+            INPUT_ANA_SETTINGS,
+            "Circuit/12Inductance of endring segment [H]"
+        ],
+        ReadOnly !Flag_Cir_RotorCage,
+        Visible (nbRotorBars>0)
+    },
+    slip = {0.9,
+        Name StrCat[
+            INPUT_ANA_SETTINGS,
+            "Circuit/09Rotor slip"
+        ],
+        Range {0, 1, 0.05},
+        ReadOnly !Flag_Cir_RotorCage,
+        Visible (nbRotorBars>0)
+    }
+];
+If (nbRotorBars > 0)
+    Printf["Rotor_Bars detected! Number of rotor bars: %.0f", nbRotorBars];
+EndIf
+
 // FUNCTIONS TO BE DEFINED
 Function
 {
@@ -511,7 +554,7 @@ Function
         // Surf_Airgap_s[] = SurfaceArea[]{MBS_AIR_SURF};
     Else
         RegionListAp() = GetRegions[Stator_Ind_Ap]; // found new function GetRegions[] which retruns the group-list
-        //                         RegionListAp(0): accesses the first element of the list which is a region number 
+        //                         RegionListAp(0): accesses the first element of the list which is a region number
         SurfCoil[] = SurfaceArea[]{RegionListAp(0)}; // save the area of on coil(side) in SurfCoil for current density calculation
         // Surf_Airgap_r[] = SurfaceArea[]{Region[Rotor_Airgap]}; // seems to be unused
     EndIf
@@ -566,7 +609,7 @@ Function
     // if the nbSlots or NbrPolesTot are changed we have to change the offset
     // Theta_Park[]	= (RotorPosition[]-OFFSET*deg2rad)*NbrPolesPairs;
     // Offset moved outside the brackets -> Offset in electrical degrees and in rotation direction.
-    // (Rotation direction is defined by Park matrix in magstadyn file.) 
+    // (Rotation direction is defined by Park matrix in magstadyn file.)
     Theta_Park[] = RotorPosition[] * NbrPolesPairs + (ParkOffset)*deg2rad;
 
     Theta_Park_deg[] = Theta_Park[] * rad2deg;
@@ -584,9 +627,9 @@ Function
 
 FUNCTION_CODE
 
-If(Flag_Cir)
+If(Flag_Cir_RotorCage)
     // include circuit
-    Include "MiscScripts/Circuit.pro";
+    Include "Circuit_SC_ASM.pro";
 EndIf
 
 // load 2D or 3D problem

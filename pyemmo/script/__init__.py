@@ -27,7 +27,7 @@ DOMAIN_ROTOR = "rotor_moving"
 DOMAIN_STRANDED = "domainS"
 DOMAIN_MAGNET = "domainM"
 DOMAIN_LAMINATION = "domainLam"
-DOMAIN_BAR = "domainLam"
+DOMAIN_BAR = "domainBar"
 DOMAIN_CONDUCTING = "domainC"
 DOMAIN_NON_CONDUCTING = "domainCC"
 DOMAIN = "domain"
@@ -61,6 +61,8 @@ default_param_dict = {"GEO": {}, "SYM": {}, "MAT": {}}
             "FLAG_CHANGE_ROT_DIR": 0,\n
             "NBR_PARALLEL_PATHS": 1,\n
             "CALC_MAGNET_LOSSES": 0,\n
+            "R_ENDRING_SEGMENT": 0.,\n
+            "L_ENDRING_SEGMENT": 0.,\n
         }, \n
         "MAT": {\n
             "VALUE_DENSITY_LAM": 7800,\n
@@ -91,6 +93,8 @@ default_param_dict["SYM"] = {
     "FLAG_CHANGE_ROT_DIR": 0,
     "NBR_PARALLEL_PATHS": 1,
     "CALC_MAGNET_LOSSES": 0,
+    "R_ENDRING_SEGMENT": 0.0,
+    "L_ENDRING_SEGMENT": 0.0,
 }
 default_param_dict["MAT"] = {
     "VALUE_DENSITY_LAM": 7800,

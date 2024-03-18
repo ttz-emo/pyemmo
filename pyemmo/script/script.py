@@ -4,6 +4,7 @@
 from __future__ import annotations
 import os
 import re
+import shutil
 
 # import warnings
 import logging
@@ -1042,10 +1043,16 @@ class Script:
             rotorPhysicalsDict[DOMAIN_CONDUCTING]
         )
         rotorPhysicalsDict[DOMAIN_CONDUCTING].clear()
+
         # create Domains
         domainList.extend(
             self._createDomains(rotorPhysicalsDict, rotorDomainDict)
         )
+        # Create single Bar regions
+        if DOMAIN_BAR in rotorPhysicalsDict:
+            rotorPhysicalsDict[DOMAIN_BAR].sort(key=Slot.getRadialPosition)
+            for i, region in enumerate(rotorPhysicalsDict[DOMAIN_BAR]):
+                domainList.append(Domain(f"Rotor_Bar_{i+1}", region))
         # add additional domains for every movinband part, to specify the
         # Link-boundary in magstatdyn
         for domain in domainList:
@@ -2266,6 +2273,12 @@ class Script:
         # write the magstadyn file to new destination
         with open(calcFilePath, "w", encoding="utf-8") as calcFile:
             calcFile.write(calcCode)
+
+        ## COPY CIRCUIT FILE
+        shutil.copy(
+            join(MAIN_DIR, "script", "Circuit_SC_ASM.pro"),
+            join(self.scriptPath, "Circuit_SC_ASM.pro"),
+        )
 
         #  6.1 add the PostOperation command code before including the
         # magstatdyn-file
