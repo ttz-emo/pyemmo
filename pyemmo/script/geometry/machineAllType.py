@@ -21,23 +21,22 @@ from ...script import default_param_dict
 class MachineAllType:
     def __init__(
         self,
-        nbrPolePairs: Union[int, float],
+        nbrPolePairs: int,
         rotor: Rotor,
         stator: Stator,
         name: str = "",
+        symmetryFactor: Union[int, None] = None,
     ):
         """
         Constructor of class Machine
         Args:
-            nbrPolePairs:   Union[int,float]
-            rotor:          Rotor
-            stator:         Stator
-            name:           str = ""
-
-        Returns:
-
-        Raises:
-            Nothing
+            nbrPolePairs (int): Number of pole pairs of machine.
+            rotor (Rotor): PyEMMO Rotor class object
+            rotor (Stator): PyEMMO Stator class object
+            name (str, optional): Machine name. Defaults to "machine".
+            symmetryFactor (Union[int, None]): Fixed given symmetry factor. If
+                None is given. The symmetry factor will be calculated by number
+                of slots and poles.
         """
         ###Name des Objektes.
         self.name = name if name else "machine"
@@ -46,6 +45,8 @@ class MachineAllType:
         self.rotor = rotor
         ###Objekt der Klasse Stator.
         self.stator = stator
+        # Setting outer given symmetry factor. Will only be used if not None.
+        self._symmetryFactor = symmetryFactor
         if rotor and stator:
             self.createMachineDomains()
 
@@ -186,8 +187,13 @@ class MachineAllType:
         Returns:
             int: Symmetry Factor
         """
+        if self._symmetryFactor:
+            # if external symmetry factor is given:
+            return self._symmetryFactor
+        # if sym is not given, try to calculate it
         if self.rotor and self.stator:
-            sym_machine = gcd(self.stator.nbrSlots, self.nbrPolePairs / 2)
+            nbr_poles = self.nbrPolePairs * 2
+            sym_machine = gcd(self.stator.nbrSlots, nbr_poles)
             sym_winding = self.stator.winding.get_periodicity_t() * 2
             # logger.debug("Symmetry factor winding: %s",{sym_winding})
             sym_factor = min(sym_winding, sym_machine)
