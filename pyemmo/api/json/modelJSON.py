@@ -1,4 +1,5 @@
 """This module is about the model generation via json api"""
+
 from math import radians
 from typing import Dict, List, Literal, Tuple, Union
 
@@ -17,6 +18,7 @@ from ...script.geometry.rotorLamination import RotorLamination
 from ...script.geometry.slot import Slot
 from ...script.geometry.spline import Spline
 from ...script.geometry.statorLamination import StatorLamination
+from ...script.geometry.bar import Bar
 from ...script.geometry.surface import Surface
 from ...script.geometry.transformable import Transformable
 from ...script.material.material import Material
@@ -499,9 +501,10 @@ def createPhysicalSurfaces(
             material=surfList[0].material,
         )
         return [airGap], machineSide
-    # elif "RoCu" in surfName: # For ASM-Cage
-    #     print(surfName)
-    #     pass
+    if idExt == "RoCu":  # For ASM-Cage
+        bars = [Bar(surf.idExt, surf, surf.material) for surf in surfList]
+        return bars, machineSide
+
     # elif "Pol" in surfName or "RoNut" in surfName: # Rotor lamination
     #     pass
     if any(identifier in idExt for identifier in ("Pol", "RoNut")):
@@ -568,8 +571,8 @@ def phase2angle(phaseChar: Literal["u", "v", "w"]) -> float:
     """returns the angle of a specific phase name in "UVW"
 
     * U = 0
-    * V = :math:`\\frac{2\pi}{3}`
-    * W = :math:`-\\frac{2\pi}{3}`
+    * V = :math:`\\frac{2\\pi}{3}`
+    * W = :math:`-\\frac{2\\pi}{3}`
 
     Args:
         PhaseChar (str): char object for the phase name (phase ID). Should be "u", "v" or "w"
@@ -694,8 +697,8 @@ def getSlotPhase(
         segmentNbr (int): Circumferderal model segment number starting with 0
             on the x-axis (first segment). Number increasing in math. positive
             direction.
-        slotSide (int): Slot side 0 = right side or  slot bottom; 
-            1 = left side or slot opening. (Slot side can also be 2 or 3 but 
+        slotSide (int): Slot side 0 = right side or  slot bottom;
+            1 = left side or slot opening. (Slot side can also be 2 or 3 but
             is merged into 0 and 1 by modulo operation. This is usefull when
             you have multiple slot side (>2) per lamination segment.)
 
@@ -712,7 +715,7 @@ def getSlotPhase(
     """
     for phaseIndex, phaseList in enumerate(windingLayout):
         # for slotSideList in phaseList:
-        for slotNumber in phaseList[slotSide % 2]: # TODO: Test if multiple
+        for slotNumber in phaseList[slotSide % 2]:  # TODO: Test if multiple
             # layer winding is working.
             if abs(slotNumber) == segmentNbr + 1:
                 if phaseIndex == 0:
@@ -786,14 +789,18 @@ def createWinding(extendedInfo: dict) -> datamodel:
     # format winding layout for swat_em
     windLayout = importJSON.getWindingList(extendedInfo)
     swatemWinding.set_phases(
-        
         S=windLayout, turns=(importJSON.getNbrOfTurns(extendedInfo))
-    
     )
     swatemWinding.analyse_wdg()  # analyse winding to make sure its valid and all parameters are set
     # make sure that number of parallel paths does not exceed max. possible paths of winding:
-    if max(swatemWinding.get_parallel_connections()) < importJSON.getNbrParalellPaths(extendedInfo):
-        logger.warning("The given number of parallel windings paths (%i) exceeds possible paths of the winding layout (%i)!", importJSON.getNbrParalellPaths(extendedInfo), max(swatemWinding.get_parallel_connections()) )
+    if max(
+        swatemWinding.get_parallel_connections()
+    ) < importJSON.getNbrParalellPaths(extendedInfo):
+        logger.warning(
+            "The given number of parallel windings paths (%i) exceeds possible paths of the winding layout (%i)!",
+            importJSON.getNbrParalellPaths(extendedInfo),
+            max(swatemWinding.get_parallel_connections()),
+        )
 
     return swatemWinding
 
