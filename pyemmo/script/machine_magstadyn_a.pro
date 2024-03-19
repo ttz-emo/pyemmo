@@ -246,11 +246,7 @@ Function {
   Idir[Region[{Stator_IndsN, Rotor_IndsN}]] = -1 ;
 
   // define rotation direction of stator field. This is also depended on the winding layout!
-  If (Flag_invertRotDir)
-    rotDirChange = -1;
-  Else
-    rotDirChange = 1;
-  EndIf
+  rotDirChange = (Flag_invertRotDir) ? -1 : 1;
 
   // defintion of the dq0-> vector
   Idq0[] = Vector[ $ID, $IQ, $I0 ] ;
@@ -279,10 +275,11 @@ Function {
     IA[] = CompX[ Iabc[] ] ;
     IB[] = CompY[ Iabc[] ] ;
     IC[] = CompZ[ Iabc[] ] ;
-  Else
-    IA[] = ((Flag_Fault == 1) && ($Time>0.02)) ? 0*F_Sin_wt_p[]{2*Pi*Freq, pA} : F_Sin_wt_p[]{2*Pi*Freq, pA} ;
-    IB[] = F_Sin_wt_p[]{2*Pi*Freq, pB};
-    IC[] = F_Sin_wt_p[]{2*Pi*Freq, pC};
+  Else // Standard sinusoidal current definition
+    II = I_eff * Sqrt[2];
+    IA[] = ((Flag_Fault == 1) && ($Time>0.02)) ? 0*F_Sin_wt_p[]{2*Pi*freq_stator, pA} : F_Sin_wt_p[]{2*Pi*freq_stator, pA} ;
+    IB[] = F_Sin_wt_p[]{2*Pi*freq_stator, rotDirChange*pB};
+    IC[] = F_Sin_wt_p[]{2*Pi*freq_stator, rotDirChange*pC};
   EndIf
   Jz1A[] = NbWires[]/SurfCoil[] * Idir[] * Vector[0, 0, 1];
   // calculate the current density from the current and the surface of the coil
@@ -453,6 +450,9 @@ Constraint {
   // Here we could define constraints on the voltage.
   { Name Voltage_2D ;
     Case {
+      // If(!Flag_Cir_RotorCage)
+      //   { Region RotorC  ; Value 0. ; }
+      // EndIf
     }
   }
 
@@ -719,7 +719,7 @@ Formulation {
       // if we have an estimation of the resistance of DomainB, via e.g. measurements
       // which is better to account for the end windings...
 
-      If(Flag_Cir)
+      If(Flag_Cir_RotorCage)
 	      GlobalTerm { NeverDt[ Dof{Uz}                , {Iz} ] ; In Resistance_Cir ; }
         GlobalTerm { NeverDt[ Resistance[] * Dof{Iz} , {Iz} ] ; In Resistance_Cir ; }
 
