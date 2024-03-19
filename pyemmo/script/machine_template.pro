@@ -191,13 +191,14 @@ DefineConstant[
         Visible Flag_Inductance
     }
 
-    Flag_Lam = {
-    0, Name StrCat[
-        INPUT_ANA_SETTINGS_OUTPUT_LOSS, "01Calculate Eddy Current in Laminations"
-    ],
-    Choices{0, 1},
-    Visible Flag_ExpertMode && Flag_AnalysisType
-    },
+    Flag_Lam = 0, // FIXME: Not using lamination eddy current calculation yet!
+    // Flag_Lam = {
+    // 0, Name StrCat[
+    //     INPUT_ANA_SETTINGS_OUTPUT_LOSS, "01Calculate Eddy Current in Laminations"
+    // ],
+    // Choices{0, 1},
+    // Visible Flag_ExpertMode && Flag_AnalysisType
+    // },
 
     Flag_EC_Magnets = {
         CALC_MAGNET_LOSSES, Name StrCat[
