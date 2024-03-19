@@ -4,32 +4,37 @@ Include PARAMETER_FILE
 
 // Strings defining the Parameter tree =========================================
 // Options for the Analysis Setting
-INPUT_ANA_SETTINGS = "Input/01Analysis and Solver Parameters/";
-INPUT_ANA_SETTINGS_SOLVER = StrCat[INPUT_ANA_SETTINGS, "99Nonlinear solver/"];
+INPUT_ANA_SETTINGS = "Input/01Analysis Parameters/";
+INPUT_ANA_SETTINGS_OUTPUT =StrCat[INPUT_ANA_SETTINGS, "99Results/"];
+
+INPUT_SOLVER_SETTINGS = "Input/02Solver Parameters/";
+INPUT_SOLVER_SETTINGS_NL = StrCat[INPUT_SOLVER_SETTINGS, "99Nonlinear solver/"];
 
 // For Geometrical Parameters
-INPUT_GEO = "Input/02Geometry/";
+INPUT_GEO = "Input/03Geometry/";
 INPUT_GEO_ROTOR = StrCat[INPUT_GEO, "01Rotor/"];
 INPUT_GEO_ROTOR_POLESHAPING = StrCat[INPUT_GEO_ROTOR, "01Pole Shaping/"];
 INPUT_GEO_ROTOR_SLOT = StrCat[INPUT_GEO_ROTOR, "02Slot/"];
 INPUT_GEO_STATOR = StrCat[INPUT_GEO, "02Stator/"];
 INPUT_GEO_MAGNET = StrCat[INPUT_GEO, "03Magnet/"];
 
-INPUT_MESH = "Input/03Mesh/";
+INPUT_MESH = "Input/04Mesh/";
 
-INPUT_ELEC = "Input/04Electrical Parameters/";
+INPUT_ELEC = "Input/05Electrical Parameters/";
 INPUT_ELEC_WINDINGS = StrCat[INPUT_ELEC, "01Windings/"];
 INPUT_ELEC_EXCITATION = StrCat[INPUT_ELEC, "02Excitation/"];
+INPUT_ELEC_CIRCUIT_ROTOR = StrCat[INPUT_ELEC, "03Rotor Cage Circuit/"];
 
 // For Material Properties
-INPUT_MAT_PROPERTIES = "Input/05Material Properties/";
+INPUT_MAT_PROPERTIES = "Input/06Material Properties/";
 INPUT_MAT_PROPERTIES_MAGNET = StrCat[INPUT_MAT_PROPERTIES, "Magnets/"];
 INPUT_MAT_PROPERTIES_CORE = StrCat[INPUT_MAT_PROPERTIES, "Rotor Core/"];
 INPUT_MAT_PROPERTIES_STATOR = StrCat[INPUT_MAT_PROPERTIES, "Stator/"];
 
 mm = 1e-3;
-//=============================================================================
-DefineConstant[ // Some script constants which are currently unused
+
+// Some script constants which are currently unused:
+DefineConstant[
     Flag_EW = 0,
     Flag_3D = 0,
     Flag_Cir = 0,
@@ -37,132 +42,166 @@ DefineConstant[ // Some script constants which are currently unused
     rad2deg = 1 / deg2rad
 ];
 
-// ================ ANALYSIS AND SOLVER PARAMETERS ================
+//=============================================================================
+// ====================== ANALYSIS AND SOLVER PARAMETERS ======================
+//=============================================================================
 DefineConstant[
-    Flag_ExpertMode = {1,
-                       Name '01View/Expert Mode',
-                       Choices {0, 1}},
+    Flag_ExpertMode = {
+        1,
+        Name '01View/Expert Mode',
+        Choices {0, 1}
+    },
 
     Flag_Debug = {1, Name "01View/Debug", Choices {0,1}},
 
-    Flag_AnalysisType = {ANALYSIS_TYPE,
-        Name StrCat[INPUT_ANA_SETTINGS, "01Analysis Type"],
+    Flag_AnalysisType = {
+        ANALYSIS_TYPE, Name StrCat[INPUT_ANA_SETTINGS, "01Analysis Type"],
         Choices{0 = "Static", 1 = "Transient"}
     },
 
-    Flag_SrcType_Stator = {1,
-        Name StrCat[INPUT_ANA_SETTINGS, "02Source Input Type"],
+    Flag_SrcType_Stator = {
+        1, Name StrCat[INPUT_ANA_SETTINGS, "02Source Input Type"],
         Choices{1 = "Current Source"}, // Only current source for now
-     //    Choices{1 = "Current Source", 2 = "Voltage Source", 0 = "back EMF in Circuit"},
-        Visible Flag_ExpertMode},
+        // Choices{1 = "Current Source", 2 = "Voltage Source", 0 = "back EMF in Circuit"},
+        Visible Flag_ExpertMode
+    },
 
-    Flag_SaveAllSteps = {0,
-        Name StrCat[INPUT_ANA_SETTINGS, "03Save all time steps"],
-        Choices {0,1},
-        Visible Flag_ExpertMode && Flag_AnalysisType==1},
+    initrotor_pos = {
+        INIT_ROTOR_POS, Name StrCat[INPUT_ANA_SETTINGS, "04Initial rotor position"],
+        Visible Flag_ExpertMode,
+        Units "deg mech"
+    },
 
-    Flag_ClearResults = {0,
-        Name StrCat[INPUT_ANA_SETTINGS, "03Delete previous result files"],
-        Choices {0,1},
-        Visible Flag_ExpertMode},
+    d_theta = {
+        ANGLE_INCREMENT, Name StrCat[INPUT_ANA_SETTINGS, "05Angle Increment [mech deg]"],
+        Visible Flag_ExpertMode && Flag_AnalysisType==1
+    },
 
-    Flag_Calculate_ONELAB = {1,
-        Name StrCat[INPUT_ANA_SETTINGS, "03Calculate torque through Arrkios method (ONELAB implementation)"],
-        Choices {0,1},
-        Visible Flag_ExpertMode},
+    finalrotor_pos = {
+        FINAL_ROTOR_POS, Name StrCat[INPUT_ANA_SETTINGS, "06Final rotor position"],
+        Visible Flag_ExpertMode && Flag_AnalysisType==1,
+        Help "Final rotor position",
+        Units "deg mech"
+    },
 
-    Flag_Calculate_VW = {0,
-        Name StrCat[INPUT_ANA_SETTINGS, "03Calculate torque through virtual work"],
-        Choices {0,1},
-        Visible Flag_ExpertMode},
-
-    initrotor_pos = {INIT_ROTOR_POS,
-                     Name StrCat[INPUT_ANA_SETTINGS, "04Initial rotor position"],
-                     Visible Flag_ExpertMode,
-                     Units "deg mech"},
-
-    d_theta = {ANGLE_INCREMENT,
-               Name StrCat[INPUT_ANA_SETTINGS, "05Angle Increment [mech deg]"],
-               Visible Flag_ExpertMode && Flag_AnalysisType},
-
-    finalrotor_pos = {FINAL_ROTOR_POS,
-                      Name StrCat[INPUT_ANA_SETTINGS, "06Final rotor position"],
-                      Visible Flag_ExpertMode && Flag_AnalysisType==1,
-                      Help "Final rotor position",
-                      Units "deg mech"},
-    /*Flag_Symmetry = {SymmetryFactor > 1,
-        Name StrCat[INPUT_ANA_SETTINGS, "91Use symmetry"],
-        ReadOnly 1,
-        Visible Flag_ExpertMode},*/
-    RPM = {SPEED_RPM,
-        Name StrCat[INPUT_ANA_SETTINGS, "08Rotational Speed [RPM]"],
-        Visible Flag_ExpertMode &&Flag_AnalysisType},
-
-    NbSteps = {Ceil[(finalrotor_pos - initrotor_pos) / (d_theta) + 1],
-        Name StrCat[INPUT_ANA_SETTINGS, "09Number of Time Steps"],
+    NbSteps = {
+        Ceil[(finalrotor_pos - initrotor_pos) / (d_theta) + 1],
+        Name StrCat[INPUT_ANA_SETTINGS, "07Number of Time Steps"],
         Visible Flag_ExpertMode &&Flag_AnalysisType,
-        ReadOnly 1},
+        ReadOnly 1
+    },
 
-    Flag_SecondOrder = {0,
-        Name StrCat[INPUT_ANA_SETTINGS, "10Second Order Basis Function"],
-        Choices {0,1},
-        Visible Flag_ExpertMode}, // Flag to set second order basis function
+    RPM = {
+        SPEED_RPM, Name StrCat[INPUT_ANA_SETTINGS, "08Rotational Speed [RPM]"],
+        Visible Flag_ExpertMode &&Flag_AnalysisType
+    },
 
     SymmetryFactor = SYMMETRY_FACTOR,
     Flag_Symmetry = SymmetryFactor > 1,
-    /*Flag_Symmetry = {SymmetryFactor > 1,
-                Choices{0, 1},
-                Name StrCat[INPUT_ANA_SETTINGS, "91Use symmetry"],
-                ReadOnly 1,
-                Visible Flag_ExpertMode},*/
 
-    // ================ SOLVER PARAMETERS ================
-    Nb_max_iter = {60,
-                   Name StrCat[INPUT_ANA_SETTINGS_SOLVER, "Max. num. iterations"],
-                //    Visible Flag_NL,
-                   Help "Maximum number of iterations in the Newton-Raphson method."},
+    // Flag_Symmetry = {SymmetryFactor > 1,
+    //             Choices{0, 1},
+    //             Name StrCat[INPUT_ANA_SETTINGS, "91Use symmetry"],
+    //             ReadOnly 1,
+    //             Visible Flag_ExpertMode},
 
-    // solver will stop when Norm((Ax-b)/x) < stop_criterion
-    stop_criterion = {1e-7,
-                      Name StrCat[INPUT_ANA_SETTINGS_SOLVER, "Stopping criterion"],
-                    //   Visible Flag_NL,
-                      Help "Stop criterion for Newton-Raphson method. Solver will stop when Norm((Ax-b)/x) < stop_criterion."},
+    // -------------------------------------------------------------------------
+    // -------------------- ANALYSIS - OUTPUT SETTINGS -------------------------
+    // -------------------------------------------------------------------------
 
-    // In the newton raphson method, the relaxation factor determines the new x to be in the next iteration if x_(n-1) is the solution of the previous iteration, x_calc the new calculated solution, then x_n = x_(n-1) + relaxation_factor*(x_clac-x_(n-1))
-    relaxation_factor = {1,
-                         Name StrCat[INPUT_ANA_SETTINGS_SOLVER, "Relaxation factor"],
-                        //  Visible Flag_NL,
-                         Help "Relaxation Factor for Newton-Raphson method."},
+    Flag_SaveAllSteps = {
+        0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "01Save all time steps"],
+        Help "Save each field results (pos) in a separate file with time step index",
+        Choices {0,1},
+        Visible Flag_ExpertMode && Flag_AnalysisType==1
+    },
 
-    // ================ RESULT PARAMETERS ================
-    // Whats to be calculated?
-    ResId = {"/",
-             Name StrCat[INPUT_ANA_SETTINGS, "Results folder name"],
-             Help "Name of the folder inside the results folder, where the result files of THIS simulation should be stored."},
+    Flag_ClearResults = {
+        0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "02Delete previous result files"],
+        Choices {0,1},
+        Visible Flag_ExpertMode
+    },
 
-    Flag_PrintFields = {1,
-                        Name StrCat[INPUT_ANA_SETTINGS, "Show Local Fields"],
-                        Choices{0, 1}},
+    Flag_Calculate_ONELAB = {
+        1, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "03Calculate torque: Arrkios method"],
+        Choices {0,1},
+        Help "ONELAB implementation of Arrkios method.",
+        Visible Flag_ExpertMode
+    },
 
-    Flag_Lam = {0,
-                Choices{0, 1},
-                Name StrCat[INPUT_ANA_SETTINGS, "Calc Eddy Current losses in laminations"],
-                Visible Flag_ExpertMode && Flag_AnalysisType},
+    Flag_Calculate_VW = {
+        0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "03Calculate torque: Virtual Work"],
+        Choices {0,1},
+        Visible Flag_ExpertMode
+    },
 
-    Flag_EC_Magnets = {CALC_MAGNET_LOSSES,
-        Name StrCat[INPUT_ANA_SETTINGS, "Eddy Current in Magnets (2D)"],
+    ResId = {
+        "/", Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "Results folder name"],
+        Help "Name of the folder inside the results folder, where the result files of THIS simulation should be stored."
+    },
+
+    Flag_PrintFields = {
+        1, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "Show Local Fields"],
+        Choices{0, 1}
+    },
+
+    Flag_Lam = {
+        0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "Calc Eddy Current losses in laminations"],
+        Choices{0, 1},
+        Visible Flag_ExpertMode && Flag_AnalysisType
+    },
+
+    Flag_EC_Magnets = {
+        CALC_MAGNET_LOSSES, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "Eddy Current in Magnets (2D)"],
         Visible Flag_ExpertMode,
         Choices{0, 1},
-        Help "Consider Eddy-Current in the PMs"},
+        Help "Consider Eddy-Current in the PMs"
+    },
 
-    Flag_Inductance = {0,
-                       Name StrCat[INPUT_ANA_SETTINGS, "Compute inductances"],
-                       Choices{0, 1}},
+    Flag_Inductance = {
+        0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "Compute inductances"],
+        Choices{0, 1}
+    },
 
-    Flag_diffInductance = {1,
-                           Name StrCat[INPUT_ANA_SETTINGS, "Inductance Computation Type"],
-                           Choices{0 = "Apparent", 1 = "Incremental"},
-                           Visible Flag_Inductance}
+    Flag_diffInductance = {
+        1, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "Inductance Computation Type"],
+        Choices{0 = "Apparent", 1 = "Incremental"},
+        Visible Flag_Inductance
+    }
+
+    // -------------------------------------------------------------------------
+    // -------------------- ANALYSIS - SOLVER SETTINGS -------------------------
+    // -------------------------------------------------------------------------
+
+    // Flag to set second order basis function:
+    Flag_SecondOrder = {
+        0, Name StrCat[INPUT_SOLVER_SETTINGS, "01Second Order Basis Function"],
+        Choices {0,1},
+        Visible Flag_ExpertMode
+    },
+    Nb_max_iter = {
+        60,
+        Name StrCat[INPUT_SOLVER_SETTINGS_NL, "Max. num. iterations"],
+        // Visible Flag_NL,
+        Help "Maximum number of iterations in the Newton-Raphson method."
+        },
+
+    // solver will stop when Norm((Ax-b)/x) < stop_criterion
+    stop_criterion = {
+        1e-7, Name StrCat[INPUT_SOLVER_SETTINGS_NL, "Stopping criterion"],
+        //   Visible Flag_NL,
+        Help "Stop criterion for Newton-Raphson method. Solver will stop when Norm((Ax-b)/x) < stop_criterion."
+    },
+
+    // In the newton raphson method, the relaxation factor determines the new x
+    // to be in the next iteration if x_(n-1) is the solution of the previous
+    // iteration, x_calc the new calculated solution, then
+    //      x_n = x_(n-1) + relaxation_factor*(x_clac-x_(n-1))
+    relaxation_factor = {
+        1, Name StrCat[INPUT_SOLVER_SETTINGS_NL, "Relaxation factor"],
+        //  Visible Flag_NL,
+        Help "Relaxation Factor for Newton-Raphson method."
+    }
 ];
 
     // If(Flag_SrcType_Stator == 2)
@@ -173,9 +212,14 @@ DefineConstant[
     //             Choices{0 = "none", 1 = "Short Circuit A-B"}}
     //     ];
     // EndIf
-// ================ END OF ANALYSIS AND SOLVER PARAMETERS ================
+//=============================================================================
+// ==================== END ANALYSIS AND SOLVER PARAMETERS ====================
+//=============================================================================
 
-// In order to be able to use the machine_magstadyn_a.pro file which is included in onelab, we will have to define some additional constants number of NbrPolesTot in the model
+
+// In order to be able to use the machine_magstadyn_a.pro file which is included
+// in onelab, we will have to define some additional constants number of
+// NbrPolesTot in the model
 DefineConstant[
     nbSlots = NBR_SLOTS,
     NbrPolesTot = NBR_POLE_PAIRS * 2,
@@ -191,7 +235,9 @@ Printf("Symmetry Faktor = %.0f", SymmetryFactor);
 Printf("Flag Symmetry = %.0f", Flag_Symmetry);
 Printf("Airgap radius = %.5f", r_AG);
 
-// ================ MACHINE PARAMETERS ================
+//=============================================================================
+// ==================== MACHINE PARAMETERS ====================
+//=============================================================================
 DefineConstant[
     AxialLength_S = {L_AX_S,
                      Name StrCat[INPUT_GEO_STATOR, "Stator axial length"],
@@ -210,11 +256,14 @@ DefineConstant[
     // d_Lam = d_Lam_i * mm, // conversion to SI
 
     // determine if we want to calculate using a linear or non-linear material
-    Flag_NL = {FLAG_NL,
-        Name StrCat[INPUT_MAT_PROPERTIES, "Non-linear B-H curves"],
+    Flag_NL = {
+        FLAG_NL, Name StrCat[INPUT_MAT_PROPERTIES, "Non-linear B-H curves"],
         Choices{0, 1},
         Visible Flag_ExpertMode,
-        Help "If this parameter is checked (=1), then the non-linear B-H curves are used. Otherwise the non-linearity is replaced (extrapolated) by a constant mu_r."}
+        Help "If this parameter is checked (=1), then the non-linear B-H curves
+             are used. Otherwise the non-linearity is replaced (extrapolated) by
+             a constant mu_r."
+        }
 
     // dens_Lam = {
     //     VALUE_DENSITY_LAM,
@@ -223,11 +272,19 @@ DefineConstant[
     //     Visible Flag_Lam &&Flag_ExpertMode,
     //     Help "density of the lammination part where eddy current losses should be calculated"}
 
-]; // End Machine Properties
+];
 
 // Printf("%g d_lam", d_Lam);
 
-DefineConstant[ // Exitation parameters
+//=============================================================================
+// ==================== END MACHINE PARAMETERS ====================
+//=============================================================================
+
+//=============================================================================
+// ==================== EXCITATION PARAMETERS ====================
+//=============================================================================
+
+DefineConstant[
     ID_RMS = {Id_eff,
               Name StrCat[INPUT_ELEC_EXCITATION, "00ID_RMS"],
               Units "A",
@@ -283,12 +340,23 @@ DefineConstant[ // Exitation parameters
                          Visible Flag_Cir}
 ];
 
+//=============================================================================
+// ==================== END EXCITATION PARAMETERS ====================
+//=============================================================================
+
+//=============================================================================
+// ==================== MATERIAL PARAMETERS ====================
+//=============================================================================
 
 DefineConstant[ //Material definitions
     tempMag = {TEMP_MAG,
         Name StrCat[INPUT_MAT_PROPERTIES_MAGNET, "Magnet temperature [°C]"],
         Visible Flag_ExpertMode}
 ];
+
+//=============================================================================
+// ==================== END MATERIAL PARAMETERS ====================
+//=============================================================================
 
 DefineConstant[ // Some circiut definitions
     // Variable controlling if the current density in the windings is imposed (via current)
@@ -496,14 +564,14 @@ DefineConstant[
     nbRotorBars = NbrRegions[Rotor_Bars],
     Flag_Cir_RotorCage = {(nbRotorBars > 0) , Choices{0,1},
         Name StrCat(
-            INPUT_ANA_SETTINGS,"Circuit/10Use circuit in rotor cage"
+            INPUT_ELEC_CIRCUIT_ROTOR,"Circuit/10Use circuit in rotor cage"
             ),
         Visible (nbRotorBars > 0)
         // ReadOnly (Flag_SrcType_Stator==1)
     }
     R_endring_segment = {0.836e-6,
         Name StrCat[
-            INPUT_ANA_SETTINGS,
+            INPUT_ELEC_CIRCUIT_ROTOR,
             "Circuit/11Resistance of endring segment [Ohm]"
         ],
         ReadOnly !Flag_Cir_RotorCage,
@@ -511,7 +579,7 @@ DefineConstant[
     },
     L_endring_segment = {4.8e-9,
         Name StrCat[
-            INPUT_ANA_SETTINGS,
+            INPUT_ELEC_CIRCUIT_ROTOR,
             "Circuit/12Inductance of endring segment [H]"
         ],
         ReadOnly !Flag_Cir_RotorCage,
@@ -519,7 +587,7 @@ DefineConstant[
     },
     slip = {0.9,
         Name StrCat[
-            INPUT_ANA_SETTINGS,
+            INPUT_ELEC_CIRCUIT_ROTOR,
             "Circuit/09Rotor slip"
         ],
         Range {0, 1, 0.05},
