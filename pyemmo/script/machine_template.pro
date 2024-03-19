@@ -6,6 +6,7 @@ Include PARAMETER_FILE
 // Options for the Analysis Setting
 INPUT_ANA_SETTINGS = "Input/01Analysis Parameters/";
 INPUT_ANA_SETTINGS_OUTPUT =StrCat[INPUT_ANA_SETTINGS, "99Results/"];
+INPUT_ANA_SETTINGS_OUTPUT_LOSS =StrCat[INPUT_ANA_SETTINGS_OUTPUT, "Losses/"];
 
 INPUT_SOLVER_SETTINGS = "Input/02Solver Parameters/";
 INPUT_SOLVER_SETTINGS_NL = StrCat[INPUT_SOLVER_SETTINGS, "99Nonlinear solver/"];
@@ -32,6 +33,8 @@ INPUT_MAT_PROPERTIES_CORE = StrCat[INPUT_MAT_PROPERTIES, "Rotor Core/"];
 INPUT_MAT_PROPERTIES_STATOR = StrCat[INPUT_MAT_PROPERTIES, "Stator/"];
 
 mm = 1e-3;
+SYNCHRONOUS = 0;
+ASYNCHRONOUS = 1;
 
 // Some script constants which are currently unused:
 DefineConstant[
@@ -43,16 +46,41 @@ DefineConstant[
 ];
 
 //=============================================================================
+//============================= DOMAIN DEFINITION =============================
+//=============================================================================
+Group
+{
+    DefineGroup[
+        Domain_Lam, // part of the domain which is laminated
+        Rotor_Magnets,
+        Stator_Ind_Am, Stator_Ind_Bm, Stator_Ind_Cm,
+        Stator_Ind_Ap, Stator_Ind_Bp, Stator_Ind_Cp,
+        Rotor_Bars
+    ];
+}
+
+GROUP_CODE
+//=============================================================================
+//=========================== END DOMAIN DEFINITION ===========================
+//=============================================================================
+
+//=============================================================================
 // ====================== ANALYSIS AND SOLVER PARAMETERS ======================
 //=============================================================================
 DefineConstant[
-    Flag_ExpertMode = {
-        1,
-        Name '01View/Expert Mode',
-        Choices {0, 1}
-    },
+    nbMagnets = NbrRegions[Rotor_Magnets],  // number of rotor magnet domains
+    nbRotorBars = NbrRegions[Rotor_Bars],   // number of rotor bar domains
+
+    Flag_ExpertMode = {1, Name "01View/Expert Mode", Choices {0, 1}},
 
     Flag_Debug = {1, Name "01View/Debug", Choices {0,1}},
+
+    MachineType = {
+        (nbRotorBars > 0), Name StrCat[INPUT_ANA_SETTINGS, "00Machine Type"],
+        Choices {SYNCHRONOUS = "Synchronous", ASYNCHRONOUS = "Asynchronous"},
+        Visible Flag_Debug,
+        ReadOnly 1
+    },
 
     Flag_AnalysisType = {
         ANALYSIS_TYPE, Name StrCat[INPUT_ANA_SETTINGS, "01Analysis Type"],
@@ -116,58 +144,69 @@ DefineConstant[
         Visible Flag_ExpertMode && Flag_AnalysisType==1
     },
 
+    ResId = {
+        "/", Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "02Results folder name"],
+        Help "Name of the folder inside the results folder, where the result
+            files of THIS simulation should be stored."
+    },
+
     Flag_ClearResults = {
-        0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "02Delete previous result files"],
+        0, Name StrCat[
+            INPUT_ANA_SETTINGS_OUTPUT, "03Delete previous result files"
+        ],
         Choices {0,1},
         Visible Flag_ExpertMode
     },
 
+    Flag_PrintFields = {
+        1, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "04Show Local Fields"],
+        Choices{0, 1}
+    },
+
     Flag_Calculate_ONELAB = {
-        1, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "03Calculate torque: Arrkios method"],
+        1, Name StrCat[
+            INPUT_ANA_SETTINGS_OUTPUT, "05Calculate torque: Arrkios method"
+        ],
         Choices {0,1},
         Help "ONELAB implementation of Arrkios method.",
         Visible Flag_ExpertMode
     },
 
     Flag_Calculate_VW = {
-        0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "03Calculate torque: Virtual Work"],
+        0, Name StrCat[
+            INPUT_ANA_SETTINGS_OUTPUT, "06Calculate torque: Virtual Work"
+        ],
         Choices {0,1},
         Visible Flag_ExpertMode
     },
 
-    ResId = {
-        "/", Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "Results folder name"],
-        Help "Name of the folder inside the results folder, where the result files of THIS simulation should be stored."
-    },
-
-    Flag_PrintFields = {
-        1, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "Show Local Fields"],
-        Choices{0, 1}
-    },
-
-    Flag_Lam = {
-        0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "Calc Eddy Current losses in laminations"],
-        Choices{0, 1},
-        Visible Flag_ExpertMode && Flag_AnalysisType
-    },
-
-    Flag_EC_Magnets = {
-        CALC_MAGNET_LOSSES, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "Eddy Current in Magnets (2D)"],
-        Visible Flag_ExpertMode,
-        Choices{0, 1},
-        Help "Consider Eddy-Current in the PMs"
-    },
-
     Flag_Inductance = {
-        0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "Compute inductances"],
+        0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "07Compute inductances"],
         Choices{0, 1}
     },
 
     Flag_diffInductance = {
-        1, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "Inductance Computation Type"],
+        1, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "08Inductance Computation Type"],
         Choices{0 = "Apparent", 1 = "Incremental"},
         Visible Flag_Inductance
     }
+
+    Flag_Lam = {
+    0, Name StrCat[
+        INPUT_ANA_SETTINGS_OUTPUT_LOSS, "01Calculate Eddy Current in Laminations"
+    ],
+    Choices{0, 1},
+    Visible Flag_ExpertMode && Flag_AnalysisType
+    },
+
+    Flag_EC_Magnets = {
+        CALC_MAGNET_LOSSES, Name StrCat[
+            INPUT_ANA_SETTINGS_OUTPUT_LOSS, "02Calculate Eddy Current in Magnets (2D)"
+        ],
+        Choices{0, 1},
+        Visible (Flag_ExpertMode && nbMagnets > 0),
+        Help "Consider Eddy-Current in the PMs"
+    },
 
     // -------------------------------------------------------------------------
     // -------------------- ANALYSIS - SOLVER SETTINGS -------------------------
@@ -236,7 +275,7 @@ Printf("Flag Symmetry = %.0f", Flag_Symmetry);
 Printf("Airgap radius = %.5f", r_AG);
 
 //=============================================================================
-// ==================== MACHINE PARAMETERS ====================
+//============================ MACHINE PARAMETERS =============================
 //=============================================================================
 DefineConstant[
     AxialLength_S = {L_AX_S,
@@ -339,7 +378,44 @@ DefineConstant[
                          Choices{0 = "Star Connection", 1 = "Delta Connection"},
                          Visible Flag_Cir}
 ];
-
+// Set number of rotor bars after group definition
+DefineConstant[
+    Flag_Cir_RotorCage = {(nbRotorBars > 0) , Choices{0,1},
+        Name StrCat(
+            INPUT_ELEC_CIRCUIT_ROTOR,"Circuit/10Use circuit in rotor cage"
+            ),
+        Visible (nbRotorBars > 0)
+        // ReadOnly (Flag_SrcType_Stator==1)
+    }
+    R_endring_segment = {0.836e-6,
+        Name StrCat[
+            INPUT_ELEC_CIRCUIT_ROTOR,
+            "Circuit/11Resistance of endring segment [Ohm]"
+        ],
+        ReadOnly !Flag_Cir_RotorCage,
+        Visible (nbRotorBars>0)
+    },
+    L_endring_segment = {4.8e-9,
+        Name StrCat[
+            INPUT_ELEC_CIRCUIT_ROTOR,
+            "Circuit/12Inductance of endring segment [H]"
+        ],
+        ReadOnly !Flag_Cir_RotorCage,
+        Visible (nbRotorBars>0)
+    },
+    slip = {0.9,
+        Name StrCat[
+            INPUT_ELEC_CIRCUIT_ROTOR,
+            "Circuit/09Rotor slip"
+        ],
+        Range {0, 1, 0.05},
+        ReadOnly !Flag_Cir_RotorCage,
+        Visible (nbRotorBars>0)
+    }
+];
+If (nbRotorBars > 0)
+    Printf["Rotor_Bars detected! Number of rotor bars: %.0f", nbRotorBars];
+EndIf
 //=============================================================================
 // ==================== END EXCITATION PARAMETERS ====================
 //=============================================================================
@@ -395,19 +471,6 @@ DefineConstant[ // Some circiut definitions
 Printf("Flag_Cir = %g", Flag_Cir);
 Printf("Flag_SrcType_Stator = %g", Flag_SrcType_Stator);
 Printf("Flag_ImposedCurrentDensity = %g", Flag_ImposedCurrentDensity);
-
-Group
-{
-    DefineGroup[
-        Domain_Lam, // part of the domain which is laminated
-        Rotor_Magnets,
-        Stator_Ind_Am, Stator_Ind_Bm, Stator_Ind_Cm,
-        Stator_Ind_Ap, Stator_Ind_Bp, Stator_Ind_Cp,
-        Rotor_Bars
-    ];
-}
-
-GROUP_CODE
 
 Group
 {
@@ -559,45 +622,6 @@ Group
     //     EndIf
     // EndIf
 }
-// Set number of rotor bars after group definition
-DefineConstant[
-    nbRotorBars = NbrRegions[Rotor_Bars],
-    Flag_Cir_RotorCage = {(nbRotorBars > 0) , Choices{0,1},
-        Name StrCat(
-            INPUT_ELEC_CIRCUIT_ROTOR,"Circuit/10Use circuit in rotor cage"
-            ),
-        Visible (nbRotorBars > 0)
-        // ReadOnly (Flag_SrcType_Stator==1)
-    }
-    R_endring_segment = {0.836e-6,
-        Name StrCat[
-            INPUT_ELEC_CIRCUIT_ROTOR,
-            "Circuit/11Resistance of endring segment [Ohm]"
-        ],
-        ReadOnly !Flag_Cir_RotorCage,
-        Visible (nbRotorBars>0)
-    },
-    L_endring_segment = {4.8e-9,
-        Name StrCat[
-            INPUT_ELEC_CIRCUIT_ROTOR,
-            "Circuit/12Inductance of endring segment [H]"
-        ],
-        ReadOnly !Flag_Cir_RotorCage,
-        Visible (nbRotorBars>0)
-    },
-    slip = {0.9,
-        Name StrCat[
-            INPUT_ELEC_CIRCUIT_ROTOR,
-            "Circuit/09Rotor slip"
-        ],
-        Range {0, 1, 0.05},
-        ReadOnly !Flag_Cir_RotorCage,
-        Visible (nbRotorBars>0)
-    }
-];
-If (nbRotorBars > 0)
-    Printf["Rotor_Bars detected! Number of rotor bars: %.0f", nbRotorBars];
-EndIf
 
 // FUNCTIONS TO BE DEFINED
 Function
