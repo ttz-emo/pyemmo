@@ -31,11 +31,28 @@ def exportTabMaxwell(data: list, identifier: list[str], filepath: str) -> None:
 
     Args:
         data (list): List of data vectors.
-        identifier (list[str]): List of data identifier for Maxwell like "H (A_per_meter)" or "B (tesla)".
-        filepath (str, optional): File path to write the results to. File extension must be ".tab"!
+        identifier (list[str]): List of data identifier for Maxwell like 
+            "Time (s)", "H (A_per_meter)" or "B (tesla)".
+        filepath (str): File path to write the results to. File
+            extension must be ".tab"!
 
     Raises:
         ValueError: If extension is not .tab
+
+    Example:
+
+        ..code:: python
+
+            time_data = [4, 5, 6]
+            h_data = [1, 2, 3]
+
+            data = [time_data, h_data]
+            ids = ["Time (s)", "H (A_per_meter)"]
+
+            file = (
+                f"{RES_DIR}\testExportMaxwellData.tab"
+            )
+            exportTabMaxwell(data, ids, file)
     """
     assert len(data) == len(identifier), "data and identifier length are not matching!"
     assert not path.isfile(filepath), f"Given .tab file allready exists: {filepath}"
