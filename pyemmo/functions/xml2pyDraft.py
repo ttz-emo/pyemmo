@@ -1,3 +1,22 @@
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 import xml.etree.ElementTree as ET
 from typing import List, Dict, Union
 from math import pi
@@ -5,7 +24,9 @@ from math import pi
 
 ###
 ###
-def getMaterialArray(xmlPath: str) -> List[Dict[str, Union[str, float, List[float]]]]:
+def getMaterialArray(
+    xmlPath: str,
+) -> List[Dict[str, Union[str, float, List[float]]]]:
     """Die Funktion getMaterialArray() ist ein Parser speziell für die erstellten XML-Dokumente
     aus den Maxwell-Materialdaten (.amat). Als Input dient der vollständige Pfad der XML-Datei.
     Eine Liste mit allen Materialien und den Eigenschaften: elektrische Leitfähigkeit, magnetsiche
@@ -76,7 +97,9 @@ def getMaterialArray(xmlPath: str) -> List[Dict[str, Union[str, float, List[floa
                     elif unitH == "A_per_meter":
                         hSI = hVal
                     else:
-                        raise ValueError("Unit for magnetic field strength not defined.")
+                        raise ValueError(
+                            "Unit for magnetic field strength not defined."
+                        )
                     # H-Wert in der H[]-Liste abspeichern (nach einander).
                     H.append(hSI)
 
@@ -89,7 +112,9 @@ def getMaterialArray(xmlPath: str) -> List[Dict[str, Union[str, float, List[floa
                     elif unitB.lower() == "tesla":
                         bSI = bVal
                     else:
-                        raise ValueError("Unit for magnetic flux density not defined.")
+                        raise ValueError(
+                            "Unit for magnetic flux density not defined."
+                        )
                     # B-Wert in der B[]-Liste abspeichern (nach einander).
                     B.append(bSI)
                 # Listen in ein BH-Dict abspeichern.
