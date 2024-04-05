@@ -11,8 +11,9 @@ from pyemmo.functions.import_results import (
     plot_timetable_dat,
     read_timetable_dat,
     split_data,
-    # plotAllDat,
+    plot_all_dat,
     importSP,
+    get_result_files,
 )
 
 # %% single simulation in time table formated file:
@@ -63,7 +64,8 @@ for sim in range(nbrSims):
     # show()
     # ax.set_aspect("equal", adjustable="box")
     fig.axes[0].set_ylim(
-        bottom=min(torqueArray[sim]) * (1.1 if min(torqueArray[sim]) < 0 else 0.9),
+        bottom=min(torqueArray[sim])
+        * (1.1 if min(torqueArray[sim]) < 0 else 0.9),
         top=max(torqueArray[sim]) * 1.1,
     )
     # ax.autoscale()
@@ -78,7 +80,7 @@ for phase in "ABC":
     )
     n, t, data = split_data(time[phase], indVoltage[phase])
     for sim in range(n):
-        ax.plot(t[sim], data[sim], label= f"Sim: {sim}, Phase: {phase}")
+        ax.plot(t[sim], data[sim], label=f"Sim: {sim}, Phase: {phase}")
 ax.legend()
 
 # %% Import Radial Flux Density in Airgap
