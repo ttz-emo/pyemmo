@@ -736,7 +736,21 @@ Function
             ReadOnly 1,
             Visible MachineType == ASYNCHRONOUS
         }
+        asm_finalrotor_pos = 360*(nbStatorPeriods/freq_stator)*n
     ];
+    If (MachineType==ASYNCHRONOUS)
+        // Reset ONELAB parameters after calculating stator frequency
+        // Reset final rotor position (we did not know fs before)
+        SetNumber[
+            StrCat[INPUT_ANA_SETTINGS, "06Final rotor position"],
+            asm_finalrotor_pos
+        ];
+        // Reset number of timesteps due to slip
+        SetNumber[
+            StrCat[INPUT_ANA_SETTINGS, "07Number of Time Steps"],
+            Ceil[(asm_finalrotor_pos - initrotor_pos) / (d_theta) + 1]
+        ];
+    EndIf
     // electrical period
     T = 1 / freq_stator;
     // electrical pulsation
