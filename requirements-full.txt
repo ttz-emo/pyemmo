@@ -5,3 +5,6 @@ parse>=1.19.0
 pygetdp>=1.0.0
 swat_em>=0.6.3
 hypothesis>=6.98.17
+gmsh>=4.10.3
+Sphinx>=7.2.6
+GitPython

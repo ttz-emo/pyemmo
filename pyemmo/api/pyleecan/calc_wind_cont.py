@@ -1,3 +1,22 @@
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 """Module: wind_contour_calculation"""
 
 import math
@@ -20,6 +39,11 @@ def calc_wind_contour(
 ) -> list[Union[Line, CircleArc]]:
     """Calculation for the contour of a slot with winding.
 
+        TODO: Filterung der Konturlinien anpassen. Wicklungskontur(en) von der
+        Innenkontur der Statorblechs abziehen. Die Interface-Linie zwischen Nutschlitz
+        und Wicklung ist diejenige Linie, die nicht in der Wicklungs- UND Statorkontur
+        vorkommt.
+
     Args:
         geometry_list (list): A list of geometry elements.
         stator_rint (float): The inner radius of the stator.
@@ -32,12 +56,12 @@ def calc_wind_contour(
         - The wind contour lines are calculated based on the provided geometry list
           and stator inner and outer radii.
         - The wind contour lines are plotted for visualization.
-    # """
+    #"""
     # TODO: Filterung der Konturlinien anpassen. Wicklungskontur(en) von der
     # Innenkontur der Statorblechs abziehen. Die Interface-Linie zwischen
     # Nutschlitz und Wicklung ist diejenige Linie, die nicht in der Wicklungs-
     # UND Statorkontur vorkommt.
-    
+
     stator_cont_line_list: list[Union[Line, CircleArc]] = []
     stator_lam_surf_list = get_stator_surfs(geometry_list=geometry_list)
 

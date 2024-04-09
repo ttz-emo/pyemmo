@@ -1,3 +1,23 @@
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+
 # %%
 
 import os
@@ -10,7 +30,9 @@ try:
     from pyemmo.script.script import Script
 except:
     try:
-        rootname = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        rootname = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "..")
+        )
     except:
         rootname = r"C:\Users\k49976\Desktop\repositoryGibLab\pyemmo"
         print(f"Could not determine root. Setting it manually to '{rootname}'")
@@ -122,7 +144,9 @@ def createRotorPMSM():
     dLdC3 = Line("dLdC3", ddCR1, dR3)
 
     # Erzeugung der Flächen
-    s_RotorBlech_01 = Surface("s_RotorBlech", [dLR1, dLR5, dLR6, dLR4, dLR3, dLR2])
+    s_RotorBlech_01 = Surface(
+        "s_RotorBlech", [dLR1, dLR5, dLR6, dLR4, dLR3, dLR2]
+    )
     s_Magnet_01 = Surface("s_Magnet", [dLR6, dLRM2, dLRM3, dLRM1])
     s_Container_01 = Surface(
         "s_Container", [dLdC1, dLdC2, dLRM3, dLRM1, dLR4, dLR3, dLdC3]
@@ -195,7 +219,9 @@ def createRotorPMSM():
     for sR in slave_R:
         sR.rotateZ(mRotor, math.pi / 2)
     slaveR = SlaveLine("slaveR", slave_R)
-    mbRotor = MovingBand(name="mbRotor", geometricalElement=mbR_all, material=air)
+    mbRotor = MovingBand(
+        name="mbRotor", geometricalElement=mbR_all, material=air
+    )
     phy_innerLimit = LimitLine("innerLimitRotor", innerLimit)
 
     return Rotor(
@@ -232,7 +258,11 @@ def createStatorPMSM():
     dS6 = Point("dS6", 37e-3 + 14.566e-3 + 2.976e-3, 0, 0, 0.003)
 
     dS7 = Point(
-        "dS7", 37e-3 * math.cos(math.pi / 12), 37e-3 * math.sin(math.pi / 12), 0, 0.0003
+        "dS7",
+        37e-3 * math.cos(math.pi / 12),
+        37e-3 * math.sin(math.pi / 12),
+        0,
+        0.0003,
     )
     dS8 = Point(
         "dS8",
@@ -293,7 +323,9 @@ def createStatorPMSM():
     )
     s_Nutschlitz01 = Surface("nutschlitz_01", [dLS2, dLNS2, dLNS3, dLNS1])
     s_Nut01 = Surface("nut_01", [dLNS2, dLS6, dLS5, dLS4, dLS3])
-    s_Luftspalt01 = Surface("Luftspalt_01", [dLNS1, dLS10, dLdCSS2, dLdCS1, dLdCSS1])
+    s_Luftspalt01 = Surface(
+        "Luftspalt_01", [dLNS1, dLS10, dLdCSS2, dLdCS1, dLdCSS1]
+    )
 
     s_Statorblech = [s_statorblech01]
     s_Nutschlitz = [s_Nutschlitz01]
@@ -323,12 +355,18 @@ def createStatorPMSM():
         mbS_all.append(mbS)
         hL2.rotateZ(PBohrung, math.pi / 12)
 
-    phy_StatorBlech = StatorLamination("StatorBlech", s_Statorblech, steel_1010)
+    phy_StatorBlech = StatorLamination(
+        "StatorBlech", s_Statorblech, steel_1010
+    )
     phy_Nutschlitz = AirArea("Nutschlitz", s_Nutschlitz, air)
     allSlot: list[Slot] = []
     for i2 in range(0, len(s_Nut)):
-        allSlot.append(Slot(name="", geometricalElement=[s_Nut[i2]], material=copper))
-        allSlot[len(allSlot) - 1].name = "slot_" + str(allSlot[len(allSlot) - 1].id)
+        allSlot.append(
+            Slot(name="", geometricalElement=[s_Nut[i2]], material=copper)
+        )
+        allSlot[len(allSlot) - 1].name = "slot_" + str(
+            allSlot[len(allSlot) - 1].id
+        )
         # allSlot[len(allSlot) - 1].addExcitation(windingInstruction[i2])
     phy_airGap = AirGap("luftspalt_stator", s_Luftspalt, air)
 

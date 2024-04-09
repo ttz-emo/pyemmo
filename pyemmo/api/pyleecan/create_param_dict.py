@@ -1,5 +1,24 @@
-from pyleecan.Classes.Machine import Machine as PyleecanMachine
-from pyleecan.Classes.Simulation import Simulation as PyleecanSimulation
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+from pyleecan.Classes.Machine import Machine
+from pyleecan.Classes.Simulation import Simulation
 from pyleecan.Classes.Lamination import Lamination
 from pyleecan.Classes.LamHole import LamHole
 from pyleecan.Classes.LamSlotMag import LamSlotMag
@@ -24,7 +43,7 @@ def create_param_dict(
     parameters in ONELAB.
 
     Args:
-        machine (PyleecanMachine): Pyleecan `Machine 
+        machine (PyleecanMachine): Pyleecan `Machine
             <https://pyleecan.org/pyleecan.Classes.Machine.html>`_ object.
         pyleecan_simulation (PyleecanSimulation): A Pyleecan `Simulation
             <https://pyleecan.org/pyleecan.Classes.Simulation.html>`_ object.

@@ -1,3 +1,22 @@
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 from random import random
 from typing import TYPE_CHECKING, List, Tuple, Type, Union
 
@@ -40,7 +59,9 @@ class Surface(Transformable):
     """Statische Variable zur ID-Verwaltung"""
 
     ###Konstruktor der Klasse Surface
-    def __init__(self, name: str, curves: List[Union[Line, CircleArc, Spline]]):
+    def __init__(
+        self, name: str, curves: List[Union[Line, CircleArc, Spline]]
+    ):
         """Create a surface object.
 
         Args:
@@ -63,7 +84,7 @@ class Surface(Transformable):
         ###Farbe vom Netz.
         self._color = ""
         # init because _cut(=tools) is only accessed by method ``cutOut``
-        self._cut: List["Surface"] = [] 
+        self._cut: List["Surface"] = []
         self._isTool: bool = False
         self._delete: bool = False
 
@@ -392,7 +413,11 @@ class Surface(Transformable):
         return s
 
     def mirror(
-        self, planePoint: Point, planeVector1: Line, planeVector2: Line, name: str = ""
+        self,
+        planePoint: Point,
+        planeVector1: Line,
+        planeVector2: Line,
+        name: str = "",
     ) -> "Surface":
         """Mit mirror() kann eine Fläche an einer definierten Ebene gespiegelt werden.
         Bildpunkte werden hierbei generiert und eine Linie zwischen den Punkten erzeugt.
@@ -414,7 +439,9 @@ class Surface(Transformable):
         allCurve.reverse()
         allNewCurve = []
         for aC in allCurve:
-            allNewCurve.append(aC.mirror(planePoint, planeVector1, planeVector2))
+            allNewCurve.append(
+                aC.mirror(planePoint, planeVector1, planeVector2)
+            )
 
         s = Surface(self._name, allNewCurve)
 
@@ -463,7 +490,9 @@ class Surface(Transformable):
                 newCurves = curves + addCurves  # combine the remaining lines
                 # check if the remaining lines containing the touch points can be combined:
                 for dockPoint in touchpoints:
-                    lines2combine: List[Union[Line, CircleArc, Spline]] = list()
+                    lines2combine: List[Union[Line, CircleArc, Spline]] = (
+                        list()
+                    )
                     # find the two lines in the two remaining curve lists containing the docking point:
                     for curve in newCurves:
                         for linePoint in curve.points:
@@ -680,7 +709,11 @@ class Surface(Transformable):
             y.append(coords[1])
             z.append(coords[2])
         return Point(
-            name=("CP_" + self.name), x=mean(x), y=mean(y), z=mean(z), meshLength=1
+            name=("CP_" + self.name),
+            x=mean(x),
+            y=mean(y),
+            z=mean(z),
+            meshLength=1,
         )
 
     def plot(

@@ -1,3 +1,22 @@
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 """This module holds the electrical steel lamination Material-class definition"""
 import numpy
 from typing import Tuple, Dict, Union
@@ -120,7 +139,9 @@ class ElectricalSteel(Material):
         return self._referenceFrequency
 
     @referenceFrequency.setter
-    def referenceFrequency(self, newReferenceFrequency: Union[int, float]) -> None:
+    def referenceFrequency(
+        self, newReferenceFrequency: Union[int, float]
+    ) -> None:
         """Setter of reference frequency in Hz
 
         Args:
@@ -142,7 +163,9 @@ class ElectricalSteel(Material):
         return self._referenceFluxDensity
 
     @referenceFluxDensity.setter
-    def referenceFluxDensity(self, newReferenceFluxDensity: Union[int, float]) -> None:
+    def referenceFluxDensity(
+        self, newReferenceFluxDensity: Union[int, float]
+    ) -> None:
         """Setter of reference flux density in T
 
         Args:
@@ -157,7 +180,7 @@ class ElectricalSteel(Material):
         """print electrical steel material to stdout"""
         table = [
             ["Name:", self.name],
-            ["Is linear:", "Yes" if self.isLinear() else "No"],
+            ["Is linear:", "Yes" if self.linear else "No"],
             ["Electrical Conductivity [S/m]:", self.conductivity],
             ["Relative Permeability []:", self.relPermeability],
             ["Remanence Flux Density[T]:", self.remanence],
@@ -168,6 +191,8 @@ class ElectricalSteel(Material):
         ]
         for row in table:
             if row[1] is None:
-                row[1] = "None"  # set to string because formatting None not supported
+                row[1] = (
+                    "None"  # set to string because formatting None not supported
+                )
             print(f"{row[0]: >25} {row[1]: <15}")
         print("\n")

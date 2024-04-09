@@ -1,3 +1,23 @@
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+
 # %% imports
 import gmsh
 import sys, os
@@ -47,6 +67,9 @@ def intAndPlot(viewTag, symFactor, axLen, time, filePath, plotName: str):
     gmsh.view.option.setNumber(intViewTag, "CustomMin", 0)
     gmsh.view.option.setNumber(intViewTag, "CustomMax", np.max(intData) * 1.2)
     # 0: none, 1: simple axes, 2: box, 3: full grid, 4: open grid, 5: ruler
+    gmsh.view.option.setNumber(
+        intViewTag, "Axes", viewPos[viewTag % 4]
+    )  # FIXME
     gmsh.view.option.setNumber(
         intViewTag, "Axes", viewPos[viewTag % 4]
     )  # FIXME
@@ -350,7 +373,7 @@ def ironLossInteractive(
     ax1 = axes[0]
     ax1.plot(time, bMeanFree[:, elemId, 0] / np.max(bMeanFree[:, elemId, 0]))
     ax1.set_xlabel("time in s")
-    ax1.set_ylabel("$B/B_{\mathrm{max}}$")
+    ax1.set_ylabel(r"$B/B_{\mathrm{max}}$")
     ax1.yaxis.label.set_color("C0")
     ax1.tick_params(axis="y", colors="C0")
     # ax1.grid(color="C0")
@@ -359,14 +382,15 @@ def ironLossInteractive(
 
     ax12 = ax1.twinx()
     ax12.plot(time, Hirr[:, elemId, 0] / np.max(Hirr[:, elemId, 0]), "C1")
+    ax12.plot(time, Hirr[:, elemId, 0] / np.max(Hirr[:, elemId, 0]), "C1")
     ax12.yaxis.label.set_color("C1")
     ax12.tick_params(axis="y", colors="C1")
-    ax12.set_ylabel("$H_{\mathrm{irr}}/H_{\mathrm{irr,max}}$")
+    ax12.set_ylabel(r"$H_{\mathrm{irr}}/H_{\mathrm{irr,max}}$")
 
     ax2 = axes[1]
     ax2.plot(time, bMeanFree[:, elemId, 1] / np.max(bMeanFree[:, elemId, 1]))
     ax2.set_xlabel("time in s")
-    ax2.set_ylabel("$B/B_{\mathrm{max}}$")
+    ax2.set_ylabel(r"$B/B_{\mathrm{max}}$")
     ax2.yaxis.label.set_color("C0")
     ax2.tick_params(axis="y", colors="C0")
     # ax2.grid(color="C0")
@@ -375,9 +399,10 @@ def ironLossInteractive(
 
     ax21 = ax2.twinx()
     ax21.plot(time, Hirr[:, elemId, 1] / np.max(Hirr[:, elemId, 1]), "C1")
+    ax21.plot(time, Hirr[:, elemId, 1] / np.max(Hirr[:, elemId, 1]), "C1")
     ax21.yaxis.label.set_color("C1")
     ax21.tick_params(axis="y", colors="C1")
-    ax21.set_ylabel("$H_{\mathrm{irr}}/H_{\mathrm{irr,max}}$")
+    ax21.set_ylabel(r"$H_{\mathrm{irr}}/H_{\mathrm{irr,max}}$")
     fig.tight_layout()
 
     # Plot x and y comp. of Bm and Hm over element number
@@ -409,8 +434,8 @@ def ironLossInteractive(
     ps[0].set_color("C3")
     ps[1].set_color("C4")
     ax.grid(True)
-    ax.set_xlabel("$H_{\mathrm{irr}}/H_{\mathrm{irr,max}}$")
-    ax.set_ylabel("$B/B_{\mathrm{max}}$")
+    ax.set_xlabel(r"$H_{\mathrm{irr}}/H_{\mathrm{irr,max}}$")
+    ax.set_ylabel(r"$B/B_{\mathrm{max}}$")
     ax.legend(["x", "y"])
     ax.axhline(y=0, color="k")
     ax.axvline(x=0, color="k")

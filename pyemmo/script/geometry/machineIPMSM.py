@@ -1,12 +1,32 @@
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 from typing import Dict
+from math import pi, gcd
+import swat_em
 
-from pyemmo.script.geometry.machineAllType import MachineAllType
 from ..script import default_param_dict
+from ... import logging
+from .machineAllType import MachineAllType
 from .domain import Domain
 from .rotorIPMSM import RotorIPMSM
 from .statorSPMSM import StatorPMSM
-from math import pi
-import swat_em
 
 
 class MachineIPMSM(MachineAllType):
@@ -16,7 +36,7 @@ class MachineIPMSM(MachineAllType):
         simuParam (dict): dict with the essential machine parameters
 
         'analysisParameter':
-    
+
         * 'symmetryFactor' : Integer,
         * 'nbrPolesTotal' : Integer,
         * 'nbrSlotTotal' : Integer,
@@ -25,11 +45,11 @@ class MachineIPMSM(MachineAllType):
         * 'analysisType' : String,
         * 'startPosition' : Float
     """
+
     def __init__(self, simuParam, name="Machine_IPMSM"):
         """Constructor of the class MachineIPMSM."""
         super().__init__(
             nbrPolePairs=(simuParam["analysisParameter"]["nbrPolesTotal"] / 2),
-            symmetryFactor=simuParam["analysisParameter"]["symmetryFactor"],
             rotor=None,
             stator=None,
             name=name,
@@ -39,11 +59,11 @@ class MachineIPMSM(MachineAllType):
         # Calculate Poles and Slots for Model
         self._simuParam["analysisParameter"]["nbrPolesinModel"] = (
             self._simuParam["analysisParameter"]["nbrPolesTotal"]
-            / self.symmetryFactor
+            / simuParam["analysisParameter"]["symmetryFactor"]
         )
         self._simuParam["analysisParameter"]["nbrSlotinModel"] = (
             self._simuParam["analysisParameter"]["nbrSlotTotal"]
-            / self.symmetryFactor
+            / simuParam["analysisParameter"]["symmetryFactor"]
         )
 
     @property
@@ -55,7 +75,37 @@ class MachineIPMSM(MachineAllType):
         """
         simuParams = self._simuParamDict
         return simuParams["analysisParameter"]["startPosition"]
-    
+
+    @property
+    def symmetryFactor(self) -> int:
+        """Getter of Symmetry Factor
+
+        Returns:
+            int: Symmetry Factor
+        """
+        try:
+            sym_factor = super().symmetryFactor
+            if (
+                self._simuParam["analysisParameter"]["symmetryFactor"]
+                > sym_factor
+            ):
+                logging.error(
+                    "Given symmetry factor doesn't match maximal sym: %i != %i",
+                    self._simuParam["analysisParameter"]["symmetryFactor"],
+                    sym_factor,
+                )
+                return sym_factor
+        except RuntimeError:
+            # super() failed because rotor or stator was not given
+            return self._simuParam["analysisParameter"]["symmetryFactor"]
+        except Exception as exce:
+            raise exce
+        # noramlly we should return sym_factor here, but since the workflow is
+        # that the sym_factor must be given from outside, we return that one
+        # for now...
+        # return sym_factor
+        return self._simuParam["analysisParameter"]["symmetryFactor"]
+
     @property
     def simParams(self) -> dict:
         """
@@ -75,7 +125,7 @@ class MachineIPMSM(MachineAllType):
         paramDict["NBR_SLOTS"] = self.stator.nbrSlots
         slots = self.stator.slots
         nbrTurns = slots[0].nbrTurns
-        slots.pop(0) # pop first one to don't compare the slot against itself
+        slots.pop(0)  # pop first one to don't compare the slot against itself
         for slot in slots:
             actNbrTurns = slot.nbrTurns
             if nbrTurns != actNbrTurns:
@@ -91,10 +141,10 @@ class MachineIPMSM(MachineAllType):
         """return the simulation parameter dict
 
         Returns:
-            Dict: dict with simulation parameters. 
-        
+            Dict: dict with simulation parameters.
+
         Content of SimuParamDict under 'analysisParameter' is:
-    
+
         * 'symmetryFactor' : Integer,
         * 'nbrPolesTotal' : Integer,
         * 'nbrSlotTotal' : Integer,
@@ -105,7 +155,9 @@ class MachineIPMSM(MachineAllType):
         """
         return self._simuParam
 
-    def addRotorToMachine(self, laminationType: str, magnetType: str, axLen: float = 1):
+    def addRotorToMachine(
+        self, laminationType: str, magnetType: str, axLen: float = 1
+    ):
         nbrPoles = self.nbrPolePairs * 2
         symFactor = self.symmetryFactor
         angleGeoParts = 2 * pi / (nbrPoles) / 2  # half segment?
@@ -119,7 +171,9 @@ class MachineIPMSM(MachineAllType):
             magnetType=magnetType,
             angleGeoParts=angleGeoParts,  # angle of one segment
             nbrGeoParts=nbrGeoParts,
-            symmetryFactor=self._symmetryFactor,
+            symmetryFactor=self._simuParam["analysisParameter"][
+                "symmetryFactor"
+            ],
             startPosition=startPosition,
             axLen=axLen,
         )
@@ -134,23 +188,27 @@ class MachineIPMSM(MachineAllType):
     ):
         startPosition = (
             pi
-            / self._symmetryFactor
+            / self._simuParam["analysisParameter"]["symmetryFactor"]
             / self._simuParam["analysisParameter"]["nbrSlotinModel"]
             + self._simuParam["analysisParameter"]["startPosition"]
         )
         angleGeoParts = (
             pi
-            / self._symmetryFactor
+            / self._simuParam["analysisParameter"]["symmetryFactor"]
             / self._simuParam["analysisParameter"]["nbrSlotinModel"]
         )
-        nbrGeoParts = self._simuParam["analysisParameter"]["nbrSlotinModel"] * 2
+        nbrGeoParts = (
+            self._simuParam["analysisParameter"]["nbrSlotinModel"] * 2
+        )
         statorSPMSM1 = StatorPMSM(
             laminationType=laminationType,
             slotType=slotType,
             nbrSlots=self._simuParam["analysisParameter"]["nbrSlotTotal"],
             angleGeoParts=angleGeoParts,
             nbrGeoParts=nbrGeoParts,
-            symmetryFactor=self._symmetryFactor,
+            symmetryFactor=self._simuParam["analysisParameter"][
+                "symmetryFactor"
+            ],
             startPosition=startPosition,
             axLen=axLen,
             winding=winding,
@@ -182,13 +240,16 @@ class MachineIPMSM(MachineAllType):
             )
             self._domainNL = Domain(
                 "DomainNL",
-                self.rotor._domainNL.physicals + self.stator._domainNL.physicals,
+                self.rotor._domainNL.physicals
+                + self.stator._domainNL.physicals,
             )
 
             self._rotorMoving = Domain(
                 "Rotor_Moving", self.rotor._rotorMoving.physicals
             )
-            self._mbBaux = Domain("Rotor_Bnd_MBaux", self.rotor._mbBaux.physicals)
+            self._mbBaux = Domain(
+                "Rotor_Bnd_MBaux", self.rotor._mbBaux.physicals
+            )
             self._domainAirGapRotor = Domain(
                 "Rotor_Airgap", self.rotor._domainAirGap.physicals
             )

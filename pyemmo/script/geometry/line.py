@@ -1,3 +1,22 @@
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 """Module of geometry class Line"""
 
 from random import random
@@ -184,7 +203,7 @@ class Line(Transformable):
         startPoint = self.startPoint
         endPoint = self.endPoint
         return (startPoint, endPoint)
-    
+
     @property
     def middlePoint(self) -> Point:
         """Get the center point between start and end point.
@@ -503,10 +522,8 @@ class Line(Transformable):
         ):  # make sure the line types are equal
             raise (
                 TypeError(
-                    (
-                        "Tried to combine lines, but the line types are different! "
-                        f"{type(self)} != {type(addLine)}"
-                    )
+                    "Tried to combine lines, but the line types are different! "
+                    f"{type(self)} != {type(addLine)}"
                 )
             )
         if not touchPoint:
@@ -534,19 +551,15 @@ class Line(Transformable):
             else:
                 raise (
                     RuntimeError(
-                        (
-                            f"Combination of lines ({self.name} and {addLine.name}) failed."
-                            f"{len(newPoints)} points to create a new line; should be 2!"
-                        )
+                        f"Combination of lines ({self.name} and {addLine.name}) failed."
+                        f"{len(newPoints)} points to create a new line; should be 2!"
                     )
                 )
         else:
             raise (
                 RuntimeError(
-                    (
-                        f"Combination of lines ({self.name} and {addLine.name}) failed."
-                        "Could not find touchpoint."
-                    )
+                    f"Combination of lines ({self.name} and {addLine.name}) failed."
+                    "Could not find touchpoint."
                 )
             )
 
@@ -569,5 +582,3 @@ class Line(Transformable):
             if p.isEqual(refPoint, tol=tol):
                 return True
         return False
-
-

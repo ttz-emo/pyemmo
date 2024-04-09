@@ -88,7 +88,7 @@ DefineConstant[
   // Extension defintion for the results
   ExtGmsh = ".pos",   // fields are stored in pos files (they are then loaded automatically into onelab)
   ExtGnuplot = ".dat" // file type for table results sich as torque
-    
+
   // some commandline options
   R_ = {"Analysis", Name "GetDP/1ResolutionChoices", Visible Flag_Debug},
   // Options:
@@ -98,7 +98,7 @@ DefineConstant[
   //  -order(real)      Specifies the maximum interpolation order.
   //  -setnumber (name value)   Sets constant number name to value.
   //  -setstring (name value)   Sets constant string name to value.
-  C_ = {"-solve Analysis -v 99 -v2", Name "GetDP/9ComputeCommand", Visible Flag_Debug}, 
+  C_ = {"-solve Analysis -v 99 -v2", Name "GetDP/9ComputeCommand", Visible Flag_Debug},
   P_ = {"", Name "GetDP/2PostOperationChoices", Visible Flag_Debug}
 ];
 Printf("Results Directory is %s", ResDir());
@@ -148,7 +148,7 @@ Group {
 
   DomainM = Region[ {Rotor_Magnets} ] ;
 
-  // DomainB is coupled to an external circuit, so if we impose the current density, it is obvious that 
+  // DomainB is coupled to an external circuit, so if we impose the current density, it is obvious that
   // we cannot include them there
   If(!Flag_ImposedCurrentDensity)
     DomainB = Region[ {Inds} ] ;
@@ -168,7 +168,7 @@ Group {
   //   Printf("Rotor Regions: %.0f", RegList(i));
   // EndFor
 
-  // In the resolution, the nodes of the rotor are rotated, this defines the 
+  // In the resolution, the nodes of the rotor are rotated, this defines the
   // regions which belong to the rotor and will consequently be rotated
   // similar to the definition of the moving object in Maxwell
   Rotor_Moving = Region[{ Rotor, Rotor_Air, Rotor_Airgap, Rotor_Bnd_MBaux} ] ;
@@ -176,7 +176,7 @@ Group {
   If (!Flag_MB)
     Rotor_Moving += Region[{Rotor_ClippingAux}];
   EndIf
- 
+
 
   // If (Flag_MB)
     // Definition of the moving-band region (if used)
@@ -204,7 +204,7 @@ Group {
   // Dummy region number for postpro with functions
   // if we want to write a function (e.g. the d-axis flux-linkage) to
   // a file
-  DomainDummy = Region[12345] ; 
+  DomainDummy = Region[12345] ;
 }
 
 
@@ -215,7 +215,7 @@ Group {
 // In GetDP, the material properties are defined as functions
 // functions can be time or region dependent
 // for example mu[{Air}] = 4e-7*pi; mu[{Iron}] = 3000*4e-7*pi
-// Whenever the function is called (eg. when plotting fields), getdp will 
+// Whenever the function is called (eg. when plotting fields), getdp will
 // know to which domain the element belongs and use the correct value
 Function {
   axialLength[Region[{Rotor}]] = AxialLength_R;
@@ -231,7 +231,7 @@ Function {
   // since sigma is defined differntly for different regions so will rho[]
   rho[] = 1/sigma[] ;
 
-  // defintion of the density function to be used in the calculation of the 
+  // defintion of the density function to be used in the calculation of the
   // moment of inertia
   // density[Motor_Region_1] = dens_Lam;
   // density[Motor_Region_3] = dens_Lam;
@@ -246,11 +246,7 @@ Function {
   Idir[Region[{Stator_IndsN, Rotor_IndsN}]] = -1 ;
 
   // define rotation direction of stator field. This is also depended on the winding layout!
-  If (Flag_invertRotDir)
-    rotDirChange = -1;
-  Else
-    rotDirChange = 1;
-  EndIf
+  rotDirChange = (Flag_invertRotDir) ? -1 : 1;
 
   // defintion of the dq0-> vector
   Idq0[] = Vector[ $ID, $IQ, $I0 ] ;
@@ -268,21 +264,22 @@ Function {
   Flux_abc[] = Vector[$Flux_a, $Flux_b, $Flux_c];
 
   // Here we see why the abs fluxes and the qq0 currents were defined as
-  // vectors. Like this we can use the Tensor and Vector multiplication 
+  // vectors. Like this we can use the Tensor and Vector multiplication
   // to calculate the dq0 fluxes or abc currents
   Iabc[]     = Pinv[] * Idq0[] ;
   Flux_dq0[] = P[] *  Flux_abc[];
 
-  // assign the current of each phase 
+  // assign the current of each phase
   If(Flag_ParkTransformation)
     II = 1. ;
     IA[] = CompX[ Iabc[] ] ;
     IB[] = CompY[ Iabc[] ] ;
     IC[] = CompZ[ Iabc[] ] ;
-  Else
-    IA[] = ((Flag_Fault == 1) && ($Time>0.02)) ? 0*F_Sin_wt_p[]{2*Pi*Freq, pA} : F_Sin_wt_p[]{2*Pi*Freq, pA} ;
-    IB[] = F_Sin_wt_p[]{2*Pi*Freq, pB};
-    IC[] = F_Sin_wt_p[]{2*Pi*Freq, pC};
+  Else // Standard sinusoidal current definition
+    II = I_eff * Sqrt[2];
+    IA[] = ((Flag_Fault == 1) && ($Time>0.02)) ? 0*F_Sin_wt_p[]{2*Pi*freq_stator, pA} : F_Sin_wt_p[]{2*Pi*freq_stator, pA} ;
+    IB[] = F_Sin_wt_p[]{2*Pi*freq_stator, rotDirChange*pB};
+    IC[] = F_Sin_wt_p[]{2*Pi*freq_stator, rotDirChange*pC};
   EndIf
   Jz1A[] = NbWires[]/SurfCoil[] * Idir[] * Vector[0, 0, 1];
   // calculate the current density from the current and the surface of the coil
@@ -299,8 +296,8 @@ Function {
   // Function to rotate the points around the z axis
   RotatePZ[] = Rotate[ Vector[$X,$Y,$Z], 0, 0, $1 ] ;
 
-  // The inductance is calculated using the frozen permeability method. 
-  // Further details on this method can be found under 
+  // The inductance is calculated using the frozen permeability method.
+  // Further details on this method can be found under
   // https://ieeexplore.ieee.org/abstract/document/732255
   // Since we need to energize the different axis one after the other
   // we define the new abc currents to apply, and consequently the new
@@ -349,7 +346,7 @@ Jacobian {
   // In this case we name our Jacobian Vol, it is definied in all elements and is of type Vol
   // the type vol states that the dimension of the element during the transformation is not changed
   // in 2-D: triangle remains a triangle
-  // When using a type Sur, the dimension is dectreased by 1, this means that f.eg. in 2-D the 
+  // When using a type Sur, the dimension is dectreased by 1, this means that f.eg. in 2-D the
   // element of type n=2 is mapped into a n=1
   { Name Vol; Case { { Region All ; Jacobian Vol; } } }
   { Name Sur; Case { { Region All ; Jacobian Sur; } } }
@@ -359,7 +356,7 @@ Jacobian {
 Integration {
   // We call our integration I1, and the method used is a Gauss integration
   // (see: https://de.wikipedia.org/wiki/Gauß-Quadratur)
-  // For each element we define the number of integration points 
+  // For each element we define the number of integration points
   { Name I1 ; Case {
       { Type Gauss ;
         Case {
@@ -388,7 +385,7 @@ Constraint {
         // Here we link the DoFs from the primary surface (CutA0) to the slave surface (cutA1)
         // this is specified by the type Link.
         // the coefficient determines if we have positive or negative symmetry
-        // The function specifies the transformation that has to be used to get from the primary 
+        // The function specifies the transformation that has to be used to get from the primary
         // DoF to the slave DoF. Since we have rotational symmetry around Z, the rotation around Z function defined before has to be used.
         { Region Surf_cutA1; SubRegion Region[{Surf_Inf,Surf_bn0}]; Type Link;
           RegionRef Surf_cutA0; SubRegionRef Region[{Surf_Inf,Surf_bn0}];
@@ -401,9 +398,9 @@ Constraint {
         // In the Domain we only have 1/SymmetryFactor of the MovingBand, which is a full circle
         // This means that we also only have data for the DoFs on the part which we model, so we need
         // to use symmetry here as well to link the DoFs for which we have results to other parts
-        // this has to be done since, these are also automaticcaly linked to the DoFs of the stator 
+        // this has to be done since, these are also automaticcaly linked to the DoFs of the stator
         // and it can be that the Rotor_Moving_Band we have Dofs is diamterically oposite to the stator
-        // (rememeber we have motion, possibly), and by copying it to the other parts, we can link them to the stator 
+        // (rememeber we have motion, possibly), and by copying it to the other parts, we can link them to the stator
         // DoFs
         For k In {1:SymmetryFactor-1}
           { Region Rotor_Bnd_MB~{k+1} ;
@@ -434,7 +431,7 @@ Constraint {
       }
     }
   EndIf
-  // Constraint for the electrical sclar potential in which we fix the 
+  // Constraint for the electrical sclar potential in which we fix the
   // current for certain regions.
   // The magnetic scalar potential is only defined in DomainC!
   { Name Current_2D ;
@@ -453,6 +450,9 @@ Constraint {
   // Here we could define constraints on the voltage.
   { Name Voltage_2D ;
     Case {
+      // If(!Flag_Cir_RotorCage)
+      //   { Region RotorC  ; Value 0. ; }
+      // EndIf
     }
   }
 
@@ -480,11 +480,11 @@ Constraint {
 
 // Here we define the function spaces. Function Spaces are the entities which store the DoFs.
 FunctionSpace {
-  // Here we define the FunctionSpace for the magnetic vector potential. This is of Type Form1P. 
+  // Here we define the FunctionSpace for the magnetic vector potential. This is of Type Form1P.
   // Further definitions on differential forms can be found in literature.
   // A small summary is given here:
   // A FunctionSpace of Form:
-  //    *0 : Sclar field with quantities are continous arcoss elements 
+  //    *0 : Sclar field with quantities are continous arcoss elements
   //    *1 : Vector Field having a continous tangential component on the interface between 2 domains (eg. magnetic field)
   //    *2 : Vector Field having a continous normal component on the interface between 2 domains (eg. magnetic flux density)
   //    *3 : Scalar Field with discontinous quantities acrcoss elements
@@ -514,7 +514,7 @@ FunctionSpace {
     Constraint {
       { NameOfCoef ae1 ; EntityType NodesOf ; NameOfConstraint MVP_2D ; }
       If (Flag_SecondOrder)
-        { NameOfCoef ae2 ; EntityType EdgesOf ; NameOfConstraint MVP_2D_2E ; } 
+        { NameOfCoef ae2 ; EntityType EdgesOf ; NameOfConstraint MVP_2D_2E ; }
       EndIf
     }
   }
@@ -593,7 +593,7 @@ FunctionSpace {
 }
 
 //-------------------------------------------------------------------------------------------
-// The formaulation Object defines the equation of the problem to be solved. This has to be wrtiiten 
+// The formaulation Object defines the equation of the problem to be solved. This has to be wrtiiten
 // in weak form. How this is done see  pdf.
 Formulation {
 
@@ -719,7 +719,7 @@ Formulation {
       // if we have an estimation of the resistance of DomainB, via e.g. measurements
       // which is better to account for the end windings...
 
-      If(Flag_Cir)
+      If(Flag_Cir_RotorCage)
 	      GlobalTerm { NeverDt[ Dof{Uz}                , {Iz} ] ; In Resistance_Cir ; }
         GlobalTerm { NeverDt[ Resistance[] * Dof{Iz} , {Iz} ] ; In Resistance_Cir ; }
 
@@ -786,7 +786,7 @@ Resolution {
       InitSolution[A];
       Evaluate[$RPos=RotorPosition_deg[]];
       Evaluate[$PAng=Theta_Park_deg[]];
-      
+
       // PostOperation[GetInertia];   // declares the variable $Inertia
 
       // //Evaluate Some motor parameters and write them to a file
@@ -803,7 +803,7 @@ Resolution {
       // Print[{$Temp}, Format "V_HUB=%e", File  StrCat[ResDir,'MotorParameters.txt']];
       // Evaluate[$Temp=Volume_RotorBridge[]];
       // Print[{$Temp}, Format "V_BRI=%e", File  StrCat[ResDir,'MotorParameters.txt']];
-      
+
       If(Flag_ParkTransformation && Flag_SrcType_Stator==1)
         PostOperation[ThetaPark_IABC] ;
       EndIf
@@ -914,10 +914,10 @@ Resolution {
   }
 }
 // Include "Tables_ECLossesLaminations.pro";  // For the computation of the EddyCurrent Tables for the simulink model
-  
+
 //-------------------------------------------------------------------------------------------
 // In this object the Post processed quantities are defined and the expression of the different quantities are given. Multiple Postprocessings can be defined. Each one of them is given a name for identification and the name of the formulation on which it is applicable is also mentioned.
-// There are different Types of PostProceessing Types 
+// There are different Types of PostProceessing Types
 //    * integral : in this case, the quantity is integrated over the elements to get a single value per calculation (global quantity)
 //    * Term     : in this case the quantitiy can calculated for each element given in the passed Region (see what follows after "In" below) (local quantity)
 
@@ -926,141 +926,141 @@ Resolution {
 PostProcessing {
   If (Flag_Inductance)
     // New PostProcessing: Frozen_PM
-    { Name Frozen_PM ; 
+    { Name Frozen_PM ;
       NameOfFormulation MagSta_PM ;
       PostQuantity {
         // Here we define the equation to be used to calculate the flux linkage
         // For a explanation on this equation see : https://www.crcpress.com/Electrical-Machine-Analysis-Using-Finite-Elements/Bianchi/p/ book/9780849333996
-        // in short the flux linkage of a given phase is defined by the surface integral 
+        // in short the flux linkage of a given phase is defined by the surface integral
         // int_PhaseX (\vec{J1A}*\vec{a}) dV, in which J1A is a vector pointing in the direction of the current flow, and having the norm   nbTurns/SurfaceCoil
         // since we are in the 2-D case both J1A and a are in the z-direction only ==> the integral is scalar!!
         // Since we have a 2-D model ==> we also need to multiply with the stack Length (dV = Lstk* dA)
         // Moreover, as we consider symmetry, we also need to multiply the result with the symmetryFactor
         // Since we have an integration we need to provide the integration method to be used
-        { 
-          Name Flux ; 
-          Value { 
-            Integral { [ SymmetryFactor*axialLength[]*Idir[]*NbWires[]/SurfCoil[]/NbrParallelPaths * CompZ[{a_PM}] ] ;In Inds  ; Jacobian Vol ; Integration I1 ; } 
-          } 
+        {
+          Name Flux ;
+          Value {
+            Integral { [ SymmetryFactor*axialLength[]*Idir[]*NbWires[]/SurfCoil[]/NbrParallelPaths * CompZ[{a_PM}] ] ;In Inds  ; Jacobian Vol ; Integration I1 ; }
+          }
         }
         // As explained before, to output functions, we need to apply the post Processing to a Dummy domain....
         // For a Post Porcessing in which we plot something on a per element Basis, see further down.
-        { 
+        {
           Name Flux_d  ;
-          Value { 
-            Term { Type Global; [ CompX[Flux_dq0_PM[]] ] ; In DomainDummy ; } 
-          } 
+          Value {
+            Term { Type Global; [ CompX[Flux_dq0_PM[]] ] ; In DomainDummy ; }
+          }
         }
-        { 
+        {
           Name Flux_q  ;
-          Value { 
-            Term { Type Global; [ CompY[Flux_dq0_PM[]] ] ; In DomainDummy ; } 
-          } 
+          Value {
+            Term { Type Global; [ CompY[Flux_dq0_PM[]] ] ; In DomainDummy ; }
+          }
         }
-        { 
+        {
           Name Flux_0  ;
-          Value { 
-            Term { Type Global; [ CompZ[Flux_dq0_PM[]] ] ; In DomainDummy ; } 
-          } 
+          Value {
+            Term { Type Global; [ CompZ[Flux_dq0_PM[]] ] ; In DomainDummy ; }
+          }
         }
       }
     }
     // New PostProcessing: Frozen_I_0
-    { Name Frozen_I_0 ; 
+    { Name Frozen_I_0 ;
       NameOfFormulation MagSta_Currents_0;
       PostQuantity {
-        { 
+        {
           Name Flux ;
           Value {
-            Integral { [ SymmetryFactor*axialLength[]*Idir[]*NbWires[]/SurfCoil[]/NbrParallelPaths* CompZ[{a_I_0}] ] ; In Inds  ; Jacobian Vol ; Integration I1 ; } 
-          } 
+            Integral { [ SymmetryFactor*axialLength[]*Idir[]*NbWires[]/SurfCoil[]/NbrParallelPaths* CompZ[{a_I_0}] ] ; In Inds  ; Jacobian Vol ; Integration I1 ; }
+          }
         }
 
-        { 
+        {
           Name Flux_d  ;
-          Value { 
-            Term { Type Global; [ CompX[Flux_dq0_Id[]] ] ; In DomainDummy ; } 
-          } 
+          Value {
+            Term { Type Global; [ CompX[Flux_dq0_Id[]] ] ; In DomainDummy ; }
+          }
         }
-        { 
+        {
           Name Flux_q  ;
-          Value { 
-            Term { Type Global; [ CompY[Flux_dq0_Id[]] ] ; In DomainDummy ; } 
-          } 
+          Value {
+            Term { Type Global; [ CompY[Flux_dq0_Id[]] ] ; In DomainDummy ; }
+          }
         }
-        { 
+        {
           Name Flux_0  ;
-          Value { 
-            Term { Type Global; [ CompZ[Flux_dq0_Id[]] ] ; In DomainDummy ; } 
-          } 
+          Value {
+            Term { Type Global; [ CompZ[Flux_dq0_Id[]] ] ; In DomainDummy ; }
+          }
         }
-        { 
+        {
           Name Ld  ;
-          Value { 
-            Term { Type Global; [ Ld[] ] ; In DomainDummy ; } 
-          } 
+          Value {
+            Term { Type Global; [ Ld[] ] ; In DomainDummy ; }
+          }
         }
-        { 
+        {
           Name Ldq  ;
-          Value { 
-            Term { Type Global; [ Ldq[] ] ; In DomainDummy ; } 
-          } 
+          Value {
+            Term { Type Global; [ Ldq[] ] ; In DomainDummy ; }
+          }
         }
       }
     }
     // New PostProcessing: Frozen_I_1
-    { Name Frozen_I_1 ; 
+    { Name Frozen_I_1 ;
       NameOfFormulation MagSta_Currents_1;
       PostQuantity {
-        { 
+        {
           Name Flux ;
           Value {
-            Integral { [ SymmetryFactor*axialLength[]*Idir[]*NbWires[]/SurfCoil[]/NbrParallelPaths* CompZ[{a_I_1}] ] ; In Inds  ; Jacobian Vol ; Integration I1 ; } 
-          } 
+            Integral { [ SymmetryFactor*axialLength[]*Idir[]*NbWires[]/SurfCoil[]/NbrParallelPaths* CompZ[{a_I_1}] ] ; In Inds  ; Jacobian Vol ; Integration I1 ; }
+          }
         }
-        { 
+        {
           Name Flux_d  ;
-          Value { 
-            Term { Type Global; [ CompX[Flux_dq0_Iq[]] ] ; In DomainDummy ; } 
-          } 
+          Value {
+            Term { Type Global; [ CompX[Flux_dq0_Iq[]] ] ; In DomainDummy ; }
+          }
         }
-        { 
+        {
           Name Flux_q  ;
-          Value { 
-            Term { Type Global; [ CompY[Flux_dq0_Iq[]] ] ; In DomainDummy ; } 
-          } 
+          Value {
+            Term { Type Global; [ CompY[Flux_dq0_Iq[]] ] ; In DomainDummy ; }
+          }
         }
-        { 
+        {
           Name Flux_0  ;
-          Value { 
-            Term { Type Global; [ CompZ[Flux_dq0_Iq[]] ] ; In DomainDummy ; } 
-          } 
+          Value {
+            Term { Type Global; [ CompZ[Flux_dq0_Iq[]] ] ; In DomainDummy ; }
+          }
         }
-        { 
+        {
           Name Lq  ;
-          Value { 
-            Term { Type Global; [ Lq[] ] ; In DomainDummy ; } 
-          } 
+          Value {
+            Term { Type Global; [ Lq[] ] ; In DomainDummy ; }
+          }
         }
       }
     }
   EndIf // (Flag_Inductance)
 
   // New PostProcessing: MagStaDyn_a_2D
-  { Name MagStaDyn_a_2D; 
-    NameOfFormulation MagStaDyn_a_2D; 
+  { Name MagStaDyn_a_2D;
+    NameOfFormulation MagStaDyn_a_2D;
     NameOfSystem A;
     PostQuantity {
       { Name domain ; Value { Term { [ 1 ] ; In Domain ; Jacobian Vol ; } } }
       { Name boundary ; Value { Term { [ 1 ] ; In DomainPlotMovingGeo ; Jacobian Vol ; } } } // Dummy value - for visualization
       { Name surf; Value{ Integral { [ 1 ]; In Domain; Jacobian Vol; Integration I1; } } }
-      
+
       { Name intAxLen; Value{ Integral { [ axialLength[]/SurfaceArea[] ]; In Domain; Jacobian Vol; Integration I1; } } }
       { Name axLen ; Value { Term { [ axialLength[] ] ; In Domain ; Jacobian Vol ; } } } // Dummy value - for visualization
-      // { Name axLenValue; Value{ Term { Type Global; [ axialLength[] ]; In DomainDummy; Jacobian Vol; Integration I1; } } } // This does NOT work...  
+      // { Name axLenValue; Value{ Term { Type Global; [ axialLength[] ]; In DomainDummy; Jacobian Vol; Integration I1; } } } // This does NOT work...
 
-      { Name surfCoil; Value{ Term { Type Global; [ SurfCoil[] ]; In DomainDummy; Jacobian Vol; Integration I1; } } }      
-      // { Name surfCoil; Value{ Integral { [ SurfCoil[]/SurfaceArea[] ]; In Domain; Jacobian Vol; Integration I1; } } }      
+      { Name surfCoil; Value{ Term { Type Global; [ SurfCoil[] ]; In DomainDummy; Jacobian Vol; Integration I1; } } }
+      // { Name surfCoil; Value{ Integral { [ SurfCoil[]/SurfaceArea[] ]; In Domain; Jacobian Vol; Integration I1; } } }
 
       { Name a  ; Value { Term { [ {a} ] ; In Domain ; Jacobian Vol ; } } }
       { Name az ; Value { Term { [ CompZ[{a}] ] ; In Domain ; Jacobian Vol ; } } }
@@ -1083,45 +1083,45 @@ PostProcessing {
       { Name P_Lam ; Value { Integral { [ SymmetryFactor*axialLength[]*Fac_Lam[]*SquNorm[Dt[{d a}]] ]; In Domain_Lam ; Jacobian Vol ; Integration I1 ; } } }
       // Inertia
 	    { Name Inertia; Value { Integral { [ SymmetryFactor*SquNorm[XYZ[]]*density[]*axialLength[] ]; In Rotor; Jacobian Vol; Integration I1;}}}
-      { 
+      {
         Name JouleLosses ;
-        Value { 
+        Value {
           Integral { [ SymmetryFactor*axialLength[]*sigma[] * SquNorm[ Dt[{a}]+{ur} ] ] ; In DomainC ; Jacobian Vol ; Integration I1 ; }
           Integral { [ 1./sigma[]*SquNorm[ IA[]*{ir} ] ] ; In PhaseA ; Jacobian Vol ; Integration I1 ; }
           Integral { [ 1./sigma[]*SquNorm[ IB[]*{ir} ] ] ; In PhaseB  ; Jacobian Vol ; Integration I1 ; }
           Integral { [ 1./sigma[]*SquNorm[ IC[]*{ir} ] ] ; In PhaseC  ; Jacobian Vol ; Integration I1 ; }
         }
       }
-      { 
+      {
         Name p_Joule ;
-        Value { 
+        Value {
           Term { [ sigma[] * SquNorm[ Dt[{a}]+{ur} ] ] ; In Region[{DomainC}] ; Jacobian Vol ;}
         }
       }
-      { 
-        Name Flux ; 
-        Value { 
-          Integral { [ SymmetryFactor*axialLength[]*Idir[]*NbWires[]/SurfCoil[]/NbrParallelPaths* CompZ[{a}] ] ; In Inds  ; Jacobian Vol ; Integration I1 ; } 
-        } 
+      {
+        Name Flux ;
+        Value {
+          Integral { [ SymmetryFactor*axialLength[]*Idir[]*NbWires[]/SurfCoil[]/NbrParallelPaths* CompZ[{a}] ] ; In Inds  ; Jacobian Vol ; Integration I1 ; }
+        }
       }
       // Force computation by Virtual Works
-      { Name Force_vw ; Value { 
-        Integral { Type Global ; [ 0.5 * nu[] * VirtualWork [{d a}] * axialLength[] ]; In ElementsOf[Rotor_Airgap, OnOneSideOf Rotor_Bnd_MB]; Jacobian Vol ; Integration I1 ; } 
+      { Name Force_vw ; Value {
+        Integral { Type Global ; [ 0.5 * nu[] * VirtualWork [{d a}] * axialLength[] ]; In ElementsOf[Rotor_Airgap, OnOneSideOf Rotor_Bnd_MB]; Jacobian Vol ; Integration I1 ; }
       } }
 
      { Name Torque_vw ; Value {
 	      // Torque computation via Virtual Works
-         Integral { Type Global ; [ - SymmetryFactor * CompZ[ 0.5 * nu[] * XYZ[] /\ VirtualWork[{d a}] ] * axialLength[] ]; 
+         Integral { Type Global ; [ - SymmetryFactor * CompZ[ 0.5 * nu[] * XYZ[] /\ VirtualWork[{d a}] ] * axialLength[] ];
          In ElementsOf[Rotor_Airgap, OnOneSideOf Rotor_Bnd_MB]; Jacobian Vol ; Integration I1 ; }
        }
      }
      { Name Torque_vw_s ; Value {
         // Torque computation via Virtual Works
-        Integral { Type Global ; [ SymmetryFactor * CompZ[ 0.5 * nu[] * XYZ[] /\ VirtualWork[{d a}] ] * axialLength[] ]; 
+        Integral { Type Global ; [ SymmetryFactor * CompZ[ 0.5 * nu[] * XYZ[] /\ VirtualWork[{d a}] ] * axialLength[] ];
         In ElementsOf[Stator_Airgap, OnOneSideOf Stator_Bnd_MB]; Jacobian Vol ; Integration I1 ; }
         }
       }
-    
+
 
      { Name Torque_Maxwell_r ;
        // Torque computation via Maxwell stress tensor
@@ -1150,8 +1150,8 @@ PostProcessing {
 	   { Name InducedVoltage  ;
         Value {
           Integral { [ SymmetryFactor * axialLength[] * Idir[] * NbWires[] / SurfCoil[] / NbrParallelPaths * Dt[CompZ[{a}]] ] ;
-          In Inds  ; Jacobian Vol ; Integration I1 ; }  
-        } 
+          In Inds  ; Jacobian Vol ; Integration I1 ; }
+        }
       }
 
      { Name ComplexPower ;
@@ -1211,14 +1211,14 @@ po_mecS = StrCat[po_mec,"1Surface [m²] "];
 PostOperation Debug UsingPost MagStaDyn_a_2D{
   // // Print all entities in domain
   // Print[ domain, OnElementsOf Domain, File StrCat[ResDir,"domain",ExtGmsh], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps] ;
-  // // Print the boundary lines - 
+  // // Print the boundary lines -
   // Print[ boundary, OnElementsOf DomainPlotMovingGeo, File StrCat[ResDir,"bnd",ExtGmsh], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps] ;
   // Echo[ Str["For i In {PostProcessing.NbViews-1:0:-1}",
   //   "  If(!StrCmp(View[i].Name, 'boundary'))",
   //   "    View[i].ShowElement=1;",
   //   "   EndIf",
   //   "EndFor"], File StrCat[ResDir, "tmp.geo"], LastTimeStepOnly] ;
-  
+
 // #######################################################
   // Axial length with function definition works fine...
   // Integral over axial length function divided by SurfaceArea[] results in mean axial length of integration surface:
@@ -1228,14 +1228,14 @@ PostOperation Debug UsingPost MagStaDyn_a_2D{
   // Print axial length on domain
   Print[ axLen, OnElementsOf Domain, File StrCat[ResDir,"AxialeLaenge",ExtGmsh], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps ] ;
 // #######################################################
-  
+
   // Print[ Vmag, OnElementsOf DomainS, File StrCat[ResDir,"magDurchflutung",ExtGmsh], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps ] ;
   // Print[ I_n, OnElementsOf DomainS, File StrCat[ResDir,"Current",ExtGmsh], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps ] ;
   Print [ surfCoil , OnRegion DomainDummy, Format Table, LastTimeStepOnly, SendToServer StrCat[po_mecS,"SurfCoil"]{0}, Color "LightYellow"];
   // Print[ surfCoil[PhaseA_pos], OnGlobal, Format Table, LastTimeStepOnly, File StrCat[ResDir,"SurfCoil_Debug",ExtGnuplot], SendToServer StrCat[po_mecS,"SurfCoil"]{0}, Color "LightYellow"];
   // Print[ surf[PhaseA_pos], OnGlobal, Format Table, LastTimeStepOnly, File StrCat[ResDir,"Surf_Phase_A_pos",ExtGnuplot], SendToServer StrCat[po_mecS,"Surf_Phase_A_pos"]{0}, Color "LightYellow"];
   // Print[ domain, OnElementsOf PhaseA_pos, File StrCat[ResDir,"PhaseA_pos",ExtGmsh],LastTimeStepOnly];
-  // Print[ b_radial, OnGrid{(r_AG)*Sin[Pi/nbSlots-$A*Pi/180],(r_AG)*Cos[Pi/nbSlots-$A*Pi/180],0 }{0:360/SymmetryFactor,0,0}, 
+  // Print[ b_radial, OnGrid{(r_AG)*Sin[Pi/nbSlots-$A*Pi/180],(r_AG)*Cos[Pi/nbSlots-$A*Pi/180],0 }{0:360/SymmetryFactor,0,0},
   //   File StrCat[ResDir,"brad",ExtGmsh] ];
   // Print[ b_tangent, OnGrid{(r_AG)*Sin[Pi/nbSlots-$A*Pi/180],(r_AG)*Cos[Pi/nbSlots-$A*Pi/180],0 }{0:360/SymmetryFactor,0,0},
   //   File StrCat[ResDir,"btan",ExtGmsh] ];
@@ -1248,23 +1248,30 @@ PostOperation Get_LocalFields UsingPost MagStaDyn_a_2D {
   //------------------------------
   // Print[ jz, OnElementsOf DomainC, File StrCat[ResDir,"jz",ExtGmsh], LastTimeStepOnly,
 	//  AppendTimeStepToFileName Flag_SaveAllSteps ] ;
-  
+
   Print[ js, OnElementsOf DomainS, File StrCat[ResDir,"js",ExtGmsh], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps ] ;
-   
+
   Print[ b,  OnElementsOf Domain, File StrCat[ResDir,"b",ExtGmsh], Format Gmsh, LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps] ;
 
   Print[ bn,  OnElementsOf Domain, File StrCat[ResDir,"bn",ExtGmsh], Format Gmsh, LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps] ;
-    
+
   Print[ mu, OnElementsOf Domain, File StrCat[ResDir,"mu_r",ExtGmsh], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps] ;
 
   Print[ az, OnElementsOf Domain, File StrCat[ResDir,"az",ExtGmsh], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps ] ;
   Echo[ Str["l=PostProcessing.NbViews-1;", "View[l].IntervalsType = 1;", "View[l].NbIso = 30;", "View[l].Light = 0;", "View[l].LineWidth = 2;"], File StrCat[ResDir,"tmp.geo"], LastTimeStepOnly] ;
-  
+
   If (Flag_Lam)
     Print[ p_Lam, OnElementsOf Domain_Lam, File StrCat[ResDir,"p_Lam.pos"], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps ] ;
   EndIf
   If (Flag_EC_Magnets)
-    Print[ p_Joule, OnElementsOf Rotor_Magnets, File StrCat[ResDir,"p_EC_Mag.pos"], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps ] ;
+    Print[ p_Joule, OnElementsOf Rotor_Magnets, File StrCat[ResDir,"p_EC_Mag.pos"],
+      LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps ] ;
+  EndIf
+  If (Flag_Cir_RotorCage)
+    Print[
+      jz, OnElementsOf Rotor_Bars, File StrCat[ResDir, "jz", ExtGmsh],
+      LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps
+    ];
   EndIf
 }
 
@@ -1288,7 +1295,7 @@ PostOperation GetBRadTanAirGap UsingPost MagStaDyn_a_2D {
   Print[ b_tangent, OnGrid{(r_AG*(1-0.0001))*Cos[$A*Pi/180],(r_AG*(1-0.0001))*Sin[$A*Pi/180],0 }{0:360/SymmetryFactor:0.5,0,0}, File StrCat[ResDir,"btan",ExtGmsh], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps];
 }
 
-// // PostOperation for getting the tangential and the radial components of the 
+// // PostOperation for getting the tangential and the radial components of the
 // // magnetic flux density in the middle of the tooth, yoke and tooth tip
 // PostOperation GetBLocusStator UsingPost MagStaDyn_a_2D {
 
@@ -1329,7 +1336,7 @@ PostOperation Get_GlobalQuantities UsingPost MagStaDyn_a_2D {
       Print[ I, OnRegion PhaseA_pos, Format Table,
 	     File > StrCat[ResDir,"Ia",ExtGnuplot], LastTimeStepOnly,
        SendToServer StrCat[poI,"A"]{0}, Color "Pink" ];
-       
+
       Print[ I, OnRegion PhaseB_pos, Format Table,
         File > StrCat[ResDir,"Ib",ExtGnuplot], LastTimeStepOnly,
         SendToServer StrCat[poI,"B"]{0}, Color "Yellow" ];
@@ -1373,7 +1380,7 @@ PostOperation Get_GlobalQuantities UsingPost MagStaDyn_a_2D {
     Print[ U, OnRegion PhaseB_pos, Format Table,
        File > StrCat[ResDir,"Ub_w",ExtGnuplot], LastTimeStepOnly,
        SendToServer StrCat[poV,"Winding/","B"]{0}, Color "Yellow" ];
-  
+
     // phase C
     Print[ I, OnRegion Input3, Format Table,
      File > StrCat[ResDir,"Ic",ExtGnuplot], LastTimeStepOnly,
@@ -1390,6 +1397,13 @@ PostOperation Get_GlobalQuantities UsingPost MagStaDyn_a_2D {
     Print[ U, OnRegion PhaseC_pos, Format Table,
      File > StrCat[ResDir,"Uc_w",ExtGnuplot], LastTimeStepOnly,
      SendToServer StrCat[poV,"Winding/","C"]{0}, Color "LightGreen" ];
+  EndIf
+  If (Flag_Cir_RotorCage)
+    Print[
+      I, OnRegion Rotor_Bars, Format Table,
+      File > StrCat[ResDir,"I_bars",ExtGnuplot], LastTimeStepOnly,
+      SendToServer StrCat[poI,"rotor"]{0}, Color "LightGreen"
+    ];
   EndIf
 
   // Calculate the Flux linkage
@@ -1427,7 +1441,7 @@ PostOperation Get_Torque UsingPost MagStaDyn_a_2D {
   // In the case of a static eccentricity, the rotor center is at (0,0,0) => so we calculate the torque on the airgap layer of the rotor
   Print[ Torque_Maxwell_r[Rotor_Airgap], OnGlobal, Format TimeTable,
     File > StrCat[ResDir,"Tr",ExtGnuplot], LastTimeStepOnly, StoreInVariable $Tstator,
-    SendToServer StrCat[po_mecT,"ArrkioONELAB_rotor"]{0}, Color "Ivory" ]; 
+    SendToServer StrCat[po_mecT,"ArrkioONELAB_rotor"]{0}, Color "Ivory" ];
   // in the other cases we have either no eccentricity (it does not matter where we calculate the torque) or dynamic eccentricity => stator center at 0,0,0
   // in that case we calculate it on the stator airgap.
   Print[ Torque_Maxwell_s[Stator_Airgap], OnGlobal, Format TimeTable,
@@ -1491,7 +1505,7 @@ If (Flag_ParkTransformation)
 EndIf
 
 
-// These post operations are used in order to calculate the inductances usingthe frozen permeabilty method see Papers: 
+// These post operations are used in order to calculate the inductances usingthe frozen permeabilty method see Papers:
 //  - https://ieeexplore.ieee.org/document/5316039/
 //  - https://ieeexplore.ieee.org/document/732255/
 

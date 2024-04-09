@@ -17,52 +17,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-from .machineAllType import MachineAllType
-from .rotorSPMSM import RotorSPMSM
-from .statorSPMSM import StatorPMSM, datamodel
 import math
+from .machineAllType import MachineAllType
+from .rotor import Rotor
+from .stator import Stator
 
 
-###
-# Eine Instanz der Klasse MachineSPMSM beschreibt eine Synchronmaschine mit Oberflächenmagneten im dreidimensionalen Raum.
-# Dieser Maschinentype ist ein Bestandteil des Baukastens, welches vom Nutzer für die Simulation instanziiert werden kann.
-# Durch die Vorauswahl des Maschinentypes, werden Eigenschaften aus dem Input-Dictionary den Bauteilen automatisch zugewiesen.
-###
-class MachineSPMSM(MachineAllType):
+class MachineASM(MachineAllType):
     """
-    SPMSM machine class
+    ASM machine class
 
         TODO: example
     """
 
-    def __init__(self, simuParam):
-        """create a SPMSM machine object
-
-        Args:
-            simuParam (dict): classical machine simulation parameter dict.
-
-        DEFAULT simulation parameter dict:
-
-        .. code:: python
-
-            {
-                "analysisParameter": {
-                    "freq": 1000 / 60, # mech. frequency
-                    "symmetryFactor": 4,
-                    "nbrPolesTotal": 10,
-                    "nbrSlotTotal": 12,
-                    "timeMax": 1 / (1000/60), # stop time simulation
-                    "timeStep": 1/ (180 * (1000/60) * 2),  # step time
-                    "analysisType": "timedomain",  # options: 'timedomain' or 'static'
-                    "startPosition": 0, # init rotation
-                },
-            }
-
-
-        """
-        nbrPoles = simuParam["analysisParameter"]["nbrPolesTotal"]
+    def __init__(self, nbr_pole_pairs: int, rotor: Rotor, stator: Stator):
         super().__init__(
-            nbrPolePairs=nbrPoles / 2,
+            nbrPolePairs=nbr_pole_pairs,
             rotor=None,
             stator=None,
             name="MachineSPMSM",
@@ -179,13 +149,13 @@ class MachineSPMSM(MachineAllType):
     ):
         startPosition = (
             math.pi
-            / self.symmetryFactor  # FIXME
+            / self.symmetryFactor
             / self._simuParam["analysisParameter"]["nbrSlotinModel"]
             + self._simuParam["analysisParameter"]["startPosition"]
         )
         angleGeoParts = (
             math.pi
-            / self.symmetryFactor  # FIXME
+            / self.symmetryFactor
             / self._simuParam["analysisParameter"]["nbrSlotinModel"]
         )
         nbrGeoParts = (

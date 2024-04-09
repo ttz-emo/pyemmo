@@ -1,4 +1,24 @@
-#%%
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+
+# %%
 from sys import path
 from os.path import abspath, join, dirname
 from numpy import deg2rad
@@ -13,7 +33,7 @@ from pyemmo.script.geometry.surface import Surface
 from pyemmo.functions.runOnelab import createCmdCommand
 from subprocess import run
 
-#%%
+# %%
 myScript = Script("testGEO", scriptPath=RESULT_DIR, simuParams={})
 pm = Point("pm", 0, 0, 0, 0.1)
 p2 = Point("p2", 1, 0, 0, 0.1)
@@ -35,11 +55,11 @@ l8 = Line("l8", p7, p3)
 
 surf1 = Surface("s1", [l1, l2, l3, l4])
 surf2 = Surface("s2", [l5, l6, l7, l8])
-#%%
+# %%
 combinedSurf = surf1.combine(addSurf=surf2)
 combinedSurf = combinedSurf.duplicate()
 combinedSurf.translate(2, 0, 0)
-#%%
+# %%
 p9 = p8.duplicate("p9")
 p9.rotateZ(p7, deg2rad(-90))
 circ1 = CircleArc("c1", startPoint=p8, centerPoint=p7, endPoint=p9)
@@ -52,11 +72,11 @@ surf3 = Surface("s3", [circ1, l9, circ2, l10])
 surf3 = surf3.duplicate()
 surf3.translate(2, 0, 0)
 surf3.plot()
-#%%
+# %%
 surf5 = combinedSurf.combine(surf3)
 surf5 = surf5.duplicate()
 surf5.translate(2, 0, 0)
-#%%
+# %%
 surf1.addToScript(myScript)
 surf2.addToScript(myScript)
 combinedSurf.addToScript(myScript)
@@ -64,7 +84,7 @@ surf3.addToScript(myScript)
 surf5.addToScript(myScript)
 myScript.generateScript(mode=1)  # only geo file
 # run(createCmdCommand(onelabFile=myScript.getGeoFilePath(), useGUI=True))
-#%%
+# %%
 myScript._resetGeometry()
 r1 = 1
 r2 = 1.2
@@ -88,4 +108,4 @@ surf6 = surf4.combine(surf5)
 surf6.addToScript(myScript)
 myScript.generateScript(mode=1)  # only geo file
 run(createCmdCommand(onelabFile=myScript.geoFilePath, useGUI=True))
-#%%
+# %%

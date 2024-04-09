@@ -1,3 +1,23 @@
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+
 ###Noch nicht in die Doku. Funktioniert zunächst eingeschränkt für einzelne Linien wie beim Luis.
 # def loadFromStep(self, stepFiles, unit, meshLength):
 try:
@@ -133,13 +153,19 @@ def getRawCoordinate(textLineFromFile, idCurve):
 def createCurve(rawCoord, typeCurve, meshLength, unit):
     if typeCurve == "circleArc":
         coord = rawCoordToFloatCoord(rawCoord[2])
-        pC = Point("", coord[0] * unit, coord[1] * unit, coord[2] * unit, meshLength)
+        pC = Point(
+            "", coord[0] * unit, coord[1] * unit, coord[2] * unit, meshLength
+        )
         pC.name = "point_" + str(pC.id)
     coord = rawCoordToFloatCoord(rawCoord[0])
-    p1 = Point("", coord[0] * unit, coord[1] * unit, coord[2] * unit, meshLength)
+    p1 = Point(
+        "", coord[0] * unit, coord[1] * unit, coord[2] * unit, meshLength
+    )
     p1.name = "point_" + str(p1.id)
     coord = rawCoordToFloatCoord(rawCoord[1])
-    p2 = Point("", coord[0] * unit, coord[1] * unit, coord[2] * unit, meshLength)
+    p2 = Point(
+        "", coord[0] * unit, coord[1] * unit, coord[2] * unit, meshLength
+    )
     p2.name = "point_" + str(p2.id)
 
     if typeCurve == "circleArc":
