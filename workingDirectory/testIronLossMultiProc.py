@@ -1,3 +1,22 @@
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 """Module to test iron loss calculation"""
 # %%
 import os
@@ -33,27 +52,29 @@ if __name__ == "__main__":
     Iamp = np.linspace(Imax / nI, Imax, nI)
     nMax = 4000
     # uncomment for speed map:
-        # nN = 3
-        # n = np.linspace(nMax / nN, nMax, nN)
+    # nN = 3
+    # n = np.linspace(nMax / nN, nMax, nN)
     # only nMax
     n = nMax
 
     # create grid for sim
     phiMap, iMap, nMap = np.meshgrid(phi, Iamp, n)
-    idMap = iMap*(-np.sin(phiMap))
-    iqMap = iMap*(np.cos(phiMap))
+    idMap = iMap * (-np.sin(phiMap))
+    iqMap = iMap * (np.cos(phiMap))
     print(f"Number of simulations: {iMap.size}")
-    
+
     # % Remove old iron loss results
     # print("Removing results...")
     # removeLossRes(iMap, phiMap, nMap, RES_DIR=RES_DIR)
     # print("Results have been removed!")
-    
+
     paramDictList = []
     # %
     for i in range(iMap.size):
         # %
-        idq = iMap.flat[i] * np.array([-np.sin(phiMap.flat[i]), np.cos(phiMap.flat[i])])
+        idq = iMap.flat[i] * np.array(
+            [-np.sin(phiMap.flat[i]), np.cos(phiMap.flat[i])]
+        )
         resId = (
             f"id_{np.round(idq[0],1)}A"
             + f"_iq_{np.round(idq[1],1)}A"
@@ -106,9 +127,7 @@ if __name__ == "__main__":
     # ax.plot_surface(t, e, np.linalg.norm(bData, axis=2))
 
     # load loss data
-    RES_DIR = (
-        r"C:\Users\ganser\AppData\Roaming\pyemmo\Results\res_Test_1FE1051_4HF11_TherCom"
-    )
+    RES_DIR = r"C:\Users\ganser\AppData\Roaming\pyemmo\Results\res_Test_1FE1051_4HF11_TherCom"
     ironLossResFile = os.path.join(RES_DIR, "ironLossData.npy")
     ironLossArray = np.load(ironLossResFile)
     currentAngleFile = os.path.join(RES_DIR, "currentAngle.npy")
