@@ -1,14 +1,34 @@
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 import scipy.io as sio
+
 # from setPath import pathRes
 import pyemmo as emmo
 import sys
 
 if len(sys.argv) > 2:
     pathRes = sys.argv[2]
-    #Skriptobjekt
+    # Skriptobjekt
     myScript = emmo.Script("Modell_Siemens", pathRes)
 
-    #benötigte Informatationen
+    # benötigte Informatationen
     pfadMatlabStruct = sys.argv[1]
     meshLaenge = 1e-3
 
@@ -19,35 +39,35 @@ if len(sys.argv) > 2:
         flaecheAll = []
         for i in range(3, flaechenAnzahl):
             flaechenName = sys.argv[i]
-            #Werte aus FlächenListe
+            # Werte aus FlächenListe
             flaechenListe = structAusMatlab[flaechenName]
             listenLaenge = len(flaechenListe)
             lineListe = []
 
-            for i in range (1, listenLaenge):
-                #Punkte für Linien erstellen
+            for i in range(1, listenLaenge):
+                # Punkte für Linien erstellen
                 x1 = flaechenListe[i][1].flat[0]
                 y1 = flaechenListe[i][2].flat[0]
                 x2 = flaechenListe[i][5].flat[0]
                 y2 = flaechenListe[i][6].flat[0]
 
-                point1 = emmo.Point('', x1, y1, 0, meshLaenge)
-                point1.setName('point' + str(point1.getID()))
-                point2 = emmo.Point('', x2, y2, 0, meshLaenge)
-                point2.setName('point' + str(point2.getID()))
+                point1 = emmo.Point("", x1, y1, 0, meshLaenge)
+                point1.setName("point" + str(point1.getID()))
+                point2 = emmo.Point("", x2, y2, 0, meshLaenge)
+                point2.setName("point" + str(point2.getID()))
 
-                #Kreis braucht noch zusätzlich ein Mittelpunkt
-                if flaechenListe[i][13].flat[0] == 'Arc':
+                # Kreis braucht noch zusätzlich ein Mittelpunkt
+                if flaechenListe[i][13].flat[0] == "Arc":
                     x3 = flaechenListe[i][9].flat[0]
                     y3 = flaechenListe[i][10].flat[0]
-                    point3 = emmo.Point('', x3, y3, 0, meshLaenge)
-                    point3.setName('point' + str(point3.getID()))
-                    line1 = emmo.CircleArc('', point1, point3, point2)
-                
-                elif flaechenListe[i][13].flat[0] == 'Line':
-                    line1 = emmo.Line('', point1, point2)
-                
-                line1.setName('Curve' + str(line1.getID()))
+                    point3 = emmo.Point("", x3, y3, 0, meshLaenge)
+                    point3.setName("point" + str(point3.getID()))
+                    line1 = emmo.CircleArc("", point1, point3, point2)
+
+                elif flaechenListe[i][13].flat[0] == "Line":
+                    line1 = emmo.Line("", point1, point2)
+
+                line1.setName("Curve" + str(line1.getID()))
                 lineListe.append(line1)
 
             flaeche1 = emmo.Surface(flaechenName, lineListe)
@@ -57,10 +77,14 @@ if len(sys.argv) > 2:
             s.addToScript(myScript)
 
         myScript.generateScript()
-        print('.geo-Datei wurde erzeugt!')
+        print(".geo-Datei wurde erzeugt!")
     else:
-        print('Keine Flaeche als Argument angegeben.')
+        print("Keine Flaeche als Argument angegeben.")
 
 else:
-    print('Achtung: Dieses Skript soll aus MATLAB gestartet werden. Ist die Anwendung aus MATLAB gestartet worden, wurden nicht alle noetigen Informationen uebergeben. Pfade pruefen!')
-    print('Als erstes Argument muss der Pfad der .mat Datei uebergeben werden und als zweites der Ergebnispfad. Alle nachfolgenden Argumenten sind die zu erzeugenden Flaechen.')
+    print(
+        "Achtung: Dieses Skript soll aus MATLAB gestartet werden. Ist die Anwendung aus MATLAB gestartet worden, wurden nicht alle noetigen Informationen uebergeben. Pfade pruefen!"
+    )
+    print(
+        "Als erstes Argument muss der Pfad der .mat Datei uebergeben werden und als zweites der Ergebnispfad. Alle nachfolgenden Argumenten sind die zu erzeugenden Flaechen."
+    )

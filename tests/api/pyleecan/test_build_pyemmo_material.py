@@ -1,3 +1,22 @@
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 """
 Module: test_build_pyemmo_material
 
@@ -81,7 +100,7 @@ def test_build_pyemmo_material(sample_pyleecan_material: pyleecanMat) -> None:
     pyemmo_material = build_pyemmo_material(sample_pyleecan_material)
     assert pyemmo_material.name == "sample_pyleecan_material"
     assert pyemmo_material.density == 7650
-    assert pyemmo_material.conductivity == 1/0.01
+    assert pyemmo_material.conductivity == 1 / 0.01
     assert pyemmo_material.relPermeability == 0.000345
     assert pyemmo_material.tempCoefRem == -0.001
     assert pyemmo_material.remanence == 1.5

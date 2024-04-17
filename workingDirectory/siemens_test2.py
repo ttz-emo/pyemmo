@@ -1,3 +1,23 @@
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+
 # %% Imports
 from sys import path
 from os import getcwd
@@ -11,11 +31,13 @@ from typing import List
 try:
     rootname = abspath(join(dirname(__file__), ".."))
 except:
-    rootname = "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\Software_V2"
+    rootname = (
+        "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\Software_V2"
+    )
     print(f"Could not determine root. Setting it manually to '{rootname}'")
 print(f'rootname is "{rootname}"')
 path.append(rootname)
-#%%
+# %%
 from pyemmo.definitions import RESULT_DIR, MAIN_DIR
 from pyemmo.script.script import Script
 from pyemmo.script.geometry.primaryLine import PrimaryLine
@@ -30,7 +52,7 @@ import subprocess
 from matplotlib import pyplot as plt
 import gmsh
 
-#%%
+# %%
 # try to find gmsh in system path
 gmshExe = findGmsh()
 if not gmshExe:  # if gmsh was not found set manually
@@ -42,14 +64,20 @@ else:
 # rootname = pyemmoPath
 # rootname = abspath(join(dirname(__file__), ".."))
 # rootname = join(MAIN_DIR, "..")
-Path2CSV = abspath(join(rootname, "..", r"Siemens\Looplines_TTZMitLuftspalt\areaCSV"))
+Path2CSV = abspath(
+    join(rootname, "..", r"Siemens\Looplines_TTZMitLuftspalt\areaCSV")
+)
 while not isdir(Path2CSV):
     print("Cound not find CSV folder. Please enter path!")
     Path2CSV = str(input("Enter AreaCSV folder path:"))
     print("\n")
 
-dataFrameDict = getMachineDFDict(csvFilePath=Path2CSV)  # get maschine dataframe
-extendedInfo = getDataFrameFromCSV(join(Path2CSV, "duplicationInformation.csv"))
+dataFrameDict = getMachineDFDict(
+    csvFilePath=Path2CSV
+)  # get maschine dataframe
+extendedInfo = getDataFrameFromCSV(
+    join(Path2CSV, "duplicationInformation.csv")
+)
 symFaktor = getSymFactor(extendedInfo)
 ##%%
 ###############################################################################
@@ -57,7 +85,7 @@ symFaktor = getSymFactor(extendedInfo)
 # for key in SurfaceDict.keys():
 #     if "Lu" in key:
 #         SurfaceDict[key].setMeshColor(pyd.LightSkyBlue1)
-#%% Test Segment export and cutting code
+# %% Test Segment export and cutting code
 SurfaceDict: Dict[str, Surface] = createSurfaceDict(dataFrameDict)
 
 # PLOT MACHINE IN PYTHON
@@ -75,14 +103,14 @@ ax.set_aspect("equal", adjustable="box")
 # testScript.generateScript()
 # subprocess.run([gmshExe, join(RESULT_DIR, testScript.getName()+".geo")], shell = True)
 
-#%% ######## Material #############
+# %% ######## Material #############
 MatDataframe = getDataFrameFromCSV(join(Path2CSV, "Materials.csv"))
 MatList = createMatList(MatDataframe)
 MatDict = createMatDict(MatList)
 # for mat in MatList:
 #     mat.print()
 
-#%% Find the shortest line
+# %% Find the shortest line
 # MaschineSurfList = createMachineSurfs(dataFrameDict, extendedInfo.symFactor[0])
 # shortLineLen = 1.0
 # for surf in MaschineSurfList:
@@ -95,7 +123,7 @@ MatDict = createMatDict(MatList)
 #             print(line.getName(), " and ", shortestLine.getName(), "are equal in length: ", lineLen, shortLineLen)
 # print(shortestLine.getName(),": ",shortestLine.getPointDist())
 
-#%% ####### Physical Line #######
+# %% ####### Physical Line #######
 r_RotorMB = getMovingbandRadius(extendedInfo)
 
 RotorPhys = list()
@@ -125,7 +153,7 @@ if symFaktor > 1:
     #     [gmshExe, join(rootname, r"resultDirectory\\" + scriptName + ".geo"),],
     #     shell=True,
     # )
-#%% Create the moving band lines and object
+# %% Create the moving band lines and object
 MB_Stator, MB_Rotor_inner, MB_Rotor_Aux = createMB(
     dataFrameDict, MaschineSurfaceDict, symFaktor
 )
@@ -142,19 +170,25 @@ MB_Stator, MB_Rotor_inner, MB_Rotor_Aux = createMB(
 #     [gmshExe, join(rootname, r"resultDirectory\\" + scriptName + ".geo"),], shell=True,
 # )
 
-#%% Outer limit line for A=0
+# %% Outer limit line for A=0
 OuterLimitLineDict = {
     "Geh": [  # first case: no inner shaft radius; second case: with radius
         ["G1", "G3"],  # first case: zylindrical housing
         [
-            ["G1", "G2a"],  # second case: quadratic or "kreuzprofil" with rounding
+            [
+                "G1",
+                "G2a",
+            ],  # second case: quadratic or "kreuzprofil" with rounding
             ["G2a", "G2e"],
             ["G2e", "G3"],
             ["G2", "G1"],  # without rounding
             ["G2", "G3"],
         ],
     ],
-    "StNut": ["SZ", "SN"],  # if there is no housing, use stator iron outer line
+    "StNut": [
+        "SZ",
+        "SN",
+    ],  # if there is no housing, use stator iron outer line
 }
 limitLineList = getLimitLines(
     OuterLimitLineDict, dataFrameDict, MaschineSurfaceDict, symFaktor
@@ -173,7 +207,7 @@ StatorPhys.append(OuterLimit)
 #     [gmshExe, join(rootname, r"resultDirectory\\" + scriptName + ".geo"),], shell=True,
 # )
 
-#%% Inner limit line for A=0
+# %% Inner limit line for A=0
 # Vorgehen, wenn Welle -> Dann Welle
 # Wenn nicht Welle, aber Hülse -> Dann Hülse
 # Sonst -> Rotorblech
@@ -183,7 +217,10 @@ InnerLimitLineDict = {
         ["W4", "W3"],
     ],  # first case: no inner shaft radius; second case: with radius
     "Hul": ["H3", "H4"],
-    "Pol": [["RMi", "RI"], ["RndI", "RndM"]],  # first case:IPM; second case:APM
+    "Pol": [
+        ["RMi", "RI"],
+        ["RndI", "RndM"],
+    ],  # first case:IPM; second case:APM
     "RoNut": ["SZ", "SN"],
 }
 InnerLimitLines = getLimitLines(
@@ -202,11 +239,11 @@ InnerLimit = LimitLine("innerLimit", InnerLimitLines)
 # subprocess.run(
 #     [gmshExe, join(rootname, r"resultDirectory\\" + scriptName + ".geo"),], shell=True,
 # )
-#%% PRINT ALL BOUNDARYS IN ONE SESSION
+# %% PRINT ALL BOUNDARYS IN ONE SESSION
 # from pyemmo.functions.runOnelab import mergeAllGeoFiles
 # mergeAllGeoFiles(RESULT_DIR, gmshExe)
 
-#%% Test createBoundary function:
+# %% Test createBoundary function:
 StatorPhysicals, RotorPhysicals = createBoundaries(
     dataFrameDict=dataFrameDict,
     MaschineSurfaceDict=MaschineSurfaceDict,
@@ -228,7 +265,7 @@ StatorPhysicals, RotorPhysicals = createBoundaries(
 # subprocess.run(
 #     [gmshExe, join(rootname, r"resultDirectory\\" + scriptName + ".geo"),], shell=True,
 # )
-#%% Physical Surfaces for Onelab Domains
+# %% Physical Surfaces for Onelab Domains
 MaschineSurfList = createMachineGeometryFromSegment(dataFrameDict, symFaktor)
 # IDs:
 #   LuR/RoLu    Airgap Rotor;
@@ -240,7 +277,7 @@ fig, ax = plt.subplots()
 fig.set_dpi(300)
 for surf in MaschineSurfList:
     surf.plot(fig=fig, linewidth=0.5, color="b")
-#%% GENERATE WHOLE MACHINE!
+# %% GENERATE WHOLE MACHINE!
 # create clean machine material dict (=dict for connection between machineSurfaceID and SurfaceMaterial)
 MachineMatDict = dict()
 for key in dataFrameDict.keys():
@@ -314,7 +351,8 @@ for surf in MaschineSurfList:
             RotorPhysicals.append(physicalSurf)
         else:
             ValueError(
-                f"MachineSide was whether rotor or stator: {machineSide}", machineSide
+                f"MachineSide was whether rotor or stator: {machineSide}",
+                machineSide,
             )
 # # Test
 # testScript = pyd.Script("TestDuplication", RESULT_DIR, "OpenCASCADE")
@@ -323,7 +361,7 @@ for surf in MaschineSurfList:
 # testScript.generateScript()
 # subprocess.run([gmshExe, join(RESULT_DIR, testScript.getName() + ".geo")], shell=True)
 
-#%%
+# %%
 RotorSiemens = Rotor(
     name="RotorSiemens",
     # physicalElement=[phyLMaster_Rotor, phyLSlave_Rotor, phyInner, Blech_Rotor, Bohrung, LuftRotor] + phyMBRotor + Magnete
@@ -362,7 +400,7 @@ machineSiemens = MachineAllType(
 testScript = Script("TestFinalMachine", RESULT_DIR)
 machineSiemens.addToScript(testScript)
 idedentPoints, idedentLines = testScript.generateScript()
-#%% debugging identical points
+# %% debugging identical points
 
 # for point in idedentPoints:
 #     point.plot(fig=fig, color="r", markersize=0.5, marker=".")
@@ -371,7 +409,7 @@ idedentPoints, idedentLines = testScript.generateScript()
 # ax.autoscale()
 # ax.set_aspect("equal", adjustable="box")
 # plt.show()
-#%%
+# %%
 # # If you just want to show the geo file you can use:
 # gmsh.initialize()
 # gmsh.open(abspath(join(RESULT_DIR, testScript.getName() + ".geo")))
@@ -383,6 +421,7 @@ idedentPoints, idedentLines = testScript.generateScript()
 # If you want to show the geo and merged pro file you have to start a subprocess and run somthing like "gmsh PATH/TO/profile.pro", because gmsh.merge(...) seems only to work well with geo files:
 
 subprocess.run(
-    [gmshExe, abspath(join(RESULT_DIR, testScript.getName() + ".pro"))], shell=True
+    [gmshExe, abspath(join(RESULT_DIR, testScript.getName() + ".pro"))],
+    shell=True,
 )
 # %%

@@ -1,3 +1,22 @@
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 """Module for CircleArc Geometry"""
 from math import atan2, cos, isclose, sin
 from random import random
@@ -56,10 +75,8 @@ class CircleArc(Line):
         except ValueError as exce:
             raise (
                 ValueError(
-                    (
-                        "If you really want to draw a full circle"
-                        " consider using 4 circle arcs."
-                    )
+                    "If you really want to draw a full circle"
+                    " consider using 4 circle arcs."
                 )
             ) from exce
         except Exception as exc:
@@ -224,7 +241,11 @@ class CircleArc(Line):
         return dupCircleArc
 
     def mirror(
-        self, planePoint: Point, planeVector1: Line, planeVector2: Line, name: str = ""
+        self,
+        planePoint: Point,
+        planeVector1: Line,
+        planeVector2: Line,
+        name: str = "",
     ) -> "CircleArc":
         """Mit mirror() kann ein Kreisbogen an einer definierten Ebene gespiegelt
         werden. Bildpunkte werden hierbei generiert und eine Kurve zwischen den Punkten
@@ -255,9 +276,13 @@ class CircleArc(Line):
             CA2 = CA1.mirror(P0, yAxis, zAxis)
 
         """
-        startPoint = self.startPoint.mirror(planePoint, planeVector1, planeVector2)
+        startPoint = self.startPoint.mirror(
+            planePoint, planeVector1, planeVector2
+        )
         endPoint = self.endPoint.mirror(planePoint, planeVector1, planeVector2)
-        centerPoint = self._center.mirror(planePoint, planeVector1, planeVector2)
+        centerPoint = self._center.mirror(
+            planePoint, planeVector1, planeVector2
+        )
         mirArc = CircleArc(self.name, endPoint, centerPoint, startPoint)
         if name == "":
             mirArc.name = "CA_" + str(abs(mirArc.id))
@@ -279,8 +304,12 @@ class CircleArc(Line):
         startPoint = self.startPoint
         endPoint = self.endPoint
         centerPoint = self.center
-        angleStart = startPoint.getAngleToX(flag_deg=inDeg, CenterPoint=centerPoint)
-        angleEnd = endPoint.getAngleToX(flag_deg=inDeg, CenterPoint=centerPoint)
+        angleStart = startPoint.getAngleToX(
+            flag_deg=inDeg, CenterPoint=centerPoint
+        )
+        angleEnd = endPoint.getAngleToX(
+            flag_deg=inDeg, CenterPoint=centerPoint
+        )
         return angleStart, angleEnd
 
     def getAngle(self, inDeg=False) -> float:
@@ -327,11 +356,9 @@ class CircleArc(Line):
         # pylint: disable=locally-disabled,  line-too-long
         raise (
             ValueError(
-                (
-                    f"Start and end point of circle arc '{self.name}' dont have the same distance to the center point:"
-                    f"Distance Pc-P1={center.calcDist(startPoint.coordinate)}; "
-                    f"Distance Pc-P2 = {center.calcDist(endPoint.coordinate)}."
-                )
+                f"Start and end point of circle arc '{self.name}' dont have the same distance to the center point:"
+                f"Distance Pc-P1={center.calcDist(startPoint.coordinate)}; "
+                f"Distance Pc-P2 = {center.calcDist(endPoint.coordinate)}."
             )
         )
 
@@ -405,7 +432,9 @@ class CircleArc(Line):
             self.startPoint.plot(fig, marker, markersize, color=color, tag=tag)
             self.endPoint.plot(fig, marker, markersize, color=color, tag=tag)
 
-    def combine(self, addLine: "CircleArc", touchPoint: Point = None) -> "CircleArc":
+    def combine(
+        self, addLine: "CircleArc", touchPoint: Point = None
+    ) -> "CircleArc":
         """combine two arcs and return them as new CircleArc
 
         Args:
@@ -418,7 +447,9 @@ class CircleArc(Line):
         if self == addLine:
             return self
         # pylint: disable=locally-disabled, unidiomatic-typecheck
-        if not type(addLine) == type(self):  # make sure the line types are equal
+        if not type(addLine) == type(
+            self
+        ):  # make sure the line types are equal
             raise TypeError(
                 "Tried to combine lines, but the line types are different! "
                 f"{type(self)} != {type(addLine)}"

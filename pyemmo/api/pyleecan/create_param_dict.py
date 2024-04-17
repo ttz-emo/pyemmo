@@ -1,3 +1,22 @@
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 from pyleecan.Classes.Machine import Machine
 from pyleecan.Classes.Simulation import Simulation
 from pyleecan.Classes.Lamination import Lamination
@@ -20,7 +39,7 @@ def create_param_dict(
     Args:
         machine (Machine): machine in pyleecan format
         pyleecanSimulation (Simulation): simulation parameter in pyleecan format
-        movingband_r (float): radius of the movingBand 
+        movingband_r (float): radius of the movingBand
         magnetizationDict (dict): dictionary which contains the magnet with corresponding magnetizationangle
 
     Raises:
@@ -83,7 +102,9 @@ def create_param_dict(
                 # The magnetization Type for all magnets in the machine will be set
                 # in the same Type as the firt magnet in the list.
 
-                pyemmo_mag_type = lam_with_mag.hole[0].magnet_0.type_magnetization
+                pyemmo_mag_type = lam_with_mag.hole[
+                    0
+                ].magnet_0.type_magnetization
 
             else:  # If lamWithMag has only one magnet
                 pyemmo_mag_type = lam_with_mag.hole.magnet_0.type_magnetization
@@ -97,7 +118,9 @@ def create_param_dict(
                 # The magnetization Type for all magnets in the machine will be set
                 # in the same Type as the firt magnet in the list.
 
-                pyemmo_mag_type = lam_with_mag.slot[0].magnet_0.type_magnetization
+                pyemmo_mag_type = lam_with_mag.slot[
+                    0
+                ].magnet_0.type_magnetization
 
             else:  # If rotor has only one magnet
                 pyemmo_mag_type = lam_with_mag.magnet.type_magnetization
@@ -114,7 +137,6 @@ def create_param_dict(
     elif pyemmo_mag_type == 3:
         pyemmo_mag_type = "tangential"
 
-
     sym_factor = machine.comp_periodicity_spatial()
     if sym_factor[1]:
         sym_factor = sym_factor[0] * 2
@@ -122,8 +144,8 @@ def create_param_dict(
         sym_factor = sym_factor[0]
     logger.debug("Symmetry factor machine: %s", {sym_factor})
     swatem_winding, wind_layout = translate_winding(machine)
-    sym_winding = swatem_winding.get_periodicity_t()*2
-    logger.debug("Symmetry factor winding: %s",{sym_winding})
+    sym_winding = swatem_winding.get_periodicity_t() * 2
+    logger.debug("Symmetry factor winding: %s", {sym_winding})
     sym_factor = min(sym_winding, sym_factor)
 
     speed_rpm = pyleecan_simulation.input.OP.N0

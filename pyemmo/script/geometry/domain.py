@@ -1,3 +1,22 @@
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 """Module for Class Domain"""
 from typing import List, Union, TYPE_CHECKING
 from pyemmo.script.geometry.physicalElement import PhysicalElement
@@ -22,7 +41,9 @@ class Domain:
     """
 
     def __init__(
-        self, name: str, physicalElements: Union[List[PhysicalElement], PhysicalElement]
+        self,
+        name: str,
+        physicalElements: Union[List[PhysicalElement], PhysicalElement],
     ):
         self.name = name
         self.physicals = physicalElements
@@ -69,7 +90,8 @@ class Domain:
         """
         if isinstance(physicalElements, list):
             if all(
-                isinstance(physElem, PhysicalElement) for physElem in physicalElements
+                isinstance(physElem, PhysicalElement)
+                for physElem in physicalElements
             ):
                 self._physicals = physicalElements
                 return None
@@ -85,7 +107,9 @@ class Domain:
         if isinstance(physicalElementList, list):
             self.physicals.extend(physicalElementList)
         else:
-            raise ValueError("Argument 'physicalElementList' was not type list!")
+            raise ValueError(
+                "Argument 'physicalElementList' was not type list!"
+            )
 
     ###
     # Mit addToScript wird die Domain zum Skriptobjekt übergeben und in gmsh-Syntax übersetzt.
