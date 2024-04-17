@@ -5,11 +5,19 @@ from typing import Dict, Union, List
 import logging
 from shutil import which
 import subprocess
+from subprocess import Popen, PIPE, STDOUT
 from argparse import ArgumentParser
 import numpy as np
 
 from . import calcIronLoss
 from .import_results import read_timetable_dat
+
+
+def log_subprocess_output(pipe):
+    """Function to redirect commandline output to Python logger.
+    Took this from answer in https://stackoverflow.com/a/21978778"""
+    for line in iter(pipe.readline, b""):  # b'\n'-separated lines
+        logging.info("got line from subprocess: %r", line)
 
 
 def findGmsh(verbosity: bool = True) -> str:
@@ -130,11 +138,11 @@ def mergeAllGeoFiles(folderPath, gmshExe):
 def createCmdCommand(
     onelabFile: str,
     useGUI: bool,
-    gmshPath: Union[str ,os.PathLike] = "",
-    getdpPath: Union[str ,os.PathLike] = "",
-    logFileName: Union[str ,os.PathLike] = "",
+    gmshPath: Union[str, os.PathLike] = "",
+    getdpPath: Union[str, os.PathLike] = "",
+    logFileName: Union[str, os.PathLike] = "",
     paramDict: Dict[str, Union[str, int, float]] = None,
-    postOperations: List[str] = None,
+    postOperations: List[str] = [],
 ) -> str:
     """Create a cmd command to open a .geo or .pro file with the gmsh gui or
     run gmsh and getdp from the command line.
@@ -144,15 +152,18 @@ def createCmdCommand(
         useGUI (bool): If True command will open the file in the gmsh gui (independed if its a geo or pro file).
         gmshPath (str): Path to the gmsh executable. By defaults the gmsh exe is searched.
         getdpPath (str, optional): path to a getdp executable. Path will only be used if gui is not used. Defaults to "".
-        paramDict (Dict[str, Union[str, int, float]], optional): Dict with parameters to set in the simulation. Defaults to None.
+        paramDict (Dict[str, Union[str, int, float]], optional):
+            Dict with parameters to set in the simulation. Defaults to None.
+            You can use the value "verbosity level" to change verbosity in GetDP
+            from 0 to 99.
 
-            E.g. to set the onelab parameter "IQ_RMS" for the quadrature rms current to 10A the dict would look like:
+                E.g. to set the onelab parameter "IQ_RMS" for the quadrature rms current to 10A the dict would look like:
 
-            .. code:: python
+                .. code:: python
 
-                {
-                    "IQ_RMS": 10,
-                }
+                    {
+                        "IQ_RMS": 10,
+                    }
 
         postOperations (List[str], optional): List containing the PostOperation names that should be performed after the solving stage.
             ! PostOperations will only be executed if a getdp executable is given !
@@ -166,13 +177,13 @@ def createCmdCommand(
         TypeError: If the parameter value is not str, float or int.
         FileNotFoundError: If onelabFile does not exist or is not a file.
     """
-    if not gmshPath:
-        gmshPath = findGmsh()
     # check if the onelab file is valid:
     if isfile(onelabFile):
         (filePath, ext) = splitext(onelabFile)
         # first part of the cmd command: open the geo or pro-file
-        command = (
+        if not gmshPath:
+            gmshPath = findGmsh()
+        gmsh_command = (
             f'{gmshPath} "{onelabFile}"'  # the command is: 'gmsh "FILE.xxx"'
         )
         if ext.lower() == ".geo":
@@ -180,31 +191,44 @@ def createCmdCommand(
             if not useGUI:
                 # run onelab server in command line if gui is False
                 #   this does the meshing and database generation
-                command += " -run"  # the command is: "gmsh FILE.geo -run"
+                gmsh_command += " -run"  # the command is: "gmsh FILE.geo -run"
                 if logFileName:
-                    command += f" -log {logFileName} "
+                    gmsh_command += f" -log {logFileName} "
             # else:
             #   just leave the command as it is: "gmsh FILE.geo" to open gmsh GUI
         elif ext.lower() == ".pro":
+            getdp_command = ""
             if not useGUI:
                 if getdpPath:
                     # if command line and getdp specified
+                    getdp_command += f"{getdpPath} {onelabFile} -solve Analysis "  # run the simulation with specific getdp exe
+                    # the command is: "gmsh FILE.geo -run && getdp FILE.pro -solve Analysis"
 
                     # # TODO: Check if mesh file exists -> if not, create command to generate .msh file
                     # if not isfile(filePath+'.msh')
-
-                    command = f"{gmshPath} {filePath}.geo -run "  # set the gmsh file extension to mesh and && for new command
+                    if "msh" in paramDict:
+                        if isfile(paramDict["msh"]):
+                            # skip meshing
+                            # (meshFilePath, meshExt) = splitext(paramDict["msh"])
+                            # assert meshExt = ".msh"
+                            getdp_command += f"-msh {paramDict.pop('msh')}"
+                            gmsh_command = ""
+                        else:
+                            raise FileNotFoundError(
+                                f"""Given msh file was not found: {paramDict["msh"]}"""
+                            )
+                    else:
+                        # set the gmsh file extension to mesh
+                        gmsh_command = f"{gmshPath} {filePath}.geo -run "
                     if logFileName:
-                        command += f" -log {logFileName} "
-                    command += "&& "
-                    command += f"{getdpPath} {onelabFile} -solve Analysis"  # run the simulation with specific getdp exe
-                    # the command is: "gmsh FILE.geo -run && getdp FILE.pro -solve Analysis"
+                        gmsh_command += f" -log {logFileName} "
                     # add post operations
                     if postOperations:
-                        command += " -pos "
-                        for postOp in postOperations:
+                        getdp_command += " -pos "
+                        # Using set() because it removes string duplicates automatically
+                        for postOp in set(postOperations):
                             if isinstance(postOp, str):
-                                command += postOp + " "
+                                getdp_command += postOp + " "
                             else:
                                 raise (
                                     ValueError(
@@ -213,7 +237,7 @@ def createCmdCommand(
                                 )
                 else:
                     # only command line specified
-                    command += " -run"  # just run "gmsh FILE.pro -run", which auto-selects a getdp installation
+                    gmsh_command += " -run"  # just run "gmsh FILE.pro -run", which auto-selects a getdp installation
             # else:
             # if gui was specified, just leave the command as it is: "gmsh FILE.pro" to open gui
         else:
@@ -229,22 +253,35 @@ def createCmdCommand(
                     f"Parameter dict was not a dict, but type '{type(paramDict)}.'"
                 )
             else:
+                # add verbosity if given
+                if "verbosity level" in paramDict:
+                    getdp_command += f"-v {paramDict.pop('verbosity level')}"
                 for paramName, paramValue in paramDict.items():
                     if isinstance(paramValue, str):
-                        command += f" -setstring {paramName} {paramValue}"
+                        getdp_command += (
+                            f" -setstring {paramName} {paramValue}"
+                        )
                     elif isinstance(paramValue, (float, int)):
-                        command += f" -setnumber {paramName} {paramValue}"
+                        getdp_command += (
+                            f" -setnumber {paramName} {paramValue}"
+                        )
                     else:
                         raise (
                             TypeError(
                                 f"Parameter value was not string, float or int! -> {type(paramValue)}"
                             )
                         )
+
     else:
         raise FileNotFoundError(
             f"Provided Onelab file was not found: {onelabFile}"
         )
-    return command
+    if gmsh_command and getdp_command:
+        return gmsh_command + " && " + getdp_command
+    elif gmsh_command:
+        return gmsh_command
+    else:
+        return getdp_command
 
 
 def createGMSHCommand(
@@ -329,10 +366,12 @@ def runCalcforCurrent(param: dict):
     param["getdp"]["ResPath"] = RES_DIR
     pro_file = param["pro"]
     simulation_res_dir = os.path.join(RES_DIR, param["ResId"])
+
+    post_operations = param["PostOp"] if "PostOp" in param else []
+
     if not os.path.isdir(simulation_res_dir):
         # only run if results dir for this simulation not exists
         # determine if core loss can be calculated
-        post_operations = None
         if "hyst" in param and "eddy" in param:
             post_operations = ["GetBIron"]  # calc core loss
 
@@ -348,12 +387,38 @@ def runCalcforCurrent(param: dict):
         logging.debug("cmd command is: %s", cmdCommand)
         logging.info("Running simulation for result-ID '%s'", param["ResId"])
 
-        subprocess.run(
+        # calcInfo = subprocess.run(
+        #     cmdCommand,
+        #     capture_output=True,  # not importJSON.getFlagOpenGui(extendedInfo),
+        #     text=True,
+        #     check=False,
+        # )
+        # # print(f"StdOut:\n{calcInfo.stdout}")
+        # if calcInfo.stderr:
+        #     for textLine in calcInfo.stderr.split("\n"):
+        #         if "error" in textLine.lower():
+        #             logging.error(
+        #                 "Onelab call issued the following error: \n\t%s",
+        #                 textLine.replace("\n", "\n\t"),
+        #             )
+        #         else:
+        #             if textLine:  # if textline is not empty
+        #                 logging.warning(
+        #                     "Onelab call issued the following warning: \n\t%s",
+        #                     textLine.replace("\n", "\n\t"),
+        #                 )
+
+        ## TRY TO LOG OUTPUT OF FUNCTION CALL:
+        process = Popen(
             cmdCommand,
-            check=True,  # raise Python-error on error execution error
-            capture_output=False,
-            stdout=subprocess.DEVNULL,
+            stdout=PIPE,
+            stderr=STDOUT,
+            # text=True,
         )
+        with process.stdout:
+            log_subprocess_output(process.stdout)
+        exitcode = process.wait()  # 0 means success
+
     else:
         # Simulation with this resId has allready been done!
         # raise RuntimeError(
@@ -395,6 +460,12 @@ def runCalcforCurrent(param: dict):
             raise FileNotFoundError(
                 f"Could not find result file for phase current I{index}"
             )
+    # optional import bar currents
+    res_file = os.path.join(simulation_res_dir, "I_bars.dat")
+    if isfile(res_file):
+        results_dict["time"], results_dict["current"]["bars"] = (
+            read_timetable_dat(res_file)
+        )
 
     # 2. Torque Results
     results_dict["torque"] = {}
@@ -426,8 +497,8 @@ def runCalcforCurrent(param: dict):
         )
         if os.path.isfile(res_file):
             # get first char in machine side to index rotor and stator results
-            _, results_dict["inducedVoltage"][index] = read_timetable_dat(
-                res_file
+            _, results_dict["inducedVoltage"][index.lower()] = (
+                read_timetable_dat(res_file)
             )
 
     # 5. Rotor position
@@ -442,7 +513,7 @@ def runCalcforCurrent(param: dict):
     if not os.path.exists(
         os.path.join(simulation_res_dir, "hystLoss_rotor.dat")
     ):
-        if post_operations is not None:
+        if "GetBIron" in post_operations:
             # calculate core loss
             totalLoss = 0
             for _, side in enumerate(["rotor", "stator"]):
@@ -508,6 +579,7 @@ def runCalcforCurrent(param: dict):
             f"{'Summe:':<14} {np.mean(core_loss_dict['rotor']['exc']+core_loss_dict['rotor']['eddy']+core_loss_dict['rotor']['hyst']) : 8.3f} W {np.mean(core_loss_dict['stator']['exc']+core_loss_dict['stator']['eddy']+core_loss_dict['stator']['hyst']) : 9.3f} W {np.mean(core_loss_dict['rotor']['exc']+core_loss_dict['rotor']['eddy']+core_loss_dict['rotor']['hyst']+core_loss_dict['stator']['exc']+core_loss_dict['stator']['eddy']+core_loss_dict['stator']['hyst']) : 9.3f} W"
         )
     return results_dict
+
 
 def main() -> None:
     # print("running main() of runOnelab.")
