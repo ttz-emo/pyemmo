@@ -43,7 +43,7 @@ Function {
       NL2~{k} = (k<nbRotorBars) ? NB2~{k2} : NB1~{1} ;
     EndFor
 
-  ElseIf (NbrPolesInModel>1 && NbrPolesInModel%2)
+  ElseIf (NbrPolesInModel>1 && (NbrPolesInModel%2 == 0))
     For k In {1:nbRotorBars}
       NR1~{k} = NB1~{k}; // first node number for each endring resistance
       k2 = (k<nbRotorBars) ? k+1 : 1.;
