@@ -1,3 +1,22 @@
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 from typing import Dict, List, Union
 from matplotlib import pyplot as plt
 from numpy import pi, sign
@@ -23,7 +42,7 @@ from ..material.electricalSteel import ElectricalSteel
 # Für die Verwendung des Baukastens, ist die Spezifizierung der Maschine zunächst sinnvoll.
 # Hierfür sollte man deshalb spezifische Klassen bspw. machineSPMSM (für Oberflächenmagnete) benutzen und die dazugehörige Klasse StatorSPMSM verwenden.
 ###
-class Stator(object):
+class Stator:
     def __init__(
         self,
         nbrSlots: int,
@@ -128,7 +147,9 @@ class Stator(object):
         return self._physicalElements
 
     @physicalElements.setter
-    def physicalElements(self, physicalElementsList: List[PhysicalElement]) -> None:
+    def physicalElements(
+        self, physicalElementsList: List[PhysicalElement]
+    ) -> None:
         """Setter of PhysicalElement-List
 
         Args:
@@ -161,7 +182,9 @@ class Stator(object):
                     self._physicalElements.append(physicalElem)
             self._createDomainForStator()  # recreate domains for stator with new elements
         else:
-            raise ValueError(f"Argument 'physicalElementList' was not type list!")
+            raise ValueError(
+                f"Argument 'physicalElementList' was not type list!"
+            )
 
     @property
     def slots(self) -> List[Slot]:
@@ -399,7 +422,9 @@ class Stator(object):
                     if physicalElement not in phy_domainLam:
                         phy_domainLam.append(physicalElement)
 
-                phy_domain.append(physicalElement)  # append Surface to main Domain
+                phy_domain.append(
+                    physicalElement
+                )  # append Surface to main Domain
             elif geoType == Line:
                 # MB zuweisen
                 if physicalElement.type == "MovingBand":

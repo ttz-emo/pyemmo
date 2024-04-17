@@ -1,3 +1,22 @@
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 """Module for json api surface class"""
 from typing import List, Union
 
@@ -89,7 +108,6 @@ class SurfaceAPI(Surface):
         """
         return self._idExt
 
-    
     def setIdExt(self, newName: str) -> None:
         """set the abbriviation of the surface name (literal Surface ID)
 
@@ -159,7 +177,7 @@ class SurfaceAPI(Surface):
         """create a copy of the surface
 
         Args:
-            name (str, optional): New name for copied surface. 
+            name (str, optional): New name for copied surface.
                 Defaults to previous surface name + "_dup" for duplicate.
 
         Returns:

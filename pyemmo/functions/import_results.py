@@ -1,3 +1,22 @@
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 """Module to import simulation results from GetDP (Onelab)"""
 
 import os
@@ -47,14 +66,14 @@ def read_timetable_dat(
     # Try to import the data via numpy. Should work for most cases!
     # standard 'delemiter' is whitespace.
     data_array = np.loadtxt(file_path, dtype=float, comments="#")
-    if len(data_array.shape)==1:
+    if len(data_array.shape) == 1:
         # static simulation
-        assert data_array.size > 1 # there must be at least one time + value
-        time = np.reshape(data_array[0],(1))
+        assert data_array.size > 1  # there must be at least one time + value
+        time = np.reshape(data_array[0], (1))
         values = data_array[1:]
     else:
         # multi static or transient simulation(s)
-        time = data_array[:,0]
+        time = data_array[:, 0]
         values = data_array[:, 1:]
 
     return (time, values)
@@ -249,7 +268,7 @@ def importSP(
     filename, ext = filename.split(".")
     if ext != "pos":
         raise ValueError(f"Given filepath '{posFilePath}' is not a POS-file!")
-    with open(posFilePath, "r", encoding="utf-8") as dataFile:
+    with open(posFilePath, encoding="utf-8") as dataFile:
         dataLines = dataFile.readlines()
     parsedName = parse('View "{}" {\n', dataLines.pop(0))
     if not parsedName:
