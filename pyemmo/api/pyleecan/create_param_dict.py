@@ -17,8 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-from pyleecan.Classes.Machine import Machine
-from pyleecan.Classes.Simulation import Simulation
+from pyleecan.Classes.Machine import Machine as PyleecanMachine
+from pyleecan.Classes.Simulation import Simulation as PyleecanSimulation
 from pyleecan.Classes.Lamination import Lamination
 from pyleecan.Classes.LamHole import LamHole
 from pyleecan.Classes.LamSlotMag import LamSlotMag

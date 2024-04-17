@@ -71,7 +71,8 @@ if os.path.isfile(pylcn_machine_testfile):
     )
     # get list IDs and print them
     for machineName in workingMachineDict.keys():
-        print(f"{machineList.index(machineName)}: " + machineName)
+        if machineName in machineList:
+            print(f"{machineList.index(machineName)}: " + machineName)
 
 # %%
 # Use machines:
