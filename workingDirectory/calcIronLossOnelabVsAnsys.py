@@ -1,3 +1,22 @@
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 """Module to test iron loss calculation"""
 # %%
 import os
@@ -7,6 +26,7 @@ import subprocess
 import datetime
 import time
 import scipy.io as sio
+
 # import logging
 import concurrent.futures
 from matplotlib import pyplot as plt
@@ -29,8 +49,10 @@ RES_DIR = (
 
 # %%
 def runCalcforCurrent(stromdq):
-    resId = f"id_{np.round(stromdq[0],1)}A_iq_{np.round(stromdq[1],1)}A".replace(
-        ".", "_"
+    resId = (
+        f"id_{np.round(stromdq[0],1)}A_iq_{np.round(stromdq[1],1)}A".replace(
+            ".", "_"
+        )
     )
     print(f"Running job: {resId}")
     paramDict = {
@@ -84,15 +106,17 @@ def runCalcforCurrent(stromdq):
         try:
             ironLoss, _ = calcIronLoss.main(
                 bFilePath,
-                lossFactor={"hyst": 172.04, "eddy": 1.05, "exc": 0},
-                symFactor=4,
-                axialLength=0.05,
+                loss_factor={"hyst": 172.04, "eddy": 1.05, "exc": 0},
+                sym_factor=4,
+                axial_length=0.05,
             )
             for _, lossVals in ironLoss.items():
                 totalLoss += lossVals.mean()
             # print(f"Iron losses for {resId} on {side} are: {ironLoss[side]}")
         except Exception as exce:
-            print(f"Failed to calculate iron loss for '{resId}', because of: {exce}")
+            print(
+                f"Failed to calculate iron loss for '{resId}', because of: {exce}"
+            )
     return totalLoss
 
 
@@ -102,7 +126,9 @@ if __name__ == "__main__":
     # RESULT_DIR = r"C:\Users\ganser\AppData\Roaming\pyemmo\Results"
     geoFile = os.path.join(RESULT_DIR, "Test_1FE1051-4HF11_TherCom.geo")
     mshFile = os.path.join(RESULT_DIR, "Test_1FE1051-4HF11_TherCom.msh")
-    paramFile = os.path.join(RESULT_DIR, "Test_1FE1051-4HF11_TherCom_param.geo")
+    paramFile = os.path.join(
+        RESULT_DIR, "Test_1FE1051-4HF11_TherCom_param.geo"
+    )
     calFile = os.path.join(RESULT_DIR, "machine_magstadyn_a.pro")
     proFile = os.path.join(RESULT_DIR, "Test_1FE1051-4HF11_TherCom.pro")
     if not os.path.exists(proFile):
@@ -117,7 +143,7 @@ if __name__ == "__main__":
     if not os.path.exists(mshFile):
         meshCommand = runOnelab.createCmdCommand(geoFile, useGUI=False)
         subprocess.run(meshCommand)
-    
+
     ## simulation parameters
     ansysResPath = r"C:\Users\ganser\AppData\Roaming\pyemmo\Results\230301_EisenverlustkennfeldAnsys.csv"
     ansysResults = pandas.read_csv(ansysResPath)
@@ -168,7 +194,9 @@ if __name__ == "__main__":
     print("save iron losses...")
     np.save(ironLossResFile, ironLossArray)
 
-    coreLossOnelabMatFile = os.path.join(RES_DIR, "230301_ironLossDataOnelab.mat")
+    coreLossOnelabMatFile = os.path.join(
+        RES_DIR, "230301_ironLossDataOnelab.mat"
+    )
     sio.savemat(
         coreLossOnelabMatFile,
         {

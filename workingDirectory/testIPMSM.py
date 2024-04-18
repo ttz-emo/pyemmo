@@ -1,3 +1,23 @@
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+
 # %%
 from os import path
 import math
@@ -55,7 +75,9 @@ simuIPMSMDict = {
 # Maschine aus dem Baukasten parametrisieren
 pmsm1 = MachineIPMSM(simuIPMSMDict)
 ## ROTOR ##
-rotor1 = pmsm1.addRotorToMachine("sheet01_standard", "magnet_Slot01", axLen=axialLength)
+rotor1 = pmsm1.addRotorToMachine(
+    "sheet01_standard", "magnet_Slot01", axLen=axialLength
+)
 rotor1.addLaminationParameter(
     {
         "r_We": 7e-3,
@@ -114,10 +136,14 @@ stator1.addAirGapParameter({"width": 1e-3, "material": air})
 stator1.createStator()
 stator1.plot()
 # %%
-pmsm1.setFunctionMesh(functionType="quad", meshGainFactor=2, basisMeshsize=0.5e-3)
+pmsm1.setFunctionMesh(
+    functionType="quad", meshGainFactor=2, basisMeshsize=0.5e-3
+)
 pmsm1.createMachineDomains()
 
-modelDir = path.abspath(path.join(ROOT_DIR, "Results", "Baukasten", "Test_IPMSM"))
+modelDir = path.abspath(
+    path.join(ROOT_DIR, "Results", "Baukasten", "Test_IPMSM")
+)
 testIPMSM_Script = Script(
     name="Test_IPMSM",
     scriptPath=modelDir,
@@ -140,7 +166,9 @@ testIPMSM_Script.addPostOperation(
     name="User Defined PostOperation",
     OnGrid="{(r_AG)*Sin[$A*Pi/180],(r_AG)*Cos[$A*Pi/180],0}{0:360/SymmetryFactor,0,0}",
     # OnGrid="{(r_AG)*Sin[Pi/nbSlots-$A*Pi/180],(r_AG)*Cos[Pi/nbSlots-$A*Pi/180],0}{0:360/SymmetryFactor,0,0}",
-    File=path.abspath(path.join(testIPMSM_Script.resultsPath, "b_OnRadius.pos")),
+    File=path.abspath(
+        path.join(testIPMSM_Script.resultsPath, "b_OnRadius.pos")
+    ),
 )
 import time
 
@@ -151,7 +179,9 @@ print("I am done!")
 print(f"\n Generation of script took {stopTime-startTime} seconds.")
 
 # %%
-proFilePath = path.join(testIPMSM_Script.scriptPath, testIPMSM_Script.name + ".pro")
+proFilePath = path.join(
+    testIPMSM_Script.scriptPath, testIPMSM_Script.name + ".pro"
+)
 command = runOnelab.createCmdCommand(
     onelabFile=path.abspath(proFilePath),
     gmshPath=runOnelab.findGmsh(),

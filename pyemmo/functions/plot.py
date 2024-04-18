@@ -1,3 +1,22 @@
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 from random import random
 from typing import List, Tuple, Union
 from matplotlib import pyplot as plt
@@ -46,12 +65,22 @@ def plot(
                 tag=tag,
             )
         else:
-            geoObj.plot(
-                fig,
-                linewidth=linewidth,
-                color=color,
-                marker=marker,
-                markersize=markersize,
-                tag=tag,
-            )
+            if isinstance(geoObj, Point):
+                # plot points separatly because they have no linewidth
+                geoObj.plot(
+                    fig=fig,
+                    marker=marker,
+                    markersize=markersize,
+                    color=color,
+                    tag=tag,
+                )
+            else:
+                geoObj.plot(
+                    fig,
+                    linewidth=linewidth,
+                    color=color,
+                    marker=marker,
+                    markersize=markersize,
+                    tag=tag,
+                )
     return fig, ax

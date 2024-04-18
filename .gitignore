@@ -2,6 +2,9 @@
 **.vscode/
 **venv*/
 **__pycache__/
+**.*cache*/
+/dist
+/pyemmo.egg-info
 *.pos
 *.pre
 *.res

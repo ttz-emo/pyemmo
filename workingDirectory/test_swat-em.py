@@ -1,3 +1,23 @@
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+
 # %%
 import os
 from math import ceil
@@ -13,7 +33,9 @@ TEST_RES_DIR = os.path.join(RESULT_DIR, "swat-em")
 def genWindLayout_swat(
     windingList: List[str], Qs: int, onePole=False
 ) -> List[List[int]]:
-    windType = "integer" if windingList[0::2] == windingList[1::2] else "fractional"
+    windType = (
+        "integer" if windingList[0::2] == windingList[1::2] else "fractional"
+    )
     nbrSlotsInList = len(windingList) / 2
     nbrRepeat = Qs / nbrSlotsInList
     if nbrRepeat.is_integer() and nbrSlotsInList.is_integer():
@@ -104,7 +126,9 @@ pp = 1
 
 wdg2 = swat_em.datamodel()
 wdg2.set_machinedata(Q=Qs, p=pp, m=3)
-windLayout = genWindLayoutSwatEM(windingList=windList, nbrSlots=Qs, onePole=True)
+windLayout = genWindLayoutSwatEM(
+    windingList=windList, nbrSlots=Qs, onePole=True
+)
 print("\nWinding layout for swat-em:\n", windLayout)
 wdg2.set_phases(S=windLayout)
 wdg2.analyse_wdg()
@@ -127,5 +151,7 @@ pp = 1
 wdg3.genwdg(Q=Qs, P=pp * 2, m=3, layers=1, turns=1)
 wdg3.analyse_wdg()
 print(wdg3.get_layers())
-wdg3.plot_layout(filename=os.path.join(TEST_RES_DIR, "layout_18_1.png"), show=True)
+wdg3.plot_layout(
+    filename=os.path.join(TEST_RES_DIR, "layout_18_1.png"), show=True
+)
 wdg3.plot_MMK(filename=os.path.join(TEST_RES_DIR, "MMK_18_1.png"), show=True)

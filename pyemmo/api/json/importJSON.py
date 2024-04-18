@@ -1,3 +1,22 @@
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 """
 This module is about import functions for model information (geometry and simulation information)
 from json files
@@ -9,10 +28,10 @@ from typing import Dict, List, Tuple, Union, Literal, Any
 from numpy import pi, zeros
 from numpy.linalg import norm
 
-from ..functions.cleanName import cleanName
-from ..script.material.material import Material
-from ..script.material.electricalSteel import ElectricalSteel
-from . import air
+from ...functions.cleanName import cleanName
+from ...script.material.material import Material
+from ...script.material.electricalSteel import ElectricalSteel
+from .. import air
 
 # ================================ START EXTENDED INFO FUNCTIONS ===================================
 
@@ -39,15 +58,15 @@ def importExtInfo(extInfoPath: str) -> dict:
 
 def getMagDir(extendedInfo: dict) -> str:
     """Retrun the magnetization direction (parallel, radial, ...) from the extendedInfo dict"""
-    magDirKey = "magDirection"
+    magDirKey = "magType"
     if magDirKey in extendedInfo.keys():
         if isinstance(extendedInfo[magDirKey], str):
             return extendedInfo[magDirKey]
         raise ValueError(
-            f"Magnetization direction (magDirection) is not type str: {extendedInfo[magDirKey]}"
+            f"Magnetization direction (magType) is not type str: {extendedInfo[magDirKey]}"
         )
     raise KeyError(
-        "Magnetization direction (magDirection) is missing from extended info dict!"
+        "Magnetization direction (magType) is missing from extended info dict!"
     )
 
 
@@ -117,9 +136,9 @@ def getNbrOfTurns(extendedInfo: dict) -> float:
     """
     ntpsKey = "Ntps"
     if ntpsKey in extendedInfo.keys():
-        if isinstance(extendedInfo[ntpsKey], numbers.Number) and not isinstance(
-            extendedInfo[ntpsKey], bool
-        ):
+        if isinstance(
+            extendedInfo[ntpsKey], numbers.Number
+        ) and not isinstance(extendedInfo[ntpsKey], bool):
             return float(extendedInfo[ntpsKey])
         msg = (
             "Number of turns per slot side variable (Ntps)"
@@ -169,10 +188,12 @@ def getSymFactor(extendedInfo: dict) -> int:
     """getSymFactor returns the symmetry factor from the extended info dict"""
     symFactorKey = "symFactor"
     if symFactorKey in extendedInfo.keys():
-        if float(extendedInfo[symFactorKey]).is_integer():
-            return int(extendedInfo[symFactorKey])
+        symFactor = extendedInfo[symFactorKey]
+        if float(symFactor).is_integer() and symFactor > 0:
+            # symmetry is positiv integer
+            return int(symFactor)
         raise ValueError(
-            f"Symmetry factor ('{symFactorKey}') is not type int: {extendedInfo[symFactorKey]}"
+            f"Symmetry factor ('{symFactorKey}') is not type int: {symFactor}"
         )
     raise KeyError(
         f"Symmetry factor ('{symFactorKey}') missing from extended info dict!"
@@ -202,12 +223,16 @@ def getNbrSlots(extendedInfo: dict) -> int:
         nbrSlots = extendedInfo[nppKey]
         if float(nbrSlots).is_integer():
             return int(nbrSlots)
-        raise ValueError(f"number of slots ('{nppKey}') is not type int: {nbrSlots}")
-    raise KeyError(f"number of slots ('{nppKey}') missing from extended info dict!")
+        raise ValueError(
+            f"number of slots ('{nppKey}') is not type int: {nbrSlots}"
+        )
+    raise KeyError(
+        f"number of slots ('{nppKey}') missing from extended info dict!"
+    )
 
 
 def getElecFreq(extendedInfo: dict) -> float:
-    """calcElecFreq calculates the electrical frequency in Hz from the extended info dict by
+    r"""calcElecFreq calculates the electrical frequency in Hz from the extended info dict by
     :math:`f_\mathrm{el} = f_\mathrm{mech} \cdot pp`, where :math:`pp` is the number of pole
     pairs"""
     return getRotFreq(extendedInfo, "Hz") * getNbrPolePairs(extendedInfo)
@@ -243,7 +268,7 @@ def getMagTemperature(extendedInfo: dict) -> Union[float, None]:
     return None
 
 
-def getSimuParams(extendedInfo: dict) -> Dict[str, float]:
+def getSimuParams(extendedInfo: dict) -> Dict[str, Dict[str, float]]:
     """
     Return the simulation parameter dictionary needed for script class. See class :class:`Script
     <pyemmo.script.script.Script>` for details about the simulation dict.
@@ -261,6 +286,7 @@ def getSimuParams(extendedInfo: dict) -> Dict[str, float]:
             "SPEED_RPM": getRotFreq(extendedInfo, "rpm"),
             "ParkAngOffset": extendedInfo["parkAngleOffset"],
             "ANALYSIS_TYPE": extendedInfo["analysisType"],
+            "NBR_PARALLEL_PATHS": extendedInfo["NpP"],
         },
         "MAT": {
             "TEMP_MAG": getMagTemperature(extendedInfo),
@@ -286,7 +312,9 @@ def getModelName(extendedInfo: dict) -> str:
     if mNKey in extendedInfo.keys():
         correctScriptName = cleanName(extendedInfo[mNKey])
         return correctScriptName
-    raise KeyError(f"Name of model files ('{mNKey}') missing from extended info dict!")
+    raise KeyError(
+        f"Name of model files ('{mNKey}') missing from extended info dict!"
+    )
 
 
 def getFlagOpenGui(extendedInfo: dict) -> bool:
@@ -304,7 +332,9 @@ def getFlagOpenGui(extendedInfo: dict) -> bool:
     fogKey = "flag_openGUI"
     if fogKey in extendedInfo.keys():
         return extendedInfo[fogKey]
-    raise KeyError(f"Name of model files ('{fogKey}') missing from extended info dict!")
+    raise KeyError(
+        f"Name of model files ('{fogKey}') missing from extended info dict!"
+    )
 
 
 def getMovingbandRadius(extendedInfo: dict) -> float:
@@ -350,6 +380,31 @@ def getFlagCalcIronLoss(extendedInfo: dict) -> bool:
         )
         raise TypeError(msg)
     msg = f"Iron loss calculation flag ('{mbKey}') missing from extended info dict!"
+    raise KeyError(msg)
+
+
+def getMagAngle(extendedInfo: dict) -> dict:
+    """Returns the magnetization angle dictionary.\n
+    This dictionary defines the *magnetization vector angle in rad* with the
+    magnet surface IdExt as key. Identifier is 'magAngle'.
+    The magAngle dict looks like:
+
+        {\n
+            "Mag1": 0.192,\n
+            "Mag2": 0.344,\n
+            ...\n
+        }\n
+    """
+    mbKey = "magAngle"
+    if mbKey in extendedInfo.keys():
+        if isinstance(extendedInfo[mbKey], dict):
+            return extendedInfo[mbKey]
+        msg = (
+            "The parameter 'magAngle' was not a dict!"
+            f"But type {type(extendedInfo[mbKey])}"
+        )
+        raise TypeError(msg)
+    msg = f"Magnetization angle flag ('{mbKey}') missing from extended info dict!"
     raise KeyError(msg)
 
 
@@ -418,7 +473,9 @@ def createMaterial(matDict: Dict[str, Dict[Literal["wert"], Any]]) -> Material:
                 )
                 raise AttributeError(msg)
     else:
-        raise ValueError(f"Material '{name}' missing 'elektromagnetik' section!")
+        raise ValueError(
+            f"Material '{name}' missing 'elektromagnetik' section!"
+        )
 
     if "dichte" in matDict.keys():
         density = matDict["dichte"]["wert"]
@@ -429,7 +486,13 @@ def createMaterial(matDict: Dict[str, Dict[Literal["wert"], Any]]) -> Material:
         sheetThickness = matDict["d"]["wert"]
         assert sheetThickness < 1
         mat = createSteelMaterial(
-            matDict, name, conductivity, permeability, bhCurve, density, sheetThickness
+            matDict,
+            name,
+            conductivity,
+            permeability,
+            bhCurve,
+            density,
+            sheetThickness,
         )
     except (KeyError, AssertionError, TypeError):
         mat = Material(
@@ -447,7 +510,13 @@ def createMaterial(matDict: Dict[str, Dict[Literal["wert"], Any]]) -> Material:
 
 
 def createSteelMaterial(
-    materialDict, name, conductivity, permeability, bhCurve, density, sheetThickness
+    materialDict,
+    name,
+    conductivity,
+    permeability,
+    bhCurve,
+    density,
+    sheetThickness,
 ) -> ElectricalSteel:
     emDict: dict = materialDict["elektromagnetik"]
     try:
@@ -500,7 +569,9 @@ def isAir(materialName: str):
         if not materialName:  # if materialName is empty
             return True
         raise TypeError("Imported material name is unempty list, not string!")
-    raise TypeError("Imported material name has type" + str(type(materialName)))
+    raise TypeError(
+        "Imported material name has type" + str(type(materialName))
+    )
 
 
 # ======================================= END MATERIAL FUNCTIONS ===================================

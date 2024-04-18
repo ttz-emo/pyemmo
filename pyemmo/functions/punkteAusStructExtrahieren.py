@@ -1,3 +1,22 @@
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 """
 1. Nach dem Namen der Fläche suchen -> Hier PRODUCT('Surface_Rotorblech'
 2. Blockende suchen mit dem Identifier -> PRODUCT_RELATED_PRODUCT_CATEGORY
@@ -15,9 +34,9 @@ def loadFromStep(self, stepFile, unit, meshLength):
         allDict = self.extractNeededInfo(allObject)
         allElement = self.extractPointandLine(allDict)
         self._createGeometry(allElement, unit, meshLength)
-        
+
     def _trimStep(self, file):
-        
+
         startId = "PRODUCT('Surface_Rotorblech'"
         endId = "PRODUCT_RELATED_PRODUCT_CATEGORY"
         for i1 in range(len(file)):
@@ -27,7 +46,7 @@ def loadFromStep(self, stepFile, unit, meshLength):
             else:
                 file = file[i1:len(file)]
                 break
-        
+
         for i2 in range(len(file)):
             idFind2 = file[i2].find(endId)
             if idFind2 == -1:
@@ -35,24 +54,24 @@ def loadFromStep(self, stepFile, unit, meshLength):
             else:
                 file = file[0:i2]
                 break
-                
+
         return file
-    
+
     def _splitObjects(self, file):
         objectLib = []
         startId = "EDGE_CURVE"
         endId = "ORIENTED_EDGE"
         condFindObject = True
-        
+
         allObject = []
-        
+
         while condFindObject:
             for i1 in range(len(file)):
                 idFind1 = file[i1].find(startId)
                 if idFind1 != -1:
                     file = file[i1:len(file)]
                     break
-                    
+
             for i2 in range(len(file)):
                 idFind2 = file[i2].find(endId)
                 if idFind2 != -1 and i2 != len(file):
@@ -64,7 +83,7 @@ def loadFromStep(self, stepFile, unit, meshLength):
                 elif i2 == len(file)-1:
                     objectLib.append(file)
                     condFindObject = False
-        
+
         for ob in objectLib:
             obDict = {}
             for i in range(len(ob)):
@@ -79,14 +98,14 @@ def loadFromStep(self, stepFile, unit, meshLength):
                     allObject.append(obDict)
                     break
         return allObject
-        
+
     def extractNeededInfo(self, allObject):
         #Zeilen mit EDGE_CURVE (Wie sind die Kurven verbunden? -> #..., #... -> Nur ersten 2 Werte nötig!)
         #Zeilen mit 'AXIS2_PLACEMENT_3D-> Danach kommt 'CARTESIAN_POINT' -> Mittelpunkt bei einem Kreis
         #Zeilen mit 'VERTEX_POINT' -> Alle Punkte des Körpers
         newraw = []
         pointsArray = []
-        
+
         for i in range(len(allObject)):
             objDict = {}
             objDict["description"] = allObject[i]['rawInfo'][0][allObject[i]['rawInfo'][0].find("EDGE_CURVE"):len(allObject[i]['rawInfo'][0])]
@@ -97,7 +116,7 @@ def loadFromStep(self, stepFile, unit, meshLength):
                         objDict["centrePoint"] = allObject[i]['rawInfo'][i2+1]
                         break
             newraw.append(objDict)
-        
+
         for i3 in range(len(allObject)):
             infoRaw = allObject[i3]["rawInfo"].copy()
             for i4 in range(len(infoRaw)):
@@ -106,7 +125,7 @@ def loadFromStep(self, stepFile, unit, meshLength):
 
         objectDict = {'Objects':newraw, 'AllPoints':pointsArray}
         return objectDict
-    
+
     def extractPointandLine(self, objectDict):
         #Point= {x,y,z,id}
         #Line={id,id}
@@ -122,7 +141,7 @@ def loadFromStep(self, stepFile, unit, meshLength):
             z = float(coordText[coordText.find(",")+1:len(coordText)])
             pointDict = {'id':idP, 'x':x, 'y':y, 'z':z}
             allP.append(pointDict)
-        
+
         for l in (objectDict["Objects"]):
             if l["id"] == "Circle":
                 idP = int(l["centrePoint"][1:l["centrePoint"].find(" =")])
@@ -133,7 +152,7 @@ def loadFromStep(self, stepFile, unit, meshLength):
                 z = float(coordText[coordText.find(",")+1:len(coordText)])
                 pointDict = {'id':idP, 'x':x, 'y':y, 'z':z}
                 allP.append(pointDict)
-        
+
         for ob in (objectDict["Objects"]):
             Text = ob["description"]
             Text = Text[Text.find(",")+1:len(Text)]
@@ -147,12 +166,12 @@ def loadFromStep(self, stepFile, unit, meshLength):
             allL.append(lineDict)
         allElement = {'Points' : allP, 'Curves' : allL}
         return allElement
-    
+
     def _createGeometry(self, allDict, unit, meshLength):
         allP = []
         allL = []
         allCurve = []
-        
+
         for p in allDict["Points"]:
             pointDict = {}
             pointDict["id"] = p["id"]
@@ -160,7 +179,7 @@ def loadFromStep(self, stepFile, unit, meshLength):
             p1.name = ('p_' + str(p1.id))
             pointDict["Point"] = p1
             allP.append(pointDict)
-        
+
         for l in allDict["Curves"]:
             lineDict = {}
             for i in range(len(allP)):
@@ -177,7 +196,7 @@ def loadFromStep(self, stepFile, unit, meshLength):
                         lineDict['c'] = allP[i3]["Point"]
                         break
             allL.append(lineDict)
-        
+
         for curve in allL:
             if len(curve.keys()) == 3:
                 line1 = CircleArc('c', curve['p1'], curve['c'], curve['p2'])
@@ -186,7 +205,7 @@ def loadFromStep(self, stepFile, unit, meshLength):
                 line1 = Line('l', curve['p1'], curve['p2'])
                 line1.name = ('line_'+ str(line1.id))
             allCurve.append(line1)
-        
+
         surface_Blech = Surface('Surface_Blech', allCurve)
         self._elements = [surface_Blech]
 """

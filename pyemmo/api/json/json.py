@@ -1,24 +1,42 @@
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 """This is the main module of the json api to create a machine model in Onelab."""
+
 # import debugpy
 # debugpy.debug_this_thread()
 import os
 import subprocess
-import argparse
 from os import mkdir
 from os.path import isdir, isfile, join
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 import logging
 import json
 import datetime
-from . import logger, ch
-from .. import logFmt
-from ..definitions import RESULT_DIR
-from ..functions import runOnelab, calcIronLoss, importResults
-from ..script.geometry.machineAllType import MachineAllType
-from ..script.geometry.rotor import Rotor
-from ..script.geometry.stator import Stator
-from ..script.script import Script
-from ..script.material import ElectricalSteel
+from ... import logFmt
+from ...functions import runOnelab, calcIronLoss, import_results
+from ...script.geometry.machineAllType import MachineAllType
+from ...script.geometry.rotor import Rotor
+from ...script.geometry.stator import Stator
+from ...script.script import Script
+from ...script.material import ElectricalSteel
+from .. import logger
 from . import boundaryJSON, importJSON, modelJSON, apiNameDict
 from .SurfaceJSON import SurfaceAPI
 
@@ -57,6 +75,8 @@ def createMachine(
     maschineSurfDict = modelJSON.createMachineGeometryFromSegment(
         segmentSurfDict, symFactor
     )
+    # Log winding layout for debugging *before* createSlot() is called.
+    logger.debug(f"Winding layout: {importJSON.getWindingList(extendedInfo)}")
     # create physical elements from the surfaces
     for idExt, surfList in maschineSurfDict.items():
         surfName = surfList[0].name
@@ -77,7 +97,7 @@ def createMachine(
             elif machineSide == "Rotor":
                 rotorPhysicals.extend(physSurfList)
             else:
-                ValueError(
+                raise ValueError(
                     f"MachineSide was whether rotor or stator: {machineSide}",
                 )
 
@@ -89,15 +109,14 @@ def createMachine(
         axLen=axLen["rotor"],
     )
     # create the stator
-    nbrSlotTotal = segmentSurfDict["StNut"].NbrSegments
     # create winding
-    windingSwat = modelJSON.createWinding(extendedInfo)
+    windingSWAT = modelJSON.createWinding(extendedInfo)
     statorAPI = Stator(
         name="stator created via json api",
-        nbrSlots=nbrSlotTotal,
+        nbrSlots=windingSWAT.get_num_slots(),
         physicalElements=statorPhysicals,
         axLen=axLen["stator"],
-        winding=windingSwat,
+        winding=windingSWAT,
     )
 
     # create the machine object
@@ -222,7 +241,9 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
     }.items():
         for quantity in ["b_radial", "b_tangent"]:
             sign = "-" if side == "rotor" else "+"
-            resFilePath = join("CAT_RESDIR", quantity + "_airgap_" + side + ".pos")
+            resFilePath = join(
+                "CAT_RESDIR", quantity + "_airgap_" + side + ".pos"
+            )
             # resFilePath = abspath(
             #     join(script.getResultsPath(), quantity + "_airgap_" + side + ".pos")
             # )
@@ -321,35 +342,40 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
 
 
 def main(
-    geo: str,
-    extInfo: str,
-    model: str,
-    gmsh: str = "",
-    getdp: str = "",
-    results: str = "",
+    geo: Union[str, dict],
+    extInfo: Union[str, dict],
+    model: Union[str, os.PathLike],
+    gmsh: Union[str, os.PathLike] = "",
+    getdp: Union[str, os.PathLike] = "",
+    results: Union[str, os.PathLike] = "",
 ):
-    """The main function reads the JSON files and creates the .geo and .pro scripts for a onelab
-    simulation.
+    """The main function reads the JSON files (if given) and creates the .geo
+    and .pro scripts for a onelab simulation.
 
     Program sequence:
-        1. Check that both json files are given and gmsh is installed. Import the geo segments and
-           the additional machine information.
-        2. Create a pyemmo Machine-object by rotating and duplicating the given surface segments
-           with :func:`createMachine() <pyemmo.api.json.createMachine>`
-        3. Create a pyemmo Script-object with the Machine and the simulation parameters.
-        4. Add additional code for the API specific B-field PostOperation (on line evaluation) and
-           the surface mesh size setting via the GUI.
-        5. Create the .geo and .pro script files by calling :meth:`Script.generateScript()
-           <pyemmo.script.script.Script.generateScript>`
-        6. Create command line call for gmsh/getdp with :func:`createCmdCommand()
-           <pyemmo.functions.runOnelab.createCmdCommand>` and start with :code:`subprocess.run`
+        1. Check that both json files are given and gmsh is installed. Import
+            the geo segments and the additional machine information.
+        2. Create a pyemmo Machine-object by rotating and duplicating the given
+            surface segments with
+            :func:`createMachine() <pyemmo.api.json.createMachine>`
+        3. Create a pyemmo Script-object with the Machine and the simulation
+            parameters.
+        4. Add additional code for the API specific B-field PostOperation (on
+            line evaluation) and the surface mesh size setting via the GUI.
+        5. Create the .geo and .pro script files by calling
+            :meth:`Script.generateScript() <pyemmo.script.script.Script.generateScript>`
+        6. Create command line call for gmsh/getdp with
+            :func:`createCmdCommand() <pyemmo.functions.runOnelab.createCmdCommand>`
+            and start with :code:`subprocess.run`
 
-    TODO: Update docstring - main also accepts list of surface dicts instead of filename
 
     Args:
-        geo (str): File path to JSON formatted geometry file.
-        extInfo (str): File path to JSON formatted extended information file.
-        model (str): Folder path where the resulting model files should be placed.
+        geo (str or dict): File path to JSON formatted geometry file OR segment
+            surface dict with IdExt as keys and SurfaceAPI objects as values.
+        extInfo (str or dict): File path to JSON formatted extended information
+            file or directly given info dict.
+        model (str): Folder path where the resulting model files should be
+            placed.
         gmsh (str, optional): Gmsh executable path. If nothing is provieded the
             executable will be searched.
         getdp (str, optional): GetDP executable path. Defaults to "".
@@ -361,7 +387,9 @@ def main(
         mkdir(model)
     # Set logging path to model dir
     jsonLogFileHandler = logging.FileHandler(
-        filename=os.path.join(model, "pyemmo_jsonAPI.log"), mode="w", encoding="utf-8"
+        filename=os.path.join(model, "pyemmo_jsonAPI.log"),
+        mode="w",
+        encoding="utf-8",
     )
     jsonLogFileHandler.setLevel(logger.getEffectiveLevel())
     jsonLogFileHandler.setFormatter(logFmt)
@@ -379,31 +407,43 @@ def main(
     else:
         # if gmsh was given by the user, check that its valid
         if not isfile(gmsh):
-            raise FileNotFoundError(f"Provided gmsh executable was not found: {gmsh}")
+            raise FileNotFoundError(
+                f"Provided gmsh executable was not found: {gmsh}"
+            )
 
     # get geometry
-    if isfile(geo):
-        # import the segment surface list from the json file
-        try:
-            with open(geo, encoding="utf-8") as jsonFile:
-                machineGeoList = json.load(jsonFile)
-        except FileNotFoundError as fnfe:
-            raise fnfe
-        except Exception as exept:
-            raise exept
-    elif isinstance(geo, list):
-        machineGeoList = geo
+    if isinstance(geo, str):
+        if isfile(geo):
+            # import the segment surface list from the json file
+            try:
+                with open(geo, encoding="utf-8") as jsonFile:
+                    machineGeoList = json.load(jsonFile)
+                    # create dict with surface api (segment) objects from the surface list
+                    segmentSurfDict = modelJSON.importMachineGeometry(
+                        machineGeoList
+                    )
+            except FileNotFoundError as fnfe:
+                raise fnfe
+            except Exception as exept:
+                raise exept
+        else:
+            raise (FileNotFoundError(f"Given file path {geo} was not a file."))
+    elif isinstance(geo, dict):
+        segmentSurfDict = geo
     else:
         raise TypeError(
             f"Geometry file has to be type 'File' or 'dict', not {type(geo)}"
         )
-    # create dict with surface api (segment) objects from the surface list
-    segmentSurfDict = modelJSON.importMachineGeometry(machineGeoList)
 
     # addition information
-    if isfile(extInfo):
-        # import the extended information
-        extendedInfo = importJSON.importExtInfo(extInfo)
+    if isinstance(extInfo, str):
+        if isfile(extInfo):
+            # import the extended information
+            extendedInfo = importJSON.importExtInfo(extInfo)
+        else:
+            raise (
+                FileNotFoundError(f"Given file path {extInfo} was not a file.")
+            )
     elif isinstance(extInfo, dict):
         extendedInfo = extInfo
     else:
@@ -413,6 +453,12 @@ def main(
 
     # generate the machine geometry
     machine, machineSurfDict = createMachine(segmentSurfDict, extendedInfo)
+
+    # set function mesh
+    if "useFunctionMesh" in extendedInfo.keys():
+        if extendedInfo["useFunctionMesh"]:
+            machine.setFunctionMesh("linear", meshGainFactor=20)
+
     # get the simulation pareameters
     simulationParameters = importJSON.getSimuParams(extendedInfo=extendedInfo)
     logger.info("Generating the Script object in JSON API.")
@@ -472,7 +518,8 @@ def main(
     if (
         importJSON.getFlagCalcIronLoss(extendedInfo)
         and isdir(resPath)
-        and simulationParameters["SYM"]["ANALYSIS_TYPE"] == 1  # transient simulation
+        and simulationParameters["SYM"]["ANALYSIS_TYPE"]
+        == 1  # transient simulation
     ):
         # FIXME: Implement better check for simulation status
         brFilePath = join(resPath, "b_rotor.pos")
@@ -497,47 +544,47 @@ def main(
             and isinstance(rotorMat, ElectricalSteel)
             and isinstance(statorMat, ElectricalSteel)
         ):
-            #FIXME: Material properties should be given valid
-            lossParams = rotorMat.lossParams 
+            # FIXME: Material properties should be given valid
+            lossParams = rotorMat.lossParams
             calcIronLoss.adaptIronLossParams(lossParams, rotorMat)
             ironLossR, _ = calcIronLoss.main(
                 brFilePath,
-                lossFactor={
+                loss_factor={
                     "hyst": lossParams[0],
                     "eddy": lossParams[1],
                     "exc": lossParams[2],
                 },
-                symFactor=importJSON.getSymFactor(extendedInfo),
-                axialLength=importJSON.getAxialLength(extendedInfo)["rotor"],
+                sym_factor=importJSON.getSymFactor(extendedInfo),
+                axial_length=importJSON.getAxialLength(extendedInfo)["rotor"],
             )
             lossParams = statorMat.lossParams
             calcIronLoss.adaptIronLossParams(lossParams, statorMat)
             ironLossS, time = calcIronLoss.main(
                 bsFilePath,
-                lossFactor={
+                loss_factor={
                     "hyst": lossParams[0],
                     "eddy": lossParams[1],
                     "exc": lossParams[2],
                 },
-                symFactor=importJSON.getSymFactor(extendedInfo),
-                axialLength=importJSON.getAxialLength(extendedInfo)["stator"],
+                sym_factor=importJSON.getSymFactor(extendedInfo),
+                axial_length=importJSON.getAxialLength(extendedInfo)["stator"],
             )
-            calcIronLoss.writeSimple(
+            calcIronLoss.write_simple(
                 join(resPath, "Pv_hyst_R.dat"), time, ironLossR["hyst"]
             )
-            calcIronLoss.writeSimple(
+            calcIronLoss.write_simple(
                 join(resPath, "Pv_hyst_S.dat"), time, ironLossS["hyst"]
             )
-            calcIronLoss.writeSimple(
+            calcIronLoss.write_simple(
                 join(resPath, "Pv_eddy_R.dat"), time, ironLossR["eddy"]
             )
-            calcIronLoss.writeSimple(
+            calcIronLoss.write_simple(
                 join(resPath, "Pv_eddy_S.dat"), time, ironLossS["eddy"]
             )
-            calcIronLoss.writeSimple(
+            calcIronLoss.write_simple(
                 join(resPath, "Pv_exc_R.dat"), time, ironLossR["exc"]
             )
-            calcIronLoss.writeSimple(
+            calcIronLoss.write_simple(
                 join(resPath, "Pv_exc_S.dat"), time, ironLossS["exc"]
             )
         else:
@@ -547,7 +594,8 @@ def main(
             )
     if (
         importJSON.getFlagCalcIronLoss(extendedInfo)
-        and simulationParameters["SYM"]["ANALYSIS_TYPE"] == 0  # static simulation
+        and simulationParameters["SYM"]["ANALYSIS_TYPE"]
+        == 0  # static simulation
     ):
         # FIXME: Improve check because simulation type can be changed in gmsh GUI
         logger.warning(
@@ -561,11 +609,13 @@ def main(
         resPath = apiScript.resultsPath
         if isdir(resPath):
             # if the folder for results exists
-            importResults.plt.set_loglevel(level="info") # avoid matplotlib debug infos
+            import_results.plt.set_loglevel(
+                level="info"
+            )  # avoid matplotlib debug infos
             for file in os.listdir(resPath):
                 filename, fileExt = os.path.splitext(file)
                 if fileExt == ".dat":
-                    importResults.plotTimeTableDat(
+                    import_results.plot_timetable_dat(
                         os.path.abspath(join(resPath, file)),
                         filename,
                         title=filename,
@@ -573,76 +623,3 @@ def main(
                         showfig=False,
                         savePath=None,
                     )
-
-
-if __name__ == "__main__":
-    # 1. Check that all argvs are valid!
-    parser = argparse.ArgumentParser(
-        description="Process Motor-JSON files to generate a Onelab Simulation."
-    )
-    parser.add_argument(
-        "geo",
-        help="path to the JSON geometry file ('geometry.json')",
-        type=str,
-    )
-    parser.add_argument(
-        "extInfo",
-        help="path to the extended info JSON file ('extendedInfo.json')",
-        type=str,
-    )
-    parser.add_argument(
-        "--gmsh",
-        help="path to the Gmsh executable",
-        type=str,
-        default="",
-    )
-    parser.add_argument(
-        "--getdp", help="path to the GetDP executable", type=str, default=""
-    )
-    parser.add_argument(
-        "--mod",
-        help="path where the model files should be stored",
-        type=str,
-        default=RESULT_DIR,
-    )
-    parser.add_argument(
-        "--res",
-        help="path where the simulation results should be stored",
-        type=str,
-        default="",
-    )
-
-    parser.add_argument(
-        "--log",
-        help="logging level for execution. Options are: error, warning, info, debug. default is warning",
-        type=str,
-        default="WARNING",
-    )
-
-    parser.add_argument(
-        "-v",
-        help="set execution to verbose. Verbosity level equals logging level.",
-        action=argparse.BooleanOptionalAction,
-    )
-
-    args = parser.parse_args()
-
-    # remove commandline handler if verbose
-    if args.v:
-        logger.removeHandler(ch)
-
-    # set log level
-    loglevel = args.log
-    logLevelNum = getattr(logging, loglevel.upper(), None)
-    if not isinstance(logLevelNum, int):
-        raise ValueError(f"Invalid log level: {loglevel}")
-    logger.setLevel(logLevelNum)
-
-    main(
-        geo=args.geo,
-        extInfo=args.extInfo,
-        gmsh=args.gmsh,
-        getdp=args.getdp,
-        model=args.mod,
-        results=args.res,
-    )

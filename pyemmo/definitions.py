@@ -1,4 +1,22 @@
-# -*- coding: utf-8 -*-
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 import sys
 from os import mkdir
 from os.path import abspath, dirname, join, normpath, realpath, isdir
@@ -28,7 +46,7 @@ r"""Path: RESULT_DIR is "pyemmo" default result directory to store model files a
 For Windows this is something like: 'C:\\Users\\Username\\AppData\\Roaming\\pyemmo\\Results' """
 if not isdir(RESULT_DIR):
     mkdir(RESULT_DIR)
-TEST_DIR = join(MAIN_DIR, "tests").replace("\\", "/")
+TEST_DIR = join(ROOT_DIR, "tests").replace("\\", "/")
 
 CONF_PATH = join(USER_DIR, "main_config_dict.json").replace("\\", "/")
 
@@ -42,4 +60,6 @@ config_dict = get_config_dict()
 
 # default absolute geometric tolerance to check wheter points or distances are equal.
 DEFAULT_GEO_TOL = 1e-7  # in [m]
-logging.debug("Default geometric tolerance is set to %f meter.",DEFAULT_GEO_TOL)
+logging.debug(
+    "Default geometric tolerance is set to %e meter.", DEFAULT_GEO_TOL
+)

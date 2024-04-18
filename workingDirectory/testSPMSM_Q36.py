@@ -1,3 +1,22 @@
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 """Test module for spmsm toolkit machine model"""
 # %%
 import os
@@ -159,7 +178,9 @@ winding = datamodel()
 winding.genwdg(Q=NBR_SLOTS, P=NBR_POLES, m=3, layers=2, turns=23)
 SLOT_TYPE = 0
 if SLOT_TYPE == 0:
-    stator = SPMSM.addStatorToMachine("sheet01_standard", "slotForm_01", winding)
+    stator = SPMSM.addStatorToMachine(
+        "sheet01_standard", "slotForm_01", winding
+    )
     stator.addLaminationParameter(
         {
             "r_S_i": 65e-3,
@@ -266,3 +287,27 @@ print("I am done!")
 
 
 # %%
+from pyemmo.functions.import_results import (
+    get_result_files,
+    read_timetable_dat,
+)
+from SciDataTool import DataTime, Data1D
+
+resPath = "C:/Users/ganser/AppData/Local/Programs/pyemmo/Results/Baukasten/Test_SPMSM/res_Test_SPMSM_Baukasten"
+
+resultsList: list[DataTime] = []
+try:
+    datFiles, posFiles = get_result_files(resPath)
+    for datFile in datFiles:
+        time, data = read_timetable_dat(os.path.join(resPath, datFile))
+        _, datFileName = os.path.split(datFile)
+        resQuantity, _ = os.path.splitext(datFileName)
+        timeData = Data1D(
+            values=time, symmetries=-1, name="time", symbol="t", unit="s"
+        )
+        valData = DataTime(axes=[timeData], values=data, name=resQuantity)
+        resultsList.append(valData)
+except FileNotFoundError:
+    print("No results from GetDP...")
+except Exception as exce:
+    raise exce

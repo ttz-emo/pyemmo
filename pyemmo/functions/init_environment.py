@@ -1,3 +1,22 @@
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 import shutil
 from json import dump, load
 from os.path import isdir, isfile, join
@@ -24,7 +43,13 @@ def save_config_dict(config_dict):
     )
     CONF_PATH = module.CONF_PATH
     with open(CONF_PATH, "w") as config_file:
-        dump(config_dict, config_file, sort_keys=True, indent=4, separators=(",", ": "))
+        dump(
+            config_dict,
+            config_file,
+            sort_keys=True,
+            indent=4,
+            separators=(",", ": "),
+        )
 
 
 def init_user_dir():
@@ -121,7 +146,12 @@ def get_config_dict():
         "pyemmo.definitions",
         globals=globals(),
         locals=locals(),
-        fromlist=["USER_DIR", "CONF_PATH", "DEFAULT_FONT", "DEFAULT_COLOR_MAP"],
+        fromlist=[
+            "USER_DIR",
+            "CONF_PATH",
+            "DEFAULT_FONT",
+            "DEFAULT_COLOR_MAP",
+        ],
         level=0,
     )
     USER_DIR = module.USER_DIR
@@ -136,7 +166,7 @@ def get_config_dict():
 
     # Overwrite default config_dict with USER_DIR values
     config_dict = default_config_dict.copy()
-    with open(CONF_PATH, "r") as config_file:
+    with open(CONF_PATH) as config_file:
         update_dict(source=config_dict, update=load(config_file))
 
     # Update Library if new version

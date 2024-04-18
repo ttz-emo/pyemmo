@@ -1,12 +1,33 @@
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 import pyemmo as emmo
 from typing import Union, TYPE_CHECKING
-from pyemmo.script.geometry.stepToArea import getSurfaceFromStep, getCurveFromStep
+from pyemmo.script.geometry.stepToArea import (
+    getSurfaceFromStep,
+    getCurveFromStep,
+)
 from os.path import join
 
 if TYPE_CHECKING:
     from pyemmo.script.geometry.surface import Surface
     from pyemmo.script.geometry.line import Line
-
 
 
 # Verknüpft Ordnerpfad von Stepdatei mit dem Dateienamen und ergänzt diese mit der Endung .step
@@ -449,7 +470,9 @@ def getAdaptedPath(pathStepDir):
     return pathList
 
 
-def changeToEmmoObjects(objStepPath, unit=1)->dict[str, list[Union[Surface, Line]]]:
+def changeToEmmoObjects(
+    objStepPath, unit=1
+) -> dict[str, list[Union[Surface, Line]]]:
     mesh_big = 2e-3 * unit
     mesh_middle = 5e-4 * unit
     mesh_small = 2e-4 * unit
@@ -542,7 +565,9 @@ def changeToEmmoObjects(objStepPath, unit=1)->dict[str, list[Union[Surface, Line
         elif "MBRotor" in p[0]:
             l = getCurveFromStep(p[1], mesh_big, unit)
             curve_rotorMB1 = l
-            MB2 = emmo.CircleArc("", l[0].getP2(), l[0].getC(), l[0].getP1(), True)
+            MB2 = emmo.CircleArc(
+                "", l[0].getP2(), l[0].getC(), l[0].getP1(), True
+            )
             MB2.setName("Curve_" + str(MB2.getID()))
             curve_rotorMB2.append(MB2)
         elif "Contour" in p[0]:

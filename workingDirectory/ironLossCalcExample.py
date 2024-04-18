@@ -1,3 +1,23 @@
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+
 # %% imports
 import gmsh
 import sys, os
@@ -8,7 +28,7 @@ import tkinter as tk
 from tkinter import filedialog
 
 from pyemmo.definitions import ROOT_DIR
-from pyemmo.functions.calcIronLoss import writeSimple
+from pyemmo.functions.calcIronLoss import write_simple
 
 viewPos = [2, 3, 4, 5]
 
@@ -47,7 +67,9 @@ def intAndPlot(viewTag, symFactor, axLen, time, filePath, plotName: str):
     gmsh.view.option.setNumber(intViewTag, "CustomMin", 0)
     gmsh.view.option.setNumber(intViewTag, "CustomMax", np.max(intData) * 1.2)
     # 0: none, 1: simple axes, 2: box, 3: full grid, 4: open grid, 5: ruler
-    gmsh.view.option.setNumber(intViewTag, "Axes", viewPos[viewTag % 4])  # FIXME
+    gmsh.view.option.setNumber(
+        intViewTag, "Axes", viewPos[viewTag % 4]
+    )  # FIXME
 
     # 0: manual, 1: automatic, 2: top left, 3: top right, 4: bottom left, 5: bottom right,
     # 6: top, 7: bottom, 8: left, 9: right, 10: full, 11: top third, 12: in model coordinatess
@@ -55,7 +77,9 @@ def intAndPlot(viewTag, symFactor, axLen, time, filePath, plotName: str):
 
     # save integral data as .dat file
     # gmsh.view.write(P_hystView, pFilePath)
-    writeSimple(filePath, time, intData[3:])  # skip point coordinates in export
+    write_simple(
+        filePath, time, intData[3:]
+    )  # skip point coordinates in export
     # had to write new function here because gmsh newer version .dat format does not match
     # the old getdp format for import with matlab
     return intViewTag, intData
@@ -118,7 +142,7 @@ def printModelData(
     for step in range(len(time) - 1):
         gmsh.view.addModelData(
             tag=newView,
-            step=step+1,
+            step=step + 1,
             modelName=model,
             dataType="ElementData",
             tags=tags,
@@ -131,7 +155,11 @@ def printModelData(
 
 
 def ironLossInteractive(
-    bFilePath: os.PathLike, axLen: float, lossParams: tuple, symFactor: int, elemId: int
+    bFilePath: os.PathLike,
+    axLen: float,
+    lossParams: tuple,
+    symFactor: int,
+    elemId: int,
 ):
     """_summary_
 
@@ -187,7 +215,9 @@ def ironLossInteractive(
     time = []  # init time array
 
     # get values of first time for init
-    dType, btags, gdata, gtime, numComp = gmsh.view.getModelData(tag=actTag, step=0)
+    dType, btags, gdata, gtime, numComp = gmsh.view.getModelData(
+        tag=actTag, step=0
+    )
     # dType, gtags, gdata, gtime, numComp = gmsh.view.getHomogeneousModelData(1, 0) # does
     # the same thing, but data is 1x3*N instead of 3xN (with N = number of triangles)
     nbrElements = len(btags)
@@ -203,7 +233,9 @@ def ironLossInteractive(
 
     # get data for each time step
     for step in range(1, NBR_STEPS):
-        dType, ctags, cdata, ctime, numComp = gmsh.view.getModelData(actTag, step)
+        dType, ctags, cdata, ctime, numComp = gmsh.view.getModelData(
+            actTag, step
+        )
         B_Data[step] = np.array(cdata)[:, 0:numComp]
         # "0:numComp" because for linear elements B = rot(A) results in one value per
         # element (triangle), but that one value is exported for each node. So we
@@ -295,7 +327,9 @@ def ironLossInteractive(
         if False:
             # calculating phi from arcsin doesn't work, because it gives values from -pi to pi
             # instead of 0 to 2*pi... Would need to do a case distinction.
-            phi = np.arcsin(bMeanFree / BmArray)  # FIXME: dont need to calc all values
+            phi = np.arcsin(
+                bMeanFree / BmArray
+            )  # FIXME: dont need to calc all values
             phi0 = phi[0, :, :]
         else:
             # second try with phase from fft
@@ -307,7 +341,9 @@ def ironLossInteractive(
             )
             phase = np.angle(bfft)
             tStep = time[1]
-            freqs = np.abs(np.fft.fftfreq(NBR_STEPS - 1, tStep)[: nbrFreqs + 1])
+            freqs = np.abs(
+                np.fft.fftfreq(NBR_STEPS - 1, tStep)[: nbrFreqs + 1]
+            )
 
             # find phi0 by fft
             for elem in range(nbrElements):
@@ -320,7 +356,9 @@ def ironLossInteractive(
 
             # fMaxIndex equals order of that spectral part
             phi = np.linspace(
-                phi0 + np.pi / 2, fMaxInd * (2 * np.pi) + phi0 + np.pi / 2, NBR_STEPS
+                phi0 + np.pi / 2,
+                fMaxInd * (2 * np.pi) + phi0 + np.pi / 2,
+                NBR_STEPS,
             )
         # calc cos(phi)
         cosPhi = np.cos(phi)
@@ -330,36 +368,36 @@ def ironLossInteractive(
     # Plot Bm and Hm over element number
     fig, axes = plt.subplots(nrows=2, ncols=1)
     ax1 = axes[0]
-    ax1.plot(time, bMeanFree[:, elemId, 0]/np.max(bMeanFree[:, elemId, 0]))
+    ax1.plot(time, bMeanFree[:, elemId, 0] / np.max(bMeanFree[:, elemId, 0]))
     ax1.set_xlabel("time in s")
-    ax1.set_ylabel("$B/B_{\mathrm{max}}$")
+    ax1.set_ylabel(r"$B/B_{\mathrm{max}}$")
     ax1.yaxis.label.set_color("C0")
-    ax1.tick_params(axis='y', colors="C0")
+    ax1.tick_params(axis="y", colors="C0")
     # ax1.grid(color="C0")
     ax1.set_title("x-Comp")
     ax1.grid(True)
 
     ax12 = ax1.twinx()
-    ax12.plot(time, Hirr[:, elemId, 0]/np.max(Hirr[:, elemId, 0]), "C1")
+    ax12.plot(time, Hirr[:, elemId, 0] / np.max(Hirr[:, elemId, 0]), "C1")
     ax12.yaxis.label.set_color("C1")
-    ax12.tick_params(axis='y', colors="C1")
-    ax12.set_ylabel("$H_{\mathrm{irr}}/H_{\mathrm{irr,max}}$")
+    ax12.tick_params(axis="y", colors="C1")
+    ax12.set_ylabel(r"$H_{\mathrm{irr}}/H_{\mathrm{irr,max}}$")
 
     ax2 = axes[1]
-    ax2.plot(time, bMeanFree[:, elemId, 1]/np.max(bMeanFree[:, elemId, 1]))
+    ax2.plot(time, bMeanFree[:, elemId, 1] / np.max(bMeanFree[:, elemId, 1]))
     ax2.set_xlabel("time in s")
-    ax2.set_ylabel("$B/B_{\mathrm{max}}$")
+    ax2.set_ylabel(r"$B/B_{\mathrm{max}}$")
     ax2.yaxis.label.set_color("C0")
-    ax2.tick_params(axis='y', colors="C0")
+    ax2.tick_params(axis="y", colors="C0")
     # ax2.grid(color="C0")
     ax2.set_title("y-Comp")
     ax2.grid(True)
-    
+
     ax21 = ax2.twinx()
-    ax21.plot(time, Hirr[:, elemId, 1]/np.max(Hirr[:, elemId, 1]), "C1")
+    ax21.plot(time, Hirr[:, elemId, 1] / np.max(Hirr[:, elemId, 1]), "C1")
     ax21.yaxis.label.set_color("C1")
-    ax21.tick_params(axis='y', colors="C1")
-    ax21.set_ylabel("$H_{\mathrm{irr}}/H_{\mathrm{irr,max}}$")
+    ax21.tick_params(axis="y", colors="C1")
+    ax21.set_ylabel(r"$H_{\mathrm{irr}}/H_{\mathrm{irr,max}}$")
     fig.tight_layout()
 
     # Plot x and y comp. of Bm and Hm over element number
@@ -369,7 +407,7 @@ def ironLossInteractive(
     ax1.plot(time, bMeanFree[:, elemId, 1])
     ax1.set_xlabel("time in s")
     ax1.set_ylabel("B in T")
-    ax1.legend(["x","y"])
+    ax1.legend(["x", "y"])
     # ax1.set_title("B field in T")
     ax1.grid()
     ax2 = axes[1]
@@ -377,27 +415,31 @@ def ironLossInteractive(
     ax2.plot(time, Hirr[:, elemId, 1])
     ax2.set_xlabel("time in s")
     ax2.set_ylabel("H in A/m")
-    ax2.legend(["x","y"])
+    ax2.legend(["x", "y"])
     # ax2.set_title("$H_{\mathrm{irr}}$ in A/m")
     ax2.grid()
     fig.tight_layout()
 
-
     # Plot Ellipsis
     fig, ax = plt.subplots()
-    ps = ax.plot(Hirr[:, elemId, :]/np.max(Hirr[:, elemId, :]), bMeanFree[:, elemId, :]/np.max(bMeanFree[:, elemId, :]))
+    ps = ax.plot(
+        Hirr[:, elemId, :] / np.max(Hirr[:, elemId, :]),
+        bMeanFree[:, elemId, :] / np.max(bMeanFree[:, elemId, :]),
+    )
     ps[0].set_color("C3")
     ps[1].set_color("C4")
     ax.grid(True)
-    ax.set_xlabel("$H_{\mathrm{irr}}/H_{\mathrm{irr,max}}$")
-    ax.set_ylabel("$B/B_{\mathrm{max}}$")
+    ax.set_xlabel(r"$H_{\mathrm{irr}}/H_{\mathrm{irr,max}}$")
+    ax.set_ylabel(r"$B/B_{\mathrm{max}}$")
     ax.legend(["x", "y"])
     ax.axhline(y=0, color="k")
     ax.axvline(x=0, color="k")
     # ax.set_title("EEL for Stator-Element")
     # Calculate hysteresis loss on element bases for all time steps
     # beta = 2
-    ph = np.sum(np.abs(Hirr[1:] * dBdt), axis=2)  # + np.abs(Hm * dBdt[:, :, 1])
+    ph = np.sum(
+        np.abs(Hirr[1:] * dBdt), axis=2
+    )  # + np.abs(Hm * dBdt[:, :, 1])
 
     # %% Export loss data to gmsh
     # gmsh.model.add("Test p_hyst export") # new model for view??
@@ -480,7 +522,9 @@ def ironLossInteractive(
     # is doubled since its part of the positive and negative side of the spectrum.
     # Since I defined the number of frequencies to be only for the one sided spectrum,
     # we have to double the value for amp[0] and use only nbrFreqs for amp[1:]
-    amp = np.concatenate(([amp[0] / nbrFreqs / 2], amp[1:] / (nbrFreqs)), axis=0)
+    amp = np.concatenate(
+        ([amp[0] / nbrFreqs / 2], amp[1:] / (nbrFreqs)), axis=0
+    )
     tStep = time[1]
     freqs = np.abs(
         np.fft.fftfreq(NBR_STEPS - 1, tStep)[: nbrFreqs + 1]
@@ -508,7 +552,9 @@ def ironLossInteractive(
     fig, axs = plt.subplots(2, 1)
     axs[0].plot(time, B_Data[:, elemId, 0], label="x-comp")
     axs[0].plot(time, B_Data[:, elemId, 1], label="y-comp")
-    axs[1].plot(time, np.linalg.norm(B_Data[:, elemId, :], axis=1), label="y-comp")
+    axs[1].plot(
+        time, np.linalg.norm(B_Data[:, elemId, :], axis=1), label="y-comp"
+    )
     axs[0].grid(True)
     axs[1].grid(True)
     # ax.legend(("x", "y"))
@@ -536,7 +582,9 @@ def ironLossInteractive(
     # )
     # norm of xyz comp.
     phFreq = np.linalg.norm(sigma_h * freqs * (amp.transpose() ** 2), axis=0)
-    pHFreqView = gmsh.view.add("Hystersis Loss (FFT) [W/m³]")  # get tag of new view
+    pHFreqView = gmsh.view.add(
+        "Hystersis Loss (FFT) [W/m³]"
+    )  # get tag of new view
     gmsh.view.addHomogeneousModelData(
         tag=pHFreqView,
         step=0,
@@ -595,7 +643,9 @@ def ironLossInteractive(
 
     # save integral data as .dat file
     pFilePath = os.path.join(resDir, f"p_hyst_freq_{machineSide}.dat")
-    writeSimple(pFilePath, [0], PHystFreq[3:])  # skip point coordinates in export
+    write_simple(
+        pFilePath, [0], PHystFreq[3:]
+    )  # skip point coordinates in export
 
     # %% Calculate EDDY CURRENT LOSSES ---------------------------------------------------
     print("Calculating eddy current losses...")
@@ -606,7 +656,9 @@ def ironLossInteractive(
     pc = kc / (2 * pi2) * (np.square(dBdt[:, :, 0]) + np.square(dBdt[:, :, 1]))
     # Export data to gmsh
     model = gmsh.model.getCurrent()  # get current model
-    eddyCurrentView = gmsh.view.add("Eddy Current Loss [W/m³]")  # get tag of new view
+    eddyCurrentView = gmsh.view.add(
+        "Eddy Current Loss [W/m³]"
+    )  # get tag of new view
     for step in range(len(time) - 1):
         # write every time step (except first, because derivative) to view
         gmsh.view.addHomogeneousModelData(
@@ -625,7 +677,9 @@ def ironLossInteractive(
     # EDDY CURRENTS VIA FREQUENCY ---------------------------------------------------
     # norm of xyz comp.
     pcFreq = np.linalg.norm(kc * freqs**2 * (amp.transpose() ** 2), axis=0)
-    pcFreqView = gmsh.view.add("Eddy Current Loss (FFT) [W/m³]")  # get tag of new view
+    pcFreqView = gmsh.view.add(
+        "Eddy Current Loss (FFT) [W/m³]"
+    )  # get tag of new view
     gmsh.view.addHomogeneousModelData(
         tag=pcFreqView,
         step=0,
@@ -655,7 +709,9 @@ def ironLossInteractive(
 
     # %% Integrate
     # Integrate Eddy Current losses ---------------------------------------------------
-    gmsh.plugin.setNumber("Integrate", "View", gmsh.view.getIndex(eddyCurrentView))
+    gmsh.plugin.setNumber(
+        "Integrate", "View", gmsh.view.getIndex(eddyCurrentView)
+    )
     integralView = gmsh.plugin.run("Integrate")
     # get list data from integral to determine maximum and set y limits in plot
     dtype, numElem, P_eddyData = gmsh.view.getListData(integralView)
@@ -672,22 +728,30 @@ def ironLossInteractive(
 
     # set options to display integral as xy plot
     # gmsh.view.option.setString(integralView,"Type",)
-    gmsh.view.option.copy(P_h_ViewTag, integralView)  # copy options from first plot
-    gmsh.view.option.setNumber(integralView, "CustomMax", np.max(P_eddyData) * 1.2)
+    gmsh.view.option.copy(
+        P_h_ViewTag, integralView
+    )  # copy options from first plot
+    gmsh.view.option.setNumber(
+        integralView, "CustomMax", np.max(P_eddyData) * 1.2
+    )
     gmsh.view.option.setNumber(integralView, "AutoPosition", 3)  # 3: top right
 
     # save integral values to file
     pFilePath = os.path.join(resDir, f"p_eddy_{machineSide}.dat")
-    writeSimple(pFilePath, time, P_eddyData[3:])
+    write_simple(pFilePath, time, P_eddyData[3:])
 
     # %% Calculate EXCESS LOSS ---------------------------------------------------
-    ke = lossParams[2]  # factor was 0 in model... used greater value for testing
+    ke = lossParams[
+        2
+    ]  # factor was 0 in model... used greater value for testing
     if np.abs(ke) > 1e6:
         Ce = 8.763363  # constant factor (from paper)
         pe = (
             ke
             / Ce
-            * np.power((np.square(dBdt[:, :, 0]) + np.square(dBdt[:, :, 1])), 0.75)
+            * np.power(
+                (np.square(dBdt[:, :, 0]) + np.square(dBdt[:, :, 1])), 0.75
+            )
         )
         # % Export data to gmsh
         model = gmsh.model.getCurrent()  # get current model ID
@@ -707,7 +771,9 @@ def ironLossInteractive(
         gmsh.view.write(excessView, pFilePath)
 
         # %% Integrate Excess losses ---------------------------------------------------
-        gmsh.plugin.setNumber("Integrate", "View", gmsh.view.getIndex(excessView))
+        gmsh.plugin.setNumber(
+            "Integrate", "View", gmsh.view.getIndex(excessView)
+        )
         integralView = gmsh.plugin.run("Integrate")
 
         # get list data from integral to determine maximum and set y limits in plot
@@ -721,21 +787,46 @@ def ironLossInteractive(
         integralView = gmsh.view.add("Excess Losses [W]")
         # replace data in view with recalculated data
         gmsh.view.addListData(
-            tag=integralView, dataType=dtype[0], numEle=numElem[0], data=P_excData
+            tag=integralView,
+            dataType=dtype[0],
+            numEle=numElem[0],
+            data=P_excData,
         )
         gmsh.view.option.copy(P_h_ViewTag, integralView)
-        gmsh.view.option.setNumber(integralView, "CustomMax", np.max(P_excData) * 1.2)
-        gmsh.view.option.setNumber(integralView, "AutoPosition", 4)  # 4: bottom left
+        gmsh.view.option.setNumber(
+            integralView, "CustomMax", np.max(P_excData) * 1.2
+        )
+        gmsh.view.option.setNumber(
+            integralView, "AutoPosition", 4
+        )  # 4: bottom left
 
         # save integral values to file
         pFilePath = os.path.join(resDir, f"P_exc_{machineSide}.dat")
-        writeSimple(pFilePath, time, P_excData[3:])
+        write_simple(pFilePath, time, P_excData[3:])
     else:
         pe = np.zeros(ph.shape)
         P_excData = np.zeros(P_HystData.shape)
-    # %%
-    # Calc mean of all losses on elements ---------------------------------------------------
-    pTotal_mean = np.mean(ph + pc + pe, axis=0)
+    # %% Print sum of all losses
+    totalLossView = gmsh.view.add(
+        "Total Core Loss [W/m³]"
+    )  # get tag of new view
+    pCore = ph + pc + pe
+    for step in range(len(time) - 1):
+        # write every time step (except first, because derivative) to view
+        gmsh.view.addHomogeneousModelData(
+            tag=totalLossView,
+            step=step + 1,
+            modelName=model,
+            dataType="ElementData",
+            tags=btags,
+            data=pCore[step, :],
+            time=time[step],
+        )
+    # save new view data in pos file
+    pFilePath = os.path.join(resDir, f"p_core_{machineSide}.pos")
+    gmsh.view.write(totalLossView, pFilePath)
+    # %% Calc mean of all losses on elements ---------------------------------------------------
+    pTotal_mean = np.mean(pCore, axis=0)
     # Export mean data
     model = gmsh.model.getCurrent()  # or just get current model...
     pHystView = gmsh.view.add("Mean Total Loss [W/m³]")  # get tag of new view
@@ -761,7 +852,7 @@ def ironLossInteractive(
     gmsh.view.option.setNumber(viewPsum, "AutoPosition", 5)  # 5: bottom right
 
     pFilePath = os.path.join(resDir, "p_total.dat")
-    writeSimple(pFilePath, time, Ptotal[3:])
+    write_simple(pFilePath, time, Ptotal[3:])
 
     tend = clockTime.time()
     # print(f"\nTotal iron loss calculation and plotting took {tend-tstart} seconds.\n")
@@ -793,8 +884,8 @@ if __name__ == "__main__":
     # }
     RES_DIR = "C:/temp"
     elemId = {
-        "rotor": 1642,
-        "stator": 4573,
+        "rotor": 7767,
+        "stator": 18605,
     }
 
     # lossParams = (165.9694, 1.0529, 0)

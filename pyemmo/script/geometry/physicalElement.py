@@ -1,4 +1,24 @@
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 """Module for class PhysicalElement"""
+
 from random import random
 from typing import List, Union, TYPE_CHECKING
 
@@ -81,6 +101,11 @@ class PhysicalElement:
             )
 
     @property
+    def type(self) -> str:
+        """The function getType of PhysicalElement returns a string with the PhysicalElement-Type"""
+        return self._physicalElementType
+
+    @property
     def name(self) -> str:
         """Phyiscal element name
 
@@ -138,13 +163,17 @@ class PhysicalElement:
             newID (int): new physical element ID.
         """
         if not isinstance(newID, int):
-            raise TypeError(f"PhysicalElement ID must be positive integer! {newID}")
+            raise TypeError(
+                f"PhysicalElement ID must be positive integer! {newID}"
+            )
         if 1000 < newID < PhysicalElement.physicalID:
             raise ValueError(
                 "New ID of PhysicalElement is smaller than global ID count."
                 "Given newID must be existing!"
             )
-        PhysicalElement.physicalID = newID  # set global ID to not overcount newID
+        PhysicalElement.physicalID = (
+            newID  # set global ID to not overcount newID
+        )
         self._id = newID
 
     @property
@@ -157,7 +186,9 @@ class PhysicalElement:
         return self._geometricalElement
 
     @geometricalElement.setter
-    def geometricalElement(self, geometricalElement: Union[List[Surface], List[Line]]):
+    def geometricalElement(
+        self, geometricalElement: Union[List[Surface], List[Line]]
+    ):
         """Geometrical elements
 
         Args:
@@ -166,11 +197,6 @@ class PhysicalElement:
         self._geometricalElement = geometricalElement
         # run element type funtion to ensure there are not lines AND surfaces at the same time
         self.geoElementType
-
-    @property
-    def type(self) -> str:
-        """The function getType of PhysicalElement returns a string with the PhysicalElement-Type"""
-        return self._physicalElementType
 
     @property
     def geoElementType(self) -> Union[Line, Surface, None]:
@@ -197,10 +223,8 @@ class PhysicalElement:
                 isLine = True
             else:
                 raise ValueError(
-                    (
-                        f"Geometrical element of PhysicalElement '{self.name}' is neither Line"
-                        f"nor Surface but: {type(GeoElement)}"
-                    )
+                    f"Geometrical element of PhysicalElement '{self.name}' is neither Line"
+                    f"nor Surface but: {type(GeoElement)}"
                 )
 
         if isLine and isSurface:

@@ -1,3 +1,22 @@
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 from .machineAllType import MachineAllType
 from .rotorSPMSM import RotorSPMSM
 from .statorSPMSM import StatorPMSM, datamodel
@@ -42,21 +61,21 @@ class MachineSPMSM(MachineAllType):
 
         """
         nbrPoles = simuParam["analysisParameter"]["nbrPolesTotal"]
-        symFactor = simuParam["analysisParameter"]["symmetryFactor"]
         super().__init__(
-            nbrPolePairs=nbrPoles/2,
-            symmetryFactor=symFactor,
+            nbrPolePairs=nbrPoles / 2,
             rotor=None,
             stator=None,
-            name="MachineSPMSM"
+            name="MachineSPMSM",
         )
         self._simuParam = simuParam
 
         self._simuParam["analysisParameter"]["nbrPolesinModel"] = (
-            self._simuParam["analysisParameter"]["nbrPolesTotal"] / self.symmetryFactor
+            self._simuParam["analysisParameter"]["nbrPolesTotal"]
+            / self.symmetryFactor
         )
         self._simuParam["analysisParameter"]["nbrSlotinModel"] = (
-            self._simuParam["analysisParameter"]["nbrSlotTotal"] / self.symmetryFactor
+            self._simuParam["analysisParameter"]["nbrSlotTotal"]
+            / self.symmetryFactor
         )
 
     ###
@@ -107,7 +126,9 @@ class MachineSPMSM(MachineAllType):
             / self.symmetryFactor
             / self._simuParam["analysisParameter"]["nbrPolesinModel"]
         )
-        nbrGeoParts = self._simuParam["analysisParameter"]["nbrPolesinModel"] * 2
+        nbrGeoParts = (
+            self._simuParam["analysisParameter"]["nbrPolesinModel"] * 2
+        )
         rotorSPMSM1 = RotorSPMSM(
             laminationType,
             magnetType,
@@ -158,16 +179,18 @@ class MachineSPMSM(MachineAllType):
     ):
         startPosition = (
             math.pi
-            / self.symmetryFactor
+            / self.symmetryFactor  # FIXME
             / self._simuParam["analysisParameter"]["nbrSlotinModel"]
             + self._simuParam["analysisParameter"]["startPosition"]
         )
         angleGeoParts = (
             math.pi
-            / self.symmetryFactor
+            / self.symmetryFactor  # FIXME
             / self._simuParam["analysisParameter"]["nbrSlotinModel"]
         )
-        nbrGeoParts = self._simuParam["analysisParameter"]["nbrSlotinModel"] * 2
+        nbrGeoParts = (
+            self._simuParam["analysisParameter"]["nbrSlotinModel"] * 2
+        )
         nbrSlotsTotal = (
             nbrGeoParts * self.symmetryFactor / 2
         )  # divided by 2 because one slot is formed by 2 geoParts
