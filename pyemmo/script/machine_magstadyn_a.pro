@@ -450,9 +450,9 @@ Constraint {
   // Here we could define constraints on the voltage.
   { Name Voltage_2D ;
     Case {
-      // If(!Flag_Cir_RotorCage)
-      //   { Region RotorC  ; Value 0. ; }
-      // EndIf
+      If(!Flag_Cir_RotorCage)
+        { Region RotorC  ; Value 0. ; }
+      EndIf
     }
   }
 
@@ -505,9 +505,9 @@ FunctionSpace {
       // The function BF_PerpendicularEdge defines a vector having as support nodes and pointing in the z-direction
       { Name se1 ; NameOfCoef ae1 ; Function BF_PerpendicularEdge ;
         // The support of this function space are the all the nodes of Domain and the Rotor_Bnd_MBaux (the latter is needed since the unknowns are interpolated here as well; see: Constraint)
-        Support Region[{ Domain,Rotor_Bnd_MBaux}] ; Entity NodesOf [ All ] ; }
+        Support Region[{ Domain, Rotor_Bnd_MBaux, Stator_Bnd_MB, Rotor_Bnd_MB_1}] ; Entity NodesOf [ All ] ; }
       If (Flag_SecondOrder)
-        { Name se2 ; NameOfCoef ae2 ; Function BF_PerpendicularEdge_2E ; Support Region[{Domain, Rotor_Bnd_MBaux}] ; Entity EdgesOf [ All ] ; }
+        { Name se2 ; NameOfCoef ae2 ; Function BF_PerpendicularEdge_2E ; Support Region[{Domain, Rotor_Bnd_MBaux, Stator_Bnd_MB, Rotor_Bnd_MB_1}] ; Entity EdgesOf [ All ] ; }
       EndIf
    }
     // We constraint certain DoFs, with the previously defined constraint for the MVP
@@ -599,7 +599,8 @@ Formulation {
 
   If (Flag_Inductance)
 
-  { Name MagSta_PM ; Type FemEquation ;
+  { 
+    Name MagSta_PM ; Type FemEquation ;
     Quantity {
       { Name a  ; Type Local  ; NameOfSpace Hcurl_a_2D ; }
       { Name a_PM;Type Local  ; NameOfSpace Hcurl_a_2D_PM;}
@@ -682,7 +683,7 @@ Formulation {
       // DO NOT REMOVE!!!
       // Keeping track of Dofs in auxiliar line of MB if Symmetry==1
       Galerkin {  [  0*Dof{d a} , {d a} ]  ;
-        In Rotor_Bnd_MBaux; Jacobian Sur; Integration I1; }
+        In Region[ {Rotor_Bnd_MBaux, Stator_Bnd_MB, Rotor_Bnd_MB_1} ] ; Jacobian Sur; Integration I1; }
 
       Galerkin { [ -nu[] * br[] , {d a} ] ;
         In DomainM ; Jacobian Vol ; Integration I1 ; }
@@ -714,7 +715,7 @@ Formulation {
       Galerkin { [ Rb[]/SurfCoil[]* Dof{ir} , {ir} ] ;
         In DomainB ; Jacobian Vol ; Integration I1 ; } // Resistance term
 
-      GlobalTerm { [ Resistance[]  * Dof{Ib} , {Ib} ] ; In DomainB ; }
+      // GlobalTerm { [ Resistance[]  * Dof{Ib} , {Ib} ] ; In DomainB ; }
       // The above term can replace the resistance term:
       // if we have an estimation of the resistance of DomainB, via e.g. measurements
       // which is better to account for the end windings...
@@ -848,11 +849,20 @@ Resolution {
       EndIf
 
       If (Flag_AnalysisType == 1)
+        Printf["Time loop from t_0 = %fs to t_max = %fs with dt = %es", time0, timemax, delta_time];
+        Printf["Executing %.1f steps", Ceil[(timemax-time0)/delta_time]];
         TimeLoopTheta[time0, timemax, delta_time, 1.]{
           // Euler implicit (1) -- Crank-Nicolson (0.5)
           // FIXME like this theta cannot be controlled by the user
           ChangeOfCoordinates[ NodesOf[Rotor_Moving], RotatePZ[delta_theta[]]];
-
+          Print[
+            {
+              Floor[$Time/delta_time]+1, 
+              Ceil[(timemax-time0)/delta_time],
+              ((Floor[$Time/delta_time]+1) / Ceil[(timemax-time0)/delta_time])*100
+            },
+            Format "Step %.0f / %.0f  -  %.1f %%"];
+          // Print[{$Time}, Format "Time: %f"];
           MeshMovingBand2D[MB];
           Evaluate[$RPos=RotorPosition_deg[]];
           Evaluate[$PAng_mod=RotorPos_deg_mod[]];
@@ -1068,15 +1078,36 @@ PostProcessing {
       { Name b  ; Value { Term { [ {d a} ] ; In Domain ; Jacobian Vol ; } } }
       { Name bn  ; Value { Term { [ Norm[{d a}] ] ; In Domain ; Jacobian Vol ; } } }
       { Name hn  ; Value { Term { [ Norm[nu[{d a}]*{d a}] ] ; In Domain ; Jacobian Vol ; } } }
-      { Name b_radial ; Value { Term { [ {d a}* Vector[  Cos[AngularPosition[]#4], Sin[#4], 0.] ] ; In Domain ; Jacobian Vol ; } } }
+      { 
+        Name b_radial ; 
+        Value { Term { [ {d a}* Vector[  Cos[AngularPosition[]#4], Sin[#4], 0.] ] ; In Domain ; Jacobian Vol ; } } 
+      }
+      { 
+        Name b_radial_sur ; 
+        Value { 
+          Term { 
+            [ {d a}* Vector[  Cos[AngularPosition[]#4], Sin[#4], 0.] ] ; 
+            In Region[{Rotor_Bnd_MBaux, Stator_Bnd_MB, Rotor_Bnd_MB_1}] ; 
+            Jacobian Sur ; 
+          } 
+        } 
+      }
       { Name b_tangent ; Value { Term { [ {d a}* Vector[ -Sin[AngularPosition[]#4], Cos[#4], 0.] ] ; In Domain ; Jacobian Vol ; } } }
       { Name br ; Value { Term { [ br[] ] ;      In DomainM ; Jacobian Vol ; } } }
       { Name mu ; Value { Term { [ 1/nu[{d a}]/(mu0) ] ; In Domain ; Jacobian Vol ; } } }
+      { Name ur  ; Value { Term { [ {ur} ]; In DomainC ; Jacobian Vol ; } } }
+      { Name urz  ; Value { Term { [ CompZ[{ur}] ]; In DomainC ; Jacobian Vol ; } } }
+      { Name dta  ; Value { Term { [ Dt[{a}] ]; In DomainC ; Jacobian Vol ; } } }
+      { Name dta_ur  ; Value { Term { [ Dt[{a}]+{ur} ]; In DomainC ; Jacobian Vol ; } } }
       { Name j  ; Value { Term { [ -sigma[]*(Dt[{a}]+{ur}) ]; In DomainC ; Jacobian Vol ; } } }
       { Name js ; Value { Term { [ js[] ] ;      In DomainS ; Jacobian Vol ; } } }
       { Name jz ; Value { Term { [ CompZ[-sigma[]*(Dt[{a}]+{ur})] ]; In DomainC ; Jacobian Vol ; } } }
       { Name Vmag ; Value { Term { [ CompZ[js[]] * SurfaceArea[]  ]; In DomainS ; Jacobian Vol ; } } } // magnetic voltage (magentische Durchflutung /Theta der Wicklung) [A Turns]
       { Name I_n ; Value { Term { [ CompZ[js[]] * SurfaceArea[] / NbWires[]  ]; In DomainS ; Jacobian Vol ; } } } // Shows the actual current in the specified coil region [A]
+      // { Name I_S ; Value { 
+      //   // Actual Phase current = int {Jz dA} / nbrOfSurfaces / nbrWires * nbrParallelPaths
+      //   Integral { [ CompZ[ js[] ] * Idir[] / nbSlotSurfsPerPhase / NbWires[] * NbrParallelPaths]; In DomainS ; Jacobian Vol ; Integration I1 ;} 
+      // } } //
       { Name ir ; Value { Term { [ {ir} ] ; In Inds ; Jacobian Vol ; } } }
       // eddy currents in laminations:
       { Name p_Lam ; Value { Term { [ 1/density[]*Fac_Lam[]*SquNorm[Dt[{d a}]] ] ; In Domain_Lam ; Jacobian Vol ; } } }
@@ -1102,6 +1133,8 @@ PostProcessing {
         Name Flux ;
         Value {
           Integral { [ SymmetryFactor*axialLength[]*Idir[]*NbWires[]/SurfCoil[]/NbrParallelPaths* CompZ[{a}] ] ; In Inds  ; Jacobian Vol ; Integration I1 ; }
+          Integral { [ axialLength[] * CompZ[{a}] / SurfaceArea[]] ; In DomainC  ; Jacobian Vol ; Integration I1 ; }
+
         }
       }
       // Force computation by Virtual Works
@@ -1151,6 +1184,8 @@ PostProcessing {
         Value {
           Integral { [ SymmetryFactor * axialLength[] * Idir[] * NbWires[] / SurfCoil[] / NbrParallelPaths * Dt[CompZ[{a}]] ] ;
           In Inds  ; Jacobian Vol ; Integration I1 ; }
+          Integral { [ axialLength[] * Dt[CompZ[{a}]] / SurfaceArea[]] ;
+          In DomainC  ; Jacobian Vol ; Integration I1 ; }
         }
       }
 
@@ -1183,9 +1218,9 @@ PostProcessing {
      { Name RotorPosition_deg ; Value { Term { Type Global; [ $RPos ] ; In DomainDummy ; } } }
      { Name R ; Value { Term { Type Global; [ Rb[] ] ; In DomainDummy; } } }
      { Name Theta_Park_deg ; Value { Term { Type Global; [ $PAng ] ; In DomainDummy ; } } }
-     { Name IA  ; Value { Term { Type Global; [ IA[] ] ; In DomainDummy ; } } }
-     { Name IB  ; Value { Term { Type Global; [ IB[] ] ; In DomainDummy ; } } }
-     { Name IC  ; Value { Term { Type Global; [ IC[] ] ; In DomainDummy ; } } }
+     { Name IA  ; Value { Term { Type Global; [ II*IA[] ] ; In DomainDummy ; } } }
+     { Name IB  ; Value { Term { Type Global; [ II*IB[] ] ; In DomainDummy ; } } }
+     { Name IC  ; Value { Term { Type Global; [ II*IC[] ] ; In DomainDummy ; } } }
      { Name Flux_d  ; Value { Term { Type Global; [ CompX[Flux_dq0[]] ] ; In DomainDummy ; } } }
      { Name Flux_q  ; Value { Term { Type Global; [ CompY[Flux_dq0[]] ] ; In DomainDummy ; } } }
      { Name Flux_0  ; Value { Term { Type Global; [ CompZ[Flux_dq0[]] ] ; In DomainDummy ; } } }
@@ -1222,16 +1257,30 @@ PostOperation Debug UsingPost MagStaDyn_a_2D{
 // #######################################################
   // Axial length with function definition works fine...
   // Integral over axial length function divided by SurfaceArea[] results in mean axial length of integration surface:
-  Print[ intAxLen[Stator_Airgap], OnGlobal, Format Table, LastTimeStepOnly, File StrCat[ResDir,"Integral_axLen_AirgapStator",ExtGnuplot], SendToServer StrCat[po_mec,"Int axLen[StLu2] over SurfaceArea[]"]{0}, Color "LightYellow"];
+  Print[
+    intAxLen[Stator_Airgap], OnGlobal, Format Table, LastTimeStepOnly, 
+    File StrCat[ResDir,"Integral_axLen_AirgapStator",ExtGnuplot], 
+    SendToServer StrCat[po_mec,"Int axLen[StLu2] over SurfaceArea[]"]{0}, Color "LightYellow"
+  ];
   // Show surface area of stator airgap
-  Print[ surf[Stator_Airgap], OnGlobal, Format Table, LastTimeStepOnly, File StrCat[ResDir,"Surf_StLu2",ExtGnuplot], SendToServer StrCat[po_mecS,"Surf StLu2"]{0}, Color "LightYellow"];
+  Print[
+    surf[Stator_Airgap], OnGlobal, Format Table, LastTimeStepOnly, 
+    File StrCat[ResDir,"Surf_StLu2",ExtGnuplot], 
+    SendToServer StrCat[po_mecS,"Surf StLu2"]{0}, Color "LightYellow"
+  ];
   // Print axial length on domain
-  Print[ axLen, OnElementsOf Domain, File StrCat[ResDir,"AxialeLaenge",ExtGmsh], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps ] ;
+  Print[
+    axLen, OnElementsOf Domain, LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps,
+    File StrCat[ResDir,"AxialeLaenge",ExtGmsh]
+  ] ;
 // #######################################################
 
   // Print[ Vmag, OnElementsOf DomainS, File StrCat[ResDir,"magDurchflutung",ExtGmsh], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps ] ;
   // Print[ I_n, OnElementsOf DomainS, File StrCat[ResDir,"Current",ExtGmsh], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps ] ;
-  Print [ surfCoil , OnRegion DomainDummy, Format Table, LastTimeStepOnly, SendToServer StrCat[po_mecS,"SurfCoil"]{0}, Color "LightYellow"];
+  Print [
+    surfCoil , OnRegion DomainDummy, Format Table, LastTimeStepOnly, 
+    SendToServer StrCat[po_mecS,"Value of SurfCoil[] function"]{0}, Color "LightYellow"
+  ];
   // Print[ surfCoil[PhaseA_pos], OnGlobal, Format Table, LastTimeStepOnly, File StrCat[ResDir,"SurfCoil_Debug",ExtGnuplot], SendToServer StrCat[po_mecS,"SurfCoil"]{0}, Color "LightYellow"];
   // Print[ surf[PhaseA_pos], OnGlobal, Format Table, LastTimeStepOnly, File StrCat[ResDir,"Surf_Phase_A_pos",ExtGnuplot], SendToServer StrCat[po_mecS,"Surf_Phase_A_pos"]{0}, Color "LightYellow"];
   // Print[ domain, OnElementsOf PhaseA_pos, File StrCat[ResDir,"PhaseA_pos",ExtGmsh],LastTimeStepOnly];
@@ -1239,6 +1288,35 @@ PostOperation Debug UsingPost MagStaDyn_a_2D{
   //   File StrCat[ResDir,"brad",ExtGmsh] ];
   // Print[ b_tangent, OnGrid{(r_AG)*Sin[Pi/nbSlots-$A*Pi/180],(r_AG)*Cos[Pi/nbSlots-$A*Pi/180],0 }{0:360/SymmetryFactor,0,0},
   //   File StrCat[ResDir,"btan",ExtGmsh] ];
+  If (nbRotorBars>0)
+    Print[
+      j, OnElementsOf Rotor_Bars, File StrCat[ResDir, "j_bars", ExtGmsh],
+      LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps
+    ];
+
+    If (Flag_Cir_RotorCage)
+      Print[
+        U, OnRegion Rotor_Bar_1, Format Table,
+        File > StrCat[ResDir,"U_bar_1",ExtGnuplot], LastTimeStepOnly,
+        SendToServer StrCat[poV,"U (Bar 1)"]{0}, Color "LightYellow"
+      ];
+      Print[
+        U, OnRegion Rotor_Bar_9, Format Table,
+        File > StrCat[ResDir,"U_bar_9",ExtGnuplot], LastTimeStepOnly,
+        SendToServer StrCat[poV,"U (Bar 9)"]{0}, Color "LightYellow"
+      ];
+      Print[
+        I, OnRegion Rotor_Bar_1, Format Table,
+        File > StrCat[ResDir,"I_bar_1",ExtGnuplot], LastTimeStepOnly,
+        SendToServer StrCat[poI,"I (Bar 1)"]{0}, Color "LightYellow"
+      ];
+      Print[
+        I, OnRegion Rotor_Bar_9, Format Table,
+        File > StrCat[ResDir,"I_bar_9",ExtGnuplot], LastTimeStepOnly,
+        SendToServer StrCat[poI,"I (Bar 9)"]{0}, Color "LightYellow"
+      ];
+    EndIf
+  EndIf
 }
 
 PostOperation Get_LocalFields UsingPost MagStaDyn_a_2D {
@@ -1325,27 +1403,33 @@ PostOperation GetShortCircuitCurrent UsingPost MagStaDyn_a_2D {
 }
 
 PostOperation Get_GlobalQuantities UsingPost MagStaDyn_a_2D {
+  Print[ 
+    RotorPosition_deg, OnRegion DomainDummy, Format Table, LastTimeStepOnly,
+    File>StrCat[ResDir, "RotorPos_deg",ExtGnuplot],
+    SendToServer StrCat[po,"10Rotor position"]{0}, Color "LightYellow"
+  ];
+
   If (Flag_Lam)
     Print[ P_Lam[Domain_Lam], OnGlobal, Format TimeTable, LastTimeStepOnly,
       File > StrCat[ResDir,Sprintf("Pec_Lam.dat")],
       SendToServer StrCat["Results/EDC/",  Sprintf("43stat lam. losses (W)")] ];
   EndIf
 
-  If(!Flag_Cir)
-    If(!Flag_ParkTransformation)
-      Print[ I, OnRegion PhaseA_pos, Format Table,
-	     File > StrCat[ResDir,"Ia",ExtGnuplot], LastTimeStepOnly,
-       SendToServer StrCat[poI,"A"]{0}, Color "Pink" ];
+  // If(!Flag_Cir)
+  //   If(!Flag_ParkTransformation)
+  //     Print[ I, OnRegion PhaseA_pos, Format Table,
+	//      File > StrCat[ResDir,"Ia",ExtGnuplot], LastTimeStepOnly,
+  //      SendToServer StrCat[poI,"A"]{0}, Color "Pink" ];
 
-      Print[ I, OnRegion PhaseB_pos, Format Table,
-        File > StrCat[ResDir,"Ib",ExtGnuplot], LastTimeStepOnly,
-        SendToServer StrCat[poI,"B"]{0}, Color "Yellow" ];
+  //     Print[ I, OnRegion PhaseB_pos, Format Table,
+  //       File > StrCat[ResDir,"Ib",ExtGnuplot], LastTimeStepOnly,
+  //       SendToServer StrCat[poI,"B"]{0}, Color "Yellow" ];
 
-      Print[ I, OnRegion PhaseC_pos, Format Table,
-        File > StrCat[ResDir,"Ic",ExtGnuplot], LastTimeStepOnly,
-        SendToServer StrCat[poI,"C"]{0}, Color "LightGreen" ];
-    EndIf
-  EndIf
+  //     Print[ I, OnRegion PhaseC_pos, Format Table,
+  //       File > StrCat[ResDir,"Ic",ExtGnuplot], LastTimeStepOnly,
+  //       SendToServer StrCat[poI,"C"]{0}, Color "LightGreen" ];
+  //   EndIf
+  // EndIf
 
   If(Flag_Cir)
     // plot the quantities for phase A in the case we have an external circuit
@@ -1397,13 +1481,48 @@ PostOperation Get_GlobalQuantities UsingPost MagStaDyn_a_2D {
     Print[ U, OnRegion PhaseC_pos, Format Table,
      File > StrCat[ResDir,"Uc_w",ExtGnuplot], LastTimeStepOnly,
      SendToServer StrCat[poV,"Winding/","C"]{0}, Color "LightGreen" ];
+  Else
+    // If there is no circuit the current is given by IA[], IB[], IC[]
+    Print[
+      IA, OnRegion DomainDummy, Format Table, File>StrCat[ResDir,"Ia",ExtGnuplot], LastTimeStepOnly, 
+      SendToServer StrCat[poI,"A"]{0}, Color "Pink" 
+    ];
+    Print[
+      IB, OnRegion DomainDummy, Format Table, File>StrCat[ResDir,"Ib",ExtGnuplot], LastTimeStepOnly, 
+      SendToServer StrCat[poI,"B"]{0}, Color "Yellow" 
+    ];
+    Print[
+      IC, OnRegion DomainDummy, Format Table, File>StrCat[ResDir,"Ic",ExtGnuplot], LastTimeStepOnly, 
+      SendToServer StrCat[poI,"C"]{0}, Color "LightGreen" 
+    ];
   EndIf
   If (Flag_Cir_RotorCage)
     Print[
       I, OnRegion Rotor_Bars, Format Table,
       File > StrCat[ResDir,"I_bars",ExtGnuplot], LastTimeStepOnly,
-      SendToServer StrCat[poI,"rotor"]{0}, Color "LightGreen"
+      SendToServer StrCat[poI,"ROTOR"]{0}, Color "LightYellow"
     ];
+    Print[
+      U, OnRegion Rotor_Bars, Format Table,
+      File > StrCat[ResDir,"U_bars",ExtGnuplot], LastTimeStepOnly,
+      SendToServer StrCat[poV,"ROTOR"]{0}, Color "LightYellow"
+    ];
+    // Print[
+    //   I_S[PhaseA], OnGlobal, Format TimeTable, LastTimeStepOnly,
+    //   File>StrCat[ResDir,"Ia",ExtGnuplot],
+    //   SendToServer StrCat[poI,"A"]{0}, Color "Pink" 
+    // ];
+    // Print[
+    //   I_S[PhaseB], OnRegion DomainDummy, Format Table, LastTimeStepOnly,
+    //   File>StrCat[ResDir,"Ib",ExtGnuplot],
+    //   SendToServer StrCat[poI,"B"]{0}, Color "Yellow"
+    // ];
+    // Print[
+    //   I_S[PhaseC], OnRegion DomainDummy, Format Table, LastTimeStepOnly,
+    //   File>StrCat[ResDir,"Ic",ExtGnuplot],
+    //   SendToServer StrCat[poI,"C"]{0}, Color "LightGreen"
+    // ];
+
   EndIf
 
   // Calculate the Flux linkage
@@ -1486,21 +1605,20 @@ PostOperation GetInducedVoltages UsingPost MagStaDyn_a_2D {
 
 If (Flag_ParkTransformation)
   PostOperation ThetaPark_IABC UsingPost MagStaDyn_a_2D {
-    Print[ RotorPosition_deg, OnRegion DomainDummy, Format Table, LastTimeStepOnly,
-    File>StrCat[ResDir, "RotorPos_deg",ExtGnuplot],
-    SendToServer StrCat[po,"10Rotor position"]{0}, Color "LightYellow" ];
     Print[ Theta_Park_deg, OnRegion DomainDummy, Format Table, LastTimeStepOnly,
     File>StrCat[ResDir, "ParkAngle_deg",ExtGnuplot],
     SendToServer StrCat[po,"11Theta park"]{0}, Color "LightYellow" ];
-    Print[ IA, OnRegion DomainDummy, Format Table, LastTimeStepOnly,
-    File>StrCat[ResDir,"Ia",ExtGnuplot],
-    SendToServer StrCat[poI,"A"]{0}, Color "Pink" ];
-    Print[ IB, OnRegion DomainDummy, Format Table, LastTimeStepOnly,
-    File>StrCat[ResDir,"Ib",ExtGnuplot],
-    SendToServer StrCat[poI,"B"]{0}, Color "Yellow" ];
-    Print[ IC, OnRegion DomainDummy, Format Table, LastTimeStepOnly,
-    File>StrCat[ResDir,"Ic",ExtGnuplot],
-    SendToServer StrCat[poI,"C"]{0}, Color "LightGreen"  ];
+    
+    // ** Moved this to "GetGlobalQuantities" **
+    // Print[ IA, OnRegion DomainDummy, Format Table, LastTimeStepOnly,
+    // File>StrCat[ResDir,"Ia",ExtGnuplot],
+    // SendToServer StrCat[poI,"A"]{0}, Color "Pink" ];
+    // Print[ IB, OnRegion DomainDummy, Format Table, LastTimeStepOnly,
+    // File>StrCat[ResDir,"Ib",ExtGnuplot],
+    // SendToServer StrCat[poI,"B"]{0}, Color "Yellow" ];
+    // Print[ IC, OnRegion DomainDummy, Format Table, LastTimeStepOnly,
+    // File>StrCat[ResDir,"Ic",ExtGnuplot],
+    // SendToServer StrCat[poI,"C"]{0}, Color "LightGreen"  ];
   }
 EndIf
 
