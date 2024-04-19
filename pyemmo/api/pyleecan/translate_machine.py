@@ -398,7 +398,7 @@ def calcs_radii(
     return diff_radius, max_radius
 
 
-def get_translated_machine(
+def translate_machine(
     machine: Machine,
 ) -> tuple[list[SurfaceAPI], list[SurfaceAPI], float, dict, dict]:
     """_summary_

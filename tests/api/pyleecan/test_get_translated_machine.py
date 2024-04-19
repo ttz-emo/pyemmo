@@ -23,7 +23,7 @@ from pyleecan.Classes.Machine import Machine
 from pyleecan.Functions.load import load
 
 from pyemmo.definitions import TEST_DIR
-import pyemmo.api.pyleecan.get_translated_machine
+import pyemmo.api.pyleecan.translate_machine
 
 
 def test_get_translated_machine():
@@ -39,7 +39,7 @@ def test_get_translated_machine():
         movingband_r,
         magnetization_dict,
         geo_translation_dict,
-    ) = pyemmo.api.pyleecan.get_translated_machine.get_translated_machine(
+    ) = pyemmo.api.pyleecan.translate_machine.translate_machine(
         machine=machine,
     )
 

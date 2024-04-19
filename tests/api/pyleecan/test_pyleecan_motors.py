@@ -32,7 +32,7 @@ from pyleecan.Classes.MachineAsync import MachineAsync
 from pyleecan.Classes.MachineSync import MachineSync
 
 from pyemmo.definitions import ROOT_DIR
-from pyemmo.api.pyleecan.get_translated_machine import get_translated_machine
+from pyemmo.api.pyleecan.translate_machine import translate_machine
 
 MACHINE_FILE_DIR = os.path.join(DATA_DIR, "Machine")
 machine_test_dict = {}
@@ -54,7 +54,7 @@ for machineFile in os.listdir(MACHINE_FILE_DIR):
                 movingband_r,
                 magnetization_dict,
                 geo_translation_dict,
-            ) = get_translated_machine(machine)
+            ) = translate_machine(machine)
         except Exception as exce:
             machine_test_dict[machineFile] = (
                 f"Machine could not be translated. Error: {exce}"

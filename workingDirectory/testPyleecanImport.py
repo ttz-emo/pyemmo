@@ -39,7 +39,7 @@ from pyleecan.definitions import DATA_DIR, USER_DIR
 # from pyemmo.functions.plot import plot
 # from pyemmo.api.json.json import main
 from pyemmo.definitions import ROOT_DIR
-from pyemmo.api.pyleecan.get_translated_machine import get_translated_machine
+from pyemmo.api.pyleecan.translate_machine import translate_machine
 from pyemmo.api.pyleecan.create_pyleecan_simulation import create_simulation
 from pyemmo.api.pyleecan.create_param_dict import create_param_dict
 from pyemmo.api.pyleecan import main as pyleecanAPI
