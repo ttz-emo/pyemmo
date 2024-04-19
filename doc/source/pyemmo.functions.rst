@@ -10,10 +10,10 @@ CleanName module
    :undoc-members:
    :show-inheritance:
 
-ImportResults module
---------------------
+Import-Results module
+---------------------
 
-.. automodule:: pyemmo.functions.importResults
+.. automodule:: pyemmo.functions.import_results
    :members:
    :undoc-members:
    :show-inheritance:
