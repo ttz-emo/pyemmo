@@ -385,6 +385,18 @@ def runCalcforCurrent(param: dict):
     param["getdp"]["ResPath"] = RES_DIR
     pro_file = param["pro"]
     simulation_res_dir = os.path.join(RES_DIR, param["ResId"])
+    # Remove previous results if flag activated
+    if "Flag_ClearResults" in param["getdp"] and os.path.isdir(
+        simulation_res_dir
+    ):
+        if param["getdp"]["Flag_ClearResults"]:
+            logging.warning(
+                "Removing previous results from folder: %s",
+                simulation_res_dir,
+            )
+            for res_file in os.listdir(simulation_res_dir):
+                os.remove(os.path.join(simulation_res_dir,res_file))
+            os.rmdir(simulation_res_dir)
 
     post_operations = param["PostOp"] if "PostOp" in param else []
 
