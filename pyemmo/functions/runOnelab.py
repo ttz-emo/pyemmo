@@ -379,7 +379,14 @@ def runCalcforCurrent(param: dict):
 
     RES_DIR = param["res"]
     if not os.path.isdir(RES_DIR):
-        raise RuntimeError(f"Result directory does not exist: {RES_DIR}")
+        if os.path.isdir(os.path.dirname(RES_DIR)):
+            logging.info(f"Creating results directory: {RES_DIR}")
+            os.mkdir(RES_DIR)
+        else:
+            raise RuntimeError(
+                "Result directory does not exist and can not be created: "
+                + RES_DIR
+            )
     # adding additional results path because its initally set in the parameter geo file.
     # But if the files are moved the results folder might not exist any more!
     param["getdp"]["ResPath"] = RES_DIR
@@ -395,7 +402,7 @@ def runCalcforCurrent(param: dict):
                 simulation_res_dir,
             )
             for res_file in os.listdir(simulation_res_dir):
-                os.remove(os.path.join(simulation_res_dir,res_file))
+                os.remove(os.path.join(simulation_res_dir, res_file))
             os.rmdir(simulation_res_dir)
 
     post_operations = param["PostOp"] if "PostOp" in param else []
