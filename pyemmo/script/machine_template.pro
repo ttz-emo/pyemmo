@@ -195,7 +195,7 @@ DefineConstant[
     },
 
     res = {
-        PATH_RES, 
+        Str[PATH_RES], 
         Name StrCat[
             INPUT_ANA_SETTINGS_OUTPUT, "02Results folder path"
         ],
