@@ -776,12 +776,21 @@ Function
     theta0 = initrotor_pos * deg2rad;
     // change in position between 2 time steps in rad
     delta_theta[] = d_theta * deg2rad;
-    // stop time of the simulation
-    timemax = (finalrotor_pos - initrotor_pos) * deg2rad / wr;
-    // final rotor position in rad
-    thetaMax = finalrotor_pos * deg2rad;
-    // change in time between to time steps
-    delta_time = d_theta * deg2rad / wr;
+    If (n != 0)
+        // stop time of the simulation
+        timemax = (finalrotor_pos - initrotor_pos) * deg2rad / wr;
+        // final rotor position in rad
+        thetaMax = finalrotor_pos * deg2rad;
+        // time step
+        delta_time = d_theta * deg2rad / wr;
+    Else
+        // Case: Speed n = 0 rpm
+        timemax = nbStatorPeriods * T;
+        // final rotor position in rad
+        thetaMax = theta0;
+        // time step
+        delta_time = T / nbStepsPerPeriod;
+    EndIf
     // start time
     time0 = 0;
 
