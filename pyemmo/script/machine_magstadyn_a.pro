@@ -944,7 +944,7 @@ PostProcessing {
         // Here we define the equation to be used to calculate the flux linkage
         // For a explanation on this equation see : https://www.crcpress.com/Electrical-Machine-Analysis-Using-Finite-Elements/Bianchi/p/ book/9780849333996
         // in short the flux linkage of a given phase is defined by the surface integral
-        // int_PhaseX (\vec{J1A}*\vec{a}) dV, in which J1A is a vector pointing in the direction of the current flow, and having the norm   nbTurns/SurfaceCoil
+        // int_PhaseX (\vec{J1A}*\vec{a}) dV, in which J1A is a vector pointing in the direction of the current flow, and having the norm   nbrTurns/SurfaceCoil
         // since we are in the 2-D case both J1A and a are in the z-direction only ==> the integral is scalar!!
         // Since we have a 2-D model ==> we also need to multiply with the stack Length (dV = Lstk* dA)
         // Moreover, as we consider symmetry, we also need to multiply the result with the symmetryFactor
@@ -1108,7 +1108,7 @@ PostProcessing {
       { Name I_n ; Value { Term { [ CompZ[js[]] * SurfaceArea[] / NbWires[]  ]; In DomainS ; Jacobian Vol ; } } } // Shows the actual current in the specified coil region [A]
       // { Name I_S ; Value { 
       //   // Actual Phase current = int {Jz dA} / nbrOfSurfaces / nbrWires * nbrParallelPaths
-      //   Integral { [ CompZ[ js[] ] * Idir[] / nbSlotSurfsPerPhase / NbWires[] * NbrParallelPaths]; In DomainS ; Jacobian Vol ; Integration I1 ;} 
+      //   Integral { [ CompZ[ js[] ] * Idir[] / nbrSlotSurfsPerPhase / NbWires[] * NbrParallelPaths]; In DomainS ; Jacobian Vol ; Integration I1 ;} 
       // } } //
       { Name ir ; Value { Term { [ {ir} ] ; In Inds ; Jacobian Vol ; } } }
       // eddy currents in laminations:
@@ -1286,11 +1286,11 @@ PostOperation Debug UsingPost MagStaDyn_a_2D{
   // Print[ surfCoil[PhaseA_pos], OnGlobal, Format Table, LastTimeStepOnly, File StrCat[ResDir,"SurfCoil_Debug",ExtGnuplot], SendToServer StrCat[po_mecS,"SurfCoil"]{0}, Color "LightYellow"];
   // Print[ surf[PhaseA_pos], OnGlobal, Format Table, LastTimeStepOnly, File StrCat[ResDir,"Surf_Phase_A_pos",ExtGnuplot], SendToServer StrCat[po_mecS,"Surf_Phase_A_pos"]{0}, Color "LightYellow"];
   // Print[ domain, OnElementsOf PhaseA_pos, File StrCat[ResDir,"PhaseA_pos",ExtGmsh],LastTimeStepOnly];
-  // Print[ b_radial, OnGrid{(r_AG)*Sin[Pi/nbSlots-$A*Pi/180],(r_AG)*Cos[Pi/nbSlots-$A*Pi/180],0 }{0:360/SymmetryFactor,0,0},
+  // Print[ b_radial, OnGrid{(r_AG)*Sin[Pi/nbrSlots-$A*Pi/180],(r_AG)*Cos[Pi/nbrSlots-$A*Pi/180],0 }{0:360/SymmetryFactor,0,0},
   //   File StrCat[ResDir,"brad",ExtGmsh] ];
-  // Print[ b_tangent, OnGrid{(r_AG)*Sin[Pi/nbSlots-$A*Pi/180],(r_AG)*Cos[Pi/nbSlots-$A*Pi/180],0 }{0:360/SymmetryFactor,0,0},
+  // Print[ b_tangent, OnGrid{(r_AG)*Sin[Pi/nbrSlots-$A*Pi/180],(r_AG)*Cos[Pi/nbrSlots-$A*Pi/180],0 }{0:360/SymmetryFactor,0,0},
   //   File StrCat[ResDir,"btan",ExtGmsh] ];
-  If (nbRotorBars>0)
+  If (nbrRotorBars>0)
     Print[
       j, OnElementsOf Rotor_Bars, File StrCat[ResDir, "j_bars", ExtGmsh],
       LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps
@@ -1380,16 +1380,16 @@ PostOperation GetBRadTanAirGap UsingPost MagStaDyn_a_2D {
 // PostOperation GetBLocusStator UsingPost MagStaDyn_a_2D {
 
 //   // Middle of the tooth
-//   Print[ b_radial, OnGrid{-(Rad3-YT+(Rad1+Gap))/2*Sin[$A*2*Pi/nbSlots],(Rad3-YT+(Rad1+Gap))/2*Cos[$A*2*Pi/nbSlots],0 }{0:nbSlots/SymmetryFactor-1,0,0}, File StrCat[ResDir,"brad_tooth_center",ExtGnuplot], Format Table ];
-//   Print[ b_tangent, OnGrid{-(Rad3-YT+(Rad1+Gap))/2*Sin[$A*2*Pi/nbSlots],(Rad3-YT+(Rad1+Gap))/2*Cos[$A*2*Pi/nbSlots],0 }{0:nbSlots/SymmetryFactor-1,0,0}, File StrCat[ResDir,"btan_tooth_center",ExtGnuplot], Format Table ];
+//   Print[ b_radial, OnGrid{-(Rad3-YT+(Rad1+Gap))/2*Sin[$A*2*Pi/nbrSlots],(Rad3-YT+(Rad1+Gap))/2*Cos[$A*2*Pi/nbrSlots],0 }{0:nbrSlots/SymmetryFactor-1,0,0}, File StrCat[ResDir,"brad_tooth_center",ExtGnuplot], Format Table ];
+//   Print[ b_tangent, OnGrid{-(Rad3-YT+(Rad1+Gap))/2*Sin[$A*2*Pi/nbrSlots],(Rad3-YT+(Rad1+Gap))/2*Cos[$A*2*Pi/nbrSlots],0 }{0:nbrSlots/SymmetryFactor-1,0,0}, File StrCat[ResDir,"btan_tooth_center",ExtGnuplot], Format Table ];
 
 //   // Middle of yoke, middle slot
-//   Print[ b_radial, OnGrid{-(Rad3-YT/2)*Sin[-Pi/nbSlots + $A*2*Pi/nbSlots],(Rad3-YT/2)*Cos[-Pi/nbSlots +$A*2*Pi/nbSlots],0 }{0:nbSlots/SymmetryFactor-1,0,0}, File StrCat[ResDir,"brad_tooth_yoke",ExtGnuplot], Format Table ];
-//   Print[ b_tangent, OnGrid{-(Rad3-YT/2)*Sin[-Pi/nbSlots +$A*2*Pi/nbSlots],(Rad3-YT/2)*Cos[-Pi/nbSlots +$A*2*Pi/nbSlots],0 }{0:nbSlots/SymmetryFactor-1,0,0}, File StrCat[ResDir,"btan_tooth_yoke",ExtGnuplot], Format Table ];
+//   Print[ b_radial, OnGrid{-(Rad3-YT/2)*Sin[-Pi/nbrSlots + $A*2*Pi/nbrSlots],(Rad3-YT/2)*Cos[-Pi/nbrSlots +$A*2*Pi/nbrSlots],0 }{0:nbrSlots/SymmetryFactor-1,0,0}, File StrCat[ResDir,"brad_tooth_yoke",ExtGnuplot], Format Table ];
+//   Print[ b_tangent, OnGrid{-(Rad3-YT/2)*Sin[-Pi/nbrSlots +$A*2*Pi/nbrSlots],(Rad3-YT/2)*Cos[-Pi/nbrSlots +$A*2*Pi/nbrSlots],0 }{0:nbrSlots/SymmetryFactor-1,0,0}, File StrCat[ResDir,"btan_tooth_yoke",ExtGnuplot], Format Table ];
 
 //   // Tooth tip
-//   Print[ b_radial, OnGrid{-(Rad1+Gap+TTH)*Sin[-Pi/nbSlots/2 + $A*2*Pi/nbSlots],(Rad1+Gap+TTH)*Cos[-Pi/nbSlots/2 +$A*2*Pi/nbSlots],0 }{0:nbSlots/SymmetryFactor-1,0,0}, File StrCat[ResDir,"brad_tooth_tip",ExtGnuplot], Format Table];
-//   Print[ b_tangent, OnGrid{-(Rad1+Gap+TTH)*Sin[-Pi/nbSlots/2 +$A*2*Pi/nbSlots],(Rad1+Gap+TTH)*Cos[-Pi/nbSlots/2 +$A*2*Pi/nbSlots],0 }{0:nbSlots/SymmetryFactor-1,0,0}, File StrCat[ResDir,"btan_tooth_tip",ExtGnuplot], Format Table];
+//   Print[ b_radial, OnGrid{-(Rad1+Gap+TTH)*Sin[-Pi/nbrSlots/2 + $A*2*Pi/nbrSlots],(Rad1+Gap+TTH)*Cos[-Pi/nbrSlots/2 +$A*2*Pi/nbrSlots],0 }{0:nbrSlots/SymmetryFactor-1,0,0}, File StrCat[ResDir,"brad_tooth_tip",ExtGnuplot], Format Table];
+//   Print[ b_tangent, OnGrid{-(Rad1+Gap+TTH)*Sin[-Pi/nbrSlots/2 +$A*2*Pi/nbrSlots],(Rad1+Gap+TTH)*Cos[-Pi/nbrSlots/2 +$A*2*Pi/nbrSlots],0 }{0:nbrSlots/SymmetryFactor-1,0,0}, File StrCat[ResDir,"btan_tooth_tip",ExtGnuplot], Format Table];
 // }
 
 PostOperation GetShortCircuitCurrent UsingPost MagStaDyn_a_2D {

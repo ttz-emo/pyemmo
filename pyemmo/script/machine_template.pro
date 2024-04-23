@@ -52,7 +52,7 @@ DefineConstant[
     // In order to be able to use the machine_magstadyn_a.pro file which is included
     // in onelab, we will have to define some additional constants number of
     // NbrPolesTot in the model
-    nbSlots = NBR_SLOTS,
+    nbrSlots = NBR_SLOTS,
     NbrPolesTot = NBR_POLE_PAIRS * 2,
     NbrPolePairs = NbrPolesTot / 2,
     Flag_MB = 1, // Allways use Movingband!
@@ -82,15 +82,15 @@ GROUP_CODE
 // ====================== ANALYSIS AND SOLVER PARAMETERS ======================
 //=============================================================================
 DefineConstant[
-    nbMagnets = NbrRegions[Rotor_Magnets],  // number of rotor magnet domains
-    nbRotorBars = NbrRegions[Rotor_Bars],   // number of rotor bar domains
+    nbrMagnets = NbrRegions[Rotor_Magnets],  // number of rotor magnet domains
+    nbrRotorBars = NbrRegions[Rotor_Bars],   // number of rotor bar domains
 
     Flag_ExpertMode = {1, Name "01View/Expert Mode", Choices {0, 1}},
 
     Flag_Debug = {1, Name "01View/Debug", Choices {0,1}},
 
     MachineType = {
-        (nbRotorBars > 0), Name StrCat[INPUT_ANA_SETTINGS, "00Machine Type"],
+        (nbrRotorBars > 0), Name StrCat[INPUT_ANA_SETTINGS, "00Machine Type"],
         Choices {SYNCHRONOUS = "Synchronous", ASYNCHRONOUS = "Asynchronous"},
         Visible Flag_Debug,
         ReadOnly 1
@@ -135,13 +135,13 @@ DefineConstant[
 
 
     // ASYNCHRONOUS
-    nbStatorPeriods = {
+    nbrStatorPeriods = {
         10,
         Name StrCat[INPUT_ANA_SETTINGS, "07Number of Stator Periods"],
         Visible Flag_AnalysisType == TRANSIENT && (MachineType==ASYNCHRONOUS || RPM == 0),
         Help "Number of stator periods to determine simulation time"
     },
-    nbStepsPerPeriod = {
+    nbrStepsPerPeriod = {
         90,
         Name StrCat[INPUT_ANA_SETTINGS, "08Time steps stator period"],
         Visible Flag_AnalysisType == TRANSIENT && RPM == 0,
@@ -155,7 +155,7 @@ DefineConstant[
             initrotor_pos
             : (MachineType==SYNCHRONOUS) ? 
                 (FINAL_ROTOR_POS)
-                :(nbStatorPeriods*360/NbrPolePairs+initrotor_pos),
+                :(nbrStatorPeriods*360/NbrPolePairs+initrotor_pos),
         Name StrCat[INPUT_ANA_SETTINGS, "06Final rotor position"],
         Visible Flag_ExpertMode && Flag_AnalysisType == TRANSIENT,
         ReadOnly MachineType==ASYNCHRONOUS,
@@ -167,7 +167,7 @@ DefineConstant[
     NbSteps = {
         (RPM != 0) ? 
             Ceil[(finalrotor_pos - initrotor_pos) / (d_theta) + 1]
-            : (nbStatorPeriods*nbStepsPerPeriod + 1),
+            : (nbrStatorPeriods*nbrStepsPerPeriod + 1),
         Name StrCat[INPUT_ANA_SETTINGS, "10Number of Time Steps"],
         Visible Flag_ExpertMode && Flag_AnalysisType == TRANSIENT,
         ReadOnly 1
@@ -268,7 +268,7 @@ DefineConstant[
             "02Calculate Eddy Current in Magnets (2D)"
         ],
         Choices{0, 1},
-        Visible (Flag_ExpertMode && nbMagnets > 0),
+        Visible (Flag_ExpertMode && nbrMagnets > 0),
         Help "Consider Eddy-Current in the PMs"
     },
 
@@ -379,7 +379,7 @@ DefineConstant[
 DefineConstant[
     //========================== WINDING PARAMETERS ==========================
 
-    nbTurns = {
+    nbrTurns = {
         NBR_TURNS_IN_FACE,Name StrCat[
             INPUT_ELEC_WINDINGS, "01Number of wires per slot surface"
         ],
@@ -506,11 +506,11 @@ DefineConstant[
     Vc = VV
 
     // ROTOR CIRCUIT
-    Flag_Cir_RotorCage = {(nbRotorBars > 0) , Choices{0,1},
+    Flag_Cir_RotorCage = {(nbrRotorBars > 0) , Choices{0,1},
         Name StrCat(
             INPUT_ELEC_CIRCUIT_ROTOR,"Circuit/10Use circuit in rotor cage"
             ),
-        Visible (nbRotorBars > 0)
+        Visible (nbrRotorBars > 0)
         // ReadOnly (Flag_SrcType_Stator==1)
     },
 
@@ -520,7 +520,7 @@ DefineConstant[
             "Circuit/11Resistance of endring segment [Ohm]"
         ],
         ReadOnly !Flag_Cir_RotorCage,
-        Visible (nbRotorBars>0)
+        Visible (nbrRotorBars>0)
     },
     L_endring_segment = {4.8e-9,
         Name StrCat[
@@ -528,7 +528,7 @@ DefineConstant[
             "Circuit/12Inductance of endring segment [H]"
         ],
         ReadOnly !Flag_Cir_RotorCage,
-        Visible (nbRotorBars>0)
+        Visible (nbrRotorBars>0)
     }
 ];
 //=============================================================================
@@ -564,7 +564,7 @@ Group
     // of each coil
     // If(Flag_EW)
     //     Stator_Air += Region[{OUTERAIR_S, EW_AIR}];
-    //     For coil In{1 : nbSlots}
+    //     For coil In{1 : nbrSlots}
     //         For reg In{1 : EndWindingReg + 2} Coil ~ { coil }
     //             ~{reg} = Region[{COILS_3D ~{coil} ~{reg}}];
     //             Coil ~{coil} += Region[{COILS_3D ~{coil} ~{reg}}];
@@ -587,7 +587,7 @@ Group
         Stator_IndsP = Region[{Stator_Ind_Ap, Stator_Ind_Bp, Stator_Ind_Cp}];
     Else
         // unused for now!
-        For i In{0 : nbSlots - 1}
+        For i In{0 : nbrSlots - 1}
             If(Phases(i) == 1)
                 If(CoilDir(i) == 1)
                     Stator_Ind_Ap += Region[{Coil ~{i + 1}}];
@@ -723,10 +723,10 @@ Function
 
 Function
 {
-    NbWires[] = nbTurns;                                          // number of turns
+    NbWires[] = nbrTurns;                                          // number of turns
     If(Flag_3D)
         // // unused for now!
-        // SurfCoil[] = SurfaceArea[]{SURF_COND_STATOR} / (nbSlots / SymmetryFactor * 2);
+        // SurfCoil[] = SurfaceArea[]{SURF_COND_STATOR} / (nbrSlots / SymmetryFactor * 2);
         // Surf_Airgap_r[] = SurfaceArea[]{MBR_AIR_SURF};
         // Surf_Airgap_s[] = SurfaceArea[]{MBS_AIR_SURF};
     Else
@@ -759,7 +759,7 @@ Function
             ReadOnly 1,
             Visible MachineType == ASYNCHRONOUS
         }
-        asm_finalrotor_pos = 360*(nbStatorPeriods/freq_stator)*n
+        asm_finalrotor_pos = 360*(nbrStatorPeriods/freq_stator)*n
     ];
     If (MachineType==ASYNCHRONOUS && n != 0)
         // Reset ONELAB parameters after calculating stator frequency
@@ -790,11 +790,11 @@ Function
         delta_time = d_theta * deg2rad / wr;
     Else
         // Case: Speed n = 0 rpm
-        timemax = nbStatorPeriods * T;
+        timemax = nbrStatorPeriods * T;
         // final rotor position in rad
         thetaMax = theta0;
         // time step
-        delta_time = T / nbStepsPerPeriod;
+        delta_time = T / nbrStepsPerPeriod;
     EndIf
     // start time
     time0 = 0;
@@ -826,7 +826,7 @@ Function
                   0, 0, 1];
     RotCenter_Current[] = Rz[$Time * wr] * RotCenter_i[];
 
-    // if the nbSlots or NbrPolesTot are changed we have to change the offset
+    // if the nbrSlots or NbrPolesTot are changed we have to change the offset
     // Theta_Park[]	= (RotorPosition[]-OFFSET*deg2rad)*NbrPolePairs;
     // Offset moved outside the brackets -> Offset in electrical degrees and in rotation direction.
     // (Rotation direction is defined by Park matrix in magstadyn file.)
