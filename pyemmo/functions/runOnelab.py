@@ -168,15 +168,19 @@ def createCmdCommand(
 
     Args:
         onelabFile (str): Path to the .geo or .pro file.
-        useGUI (bool): If True command will open the file in the gmsh gui (independed if its a geo or pro file).
-        gmshPath (str): Path to the gmsh executable. By defaults the gmsh exe is searched.
-        getdpPath (str, optional): path to a getdp executable. Path will only be used if gui is not used. Defaults to "".
+        useGUI (bool): If True command will open the file in the gmsh gui
+            (independed if its a geo or pro file).
+        gmshPath (str): Path to the gmsh executable. By defaults the gmsh exe
+            is searched.
+        getdpPath (str, optional): path to a getdp executable. Path will only
+            be used if gui is not used. Defaults to "".
         paramDict (Dict[str, Union[str, int, float]], optional):
             Dict with parameters to set in the simulation. Defaults to None.
-            You can use the value "verbosity level" to change verbosity in GetDP
-            from 0 to 99.
+            You can use the value "verbosity level" to change verbosity in
+            GetDP from 0 to 99.
 
-                E.g. to set the onelab parameter "IQ_RMS" for the quadrature rms current to 10A the dict would look like:
+                E.g. to set the onelab parameter "IQ_RMS" for the quadrature
+                rms current to 10A the dict would look like:
 
                 .. code:: python
 
@@ -184,8 +188,10 @@ def createCmdCommand(
                         "IQ_RMS": 10,
                     }
 
-        postOperations (List[str], optional): List containing the PostOperation names that should be performed after the solving stage.
-            ! PostOperations will only be executed if a getdp executable is given !
+        postOperations (List[str], optional): List containing the PostOperation
+            names that should be performed after the solving stage.
+            PostOperations will only be executed if a getdp executable is
+            given!
 
     Returns:
         str: string of the executable command-line command
@@ -239,6 +245,7 @@ def createCmdCommand(
                     else:
                         # set the gmsh file extension to mesh
                         gmsh_command = f"{gmshPath} {filePath}.geo -run "
+                    # If log file name is given, add file logging flag:
                     if logFileName:
                         gmsh_command += f" -log {logFileName} "
                     # add post operations
