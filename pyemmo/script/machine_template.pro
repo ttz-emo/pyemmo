@@ -127,9 +127,10 @@ DefineConstant[
     },
 
     d_theta = {
-        (RPM!=0) ? ANGLE_INCREMENT : 0 ,
+        (RPM!=0) ? ANGLE_INCREMENT : 0. ,
         Name StrCat[INPUT_ANA_SETTINGS, "05Angle Increment [mech deg]"],
-        Visible Flag_ExpertMode && Flag_AnalysisType == TRANSIENT
+        Visible Flag_ExpertMode && Flag_AnalysisType == TRANSIENT,
+        ReadOnly RPM==0
     },
 
 
@@ -150,9 +151,11 @@ DefineConstant[
 
     // SYNCHRONOUS
     finalrotor_pos = {
-        (MachineType==SYNCHRONOUS)?(
-            (RPM!=0)?FINAL_ROTOR_POS:initrotor_pos
-            ):(nbStatorPeriods*360/NbrPolePairs+initrotor_pos),
+        (RPM==0) ? 
+            initrotor_pos
+            : (MachineType==SYNCHRONOUS) ? 
+                (FINAL_ROTOR_POS)
+                :(nbStatorPeriods*360/NbrPolePairs+initrotor_pos),
         Name StrCat[INPUT_ANA_SETTINGS, "06Final rotor position"],
         Visible Flag_ExpertMode && Flag_AnalysisType == TRANSIENT,
         ReadOnly MachineType==ASYNCHRONOUS,
@@ -162,7 +165,9 @@ DefineConstant[
     // END SYNCHRONOUS
 
     NbSteps = {
-        (RPM != 0)?Ceil[(finalrotor_pos - initrotor_pos) / (d_theta) + 1]:(nbStatorPeriods*nbStepsPerPeriod),
+        (RPM != 0) ? 
+            Ceil[(finalrotor_pos - initrotor_pos) / (d_theta) + 1]
+            : (nbStatorPeriods*nbStepsPerPeriod + 1),
         Name StrCat[INPUT_ANA_SETTINGS, "10Number of Time Steps"],
         Visible Flag_ExpertMode && Flag_AnalysisType == TRANSIENT,
         ReadOnly 1
