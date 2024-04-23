@@ -51,7 +51,7 @@ n = 0
 f_s = f_r + 2 * n / 60
 T_s = 1 / f_s
 nbr_stator_periods = 4
-nbr_steps_per_period = 256
+nbr_steps_per_period = 128
 # Zum Abgleich mit Maxwell
 Nbr_Sect = 2048  # Bandsegmentierung
 multi = 8  # Default=4 number of Segments per timestep
@@ -65,7 +65,7 @@ logging.debug("Timestep %e s.", timestep)
 logging.debug("One time step equals %f° mechanical degrees.", winkelschritt)
 logging.debug("Stop time of simulation: %.7e s", int(nbrSteps) * timestep)
 # %%
-resId = "blockedRotor_1Hz_4Periods_256Steps_NewCirc"
+resId = "blockedRotor_1Hz_4Periods_128Steps_NewCirc"
 # resId = "blockedRotor_1Hz_Circ"
 paramDict = {
     "getdp": {
@@ -82,10 +82,10 @@ paramDict = {
         "Flag_PrintFields": 0,
         "Flag_Debug": 1,
         "Flag_ClearResults": 1,
-        "verbosity level": 3,
-        ## NEW
+        "verbosity level": 5,
         # "AxialLength_R": 1,
         # "AxialLength_S": 1,
+        "NbrParallelPaths": 1,
         "R_endring_segment": 16e-7 / 2,  # Initial value: 16e-7,
         "L_endring_segment": 2e-9 / 2,
         "Flag_Cir_RotorCage": 1,
