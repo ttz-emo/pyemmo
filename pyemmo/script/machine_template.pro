@@ -120,23 +120,39 @@ DefineConstant[
         Units "deg mech"
     },
 
+    RPM = {
+        SPEED_RPM, Name StrCat[INPUT_ANA_SETTINGS, "09Rotational Speed"],
+        Visible Flag_ExpertMode && Flag_AnalysisType == TRANSIENT,
+        Units "min^-1"
+    },
+
     d_theta = {
-        ANGLE_INCREMENT, Name StrCat[INPUT_ANA_SETTINGS, "05Angle Increment [mech deg]"],
+        (RPM!=0) ? ANGLE_INCREMENT : 0 ,
+        Name StrCat[INPUT_ANA_SETTINGS, "05Angle Increment [mech deg]"],
         Visible Flag_ExpertMode && Flag_AnalysisType == TRANSIENT
     },
+
 
     // ASYNCHRONOUS
     nbStatorPeriods = {
         10,
-        Name StrCat[INPUT_ANA_SETTINGS, "05Number of Stator Periods"],
-        Visible Flag_AnalysisType == TRANSIENT && MachineType==ASYNCHRONOUS,
+        Name StrCat[INPUT_ANA_SETTINGS, "07Number of Stator Periods"],
+        Visible Flag_AnalysisType == TRANSIENT && (MachineType==ASYNCHRONOUS || RPM == 0),
+        Help "Number of stator periods to determine simulation time"
+    },
+    nbStepsPerPeriod = {
+        90,
+        Name StrCat[INPUT_ANA_SETTINGS, "08Time steps stator period"],
+        Visible Flag_AnalysisType == TRANSIENT && RPM == 0,
         Help "Number of stator periods to determine simulation time"
     },
     // END ASYNCHRONOUS
 
     // SYNCHRONOUS
     finalrotor_pos = {
-        (MachineType==SYNCHRONOUS)?FINAL_ROTOR_POS:(nbStatorPeriods*360/NbrPolePairs+initrotor_pos),
+        (MachineType==SYNCHRONOUS)?(
+            (RPM!=0)?FINAL_ROTOR_POS:initrotor_pos
+            ):(nbStatorPeriods*360/NbrPolePairs+initrotor_pos),
         Name StrCat[INPUT_ANA_SETTINGS, "06Final rotor position"],
         Visible Flag_ExpertMode && Flag_AnalysisType == TRANSIENT,
         ReadOnly MachineType==ASYNCHRONOUS,
@@ -146,16 +162,10 @@ DefineConstant[
     // END SYNCHRONOUS
 
     NbSteps = {
-        Ceil[(finalrotor_pos - initrotor_pos) / (d_theta) + 1],
-        Name StrCat[INPUT_ANA_SETTINGS, "07Number of Time Steps"],
+        (RPM != 0)?Ceil[(finalrotor_pos - initrotor_pos) / (d_theta) + 1]:(nbStatorPeriods*nbStepsPerPeriod),
+        Name StrCat[INPUT_ANA_SETTINGS, "10Number of Time Steps"],
         Visible Flag_ExpertMode && Flag_AnalysisType == TRANSIENT,
         ReadOnly 1
-    },
-
-    RPM = {
-        SPEED_RPM, Name StrCat[INPUT_ANA_SETTINGS, "08Rotational Speed"],
-        Visible Flag_ExpertMode && Flag_AnalysisType == TRANSIENT,
-        Units "min^-1"
     },
 
     SymmetryFactor = {
@@ -738,16 +748,15 @@ Function
         }
         asm_finalrotor_pos = 360*(nbStatorPeriods/freq_stator)*n
     ];
-    If (MachineType==ASYNCHRONOUS)
+    If (MachineType==ASYNCHRONOUS && n != 0)
         // Reset ONELAB parameters after calculating stator frequency
         // Reset final rotor position (we did not know fs before)
         SetNumber[
             StrCat[INPUT_ANA_SETTINGS, "06Final rotor position"],
             asm_finalrotor_pos
         ];
-        // Reset number of timesteps due to slip
         SetNumber[
-            StrCat[INPUT_ANA_SETTINGS, "07Number of Time Steps"],
+            StrCat[INPUT_ANA_SETTINGS, "10Number of Time Steps"],
             Ceil[(asm_finalrotor_pos - initrotor_pos) / (d_theta) + 1]
         ];
     EndIf
