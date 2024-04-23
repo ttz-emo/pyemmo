@@ -184,27 +184,35 @@ DefineConstant[
         Visible Flag_ExpertMode && Flag_AnalysisType == TRANSIENT
     },
 
+    res = {
+        PATH_RES, 
+        Name StrCat[
+            INPUT_ANA_SETTINGS_OUTPUT, "02Results folder path"
+        ],
+        Visible Flag_Debug
+    }
     ResId = {
-        "/", Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "02Results folder name"],
-        Help "Name of the folder inside the results folder, where the result
-            files of THIS simulation should be stored."
+        "/", Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "03Results folder name"],
+        Help "Name of the directory inside the results folder, where the result
+            files of THIS simulation should be stored. This directory will be
+            automatically created by GetDP."
     },
 
     Flag_ClearResults = {
         0, Name StrCat[
-            INPUT_ANA_SETTINGS_OUTPUT, "03Delete previous result files"
+            INPUT_ANA_SETTINGS_OUTPUT, "04Delete previous result files"
         ],
         Choices {0,1}
     },
 
     Flag_PrintFields = {
-        1, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "04Show Local Fields"],
+        1, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "05Show Local Fields"],
         Choices{0, 1}
     },
 
     Flag_Calculate_ONELAB = {
         1, Name StrCat[
-            INPUT_ANA_SETTINGS_OUTPUT, "05Calculate torque: Arrkios method"
+            INPUT_ANA_SETTINGS_OUTPUT, "06Calculate torque: Arrkios method"
         ],
         Choices {0,1},
         Help "ONELAB implementation of Arrkios method.",
@@ -213,19 +221,19 @@ DefineConstant[
 
     Flag_Calculate_VW = {
         0, Name StrCat[
-            INPUT_ANA_SETTINGS_OUTPUT, "06Calculate torque: Virtual Work"
+            INPUT_ANA_SETTINGS_OUTPUT, "07Calculate torque: Virtual Work"
         ],
         Choices {0,1},
         Visible Flag_ExpertMode
     },
 
     Flag_Inductance = {
-        0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "07Compute inductances"],
+        0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "08Compute inductances"],
         Choices{0, 1}
     },
 
     Flag_diffInductance = {
-        1, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "08Inductance Computation Type"],
+        1, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "09Inductance Computation Type"],
         Choices{0 = "Apparent", 1 = "Incremental"},
         Visible Flag_Inductance
     }
