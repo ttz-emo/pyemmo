@@ -1521,9 +1521,12 @@ class Script:
                 bhArray = mat.BH
                 bString = "{"
                 hString = "{"
-                for bhValue in bhArray:
+                for i, bhValue in enumerate(bhArray):
                     bString += str(bhValue[0]) + ","
                     hString += str(bhValue[1]) + ","
+                    if i%10==0:
+                        bString += "\n"
+                        hString += "\n"
                 bString = bString[0 : len(bString) - 1] + "}"
                 hString = hString[0 : len(hString) - 1] + "}"
                 matFun.add_params({f"Mat_h_{matName}": hString})
