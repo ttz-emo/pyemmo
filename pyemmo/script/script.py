@@ -1524,7 +1524,7 @@ class Script:
                 for i, bhValue in enumerate(bhArray):
                     bString += str(bhValue[0]) + ","
                     hString += str(bhValue[1]) + ","
-                    if i%10==0:
+                    if (i % 9 == 0) and ((i - 1) != bhArray.shape[0]):
                         bString += "\n"
                         hString += "\n"
                 bString = bString[0 : len(bString) - 1] + "}"
