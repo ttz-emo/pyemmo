@@ -195,7 +195,25 @@ class Script:
         self.functionMagnetisation = FunctionGetDP()
 
         self._postOperation: PostOperation = PostOperation()
-
+        # TODO: Add default Post Operation:
+        # PostOperation{
+        #     { 
+        #         Name get_local_fields_post_sim; NameOfPostProcessing MagStaDyn_a_2D; 
+        #         Operation {       
+        #             Print[ js, OnElementsOf DomainS, File StrCat[ResDir,"js",ExtGmsh]] ;
+        #             Print[ b,  OnElementsOf Domain, File StrCat[ResDir,"b",ExtGmsh] ] ;
+        #             Print[ bn,  OnElementsOf Domain, File StrCat[ResDir,"bn",ExtGmsh]] ;
+        #             Print[ mu, OnElementsOf Domain, File StrCat[ResDir,"mu_r",ExtGmsh]] ;
+        #             Print[ az, OnElementsOf Domain, File StrCat[ResDir,"az",ExtGmsh] ] ;
+        #             // Echo[ Str["l=PostProcessing.NbViews-1;", "View[l].IntervalsType = 1;", "View[l].NbIso = 30;", "View[l].Light = 0;", "View[l].LineWidth = 2;"], File StrCat[ResDir,"tmp.geo"], LastTimeStepOnly] ;
+        #             If (Flag_Cir_RotorCage)
+        #             Print[
+        #                 j, OnElementsOf Rotor_Bars, File StrCat[ResDir, "j_RotorBars", ExtGmsh]
+        #             ];
+        #             EndIf
+        #     }
+        #     }
+        # }
         self.factory = factory  # gmsh geometry kernel
 
         ### FOR DEBUGGING ###
