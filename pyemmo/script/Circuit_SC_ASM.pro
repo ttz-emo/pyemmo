@@ -62,15 +62,39 @@ Function {
       NLl2~{k} = (k<nbrRotorBars) ? NB2~{k2} : NB1~{1} ;
     EndFor
 
-  ElseIf (NbrPolesInModel>1 && NbrPolesInModel%2)
-    For k In {1:nbrRotorBars}
-      NR1~{k} = NB1~{k}; // first node number for each endring resistance
-      k2 = (k<nbrRotorBars) ? k+1 : 1.;
-      // second node number for each endring resistance:
-      NR2~{k} = (k<nbrRotorBars) ? NB1~{k2} : NB1~{1} ;
-      NL1~{k} = NB2~{k}; // first node number for each endring inductance
-      // second node number for each endring inductance:
-      NL2~{k} = (k<nbrRotorBars) ? NB2~{k2} : NB2~{1} ;
+    ElseIf (NbrPolesInModel>1 && !(NbrPolesInModel%2))
+      For k In {1:nbrRotorBars}
+        // NR1~{k} = NB1~{k}; // first node number for each endring resistance
+        // k2 = (k<nbrRotorBars) ? k+1 : 1.;
+        // // second node number for each endring resistance:
+        // NR2~{k} = (k<nbrRotorBars) ? NB1~{k2} : NB1~{1} ;
+        // NL1~{k} = NB2~{k}; // first node number for each endring inductance
+        // // second node number for each endring inductance:
+        // NL2~{k} = (k<nbrRotorBars) ? NB2~{k2} : NB2~{1} ;
+  
+        // Upper Branch
+        NRu1~{k} = NB1~{k}; // first node number for upper endring resistance
+        // second node number for each endring resistance:
+        NRu2~{k} = NIM1~{k}; // = intermediate node 
+        
+        NLu1~{k} = NRu2~{k}; // first node number for each endring inductance (=
+        // output of resistance)
+        // second node number for each endring inductance:
+        k2 = (k<nbrRotorBars) ? k+1 : 1.; // We need this since in the next
+        // inline if statement, the first and second option will both be
+        // evaluated at runtime, even if only one of the option is used (like in
+        // a real if-case).
+        NLu2~{k} = (k<nbrRotorBars) ? NB1~{k2} : NB1~{1} ;
+  
+        // Lower Branch
+        NRl1~{k} = NB2~{k}; // first node number for lower endring resistance
+        // second node number for lower endring resistance:
+        NRl2~{k} = NIM2~{k}; // = lower intermediate node 
+  
+        NLl1~{k} = NRl2~{k}; // first node number for lower endring inductance (=
+        // output of lower resistance)
+        // second node number for lower endring inductance:
+        NLl2~{k} = (k<nbrRotorBars) ? NB2~{k2} : NB2~{1} ;
     EndFor
   Else
     Printf[
