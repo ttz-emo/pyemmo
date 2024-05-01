@@ -15,6 +15,8 @@ def test_run_gmsh():
     out = subprocess.run(
         gmsh_command, check=True, capture_output=True, text=True
     )
+    # TODO: Check that .db and .msh file are created and clean them up after
+    # test run
 
 
 if __name__ == "__main__":
