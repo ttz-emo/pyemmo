@@ -734,6 +734,9 @@ Function
         //                         RegionListAp(0): accesses the first element of the list which is a region number
         SurfCoil[] = SurfaceArea[]{RegionListAp(0)}; // save the area of on coil(side) in SurfCoil for current density calculation
         // Surf_Airgap_r[] = SurfaceArea[]{Region[Rotor_Airgap]}; // seems to be unused
+        If (MachineType==ASYNCHRONOUS) // && nbrRotorBars > 0
+            RegionListBars() = GetRegions[Rotor_Bars];
+            SurfBar[] = SurfaceArea[]{RegionListBars(0)};
     EndIf
 
     n = RPM / 60; // rotational frequency in Hz

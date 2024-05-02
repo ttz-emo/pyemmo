@@ -1104,6 +1104,8 @@ PostProcessing {
       { Name j  ; Value { Term { [ -sigma[]*(Dt[{a}]+{ur}) ]; In DomainC ; Jacobian Vol ; } } }
       { Name js ; Value { Term { [ js[] ] ;      In DomainS ; Jacobian Vol ; } } }
       { Name jz ; Value { Term { [ CompZ[-sigma[]*(Dt[{a}]+{ur})] ]; In DomainC ; Jacobian Vol ; } } }
+      { Name intJz ; Value { Integral { [ CompZ[-sigma[]*(Dt[{a}]+{ur})] ]; In DomainC ; Jacobian Vol ; Integration I1; } } }
+      // { Name intSigma ; Value { Integral { [ sigma[] ]; In DomainC ; Jacobian Vol ; } } }
       { Name Vmag ; Value { Term { [ CompZ[js[]] * SurfaceArea[]  ]; In DomainS ; Jacobian Vol ; } } } // magnetic voltage (magentische Durchflutung /Theta der Wicklung) [A Turns]
       { Name I_n ; Value { Term { [ CompZ[js[]] * SurfaceArea[] / NbWires[]  ]; In DomainS ; Jacobian Vol ; } } } // Shows the actual current in the specified coil region [A]
       // { Name I_S ; Value { 
@@ -1218,7 +1220,10 @@ PostProcessing {
      } }
 
      { Name RotorPosition_deg ; Value { Term { Type Global; [ $RPos ] ; In DomainDummy ; } } }
-     { Name R ; Value { Term { Type Global; [ Rb[] ] ; In DomainDummy; } } }
+     { Name R ; Value { 
+        Term { Type Global; [ Rb[] ] ; In DomainDummy; }
+        Integral { [ axialLength[] / sigma[] / SurfBar[]^2]; In Rotor_Bars; Jacobian Vol; Integration I1; }
+      } }
      { Name Theta_Park_deg ; Value { Term { Type Global; [ $PAng ] ; In DomainDummy ; } } }
      { Name IA  ; Value { Term { Type Global; [ II*IA[] ] ; In DomainDummy ; } } }
      { Name IB  ; Value { Term { Type Global; [ II*IB[] ] ; In DomainDummy ; } } }
@@ -1311,6 +1316,16 @@ PostOperation Debug UsingPost MagStaDyn_a_2D{
         I, OnRegion Rotor_Bar_1, Format Table,
         File > StrCat[ResDir,"I_bar_1",ExtGnuplot], LastTimeStepOnly,
         SendToServer StrCat[poI,"I (Bar 1)"]{0}, Color "LightYellow"
+      ];
+      Print[
+        intJz[Rotor_Bar_1], OnGlobal, Format Table,
+        File > StrCat[ResDir,"intJz_bar_1",ExtGnuplot], LastTimeStepOnly,
+        SendToServer StrCat[poI,"I (Bar 1) = IntJz (Bar 1)"]{0}, Color "LightYellow"
+      ];
+      Print[
+        R[Rotor_Bar_1], OnGlobal, Format Table,
+        File > StrCat[ResDir,"R_bar_1",ExtGnuplot], LastTimeStepOnly,
+        SendToServer StrCat[poI,"R (Bar 1)"]{0}, Color "LightRed"
       ];
       Print[
         I, OnRegion Rotor_Bar_9, Format Table,
