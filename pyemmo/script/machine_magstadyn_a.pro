@@ -1224,6 +1224,15 @@ PostProcessing {
         Term { Type Global; [ Rb[] ] ; In DomainDummy; }
         Integral { [ axialLength[] / sigma[] / SurfBar[]^2]; In Rotor_Bars; Jacobian Vol; Integration I1; }
       } }
+      For ibar In {1:nbrRotorBars}
+        { Name R_Bar~{ibar}; Value{
+          Integral { [ 
+            // = P_el / I_bar^2 
+            axialLength[]*sigma[]*SquNorm[(Dt[{a}]+{ur})] / SquNorm[$I_Bar~{ibar}]
+          ]; In Rotor_Bar~{ibar}; Jacobian Vol; Integration I1; }
+          }
+        }
+      EndFor
      { Name Theta_Park_deg ; Value { Term { Type Global; [ $PAng ] ; In DomainDummy ; } } }
      { Name IA  ; Value { Term { Type Global; [ II*IA[] ] ; In DomainDummy ; } } }
      { Name IB  ; Value { Term { Type Global; [ II*IB[] ] ; In DomainDummy ; } } }
@@ -1302,35 +1311,34 @@ PostOperation Debug UsingPost MagStaDyn_a_2D{
     ];
 
     If (Flag_Cir_RotorCage)
-      Print[
-        U, OnRegion Rotor_Bar_1, Format Table,
-        File > StrCat[ResDir,"U_bar_1",ExtGnuplot], LastTimeStepOnly,
-        SendToServer StrCat[poV,"U (Bar 1)"]{0}, Color "LightYellow"
-      ];
-      Print[
-        U, OnRegion Rotor_Bar_9, Format Table,
-        File > StrCat[ResDir,"U_bar_9",ExtGnuplot], LastTimeStepOnly,
-        SendToServer StrCat[poV,"U (Bar 9)"]{0}, Color "LightYellow"
-      ];
-      Print[
-        I, OnRegion Rotor_Bar_1, Format Table,
-        File > StrCat[ResDir,"I_bar_1",ExtGnuplot], LastTimeStepOnly,
-        SendToServer StrCat[poI,"I (Bar 1)"]{0}, Color "LightYellow"
-      ];
+      For iBar In {1:nbrRotorBars}
+        Print[
+          I, OnRegion Rotor_Bar~{iBar}, Format Table,
+          File > StrCat[ResDir,"I_bar_", Sprintf["%.0f",iBar], ExtGnuplot], LastTimeStepOnly,
+          SendToServer StrCat[poI,"I (Bar ",Sprintf["%.0f",iBar], ")"]{0}, Color "LightYellow",
+          StoreInVariable $I_Bar~{iBar}
+        ];
+        Print[
+          U, OnRegion Rotor_Bar~{iBar}, Format Table,
+          File > StrCat[ResDir,"U_bar_", Sprintf["%.0f",iBar], ExtGnuplot], LastTimeStepOnly,
+          SendToServer StrCat[poI,"U (Bar ",Sprintf["%.0f",iBar], ")"]{0}, Color "LightYellow"
+        ];
+        Print[
+          R_Bar~{iBar}[Rotor_Bar~{iBar}], OnGlobal, Format Table,
+          File > StrCat[ResDir,"R_bar_", Sprintf["%.0f",iBar],ExtGnuplot], LastTimeStepOnly,
+          SendToServer StrCat[poI,"R (Bar ",Sprintf["%.0f",iBar], ")"]{0}, Color "LightRed",
+          StoreInVariable $R_Bar~{iBar}
+        ];
+        Print[
+          ComplexPower[Rotor_Bar~{iBar}], OnGlobal, Format Table,
+          File > StrCat[ResDir,"P_bar_", Sprintf["%.0f",iBar],ExtGnuplot], LastTimeStepOnly,
+          SendToServer StrCat[poI,"P_complex (Bar ",Sprintf["%.0f",iBar], ")"]{0}, Color "LightRed"
+        ];
+      EndFor
       Print[
         intJz[Rotor_Bar_1], OnGlobal, Format Table,
         File > StrCat[ResDir,"intJz_bar_1",ExtGnuplot], LastTimeStepOnly,
         SendToServer StrCat[poI,"I (Bar 1) = IntJz (Bar 1)"]{0}, Color "LightYellow"
-      ];
-      Print[
-        R[Rotor_Bar_1], OnGlobal, Format Table,
-        File > StrCat[ResDir,"R_bar_1",ExtGnuplot], LastTimeStepOnly,
-        SendToServer StrCat[poI,"R (Bar 1)"]{0}, Color "LightRed"
-      ];
-      Print[
-        I, OnRegion Rotor_Bar_9, Format Table,
-        File > StrCat[ResDir,"I_bar_9",ExtGnuplot], LastTimeStepOnly,
-        SendToServer StrCat[poI,"I (Bar 9)"]{0}, Color "LightYellow"
       ];
     EndIf
   EndIf
