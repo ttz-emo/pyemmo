@@ -66,7 +66,7 @@ class MachineSPMSM(MachineAllType):
             rotor=None,
             stator=None,
             name="MachineSPMSM",
-            symmetryFactor=simuParam["analysisParameter"]["symmetryFactor"]
+            symmetryFactor=simuParam["analysisParameter"]["symmetryFactor"],
         )
         self._simuParam = simuParam
 

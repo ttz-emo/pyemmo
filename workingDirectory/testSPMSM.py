@@ -277,13 +277,16 @@ myScript = Script(
 )
 myScript.generateScript()
 
-os.system(
-    createCmdCommand(
-        onelabFile=myScript.proFilePath,
-        useGUI=True,
-        paramDict={"Flag_ClearResults": 1},
-    )
+cmd = createCmdCommand(
+    onelabFile=myScript.proFilePath,
+    gmshPath=r"C:\Software\onelab\gmsh.exe",
+    getdpPath=r"C:\Software\onelab\getdp.exe",
+    useGUI=False,
+    paramDict={"Flag_ClearResults": 1},
 )
+print(cmd)
+
+os.system(cmd)
 plot_all_dat(myScript.resultsPath)
 print("I am done!")
 
