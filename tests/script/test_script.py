@@ -19,7 +19,7 @@
 #
 import unittest
 from pyemmo.script.script import Script
-from .. import TEST_RES_DIR
+from .. import save_path
 
 
 class TestScript(unittest.TestCase):
@@ -71,7 +71,7 @@ class TestScript(unittest.TestCase):
         }
         self.scriptObj = Script(
             name="testScript",
-            scriptPath=TEST_RES_DIR,
+            scriptPath=save_path,
             factory="Built-in",
             simuParams=self.initParamDict,
         )
