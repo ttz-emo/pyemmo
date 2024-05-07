@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied
+# Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -55,7 +56,7 @@ def test_run_gmsh():
     gmsh_command = createGMSHCommand(
         gmshFile=geo_file, useGUI=False, gmshPath=GMSH_EXE, logFileName=""
     )
-    out = subprocess.run(
+    _ = subprocess.run(
         gmsh_command, check=True, capture_output=True, text=True
     )
     for res_ext in (".db", ".msh"):
