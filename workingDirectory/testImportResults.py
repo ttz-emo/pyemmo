@@ -31,8 +31,9 @@ from pyemmo.functions.import_results import (
     plot_timetable_dat,
     read_timetable_dat,
     split_data,
-    # plotAllDat,
+    plot_all_dat,
     importSP,
+    get_result_files,
 )
 
 # %% single simulation in time table formated file:
