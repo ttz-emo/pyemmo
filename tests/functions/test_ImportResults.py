@@ -9,15 +9,22 @@ import numpy as np
 from parse import parse
 import gmsh
 
-from pyemmo.functions.import_results import read_timetable_dat
-from pyemmo.functions.import_results import read_RegionValue_dat
-from pyemmo.functions.import_results import split_data
-from pyemmo.functions.import_results import plot_timetable_dat
-from pyemmo.functions.import_results import importSP
+from pyemmo.functions.import_results import (
+    read_timetable_dat,
+    importPos,
+    read_RegionValue_dat,
+    split_data,
+    plot_timetable_dat,
+    importSP,
+    get_result_files,
+)
 import pytest
 
-#from .. import TEST_DATA_DIR
-TEST_DATA_DIR = r"C:\Users\k54149\Documents\pyemmo"
+from .. import TEST_DATA_DIR
+
+# TEST_DATA_DIR = r"C:\Users\k54149\Documents\pyemmo\tests\data"
+# TEST_DATA_DIR = r"D:\pyemmo\tests\data"
+
 
 @pytest.mark.parametrize(
     "file_path",
@@ -101,7 +108,9 @@ def test_Region_value(file_path):
 
     test_tuple = (time_array, value_array)
 
-    assert np.array_equal(data_array, test_tuple),"Time and Data Values were imported incorrectly!"
+    assert np.array_equal(
+        data_array, test_tuple
+    ), "Time and Data Values were imported incorrectly!"
 
 
 def test_split_data():
@@ -156,7 +165,14 @@ def test_split_data():
 
 def test_plot_timetable_dat():
     """Tests that the number offigures created is equal to the number of Simulations"""
-    file_path = os.path.join(TEST_DATA_DIR,"Results","Baukasten","Test_SPMSM","res_Test_SPMSM_Baukasten","Surf_StLu2.dat")
+    file_path = os.path.join(
+        TEST_DATA_DIR,
+        "Results",
+        "Baukasten",
+        "Test_SPMSM",
+        "res_Test_SPMSM_Baukasten",
+        "Surf_StLu2.dat",
+    )
     Plot_list = plot_timetable_dat(
         file_path, "DataLabel", "Graph", False, True, None
     )
@@ -168,7 +184,14 @@ def test_plot_timetable_dat():
 
 def test_import_SP():
     """Tests the Data-name,Time vector,Postion array and Value array of the imported .pos file"""
-    file_path = os.path.join(TEST_DATA_DIR,"Results","Baukasten","Test_SPMSM","res_Test_SPMSM_Baukasten","btan.pos")
+    file_path = os.path.join(
+        TEST_DATA_DIR,
+        "Results",
+        "Baukasten",
+        "Test_SPMSM",
+        "res_Test_SPMSM_Baukasten",
+        "btan.pos",
+    )
     test_tuple = importSP(file_path)
     assert_tuple = (
         "b_tangent",
@@ -185,13 +208,31 @@ def test_import_SP():
         ],
     )
 
-    assert np.array_equal(test_tuple[0], assert_tuple[0])," Incorrect Time-vector Imported!"
+    assert np.array_equal(
+        test_tuple[0], assert_tuple[0]
+    ), " Incorrect Time-vector Imported!"
     for x in range(len(assert_tuple[2]) - 1):
-        assert np.array_equal(test_tuple[2][x], assert_tuple[2][x]),"Incorrect Postion-Array Imported!"
+        assert np.array_equal(
+            test_tuple[2][x], assert_tuple[2][x]
+        ), "Incorrect Postion-Array Imported!"
 
     for x in range(len(assert_tuple[3]) - 1):
-        assert np.array_equal(test_tuple[3][x], assert_tuple[3][x]);"Incorrect Value-Array Imported! "
+        assert np.array_equal(test_tuple[3][x], assert_tuple[3][x])
+        "Incorrect Value-Array Imported!"
 
 
-# if __name__ == "__main__":
-#     test_checkImportedValues(TEST_DATA_DIR)
+def test_import_pos():
+    """TODO..."""
+    ...
+
+
+if __name__ == "__main__":
+    # Test usage of importPos function:
+    # mesh_element_tag, time, data = importPos(os.path.join(TEST_DATA_DIR, "functions","import_results","pos_res_file_az.pos"))
+    # print(mesh_element_tag)
+
+    # Test usage of get_result_files function:
+    # dat_file_list, pos_file_list = get_result_files(os.path.join(TEST_DATA_DIR, "functions","import_results"))
+    # for filename in dat_file_list+pos_file_list:
+    #     print(filename)
+    ...
