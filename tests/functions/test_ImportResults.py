@@ -17,13 +17,14 @@ from pyemmo.functions.import_results import (
     plot_timetable_dat,
     importSP,
     get_result_files,
+   
 )
 import pytest
 
-from .. import TEST_DATA_DIR
+#from .. import TEST_DATA_DIR
 
-# TEST_DATA_DIR = r"C:\Users\k54149\Documents\pyemmo\tests\data"
-# TEST_DATA_DIR = r"D:\pyemmo\tests\data"
+TEST_DATA_DIR = r"C:\Users\k54149\Documents\pyemmo\tests\data"
+#TEST_DATA_DIR = r"D:\pyemmo\tests\data"
 
 
 @pytest.mark.parametrize(
@@ -31,11 +32,8 @@ from .. import TEST_DATA_DIR
     [
         os.path.join(
             TEST_DATA_DIR,
-            "tests",
             
-            
-            
-            "Ib.dat"
+            "Ib_test.dat"
         )
     ],
 )
@@ -44,7 +42,7 @@ def test_file_exists(file_path):
     try:
         read_timetable_dat(file_path)
         os.path.isfile(
-            "C:/Users/k54149/Documents/pyemmo/Results/Baukasten/Test_SPMSM/res_Test_SPMSM_Baukast/Ib.dat"
+           os.path.join(TEST_DATA_DIR, "Ib_test.dat")
         )
     except FileNotFoundError:
         pass
@@ -55,14 +53,7 @@ def test_file_exists(file_path):
 @pytest.mark.parametrize(
     "file_path",
     [
-        os.path.join(
-            TEST_DATA_DIR,
-            "Results",
-            "Baukasten",
-            "Test_SPMSM",
-            "res_Test_SPMSM_Baukasten",
-            "Ib.dat",
-        )
+          os.path.join( TEST_DATA_DIR,"Ib_test.dat")
     ],
 )
 def test_datasize_values(file_path):
@@ -85,17 +76,10 @@ def test_datasize_values(file_path):
 @pytest.mark.parametrize(
     "file_path",
     [
-        os.path.join(
-            TEST_DATA_DIR,
-            "Results",
-            "Baukasten",
-            "Test_SPMSM",
-            "res_Test_SPMSM_Baukasten",
-            "Surf_StLu2.dat",
-        ),
-        # "C:/Users/k54149/Documents/pyemmo/Results/Baukasten/Test_SPMSM/res_Test_SPMSM_Baukasten/Surf_StLu2.dat"
+          os.path.join( TEST_DATA_DIR,"Surf_StLu2_test.dat")
     ],
 )
+
 def test_Region_value(file_path):
     """Tests if the Time and Data Values are imported correctly from dat-file in Region Value format."""
     data_array = read_RegionValue_dat(file_path)
@@ -165,14 +149,8 @@ def test_split_data():
 
 def test_plot_timetable_dat():
     """Tests that the number offigures created is equal to the number of Simulations"""
-    file_path = os.path.join(
-        TEST_DATA_DIR,
-        "Results",
-        "Baukasten",
-        "Test_SPMSM",
-        "res_Test_SPMSM_Baukasten",
-        "Surf_StLu2.dat",
-    )
+    file_path = os.path.join( TEST_DATA_DIR,"Surf_StLu2_test.dat")
+    
     Plot_list = plot_timetable_dat(
         file_path, "DataLabel", "Graph", False, True, None
     )
@@ -186,11 +164,8 @@ def test_import_SP():
     """Tests the Data-name,Time vector,Postion array and Value array of the imported .pos file"""
     file_path = os.path.join(
         TEST_DATA_DIR,
-        "Results",
-        "Baukasten",
-        "Test_SPMSM",
-        "res_Test_SPMSM_Baukasten",
-        "btan.pos",
+        
+        "btan_test.pos"
     )
     test_tuple = importSP(file_path)
     assert_tuple = (
@@ -206,11 +181,16 @@ def test_import_SP():
             [-0.05609076949641559],
             [-0.05854188999837832],
         ],
-    ),"!"
+    )
 
     assert np.array_equal(
         test_tuple[0], assert_tuple[0]
-    ), " Incorrect Time-vector Imported!"
+    ), " Incorrect Data name Imported!"
+    for x in range(len(assert_tuple[1]) - 1):
+        assert np.array_equal(
+            test_tuple[1][x], assert_tuple[1][x]
+        ), "Incorrect Time-Array Imported!"
+
     for x in range(len(assert_tuple[2]) - 1):
         assert np.array_equal(
             test_tuple[2][x], assert_tuple[2][x]
@@ -220,19 +200,47 @@ def test_import_SP():
         assert np.array_equal(test_tuple[3][x], assert_tuple[3][x])
         "Incorrect Value-Array Imported!"
 
+tuple_import = importPos(r"C:\Users\k54149\Documents\pyemmo\Results\Baukasten\Test_SPMSM\res_Test_SPMSM_Baukasten\AxialeLaenge.pos")
+np.save('test_import_tuple.npy',tuple_import)
+@pytest.mark.parametrize(
+    "file_path",
+    [
+          os.path.join( TEST_DATA_DIR,"AxialeLaenge_test.pos")
+    ],
+)
+def test_import_pos(file_path):
+    """Tests if the Imported values(gmsh mesh element tags,time,data array) from a POS file are correct"""
+   
+    test_import_tuple = np.load('test_import_tuple.npy',allow_pickle = True)
+    assert_Tuple = importPos(file_path)
+    for x in range(len(assert_Tuple[0]) - 1):
+        assert np.array_equal(
+            assert_Tuple[0][x], test_import_tuple[0][x]
+        ), "Incorrect Mesh element Imported!"
 
-def test_import_pos():
-    """TODO..."""
-    ...
+    for x in range(len(assert_Tuple[1]) - 1):
+        assert np.array_equal(
+            assert_Tuple[1][x],test_import_tuple[1][x]
+        ), "Incorrect Time-Array Imported!"
+
+    for x in range(len(assert_Tuple[2]) - 1):
+        assert np.array_equal(
+            assert_Tuple[2][x], test_import_tuple[2][x]
+        ), "Incorrect Data-Array Imported!"
+
 
 
 if __name__ == "__main__":
-    # Test usage of importPos function:
-    # mesh_element_tag, time, data = importPos(os.path.join(TEST_DATA_DIR, "functions","import_results","pos_res_file_az.pos"))
-    # print(mesh_element_tag)
+    #Test usage of importPos function:
+    mesh_element_tag, time, data = importPos(os.path.join( TEST_DATA_DIR,"AxialeLaenge_test.pos"))
+    print(mesh_element_tag)
+    print(time)
+    print(data)
 
-    # Test usage of get_result_files function:
-    # dat_file_list, pos_file_list = get_result_files(os.path.join(TEST_DATA_DIR, "functions","import_results"))
-    # for filename in dat_file_list+pos_file_list:
-    #     print(filename)
-    ...
+    test_import_pos(os.path.join( TEST_DATA_DIR,"AxialeLaenge_test.pos"))
+    print
+    #Test usage of get_result_files function:
+    #dat_file_list, pos_file_list = get_result_files(os.path.join(TEST_DATA_DIR, "functions","import_results"))
+   # for filename in dat_file_list+pos_file_list:
+     #print(filename)
+    
