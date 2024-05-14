@@ -30,4 +30,10 @@ doc/UML_Diagrams/*
 workingDirectory/testPosImport/*
 # Exclude onelab test installation
 tests/data/*onelab/
+
 # specific files to ignore
+tests/GMSH_TEST_PATH
+tests/GETDP_TEST_PATH
+
+# specific files to not ignore
+!tests/data/functions/import_results/SP_fomatted_res_file.pos
