@@ -24,11 +24,11 @@ TEST_DATA_DIR = r"C:\Users\k54149\Documents\pyemmo"
     [
         os.path.join(
             TEST_DATA_DIR,
-            "Results",
-            "Baukasten",
-            "Test_SPMSM",
-            "res_Test_SPMSM_Baukasten",
-            "Ib.dat",
+            "tests",
+            
+            
+            
+            "Ib.dat"
         )
     ],
 )
@@ -183,7 +183,7 @@ def test_import_SP():
             [-0.05609076949641559],
             [-0.05854188999837832],
         ],
-    )
+    ),"!"
 
     assert np.array_equal(test_tuple[0], assert_tuple[0])," Incorrect Time-vector Imported!"
     for x in range(len(assert_tuple[2]) - 1):
