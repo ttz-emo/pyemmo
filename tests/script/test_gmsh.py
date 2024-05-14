@@ -2,6 +2,7 @@ import os
 import subprocess
 from pyemmo.functions.runOnelab import createGMSHCommand
 from tests import GMSH_EXE, TEST_DATA_DIR
+import logging
 
 
 def test_run_gmsh():
