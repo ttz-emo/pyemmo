@@ -45,7 +45,7 @@ logger = logging.getLogger("matplotlib").setLevel(logging.WARNING)
 logging.debug(f"Start simulation at {time.ctime()}")
 start = time.perf_counter()
 
-f_r = 1
+f_r = 5
 I_eff = 50
 n = 0
 f_s = f_r + 2 * n / 60
@@ -65,7 +65,7 @@ logging.debug("Timestep %e s.", timestep)
 logging.debug("One time step equals %f° mechanical degrees.", winkelschritt)
 logging.debug("Stop time of simulation: %.7e s", int(nbrSteps) * timestep)
 # %%
-resId = "blockedRotor_1Hz_4Periods_128Steps_NewCirc"
+resId = f"blockedRotor_{f_r}Hz_{nbr_stator_periods}Periods_{nbr_steps_per_period}Steps_R_dyn"
 # resId = "blockedRotor_1Hz_Circ"
 paramDict = {
     "getdp": {
@@ -106,7 +106,7 @@ paramDict = {
     # "exc": 0,
     # "axLen": 0.2,
     # "sym": 4,
-    "info": "Käfig-Ersatzschaltbild aktualisiert, sodass beide Kurzschlussringseiten separat modeliert werden.",
+    "info": "Dynamischen Rotorwiderstand im Rotor-Ersatzschaltbild eingebaut.",
     "datetime": time.ctime(),
     "PostOp": ["GetBOnRadius"],
 }
