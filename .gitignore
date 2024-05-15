@@ -28,5 +28,6 @@ doc/UML_Diagrams/*
 
 # Exclude testPosImport content
 workingDirectory/testPosImport/*
-
+# Exclude onelab test installation
+tests/data/*onelab/
 # specific files to ignore

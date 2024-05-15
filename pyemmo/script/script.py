@@ -1513,9 +1513,21 @@ class Script:
                 physElemIDstr.append(str(physicalElementID))
             # add group for material
             matName = cleanName(mat.name)
-            self.group.add(id="group_" + matName, glist=physElemIDstr)
+            # FIXME: Group Add fails if mat name exists twice
+            # added workaround by adding _dup id
+            try:
+                self.group.add(id="group_" + matName, glist=physElemIDstr)
+            except ValueError as val_err:
+                if re.search(
+                    r"Identifier .* already in use.", val_err.args[0]
+                ):
+                    logging.warning(
+                        f"Material with name {matName} is defined multiple times, but with different properties. "
+                        "Trying to add it again with different identifier..."
+                    )
+                    matName = matName + "_dup"
+                    self.group.add(id="group_" + matName, glist=physElemIDstr)
             matFun = self.functionMaterial
-
             matFun.add_comment(f"New Material: {matName}\n", True)
             # add electrical conductivity
             conductivity = mat.conductivity

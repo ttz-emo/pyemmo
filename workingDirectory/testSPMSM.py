@@ -253,7 +253,7 @@ SPMSM.plot()
 resDir = os.path.join(ROOT_DIR, r"Results\Baukasten")
 modelDir = path.abspath(path.join(resDir, "Test_SPMSM"))
 if not path.isdir(modelDir):
-    mkdir(modelDir)
+    os.makedirs(modelDir)
 else:
     # remove results folder
     pass
@@ -277,13 +277,16 @@ myScript = Script(
 )
 myScript.generateScript()
 
-os.system(
-    createCmdCommand(
-        onelabFile=myScript.proFilePath,
-        useGUI=False,
-        paramDict={"Flag_ClearResults": 1},
-    )
+cmd = createCmdCommand(
+    onelabFile=myScript.proFilePath,
+    gmshPath=r"C:\Software\onelab\gmsh.exe",
+    getdpPath=r"C:\Software\onelab\getdp.exe",
+    useGUI=False,
+    paramDict={"Flag_ClearResults": 1},
 )
+print(cmd)
+
+os.system(cmd)
 plot_all_dat(myScript.resultsPath)
 print("I am done!")
 
