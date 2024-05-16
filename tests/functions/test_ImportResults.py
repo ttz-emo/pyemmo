@@ -197,12 +197,25 @@ def test_import_pos(file_path):
     time = np.load((os.path.join( TEST_DATA_DIR,"test_import_tuple1.npy")), allow_pickle=True)
     data = np.load((os.path.join( TEST_DATA_DIR,"test_import_tuple2.npy")), allow_pickle=True)
     imp_mesh_elem, imp_time, imp_data = importPos(file_path)
-    np.array_equal(mesh_elemt_ids,imp_mesh_elem),"Incorrect Mesh element Imported!"    
-    np.array_equal(time,imp_time),"Incorrect Mesh element Imported!"
-    np.array_equal(data,imp_data),"Incorrect Mesh element Imported!"
+    assert np.array_equal(mesh_elemt_ids,imp_mesh_elem),"Incorrect Mesh elements Imported!"    
+    assert np.array_equal(time,imp_time),"Incorrect Time stamps Imported!"
+    assert np.array_equal(data,imp_data),"Incorrect Data Array Imported!"
    
-    print("stop")
+  
+#result_import = get_result_files(os.path.join(TEST_DATA_DIR, "functions", "import_results"))
+#np.save('get_result_files_dat.npy',result_import[0])
+#np.save('get_result_files_pos.npy',result_import[1])
 
+@pytest.mark.parametrize(
+    "file_path",
+    [os.path.join(TEST_DATA_DIR,"functions", "import_results")],
+)
+def test_get_results_file(file_path):
+    test_import_dat,test_import_pos = get_result_files(file_path)
+    result_dat = np.load((os.path.join( TEST_DATA_DIR,"get_result_files_dat.npy")), allow_pickle=True)
+    result_pos = np.load((os.path.join( TEST_DATA_DIR,"get_result_files_pos.npy")), allow_pickle=True)
+    assert np.array_equal(test_import_dat,result_dat),"Incorrect list of .dat files!"
+    assert np.array_equal(test_import_pos,result_pos),"Incorrect list of .pos files!"
 
 if __name__ == "__main__":
     # Test usage of importPos function:
