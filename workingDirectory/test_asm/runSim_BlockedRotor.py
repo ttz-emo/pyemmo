@@ -11,8 +11,8 @@ import numpy as np
 from pyemmo.functions.runOnelab import runCalcforCurrent
 from pyemmo.functions.import_results import (
     read_timetable_dat,
-    # plot_all_dat,
-    # plot_timetable_dat,
+    plot_all_dat,
+    plot_timetable_dat,
     read_RegionValue_dat,
 )
 from definitions import MODEL_NAME, MODEL_DIR
@@ -45,13 +45,15 @@ logger = logging.getLogger("matplotlib").setLevel(logging.WARNING)
 logging.debug(f"Start simulation at {time.ctime()}")
 start = time.perf_counter()
 
-f_r = 5
+nbr_bars = 9
+
+f_r = 50
 I_eff = 50
 n = 0
 f_s = f_r + 2 * n / 60
 T_s = 1 / f_s
 nbr_stator_periods = 4
-nbr_steps_per_period = 128
+nbr_steps_per_period = 64
 # Zum Abgleich mit Maxwell
 Nbr_Sect = 2048  # Bandsegmentierung
 multi = 8  # Default=4 number of Segments per timestep
@@ -65,7 +67,7 @@ logging.debug("Timestep %e s.", timestep)
 logging.debug("One time step equals %f° mechanical degrees.", winkelschritt)
 logging.debug("Stop time of simulation: %.7e s", int(nbrSteps) * timestep)
 # %%
-resId = f"blockedRotor_{f_r}Hz_{nbr_stator_periods}Periods_{nbr_steps_per_period}Steps_R_dyn"
+resId = f"blockedRotor_{f_r}Hz_{nbr_stator_periods}Periods_{nbr_steps_per_period}Steps_R_dyn_thers"
 # resId = "blockedRotor_1Hz_Circ"
 paramDict = {
     "getdp": {
@@ -90,7 +92,7 @@ paramDict = {
         "L_endring_segment": 2e-9 / 2,
         "Flag_Cir_RotorCage": 1,
         # "Flag_Calculate_VW": 1,
-        "msh": os.path.join(MODEL_DIR, "coarseMesh.msh"), # fineMesh.msh
+        "msh": os.path.join(MODEL_DIR, "coarseMesh.msh"),  # fineMesh.msh
         # "Flag_SecondOrder": 0,
     },
     "ResId": resId,
@@ -106,7 +108,7 @@ paramDict = {
     # "exc": 0,
     # "axLen": 0.2,
     # "sym": 4,
-    "info": "Dynamischen Rotorwiderstand im Rotor-Ersatzschaltbild eingebaut.",
+    "info": "Dynamischen Rotorwiderstand im Rotor-Ersatzschaltbild eingebaut + Threshold für zu kleinen Rotorwiderstand auf 1A reduziert",
     "datetime": time.ctime(),
     "PostOp": ["GetBOnRadius"],
 }
@@ -136,20 +138,22 @@ ax.plot(results["time"], results["current"]["b"])
 ax.plot(results["time"], results["current"]["c"])
 
 # %%
-# Stabströme
+# PLOT STABSTRÖME
 t, I_bars = (results["time"], results["current"]["bars"])
 fig, axi = plt.subplots()
 axi: Axes = axi
-for nbar in range(9):
+for nBar in range(nbr_bars):
     line_i = axi.plot(
         results["time"],
-        results["current"]["bars"][:, nbar],
-        label=f"Bar {nbar+1}",
+        results["current"]["bars"][:, nBar],
+        label=f"Bar {nBar+1}",
+        marker="*",
     )
 axi.set_ylabel("Strom in A")
-axi.set_xlim(
-    t[int(t.size * ((nbr_stator_periods - 2) / nbr_stator_periods))], t[-1]
-)
+if t[-1] > 2 * T_s:  # if specific amount of periods is calculated
+    axi.set_xlim(
+        t[int(t.size * ((nbr_stator_periods - 2) / nbr_stator_periods))], t[-1]
+    )
 axi.legend()
 axi.grid(True)
 axi.set_title(f"Stabströme")
@@ -158,30 +162,30 @@ respath = os.path.join(paramDict["res"], resId)
 # plot_all_dat(respath)
 # %%
 # Stabspannung vs Stabstrom
-u_bars_resfile = os.path.join(respath, "U_bars.dat")
-if os.path.isfile(u_bars_resfile):
-    t, U_bars = read_timetable_dat(u_bars_resfile)
+resfile = os.path.join(respath, "U_bars.dat")
+if os.path.isfile(resfile):
+    t, U_bars = read_timetable_dat(resfile)
     fig, ax = plt.subplots()
     ax: Axes = ax
-    nbar = 8
-    line_u = ax.plot(t, U_bars[:, nbar], label="Spannung", color="b")
+    nBar = 8
+    line_u = ax.plot(t, U_bars[:, nBar], label="Spannung", color="b")
     ax.set_ylabel("Spannung in V")
 
     axi: Axes = ax.twinx()
     line_i = axi.plot(
-        results["time"], results["current"]["bars"][:, nbar], color="g"
+        results["time"], results["current"]["bars"][:, nBar], color="g"
     )
     axi.set_ylabel("Strom in A")
     ax.grid(True)
     ax.legend(handles=[line_u[0], line_i[0]])
-    ax.set_title(f"Stab {nbar+1}")
+    ax.set_title(f"Stab {nBar+1}")
 
     # %
     fig, ax = plt.subplots()
     ax: Axes = ax
-    r_bar = np.mean(U_bars[1:, nbar] / I_bars[1:, nbar])
+    r_bar = np.mean(U_bars[1:, nBar] / I_bars[1:, nBar])
     line_u = ax.plot(
-        t, U_bars[:, nbar] / I_bars[:, nbar], label="Widerstand", color="b"
+        t, U_bars[:, nBar] / I_bars[:, nBar], label="Widerstand", color="b"
     )
     ax.set_xlim(
         t[int(t.size * (nbr_stator_periods - 2) / nbr_stator_periods)], t[-1]
@@ -192,8 +196,8 @@ if os.path.isfile(u_bars_resfile):
     # %
     fig, ax = plt.subplots()
     ax: Axes = ax
-    for nbar in range(9):
-        line_u = ax.plot(t, U_bars[:, nbar], label=f"Stab {nbar}")
+    for nBar in range(nbr_bars):
+        line_u = ax.plot(t, U_bars[:, nBar], label=f"Stab {nBar}")
     ax.set_ylabel("Spannung in V")
     # ax.set_xlim(14.75,15)
     ax.legend()
@@ -222,37 +226,51 @@ t = results["time"]
 ax.grid(True)
 # %%
 # Plot Drehmoment
+fig, ax = plt.subplots()
+ax: Axes = ax
 if os.path.isfile(os.path.join(respath, "Ts_vw.dat")):
     t_t, ts_vw = read_RegionValue_dat(os.path.join(respath, "Ts_vw.dat"))
     _, tr_vw = read_RegionValue_dat(os.path.join(respath, "Tr_vw.dat"))
 
-    fig, ax = plt.subplots()
-    ax: Axes = ax
     # all Torques
     # line_ts = ax.plot(results["time"], results["torque"]["stator"], label=f"Ts (MST)")
     # line_tr = ax.plot(results["time"], results["torque"]["rotor"], label=f"Tr (MST)")
     # ax.plot(t_t, ts_vw, label=f"Ts (VW)")
     # ax.plot(t_t, tr_vw, label=f"Tr (VW)")
-
-    # mean torque
-    ax.plot(
-        results["time"],
-        np.mean(
-            [results["torque"]["stator"], results["torque"]["rotor"]], axis=0
-        ),
-        ".-",
-        label="MST",
-    )
     ax.plot(t_t, np.mean([ts_vw, tr_vw], axis=0), label="VW")
-    # ax.set_ylabel("Spannung in V")
-    ax.legend(loc=1)
-    ax.set_xlim(
-        t[int(t.size * (nbr_stator_periods - 1) / nbr_stator_periods)], t[-1]
-    )
-    # ax.set_ylim([150,280]) # medium zoom
-    ax.set_ylim([210, 235])  # high zoom
-    ax.set_title("Drehmoment")
-    ax.grid(True)
+
+# mean torque
+ax.plot(
+    results["time"],
+    np.mean([results["torque"]["stator"], results["torque"]["rotor"]], axis=0),
+    ".-",
+    label="MST",
+)
+# ax.set_ylabel("Spannung in V")
+ax.legend(loc=1)
+ax.set_xlim(
+    t[int(t.size * (nbr_stator_periods - 1) / nbr_stator_periods)], t[-1]
+)
+# ax.set_ylim([150,280]) # medium zoom
+# ax.set_ylim([210, 235])  # high zoom
+ax.set_title("Drehmoment")
+ax.grid(True)
+# %%
+# PLOT RESISTANCES
+# %matplotlib widget
+R_bar_dc = 5.19932563e-05
+fig, ax = plt.subplots()
+ax: Axes = ax
+# for nBar in range(1,nbr_bars+1):
+for nBar in (1, 5, 9):
+    resfile = os.path.join(respath, f"R_bar_{nBar}.dat")
+    if os.path.isfile(resfile):
+        t, R_bar = read_timetable_dat(resfile)
+        ax.plot(t, R_bar, label=f"R_bar_{nBar}", marker=".")
+ax.set_ylim(bottom=0, top=3 * R_bar_dc)
+ax.legend()
+# plt.close()
+# plot_timetable_dat(resfile,dataLabel=f"R_{{bar,{nBar}}}")
 # %%
 logging.shutdown()
 # %% FINAL
