@@ -47,12 +47,12 @@ start = time.perf_counter()
 
 nbr_bars = 9
 
-f_r = 1
+f_r = 50
 I_eff = 50
 n = 0
 f_s = f_r + 2 * n / 60
 T_s = 1 / f_s
-nbr_stator_periods = 4
+nbr_stator_periods = 80
 nbr_steps_per_period = 64
 # Zum Abgleich mit Maxwell
 Nbr_Sect = 2048  # Bandsegmentierung
@@ -92,7 +92,8 @@ paramDict = {
         "L_endring_segment": 2e-9 / 2,
         "Flag_Cir_RotorCage": 1,
         # "Flag_Calculate_VW": 1,
-        "msh": os.path.join(MODEL_DIR, "coarseMesh.msh"),  # fineMesh.msh
+        #                           fineMesh or coarseMesh
+        "msh": os.path.join(MODEL_DIR, "fineMesh.msh"),
         # "Flag_SecondOrder": 0,
     },
     "ResId": resId,
@@ -103,14 +104,15 @@ paramDict = {
     ),
     "exe": r"C:\Users\ganser\AppData\Local\Programs\onelab-Windows64-230206\getdp.exe",
     "gmsh": r"C:\Users\ganser\AppData\Local\Programs\onelab-Windows64-230206\gmsh.exe",
+    # "log": f"{resId}.log",  # log file name
     # "hyst": 0, # 172.04,
     # "eddy": 0, # 1.0472,
     # "exc": 0,
     # "axLen": 0.2,
     # "sym": 4,
-    "info": "Dynamischen Rotorwiderstand im Rotor-Ersatzschaltbild eingebaut + Threshold für zu kleinen Rotorwiderstand auf 1A reduziert",
+    "info": "Simulation zum Abgleich mit Maxwell mit statischem Rotorwiderstand bei 50Hz und feinem Mesh.",
     "datetime": time.ctime(),
-    "PostOp": ["GetBOnRadius"],
+    "PostOp": [],  # GetBOnRadius
 }
 
 results = runCalcforCurrent(paramDict)
@@ -119,7 +121,7 @@ sim_duration = stop - start
 logging.info(
     "Simulation took %s", str(datetime.timedelta(seconds=sim_duration))
 )
-if sim_duration > nbrSteps * 3:
+if sim_duration > nbrSteps:
     results["simulation_duration"] = sim_duration
 # %%
 out_dict = paramDict.copy()
@@ -167,13 +169,16 @@ if os.path.isfile(resfile):
     t, U_bars = read_timetable_dat(resfile)
     fig, ax = plt.subplots()
     ax: Axes = ax
-    nBar = 8
+    nBar = 0
     line_u = ax.plot(t, U_bars[:, nBar], label="Spannung", color="b")
     ax.set_ylabel("Spannung in V")
 
     axi: Axes = ax.twinx()
     line_i = axi.plot(
-        results["time"], results["current"]["bars"][:, nBar], color="g"
+        results["time"],
+        results["current"]["bars"][:, nBar],
+        color="g",
+        label="Strom",
     )
     axi.set_ylabel("Strom in A")
     ax.grid(True)
@@ -240,17 +245,20 @@ if os.path.isfile(os.path.join(respath, "Ts_vw.dat")):
     ax.plot(t_t, np.mean([ts_vw, tr_vw], axis=0), label="VW")
 
 # mean torque
+results["torque"]["mean"] = np.mean(
+    [results["torque"]["stator"], results["torque"]["rotor"]], axis=0
+)
 ax.plot(
     results["time"],
-    np.mean([results["torque"]["stator"], results["torque"]["rotor"]], axis=0),
+    results["torque"]["mean"],
     ".-",
     label="MST",
 )
 # ax.set_ylabel("Spannung in V")
 ax.legend(loc=1)
-ax.set_xlim(
-    t[int(t.size * (nbr_stator_periods - 1) / nbr_stator_periods)], t[-1]
-)
+# ax.set_xlim(
+#     t[int(t.size * (nbr_stator_periods - 1) / nbr_stator_periods)], t[-1]
+# )
 # ax.set_ylim([150,280]) # medium zoom
 # ax.set_ylim([210, 235])  # high zoom
 ax.set_title("Drehmoment")
@@ -289,6 +297,14 @@ if not os.path.isfile(f_name_mxwl_export):
     exportTabMaxwell(
         [out_dict["time"], U_bars[:, 1]],
         identifier=["Time (s)", "V_Bar_Onelab (V)"],
+        filepath=f_name_mxwl_export,
+    )
+# Export Torque
+f_name_mxwl_export = os.path.join(respath, "torque.tab")
+if not os.path.isfile(f_name_mxwl_export):
+    exportTabMaxwell(
+        [out_dict["time"], results["torque"]["mean"]],
+        identifier=["Time (s)", "Torque_Onelab (Nm)"],
         filepath=f_name_mxwl_export,
     )
 # %%
