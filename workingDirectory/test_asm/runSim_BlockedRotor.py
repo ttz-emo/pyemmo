@@ -47,7 +47,7 @@ start = time.perf_counter()
 
 nbr_bars = 9
 
-f_r = 50
+f_r = 1
 I_eff = 50
 n = 0
 f_s = f_r + 2 * n / 60
@@ -67,7 +67,7 @@ logging.debug("Timestep %e s.", timestep)
 logging.debug("One time step equals %f° mechanical degrees.", winkelschritt)
 logging.debug("Stop time of simulation: %.7e s", int(nbrSteps) * timestep)
 # %%
-resId = f"blockedRotor_{f_r}Hz_{nbr_stator_periods}Periods_{nbr_steps_per_period}Steps_R_dyn_thers"
+resId = f"blockedRotor_{f_r}Hz_{nbr_stator_periods}Periods_{nbr_steps_per_period}Steps_R_stat"
 # resId = "blockedRotor_1Hz_Circ"
 paramDict = {
     "getdp": {
@@ -120,7 +120,7 @@ logging.info(
     "Simulation took %s", str(datetime.timedelta(seconds=sim_duration))
 )
 if sim_duration > nbrSteps * 3:
-    results["simlation_duration"] = sim_duration
+    results["simulation_duration"] = sim_duration
 # %%
 out_dict = paramDict.copy()
 out_dict.update(results)
