@@ -174,6 +174,8 @@ def createCmdCommand(
             is searched.
         getdpPath (str, optional): path to a getdp executable. Path will only
             be used if gui is not used. Defaults to "".
+        logFileName (str, optional): Provide a log file name if the simulation
+            procedure should be saved to a file. Defaults to "".
         paramDict (Dict[str, Union[str, int, float]], optional):
             Dict with parameters to set in the simulation. Defaults to None.
             You can use the value "verbosity level" to change verbosity in
@@ -236,7 +238,7 @@ def createCmdCommand(
                             # skip meshing
                             # (meshFilePath, meshExt) = splitext(paramDict["msh"])
                             # assert meshExt = ".msh"
-                            getdp_command += f"-msh {paramDict.pop('msh')}"
+                            getdp_command += f"-msh {paramDict.pop('msh')} "
                             gmsh_command = ""
                         else:
                             raise FileNotFoundError(
@@ -245,9 +247,9 @@ def createCmdCommand(
                     else:
                         # set the gmsh file extension to mesh
                         gmsh_command = f"{gmshPath} {filePath}.geo -run "
-                    # If log file name is given, add file logging flag:
-                    if logFileName:
-                        gmsh_command += f" -log {logFileName} "
+                    # # If log file name is given, add file logging flag:
+                    # if logFileName:
+                    #     gmsh_command += f" -log {logFileName} "
                     # add post operations
                     if postOperations:
                         getdp_command += " -pos "
@@ -454,6 +456,7 @@ def runCalcforCurrent(param: dict):
         #                 )
 
         ## TRY TO LOG OUTPUT OF FUNCTION CALL:
+        # TODO: Add log file option and stream simulation to log file
         process = Popen(
             cmdCommand,
             stdout=PIPE,
