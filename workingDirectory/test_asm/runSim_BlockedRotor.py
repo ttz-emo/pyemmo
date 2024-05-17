@@ -91,6 +91,7 @@ paramDict = {
         "R_endring_segment": 16e-7 / 2,  # Initial value: 16e-7,
         "L_endring_segment": 2e-9 / 2,
         "Flag_Cir_RotorCage": 1,
+        "Flag_Dynamic_RotorBarResistance": 0,
         # "Flag_Calculate_VW": 1,
         #                           fineMesh or coarseMesh
         "msh": os.path.join(MODEL_DIR, "fineMesh.msh"),
