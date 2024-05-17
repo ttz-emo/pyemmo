@@ -272,5 +272,25 @@ ax.legend()
 # plt.close()
 # plot_timetable_dat(resfile,dataLabel=f"R_{{bar,{nBar}}}")
 # %%
+# Export Data for Maxwell
+from pyemmo.functions.exportMaxwell import exportTabMaxwell
+
+# Export Bar Current
+f_name_mxwl_export = os.path.join(respath, "I_Bar_1.tab")
+if not os.path.isfile(f_name_mxwl_export):
+    exportTabMaxwell(
+        [out_dict["time"], I_bars[:, 1]],
+        identifier=["Time (s)", "I_Bar_Onelab (A)"],
+        filepath=f_name_mxwl_export,
+    )
+# Export Bar Voltage
+f_name_mxwl_export = os.path.join(respath, "U_Bar_1.tab")
+if not os.path.isfile(f_name_mxwl_export):
+    exportTabMaxwell(
+        [out_dict["time"], U_bars[:, 1]],
+        identifier=["Time (s)", "V_Bar_Onelab (V)"],
+        filepath=f_name_mxwl_export,
+    )
+# %%
 logging.shutdown()
 # %% FINAL
