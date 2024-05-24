@@ -425,24 +425,24 @@ def createMaterial(matDict: Dict[str, Dict[Literal["wert"], Any]]) -> Material:
     if isAir(name):
         return air
     if "elektromagnetik" in matDict.keys():
+        # TODO: Optimize code by introducing default mat dict and iterating
+        #  over its elements!
         magMatDict: dict = matDict["elektromagnetik"]
-        if "el_lw" in magMatDict.keys():
-            conductivity = magMatDict["el_lw"]["wert"]
-        else:
+        conductivity = magMatDict.get("el_lw", {}).get("wert")
+        if not isinstance(conductivity, (int, float)):
             conductivity = None
         # linear magnetic permerability
-        if "mue_r" in magMatDict.keys():
-            permeability = magMatDict["mue_r"]["wert"]
-        else:
+        permeability = magMatDict.get("mue_r", {}).get("wert")
+        if not isinstance(permeability, (int, float)):
             permeability = None
         # remanent flux density [T]
-        if "b_rem" in magMatDict.keys():
-            remanence = magMatDict["b_rem"]["wert"]
-            if "tk_rem_100" in magMatDict.keys():
-                remanenceTempCoef = magMatDict["tk_rem_100"]["wert"]
-        else:
+        remanence = magMatDict.get("b_rem", {}).get("wert")
+        if not isinstance(remanence, (int, float)):
             remanence = None
             remanenceTempCoef = None
+        else:
+            if "tk_rem_100" in magMatDict.keys():
+                remanenceTempCoef = magMatDict["tk_rem_100"]["wert"]
         # BH Curve
         bhCurve = None
         if "bh_kl" in magMatDict.keys():
@@ -477,9 +477,8 @@ def createMaterial(matDict: Dict[str, Dict[Literal["wert"], Any]]) -> Material:
             f"Material '{name}' missing 'elektromagnetik' section!"
         )
 
-    if "dichte" in matDict.keys():
-        density = matDict["dichte"]["wert"]
-    else:
+    density = magMatDict.get("dichte", {}).get("wert")
+    if not isinstance(density, (int, float)):
         density = None
 
     try:
