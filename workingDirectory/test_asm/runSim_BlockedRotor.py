@@ -260,7 +260,7 @@ ax.legend(loc=1)
 # ax.set_xlim(
 #     t[int(t.size * (nbr_stator_periods - 1) / nbr_stator_periods)], t[-1]
 # )
-# ax.set_ylim([150,280]) # medium zoom
+# ax.set_ylim([-25,60]) # medium zoom
 # ax.set_ylim([210, 235])  # high zoom
 ax.set_title("Drehmoment")
 ax.grid(True)
