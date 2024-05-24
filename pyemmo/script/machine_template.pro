@@ -151,9 +151,9 @@ DefineConstant[
 
     // SYNCHRONOUS
     finalrotor_pos = {
-        (RPM==0) ? 
+        (RPM==0) ?
             initrotor_pos
-            : (MachineType==SYNCHRONOUS) ? 
+            : (MachineType==SYNCHRONOUS) ?
                 (FINAL_ROTOR_POS)
                 :(nbrStatorPeriods*360/NbrPolePairs+initrotor_pos),
         Name StrCat[INPUT_ANA_SETTINGS, "06Final rotor position"],
@@ -165,7 +165,7 @@ DefineConstant[
     // END SYNCHRONOUS
 
     NbSteps = {
-        (RPM != 0) ? 
+        (RPM != 0) ?
             Ceil[(finalrotor_pos - initrotor_pos) / (d_theta) + 1]
             : (nbrStatorPeriods*nbrStepsPerPeriod + 1),
         Name StrCat[INPUT_ANA_SETTINGS, "10Number of Time Steps"],
@@ -200,7 +200,7 @@ DefineConstant[
     },
 
     res = {
-        Str[PATH_RES], 
+        Str[PATH_RES],
         Name StrCat[
             INPUT_ANA_SETTINGS_OUTPUT, "02Results folder path"
         ],
@@ -737,6 +737,7 @@ Function
         If (MachineType==ASYNCHRONOUS) // && nbrRotorBars > 0
             RegionListBars() = GetRegions[Rotor_Bars];
             SurfBar[] = SurfaceArea[]{RegionListBars(0)};
+        EndIf
     EndIf
 
     n = RPM / 60; // rotational frequency in Hz
