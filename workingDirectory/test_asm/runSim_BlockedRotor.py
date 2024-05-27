@@ -47,16 +47,16 @@ start = time.perf_counter()
 
 nbr_bars = 9
 
-f_r = 50
-I_eff = 50
+f_r = 1
+I_eff = 20
 n = 0
 f_s = f_r + 2 * n / 60
 T_s = 1 / f_s
-nbr_stator_periods = 80
-nbr_steps_per_period = 64
+nbr_stator_periods = 4
+nbr_steps_per_period = 128
 # Zum Abgleich mit Maxwell
 Nbr_Sect = 2048  # Bandsegmentierung
-multi = 8  # Default=4 number of Segments per timestep
+multi = 4  # Default=4 number of Segments per timestep
 timestep = (
     (60 / (n * Nbr_Sect / multi)) if n > 0 else T_s / nbr_steps_per_period
 )
@@ -96,6 +96,7 @@ paramDict = {
         #                           fineMesh or coarseMesh
         "msh": os.path.join(MODEL_DIR, "fineMesh.msh"),
         # "Flag_SecondOrder": 0,
+        "stop_criterion": 1e-8,
     },
     "ResId": resId,
     "pro": os.path.join(MODEL_DIR, MODEL_NAME + ".pro"),
@@ -111,9 +112,9 @@ paramDict = {
     # "exc": 0,
     # "axLen": 0.2,
     # "sym": 4,
-    "info": "Simulation zum Abgleich mit Maxwell mit statischem Rotorwiderstand bei 50Hz und feinem Mesh.",
+    "info": "Simulation zum Abgleich mit Maxwell mit statischem Rotorwiderstand bei 1Hz und feinem Mesh. Zusätzlich noch extra PO für Feldplots eingebaut.",
     "datetime": time.ctime(),
-    "PostOp": [],  # GetBOnRadius
+    "PostOp": ["Get_LocalFields_Post"],  # GetBOnRadius
 }
 
 results = runCalcforCurrent(paramDict)
