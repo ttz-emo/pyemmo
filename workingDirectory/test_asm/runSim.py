@@ -48,10 +48,10 @@ I_eff = 50
 n = 1000
 f_s = f_r + 2 * n / 60
 T_s = 1 / f_s
-nbr_stator_periods = 1
+nbr_stator_periods = 80
 # Zum Abgleich mit Maxwell
 Nbr_Sect = 2048  # Bandsegmentierung
-multi = 4  # Default=4 number of Segments per timestep
+multi = 8  # Default=4 number of Segments per timestep
 timestep = (60 / (n * Nbr_Sect / multi)) if n > 0 else T_s / 90
 winkelschritt = n / 60 * 360 * timestep  # Default: 0.703125
 nbrSteps = T_s / timestep * nbr_stator_periods
@@ -60,16 +60,16 @@ logging.debug("Timestep %e s.", timestep)
 logging.debug("One time step equals %f° mechanical degrees.", winkelschritt)
 logging.debug("Stop time of simulation: %.7e s", int(nbrSteps) * timestep)
 # %%
-resId = f"blockedRotor_{n}rpm_{f_r}Hz_{nbr_stator_periods}Periods"
+resId = f"{I_eff}A_{n}rpm_{f_r}Hz_{nbr_stator_periods}Periods"
 paramDict = {
     "getdp": {
+        "RPM": float(n),
+        "nbrStatorPeriods": nbr_stator_periods,
+        "d_theta": winkelschritt,
         "freq_rotor": f_r,
         "I_eff": I_eff,
         # "IQ_RMS": float(idq[1]),
-        "RPM": float(n),
         "initrotor_pos": 0.0,
-        "nbrStatorPeriods": nbr_stator_periods,
-        "d_theta": winkelschritt,
         "ResId": resId,
         "Flag_AnalysisType": 1,
         "Flag_PrintFields": 0,
@@ -138,7 +138,7 @@ ax.plot(results["current"]["bars"], linewidth=0.5)
 
 # %%
 respath = os.path.join(paramDict["res"], resId)
-plot_all_dat(respath)
+# plot_all_dat(respath)
 # %%
 t, U_bars = read_timetable_dat(os.path.join(respath, "U_bars.dat"))
 fig, ax = plt.subplots()
@@ -150,7 +150,7 @@ t, I_bars = read_timetable_dat(os.path.join(respath, "I_bars.dat"))
 axi: Axes = ax.twinx()
 line_i = axi.plot(t, I_bars[:, nbar], label="Strom", color="g")
 axi.set_ylabel("Strom in A")
-ax.set_xlim(13, None)
+# ax.set_xlim(13, None)
 ax.grid(True)
 ax.legend(handles=[line_u[0], line_i[0]])
 ax.set_title(f"Stab {nbar+1}")
@@ -161,7 +161,7 @@ axi: Axes = axi
 for nbar in range(9):
     line_i = axi.plot(t, I_bars[:, nbar], label=f"Bar {nbar+1}")
 axi.set_ylabel("Strom in A")
-axi.set_xlim(8, 10)
+# axi.set_xlim(8, 10)
 axi.legend()
 axi.grid(True)
 axi.set_title(f"Stabströme")
@@ -173,8 +173,8 @@ r_bar = np.mean(U_bars[1:, nbar] / I_bars[1:, nbar])
 line_u = ax.plot(
     t, U_bars[:, nbar] / I_bars[:, nbar], label="Widerstand", color="b"
 )
-ax.set_xlim(13, None)
-ax.set_ylim(-1e-5, 1e-5)
+# ax.set_xlim(13, None)
+# ax.set_ylim(-1e-5, 1e-5)
 ax.grid(True)
 
 # %%
@@ -193,8 +193,8 @@ fig, ax = plt.subplots()
 ax: Axes = ax
 for nbar in range(9):
     line_u = ax.plot(t, I_bars[:, nbar], label=f"Stab {nbar}")
-# ax.set_ylabel("Spannung in V")
-ax.set_xlim(13, 15)
+ax.set_ylabel("Strom in A")
+# ax.set_xlim(13, 15)
 ax.legend()
 # ax.set_ylim(-1e-5,1e-5)
 ax.grid(True)
@@ -210,7 +210,7 @@ line_u = ax.plot(t, U_iA, label=f"U_iA")
 line_u = ax.plot(t, U_iB, label=f"U_iB")
 line_u = ax.plot(t, U_iC, label=f"U_iC")
 # ax.set_ylabel("Spannung in V")
-ax.set_xlim(14.5, 15)
+# ax.set_xlim(14.5, 15)
 ax.legend()
 # ax.set_ylim(-1e-5,1e-5)
 ax.grid(True)
@@ -241,29 +241,32 @@ ax.plot(
 )
 # ax.set_ylabel("Spannung in V")
 ax.legend(loc=1)
-ax.set_xlim(
-    t[int(t.size * (nbr_stator_periods - 1) / nbr_stator_periods)], t[-1]
-)
-ax.set_ylim([-25,60]) # medium zoom
+# ax.set_xlim(
+#     t[int(t.size * (nbr_stator_periods - 1) / nbr_stator_periods)], t[-1]
+# )
+# ax.set_ylim([-25,60]) # medium zoom
 # ax.set_ylim([210, 235])  # high zoom
 ax.set_title("Drehmoment")
 ax.grid(True)
 # %%
 # PLOT RESISTANCES
-# %matplotlib widget
-R_bar_dc = 5.19932563e-05
-fig, ax = plt.subplots()
-ax: Axes = ax
-# for nBar in range(1,nbr_bars+1):
-for nBar in (1, 5, 9):
-    resfile = os.path.join(respath, f"R_bar_{nBar}.dat")
-    if os.path.isfile(resfile):
-        t, R_bar = read_timetable_dat(resfile)
-        ax.plot(t, R_bar, label=f"R_bar_{nBar}", marker=".")
-ax.set_ylim(bottom=0, top=3 * R_bar_dc)
-ax.legend()
-# plt.close()
-# plot_timetable_dat(resfile,dataLabel=f"R_{{bar,{nBar}}}")
+resfile = os.path.join(respath, "R_bar_1.dat")
+if os.path.isfile(resfile):
+    R_bar_dc = 5.19932563e-05
+    fig, ax = plt.subplots()
+    ax: Axes = ax
+    # for nBar in range(1,nbr_bars+1):
+    for nBar in (1, 5, 9):
+        resfile = os.path.join(respath, f"R_bar_{nBar}.dat")
+        if os.path.isfile(resfile):
+            t, R_bar = read_timetable_dat(resfile)
+            ax.plot(t, R_bar, label=f"R_bar_{nBar}", marker=".")
+    ax.set_ylim(bottom=0, top=3 * R_bar_dc)
+    ax.legend()
+    # plt.close()
+    # plot_timetable_dat(resfile,dataLabel=f"R_{{bar,{nBar}}}")
+else:
+    logging.info(f"No bar resistance results in result directory {respath}")
 # %%
 # Export Data for Maxwell
 from pyemmo.functions.exportMaxwell import exportTabMaxwell
