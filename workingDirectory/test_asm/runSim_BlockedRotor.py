@@ -264,23 +264,28 @@ ax.legend(loc=1)
 # ax.set_ylim([-25,60]) # medium zoom
 # ax.set_ylim([210, 235])  # high zoom
 ax.set_title("Drehmoment")
-ax.grid(True)
+ax.grid(True, "major", linestyle="-")
+ax.grid(True, "minor", linestyle="--")
+ax.minorticks_on()
 # %%
 # PLOT RESISTANCES
-# %matplotlib widget
-R_bar_dc = 5.19932563e-05
-fig, ax = plt.subplots()
-ax: Axes = ax
-# for nBar in range(1,nbr_bars+1):
-for nBar in (1, 5, 9):
-    resfile = os.path.join(respath, f"R_bar_{nBar}.dat")
-    if os.path.isfile(resfile):
-        t, R_bar = read_timetable_dat(resfile)
-        ax.plot(t, R_bar, label=f"R_bar_{nBar}", marker=".")
-ax.set_ylim(bottom=0, top=3 * R_bar_dc)
-ax.legend()
-# plt.close()
-# plot_timetable_dat(resfile,dataLabel=f"R_{{bar,{nBar}}}")
+resfile = os.path.join(respath, "R_bar_1.dat")
+if os.path.isfile(resfile):
+    R_bar_dc = 5.19932563e-05
+    fig, ax = plt.subplots()
+    ax: Axes = ax
+    # for nBar in range(1,nbr_bars+1):
+    for nBar in (1, 5, 9):
+        resfile = os.path.join(respath, f"R_bar_{nBar}.dat")
+        if os.path.isfile(resfile):
+            t, R_bar = read_timetable_dat(resfile)
+            ax.plot(t, R_bar, label=f"R_bar_{nBar}", marker=".")
+    ax.set_ylim(bottom=0, top=3 * R_bar_dc)
+    ax.legend()
+    # plt.close()
+    # plot_timetable_dat(resfile,dataLabel=f"R_{{bar,{nBar}}}")
+else:
+    logging.info(f"No bar resistance results in result directory {respath}")
 # %%
 # Export Data for Maxwell
 from pyemmo.functions.exportMaxwell import exportTabMaxwell
