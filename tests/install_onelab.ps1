@@ -18,12 +18,35 @@ $today = Get-Date -Format "yyMMdd"
 $store_path = Join-Path -Path $current_folder_name  -ChildPath ("data\onelab")
 Write-Output "Store path is $store_path"
 
-if (Test-Path $store_path) {
-    # Write-Output "Onelab for date $(Get-Date) allready installed"
-    Write-Output "Onelab allready installed!"
-}
-else {
-    New-Item -Path $store_path -ItemType Directory
+$test_path = Join-Path -Path $current_folder_name -ChildPath ("data\*_onelab")
+if (Test-Path -Path $test_path -PathType Container) {
+    if (Test-Path $store_path) {
+        # TODO: add check here that executables exist!
+        Write-Output "Onelab for date $(Get-Date) allready installed"
+    }
+    else {
+        # Newest onelab installation missing
+        Remove-Item $test_path -Recurse -Force -Confirm:$false # remove previous installation folder
+        New-Item -Path $store_path -ItemType Directory # add new directory
+        $zip_filepath = $store_path + "\onelab.zip" # path for onelab.zip
+        Write-Output("Zip file path is: $zip_filepath")
+        if (Test-Path $zip_filepath) {
+            # TODO: Does this check make sense since we just created the folder
+            Write-Output("onelab.zip has allready been downloaded.")
+        }
+        else {
+            # FIXME: What to do if there is no internet?
+            (New-Object System.Net.WebClient).DownloadFile('https://onelab.info/files/onelab-Windows64.zip', $zip_filepath)
+        }
+        $onelab_path = Join-Path -Path $store_path  -ChildPath "onelab-Windows64"
+        if (Test-Path $onelab_path) {
+            Write-Output "onelab.zip allready expanded."
+        }
+        else {
+            Expand-Archive ($zip_filepath) -DestinationPath $store_path
+            Remove-Item  $zip_filepath
+        }
+    }
 }
 "$store_path\onelab-Windows64\gmsh.exe" > 'GMSH_TEST_PATH'
 "$store_path\onelab-Windows64\getdp.exe" > 'GETDP_TEST_PATH'
