@@ -32,4 +32,6 @@ workingDirectory/testPosImport/*
 tests/data/*onelab/
 tests/GETDP_TEST_PATH
 tests/GMSH_TEST_PATH
+# Exclude private tests
+tests/private
 # specific files to ignore
