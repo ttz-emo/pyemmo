@@ -247,7 +247,7 @@ stator.plot()
 # %% Create Machine
 SPMSM.createMachineDomains()
 SPMSM.setFunctionMesh("linear", 8)
-SPMSM.plot()
+fig = SPMSM.plot()
 # SPMSM.createMachineDomains -> MachineAllType function
 # %%
 resDir = os.path.join(ROOT_DIR, r"Results\Baukasten")
@@ -281,11 +281,12 @@ cmd = createCmdCommand(
     onelabFile=myScript.proFilePath,
     gmshPath=r"C:\Software\onelab\gmsh.exe",
     getdpPath=r"C:\Software\onelab\getdp.exe",
-    useGUI=False,
+    useGUI=True,
     paramDict={"Flag_ClearResults": 1},
 )
 print(cmd)
 
+# %%
 os.system(cmd)
 plot_all_dat(myScript.resultsPath)
 print("I am done!")
