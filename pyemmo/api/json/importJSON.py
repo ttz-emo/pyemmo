@@ -32,6 +32,7 @@ from ...functions.cleanName import cleanName
 from ...script.material.material import Material
 from ...script.material.electricalSteel import ElectricalSteel
 from .. import air
+from .. import logger
 
 # ================================ START EXTENDED INFO FUNCTIONS ===================================
 
@@ -472,6 +473,14 @@ def createMaterial(matDict: Dict[str, Dict[Literal["wert"], Any]]) -> Material:
                     "(neither relative permeability nor BH-Curve)"
                 )
                 raise AttributeError(msg)
+            elif permeability < 1:
+                # pylint: disable=locally-disabled,  line-too-long
+                logger.warning(
+                    "Permeability of material '%s' is smaller than 1! Resetting it to 1 for model.",
+                    name,
+                    exc_info=1,
+                )
+                permeability = 1.0
     else:
         raise ValueError(
             f"Material '{name}' missing 'elektromagnetik' section!"
