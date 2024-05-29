@@ -30,6 +30,7 @@ import logging
 from math import pi
 from os.path import abspath, join
 from typing import TYPE_CHECKING, Dict, List, Literal, Tuple, Union
+import numpy as np
 from numpy import rad2deg, where
 from pygetdp import Function as FunctionGetDP
 from pygetdp import Group as GroupGetDP
@@ -1422,6 +1423,11 @@ class Script:
         material = physicalElement.material
         if material not in matDict["material"]:
             matDict["material"].append(material)
+            # check that the material has eighter bh curve or permeability
+            if material.BH.size == 0 and not material.relPermeability:
+                raise RuntimeError(
+                    f"Material {material.name} has neither bh curve nor relative permability!"
+                )
             matDict["physicalElemID"].append([physicalElement.id])
         else:
             # otherwise find the index of the existing material
