@@ -52,6 +52,11 @@ class ElectricalSteel(Material):
             thermalConductivity,
             thermalCapacity,
         )
+        # make sure density is given since we need it to calculate loss
+        # parameters in core loss calculation.
+        assert (
+            self.density
+        ), "No value for electrical steel material density given!"
         self.sheetThickness = sheetThickness
         self.lossParams = lossParams
         self.referenceFrequency = referenceFrequency

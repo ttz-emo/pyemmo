@@ -574,7 +574,6 @@ def adaptIronLossParams(
     freq = steelMat.referenceFrequency  # frequency in Hz
     ind = steelMat.referenceFluxDensity  # induction in T
     dens = steelMat.density  # density in kg/m³
-    dens = steelMat.density  # density in kg/m³
     lossParams[0] = lossParams[0] * dens / freq / (ind**2)
     lossParams[1] = lossParams[1] * dens / ((freq * ind) ** 2)
     lossParams[2] = lossParams[2] * dens / ((freq * ind) ** 1.5)
