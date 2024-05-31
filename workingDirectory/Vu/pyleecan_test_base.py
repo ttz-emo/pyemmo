@@ -71,4 +71,7 @@ def pyleecan_test_base(test_cases: dict, test_params: list, print_flag: bool = 0
         # runCalcforCurrent(param_dict)
 
 if __name__ == "__main__":
-    pyleecan_test_base(test_cases, test_params)
+    # pyleecan_test_base(test_cases, test_params)
+    import sys
+    for p in sys.path:
+        print(p)

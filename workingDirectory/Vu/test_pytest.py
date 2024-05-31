@@ -1,5 +1,7 @@
-from pyleecan_test_base import pyleecan_test_base
+
 import os
+from pyleecan_test_base import pyleecan_test_base
+
 import glob
 from collections import defaultdict
 from pyemmo.definitions import ROOT_DIR
