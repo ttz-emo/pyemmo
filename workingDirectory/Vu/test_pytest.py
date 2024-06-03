@@ -25,14 +25,11 @@ class TestCases:
         test_type = "api\\pyleecan"
         self.make_test_cases(test_type)
         for test_id, test_case in self.test_cases[test_type].items():
-            updateConfig(test_type, test_id, test_case)
-            pyleecan_test_base(test_type, test_id, test_case, self.test_params[test_type])
+            curr_datetime, dest = updateConfig(test_type, test_id, test_case)
+            pyleecan_test_base(curr_datetime, test_type, test_id, test_case, self.test_params[test_type])
 
         for  test_id, test_case in self.test_cases[test_type].items():
-            assert len(glob.glob(os.path.join(ROOT_DIR, f"Results\\pyleecanAPI\\{test_type}\\test_{test_id}\\{test_case}\\*.geo"))) == 2
-
-    def test_dummy(self):
-        assert 1 + 1 == 3 
+            assert len(glob.glob(os.path.join(ROOT_DIR, f"Results\\pyleecanAPI\\{test_type}\\{curr_datetime}\\test_{test_id}\\{test_case}\\*.geo"))) == 2
 
     def make_test_cases(self, test_type: str) -> dict:
         test_files = glob.glob(os.path.join(ROOT_DIR, r"tests\data", test_type, "*.json"))

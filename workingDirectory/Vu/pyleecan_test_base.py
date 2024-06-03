@@ -23,7 +23,7 @@ test_params = {
 }
 
 
-def pyleecan_test_base(test_type: str, test_id: int, test_case: str, test_params: list, print_flag: bool = 0, debug_flag: bool = 0) :
+def pyleecan_test_base(date: str, test_type: str, test_id: int, test_case: str, test_params: list, print_flag: bool = 0, debug_flag: bool = 0) :
 
     '''
     Base test data prepper for Pyleecan API workflow test.
@@ -44,7 +44,7 @@ def pyleecan_test_base(test_type: str, test_id: int, test_case: str, test_params
     assert os.path.isfile(machine_file_path)  # make sure file exists
 
     pyleecan_machine: Machine = load.load(machine_file_path)
-    resFolder = os.path.join(ROOT_DIR, f"Results\\pyleecanAPI\\{test_type}\\test_{test_id}\\{test_case}")
+    resFolder = os.path.join(ROOT_DIR, f"Results\\pyleecanAPI\\{test_type}\\{date}\\test_{test_id}\\{test_case}")
     if not os.path.isdir(resFolder):
         os.makedirs(resFolder)
     pyleecanAPI.main(pyleecan_machine, model_dir = resFolder)
