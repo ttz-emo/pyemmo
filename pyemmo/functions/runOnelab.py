@@ -160,7 +160,7 @@ def createCmdCommand(
     gmshPath: Union[str, os.PathLike] = "",
     getdpPath: Union[str, os.PathLike] = "",
     logFileName: Union[str, os.PathLike] = "",
-    paramDict: Dict[str, Union[str, int, float]] = None,
+    paramDict: Dict[str, Union[str, int, float]] = {},
     postOperations: List[str] = [],
 ) -> str:
     """Create a cmd command to open a .geo or .pro file with the gmsh gui or

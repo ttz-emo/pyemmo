@@ -21,10 +21,12 @@ from cmath import pi
 from math import gcd
 from typing import List, Literal, Union
 from matplotlib import pyplot as plt
+from matplotlib.figure import Figure
 
 from .physicalElement import PhysicalElement
 from .surface import Surface, Point, Line
 from .domain import Domain
+from .movingBand import MovingBand
 from .rotor import Rotor
 from .stator import Stator
 from ...script import default_param_dict
@@ -426,7 +428,7 @@ class MachineAllType:
             a = -b / 2 / rMb
         else:
             mssg = f"Unknown function specifier '{functionType}' for functional mesh."
-            raise (ValueError(mssg))
+            raise ValueError(mssg)
         for physical in self.physicalElements:
             for geo in physical.geometricalElement:
                 points: List[Point] = []
@@ -459,7 +461,8 @@ class MachineAllType:
         linewidth=0.5,
         marker=".",
         markersize=1,
-    ) -> None:
+        plot_mb: bool = False,
+    ) -> Figure:
         """
         2D Line plot of the surface
         """
@@ -470,10 +473,15 @@ class MachineAllType:
         domains = self.domains
         for domain in domains:
             for phys in domain.physicals:
+                if not plot_mb:
+                    if isinstance(phys, MovingBand):
+                        break
                 for geoElem in phys.geometricalElement:
                     geoElem.plot(
                         fig=fig,
                         linewidth=linewidth,
                         marker=marker,
                         markersize=markersize,
+                        color=[0, 0, 0],
                     )
+        return fig

@@ -161,3 +161,12 @@ def get_cont(get_rotor_cont_function, machine_file):
 def test_main_functions(test_function):
     get_rotor_cont_function, machine_file = test_function
     get_cont(get_rotor_cont_function, machine_file)
+
+
+# if __name__ == "__main__":
+#     test_main_functions(
+#         (
+#             get_winding_cont,
+#             "03_synrm_muster_Bachelor.json",
+#         )
+#     )
