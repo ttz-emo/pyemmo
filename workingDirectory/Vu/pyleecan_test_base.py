@@ -39,6 +39,8 @@ def pyleecan_test_base(test_params: list,
 
     # disable messages of matplotlib
     logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
+    # logging.getLogger("matplotlib.colormaps").setLevel(logging.ERROR)
+    # logging.getLogger("numpy").setLevel(logging.ERROR)
     logging.getLogger().setLevel(logging.INFO)
 
     machine_file_path = test_data_path
