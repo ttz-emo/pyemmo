@@ -22,14 +22,36 @@ class TestCases:
         }
     }
     def test_pyleecan(self):
+        """
+        Testing pyleecan API to generate GMSH and simulation files based on pyleecan machine json files.
+
+
+        """
         test_type = "api\\pyleecan"
         self.make_test_cases(test_type)
         for test_id, test_case in self.test_cases[test_type].items():
-            curr_datetime, dest = updateConfig(test_type, test_id, test_case)
+            curr_datetime, log_dest = updateConfig(test_type, test_id, test_case)
             pyleecan_test_base(curr_datetime, test_type, test_id, test_case, self.test_params[test_type])
 
         for  test_id, test_case in self.test_cases[test_type].items():
-            assert len(glob.glob(os.path.join(ROOT_DIR, f"Results\\pyleecanAPI\\{test_type}\\{curr_datetime}\\test_{test_id}\\{test_case}\\*.geo"))) == 2
+            #Point 1: check if result folder exist
+            result_path = f"Results\\pyleecanAPI\\{test_type}\\{curr_datetime}\\test_{test_id}\\{test_case}"
+            assert os.path.isdir(result_path)
+
+            #Point 2: check if GMSH base files are generated
+            assert len(glob.glob(os.path.join(ROOT_DIR, result_path, "*.geo"))) == 2
+            assert len(glob.glob(os.path.join(ROOT_DIR, result_path, "*.pro"))) == 3
+            assert len(glob.glob(os.path.join(ROOT_DIR, result_path, "*.db"))) == 1
+            assert len(glob.glob(os.path.join(ROOT_DIR, result_path, "*.msh"))) == 1
+            assert len(glob.glob(os.path.join(ROOT_DIR, result_path, "*.pre"))) == 1
+            assert len(glob.glob(os.path.join(ROOT_DIR, result_path, "*.res"))) == 1
+            
+
+            #Point 3: check if simulation data is generated
+            assert os.path.isdir(os.path.join(ROOT_DIR, result_path, f"res_{test_case}"))
+            
+
+
 
     def make_test_cases(self, test_type: str) -> dict:
         test_files = glob.glob(os.path.join(ROOT_DIR, r"tests\data", test_type, "*.json"))
