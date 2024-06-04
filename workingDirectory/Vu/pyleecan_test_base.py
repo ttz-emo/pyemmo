@@ -23,7 +23,10 @@ test_params = {
 }
 
 
-def pyleecan_test_base(date: str, test_type: str, test_id: int, test_case: str, test_params: list, print_flag: bool = 0, debug_flag: bool = 0) :
+def pyleecan_test_base(test_params: list, 
+                       result_path: str,
+                       test_data_path: str, 
+                       print_flag: bool = 0, debug_flag: bool = 0) :
 
     '''
     Base test data prepper for Pyleecan API workflow test.
@@ -38,15 +41,9 @@ def pyleecan_test_base(date: str, test_type: str, test_id: int, test_case: str, 
     logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
     logging.getLogger().setLevel(logging.INFO)
 
-    machine_file_path = os.path.join(
-        ROOT_DIR, f"tests\\data\\api\\pyleecan\\{test_case}.json"
-    )
-    assert os.path.isfile(machine_file_path)  # make sure file exists
-
+    machine_file_path = test_data_path
     pyleecan_machine: Machine = load.load(machine_file_path)
-    resFolder = os.path.join(ROOT_DIR, f"Results\\pyleecanAPI\\{test_type}\\{date}\\test_{test_id}\\{test_case}")
-    if not os.path.isdir(resFolder):
-        os.makedirs(resFolder)
+    resFolder = result_path
     pyleecanAPI.main(pyleecan_machine, model_dir = resFolder)
     geo_file = os.path.join(resFolder, pyleecan_machine.name + ".geo")
     pro_file = os.path.join(resFolder, pyleecan_machine.name + ".pro")

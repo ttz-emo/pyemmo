@@ -6,9 +6,7 @@ import glob
 from collections import defaultdict
 from pyemmo.definitions import ROOT_DIR
 
-from testUtils import updateConfig
-from configparser import ConfigParser
-from datetime import datetime
+from testUtils import updateConfig, count_files
 
 class TestCases:
     test_cases = defaultdict(dict)
@@ -19,6 +17,8 @@ class TestCases:
             "iq": 50,
             "rpm": 1000,
             "d_theta": 0.25,
+            "test_data_folder": "tests\\data",
+            "result_folder": "Result\\pyleecanAPI"
         }
     }
     def test_pyleecan(self):
@@ -29,27 +29,51 @@ class TestCases:
         """
         test_type = "api\\pyleecan"
         self.make_test_cases(test_type)
+        result_path = defaultdict(list)
+        simul_path = defaultdict(list)
+        simul_subfolder_path = defaultdict(list)
+        
+
         for test_id, test_case in self.test_cases[test_type].items():
             curr_datetime, log_dest = updateConfig(test_type, test_id, test_case)
-            pyleecan_test_base(curr_datetime, test_type, test_id, test_case, self.test_params[test_type])
+
+
+            #preparing source and result folders
+            source_path = os.path.join(ROOT_DIR, self.test_params[test_type]["test_data_folder"], f"{test_type}\\{test_case}.json")
+
+            assert os.path.isfile(source_path)  # make sure source file exists
+
+            result_path[test_id] = os.path.join(ROOT_DIR, self.test_params[test_type]["result_folder"], f"{test_type}\\{curr_datetime}\\test_{test_id}\\{test_case}")
+            if not os.path.isdir(result_path[test_id]):
+                os.makedirs(result_path[test_id])
+
+            simul_path[test_id] = os.path.join(ROOT_DIR, result_path[test_id], f"res_{test_case}")
+            simul_subfolder = f"id_{self.test_params[test_type]['id']}_iq_{self.test_params[test_type]['iq']}_n_{self.test_params[test_type]['rpm']}rpm"
+            simul_subfolder_path[test_id] = os.path.join(result_path[test_id], simul_path[test_id], simul_subfolder)
+
+            pyleecan_test_base(self.test_params[test_type], result_path=result_path[test_id], test_data_path=source_path)
 
         for  test_id, test_case in self.test_cases[test_type].items():
             #Point 1: check if result folder exist
-            result_path = f"Results\\pyleecanAPI\\{test_type}\\{curr_datetime}\\test_{test_id}\\{test_case}"
-            assert os.path.isdir(result_path)
+            base_result_path = result_path[test_id] #this can change to a different folder for base data
 
             #Point 2: check if GMSH base files are generated
-            assert len(glob.glob(os.path.join(ROOT_DIR, result_path, "*.geo"))) == 2
-            assert len(glob.glob(os.path.join(ROOT_DIR, result_path, "*.pro"))) == 3
-            assert len(glob.glob(os.path.join(ROOT_DIR, result_path, "*.db"))) == 1
-            assert len(glob.glob(os.path.join(ROOT_DIR, result_path, "*.msh"))) == 1
-            assert len(glob.glob(os.path.join(ROOT_DIR, result_path, "*.pre"))) == 1
-            assert len(glob.glob(os.path.join(ROOT_DIR, result_path, "*.res"))) == 1
-            
+            base_result_file_count = count_files(base_result_path)
+            self.check_file_counts(base_result_file_count, result_path[test_id])
 
             #Point 3: check if simulation data is generated
-            assert os.path.isdir(os.path.join(ROOT_DIR, result_path, f"res_{test_case}"))
-            
+            base_simul_path = simul_path[test_id] #This can also change for another base data folder
+            base_simul_subfolder_path = simul_subfolder_path[test_id] #This can also change for another base data folder
+
+            assert os.path.isdir(simul_path[test_id])
+            assert os.path.isdir(simul_subfolder_path[test_id])
+
+            base_simul_file_count = count_files(base_simul_path)
+            base_simul_subfolder_file_count = count_files(base_simul_subfolder_path)
+
+            self.check_file_counts(base_simul_file_count, simul_path[test_id])
+            self.check_file_counts(base_simul_subfolder_file_count, simul_subfolder_path[test_id])
+
 
 
 
@@ -63,17 +87,7 @@ class TestCases:
         
         return self.test_cases
 
-
-    # def updateConfig(test_type: str, test_id: int, test_case: str):
-    
-    #     '''
-    #     Function to update config file to generate proper test file name
-    #     '''
-
-    #     curr_datetime = datetime.now().strftime("%Y_%m_%d-%H_%M_%S")
-    #     parser = ConfigParser()
-    #     parser.read('pytest.ini')
-    #     parser.set('pytest', 'log_file', f"logs/{test_type}/test_{test_id}_{test_case}/{curr_datetime}.log")
-
-    #     with open('pytest.ini', 'w') as config_file:
-    #         parser.write(config_file)
+    def check_file_counts(self, base_count: dict, folder_to_count: str):
+        for file_type, count in base_count.items():
+                if file_type != "dir":
+                    assert len(glob.glob(os.path.join(ROOT_DIR, folder_to_count, f"*.{file_type}"))) == count
