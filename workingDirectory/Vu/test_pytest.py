@@ -18,7 +18,7 @@ class TestCases:
             "rpm": 1000,
             "d_theta": 0.25,
             "test_data_folder": "tests\\data",
-            "result_folder": "Result\\pyleecanAPI"
+            "result_folder": "Results\\pyleecanAPI"
         }
     }
     def test_pyleecan(self):
@@ -47,23 +47,25 @@ class TestCases:
             if not os.path.isdir(result_path[test_id]):
                 os.makedirs(result_path[test_id])
 
-            simul_path[test_id] = os.path.join(ROOT_DIR, result_path[test_id], f"res_{test_case}")
+            simul_path[test_id] = os.path.join(result_path[test_id], f"res_{test_case}")
             simul_subfolder = f"id_{self.test_params[test_type]['id']}_iq_{self.test_params[test_type]['iq']}_n_{self.test_params[test_type]['rpm']}rpm"
-            simul_subfolder_path[test_id] = os.path.join(result_path[test_id], simul_path[test_id], simul_subfolder)
+            simul_subfolder_path[test_id] = os.path.join(simul_path[test_id], simul_subfolder)
 
             pyleecan_test_base(self.test_params[test_type], result_path=result_path[test_id], test_data_path=source_path)
 
         for  test_id, test_case in self.test_cases[test_type].items():
             #Point 1: check if result folder exist
-            base_result_path = result_path[test_id] #this can change to a different folder for base data
+            base_result_path = os.path.join(ROOT_DIR, self.test_params[test_type]["test_data_folder"], test_type, f"comparison_base\\{test_case}") #this can change to a different folder for base data
 
+            
             #Point 2: check if GMSH base files are generated
             base_result_file_count = count_files(base_result_path)
             self.check_file_counts(base_result_file_count, result_path[test_id])
 
+            
             #Point 3: check if simulation data is generated
-            base_simul_path = simul_path[test_id] #This can also change for another base data folder
-            base_simul_subfolder_path = simul_subfolder_path[test_id] #This can also change for another base data folder
+            base_simul_path = os.path.join(base_result_path, f"res_{test_case}") #This can also change for another base data folder
+            base_simul_subfolder_path = os.path.join(base_simul_path, simul_subfolder) #This can also change for another base data folder
 
             assert os.path.isdir(simul_path[test_id])
             assert os.path.isdir(simul_subfolder_path[test_id])
@@ -73,6 +75,12 @@ class TestCases:
 
             self.check_file_counts(base_simul_file_count, simul_path[test_id])
             self.check_file_counts(base_simul_subfolder_file_count, simul_subfolder_path[test_id])
+
+
+            #Point 4: Check content of file
+
+
+
 
 
 
