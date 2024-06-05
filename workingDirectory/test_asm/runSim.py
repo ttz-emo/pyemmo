@@ -112,7 +112,7 @@ sim_duration = stop - start
 logging.info(
     "Simulation took %s", str(datetime.timedelta(seconds=sim_duration))
 )
-if sim_duration > nbrSteps * 3:
+if sim_duration > 1:
     results["simlation_duration"] = sim_duration
 # %%
 out_dict = paramDict.copy()
@@ -275,7 +275,7 @@ from pyemmo.functions.exportMaxwell import exportTabMaxwell
 f_name_mxwl_export = os.path.join(respath, "I_Bar_1.tab")
 if not os.path.isfile(f_name_mxwl_export):
     exportTabMaxwell(
-        [out_dict["time"], I_bars[:, 1]],
+        [out_dict["time"], I_bars[:, 0]],
         identifier=["Time (s)", "I_Bar_Onelab (A)"],
         filepath=f_name_mxwl_export,
     )
@@ -283,7 +283,7 @@ if not os.path.isfile(f_name_mxwl_export):
 f_name_mxwl_export = os.path.join(respath, "U_Bar_1.tab")
 if not os.path.isfile(f_name_mxwl_export):
     exportTabMaxwell(
-        [out_dict["time"], U_bars[:, 1]],
+        [out_dict["time"], U_bars[:, 0]],
         identifier=["Time (s)", "V_Bar_Onelab (V)"],
         filepath=f_name_mxwl_export,
     )
