@@ -32,7 +32,7 @@ from matplotlib import pyplot as plt
 
 # from pyemmo.definitions import ROOT_DIR
 from pyemmo.functions import calcIronLoss
-from pyemmo.functions import importResults
+from pyemmo.functions import import_results
 from pyemmo.definitions import TEST_DIR
 
 TIME_DOMAIN = True
@@ -135,7 +135,7 @@ if TIME_DOMAIN:
 # %%
 lossGetdpFile = os.path.join(RES_DIR, "Pec_Lam.dat")
 if os.path.isfile(lossGetdpFile):
-    time, eddyLossOnelab = importResults.readTimeTableDat(lossGetdpFile)
+    time, eddyLossOnelab = import_results.read_timetable_dat(lossGetdpFile)
     print(
         "\nOnelab eddy current loss results:\n"
         f"{'Eddy Current:':<14} {np.mean(eddyLossOnelab) : 8.3f} W"
