@@ -13,7 +13,9 @@ else {
 $current_folder_name = Get-Location
 $today = Get-Date -Format "yyMMdd"
 # Download newest ONELAB version
-$store_path = Join-Path -Path $current_folder_name  -ChildPath ("data\" + $today + "_onelab")
+# FIXME: Check ONELAB for new verion BEFORE downloading the whole package again...
+# $store_path = Join-Path -Path $current_folder_name  -ChildPath ("data\" + $today + "_onelab")
+$store_path = Join-Path -Path $current_folder_name  -ChildPath ("data\onelab")
 Write-Output "Store path is $store_path"
 
 $test_path = Join-Path -Path $current_folder_name -ChildPath ("data\*_onelab")

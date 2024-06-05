@@ -1187,45 +1187,69 @@
         "Wwire": 0.0032,
         "__class__": "CondType12",
         "cond_mat": {
-          "HT": {
-            "Cp": 381.0,
-            "__class__": "MatHT",
-            "alpha": 1.6e-05,
-            "lambda_x": 385.0,
-            "lambda_y": 385.0,
-            "lambda_z": 385.0
-          },
-          "__class__": "Material",
-          "desc": "COPPER WINDING",
-          "eco": {
-            "__class__": "MatEconomical",
-            "cost_unit": 60.0,
-            "unit_name": "$"
-          },
-          "elec": {
-            "__class__": "MatElectrical",
-            "alpha": 0.00393,
-            "epsr": 1,
-            "rho": 1.73e-08
-          },
-          "is_isotropic": true,
-          "mag": null,
-          "name": "Copper1",
-          "path": "C:/Users/k49976/AppData/Roaming/pyleecan/Material/Copper1.json",
-          "struct": {
-            "Ex": 115000000000.0,
-            "Ey": 115000000000.0,
-            "Ez": 115000000000.0,
-            "Gxy": null,
-            "Gxz": null,
-            "Gyz": null,
-            "__class__": "MatStructural",
-            "nu_xy": null,
-            "nu_xz": null,
-            "nu_yz": null,
-            "rho": 8900.0
-          }
+    "HT": {
+        "Cp": 381.0,
+        "__class__": "MatHT",
+        "alpha": 2.1e-05,
+        "lambda_x": 385.0,
+        "lambda_y": 385.0,
+        "lambda_z": 385.0
+    },
+    "__class__": "Material",
+    "__save_date__": "2021_05_03 14h38min33s ",
+    "__version__": "pyleecan_1.2.1",
+    "desc": "COPPER WINDING",
+    "eco": {
+        "__class__": "MatEconomical",
+        "cost_unit": 60.0,
+        "unit_name": "$"
+    },
+    "elec": {
+        "__class__": "MatElectrical",
+        "alpha": 0.003,
+        "epsr": 1,
+        "rho": 2.2e-08
+    },
+    "is_isotropic": true,
+    "mag": {
+        "BH_curve": {
+            "__class__": "ImportMatrix",
+            "is_transpose": false
         },
+        "Brm20": 0,
+        "Hc": 0,
+        "LossData": {
+            "__class__": "ImportMatrix",
+            "is_transpose": false
+        },
+        "ModelBH": {
+            "Bmax": 2.31,
+            "Hmax": null,
+            "__class__": "ModelBH",
+            "delta": 100
+        },
+        "Wlam": 0,
+        "__class__": "MatMagnetics",
+        "alpha_Br": 0.0,
+        "is_BH_extrapolate": false,
+        "mur_lin": 1
+    },
+    "name": "Copper2",
+    "path": "Copper2.json",
+    "struct": {
+        "Ex": 115000000000.0,
+        "Ey": 115000000000.0,
+        "Ez": 115000000000.0,
+        "Gxy": null,
+        "Gxz": null,
+        "Gyz": null,
+        "__class__": "MatStructural",
+        "nu_xy": null,
+        "nu_xz": null,
+        "nu_yz": null,
+        "rho": 8900.0
+    }
+},
         "ins_mat": {
           "HT": {
             "Cp": 671.0,
