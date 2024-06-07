@@ -77,7 +77,10 @@ class TestCases:
             self.check_file_counts(base_simul_subfolder_file_count, simul_subfolder_path[test_id])
 
 
-            #Point 4: Check content of file
+            #Point 4: Check content of files
+            #4.1 in main test folder
+            base_result_files = glob.glob(os.path.join(base_result_path, "*.*"))
+            result_files = glob.glob(os.path.join(result_path, "*.*"))
 
 
 
