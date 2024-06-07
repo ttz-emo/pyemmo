@@ -17,7 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Literal
+import logging
 from matplotlib import pyplot as plt
 from numpy import pi, sign
 from swat_em import datamodel
@@ -26,7 +27,7 @@ from .movingBand import MovingBand
 from .airGap import AirGap
 from .physicalElement import PhysicalElement
 from .slot import Slot
-from .surface import Surface
+from .surface import Surface, Point
 from .domain import Domain
 from ..material.electricalSteel import ElectricalSteel
 
@@ -234,6 +235,26 @@ class Stator:
                     f"Could not determine movingband radius, because there were no movingband objects in the rotor."
                 )
             )
+
+    @property
+    def outer_radius(self) -> float:
+        """Stator most outer radius determined from domain OuterLimit
+
+        Returns:
+            float: Most outer radius in meter.
+        """
+        if not self.physicalElements:
+            raise RuntimeError(
+                "Cannot determine outer radius since there are no physical elements in Stator."
+            )
+        outer_radius = 0.0
+        for phys in self._domainOuterLimit.physicals:
+            for geo in phys.geometricalElement:
+                if isinstance(geo, Line):
+                    for p in geo.points:
+                        if p.radius > outer_radius:
+                            outer_radius = p.radius
+        return outer_radius
 
     @property
     def winding(self) -> datamodel:
@@ -482,6 +503,111 @@ class Stator:
         lim = 0.01 * self.movingBandRadius
         ax.set_xlim(left=-lim)
         ax.set_ylim(bottom=-lim)
+
+    def setFunctionMesh(
+        self,
+        basisMeshsize: float = None,
+        functionType: Literal["linear", "quad"] = None,
+        meshGainFactor: float = None,
+    ):
+        """add functional mesh size setting for stator if you don't want to
+        specify mesh sizes individually. Mesh size is set to increase from
+        airgap to stator outer radius. Maximal mesh size will be
+        basisMeshsize * meshGainFactor.
+        If basisMeshsize is not given, its set to
+        2 * Pi * Movingband_Radius / 360.
+
+        Args:
+            functionType (Literal[&quot;linear&quot;, &quot;quad&quot;]):
+                linear or quadratic function for mesh size.
+            meshGainFactor (float): Gain factor for mesh size from airgap to
+                outer machine limit.
+            basisMeshsize (float, optional): Basis mesh size to use near the
+                airgap (minimal mesh size).
+                Defaults to 2 * Pi * Movingband_Radius / 360.
+        """
+        logging.debug("Started automatic mesh generation on stator.")
+        # get max. outer radius:
+        r_out = self.outer_radius
+        if not basisMeshsize:
+            basisMeshsize = 2 * pi * self.movingBandRadius / 360
+            logging.debug(
+                "Setting basis mesh size to 2 * pi * self.movingBandRadius / 360 = %.3e",
+                basisMeshsize,
+            )
+        # set mesh gain factor to empirically developed default
+        if not meshGainFactor:
+            if r_out / basisMeshsize > 100:
+                meshGainFactor = r_out / basisMeshsize / 20
+                if not functionType:
+                    functionType = "linear"
+            else:
+                meshGainFactor = 20
+                if not functionType:
+                    functionType = "quad"
+            logging.debug(
+                "Setting mesh gain factor to = %.1f",
+                meshGainFactor,
+            )
+        if functionType == "linear":
+            self._set_linear_mesh(meshGainFactor, basisMeshsize)
+        else:
+            self._set_quad_mesh(meshGainFactor, basisMeshsize)
+
+    def _set_linear_mesh(self, meshGainFactor: float, basisMeshsize: float):
+        logging.debug("Setting linear mesh on stator.")
+        # calculate linear mesh size functions (ax+b)
+        a = (meshGainFactor - 1) / (self.outer_radius - self.movingBandRadius)
+        b = meshGainFactor - a * self.outer_radius
+
+        for physical in self.physicalElements:
+            for geo in physical.geometricalElement:
+                points: List[Point] = []
+                if isinstance(geo, Surface):
+                    for curve in geo.curve:
+                        points.extend(curve.points)
+                elif isinstance(geo, Line):
+                    points.extend(geo.points)
+                # All curves should belong to a surface...
+                # else:
+                #     points.extend(geo.getPoints())
+                for point in points:
+                    rP = point.radius
+                    # if rP < rMb: # == rotor is allways true
+                    # meshSizeFaktor = (a1*rP+b1)
+                    pMeshSize = (a * rP + b) * basisMeshsize
+                    point.meshLength = pMeshSize
+
+    def _set_quad_mesh(self, meshGainFactor: float, basisMeshsize: float):
+        """set mesh by parabolic function.
+
+        Args:
+            meshGainFactor (float): _description_
+            basisMeshsize (float): _description_
+        """
+        logging.debug("Setting quadratic mesh on stator.")
+        # calculate function coefficients for ax^2+bx+c
+        r_mb = self.movingBandRadius
+        c = meshGainFactor
+        b = -2 * c / r_mb
+        a = -b / 2 / r_mb
+        for physical in self.physicalElements:
+            for geo in physical.geometricalElement:
+                points: List[Point] = []
+                if isinstance(geo, Surface):
+                    for curve in geo.curve:
+                        points.extend(curve.points)
+                elif isinstance(geo, Line):
+                    points.extend(geo.points)
+                # All curves should belong to a surface...
+                # else:
+                #     points.extend(geo.getPoints())
+                for point in points:
+                    rP = point.radius
+                    # faktor = 4770*rP**2 - 430 * rP + 10 # poly 2 fit
+                    gain_factor = (a * rP**2 + b * rP + c) + 1
+                    gain_factor = 1 if gain_factor < 1 else gain_factor
+                    point.meshLength = gain_factor * basisMeshsize
 
     ###
     # Mit addToScript wird der Stator zum Skriptobjekt übergeben und in gmsh-Syntax übersetzt.

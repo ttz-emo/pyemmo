@@ -20,13 +20,15 @@
 """Module for Class Rotor"""
 
 import copy
-from typing import Dict, List, Union
+from typing import *
+import logging
 from matplotlib import pyplot as plt
+from math import pi
 from . import default_domain_dict
 from .magnet import Magnet
 from .movingBand import MovingBand
 from .surface import Surface
-from .line import Line
+from .line import Line, Point
 from .domain import Domain
 from .physicalElement import PhysicalElement
 from .. import (
@@ -412,6 +414,29 @@ class Rotor:
                 )
             )
 
+    @property
+    def inner_radius(self) -> float:
+        """determine the most inner radius.
+        This is done by checking the domain InnerLimit for the smallest radius.
+
+        Returns:
+            float: Most inner radius in meter.
+        """
+        # if _domainInnerLimit is empty, the most inner point is at (0,0,0)
+        inner_limits = self._domainInnerLimit.physicals
+        if not inner_limits:
+            # no inner limit
+            return 0.0
+        else:
+            r_in = inner_limits[0].geometricalElement[0].points[0].radius
+            for phys in inner_limits:
+                for geo in phys.geometricalElement:
+                    if isinstance(geo, Line):
+                        for p in geo.points:
+                            if p.radius < r_in:
+                                r_in = p.radius
+        return r_in
+
     # def getMovingBand(self) -> List[AirGap]:
     #     """get the MovingBand physical elements"""
     #     domainMB = self._mb
@@ -455,6 +480,113 @@ class Rotor:
                 axis.set_xlim(left=lim)
                 axis.set_ylim(bottom=lim)
         return fig, axis
+
+    def setFunctionMesh(
+        self,
+        basisMeshsize: float = None,
+        meshGainFactor: float = None,
+        functionType: Literal["linear", "quad"] = None,
+    ):
+        """add functional mesh size setting for machine if you don't want to
+        specify mesh sizes individually. Mesh size is set to increase from
+        airgap rotor inner radius. Maximal mesh size will be
+        basisMeshsize * meshGainFactor.
+        If basisMeshsize is not given, its set to
+        2 * Pi * Rotor_Movingband_Radius / 360.
+        If meshGainFactor is not given it will be derived from a empirically
+        determined algorithm that rates the ratio of inner radius and basis
+        mesh size. (This works best if basisMeshsize = Movingband hight!)
+
+        Args:
+            basisMeshsize (float, optional): Basis mesh size to use near the
+                airgap (minimal mesh size).
+                Defaults to 2 * Pi * Rotor_Movingband_Radius / 360.
+            meshGainFactor (float): Gain factor for mesh size from airgap to
+                outer machine limit. Defaults to (r_in / basisMeshsize / 3) or 30.
+            functionType (Literal[&quot;linear&quot;, &quot;quad&quot;]):
+                linear or quadratic function for mesh size. Defaults to linear
+        """
+        logging.debug("Started automatic mesh generation on rotor.")
+        # get most inner radius
+        r_in = self.inner_radius
+        if not basisMeshsize:
+            # get max. outer radius = moving band radius:
+            basisMeshsize = 2 * pi * self.movingBandRadius / 360
+            logging.debug(
+                "Setting basis mesh size to 2 * pi * self.movingBandRadius / 360 = %.3e",
+                basisMeshsize,
+            )
+        # set mesh gain factor to empirically developed default
+        if not meshGainFactor:
+            if r_in / basisMeshsize > 60:
+                meshGainFactor = r_in / basisMeshsize / 3
+            else:
+                meshGainFactor = 30
+            logging.debug(
+                "Setting mesh gain factor to = %.1f",
+                meshGainFactor,
+            )
+        if functionType == "linear" or functionType == None:
+            self._set_linear_mesh(meshGainFactor, basisMeshsize)
+        else:
+            self._set_quad_mesh(meshGainFactor, basisMeshsize)
+
+    def _set_linear_mesh(self, meshGainFactor: float, basisMeshsize: float):
+        # calculate linear mesh size functions (ax+b)
+        logging.debug("Setting linear mesh on rotor.")
+        a1 = (1 - meshGainFactor) / self.movingBandRadius
+        b1 = meshGainFactor
+
+        # a2 = (meshGainFactor - 1) / (self.movingBandRadius - self.inner_radius)
+        # b2 = meshGainFactor - a2 * self.movingBandRadius
+
+        for physical in self.physicalElements:
+            for geo in physical.geometricalElement:
+                points: List[Point] = []
+                if isinstance(geo, Surface):
+                    for curve in geo.curve:
+                        points.extend(curve.points)
+                elif isinstance(geo, Line):
+                    points.extend(geo.points)
+                # All curves should belong to a surface...
+                # else:
+                #     points.extend(geo.getPoints())
+                for point in points:
+                    rP = point.radius
+                    # if rP < rMb: # == rotor is allways true
+                    # meshSizeFaktor = (a1*rP+b1)
+                    pMeshSize = (a1 * rP + b1) * basisMeshsize
+                    point.meshLength = pMeshSize
+
+    def _set_quad_mesh(self, meshGainFactor: float, basisMeshsize: float):
+        logging.debug("Setting quadratic mesh on rotor.")
+        # calculate function coefficients for ax^2+bx+c
+        # c = meshGainFactor
+        # b = -2 * c / self.inner_radius
+        # a = -b / 2 / self.inner_radius
+        r_in = self.inner_radius
+        r_mb = self.movingBandRadius
+        f1 = r_in ^ 2 - 2 * r_in * r_mb + r_mb ^ 2
+        a = (meshGainFactor - 1) / f1
+        b = -2 * a * r_mb
+        c = (r_mb ^ 2 * (meshGainFactor - 1)) / f1
+        for physical in self.physicalElements:
+            for geo in physical.geometricalElement:
+                points: List[Point] = []
+                if isinstance(geo, Surface):
+                    for curve in geo.curve:
+                        points.extend(curve.points)
+                elif isinstance(geo, Line):
+                    points.extend(geo.points)
+                # All curves should belong to a surface...
+                # else:
+                #     points.extend(geo.getPoints())
+                for point in points:
+                    rP = point.radius
+                    # faktor = 4770*rP**2 - 430 * rP + 10 # poly 2 fit
+                    gain_factor = (a * rP**2 + b * rP + c) + 1
+                    gain_factor = 1 if gain_factor < 1 else gain_factor
+                    point.meshLength = gain_factor * basisMeshsize
 
     def addToScript(self, script):
         """Mit addToScript wird der Rotor zum Skriptobjekt übergeben und in gmsh-Syntax übersetzt.
