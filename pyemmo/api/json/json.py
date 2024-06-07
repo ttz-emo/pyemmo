@@ -546,7 +546,6 @@ def main(
         ):
             # FIXME: Material properties should be given valid
             lossParams = rotorMat.lossParams
-            calcIronLoss.adaptIronLossParams(lossParams, rotorMat)
             ironLossR, _ = calcIronLoss.main(
                 brFilePath,
                 loss_factor={
@@ -558,7 +557,6 @@ def main(
                 axial_length=importJSON.getAxialLength(extendedInfo)["rotor"],
             )
             lossParams = statorMat.lossParams
-            calcIronLoss.adaptIronLossParams(lossParams, statorMat)
             ironLossS, time = calcIronLoss.main(
                 bsFilePath,
                 loss_factor={
