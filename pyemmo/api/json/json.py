@@ -457,7 +457,7 @@ def main(
     # set function mesh
     if "useFunctionMesh" in extendedInfo.keys():
         if extendedInfo["useFunctionMesh"]:
-            machine.setFunctionMesh("linear", meshGainFactor=20)
+            machine.setFunctionMesh()
 
     # get the simulation pareameters
     simulationParameters = importJSON.getSimuParams(extendedInfo=extendedInfo)
