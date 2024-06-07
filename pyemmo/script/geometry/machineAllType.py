@@ -407,9 +407,15 @@ class MachineAllType:
                 h_mb,
             )
 
-        self.rotor.setFunctionMesh(basisMeshsize, meshGainFactor, functionType)
+        self.rotor.setFunctionMesh(
+            basisMeshsize=basisMeshsize,
+            meshGainFactor=meshGainFactor,
+            functionType=functionType,
+        )
         self.stator.setFunctionMesh(
-            basisMeshsize, meshGainFactor, functionType
+            basisMeshsize=basisMeshsize,
+            meshGainFactor=meshGainFactor,
+            functionType=functionType,
         )
         # # get max. stator radius:
         # rS = 0

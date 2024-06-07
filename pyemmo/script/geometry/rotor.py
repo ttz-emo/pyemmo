@@ -566,10 +566,10 @@ class Rotor:
         # a = -b / 2 / self.inner_radius
         r_in = self.inner_radius
         r_mb = self.movingBandRadius
-        f1 = r_in ^ 2 - 2 * r_in * r_mb + r_mb ^ 2
+        f1 = r_in**2 - 2 * r_in * r_mb + r_mb**2
         a = (meshGainFactor - 1) / f1
         b = -2 * a * r_mb
-        c = (r_mb ^ 2 * (meshGainFactor - 1)) / f1
+        c = (r_mb**2 * (meshGainFactor - 1)) / f1
         for physical in self.physicalElements:
             for geo in physical.geometricalElement:
                 points: List[Point] = []
