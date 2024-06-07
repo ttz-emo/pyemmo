@@ -55,7 +55,6 @@ def build_pyemmo_material(pyleecan_material: PyleecanMaterial) -> Material:
     # mag props
     mag_properties: MatMagnetics = pyleecan_material.mag
     try:
-        # TODO: Abfangen, falls mur_lin und BH nicht gesetzt sind -> Fehler ausgeben. Falls BH gegeben ist, kein mur_lin benötigt.
         rel_permeability = mag_properties.mur_lin
     except AttributeError:
         rel_permeability = None
@@ -80,7 +79,11 @@ def build_pyemmo_material(pyleecan_material: PyleecanMaterial) -> Material:
         density = pyleecan_material.struct.rho
     except AttributeError:
         density = None
-
+    if bh is None and rel_permeability is None:
+        # pylint: disable=locally-disabled, line-too-long
+        raise ValueError(
+            f"No magnetic properties (mue_r and BH curve) defined in material '{pyleecan_material.name}'"
+        )
     pyemmo_material = Material(
         name=pyleecan_material.name,
         conductivity=conductivity,

@@ -446,33 +446,27 @@ class RotorSPMSM(Rotor):
             c1.rotateZ(self.laminationDict["machineCentrePoint"], i * angle)
             curveInner.append(c1)
 
-        mbRotor1: List[CircleArc] = []
-        mbNegDirection = (
-            self._physicalElements[3]
-            .geometricalElement[0]
-            .curve[1]
-            .duplicate()
-        )
+        # create moving band lines
+        airgap_surf1: Surface = self._physicalElements[3].geometricalElement[0]
+        mb_line_list: List[CircleArc] = []
+        mbNegDirection = airgap_surf1.curve[1].duplicate()
         mbNegDirection.rotateZ(
             self.laminationDict["machineCentrePoint"], -angle
         )
-        mbRotor1.append(mbNegDirection)
-        mbRotor1.append(
-            self._physicalElements[3].geometricalElement[0].curve[1]
-        )
+        mb_line_list.append(mbNegDirection)
 
         for i in range(1, self.nbrGeoParts):
             c1 = curveInner[0].duplicate()
             c1.rotateZ(self.laminationDict["machineCentrePoint"], i * angle)
             curveInner.append(c1)
         for i in range(1, self.nbrGeoParts):
-            c2 = mbRotor1[0].duplicate()
+            c2 = mb_line_list[0].duplicate()
             c2.rotateZ(self.laminationDict["machineCentrePoint"], i * angle)
-            mbRotor1.append(c2)
+            mb_line_list.append(c2)
 
         mbRotorLine = MovingBand(
             "movingBand_RotorLine",
-            mbRotor1,
+            mb_line_list,
             self._airGapDict["material"],
             False,
         )
@@ -481,7 +475,7 @@ class RotorSPMSM(Rotor):
         allMBAux = []
         for i in range(1, int(self.symmetryFactor)):
             mbRotor_aux = []
-            for l_mb in mbRotor1:
+            for l_mb in mb_line_list:
                 l_mb_aux = l_mb.duplicate()
                 l_mb_aux.rotateZ(
                     self.laminationDict["machineCentrePoint"],
