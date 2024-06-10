@@ -32,18 +32,21 @@ Functions:
 
 """
 
-from typing import Union
+from typing import Union, List, Tuple, Dict
 
 from pyleecan.Classes.Machine import Machine as PyleecanMachine
 from pyleecan.Classes.MachineSCIM import MachineSCIM
+from pyleecan.Classes.LamSlotWind import LamSlot, LamSlotWind
 
 from ...script.geometry.circleArc import CircleArc
 from ...script.geometry.line import Line
 from ...script.geometry.point import Point
+from ..json.SurfaceJSON import SurfaceAPI
 from .get_rotor_stator_surfs import get_rotor_surfs
 from .calcs_rotor_spmsm_cont import calc_spmsm_rotor_cont
 from .calcs_even_rotor_cont import calc_even_rotor_cont
 from .calc_wind_cont import calc_wind_contour
+from .get_rotor_stator_surfs import get_stator_surfs
 
 
 def get_spmsm_rotor_cont(
@@ -148,35 +151,40 @@ def get_even_rotor_cont(
 
 
 def get_winding_cont(
-    geometry_list: list, machine: PyleecanMachine, is_internal_rotor: bool
+    lamination_surf: SurfaceAPI,
+    slot_surfs: List[SurfaceAPI],
+    lamination: LamSlotWind,
+    is_internal: bool,
 ) -> list[Union[Line, CircleArc]]:
     """
-    Get the list of curves of the contour of the stator with winding.
+    Get the list of curves of the contour of a LamSlotWind object.
 
     Args:
-        geometry_list (list): List of all surfaces of the machine (Pyemmo format).
-        machine (PyleecanMachine): Pyleecan machine.
-        is_internal_rotor (bool): True if the rotor is internal, False otherwise.
+        geometry_list (list): List of all surfaces of the machine (pyEMMO format).
+        lamination (LamSlotWind): LamSlotWind Pyleecan object.
+        is_internal (bool): True if the lamination is internal, False otherwise.
 
     Returns:
         list[Union[Line, CircleArc]]: List of stator contour lines.
     """
-    stator_rint = machine.stator.Rint
-    stator_rext = machine.stator.Rext
+    r_int = lamination.Rint
+    r_ext = lamination.Rext
 
-    if is_internal_rotor:
-        stator_cont_line_list = calc_wind_contour(
-            geometry_list=geometry_list,
-            stator_rint=stator_rint,
-            stator_rext=stator_rext,
+    # TODO: Add left and right contour points for airgap surface generation
+
+    if is_internal:
+        cont_line_list = calc_wind_contour(
+            lam_surf=lamination_surf,
+            slot_surf_list=slot_surfs,
+            rint=r_int,
+            rext=r_ext,
         )
-    elif isinstance(machine, MachineSCIM):
-        pass
     else:
-        stator_cont_line_list = calc_wind_contour(
-            geometry_list=geometry_list,
-            stator_rint=stator_rext,
-            stator_rext=stator_rint,
+        cont_line_list = calc_wind_contour(
+            lam_surf=lamination_surf,
+            slot_surf_list=slot_surfs,
+            rint=r_ext,
+            rext=r_int,
         )
 
-    return stator_cont_line_list
+    return cont_line_list

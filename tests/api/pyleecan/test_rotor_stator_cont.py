@@ -79,6 +79,7 @@ def get_cont(get_rotor_cont_function, machine_file):
         os.path.abspath(os.path.join(TEST_DIR, "data", machine_file))
     )
     geometry_list, is_internal = get_translated_machine(machine)
+    # FIXME: Fix test for new LamSlotWind contour function!
     result = get_rotor_cont_function(
         geometry_list=geometry_list,
         machine=machine,

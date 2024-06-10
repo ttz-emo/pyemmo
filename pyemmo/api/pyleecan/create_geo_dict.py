@@ -62,6 +62,11 @@ from typing import List, Union
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
 from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 from pyleecan.Classes.MachineSyRM import MachineSyRM
+from pyleecan.Classes.LamHole import LamHole
+from pyleecan.Classes.LamSlotMag import LamSlotMag
+from pyleecan.Classes.LamSlotWind import LamSlotWind
+from pyleecan.Classes.LamSquirrelCage import LamSquirrelCage
+
 from pyleecan.Classes.Machine import Machine as PyleecanMachine
 
 from ...functions.plot import plot
@@ -70,6 +75,7 @@ from ...script.geometry.circleArc import CircleArc
 from ...script.geometry.point import Point
 from ..json.SurfaceJSON import SurfaceAPI
 from .. import logger
+from ..json.modelJSON import createSurfaceDict
 from .translate_surfs import translate_surface
 from .get_rotor_stator_cont import (
     get_spmsm_rotor_cont,
@@ -172,41 +178,56 @@ def create_geo_dict(
     # Generate the rotor and stator contour:
     # --------------------------------------
     logger.debug("Generating rotor and stator contour")
-    if isinstance(machine, (MachineIPMSM, MachineSIPMSM, MachineSyRM)):
-        if isinstance(machine, (MachineIPMSM, MachineSyRM)):
-            # CutOuts in rotorLamination if IPMSM or SynRM:
-            for surf_to_cutout in geometry_list:
-                if surf_to_cutout.name in ("Loch", "Magnet"):
-                    geometry_list[0].cutOut(surf_to_cutout)
-            (
-                rotor_contour_line_list,
-                r_point_rotor_cont,
-                l_point_rotor_cont,
-            ) = get_even_rotor_cont(
-                geometry_list=geometry_list,
-                machine=machine,
-                is_internal_rotor=is_internal_rotor,
-            )
-        elif isinstance(machine, MachineSIPMSM):
-            (
-                rotor_contour_line_list,
-                r_point_rotor_cont,
-                l_point_rotor_cont,
-            ) = get_spmsm_rotor_cont(
-                geometry_list=geometry_list,
-                machine=machine,
-                is_internal_rotor=is_internal_rotor,
-            )
-
-        stator_contour_line_list = get_winding_cont(
+    # create dict with idExt as keys and surface items:
+    geo_dict = createSurfaceDict(geometry_list)
+    if isinstance(machine.rotor, LamHole):
+        # CutOuts in rotorLamination if IPMSM or SynRM:
+        for surf_to_cutout in geometry_list:
+            if surf_to_cutout.name in ("Loch", "Magnet"):
+                geometry_list[0].cutOut(surf_to_cutout)
+        (
+            rotor_contour_line_list,
+            r_point_rotor_cont,
+            l_point_rotor_cont,
+        ) = get_even_rotor_cont(
             geometry_list=geometry_list,
             machine=machine,
             is_internal_rotor=is_internal_rotor,
         )
+    elif isinstance(machine.rotor, LamSlotMag):
+        (
+            rotor_contour_line_list,
+            r_point_rotor_cont,
+            l_point_rotor_cont,
+        ) = get_spmsm_rotor_cont(
+            geometry_list=geometry_list,
+            machine=machine,
+            is_internal_rotor=is_internal_rotor,
+        )
+    elif isinstance(machine.rotor, LamSquirrelCage):
+        lam_surf = geo_dict["Pol"]
+        slot_surf = geo_dict["RoCu"]
+        get_winding_cont(
+            lamination_surf=lam_surf,
+            slot_surfs=[slot_surf],
+            lamination=machine.rotor,
+            is_internal=not is_internal_rotor,
+        )
 
     else:
-        raise TypeError("Unable to generate contours of this machine type!")
-
+        raise TypeError(
+            f"Unable to generate contours of rotor lamination type {type(machine.rotor)}!"
+        )
+    lam_surf = geo_dict["StNut"]
+    slot_surfs = [geo_dict["StCu0"]]
+    if "StCu1" in geo_dict:
+        slot_surfs.append(geo_dict["StCu1"])
+    stator_contour_line_list = get_winding_cont(
+        lamination_surf=lam_surf,
+        slot_surfs=slot_surfs,
+        lamination=machine.stator,
+        is_internal=is_internal_rotor,
+    )
     # ------------------------------------------------------
     # Change names of rotorRint-Curve and statorRext-Curve:
     # ------------------------------------------------------
