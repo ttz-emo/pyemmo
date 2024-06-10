@@ -34,7 +34,11 @@ class TestCases:
     def test_pyleecan(self):
         """
         Testing pyleecan API to generate GMSH and simulation files based on pyleecan machine json files.
-
+        There are 4 test points included:
+            - Check that simulation folders and subfolders are properly generated
+            - Check that GMSH and GetDP files are properly generated
+            - Check that simulation folders and files are generated
+            - Check that content of result files match base comparison data
 
         """
         test_type = "api\\pyleecan"
@@ -47,12 +51,11 @@ class TestCases:
         for test_id, test_case in self.test_cases[test_type].items():
             curr_datetime, log_dest = updateConfig(test_type, test_id, test_case)
 
-
             #preparing source and result folders
             source_path = os.path.join(ROOT_DIR, self.test_params[test_type]["test_data_folder"], f"{test_type}\\{test_case}.json")
 
             # make sure source file exists 
-            assert os.path.isfile(source_path) and messagePrinter("SUCCESS: Source folder exist"), "ERROR: Source folder does not exist"
+            assert os.path.isfile(source_path) and messagePrinter("SUCCESS: Source file exist"), "ERROR: Source file does not exist"
 
             result_path[test_id] = os.path.join(ROOT_DIR, self.test_params[test_type]["result_folder"], f"{test_type}\\{curr_datetime}\\test_{test_id}\\{test_case}")
             if not os.path.isdir(result_path[test_id]):
@@ -65,27 +68,32 @@ class TestCases:
             pyleecan_test_base(self.test_params[test_type], result_path=result_path[test_id], test_data_path=source_path)
 
         for  test_id, test_case in self.test_cases[test_type].items():
-            #Point 1: check if result folder exist
+            #Preparation of base comparison paths
             base_result_path = os.path.join(ROOT_DIR, self.test_params[test_type]["test_data_folder"], test_type, f"comparison_base\\{test_case}") #this can change to a different folder for base data
-
-            
-            #Point 2: check if GMSH base files are generated
-            self.check_file_counts(base_result_path, result_path[test_id])
-
-            
-            #Point 3: check if simulation data is generated
             base_simul_path = os.path.join(base_result_path, f"res_{test_case}") #This can also change for another base data folder
             base_simul_subfolder_path = os.path.join(base_simul_path, simul_subfolder) #This can also change for another base data folder
 
+            #Point 1: Check that simulation result folders are properly generated
+            print(f"Test case {test_id}: {test_case}")
+            print("Test point 1: Check that simulation result folders are properly generated:")
             assert os.path.isdir(simul_path[test_id]) and messagePrinter("SUCCESS: Simulation result folder exist"), "ERROR: Simulation result folder does not exist"
-
             assert os.path.isdir(simul_subfolder_path[test_id]) and messagePrinter("SUCCESS: Simulation result subfolder exists!"), "ERROR: Simulation result subfolder does not exist"
-
+            print("\n")
+            
+            #Point 2: check if GMSH base files are generated
+            print("Test point 2: check if GMSH base files are generated")
+            self.check_file_counts(base_result_path, result_path[test_id])
+            print("\n")
+            
+            #Point 3: check if simulation data is generated
+            print("Test point 3: check if simulation data is generated")
             self.check_file_counts(base_simul_path, simul_path[test_id])
             self.check_file_counts(base_simul_subfolder_path, simul_subfolder_path[test_id])
+            print("\n")
 
 
             # Point 4: Check content of files
+            print("Test point 4: check content of simulation files")
             target_file_types = ["geo", "pro", "msh","pre", "pos", "dat"]
             # 4.1 In main test folder
             self.check_content(base_result_path, result_path[test_id], target_file_types)
