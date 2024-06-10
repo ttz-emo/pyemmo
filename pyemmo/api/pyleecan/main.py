@@ -25,6 +25,7 @@ from pyleecan.Classes.Machine import Machine as PyleecanMachine
 from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
 from pyleecan.Classes.MachineSyRM import MachineSyRM
+from pyleecan.Classes.MachineSCIM import MachineSCIM
 
 from ..json.json import main as json_api_main
 from .get_translated_machine import get_translated_machine
@@ -64,7 +65,8 @@ def main(
     simulation = create_simulation(pyleecan_machine, i_d=0, i_q=0, speed=1000)
     # make sure machine type is translatable
     if isinstance(
-        pyleecan_machine, (MachineSIPMSM, MachineIPMSM, MachineSyRM)
+        pyleecan_machine,
+        (MachineSIPMSM, MachineIPMSM, MachineSyRM, MachineSCIM),
     ):
         (
             movingband_r,

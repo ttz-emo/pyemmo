@@ -38,6 +38,7 @@ import math
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
 from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 from pyleecan.Classes.MachineSyRM import MachineSyRM
+from pyleecan.Classes.MachineSCIM import MachineSCIM
 from pyleecan.Classes.Machine import Machine as PyleecanMachine
 
 from ...script.geometry.point import Point
@@ -400,7 +401,7 @@ def calcs_radii(
                 diff_radius = stator_rext - magnet_shortest_radius
                 max_radius = magnet_shortest_radius
 
-    elif isinstance(machine, (MachineIPMSM, MachineSyRM)):
+    elif isinstance(machine, (MachineIPMSM, MachineSyRM, MachineSCIM)):
         if is_internal_rotor:
             max_radius = rotor_rext
             diff_radius = stator_rint - max_radius
