@@ -99,7 +99,11 @@ def translate_surface(
 
             elif name_split_list[2] == "Ventilation":
                 pyleecan_mat = machine.rotor.axial_vent[0].mat_void
-
+        elif name_split_list[2] == "Bar":
+            # Rotor Bar for SCIM
+            pyleecan_mat = machine.rotor.winding.conductor.cond_mat
+            id_ext = "RoCu"  # "RoNut" "Rotorblech"
+            name = "Rotor Bar"
         else:
             raise ValueError(
                 f"Wrong input for 'detail'. Your input was '{name_split_list[2]}'."
