@@ -27,6 +27,9 @@ def updateConfig(test_type: str, test_id: int, test_case: str):
 
 import os
 
+def messagePrinter(msg: str = "Assert OK"):
+    print(msg)
+    return True
 
 def count_files(folder_path: str) -> dict:
     '''
@@ -48,21 +51,28 @@ def count_files(folder_path: str) -> dict:
     return file_type_counter
 
 
-def geoFileParser(raw_path: str):
-    exclude_indicators = ["//"]
+
+def fileParser(raw_path: str):
+    """
+    Returns a list of line-by-line breakdown of file content, with comments removed.
+    """
+    comment_indicators = ["//"]
+    exclude_indicators = ["Color", "PATH_RES"] #exclude lines whose values always get updated along with files
     with open(raw_path, "r") as file:
         content = file.read()
         content_lines = content.split(";")
         temp = []
-        result = {}
-        for i, line in enumerate(content_lines[:20]):
+        # result = {}
+        for line in content_lines:
             delete_target = []
-            for ind in exclude_indicators:
+            for ind in comment_indicators:
                 delete_target += re.findall(f"{ind}.*\n*", line)
             for targ in delete_target:
                 line = line.replace(targ, "")
-            
-            temp.append(line)
+            line = line.replace("\n","")
+            exclude_flags = [x for x in exclude_indicators if x in line]
+            if exclude_flags == []:
+                temp.append(line)
     return temp
 
 
@@ -78,3 +88,8 @@ def geoFileParser(raw_path: str):
         #         a = cleaned.split("=")
             
         #     result[a[0]] = a[1]
+
+def fileFilter(file_list: list, target_types: list) -> list:
+    get_type = lambda x: x.split("\\")[-1].split(".")[-1]
+    result = [file for file in file_list if get_type(file) in target_types]
+    return result
