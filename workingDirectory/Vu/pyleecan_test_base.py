@@ -8,6 +8,7 @@ from pyemmo.definitions import ROOT_DIR
 from pyemmo.api.pyleecan import main as pyleecanAPI
 
 from pyemmo.functions.runOnelab import runCalcforCurrent, findGmsh, findGetDP
+from datetime import datetime
 
 test_cases = {
     1: "IPMSM_B",
@@ -26,6 +27,11 @@ test_params = {
 def pyleecan_test_base(test_params: list, 
                        result_path: str,
                        test_data_path: str, 
+                       result_folder:str = "",
+                       test_data_folder: str = "",
+                       test_type: str = "",
+                       test_id: int = 0,
+                       test_case: str = "",
                        print_flag: bool = 0, debug_flag: bool = 0) :
 
     '''
@@ -43,9 +49,23 @@ def pyleecan_test_base(test_params: list,
     # logging.getLogger("numpy").setLevel(logging.ERROR)
     logging.getLogger().setLevel(logging.DEBUG)
 
-    machine_file_path = test_data_path
+
+    #create machine
+    if not os.path.isdir(test_data_path) or test_data_path == "":
+        machine_file_path = os.path.join(ROOT_DIR, test_data_folder, f"{test_type}\\{test_case}.json")
+    else:
+        machine_file_path = test_data_path
     pyleecan_machine: Machine = load.load(machine_file_path)
-    resFolder = result_path
+
+    #Create result folder
+    if not os.path.isdir(result_path) or result_path == "":
+        curr_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
+        resFolder = os.path.join(ROOT_DIR, result_folder, f"{test_type}\\{curr_datetime}\\test_{test_id}\\{test_case}")
+        os.makedirs(resFolder)
+    else:
+        resFolder = result_path
+
+    #Run simulation
     pyleecanAPI.main(pyleecan_machine, model_dir = resFolder)
     geo_file = os.path.join(resFolder, pyleecan_machine.name + ".geo")
     pro_file = os.path.join(resFolder, pyleecan_machine.name + ".pro")
