@@ -31,6 +31,7 @@ from pyleecan.definitions import DATA_DIR
 from pyemmo.definitions import ROOT_DIR
 from pyemmo.api.pyleecan import main as pyleecanAPI
 from pyemmo.functions.runOnelab import runCalcforCurrent, findGmsh, findGetDP
+from numpy import deg2rad
 
 # disable messages of matplotlib
 logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
@@ -64,6 +65,14 @@ pyleecan_machine: MachineSCIM = load.load(
 CuMat = load.load(os.path.join(DATA_DIR, "Material", "Copper2.json"))
 pyleecan_machine.rotor.winding.conductor.cond_mat = CuMat
 pyleecan_machine.stator.winding.conductor.cond_mat = CuMat
+
+# FIX: stator slot type
+from pyleecan.Classes.SlotW22 import SlotW22
+
+pyleecan_machine.stator.slot = SlotW22(
+    W0=deg2rad(2), W2=deg2rad(3.75), H0=1e-3, H2=27.5 * 1e-3
+)
+
 # Call pyleecan api main function
 # This triggers the translation process via the pyemmo json api, creates the
 # model file for Gmsh and GetDP + opens the model in the Gmsh GUI.
@@ -77,30 +86,31 @@ pyleecanAPI.main(pyleecan_machine, model_dir=model_folder)
 geo_file = os.path.join(model_folder, pyleecan_machine.name + ".geo")
 pro_file = os.path.join(model_folder, pyleecan_machine.name + ".pro")
 # folder where simulation results will be stored
-# sim_res_dir = os.path.join(model_folder, f"res_{pyleecan_machine.name}")
+if False:
+    sim_res_dir = os.path.join(model_folder, f"res_{pyleecan_machine.name}")
 
-# # define simulation params
-# i_d = -10
-# i_q = 50
-# n = 1000
-# resid = f"id_{i_d}_iq_{i_q}_n_{n}rpm"
-# param_dict = {
-#     "getdp": {
-#         "ID_RMS": i_d,  # d current in A
-#         "IQ_RMS": i_q,  # q current in A
-#         "RPM": n,  # speed in rpm
-#         "d_theta": 0.25,
-#         "ResId": resid,
-#         "Flag_PrintFields": 0,
-#         "Flag_Debug": 0,
-#     },
-#     "ResId": resid,
-#     "pro": pro_file,
-#     "res": sim_res_dir,
-#     "exe": findGetDP(),
-#     "gmsh": findGmsh(),
-#     # "hyst": 0, # loss coefficient
-#     # "eddy": 0, # loss coefficient
-#     # "exc": 0, # loss coefficient
-# }
-# runCalcforCurrent(param_dict)
+    # define simulation params
+    i_d = -10
+    i_q = 50
+    n = 1000
+    resid = f"id_{i_d}_iq_{i_q}_n_{n}rpm"
+    param_dict = {
+        "getdp": {
+            "ID_RMS": i_d,  # d current in A
+            "IQ_RMS": i_q,  # q current in A
+            "RPM": n,  # speed in rpm
+            "d_theta": 0.25,
+            "ResId": resid,
+            "Flag_PrintFields": 0,
+            "Flag_Debug": 0,
+        },
+        "ResId": resid,
+        "pro": pro_file,
+        "res": sim_res_dir,
+        "exe": findGetDP(),
+        "gmsh": findGmsh(),
+        # "hyst": 0, # loss coefficient
+        # "eddy": 0, # loss coefficient
+        # "exc": 0, # loss coefficient
+    }
+    runCalcforCurrent(param_dict)
