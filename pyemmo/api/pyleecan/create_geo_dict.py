@@ -82,6 +82,7 @@ from .get_rotor_stator_cont import (
     get_winding_cont,
     get_even_rotor_cont,
 )
+from .calcs_rotor_spmsm_cont import get_lr_points
 from .detect_inner_outer_limit import detect_inner_outer_limit
 from .get_magnetization_dict import get_magnetization_dict
 
@@ -207,11 +208,19 @@ def create_geo_dict(
     elif isinstance(machine.rotor, LamSquirrelCage):
         lam_surf = geo_dict["Pol"]
         slot_surf = geo_dict["RoCu"]
-        get_winding_cont(
+        rotor_contour_line_list = get_winding_cont(
             lamination_surf=lam_surf,
             slot_surfs=[slot_surf],
             lamination=machine.rotor,
             is_internal=not is_internal_rotor,
+        )
+        l_point_rotor_cont, r_point_rotor_cont = get_lr_points(
+            machine,
+            rotor_contour_line_list,
+            is_internal_rotor,
+            radius=(
+                machine.rotor.Rint if is_internal_rotor else machine.rotor.Rext
+            ),
         )
 
     else:
@@ -228,6 +237,7 @@ def create_geo_dict(
         lamination=machine.stator,
         is_internal=is_internal_rotor,
     )
+
     # ------------------------------------------------------
     # Change names of rotorRint-Curve and statorRext-Curve:
     # ------------------------------------------------------

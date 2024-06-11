@@ -41,6 +41,7 @@ from pyleecan.Classes.LamSlotWind import LamSlot, LamSlotWind
 from ...script.geometry.circleArc import CircleArc
 from ...script.geometry.line import Line
 from ...script.geometry.point import Point
+from ...functions.plot import plot
 from ..json.SurfaceJSON import SurfaceAPI
 from .get_rotor_stator_surfs import get_rotor_surfs
 from .calcs_rotor_spmsm_cont import calc_spmsm_rotor_cont
