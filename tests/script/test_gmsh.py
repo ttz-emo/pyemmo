@@ -22,13 +22,7 @@
 import os
 import subprocess
 from pyemmo.functions.runOnelab import createGMSHCommand
-
-try:
-    from .. import GMSH_EXE, TEST_DATA_DIR
-except ImportError:
-    from tests import GMSH_EXE, TEST_DATA_DIR
-except Exception as exce:
-    raise exce
+from tests import GMSH_EXE, TEST_DATA_DIR
 
 
 def test_run_gmsh():

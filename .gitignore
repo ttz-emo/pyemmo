@@ -18,6 +18,8 @@ Area*.csv
 test*.pro
 test*.geo
 test*.json
+*.log
+test.ipynb
 
 # Dont track doc build
 doc/_build/
