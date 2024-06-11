@@ -5,6 +5,8 @@ from pyleecan_test_base import pyleecan_test_base
 import glob
 from collections import defaultdict
 from pyemmo.definitions import ROOT_DIR
+from pyemmo import rootLogger
+import logging
 
 from testUtils import updateConfig, count_files, messagePrinter, fileParser, fileFilter
 
@@ -46,6 +48,7 @@ class TestCases:
         result_path = defaultdict(list)
         simul_path = defaultdict(list)
         simul_subfolder_path = defaultdict(list)
+        rootLogger.setLevel(logging.DEBUG)
         
 
         for test_id, test_case in self.test_cases[test_type].items():
