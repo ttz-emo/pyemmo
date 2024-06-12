@@ -47,6 +47,22 @@ for machineFile in os.listdir(MACHINE_FILE_DIR):
             f"Could not load machine. Error: {exce}"
         )
     else:
+        # Workaround for wrong material
+        CuMat = load.load(os.path.join(DATA_DIR, "Material", "Copper2.json"))
+        try:
+            if machine.rotor.winding.conductor.cond_mat.name == "Copper1":
+                machine.rotor.winding.conductor.cond_mat = CuMat
+        except AttributeError:
+            pass
+        except Exception as exce:
+            raise exce
+        try:
+            if machine.stator.winding.conductor.cond_mat.name == "Copper1":
+                machine.stator.winding.conductor.cond_mat = CuMat
+        except AttributeError:
+            pass
+        except Exception as exce:
+            raise exce
         try:
             (
                 all_bands,
