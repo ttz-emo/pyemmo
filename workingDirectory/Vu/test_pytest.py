@@ -6,6 +6,7 @@ import glob
 from collections import defaultdict
 from pyemmo.definitions import ROOT_DIR
 from pyemmo import rootLogger
+from pyemmo.functions.import_results import read_timetable_dat
 import logging
 
 from testUtils import updateConfig, count_files, messagePrinter, fileParser, fileFilter
@@ -52,7 +53,7 @@ class TestCases:
         
 
         for test_id, test_case in self.test_cases[test_type].items():
-            curr_datetime, log_dest = updateConfig(test_type, test_id, test_case)
+            curr_datetime, _ = updateConfig(test_type, test_id, test_case)
 
             #preparing source and result folders
             source_path = os.path.join(ROOT_DIR, self.test_params[test_type]["test_data_folder"], f"{test_type}\\{test_case}.json")
@@ -97,7 +98,7 @@ class TestCases:
 
             # Point 4: Check content of files
             print("Test point 4: check content of simulation files")
-            target_file_types = ["geo", "pro", "msh","pre", "pos", "dat"]
+            target_file_types = ["geo", "pro", "msh","pre", "pos"]
             # 4.1 In main test folder
             self.check_content(base_result_path, result_path[test_id], target_file_types)
 
@@ -106,10 +107,19 @@ class TestCases:
 
             #4.3 In simulation subfolder
             self.check_content(base_simul_subfolder_path, simul_subfolder_path[test_id], target_file_types)
+            print("\n")
+
+            #Point 5: check dat files value:
+            print("Test point 5: check values in dat files")
+            dat_targets = glob.glob(os.path.join(simul_subfolder_path[test_id], "*.dat"))
+            dat_bases = glob.glob(os.path.join(base_simul_subfolder_path, "*.dat"))
+            for target_file, base_file in zip(dat_targets, dat_bases):
+                target_dat = read_timetable_dat(target_file)
+                base_dat = read_timetable_dat(base_file)
+                assert target_dat == base_dat and messagePrinter(f"SUCCESS: {target_file} check ok"), f"ERROR: mismatch found between base and target dat in {target_file}!"
             
             
-
-
+            
     def make_test_cases(self, test_type: str) -> dict:
         """
         Create a dictionary of test cases based on files in test data folder
@@ -149,4 +159,4 @@ class TestCases:
             for line_base, line_result in zip(base_content, result_content):
                 assert line_base == line_result, f"ERROR: mismatch found between base and result of {result_file}!\nBase: {line_base}\nResult: {line_result}"
                 l += 1
-            assert l == len(base_content) and messagePrinter(f"SUCCESS: {result_file} content check complete"), f"{result_file} content check failed."
+            assert l == len(base_content) and messagePrinter(f"SUCCESS: {result_file} content check ok"), f"{result_file} content check failed."

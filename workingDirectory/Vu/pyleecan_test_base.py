@@ -11,24 +11,26 @@ from pyemmo.functions.runOnelab import runCalcforCurrent, findGmsh, findGetDP
 from datetime import datetime
 
 test_cases = {
-    1: "IPMSM_B",
+    0: "Toyota_Prius",
 }
 
 test_params = {
-    1: {
+    'api\\pyleecan': {
         "id": -10,
         "iq": 50,
         "rpm": 1000,
         "d_theta": 0.25,
+        "test_data_folder": "tests\\data",
+        "result_folder": "Results\\pyleecanAPI"
     }
 }
+
+test_type = 'api\\pyleecan'
 
 
 def pyleecan_test_base(test_params: list, 
                        result_path: str = "",
                        test_data_path: str = "", 
-                       result_folder:str = "",
-                       test_data_folder: str = "",
                        test_type: str = "",
                        test_id: int = 0,
                        test_case: str = "",
@@ -37,10 +39,15 @@ def pyleecan_test_base(test_params: list,
     '''
     Base test data prepper for Pyleecan API workflow test.
     Params:
-    - test_type: type of test
-    - test_id: test id
-    - test_case: test case name, same as machine name
-    
+    - test_params: Containt parameter dict for running test
+    - result_path: string path where result should be stored
+    - test_data_path: string path where json data for testing can be found 
+    The following params are used in case running this alone e.g. for preparing base data:
+    - test_type: type of test, default empty
+    - test_id: test id, default empty
+    - test_case: test case name, same as machine name, default empty
+    - print_flag: default 0
+    - debug_flag: default 0
     '''
 
     # disable messages of matplotlib
@@ -52,7 +59,7 @@ def pyleecan_test_base(test_params: list,
 
     #create machine
     if test_data_path == "":
-        machine_file_path = os.path.join(ROOT_DIR, test_data_folder, f"{test_type}\\{test_case}.json")
+        machine_file_path = os.path.join(ROOT_DIR, test_params["test_data_folder"], f"{test_type}\\{test_case}.json")
     else:
         machine_file_path = test_data_path
     print(machine_file_path)
@@ -61,7 +68,7 @@ def pyleecan_test_base(test_params: list,
     #Create result folder
     if result_path == "":
         curr_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
-        resFolder = os.path.join(ROOT_DIR, result_folder, f"{test_type}\\{curr_datetime}\\test_{test_id}\\{test_case}")
+        resFolder = os.path.join(ROOT_DIR, test_params["result_folder"], f"{test_type}\\{curr_datetime}\\test_{test_id}\\{test_case}")
         if not os.path.isdir(resFolder):
             os.makedirs(resFolder)
     else:
@@ -102,5 +109,6 @@ def pyleecan_test_base(test_params: list,
     return machine_file_path, resFolder
 
 if __name__ == "__main__":
-    # pyleecan_test_base(test_cases, test_params)
-    print(os.path.join(os.path.abspath('.'), "pytest.ini"))
+    for test_id, test_case in test_cases.items():
+        pyleecan_test_base(test_params[test_type], test_type=test_type, test_id=test_id, test_case=test_case)
+    # print(os.path.join(os.path.abspath('.'), "pytest.ini"))
