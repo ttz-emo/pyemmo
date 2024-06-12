@@ -25,8 +25,8 @@ test_params = {
 
 
 def pyleecan_test_base(test_params: list, 
-                       result_path: str,
-                       test_data_path: str, 
+                       result_path: str = "",
+                       test_data_path: str = "", 
                        result_folder:str = "",
                        test_data_folder: str = "",
                        test_type: str = "",
@@ -51,17 +51,19 @@ def pyleecan_test_base(test_params: list,
 
 
     #create machine
-    if not os.path.isdir(test_data_path) or test_data_path == "":
+    if test_data_path == "":
         machine_file_path = os.path.join(ROOT_DIR, test_data_folder, f"{test_type}\\{test_case}.json")
     else:
         machine_file_path = test_data_path
+    print(machine_file_path)
     pyleecan_machine: Machine = load.load(machine_file_path)
 
     #Create result folder
-    if not os.path.isdir(result_path) or result_path == "":
+    if result_path == "":
         curr_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
         resFolder = os.path.join(ROOT_DIR, result_folder, f"{test_type}\\{curr_datetime}\\test_{test_id}\\{test_case}")
-        os.makedirs(resFolder)
+        if not os.path.isdir(resFolder):
+            os.makedirs(resFolder)
     else:
         resFolder = result_path
 
@@ -96,6 +98,8 @@ def pyleecan_test_base(test_params: list,
         "gmsh": findGmsh(),
     }
     runCalcforCurrent(param_dict)
+
+    return machine_file_path, resFolder
 
 if __name__ == "__main__":
     # pyleecan_test_base(test_cases, test_params)
