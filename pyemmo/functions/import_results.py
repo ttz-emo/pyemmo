@@ -186,21 +186,29 @@ def plot_timetable_dat(
     for sim in range(nbrSim):
         # FIXME: with plt.ioff() only works on Python 3.11
         # with plt.ioff() if not showfig else plt.ion():
+        sim_data = dataArray[sim]
         fig, axes = plt.subplots()
         fig.set_dpi(200)
-        axes.plot(timeArray[sim], dataArray[sim], marker=".")
+        axes.plot(timeArray[sim], sim_data)  # , marker=".")
         # show()
         # ax.set_aspect("equal", adjustable="box")
         # check that max or min is not too close to zero to apply the y_lim
-        maxVal = max(dataArray[sim])
-        minVal = min(dataArray[sim])
+        if 1 in sim_data.shape:
+            maxVal = np.max(sim_data)
+            minVal = np.min(sim_data)
+        else:
+            # multi data array
+            # FIXME: Make sure second axis is really data axis
+            maxVal = np.max(sim_data[:, 0])
+            minVal = np.min(sim_data[:, 0])
         if not (
             isclose(maxVal, 0, abs_tol=0.1) or isclose(minVal, 0, abs_tol=0.1)
         ):
             fig.axes[0].set_ylim(
-                bottom=minVal * (1.1 if min(dataArray[sim]) < 0 else 0.9),
-                top=maxVal * (1.1 if max(dataArray[sim]) > 0 else 0.9),
+                bottom=minVal * (1.1 if minVal < 0 else 0.9),
+                top=maxVal * (1.1 if maxVal > 0 else 0.9),
             )
+
         axes.set(ylabel=dataLabel, xlabel="time in s", title=title + f"_{sim}")
         if savefig:
             if not savePath:
