@@ -21,6 +21,7 @@ from random import random
 from typing import TYPE_CHECKING, List, Tuple, Type, Union
 
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 from numpy import mean
 
 from .circleArc import CircleArc
@@ -718,7 +719,7 @@ class Surface(Transformable):
 
     def plot(
         self,
-        fig=None,
+        fig: Figure = None,
         linewidth=0.5,
         color=[random() for i in range(3)],
         marker=".",
@@ -734,6 +735,7 @@ class Surface(Transformable):
             xlim, ylim = self.getBoundingBox(scalingFactor=1.1)
             fig.axes[0].set(xlim=xlim, ylim=ylim)
             ax.set_aspect("equal", adjustable="box")
+        ax = fig.axes[0]
         for curve in self.curve:
             curve.plot(
                 fig,
