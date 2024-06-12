@@ -45,7 +45,7 @@ from ...definitions import DEFAULT_GEO_TOL
 from . import importJSON, globalCenterPoint
 from .. import logger
 from .SurfaceJSON import SurfaceAPI
-from .get_coilspan import get_coilspan
+from .get_coilspan import get_min_coilspan
 
 # from .. import calc_phaseangle_starvoltageV2
 # analyse.calc_phaseangle_starvoltage = calc_phaseangle_starvoltageV2
@@ -812,7 +812,7 @@ def createWinding(extendedInfo: dict) -> datamodel:
     swatemWinding.set_phases(
         S=windLayout,
         turns=(importJSON.getNbrOfTurns(extendedInfo)),
-        w=get_coilspan(windLayout),
+        w=get_min_coilspan(windLayout),
     )
     swatemWinding.analyse_wdg()  # analyse winding to make sure its valid and all parameters are set
     # make sure that number of parallel paths does not exceed max. possible paths of winding:

@@ -22,10 +22,11 @@
 import numpy as np
 
 
-def get_coilspan(wind_layout: np.ndarray) -> int:
+def get_min_coilspan(wind_layout: np.ndarray) -> int:
     """Calculate the minimal coil span from a winding layout"""
     wind_layout = np.array(wind_layout)
     layers = wind_layout.shape[1]
+    nbrSlots = wind_layout.shape[2] * 3  # phases
     if layers == 2:
         # double layer
         first_coil_side = wind_layout[0, 0, 0]
@@ -38,6 +39,8 @@ def get_coilspan(wind_layout: np.ndarray) -> int:
         a = wind_layout[0, 1:] + first_coil_side
     is_positive_coil_side = first_coil_side > 0
     # filter oppvosit (positive/negative) winding directions
-    a = a[a < 0] if is_positive_coil_side else a[a > 0]
-    # coil span is min distance to first coil side
-    return int(np.min(np.abs(a)))
+    a = -a[a < 0] if is_positive_coil_side else a[a > 0]
+    for i in range(1, nbrSlots):
+        # loop through distance to first slot and check if that slot is in a
+        if i in a or nbrSlots - i in a:
+            return i
