@@ -20,7 +20,7 @@
 from typing import Dict, List, Union, Literal
 import logging
 from matplotlib import pyplot as plt
-from numpy import pi, sign
+import numpy as np
 from swat_em import datamodel
 from .line import Line
 from .movingBand import MovingBand
@@ -205,14 +205,14 @@ class Stator:
         #     # tooth coil winding -> radial position sort
         slotList.sort(key=Slot.get_circumferential_position)
         wind = self.winding
-        layers = wind.get_num_layers()
-        if layers > 1:
+        if wind.get_num_layers() == 2:
+            layout = np.array(wind.get_phases())
+            # check if first and second layer are not equal
             if (
-                wind.get_coilspan() > 1
-                or wind.get_phases()[0][0][0] == wind.get_phases()[0][1][0]
+                not np.array_equal(layout[0, 0, :], layout[0, 1, :])
+                and wind.get_coilspan() > 1
             ):
-                # Distributed winding with multi layer OR
-                # special case double layer tooth coil winding!
+                # Distributed winding with differnet layers
                 for i in range(wind.get_num_slots()):
                     # sort the two slot sides separately in upper and lowee slot
                     slotsides = slotList[2 * i : 2 * i + 2]
@@ -349,9 +349,9 @@ class Stator:
                 layer = 0  # there is only one layer
                 slotIDLayout = slotPos
             # Finally get winding direction and phase number (0,1,2 = u,v,w)
-            slot.windDirection = sign(layout[layer, slotIDLayout])
+            slot.windDirection = np.sign(layout[layer, slotIDLayout])
             # recalculate phase angle in rad
-            slot.phase = (abs(layout[layer, slotIDLayout]) - 1) * 2 * pi / 3
+            slot.phase = (abs(layout[layer, slotIDLayout]) - 1) * 2 * np.pi / 3
             slot.nbrTurns = self.winding.get_turns()
             slot.setColor()
 
@@ -548,9 +548,9 @@ class Stator:
         # get max. outer radius:
         r_out = self.outer_radius
         if not basisMeshsize:
-            basisMeshsize = 2 * pi * self.movingBandRadius / 360
+            basisMeshsize = 2 * np.pi * self.movingBandRadius / 360
             logging.debug(
-                "Setting basis mesh size to 2 * pi * self.movingBandRadius / 360 = %.3e",
+                "Setting basis mesh size to 2 * np.pi * self.movingBandRadius / 360 = %.3e",
                 basisMeshsize,
             )
         # set mesh gain factor to empirically developed default
