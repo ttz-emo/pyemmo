@@ -642,12 +642,14 @@ def is_single_transient(res_dir: str) -> bool:
     # This function checks a results folder for .dat results files and
     # determines if the results are transient
     # get all dat results from results folder
-    _, dat_file_list = import_results.get_result_files(res_dir)
+    dat_file_list, _ = import_results.get_result_files(res_dir)
     # if there are results
     if dat_file_list:
         # for dat_file in dat_file_list:
         # get time and data values of first file
-        time, data = import_results.read_timetable_dat(dat_file_list[0])
+        time, data = import_results.read_timetable_dat(
+            join(res_dir, dat_file_list[0])
+        )
         if time.size > 1:
             # get number of simulations in that file
             nbrSim, _, _ = import_results.split_data(time, data)
