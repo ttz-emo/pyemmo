@@ -1070,7 +1070,7 @@ class Script:
         )
         # Create single Bar regions
         if DOMAIN_BAR in rotorPhysicalsDict:
-            rotorPhysicalsDict[DOMAIN_BAR].sort(key=Slot.getRadialPosition)
+            rotorPhysicalsDict[DOMAIN_BAR].sort(key=Slot.get_radial_position)
             for i, region in enumerate(rotorPhysicalsDict[DOMAIN_BAR]):
                 domainList.append(Domain(f"Rotor_Bar_{i+1}", region))
         # add additional domains for every movinband part, to specify the
