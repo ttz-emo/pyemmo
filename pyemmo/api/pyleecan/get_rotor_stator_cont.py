@@ -155,7 +155,6 @@ def get_winding_cont(
     lamination_surf: SurfaceAPI,
     slot_surfs: List[SurfaceAPI],
     lamination: LamSlotWind,
-    is_internal: bool,
 ) -> list[Union[Line, CircleArc]]:
     """
     Get the list of curves of the contour of a LamSlotWind object.
@@ -173,19 +172,11 @@ def get_winding_cont(
 
     # TODO: Add left and right contour points for airgap surface generation
 
-    if is_internal:
-        cont_line_list = calc_wind_contour(
-            lam_surf=lamination_surf,
-            slot_surf_list=slot_surfs,
-            rint=r_int,
-            rext=r_ext,
-        )
-    else:
-        cont_line_list = calc_wind_contour(
-            lam_surf=lamination_surf,
-            slot_surf_list=slot_surfs,
-            rint=r_ext,
-            rext=r_int,
-        )
-
+    cont_line_list = calc_wind_contour(
+        lam_surf=lamination_surf,
+        slot_surf_list=slot_surfs,
+        rint=r_int,
+        rext=r_ext,
+        is_internal=lamination.is_internal,
+    )
     return cont_line_list

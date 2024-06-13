@@ -36,6 +36,7 @@ def calc_wind_contour(
     slot_surf_list: list[SurfaceAPI],
     rint: float,
     rext: float,
+    is_internal: bool,
 ) -> list[Union[Line, CircleArc]]:
     """Calculation for the contour of a slot with winding.
 
@@ -61,8 +62,13 @@ def calc_wind_contour(
     # Innenkontur der Statorblechs abziehen. Die Interface-Linie zwischen
     # Nutschlitz und Wicklung ist diejenige Linie, die nicht in der Wicklungs-
     # UND Statorkontur vorkommt.
-
     cont_line_list: list[Union[Line, CircleArc]] = []
+    if is_internal:
+        r_airgap = rext
+        r_lam = rint
+    else:
+        r_airgap = rint
+        r_lam = rext
     # Filtering out the lines that do not lie on the surface facing the air gap:
     for curve in lam_surf.curve:
         # if one point is on rInt (airgap) and none of the curve points
@@ -70,23 +76,23 @@ def calc_wind_contour(
         if (
             math.isclose(
                 a=curve.startPoint.radius,
-                b=rint,
+                b=r_airgap,
                 abs_tol=1e-6,
             )
             or math.isclose(
                 a=curve.endPoint.radius,
-                b=rint,
+                b=r_airgap,
                 abs_tol=1e-6,
             )
         ) and (
             not math.isclose(
                 a=curve.endPoint.radius,
-                b=rext,
+                b=r_lam,
                 abs_tol=1e-6,
             )
             and not math.isclose(
                 a=curve.startPoint.radius,
-                b=rext,
+                b=r_lam,
                 abs_tol=1e-6,
             )
         ):
@@ -94,19 +100,20 @@ def calc_wind_contour(
 
     # extract the points on the interface between slot opening and winding surface
     slot_op_points = []  # list for interface points
-
+    # is_internal = rint
     for curve in cont_line_list:
         # TODO: Describe what this if-case is doing.
         if (
-            curve.startPoint.radius > rint or curve.startPoint.radius > rext
+            curve.startPoint.radius > r_airgap
+            or curve.startPoint.radius > r_lam
         ) and math.isclose(
-            a=curve.startPoint.radius, b=rint, abs_tol=1e-6
+            a=curve.startPoint.radius, b=r_airgap, abs_tol=1e-6
         ) is False:
             slot_op_points.append(curve.startPoint)
         elif (
-            curve.endPoint.radius > rint or curve.endPoint.radius > rext
+            curve.endPoint.radius > r_airgap or curve.endPoint.radius > r_lam
         ) and math.isclose(
-            a=curve.endPoint.radius, b=rint, abs_tol=1e-6
+            a=curve.endPoint.radius, b=r_airgap, abs_tol=1e-6
         ) is False:
             slot_op_points.append(curve.endPoint)
 

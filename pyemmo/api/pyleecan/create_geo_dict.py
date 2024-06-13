@@ -66,6 +66,7 @@ from pyleecan.Classes.LamHole import LamHole
 from pyleecan.Classes.LamSlotMag import LamSlotMag
 from pyleecan.Classes.LamSlotWind import LamSlotWind
 from pyleecan.Classes.LamSquirrelCage import LamSquirrelCage
+from pyleecan.Classes.SurfLine import SurfLine
 
 from pyleecan.Classes.Machine import Machine as PyleecanMachine
 
@@ -119,7 +120,7 @@ def create_geo_dict(
             - Point: Leftmost point of the rotor contour.
             - dict: Dictionary containing magnetization information.
     """
-    all_surfaces: list = machine.rotor.build_geometry(
+    all_surfaces: List[SurfLine] = machine.rotor.build_geometry(
         sym=machine.rotor.comp_periodicity_geo()[0], alpha=0
     )
 
@@ -212,7 +213,6 @@ def create_geo_dict(
             lamination_surf=lam_surf,
             slot_surfs=[slot_surf],
             lamination=machine.rotor,
-            is_internal=not is_internal_rotor,
         )
         l_point_rotor_cont, r_point_rotor_cont = get_lr_points(
             machine,
@@ -235,7 +235,6 @@ def create_geo_dict(
         lamination_surf=lam_surf,
         slot_surfs=slot_surfs,
         lamination=machine.stator,
-        is_internal=is_internal_rotor,
     )
 
     # ------------------------------------------------------
