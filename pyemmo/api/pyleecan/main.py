@@ -38,6 +38,7 @@ def main(
     model_dir: str,
     gmsh: Union[str, os.PathLike] = "",
     getdp: Union[str, os.PathLike] = "",
+    use_gui: bool = True,
 ):
     """Main of pyleecan api.
 
@@ -79,6 +80,7 @@ def main(
     paramDict = create_param_dict(
         pyleecan_machine, simulation, movingband_r, magnetizationDict
     )
+    paramDict["flag_openGUI"] = use_gui
 
     json_api_main(
         geo=geo_translation_dict,
