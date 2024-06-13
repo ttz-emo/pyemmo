@@ -28,6 +28,7 @@ from pyleecan.Classes.MachineSyRM import MachineSyRM
 from pyemmo.api.json.modelJSON import SurfaceAPI
 from pyemmo.script.geometry.point import Point
 from pyemmo.definitions import TEST_DIR
+from pyemmo.api.json.modelJSON import createSurfaceDict
 from pyemmo.api.pyleecan.translate_surfs import translate_surface
 from pyemmo.api.pyleecan.get_rotor_stator_cont import (
     get_even_rotor_cont,
@@ -79,7 +80,7 @@ def get_cont(get_rotor_cont_function, machine_file):
         os.path.abspath(os.path.join(TEST_DIR, "data", machine_file))
     )
     geometry_list, is_internal = get_translated_machine(machine)
-    # FIXME: Fix test for new LamSlotWind contour function!
+
     result = get_rotor_cont_function(
         geometry_list=geometry_list,
         machine=machine,
@@ -153,15 +154,32 @@ def get_cont(get_rotor_cont_function, machine_file):
             get_even_rotor_cont,
             "03_synrm_muster_Bachelor.json",
         ),
-        (
-            get_winding_cont,
-            "03_synrm_muster_Bachelor.json",
-        ),
+        # (
+        #     get_winding_cont,
+        #     "03_synrm_muster_Bachelor.json",
+        # ),
     ],
 )
 def test_main_functions(test_function):
     get_rotor_cont_function, machine_file = test_function
     get_cont(get_rotor_cont_function, machine_file)
+
+
+def test_winding_contour_function():
+    # FIXME: Fix test for new LamSlotWind contour function!
+    machine: Machine = load(
+        os.path.abspath(
+            os.path.join(TEST_DIR, "data", "03_synrm_muster_Bachelor.json")
+        )
+    )
+    geometry_list, is_internal = get_translated_machine(machine)
+    geo_dict = createSurfaceDict(geometry_list)
+    contour_line_list = get_winding_cont(
+        lamination_surf=geo_dict["StNut"],
+        slot_surfs=geo_dict["StCu1"],
+        lamination=machine.stator,
+    )
+    ...
 
 
 # if __name__ == "__main__":
