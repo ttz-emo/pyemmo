@@ -5,6 +5,7 @@ from pyleecan.Functions import load
 from pyleecan.Classes.Machine import Machine
 
 from pyemmo.definitions import ROOT_DIR
+from pyleecan.definitions import DATA_DIR
 from pyemmo.api.pyleecan import main as pyleecanAPI
 
 from pyemmo.functions.runOnelab import runCalcforCurrent, findGmsh, findGetDP
@@ -65,6 +66,22 @@ def pyleecan_test_base(test_params: list,
     print(machine_file_path)
     pyleecan_machine: Machine = load.load(machine_file_path)
 
+    CuMat = load.load(os.path.join(DATA_DIR, "Material", "Copper2.json"))
+    try:
+        if pyleecan_machine.rotor.winding.conductor.cond_mat.name == "Copper1":
+            pyleecan_machine.rotor.winding.conductor.cond_mat = CuMat
+    except AttributeError:
+        pass
+    except Exception as exce:
+        raise exce
+    try:
+        if pyleecan_machine.stator.winding.conductor.cond_mat.name == "Copper1":
+            pyleecan_machine.stator.winding.conductor.cond_mat = CuMat
+    except AttributeError:
+        pass
+    except Exception as exce:
+        raise exce
+
     #Create result folder
     if result_path == "":
         curr_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -109,6 +126,35 @@ def pyleecan_test_base(test_params: list,
     return machine_file_path, resFolder
 
 if __name__ == "__main__":
+    from test_pytest import TestCases
+
+    new_test = TestCases()
+
+    test_cases = new_test.make_test_cases("api\\pyleecan")[test_type]
+
+    result_path = os.path.join(ROOT_DIR, "workingDirectory\\Vu\\for_testing")
+    if not os.path.isdir(result_path):
+        os.makedirs(result_path)
+
+    file = open(os.path.join(result_path, "base_data_creation_log"), "w")
+
     for test_id, test_case in test_cases.items():
-        pyleecan_test_base(test_params[test_type], test_type=test_type, test_id=test_id, test_case=test_case)
+        # print(test_case, ": ",os.path.isfile(os.path.join(ROOT_DIR, test_params[test_type]["test_data_folder"], f"{test_type}\\{test_case}.json")))
+        # print("\n")
+        result_path_true = os.path.join(result_path, test_case)
+        try:
+            pyleecan_test_base(test_params[test_type], result_path=result_path_true, test_type=test_type, test_id=test_id, test_case=test_case)
+        except AttributeError:
+            file.write(f"Attribute error in {test_case}\n")
+            pass
+        except RuntimeError:
+            print(f"Runtime error in {test_case}\n")
+            pass
+        except ValueError:
+            print(f"Value error in {test_case}\n")
+            pass
+        except FileNotFoundError:
+            print(f"FileNotFoundError in {test_case}\n")
+            pass
+    file.close()
     # print(os.path.join(os.path.abspath('.'), "pytest.ini"))

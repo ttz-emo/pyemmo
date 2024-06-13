@@ -55,13 +55,17 @@ class TestCases:
         for test_id, test_case in self.test_cases[test_type].items():
             curr_datetime, _ = updateConfig(test_type, test_id, test_case)
 
+            log_path = os.path.join(ROOT_DIR, "tests\\logs", test_type, f"test_{test_id}_{test_case}")
+            if not os.path.isdir(log_path):
+                os.makedirs(log_path)
+
             #preparing source and result folders
             source_path = os.path.join(ROOT_DIR, self.test_params[test_type]["test_data_folder"], f"{test_type}\\{test_case}.json")
 
             # make sure source file exists 
             assert os.path.isfile(source_path) and messagePrinter("SUCCESS: Source file exist"), "ERROR: Source file does not exist"
 
-            result_path[test_id] = os.path.join(ROOT_DIR, self.test_params[test_type]["result_folder"], f"{test_type}\\{curr_datetime}\\test_{test_id}\\{test_case}")
+            result_path[test_id] = os.path.join(ROOT_DIR, self.test_params[test_type]["result_folder"], f"{test_type}\\test_{test_id}\\{test_case}\\{curr_datetime}")
             if not os.path.isdir(result_path[test_id]):
                 os.makedirs(result_path[test_id])
 
@@ -82,18 +86,18 @@ class TestCases:
             print("Test point 1: Check that simulation result folders are properly generated:")
             assert os.path.isdir(simul_path[test_id]) and messagePrinter("SUCCESS: Simulation result folder exist"), "ERROR: Simulation result folder does not exist"
             assert os.path.isdir(simul_subfolder_path[test_id]) and messagePrinter("SUCCESS: Simulation result subfolder exists!"), "ERROR: Simulation result subfolder does not exist"
-            print("\n")
+            print()
             
             #Point 2: check if GMSH base files are generated
             print("Test point 2: check if GMSH base files are generated")
             self.check_file_counts(base_result_path, result_path[test_id])
-            print("\n")
+            print()
             
             #Point 3: check if simulation data is generated
             print("Test point 3: check if simulation data is generated")
             self.check_file_counts(base_simul_path, simul_path[test_id])
             self.check_file_counts(base_simul_subfolder_path, simul_subfolder_path[test_id])
-            print("\n")
+            print()
 
 
             # Point 4: Check content of files
@@ -107,7 +111,7 @@ class TestCases:
 
             #4.3 In simulation subfolder
             self.check_content(base_simul_subfolder_path, simul_subfolder_path[test_id], target_file_types)
-            print("\n")
+            print()
 
             #Point 5: check dat files value:
             print("Test point 5: check values in dat files")
@@ -117,6 +121,8 @@ class TestCases:
                 target_dat = read_timetable_dat(target_file)
                 base_dat = read_timetable_dat(base_file)
                 assert target_dat == base_dat and messagePrinter(f"SUCCESS: {target_file} check ok"), f"ERROR: mismatch found between base and target dat in {target_file}!"
+            
+            print("\n")
             
             
             

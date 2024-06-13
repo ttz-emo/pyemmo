@@ -1,4 +1,4 @@
-// This script was created with pyemmo (Version 1.3.1b1, git 25b7a4)
+// This script was created with pyemmo (Version 1.3.1b1, git 86642f)
 
 // This script has initally be written by Diogo Pinto and is adapted for the use with pyemmo by Max Ganser
 
@@ -76,39 +76,39 @@ Group
 }
 
 Group{
-    Surf_cutA0 = Region[ {1002, 1001} ];
-    Surf_cutA1 = Region[ {1004, 1003} ];
-    Surf_bn0 = Region[ 1015 ];
-    Rotor_Bnd_MB_1 = Region[ 1006 ];
-    Rotor_Bnd_MB_2 = Region[ 1007 ];
-    Rotor_Bnd_MB_3 = Region[ 1008 ];
-    Rotor_Bnd_MB_4 = Region[ 1009 ];
-    Rotor_Bnd_MB_5 = Region[ 1010 ];
-    Rotor_Bnd_MB_6 = Region[ 1011 ];
-    Rotor_Bnd_MB_7 = Region[ 1012 ];
-    Rotor_Bnd_MB_8 = Region[ 1013 ];
-    Rotor_Bnd_MB = Region[ {1006, 1007, 1008, 1009, 1010, 1011, 1012, 1013} ];
-    Rotor_Bnd_MBaux = Region[ {1007, 1008, 1009, 1010, 1011, 1012, 1013} ];
-    Rotor_Airgap = Region[ 1030 ];
-    Rotor_Magnets = Region[ {1018, 1020} ];
-    RotorCC = Region[ {1017, 1019, 1021, 1029, 1030, 1016} ];
-    Surf_Inf = Region[ 1014 ];
-    Stator_Bnd_MB = Region[ 1005 ];
-    Stator_Airgap = Region[ 1032 ];
-    StatorCC = Region[ {1031, 1032, 1022, 1023, 1024, 1025, 1026, 1027, 1028} ];
-    Stator_Ind_Ap = Region[ {1023, 1024} ];
-    Stator_Ind_Cm = Region[ {1025, 1026} ];
-    Stator_Ind_Bp = Region[ {1027, 1028} ];
-    DomainNL = Region[ {1016, 1022} ];
-    DomainL = Region[ {1017, 1018, 1019, 1020, 1021, 1029, 1030, 1023, 1024, 1025, 1026, 1027, 1028, 1031, 1032} ];
+    Surf_cutA0 = Region[ {3, 2} ];
+    Surf_cutA1 = Region[ {5, 4} ];
+    Surf_bn0 = Region[ 16 ];
+    Rotor_Bnd_MB_1 = Region[ 7 ];
+    Rotor_Bnd_MB_2 = Region[ 8 ];
+    Rotor_Bnd_MB_3 = Region[ 9 ];
+    Rotor_Bnd_MB_4 = Region[ 10 ];
+    Rotor_Bnd_MB_5 = Region[ 11 ];
+    Rotor_Bnd_MB_6 = Region[ 12 ];
+    Rotor_Bnd_MB_7 = Region[ 13 ];
+    Rotor_Bnd_MB_8 = Region[ 14 ];
+    Rotor_Bnd_MB = Region[ {7, 8, 9, 10, 11, 12, 13, 14} ];
+    Rotor_Bnd_MBaux = Region[ {8, 9, 10, 11, 12, 13, 14} ];
+    Rotor_Airgap = Region[ 31 ];
+    Rotor_Magnets = Region[ {19, 21} ];
+    RotorCC = Region[ {18, 20, 22, 30, 31, 17} ];
+    Surf_Inf = Region[ 15 ];
+    Stator_Bnd_MB = Region[ 6 ];
+    Stator_Airgap = Region[ 33 ];
+    StatorCC = Region[ {32, 33, 23, 24, 25, 26, 27, 28, 29} ];
+    Stator_Ind_Ap = Region[ {24, 25} ];
+    Stator_Ind_Cm = Region[ {26, 27} ];
+    Stator_Ind_Bp = Region[ {28, 29} ];
+    DomainNL = Region[ {17, 23} ];
+    DomainL = Region[ {18, 19, 20, 21, 22, 30, 31, 24, 25, 26, 27, 28, 29, 32, 33} ];
     MovingBand_PhysicalNb = Region[ 0 ];
-    Domain_Lam = Region[ {1016, 1022} ];
+    Domain_Lam = Region[ {17, 23} ];
     DomainPlotMovingGeo = Region[ 1 ];
-    group_PYEMMO_AIR = Region[ {1006, 1007, 1008, 1009, 1010, 1011, 1012, 1013, 1030, 1029, 1005, 1032, 1031, 0} ];
-    group_MagnetPrius = Region[ {1018, 1020} ];
-    group_Air = Region[ {1017, 1019, 1021} ];
-    group_M400_50A = Region[ {1016, 1022} ];
-    group_Copper2 = Region[ {1023, 1024, 1025, 1026, 1027, 1028} ];
+    group_PYEMMO_AIR = Region[ {7, 8, 9, 10, 11, 12, 13, 14, 31, 30, 6, 33, 32, 0} ];
+    group_MagnetPrius = Region[ {19, 21} ];
+    group_Air = Region[ {18, 20, 22} ];
+    group_M400_50A = Region[ {17, 23} ];
+    group_Copper2 = Region[ {24, 25, 26, 27, 28, 29} ];
     }
 
 //=============================================================================
@@ -958,8 +958,8 @@ Function{
     density[group_Copper2] = density_Copper2 ;
     }
 Function{
-    br[Region[1018]] = 1*br_MagnetPrius * Vector[Cos[0.5489482152997663 + RotorPosition[]], Sin[0.5489482152997663 + RotorPosition[]], 0] ;
-    br[Region[1020]] = 1*br_MagnetPrius * Vector[Cos[0.23644994809768194 + RotorPosition[]], Sin[0.23644994809768194 + RotorPosition[]], 0] ;
+    br[Region[19]] = 1*br_MagnetPrius * Vector[Cos[0.5489482152997663 + RotorPosition[]], Sin[0.5489482152997663 + RotorPosition[]], 0] ;
+    br[Region[21]] = 1*br_MagnetPrius * Vector[Cos[0.23644994809768194 + RotorPosition[]], Sin[0.23644994809768194 + RotorPosition[]], 0] ;
     }
 
 
