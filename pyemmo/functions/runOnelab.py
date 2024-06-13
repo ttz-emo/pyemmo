@@ -168,15 +168,21 @@ def createCmdCommand(
 
     Args:
         onelabFile (str): Path to the .geo or .pro file.
-        useGUI (bool): If True command will open the file in the gmsh gui (independed if its a geo or pro file).
-        gmshPath (str): Path to the gmsh executable. By defaults the gmsh exe is searched.
-        getdpPath (str, optional): path to a getdp executable. Path will only be used if gui is not used. Defaults to "".
+        useGUI (bool): If True command will open the file in the gmsh gui
+            (independed if its a geo or pro file).
+        gmshPath (str): Path to the gmsh executable. By defaults the gmsh exe
+            is searched.
+        getdpPath (str, optional): path to a getdp executable. Path will only
+            be used if gui is not used. Defaults to "".
+        logFileName (str, optional): Provide a log file name if the simulation
+            procedure should be saved to a file. Defaults to "".
         paramDict (Dict[str, Union[str, int, float]], optional):
             Dict with parameters to set in the simulation. Defaults to None.
-            You can use the value "verbosity level" to change verbosity in GetDP
-            from 0 to 99.
+            You can use the value "verbosity level" to change verbosity in
+            GetDP from 0 to 99.
 
-                E.g. to set the onelab parameter "IQ_RMS" for the quadrature rms current to 10A the dict would look like:
+                E.g. to set the onelab parameter "IQ_RMS" for the quadrature
+                rms current to 10A the dict would look like:
 
                 .. code:: python
 
@@ -184,8 +190,10 @@ def createCmdCommand(
                         "IQ_RMS": 10,
                     }
 
-        postOperations (List[str], optional): List containing the PostOperation names that should be performed after the solving stage.
-            ! PostOperations will only be executed if a getdp executable is given !
+        postOperations (List[str], optional): List containing the PostOperation
+            names that should be performed after the solving stage.
+            PostOperations will only be executed if a getdp executable is
+            given!
 
     Returns:
         str: string of the executable command-line command
@@ -230,7 +238,7 @@ def createCmdCommand(
                             # skip meshing
                             # (meshFilePath, meshExt) = splitext(paramDict["msh"])
                             # assert meshExt = ".msh"
-                            getdp_command += f"-msh {paramDict.pop('msh')}"
+                            getdp_command += f"-msh {paramDict.pop('msh')} "
                             gmsh_command = ""
                         else:
                             raise FileNotFoundError(
@@ -239,8 +247,9 @@ def createCmdCommand(
                     else:
                         # set the gmsh file extension to mesh
                         gmsh_command = f"{gmshPath} {filePath}.geo -run "
-                    if logFileName:
-                        gmsh_command += f" -log {logFileName} "
+                    # # If log file name is given, add file logging flag:
+                    # if logFileName:
+                    #     gmsh_command += f" -log {logFileName} "
                     # add post operations
                     if postOperations:
                         getdp_command += " -pos "
@@ -379,12 +388,31 @@ def runCalcforCurrent(param: dict):
 
     RES_DIR = param["res"]
     if not os.path.isdir(RES_DIR):
-        raise RuntimeError(f"Result directory does not exist: {RES_DIR}")
+        if os.path.isdir(os.path.dirname(RES_DIR)):
+            logging.info(f"Creating results directory: {RES_DIR}")
+            os.mkdir(RES_DIR)
+        else:
+            raise RuntimeError(
+                "Result directory does not exist and can not be created: "
+                + RES_DIR
+            )
     # adding additional results path because its initally set in the parameter geo file.
     # But if the files are moved the results folder might not exist any more!
     param["getdp"]["ResPath"] = RES_DIR
     pro_file = param["pro"]
     simulation_res_dir = os.path.join(RES_DIR, param["ResId"])
+    # Remove previous results if flag activated
+    if "Flag_ClearResults" in param["getdp"] and os.path.isdir(
+        simulation_res_dir
+    ):
+        if param["getdp"]["Flag_ClearResults"]:
+            logging.warning(
+                "Removing previous results from folder: %s",
+                simulation_res_dir,
+            )
+            for res_file in os.listdir(simulation_res_dir):
+                os.remove(os.path.join(simulation_res_dir, res_file))
+            os.rmdir(simulation_res_dir)
 
     post_operations = param["PostOp"] if "PostOp" in param else []
 
@@ -428,6 +456,7 @@ def runCalcforCurrent(param: dict):
         #                 )
 
         ## TRY TO LOG OUTPUT OF FUNCTION CALL:
+        # TODO: Add log file option and stream simulation to log file
         process = Popen(
             cmdCommand,
             stdout=PIPE,

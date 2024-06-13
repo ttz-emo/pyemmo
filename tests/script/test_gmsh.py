@@ -22,19 +22,9 @@
 import os
 import subprocess
 from pyemmo.functions.runOnelab import createGMSHCommand
-
-try:
-    from .. import GMSH_EXE, TEST_DATA_DIR
-except ImportError:
-    from tests import GMSH_EXE, TEST_DATA_DIR
-except Exception as exce:
-    raise exce
+from tests import GMSH_EXE, TEST_DATA_DIR
 
 
-# @pytest.mark.parametrize("test_name,corrected_name",[
-#     ('test#name','test_name'),
-#     ('0testname','_0testname'),
-# ])
 def test_run_gmsh():
     """Simple test to check if gmsh executable is set correctly by automatic
     installation and mesh command is correct and runs."""
@@ -44,9 +34,10 @@ def test_run_gmsh():
         gmshFile=geo_file, useGUI=False, gmshPath=GMSH_EXE, logFileName=""
     )
     out = subprocess.run(
-        gmsh_command, check=False, capture_output=True, text=True
+        gmsh_command, check=True, capture_output=True, text=True
     )
-    print(out)
+    # TODO: Check that .db and .msh file are created and clean them up after
+    # test run
 
 
 if __name__ == "__main__":

@@ -196,7 +196,25 @@ class Script:
         self.functionMagnetisation = FunctionGetDP()
 
         self._postOperation: PostOperation = PostOperation()
-
+        # TODO: Add default Post Operation:
+        # PostOperation{
+        #     {
+        #         Name get_local_fields_post_sim; NameOfPostProcessing MagStaDyn_a_2D;
+        #         Operation {
+        #             Print[ js, OnElementsOf DomainS, File StrCat[ResDir,"js",ExtGmsh]] ;
+        #             Print[ b,  OnElementsOf Domain, File StrCat[ResDir,"b",ExtGmsh] ] ;
+        #             Print[ bn,  OnElementsOf Domain, File StrCat[ResDir,"bn",ExtGmsh]] ;
+        #             Print[ mu, OnElementsOf Domain, File StrCat[ResDir,"mu_r",ExtGmsh]] ;
+        #             Print[ az, OnElementsOf Domain, File StrCat[ResDir,"az",ExtGmsh] ] ;
+        #             // Echo[ Str["l=PostProcessing.NbViews-1;", "View[l].IntervalsType = 1;", "View[l].NbIso = 30;", "View[l].Light = 0;", "View[l].LineWidth = 2;"], File StrCat[ResDir,"tmp.geo"], LastTimeStepOnly] ;
+        #             If (Flag_Cir_RotorCage)
+        #             Print[
+        #                 j, OnElementsOf Rotor_Bars, File StrCat[ResDir, "j_RotorBars", ExtGmsh]
+        #             ];
+        #             EndIf
+        #     }
+        #     }
+        # }
         self.factory = factory  # gmsh geometry kernel
 
         ### FOR DEBUGGING ###
@@ -1070,7 +1088,7 @@ class Script:
         )
         # Create single Bar regions
         if DOMAIN_BAR in rotorPhysicalsDict:
-            rotorPhysicalsDict[DOMAIN_BAR].sort(key=Slot.getRadialPosition)
+            rotorPhysicalsDict[DOMAIN_BAR].sort(key=Slot.get_radial_position)
             for i, region in enumerate(rotorPhysicalsDict[DOMAIN_BAR]):
                 domainList.append(Domain(f"Rotor_Bar_{i+1}", region))
         # add additional domains for every movinband part, to specify the
@@ -1539,9 +1557,12 @@ class Script:
                 bhArray = mat.BH
                 bString = "{"
                 hString = "{"
-                for bhValue in bhArray:
+                for i, bhValue in enumerate(bhArray):
                     bString += str(bhValue[0]) + ","
                     hString += str(bhValue[1]) + ","
+                    if (i % 9 == 0) and ((i - 1) != bhArray.shape[0]):
+                        bString += "\n"
+                        hString += "\n"
                 bString = bString[0 : len(bString) - 1] + "}"
                 hString = hString[0 : len(hString) - 1] + "}"
                 matFun.add_params({f"Mat_h_{matName}": hString})

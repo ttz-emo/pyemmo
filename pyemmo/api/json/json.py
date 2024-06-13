@@ -399,17 +399,6 @@ def main(
         datetime.date.today(),
         datetime.datetime.now().strftime("%H:%M:%S"),
     )
-    # check if gmsh was provided
-    if not gmsh:
-        # if gmsh was not provided, try to find it:
-        logger.debug("Gmsh path not given. Trying to find Gmsh...")
-        gmsh = runOnelab.findGmsh()
-    else:
-        # if gmsh was given by the user, check that its valid
-        if not isfile(gmsh):
-            raise FileNotFoundError(
-                f"Provided gmsh executable was not found: {gmsh}"
-            )
 
     # get geometry
     if isinstance(geo, str):
@@ -453,8 +442,12 @@ def main(
 
     # generate the machine geometry
     machine, machineSurfDict = createMachine(segmentSurfDict, extendedInfo)
-    # set function mesh size
-    # machine
+
+    # set function mesh
+    if "useFunctionMesh" in extendedInfo.keys():
+        if extendedInfo["useFunctionMesh"]:
+            machine.setFunctionMesh()
+
     # get the simulation pareameters
     simulationParameters = importJSON.getSimuParams(extendedInfo=extendedInfo)
     logger.info("Generating the Script object in JSON API.")
@@ -468,24 +461,38 @@ def main(
     )
     addPostOperations(apiScript, extendedInfo)
     meshSizeSetCode = createMeshSizeGUICode(machineSurfDict)
+    # generate geo and pro files:
     apiScript.generateScript(UD_MeshCode=meshSizeSetCode)
-    # run(
-    #     [args.gmsh, abspath(join(args.mod, testScript.getName() + ".geo")), "-2"],
-    #     shell=True,
-    # )
-    # run(
-    #     args.getdp
-    #     + " "
-    #     + abspath(join(args.mod, testScript.getName() + ".pro"))
-    #     + " -solve Analysis -v1",
-    #     shell=True,
-    # )
+
+    if importJSON.getFlagOpenGui(extendedInfo) is True:
+        _open_onelab(apiScript, extendedInfo, gmsh, getdp)
+
+    jsonLogFileHandler.close()  # close log file handler!
+
+
+def _open_onelab(
+    apiScript: Script, extendedInfo: dict, gmsh: str = "", getdp: str = ""
+):
+    """
+    Private function to open ONELAB simulation in GUI and evaluate results
+    """
+    # check if gmsh was provided
+    if not gmsh:
+        # if gmsh was not provided, try to find it:
+        logger.debug("Gmsh path not given. Trying to find Gmsh...")
+        gmsh = runOnelab.findGmsh()
+    else:
+        # if gmsh was given by the user, check that its valid
+        if not isfile(gmsh):
+            raise FileNotFoundError(
+                f"Provided gmsh executable was not found: {gmsh}"
+            )
     proFile = apiScript.proFilePath  # path to .pro file
     command = runOnelab.createCmdCommand(
         onelabFile=proFile,
         gmshPath=gmsh,
         getdpPath=getdp,
-        useGUI=importJSON.getFlagOpenGui(extendedInfo),
+        useGUI=True,
     )
     logging.debug("CMD command is: '%s'", command)
     calcInfo = subprocess.run(
@@ -511,97 +518,20 @@ def main(
     # iron loss post processing:
     resPath = apiScript.resultsPath
     # check if resPath exists -> simulation has been run.
-    if (
-        importJSON.getFlagCalcIronLoss(extendedInfo)
-        and isdir(resPath)
-        and simulationParameters["SYM"]["ANALYSIS_TYPE"]
-        == 1  # transient simulation
-    ):
-        # FIXME: Implement better check for simulation status
-        brFilePath = join(resPath, "b_rotor.pos")
-        bsFilePath = join(resPath, "b_stator.pos")
-        nbrPolePairs = machine.nbrPolePairs
-        calcAngle = (
-            simulationParameters["SYM"]["FINAL_ROTOR_POS"]
-            - simulationParameters["SYM"]["INIT_ROTOR_POS"]
-        )
-        if 360 / nbrPolePairs > calcAngle:
-            # make sure at least one electrical period has been simulated
-            # pylint: disable=locally-disabled,  line-too-long
-            logger.warning(
-                "IRON LOSS CALCULATION: Simulated rotation (%.3f°) might be smaller than one electrical period! Iron loss calculation is only valid if at least one electrical period is simulated.",
-                calcAngle,
-            )
-        rotorMat = machine.rotor._domainLam.physicals[0].material
-        statorMat = machine.stator._domainLam.physicals[0].material
-        if (
-            isfile(brFilePath)
-            and isfile(bsFilePath)
-            and isinstance(rotorMat, ElectricalSteel)
-            and isinstance(statorMat, ElectricalSteel)
-        ):
-            # FIXME: Material properties should be given valid
-            lossParams = rotorMat.lossParams
-            ironLossR, _ = calcIronLoss.main(
-                brFilePath,
-                loss_factor={
-                    "hyst": lossParams[0],
-                    "eddy": lossParams[1],
-                    "exc": lossParams[2],
-                },
-                sym_factor=importJSON.getSymFactor(extendedInfo),
-                axial_length=importJSON.getAxialLength(extendedInfo)["rotor"],
-            )
-            lossParams = statorMat.lossParams
-            ironLossS, time = calcIronLoss.main(
-                bsFilePath,
-                loss_factor={
-                    "hyst": lossParams[0],
-                    "eddy": lossParams[1],
-                    "exc": lossParams[2],
-                },
-                sym_factor=importJSON.getSymFactor(extendedInfo),
-                axial_length=importJSON.getAxialLength(extendedInfo)["stator"],
-            )
-            calcIronLoss.write_simple(
-                join(resPath, "Pv_hyst_R.dat"), time, ironLossR["hyst"]
-            )
-            calcIronLoss.write_simple(
-                join(resPath, "Pv_hyst_S.dat"), time, ironLossS["hyst"]
-            )
-            calcIronLoss.write_simple(
-                join(resPath, "Pv_eddy_R.dat"), time, ironLossR["eddy"]
-            )
-            calcIronLoss.write_simple(
-                join(resPath, "Pv_eddy_S.dat"), time, ironLossS["eddy"]
-            )
-            calcIronLoss.write_simple(
-                join(resPath, "Pv_exc_R.dat"), time, ironLossR["exc"]
-            )
-            calcIronLoss.write_simple(
-                join(resPath, "Pv_exc_S.dat"), time, ironLossS["exc"]
-            )
-        else:
-            logger.warning(
-                "IRON LOSS CALCULATION: B field results file 'b_rotor.pos' or 'b_stator.pos' not found in '%s'",
-                resPath,
-            )
-    if (
-        importJSON.getFlagCalcIronLoss(extendedInfo)
-        and simulationParameters["SYM"]["ANALYSIS_TYPE"]
-        == 0  # static simulation
-    ):
-        # FIXME: Improve check because simulation type can be changed in gmsh GUI
-        logger.warning(
-            "IRON LOSS CALCULATION: Iron loss calculation cannot be done for static simulation!",
-        )
-    # close log file handler!
-    jsonLogFileHandler.close()
-
-    # Plot Results for Debugging
-    if logger.getEffectiveLevel() <= 10:
-        resPath = apiScript.resultsPath
-        if isdir(resPath):
+    if isdir(resPath):
+        # check if the simulation that has been run is a single transient simulation:
+        sim_is_transient = is_single_transient(resPath)
+        if importJSON.getFlagCalcIronLoss(extendedInfo):
+            if sim_is_transient:
+                # if core loss flag and simulation is transient, calc core loss:
+                _run_core_loss_calculation(resPath, apiScript)
+            else:
+                logger.warning(
+                    "IRON LOSS CALCULATION: Iron loss calculation "
+                    "cannot be done for static simulation!",
+                )
+        # Plot Results for Debugging
+        if logger.getEffectiveLevel() <= 10:
             # if the folder for results exists
             import_results.plt.set_loglevel(
                 level="info"
@@ -617,3 +547,114 @@ def main(
                         showfig=False,
                         savePath=None,
                     )
+
+
+def _run_core_loss_calculation(resPath, apiScript: Script):
+    """Private function to run core loss calculation in case of GUI api run.
+
+    Args:
+        resPath (str): Path to the results directory.
+        apiScript (Script): Script object.
+    """
+    machine = apiScript.machine
+    simulationParameters = apiScript.simParams
+    # FIXME: Implement better check for simulation status
+    brFilePath = join(resPath, "b_rotor.pos")
+    bsFilePath = join(resPath, "b_stator.pos")
+    nbrPolePairs = machine.nbrPolePairs
+    calcAngle = (
+        simulationParameters["SYM"]["FINAL_ROTOR_POS"]
+        - simulationParameters["SYM"]["INIT_ROTOR_POS"]
+    )
+    if 360 / nbrPolePairs > calcAngle:
+        # make sure at least one electrical period has been simulated
+        # pylint: disable=locally-disabled,  line-too-long
+        logger.warning(
+            "IRON LOSS CALCULATION: Simulated rotation (%.3f°) might be smaller than one electrical period! Iron loss calculation is only valid if at least one electrical period is simulated.",
+            calcAngle,
+        )
+    rotorMat = machine.rotor._domainLam.physicals[0].material
+    statorMat = machine.stator._domainLam.physicals[0].material
+    if (
+        isfile(brFilePath)
+        and isfile(bsFilePath)
+        and isinstance(rotorMat, ElectricalSteel)
+        and isinstance(statorMat, ElectricalSteel)
+    ):
+        # FIXME: Material properties should be given valid
+        lossParams = rotorMat.lossParams
+        ironLossR, _ = calcIronLoss.main(
+            brFilePath,
+            loss_factor={
+                "hyst": lossParams[0],
+                "eddy": lossParams[1],
+                "exc": lossParams[2],
+            },
+            sym_factor=machine.symmetryFactor,
+            axial_length=machine.rotor.axialLength,
+        )
+        lossParams = statorMat.lossParams
+        ironLossS, time = calcIronLoss.main(
+            bsFilePath,
+            loss_factor={
+                "hyst": lossParams[0],
+                "eddy": lossParams[1],
+                "exc": lossParams[2],
+            },
+            sym_factor=machine.symmetryFactor,
+            axial_length=machine.stator.axialLength,
+        )
+        calcIronLoss.write_simple(
+            join(resPath, "Pv_hyst_R.dat"), time, ironLossR["hyst"]
+        )
+        calcIronLoss.write_simple(
+            join(resPath, "Pv_hyst_S.dat"), time, ironLossS["hyst"]
+        )
+        calcIronLoss.write_simple(
+            join(resPath, "Pv_eddy_R.dat"), time, ironLossR["eddy"]
+        )
+        calcIronLoss.write_simple(
+            join(resPath, "Pv_eddy_S.dat"), time, ironLossS["eddy"]
+        )
+        calcIronLoss.write_simple(
+            join(resPath, "Pv_exc_R.dat"), time, ironLossR["exc"]
+        )
+        calcIronLoss.write_simple(
+            join(resPath, "Pv_exc_S.dat"), time, ironLossS["exc"]
+        )
+    else:
+        logger.warning(
+            "IRON LOSS CALCULATION: field file 'b_rotor.pos' or 'b_stator.pos' not found in '%s'",
+            resPath,
+        )
+
+
+def is_single_transient(res_dir: str) -> bool:
+    """Function to determine if the results inside the results folder are from
+    a single transient simulation (nbr_sims = 1 && nbr_timesteps > 1).
+
+    Args:
+        res_dir (str): Path to results folder
+
+    Returns:
+        bool: True if nbr_sims = 1 && nbr_timesteps > 1 otherwise False.
+    """
+    # This function checks a results folder for .dat results files and
+    # determines if the results are transient
+    # get all dat results from results folder
+    dat_file_list, _ = import_results.get_result_files(res_dir)
+    # if there are results
+    if dat_file_list:
+        # for dat_file in dat_file_list:
+        # get time and data values of first file
+        time, data = import_results.read_timetable_dat(
+            join(res_dir, dat_file_list[0])
+        )
+        if time.size > 1:
+            # get number of simulations in that file
+            nbrSim, _, _ = import_results.split_data(time, data)
+            if nbrSim == 1:
+                # timesteps > 1 and number of simulation = 1
+                return True
+    # otherwise false
+    return False

@@ -173,6 +173,7 @@ def create_param_dict(
         "movingband_r": mb_radius,  # moving band radius in meters
         "axLen_S": machine.stator.L1,  # axial length of stator
         "axLen_R": machine.rotor.L1,  # axial length of rotor
+        "useFunctionMesh": True,  # use automatic mesh size generation
         "symFactor": sym_factor,  # symmetry factor for model (STANDARD = 1) has to be defined
         "startPos": 0,  # start rotor position in ° (STANDARD = 0°)
         "endPos": pyleecan_simulation.input.time.value[-1]

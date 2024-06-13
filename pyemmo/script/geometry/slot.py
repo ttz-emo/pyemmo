@@ -71,7 +71,8 @@ class Slot(PhysicalElement):
         if self.geometricalElement:  # if list is not empty
             if self.geoElementType == Line:
                 raise TypeError(
-                    f"Physical element type 'Slot' should only contain Surface  Elements but got type Line!"
+                    "Physical element type 'Slot' should only contain "
+                    "Surface Elements but got type Line!"
                 )
         # Material der Wicklung
         self.windDirection = windingDir  # set winding direction
@@ -185,21 +186,33 @@ class Slot(PhysicalElement):
             phase = phaseStr[phaseIndex]
             return phase
 
-    def getRadialPosition(self) -> Tuple[float, float]:
+    def get_radial_position(self) -> Tuple[float, float]:
         """get the radial position of the slot.\n
+        This is useful when sorting the slots in radial direction
+
+        Returns:
+            float: Radius of the center of the slots surface(s) in m
+        """
+        radList: List[float] = []
+        for surf in self.geometricalElement:
+            centerPoint = surf.calcCOG()
+            radList.append(centerPoint.radius)
+        return mean(radList)
+
+    def get_circumferential_position(self) -> Tuple[float, float]:
+        """get the circumferential position of the slot.\n
         This is useful when sorting the slots in circumfederal direction
 
         Returns:
             float: Angle of the center of the slots surface(s) in radians
-            float: Radius of the center of the slots surface(s) in m
         """
-        radList: List[float] = list()
-        phiList: List[float] = list()
+        if not self.geometricalElement:
+            raise RuntimeError("No geometry to determine slot position.")
+        phiList: List[float] = []
         for surf in self.geometricalElement:
             centerPoint = surf.calcCOG()
             phiList.append(centerPoint.getAngleToX())
-            radList.append(centerPoint.radius)
-        return (mean(phiList), mean(radList))
+        return mean(phiList)
 
     def setColor(self, colorName: str = None):  # overwrite set color
         """Set mesh color for Slot

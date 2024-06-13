@@ -19,6 +19,7 @@
 #
 
 # %%
+import os
 from os import path
 import math
 import subprocess
@@ -144,6 +145,9 @@ pmsm1.createMachineDomains()
 modelDir = path.abspath(
     path.join(ROOT_DIR, "Results", "Baukasten", "Test_IPMSM")
 )
+if not path.isdir(modelDir):
+    os.makedirs(modelDir)
+    
 testIPMSM_Script = Script(
     name="Test_IPMSM",
     scriptPath=modelDir,

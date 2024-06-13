@@ -79,6 +79,10 @@ def main(
     paramDict = create_param_dict(
         pyleecan_machine, simulation, movingband_r, magnetizationDict
     )
+
+    # stops UI from being opened
+    paramDict["flag_openGUI"] = False
+
     json_api_main(
         geo=geo_translation_dict,
         extInfo=paramDict,
