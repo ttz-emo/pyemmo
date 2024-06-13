@@ -176,16 +176,17 @@ def test_winding_contour_function():
     geo_dict = createSurfaceDict(geometry_list)
     contour_line_list = get_winding_cont(
         lamination_surf=geo_dict["StNut"],
-        slot_surfs=geo_dict["StCu1"],
+        slot_surfs=geo_dict["StCu0"],
         lamination=machine.stator,
     )
     ...
 
 
-# if __name__ == "__main__":
-#     test_main_functions(
-#         (
-#             get_winding_cont,
-#             "03_synrm_muster_Bachelor.json",
-#         )
-#     )
+if __name__ == "__main__":
+    #     test_main_functions(
+    #         (
+    #             get_winding_cont,
+    #             "03_synrm_muster_Bachelor.json",
+    #         )
+    #     )
+    test_winding_contour_function()
