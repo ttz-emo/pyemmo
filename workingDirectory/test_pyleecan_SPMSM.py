@@ -22,11 +22,12 @@
 model of a pyleecan machine."""
 # %%
 import os
+from os.path import join
 import logging
 
 from pyleecan.Functions import load
 from pyleecan.Classes.MachineSCIM import MachineSCIM
-from pyleecan.definitions import DATA_DIR
+from pyleecan.definitions import USER_DIR
 
 from pyemmo.definitions import ROOT_DIR
 from pyemmo.api.pyleecan import main as pyleecanAPI
@@ -43,8 +44,11 @@ logging.getLogger().setLevel(logging.INFO)
 # machine_file_path = os.path.join(
 #     ROOT_DIR, r"tests\data\api\pyleecan\Toyota_Prius.json"
 # )
-machine_file_path = os.path.join(DATA_DIR, "Machine", "SIPMSM_001.json")
-assert os.path.isfile(machine_file_path)  # make sure file exists
+DATA_DIR = USER_DIR
+machine_file_list = ["SIPMSM_001.json", "Railway_Traction_noDucts.json"]
+machine_file_path = os.path.join(DATA_DIR, "Machine", machine_file_list[1])
+if not os.path.isfile(machine_file_path):  # make sure file exists
+    raise FileNotFoundError(machine_file_path)
 
 # Default development results folder
 resFolder = os.path.join(ROOT_DIR, r"Results\pyleecanAPI")
@@ -61,7 +65,12 @@ pyleecan_machine: MachineSCIM = load.load(
 # FIX: rotor bar material
 CuMat = load.load(os.path.join(DATA_DIR, "Material", "Copper2.json"))
 pyleecan_machine.stator.winding.conductor.cond_mat = CuMat
-
+try:
+    pyleecan_machine.rotor.winding.conductor.cond_mat = CuMat
+except AttributeError:
+    pass
+except Exception as exce:
+    raise exce
 # Call pyleecan api main function
 # This triggers the translation process via the pyemmo json api, creates the
 # model file for Gmsh and GetDP + opens the model in the Gmsh GUI.
