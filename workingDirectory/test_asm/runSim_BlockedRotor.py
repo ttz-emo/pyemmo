@@ -47,13 +47,13 @@ start = time.perf_counter()
 
 nbr_bars = 9
 
-f_r = 1
+f_r = 50
 I_eff = 20
 n = 0
 f_s = f_r + 2 * n / 60
 T_s = 1 / f_s
 nbr_stator_periods = 4
-nbr_steps_per_period = 128
+nbr_steps_per_period = 64
 # Zum Abgleich mit Maxwell
 Nbr_Sect = 2048  # Bandsegmentierung
 multi = 4  # Default=4 number of Segments per timestep
@@ -67,8 +67,7 @@ logging.debug("Timestep %e s.", timestep)
 logging.debug("One time step equals %f° mechanical degrees.", winkelschritt)
 logging.debug("Stop time of simulation: %.7e s", int(nbrSteps) * timestep)
 # %%
-resId = f"blockedRotor_{f_r}Hz_{nbr_stator_periods}Periods_{nbr_steps_per_period}Steps_R_stat_VW"
-# resId = "blockedRotor_1Hz_Circ"
+resId = f"blockedRotor_{f_r}Hz_{nbr_stator_periods}Periods_{nbr_steps_per_period}Steps_R_dyn_thers"
 paramDict = {
     "getdp": {
         "freq_rotor": f_r,
@@ -91,10 +90,10 @@ paramDict = {
         "R_endring_segment": 16e-7 / 2,  # Initial value: 16e-7,
         "L_endring_segment": 2e-9 / 2,
         "Flag_Cir_RotorCage": 1,
-        "Flag_Dynamic_RotorBarResistance": 0,
-        "Flag_Calculate_VW": 1,
+        "Flag_Dynamic_RotorBarResistance": 1,
+        "Flag_Calculate_VW": 0,
         #                           fineMesh or coarseMesh
-        "msh": os.path.join(MODEL_DIR, "fineMesh.msh"),
+        "msh": os.path.join(MODEL_DIR, "coarseMesh.msh"),
         # "Flag_SecondOrder": 0,
         "stop_criterion": 1e-8,
     },
@@ -112,11 +111,11 @@ paramDict = {
     # "exc": 0,
     # "axLen": 0.2,
     # "sym": 4,
-    "info": "Simulation zum Abgleich mit Maxwell mit statischem Rotorwiderstand bei 1Hz und feinem Mesh. Zusätzlich noch extra PO für Feldplots eingebaut. + Virtual Work Drehmoment",
+    "info": "Restart simulation to check R_Bar_runtime and calculate moving mean.",
     "datetime": time.ctime(),
-    "PostOp": ["Get_LocalFields_Post"],  # GetBOnRadius
+    "PostOp": ["Get_LocalFields_Post"],  # GetBOnRadius - Get_LocalFields_Post
 }
-
+sim_res_dir = os.path.join(paramDict["res"], resId)
 results = runCalcforCurrent(paramDict)
 stop = time.perf_counter()
 sim_duration = stop - start
@@ -124,16 +123,16 @@ logging.info(
     "Simulation took %s", str(datetime.timedelta(seconds=sim_duration))
 )
 if sim_duration > nbrSteps:
-    results["simulation_duration"] = sim_duration
+    results["sim_duration"] = str(datetime.timedelta(seconds=sim_duration))
 # %%
 out_dict = paramDict.copy()
 out_dict.update(results)
-with open(
-    os.path.join(paramDict["res"], resId, f"{resId}.json"),
-    "w",
-    encoding="utf-8",
-) as jFile:
-    json.dump(out_dict, jFile, indent=4, cls=NumpyEncoder)
+json_res_path = os.path.join(paramDict["res"], resId, f"{resId}.json")
+if not os.path.isfile(json_res_path):
+    # only write to file if script has not been run before!
+    # TODO: Move this to runCalcForCurrent function
+    with open(json_res_path, "w", encoding="utf-8") as jFile:
+        json.dump(out_dict, jFile, indent=4, cls=NumpyEncoder)
 # %%
 # plot currents
 fig, ax = plt.subplots()
@@ -166,11 +165,8 @@ axi.legend()
 axi.grid(True)
 axi.set_title(f"Stabströme")
 # %%
-respath = os.path.join(paramDict["res"], resId)
-# plot_all_dat(respath)
-# %%
 # Stabspannung vs Stabstrom
-resfile = os.path.join(respath, "U_bars.dat")
+resfile = os.path.join(sim_res_dir, "U_bars.dat")
 if os.path.isfile(resfile):
     t, U_bars = read_timetable_dat(resfile)
     fig, ax = plt.subplots()
@@ -215,7 +211,8 @@ if os.path.isfile(resfile):
     # ax.set_ylim(-1e-5,1e-5)
     ax.grid(True)
 
-# %% Induzierte Spannung Stator
+# %%
+# Induzierte Spannung Stator
 fig, ax = plt.subplots()
 ax: Axes = ax
 # for phase in 'ABC':
@@ -239,10 +236,10 @@ ax.grid(True)
 # Plot Drehmoment
 fig, ax = plt.subplots()
 ax: Axes = ax
-if os.path.isfile(os.path.join(respath, "Ts_vw.dat")):
-    t_t, ts_vw = read_RegionValue_dat(os.path.join(respath, "Ts_vw.dat"))
-    _, tr_vw = read_RegionValue_dat(os.path.join(respath, "Tr_vw.dat"))
-    torque_vw = np.mean([ts_vw, tr_vw],axis=0)
+if os.path.isfile(os.path.join(sim_res_dir, "Ts_vw.dat")):
+    t_t, ts_vw = read_RegionValue_dat(os.path.join(sim_res_dir, "Ts_vw.dat"))
+    _, tr_vw = read_RegionValue_dat(os.path.join(sim_res_dir, "Tr_vw.dat"))
+    torque_vw = np.mean([ts_vw, tr_vw], axis=0)
     # all Torques
     # line_ts = ax.plot(results["time"], results["torque"]["stator"], label=f"Ts (MST)")
     # line_tr = ax.plot(results["time"], results["torque"]["rotor"], label=f"Tr (MST)")
@@ -274,29 +271,75 @@ ax.grid(True, "minor", linestyle="--")
 ax.minorticks_on()
 # %%
 # PLOT RESISTANCES
-resfile = os.path.join(respath, "R_bar_1.dat")
+resfile = os.path.join(sim_res_dir, "R_bar_1.dat")
 if os.path.isfile(resfile):
-    R_bar_dc = 5.19932563e-05
+    R_bar_dc = 3.572345668067562e-05
     fig, ax = plt.subplots()
     ax: Axes = ax
     # for nBar in range(1,nbr_bars+1):
-    for nBar in (1, 5, 9):
-        resfile = os.path.join(respath, f"R_bar_{nBar}.dat")
+    for nBar in (1, 1):
+        resfile = os.path.join(sim_res_dir, f"R_bar_{nBar}.dat")
         if os.path.isfile(resfile):
             t, R_bar = read_timetable_dat(resfile)
             ax.plot(t, R_bar, label=f"R_bar_{nBar}", marker=".")
+    ax.plot(
+        [t[0], t[-1]], [R_bar_dc, R_bar_dc], label=f"R_bar (DC)", marker=None
+    )
     ax.set_ylim(bottom=0, top=3 * R_bar_dc)
+    ax.set_xlim(0, T_s)
+    ax.legend()
+
+    axi: Axes = ax.twinx()
+    axi.plot(
+        results["time"],
+        np.square(results["current"]["bars"][:, nBar - 1]),
+        color="b",
+        label=f"Strom Stab {nBar}",
+    )
+    axi.set_ylabel("Strom in A")
+    axi.grid(True)
+    axi.legend()
     ax.legend()
     # plt.close()
     # plot_timetable_dat(resfile,dataLabel=f"R_{{bar,{nBar}}}")
 else:
-    logging.info(f"No bar resistance results in result directory {respath}")
+    logging.info(
+        "No bar resistance results in result directory %s", sim_res_dir
+    )
+## ADD PLOT OF RUNTIME RESISTANCE
+resfile = os.path.join(sim_res_dir, "R_bar_runtime_1.dat")
+if os.path.isfile(resfile):
+    # for nBar in range(1,nbr_bars+1):
+    for nBar in (1, 1):
+        resfile = os.path.join(sim_res_dir, f"R_bar_runtime_{nBar}.dat")
+        if os.path.isfile(resfile):
+            t, R_bar = read_timetable_dat(resfile)
+            ax.plot(t, R_bar, label=f"R_bar_{nBar} (runtime)", marker=".")
+    ax.set_ylim(bottom=0, top=10 * R_bar_dc)
+    ax.set_xlim(0, T_s)
+    ax.legend()
+#%%
+fig, ax = plt.subplots()
+ax: Axes = ax
+timestep = t[1] - t[0]
+nbr_timesteps = len(t)
+amp = np.abs(np.fft.rfft(R_bar, axis=0))
+# to get correct amplitude regarding the specific frequencies, the amplitudes
+# must be corrected by 1/nbrFreqs and DC-part by 1/(2*nbrFreqs) because its value
+# is doubled since its part of the positive and negative side of the spectrum.
+# Since I defined the number of frequencies to be only for the one sided spectrum,
+# we have to double the value for amp[0] and use only nbrFreqs for amp[1:]
+freqs = np.fft.rfftfreq(nbr_timesteps, timestep)
+nbr_freqs = len(freqs)
+amp = np.concatenate(([amp[0] / nbr_freqs / 2], amp[1:] / (nbr_freqs)), axis=0)
+amp = np.concatenate(([amp[0] / nbr_freqs / 2], amp[1:] / (nbr_freqs)), axis=0)
+plt.stem(freqs, amp)
 # %%
 # Export Data for Maxwell
 from pyemmo.functions.exportMaxwell import exportTabMaxwell
 
 # Export Bar Current
-f_name_mxwl_export = os.path.join(respath, "I_Bar_1.tab")
+f_name_mxwl_export = os.path.join(sim_res_dir, "I_Bar_1.tab")
 if not os.path.isfile(f_name_mxwl_export):
     exportTabMaxwell(
         [out_dict["time"], I_bars[:, 0]],
@@ -304,7 +347,7 @@ if not os.path.isfile(f_name_mxwl_export):
         filepath=f_name_mxwl_export,
     )
 # Export Bar Voltage
-f_name_mxwl_export = os.path.join(respath, "U_Bar_1.tab")
+f_name_mxwl_export = os.path.join(sim_res_dir, "U_Bar_1.tab")
 if not os.path.isfile(f_name_mxwl_export):
     exportTabMaxwell(
         [out_dict["time"], U_bars[:, 0]],
@@ -312,7 +355,7 @@ if not os.path.isfile(f_name_mxwl_export):
         filepath=f_name_mxwl_export,
     )
 # Export Torque
-f_name_mxwl_export = os.path.join(respath, "torque.tab")
+f_name_mxwl_export = os.path.join(sim_res_dir, "torque.tab")
 if not os.path.isfile(f_name_mxwl_export):
     exportTabMaxwell(
         [out_dict["time"], results["torque"]["mean"]],
