@@ -1,4 +1,3 @@
-
 import os
 from pyleecan_test_base import pyleecan_test_base
 
@@ -9,31 +8,40 @@ from pyemmo import rootLogger
 from pyemmo.functions.import_results import read_timetable_dat
 import logging
 
-from testUtils import updateConfig, count_files, messagePrinter, fileParser, fileFilter
+from testUtils import (
+    updateConfig,
+    count_files,
+    messagePrinter,
+    fileParser,
+    fileFilter,
+)
+
 
 class TestCases:
     """
-    Class containing test cases for Pyleecan API 
+    Class containing test cases for Pyleecan API
     Prerequisites
     - Pytest should be installed
     - Pytest-progress should be installed (pip install pytest-progress)
     - test data should be available locally
-    
+
     Test content:
     1. Test Pyleecan API to create Pyleecan machine and generate simulations in Onelab
     """
+
     test_cases = defaultdict(dict)
 
     test_params = {
-        'api\\pyleecan': {
+        "api\\pyleecan": {
             "id": -10,
             "iq": 50,
             "rpm": 1000,
             "d_theta": 0.25,
             "test_data_folder": "tests\\data",
-            "result_folder": "Results\\pyleecanAPI"
+            "result_folder": "Results\\pyleecanAPI",
         }
     }
+
     def test_pyleecan(self):
         """
         Testing pyleecan API to generate GMSH and simulation files based on pyleecan machine json files.
@@ -50,95 +58,153 @@ class TestCases:
         simul_path = defaultdict(list)
         simul_subfolder_path = defaultdict(list)
         rootLogger.setLevel(logging.DEBUG)
-        
 
         for test_id, test_case in self.test_cases[test_type].items():
             curr_datetime, _ = updateConfig(test_type, test_id, test_case)
 
-            log_path = os.path.join(ROOT_DIR, "tests\\logs", test_type, f"test_{test_id}_{test_case}")
+            log_path = os.path.join(
+                ROOT_DIR,
+                "tests\\logs",
+                test_type,
+                f"test_{test_id}_{test_case}",
+            )
             if not os.path.isdir(log_path):
                 os.makedirs(log_path)
 
-            #preparing source and result folders
-            source_path = os.path.join(ROOT_DIR, self.test_params[test_type]["test_data_folder"], f"{test_type}\\{test_case}.json")
+            # preparing source and result folders
+            source_path = os.path.join(
+                ROOT_DIR,
+                self.test_params[test_type]["test_data_folder"],
+                f"{test_type}\\{test_case}.json",
+            )
 
-            # make sure source file exists 
-            assert os.path.isfile(source_path) and messagePrinter("SUCCESS: Source file exist"), "ERROR: Source file does not exist"
+            # make sure source file exists
+            assert os.path.isfile(source_path) and messagePrinter(
+                "SUCCESS: Source file exist"
+            ), "ERROR: Source file does not exist"
 
-            result_path[test_id] = os.path.join(ROOT_DIR, self.test_params[test_type]["result_folder"], f"{test_type}\\test_{test_id}\\{test_case}\\{curr_datetime}")
+            result_path[test_id] = os.path.join(
+                ROOT_DIR,
+                self.test_params[test_type]["result_folder"],
+                f"{test_type}\\test_{test_id}\\{test_case}\\{curr_datetime}",
+            )
             if not os.path.isdir(result_path[test_id]):
                 os.makedirs(result_path[test_id])
 
-            simul_path[test_id] = os.path.join(result_path[test_id], f"res_{test_case}")
+            simul_path[test_id] = os.path.join(
+                result_path[test_id], f"res_{test_case}"
+            )
             simul_subfolder = f"id_{self.test_params[test_type]['id']}_iq_{self.test_params[test_type]['iq']}_n_{self.test_params[test_type]['rpm']}rpm"
-            simul_subfolder_path[test_id] = os.path.join(simul_path[test_id], simul_subfolder)
+            simul_subfolder_path[test_id] = os.path.join(
+                simul_path[test_id], simul_subfolder
+            )
 
-            pyleecan_test_base(self.test_params[test_type], result_path=result_path[test_id], test_data_path=source_path)
+            pyleecan_test_base(
+                self.test_params[test_type],
+                result_path=result_path[test_id],
+                test_data_path=source_path,
+            )
 
-        for  test_id, test_case in self.test_cases[test_type].items():
-            #Preparation of base comparison paths
-            base_result_path = os.path.join(ROOT_DIR, self.test_params[test_type]["test_data_folder"], test_type, f"comparison_base\\{test_case}") #this can change to a different folder for base data
-            base_simul_path = os.path.join(base_result_path, f"res_{test_case}") #This can also change for another base data folder
-            base_simul_subfolder_path = os.path.join(base_simul_path, simul_subfolder) #This can also change for another base data folder
+        for test_id, test_case in self.test_cases[test_type].items():
+            # Preparation of base comparison paths
+            base_result_path = os.path.join(
+                ROOT_DIR,
+                self.test_params[test_type]["test_data_folder"],
+                test_type,
+                f"comparison_base\\{test_case}",
+            )  # this can change to a different folder for base data
+            base_simul_path = os.path.join(
+                base_result_path, f"res_{test_case}"
+            )  # This can also change for another base data folder
+            base_simul_subfolder_path = os.path.join(
+                base_simul_path, simul_subfolder
+            )  # This can also change for another base data folder
 
-            #Point 1: Check that simulation result folders are properly generated
+            # Point 1: Check that simulation result folders are properly generated
             print(f"Test case {test_id}: {test_case}")
-            print("Test point 1: Check that simulation result folders are properly generated:")
-            assert os.path.isdir(simul_path[test_id]) and messagePrinter("SUCCESS: Simulation result folder exist"), "ERROR: Simulation result folder does not exist"
-            assert os.path.isdir(simul_subfolder_path[test_id]) and messagePrinter("SUCCESS: Simulation result subfolder exists!"), "ERROR: Simulation result subfolder does not exist"
+            print(
+                "Test point 1: Check that simulation result folders are properly generated:"
+            )
+            assert os.path.isdir(simul_path[test_id]) and messagePrinter(
+                "SUCCESS: Simulation result folder exist"
+            ), "ERROR: Simulation result folder does not exist"
+            assert os.path.isdir(
+                simul_subfolder_path[test_id]
+            ) and messagePrinter(
+                "SUCCESS: Simulation result subfolder exists!"
+            ), "ERROR: Simulation result subfolder does not exist"
             print()
-            
-            #Point 2: check if GMSH base files are generated
+
+            # Point 2: check if GMSH base files are generated
             print("Test point 2: check if GMSH base files are generated")
             self.check_file_counts(base_result_path, result_path[test_id])
             print()
-            
-            #Point 3: check if simulation data is generated
+
+            # Point 3: check if simulation data is generated
             print("Test point 3: check if simulation data is generated")
             self.check_file_counts(base_simul_path, simul_path[test_id])
-            self.check_file_counts(base_simul_subfolder_path, simul_subfolder_path[test_id])
+            self.check_file_counts(
+                base_simul_subfolder_path, simul_subfolder_path[test_id]
+            )
             print()
-
 
             # Point 4: Check content of files
             print("Test point 4: check content of simulation files")
-            target_file_types = ["geo", "pro", "msh","pre", "pos"]
+            target_file_types = ["geo", "pro", "msh", "pre", "pos"]
             # 4.1 In main test folder
-            self.check_content(base_result_path, result_path[test_id], target_file_types)
+            self.check_content(
+                base_result_path, result_path[test_id], target_file_types
+            )
 
-            #4.2 In simulation folder
-            self.check_content(base_simul_path, simul_path[test_id], target_file_types)
+            # 4.2 In simulation folder
+            self.check_content(
+                base_simul_path, simul_path[test_id], target_file_types
+            )
 
-            #4.3 In simulation subfolder
-            self.check_content(base_simul_subfolder_path, simul_subfolder_path[test_id], target_file_types)
+            # 4.3 In simulation subfolder
+            self.check_content(
+                base_simul_subfolder_path,
+                simul_subfolder_path[test_id],
+                target_file_types,
+            )
             print()
 
-            #Point 5: check dat files value:
+            # Point 5: check dat files value:
             print("Test point 5: check values in dat files")
-            dat_targets = glob.glob(os.path.join(simul_subfolder_path[test_id], "*.dat"))
-            dat_bases = glob.glob(os.path.join(base_simul_subfolder_path, "*.dat"))
+            dat_targets = glob.glob(
+                os.path.join(simul_subfolder_path[test_id], "*.dat")
+            )
+            dat_bases = glob.glob(
+                os.path.join(base_simul_subfolder_path, "*.dat")
+            )
             for target_file, base_file in zip(dat_targets, dat_bases):
                 target_dat = read_timetable_dat(target_file)
                 base_dat = read_timetable_dat(base_file)
-                assert target_dat == base_dat and messagePrinter(f"SUCCESS: {target_file} check ok"), f"ERROR: mismatch found between base and target dat in {target_file}!"
-            
+                assert target_dat == base_dat and messagePrinter(
+                    f"SUCCESS: {target_file} check ok"
+                ), f"ERROR: mismatch found between base and target dat in {target_file}!"
+
             print("\n")
-            
-            
-            
+
     def make_test_cases(self, test_type: str) -> dict:
         """
         Create a dictionary of test cases based on files in test data folder
         """
-        test_files = glob.glob(os.path.join(ROOT_DIR, r"tests\data", test_type, "*.json"))
+        test_files = glob.glob(
+            os.path.join(ROOT_DIR, r"tests\data", test_type, "*.json")
+        )
         print(test_files)
-        test_names = list(map(lambda x: x.split(".")[0], map(lambda x: x.split("\\")[-1], test_files)))
+        test_names = list(
+            map(
+                lambda x: x.split(".")[0],
+                map(lambda x: x.split("\\")[-1], test_files),
+            )
+        )
         self.test_cases[test_type] = {}
         for id, name in enumerate(test_names):
-             self.test_cases[test_type][id] = name
-        
-        return self.test_cases
+            self.test_cases[test_type][id] = name
 
+        return self.test_cases
 
     def check_file_counts(self, base_folder: str, folder_to_count: str):
         """
@@ -146,23 +212,43 @@ class TestCases:
         """
         base_count = count_files(base_folder)
         for file_type, count in base_count.items():
-                if file_type != "dir":
-                    result_count = len(glob.glob(os.path.join(ROOT_DIR, folder_to_count, f"*.{file_type}")))
-                    assert result_count == count and messagePrinter(f"SUCCESS: .{file_type} count matches"), f"ERROR: .{file_type} count mismatch!\nBase: {count}\nResult: {result_count}"
-    
+            if file_type != "dir":
+                result_count = len(
+                    glob.glob(
+                        os.path.join(
+                            ROOT_DIR, folder_to_count, f"*.{file_type}"
+                        )
+                    )
+                )
+                assert result_count == count and messagePrinter(
+                    f"SUCCESS: .{file_type} count matches"
+                ), f"ERROR: .{file_type} count mismatch!\nBase: {count}\nResult: {result_count}"
 
     def check_content(self, base_path, target_path, target_types):
         """
         Line by line comparison of base data vs. result data
         """
-        base_result_files = fileFilter(glob.glob(os.path.join(base_path, "*.*")), target_types)
-        result_files = fileFilter(glob.glob(os.path.join(target_path, "*.*")), target_types)
+        base_result_files = fileFilter(
+            glob.glob(os.path.join(base_path, "*.*")), target_types
+        )
+        result_files = fileFilter(
+            glob.glob(os.path.join(target_path, "*.*")), target_types
+        )
 
         for base_file, result_file in zip(base_result_files, result_files):
             base_content = fileParser(base_file)
             result_content = fileParser(result_file)
             l = 0
             for line_base, line_result in zip(base_content, result_content):
-                assert line_base == line_result, f"ERROR: mismatch found between base and result of {result_file}!\nBase: {line_base}\nResult: {line_result}"
+                assert (
+                    line_base == line_result
+                ), f"ERROR: mismatch found between base and result of {result_file}!\nBase: {line_base}\nResult: {line_result}"
                 l += 1
-            assert l == len(base_content) and messagePrinter(f"SUCCESS: {result_file} content check ok"), f"{result_file} content check failed."
+            assert l == len(base_content) and messagePrinter(
+                f"SUCCESS: {result_file} content check ok"
+            ), f"{result_file} content check failed."
+
+
+# if __name__=="__main__":
+#     test_case_obj = TestCases()
+#     test_case_obj.test_pyleecan()
