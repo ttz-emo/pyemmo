@@ -52,8 +52,8 @@ I_eff = 20
 n = 0
 f_s = f_r + 2 * n / 60
 T_s = 1 / f_s
-nbr_stator_periods = 4
-nbr_steps_per_period = 64
+nbr_stator_periods = 80
+nbr_steps_per_period = 128
 # Zum Abgleich mit Maxwell
 Nbr_Sect = 2048  # Bandsegmentierung
 multi = 4  # Default=4 number of Segments per timestep
@@ -62,12 +62,15 @@ timestep = (
 )
 winkelschritt = n / 60 * 360 * timestep  # Default: 0.703125
 nbrSteps = T_s * nbr_stator_periods / timestep
+
+thers = 100 # Thershold for bar resistance reset in A
+
 logging.info("Simulation should execute %i time steps.", int(nbrSteps) + 1)
 logging.debug("Timestep %e s.", timestep)
 logging.debug("One time step equals %f° mechanical degrees.", winkelschritt)
 logging.debug("Stop time of simulation: %.7e s", int(nbrSteps) * timestep)
 # %%
-resId = f"blockedRotor_{f_r}Hz_{nbr_stator_periods}Periods_{nbr_steps_per_period}Steps_R_dyn_thers"
+resId = f"blockedRotor_{f_r}Hz_{nbr_stator_periods}Periods_{nbr_steps_per_period}Steps_R_dyn_thers_{thers}A"
 paramDict = {
     "getdp": {
         "freq_rotor": f_r,
@@ -91,6 +94,7 @@ paramDict = {
         "L_endring_segment": 2e-9 / 2,
         "Flag_Cir_RotorCage": 1,
         "Flag_Dynamic_RotorBarResistance": 1,
+        "thers_dyn_Bar": thers,
         "Flag_Calculate_VW": 0,
         #                           fineMesh or coarseMesh
         "msh": os.path.join(MODEL_DIR, "coarseMesh.msh"),
@@ -286,15 +290,16 @@ if os.path.isfile(resfile):
         [t[0], t[-1]], [R_bar_dc, R_bar_dc], label=f"R_bar (DC)", marker=None
     )
     ax.set_ylim(bottom=0, top=3 * R_bar_dc)
-    ax.set_xlim(0, T_s)
+    # ax.set_xlim(0, T_s)
     ax.legend()
 
     axi: Axes = ax.twinx()
     axi.plot(
         results["time"],
-        np.square(results["current"]["bars"][:, nBar - 1]),
+        np.abs(results["current"]["bars"][:, nBar - 1]),
         color="b",
         label=f"Strom Stab {nBar}",
+        marker=".",
     )
     axi.set_ylabel("Strom in A")
     axi.grid(True)
@@ -315,10 +320,11 @@ if os.path.isfile(resfile):
         if os.path.isfile(resfile):
             t, R_bar = read_timetable_dat(resfile)
             ax.plot(t, R_bar, label=f"R_bar_{nBar} (runtime)", marker=".")
-    ax.set_ylim(bottom=0, top=10 * R_bar_dc)
-    ax.set_xlim(0, T_s)
+    # ax.set_ylim(bottom=0, top=15 * R_bar_dc)
+    # ax.set_xlim(T_s/4, T_s*3/4)
     ax.legend()
-#%%
+    # axi.set_ylim(0, 200)
+# %%
 fig, ax = plt.subplots()
 ax: Axes = ax
 timestep = t[1] - t[0]
