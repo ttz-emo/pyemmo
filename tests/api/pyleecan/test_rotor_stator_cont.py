@@ -22,11 +22,14 @@ import math
 from typing import List
 import pytest
 from pyleecan.Classes.Machine import Machine
+
+# pylint: disable=locally-disabled,  no-name-in-module
 from pyleecan.Functions.load import load
 from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 from pyleecan.Classes.MachineSyRM import MachineSyRM
 from pyemmo.api.json.modelJSON import SurfaceAPI
-from pyemmo.script.geometry.point import Point
+
+# from pyemmo.script.geometry.point import Point
 from pyemmo.definitions import TEST_DIR
 from pyemmo.api.json.modelJSON import createSurfaceDict
 from pyemmo.api.pyleecan.translate_surfs import translate_surface
@@ -166,27 +169,30 @@ def test_main_functions(test_function):
 
 
 def test_winding_contour_function():
-    # FIXME: Fix test for new LamSlotWind contour function!
+    """test for function get_winding_cont() of pyleecan API."""
     machine: Machine = load(
         os.path.abspath(
             os.path.join(TEST_DIR, "data", "03_synrm_muster_Bachelor.json")
         )
     )
-    geometry_list, is_internal = get_translated_machine(machine)
+    geometry_list, _ = get_translated_machine(machine)
     geo_dict = createSurfaceDict(geometry_list)
     contour_line_list = get_winding_cont(
         lamination_surf=geo_dict["StNut"],
-        slot_surfs=geo_dict["StCu0"],
+        slot_surfs=[geo_dict["StCu0"]],
         lamination=machine.stator,
     )
-    ...
+    # general asserts
+    assert contour_line_list is not None
+    assert len(contour_line_list) == 5
+    assert all(contour_line_list)  # no None objects
 
 
-if __name__ == "__main__":
-    #     test_main_functions(
-    #         (
-    #             get_winding_cont,
-    #             "03_synrm_muster_Bachelor.json",
-    #         )
-    #     )
-    test_winding_contour_function()
+# if __name__ == "__main__":
+#     test_main_functions(
+#         (
+#             get_winding_cont,
+#             "03_synrm_muster_Bachelor.json",
+#         )
+#     )
+# test_winding_contour_function()
