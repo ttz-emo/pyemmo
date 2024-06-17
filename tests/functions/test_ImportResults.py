@@ -174,8 +174,9 @@ def test_import_SP():
         ), "Incorrect Postion-Array Imported!"
 
     for x in range(len(assert_tuple[3]) - 1):
-        assert np.array_equal(test_tuple[3][x], assert_tuple[3][x])
-        "Incorrect Value-Array Imported!"
+        assert np.array_equal(
+            test_tuple[3][x], assert_tuple[3][x]
+        ), "Incorrect Value-Array Imported!"
 
 
 # @pytest.mark.parametrize(
@@ -208,7 +209,9 @@ def test_import_pos():
     assert np.array_equal(data, imp_data), "Incorrect Data Array Imported!"
 
 
-# result_import = get_result_files(os.path.join(IMP_RES_TEST_DATA_DIR, "functions", "import_results"))
+# result_import = get_result_files(os.path.join(
+#   IMP_RES_TEST_DATA_DIR, "functions", "import_results"
+# ))
 # np.save('get_result_files_dat.npy',result_import[0])
 # np.save('get_result_files_pos.npy',result_import[1])
 
