@@ -1,14 +1,6 @@
 import os
-from os import path, PathLike
-from cmath import isclose
-from typing import List, Tuple, Union
-import warnings
-from matplotlib.figure import Figure
-from matplotlib import pyplot as plt
 import numpy as np
-from parse import parse
-import gmsh
-
+import pytest
 from pyemmo.functions.import_results import (
     read_timetable_dat,
     importPos,
@@ -18,7 +10,6 @@ from pyemmo.functions.import_results import (
     importSP,
     get_result_files,
 )
-import pytest
 
 try:
     from .. import TEST_DATA_DIR
@@ -202,13 +193,6 @@ def test_import_pos():
     ), "Incorrect Mesh elements Imported!"
     assert np.array_equal(time, imp_time), "Incorrect Time stamps Imported!"
     assert np.array_equal(data, imp_data), "Incorrect Data Array Imported!"
-
-
-# result_import = get_result_files(os.path.join(
-#   IMP_RES_TEST_DATA_DIR, "functions", "import_results"
-# ))
-# np.save('get_result_files_dat.npy',result_import[0])
-# np.save('get_result_files_pos.npy',result_import[1])
 
 
 # @pytest.mark.parametrize(
