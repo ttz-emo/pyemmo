@@ -185,23 +185,25 @@ def test_import_SP():
 # )
 def test_import_pos():
     """
-    Tests if the Imported values(gmsh mesh element tags,time,data array)
+    Tests if the imported values (gmsh mesh element tags, time, data array)
     from a POS file are correct.
     """
-    file_path = os.path.join(IMP_RES_TEST_DATA_DIR, "AxialeLaenge_test.pos")
+    test_posFile_path = os.path.join(
+        IMP_RES_TEST_DATA_DIR, "AxialeLaenge_test.pos"
+    )
     mesh_elemt_ids = np.load(
-        (os.path.join(IMP_RES_TEST_DATA_DIR, "test_import_tuple0.npy")),
+        (os.path.join(IMP_RES_TEST_DATA_DIR, "import_pos_mesh_elem_ids.npy")),
         allow_pickle=True,
     )
     time = np.load(
-        (os.path.join(IMP_RES_TEST_DATA_DIR, "test_import_tuple1.npy")),
+        (os.path.join(IMP_RES_TEST_DATA_DIR, "import_pos_time.npy")),
         allow_pickle=True,
     )
     data = np.load(
-        (os.path.join(IMP_RES_TEST_DATA_DIR, "test_import_tuple2.npy")),
+        (os.path.join(IMP_RES_TEST_DATA_DIR, "import_pos_data.npy")),
         allow_pickle=True,
     )
-    imp_mesh_elem, imp_time, imp_data = importPos(file_path)
+    imp_mesh_elem, imp_time, imp_data = importPos(test_posFile_path)
     assert np.array_equal(
         mesh_elemt_ids, imp_mesh_elem
     ), "Incorrect Mesh elements Imported!"
