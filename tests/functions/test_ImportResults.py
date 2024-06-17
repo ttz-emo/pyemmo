@@ -76,37 +76,37 @@ def test_split_data():
     """Test split_data function"""
     time = np.array([0.0, 1.0, 2.0, 0.0, 1.0], dtype=float)
     values = np.array([0.1, 1.1, 2.1, 0.2, 1.2], dtype=float)
-    test_tuple = split_data(time, values)
+    test_nbr_sims, test_time_list, test_data_list = split_data(time, values)
     for x in range(time.size):
         if time[x] == 0:
             assert (
                 time[x + 1] != 0
             ), "There is a same time step, twice in a row!"
-    nbr_sims = 2
-    assert_time1 = [
+    target_nbr_sims = 2
+    target_time_1 = [
         np.array([0.0, 1.0, 2.0], dtype=float),
         np.array([0.0, 1.0], dtype=float),
     ]
-    assert_values1 = [
+    target_value_1 = [
         np.array([0.1, 1.1, 2.1], dtype=float),
         np.array([0.2, 1.2], dtype=float),
     ]
     assert (
-        nbr_sims == test_tuple[0]
-    ), " Incorrect number of  Simulations imported! "
+        target_nbr_sims == test_nbr_sims
+    ), " Incorrect number of Simulations imported! "
 
     assert np.array_equal(
-        assert_time1[0], test_tuple[1][0]
+        target_time_1[0], test_time_list[0]
     ), " Incorrect timesteps imported!"
     assert np.array_equal(
-        assert_time1[1], test_tuple[1][1]
+        target_time_1[1], test_time_list[1]
     ), "Incorrect timesteps imported!"
 
     assert np.array_equal(
-        assert_values1[0], test_tuple[2][0]
+        target_value_1[0], test_data_list[0]
     ), "Incorrect Values imported!"
     assert np.array_equal(
-        assert_values1[1], test_tuple[2][1]
+        target_value_1[1], test_data_list[1]
     ), "Incorrect Values imported!"
 
 
