@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -17,20 +18,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-import os
+"""Module to test pyemmo.api.pyleecan.get_translated_machine"""
+from os.path import abspath, join
 import math
 from pyleecan.Classes.Machine import Machine
+
+# pylint: disable=locally-disabled, no-name-in-module
 from pyleecan.Functions.load import load
 
-from pyemmo.definitions import TEST_DIR
 import pyemmo.api.pyleecan.get_translated_machine
+from tests.api.pyleecan import TEST_API_PYLCN_DATA_DIR
 
 
 def test_get_translated_machine():
+    """Function to test pyemmo.api.pyleecan.get_translated_machine"""
     machine: Machine = load(
-        os.path.abspath(
-            os.path.join(TEST_DIR, "data", "00_prius_machine.json")
-        )
+        abspath(join(TEST_API_PYLCN_DATA_DIR, "00_prius_machine.json"))
     )
 
     (

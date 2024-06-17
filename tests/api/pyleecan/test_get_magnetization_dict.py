@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler,
+# TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -17,26 +18,26 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-import sys
-import os
+"""Module to test the module pyemmo.api.pyleecan.get_magnetization_dict"""
+from os.path import abspath, join
 import logging
 from typing import List
 
 from pyleecan.Classes.Machine import Machine
-from pyleecan.Functions import load
 
-from pyemmo.functions.plot import plot
-from pyemmo.definitions import TEST_DIR
+# pylint: disable=locally-disabled, no-name-in-module
+from pyleecan.Functions.load import load
+
 from pyemmo.api.json.modelJSON import SurfaceAPI
 import pyemmo.api.pyleecan.translate_surfs
 import pyemmo.api.pyleecan.get_magnetization_dict
+from tests.api.pyleecan import TEST_API_PYLCN_DATA_DIR
 
 
 def test_get_magnetization_dict():
-    machine: Machine = load.load(
-        os.path.abspath(
-            os.path.join(TEST_DIR, "data", "00_prius_machine.json")
-        )
+    """Function to test the module pyemmo.api.pyleecan.get_magnetization_dict"""
+    machine: Machine = load(
+        abspath(join(TEST_API_PYLCN_DATA_DIR, "00_prius_machine.json"))
     )
     all_surfaces: list = machine.rotor.build_geometry(
         sym=machine.rotor.comp_periodicity_geo()[0], alpha=0
@@ -88,6 +89,3 @@ def test_get_magnetization_dict():
     )
     assert magnetization_dict["Mag0"] == 0.5462703245568578
     assert magnetization_dict["Mag1"] == 0.2391278388405909
-
-
-test_get_magnetization_dict()

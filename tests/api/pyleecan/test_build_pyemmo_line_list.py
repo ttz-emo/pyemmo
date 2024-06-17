@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -17,8 +18,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-import pytest
+"""Module to test the function build_pyemmo_line_list of pyleecan api"""
 from math import pi, isclose
+import pytest
 
 from pyleecan.Classes.Segment import Segment
 from pyleecan.Classes.Arc1 import Arc1
@@ -29,6 +31,8 @@ from pyemmo.script.geometry.line import Line
 from pyemmo.script.geometry.circleArc import CircleArc
 
 from pyemmo.api.pyleecan.build_pyemmo_line_list import build_pyemmo_line_list
+
+# pylint: disable=locally-disabled, redefined-outer-name
 
 
 # =======================
@@ -75,7 +79,8 @@ def sample_arc3():
 # =================
 def test_build_pyemmo_line_list_empty_list() -> None:
     """
-    Test case to verify the behavior of build_pyemmo_line_list function when provided an empty list.
+    Test case to verify the behavior of build_pyemmo_line_list function when
+    provided an empty list.
 
     Raises:
         IndexError: If the function fails to handle an empty list input correctly.
@@ -86,11 +91,12 @@ def test_build_pyemmo_line_list_empty_list() -> None:
 
 def test_build_pyemmo_line_list_segment_error() -> None:
     """
-    Test case to verify the behavior of build_pyemmo_line_list function when provided a list containing a Segment
-    object with invalid parameters.
+    Test case to verify the behavior of build_pyemmo_line_list function when
+    provided a list containing a Segment object with invalid parameters.
 
     Raises:
-        ValueError: If the function fails to handle the provided Segment object correctly.
+        ValueError: If the function fails to handle the provided Segment
+            object correctly.
     """
     with pytest.raises(ValueError):
         build_pyemmo_line_list([Segment(begin=0 + 0j, end=0 + 0j)])
@@ -98,10 +104,12 @@ def test_build_pyemmo_line_list_segment_error() -> None:
 
 def test_build_pyemmo_line_list_wrong_imput_type() -> None:
     """
-    Test case to verify the behavior of build_pyemmo_line_list function when provided an invalid input type.
+    Test case to verify the behavior of build_pyemmo_line_list function when
+    provided an invalid input type.
 
     Raises:
-        TypeError: If the function fails to handle the provided input type correctly.
+        TypeError: If the function fails to handle the provided input type
+            correctly.
     """
     with pytest.raises(TypeError):
         build_pyemmo_line_list(Segment(begin=0 + 0j, end=0 + 0j))
@@ -268,6 +276,7 @@ def test_build_pyemmo_line_list_with_mixed_elements(
     sample_arc2_is_180_deg,
     sample_arc3,
 ):
+    """Function to test the line list function with multiple elements"""
     pyemmo_line_list = build_pyemmo_line_list(
         [
             sample_segment,

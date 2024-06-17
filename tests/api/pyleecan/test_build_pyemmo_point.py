@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -33,6 +34,7 @@ from pyemmo.api.pyleecan.build_pyemmo_point import build_pyemmo_point
 @settings(max_examples=50, report_multiple_bugs=True, derandomize=True)
 @given(pyleecan_point=st.complex_numbers(allow_nan=False))
 def test_build_pyemmo_point(pyleecan_point: complex) -> None:
+    """test function to build pyemmo point from pyleecan point (np.complex)"""
     pyemmo_point: Point = build_pyemmo_point(pyleecan_point=pyleecan_point)
     assert pyemmo_point.coordinate[0] == numpy.real(pyleecan_point)
     assert pyemmo_point.coordinate[1] == numpy.imag(pyleecan_point)
