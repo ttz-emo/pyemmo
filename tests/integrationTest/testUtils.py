@@ -3,12 +3,13 @@ import os
 import glob
 from collections import defaultdict
 from datetime import datetime
+from pyemmo.definitions import ROOT_DIR, TEST_DIR
 
 import re
 
 
 
-def updateConfig(test_type: str, test_id: int, test_case: str):
+def updateConfig(test_type: str = "", test_id: int = "", test_case: str = ""):
     
     '''
     Function to update config file to generate proper test file name
@@ -18,7 +19,10 @@ def updateConfig(test_type: str, test_id: int, test_case: str):
     parser = ConfigParser()
     config_path = os.path.join(os.path.abspath('.'), "pytest.ini")
     parser.read(config_path)
-    dest_name = f"logs/{test_type}/test_{test_id}_{test_case}/{curr_datetime}.log"
+    if test_type == "":
+        dest_name = ""
+    else:
+        dest_name = f"logs/{test_type}/test_{test_id}_{test_case}/{curr_datetime}.log"
     parser.set('pytest', 'log_file', dest_name)
 
     with open(config_path, 'w+') as config_file:
@@ -93,3 +97,16 @@ def fileFilter(file_list: list, target_types: list) -> list:
     get_type = lambda x: x.split("\\")[-1].split(".")[-1]
     result = [file for file in file_list if get_type(file) in target_types]
     return result
+
+def make_test_cases(test_type: str) -> dict:
+    """
+    Create a dictionary of test cases based on files in test data folder
+    """
+    test_cases = {}
+    test_files = glob.glob(os.path.join(TEST_DIR, "data", test_type, "*.json"))
+    print(test_files)
+    test_names = list(map(lambda x: x.split(".")[0], map(lambda x: x.split("\\")[-1], test_files)))
+    for id, name in enumerate(test_names):
+            test_cases[id] = name
+    
+    return test_cases

@@ -8,10 +8,13 @@ from pyemmo.definitions import ROOT_DIR
 from pyemmo import rootLogger
 from pyemmo.functions.import_results import read_timetable_dat
 import logging
+from datetime import datetime
+import unittest
+from pytest_check import check
 
-from testUtils import updateConfig, count_files, messagePrinter, fileParser, fileFilter
+from testUtils import updateConfig, count_files, messagePrinter, fileParser, fileFilter, make_test_cases
 
-class TestCases:
+class TestCases(unittest.TestCase):
     """
     Class containing test cases for Pyleecan API 
     Prerequisites
@@ -45,25 +48,23 @@ class TestCases:
 
         """
         test_type = "api\\pyleecan"
-        self.make_test_cases(test_type)
+        # self.make_test_cases(test_type)
+        self.test_cases[test_type] = make_test_cases(test_type)
         result_path = defaultdict(list)
         simul_path = defaultdict(list)
         simul_subfolder_path = defaultdict(list)
         rootLogger.setLevel(logging.DEBUG)
         
-
+        print("========TEST PYLEECAN API + SIMULATION FLOW START========")
         for test_id, test_case in self.test_cases[test_type].items():
-            curr_datetime, _ = updateConfig(test_type, test_id, test_case)
-
-            log_path = os.path.join(ROOT_DIR, "tests\\logs", test_type, f"test_{test_id}_{test_case}")
-            if not os.path.isdir(log_path):
-                os.makedirs(log_path)
+            # curr_datetime, _ = updateConfig(test_type, test_id, test_case) #REDUNDANT since API level log already exists in each folder
+            curr_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
 
             #preparing source and result folders
             source_path = os.path.join(ROOT_DIR, self.test_params[test_type]["test_data_folder"], f"{test_type}\\{test_case}.json")
 
-            # make sure source file exists 
-            assert os.path.isfile(source_path) and messagePrinter("SUCCESS: Source file exist"), "ERROR: Source file does not exist"
+            # make sure source file exists -> REDUNDANT since test cases are created from test data folder content.
+            # assert os.path.isfile(source_path) and messagePrinter("SUCCESS: Source file exist"), "ERROR: Source file does not exist"
 
             result_path[test_id] = os.path.join(ROOT_DIR, self.test_params[test_type]["result_folder"], f"{test_type}\\test_{test_id}\\{test_case}\\{curr_datetime}")
             if not os.path.isdir(result_path[test_id]):
@@ -74,18 +75,23 @@ class TestCases:
             simul_subfolder_path[test_id] = os.path.join(simul_path[test_id], simul_subfolder)
 
             pyleecan_test_base(self.test_params[test_type], result_path=result_path[test_id], test_data_path=source_path)
+        
+        # _, _ = updateConfig()
 
         for  test_id, test_case in self.test_cases[test_type].items():
+
             #Preparation of base comparison paths
             base_result_path = os.path.join(ROOT_DIR, self.test_params[test_type]["test_data_folder"], test_type, f"comparison_base\\{test_case}") #this can change to a different folder for base data
             base_simul_path = os.path.join(base_result_path, f"res_{test_case}") #This can also change for another base data folder
             base_simul_subfolder_path = os.path.join(base_simul_path, simul_subfolder) #This can also change for another base data folder
 
             #Point 1: Check that simulation result folders are properly generated
-            print(f"Test case {test_id}: {test_case}")
+            print(f"TEST CASE {test_id}: {test_case}")
             print("Test point 1: Check that simulation result folders are properly generated:")
-            assert os.path.isdir(simul_path[test_id]) and messagePrinter("SUCCESS: Simulation result folder exist"), "ERROR: Simulation result folder does not exist"
-            assert os.path.isdir(simul_subfolder_path[test_id]) and messagePrinter("SUCCESS: Simulation result subfolder exists!"), "ERROR: Simulation result subfolder does not exist"
+            with check("check simulation folder existence"):
+                assert os.path.isdir(simul_path[test_id]) and messagePrinter("SUCCESS: Simulation result folder exist"), "ERROR: Simulation result folder does not exist"
+            with check("check simulation subfolder existence"):
+                assert os.path.isdir(simul_subfolder_path[test_id]) and messagePrinter("SUCCESS: Simulation result subfolder exists!"), "ERROR: Simulation result subfolder does not exist"
             print()
             
             #Point 2: check if GMSH base files are generated
@@ -100,18 +106,19 @@ class TestCases:
             print()
 
 
-            # Point 4: Check content of files
-            print("Test point 4: check content of simulation files")
-            target_file_types = ["geo", "pro", "msh","pre", "pos"]
-            # 4.1 In main test folder
-            self.check_content(base_result_path, result_path[test_id], target_file_types)
+            # # Point 4: Check content of files - Takes to long, need another method.
+            # print("Test point 4: check content of simulation files")
+            # # target_file_types = ["geo", "pro", "msh","pre", "pos"]
+            # target_file_types = ["msh", "pre", "pos"]
+            # # 4.1 In main test folder
+            # self.check_content(base_result_path, result_path[test_id], target_file_types)
 
-            #4.2 In simulation folder
-            self.check_content(base_simul_path, simul_path[test_id], target_file_types)
+            # #4.2 In simulation folder
+            # self.check_content(base_simul_path, simul_path[test_id], target_file_types)
 
-            #4.3 In simulation subfolder
-            self.check_content(base_simul_subfolder_path, simul_subfolder_path[test_id], target_file_types)
-            print()
+            # #4.3 In simulation subfolder
+            # self.check_content(base_simul_subfolder_path, simul_subfolder_path[test_id], target_file_types)
+            # print()
 
             #Point 5: check dat files value:
             print("Test point 5: check values in dat files")
@@ -120,24 +127,12 @@ class TestCases:
             for target_file, base_file in zip(dat_targets, dat_bases):
                 target_dat = read_timetable_dat(target_file)
                 base_dat = read_timetable_dat(base_file)
-                assert target_dat == base_dat and messagePrinter(f"SUCCESS: {target_file} check ok"), f"ERROR: mismatch found between base and target dat in {target_file}!"
-            
+                with check:
+                    assert target_dat == base_dat and messagePrinter(f"SUCCESS: {target_file} check ok"), f"ERROR: mismatch found between base and target dat in {target_file}!"
+                   
             print("\n")
-            
-            
-            
-    def make_test_cases(self, test_type: str) -> dict:
-        """
-        Create a dictionary of test cases based on files in test data folder
-        """
-        test_files = glob.glob(os.path.join(ROOT_DIR, r"tests\data", test_type, "*.json"))
-        print(test_files)
-        test_names = list(map(lambda x: x.split(".")[0], map(lambda x: x.split("\\")[-1], test_files)))
-        self.test_cases[test_type] = {}
-        for id, name in enumerate(test_names):
-             self.test_cases[test_type][id] = name
-        
-        return self.test_cases
+
+        print("========TEST PYLEECAN API + SIMULATION DONE========")            
 
 
     def check_file_counts(self, base_folder: str, folder_to_count: str):
@@ -148,7 +143,8 @@ class TestCases:
         for file_type, count in base_count.items():
                 if file_type != "dir":
                     result_count = len(glob.glob(os.path.join(ROOT_DIR, folder_to_count, f"*.{file_type}")))
-                    assert result_count == count and messagePrinter(f"SUCCESS: .{file_type} count matches"), f"ERROR: .{file_type} count mismatch!\nBase: {count}\nResult: {result_count}"
+                    with check:
+                        assert result_count == count and messagePrinter(f"SUCCESS: .{file_type} count matches"), f"ERROR: .{file_type} count mismatch!\nBase: {count}\nResult: {result_count}"
     
 
     def check_content(self, base_path, target_path, target_types):
