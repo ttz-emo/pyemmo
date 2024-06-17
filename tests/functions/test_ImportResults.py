@@ -54,29 +54,22 @@ def test_read_timetable_dat():
 
 @pytest.mark.parametrize(
     "file_path",
-    [os.path.join(IMP_RES_TEST_DATA_DIR, "Surf_StLu2_test.dat")],
+    [os.path.join(IMP_RES_TEST_DATA_DIR, "region_value_data.dat")],
 )
-def test_Region_value(file_path):
+def test_import_region_value(file_path):
     """
     Tests if the Time and Data Values are imported correctly from dat-file in
     Region Value format.
     """
     # read region value formated test file
-    data_array = read_RegionValue_dat(file_path)
+    time, data = read_RegionValue_dat(file_path)
     # time assertion array
-    time_array = np.ndarray(
-        (1,), buffer=np.array([0.001666666666666667]), dtype=float
-    )
+    target_time = np.array([0, 0.5], dtype=float)
     # data assertion array
-    value_array = np.ndarray(
-        (1,), buffer=np.array([7.609826513417671e-05]), dtype=float
-    )
-    # combine the assions arrays to a test tuple
-    test_tuple = (time_array, value_array)
+    target_values = np.array([0.1, 1.5], dtype=float)
     # assert that the values match
-    assert np.array_equal(
-        data_array, test_tuple
-    ), "Time and Data Values were imported incorrectly!"
+    assert np.all(np.isclose(time, target_time, 1e-6))
+    assert np.all(np.isclose(data, target_values, 1e-6))
 
 
 def test_split_data():
@@ -122,17 +115,17 @@ def test_plot_timetable_dat():
     Tests that the number offigures created is equal to the number of
     Simulations.
     """
-    file_path = os.path.join(IMP_RES_TEST_DATA_DIR, "Surf_StLu2_test.dat")
+    file_path = os.path.join(IMP_RES_TEST_DATA_DIR, "Ib_test.dat")
 
     plot_list = plot_timetable_dat(
         file_path=file_path,
         dataLabel="DataLabel",
         title="Graph",
         savefig=False,
-        showfig=True,
+        showfig=False,
         savePath=None,
     )
-    number_of_figures = 1
+    number_of_figures = 2
     assert (
         len(plot_list) == number_of_figures
     ), "The number of figures does not match the number of simulations!"
@@ -228,7 +221,7 @@ def test_get_result_files():
     dat_file_list, pos_file_list = get_result_files(file_path)
 
     assert np.array_equal(
-        dat_file_list, ["Ib_test.dat", "Surf_StLu2_test.dat"]
+        dat_file_list, ["Ib_test.dat", "region_value_data.dat"]
     ), "Incorrect list of .dat files!"
     assert np.array_equal(
         pos_file_list,
