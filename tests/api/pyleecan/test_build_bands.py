@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -17,26 +18,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+"""Module for testing building of band areas in pyleecan api"""
 import os
+from os.path import join
 import math
-
 from pyleecan.Classes.Machine import Machine
-from pyleecan.Functions.load import load
 
-from pyemmo.functions.plot import plot
-from pyemmo.definitions import TEST_DIR
+# pylint: disable=locally-disabled, no-name-in-module
+from pyleecan.Functions.load import load
 import pyemmo.api.pyleecan.translate_surfs
 import pyemmo.api.pyleecan.get_magnetization_dict
 import pyemmo.api.pyleecan.get_translated_machine
 import pyemmo.api.pyleecan.create_geo_dict
-from pyemmo.api.json.SurfaceJSON import SurfaceAPI
+from tests.api.pyleecan import TEST_API_PYLCN_DATA_DIR
 
 
 def test_build_bands():
+    """Function to test the build bands api function."""
     machine: Machine = load(
-        os.path.abspath(
-            os.path.join(TEST_DIR, "data", "00_prius_machine.json")
-        )
+        os.path.abspath(join(TEST_API_PYLCN_DATA_DIR, "00_prius_machine.json"))
     )
     is_internal_rotor = machine.rotor.is_internal
     (

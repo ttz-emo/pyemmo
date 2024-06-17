@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -17,18 +18,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-import pytest
-import os
+"""Module to test the detection of the model boundaries in the api."""
+from os.path import abspath, join
 from typing import List
-
+import pytest
 
 from pyleecan.Classes.Machine import Machine
+
+# pylint: disable=locally-disabled, no-name-in-module
 from pyleecan.Functions.load import load
-from pyemmo.definitions import TEST_DIR
 
 from pyemmo.api.json.SurfaceJSON import SurfaceAPI
 from pyemmo.api.pyleecan.translate_surfs import translate_surface
 from pyemmo.api.pyleecan.detectInnerOuterLimit import detect_inner_outer_limit
+from tests.api.pyleecan import TEST_API_PYLCN_DATA_DIR
 
 
 @pytest.mark.parametrize(
@@ -40,8 +43,9 @@ from pyemmo.api.pyleecan.detectInnerOuterLimit import detect_inner_outer_limit
     ],
 )
 def test_detect_inner_outer_limit(machine_sample):
+    """Function to test the detection of the model boundaries in the api."""
     machine: Machine = load(
-        os.path.abspath(os.path.join(TEST_DIR, "data", machine_sample))
+        abspath(join(TEST_API_PYLCN_DATA_DIR, machine_sample))
     )
 
     all_surfaces: list = machine.rotor.build_geometry(

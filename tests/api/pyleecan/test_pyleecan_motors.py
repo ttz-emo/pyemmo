@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -17,7 +18,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""This module loads all the available pyleecan machines and trys to run the pyemmo api"""
+"""This module loads all the available pyleecan machines and trys to run the
+pyemmo api"""
 
 # %%
 import os
@@ -47,6 +49,22 @@ for machineFile in os.listdir(MACHINE_FILE_DIR):
             f"Could not load machine. Error: {exce}"
         )
     else:
+        # Workaround for wrong material
+        CuMat = load.load(os.path.join(DATA_DIR, "Material", "Copper2.json"))
+        try:
+            if machine.rotor.winding.conductor.cond_mat.name == "Copper1":
+                machine.rotor.winding.conductor.cond_mat = CuMat
+        except AttributeError:
+            pass
+        except Exception as exce:
+            raise exce
+        try:
+            if machine.stator.winding.conductor.cond_mat.name == "Copper1":
+                machine.stator.winding.conductor.cond_mat = CuMat
+        except AttributeError:
+            pass
+        except Exception as exce:
+            raise exce
         try:
             (
                 all_bands,
