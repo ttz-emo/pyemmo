@@ -114,6 +114,7 @@ steel = ElectricalSteel(
     lossParams=None,
     referenceFrequency=0,
     referenceFluxDensity=0,
+    density=1e3,
 )
 
 plt.plot(h, b, ".-")

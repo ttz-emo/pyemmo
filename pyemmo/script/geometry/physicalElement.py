@@ -194,6 +194,7 @@ class PhysicalElement:
         Args:
             geometricalElement (Union[List[Surface], List[Line]]): Geometrical elements
         """
+        # FIXME: No type checking implemented!
         self._geometricalElement = geometricalElement
         # run element type funtion to ensure there are not lines AND surfaces at the same time
         self.geoElementType
