@@ -376,7 +376,6 @@ def createGMSHCommand(
 
 
 def runCalcforCurrent(param: dict):
-
     RES_DIR = param["res"]
     if not os.path.isdir(RES_DIR):
         raise RuntimeError(f"Result directory does not exist: {RES_DIR}")
@@ -384,7 +383,19 @@ def runCalcforCurrent(param: dict):
     # But if the files are moved the results folder might not exist any more!
     param["getdp"]["ResPath"] = RES_DIR
     pro_file = param["pro"]
-    simulation_res_dir = os.path.join(RES_DIR, param["ResId"])
+    simulation_res_dir = os.path.join(RES_DIR, param["getdp"]["ResId"])
+    # Remove previous results if flag activated
+    if "Flag_ClearResults" in param["getdp"] and os.path.isdir(
+        simulation_res_dir
+    ):
+        if param["getdp"]["Flag_ClearResults"]:
+            logging.warning(
+                "Removing previous results from folder: %s",
+                simulation_res_dir,
+            )
+            for res_file in os.listdir(simulation_res_dir):
+                os.remove(os.path.join(simulation_res_dir, res_file))
+            os.rmdir(simulation_res_dir)
 
     post_operations = param["PostOp"] if "PostOp" in param else []
 
@@ -404,7 +415,9 @@ def runCalcforCurrent(param: dict):
         )
 
         logging.debug("cmd command is: %s", cmdCommand)
-        logging.info("Running simulation for result-ID '%s'", param["ResId"])
+        logging.info(
+            "Running simulation for result-ID '%s'", param["getdp"]["ResId"]
+        )
 
         # calcInfo = subprocess.run(
         #     cmdCommand,
@@ -449,7 +462,7 @@ def runCalcforCurrent(param: dict):
     ##########################################################################
     # EVALUATE RESULTS
     ##########################################################################
-    logging.info("Import results for result-ID '%s'", param["ResId"])
+    logging.info("Import results for result-ID '%s'", param["getdp"]["ResId"])
     results_dict = {}
     # try to import getdp parameters from param dict
     # TODO: Add start and stop angle, angle and time step, ...
@@ -566,7 +579,7 @@ def runCalcforCurrent(param: dict):
     else:
         logging.warning(
             "Iron losses for %s have allready been calculated.\nImporting values...",
-            param["ResId"],
+            param["getdp"]["ResId"],
         )
         for side in ["rotor", "stator"]:
             core_loss_dict[side] = {}
@@ -580,7 +593,7 @@ def runCalcforCurrent(param: dict):
     if core_loss_dict:
         results_dict["coreLoss"] = core_loss_dict
         # pylint: disable=locally-disabled, logging-not-lazy, logging-fstring-interpolation, line-too-long
-        logging.debug("Iron loss for '" + param["ResId"] + "'")
+        logging.debug("Iron loss for '" + param["getdp"]["ResId"] + "'")
         logging.debug(f"{'Rotor':>24} {'Stator':>11} {'Gesamt':>11}")
         logging.debug(
             f"{'Hysteresis:':<14} {np.mean(core_loss_dict['rotor']['hyst']) : 8.3f} W {np.mean(core_loss_dict['stator']['hyst']) : 9.3f} W {np.mean(core_loss_dict['stator']['hyst']+core_loss_dict['rotor']['hyst']) : 9.3f} W"
