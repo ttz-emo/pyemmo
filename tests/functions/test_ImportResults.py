@@ -1,14 +1,27 @@
+#
+# Copyright (c) 2018-2024 M. Schuler & V. Patil, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+"""Module for testing the import_results module"""
 import os
-from os import path, PathLike
-from cmath import isclose
-from typing import List, Tuple, Union
-import warnings
-from matplotlib.figure import Figure
-from matplotlib import pyplot as plt
 import numpy as np
-from parse import parse
-import gmsh
-
+import pytest
 from pyemmo.functions.import_results import (
     read_timetable_dat,
     importPos,
@@ -18,7 +31,6 @@ from pyemmo.functions.import_results import (
     importSP,
     get_result_files,
 )
-import pytest
 
 try:
     from .. import TEST_DATA_DIR
@@ -54,66 +66,59 @@ def test_read_timetable_dat():
 
 @pytest.mark.parametrize(
     "file_path",
-    [os.path.join(IMP_RES_TEST_DATA_DIR, "Surf_StLu2_test.dat")],
+    [os.path.join(IMP_RES_TEST_DATA_DIR, "region_value_data.dat")],
 )
-def test_Region_value(file_path):
+def test_import_region_value(file_path):
     """
     Tests if the Time and Data Values are imported correctly from dat-file in
     Region Value format.
     """
     # read region value formated test file
-    data_array = read_RegionValue_dat(file_path)
+    time, data = read_RegionValue_dat(file_path)
     # time assertion array
-    time_array = np.ndarray(
-        (1,), buffer=np.array([0.001666666666666667]), dtype=float
-    )
+    target_time = np.array([0, 0.5], dtype=float)
     # data assertion array
-    value_array = np.ndarray(
-        (1,), buffer=np.array([7.609826513417671e-05]), dtype=float
-    )
-    # combine the assions arrays to a test tuple
-    test_tuple = (time_array, value_array)
+    target_values = np.array([0.1, 1.5], dtype=float)
     # assert that the values match
-    assert np.array_equal(
-        data_array, test_tuple
-    ), "Time and Data Values were imported incorrectly!"
+    assert np.all(np.isclose(time, target_time, 1e-6))
+    assert np.all(np.isclose(data, target_values, 1e-6))
 
 
 def test_split_data():
     """Test split_data function"""
     time = np.array([0.0, 1.0, 2.0, 0.0, 1.0], dtype=float)
     values = np.array([0.1, 1.1, 2.1, 0.2, 1.2], dtype=float)
-    test_tuple = split_data(time, values)
+    test_nbr_sims, test_time_list, test_data_list = split_data(time, values)
     for x in range(time.size):
         if time[x] == 0:
             assert (
                 time[x + 1] != 0
             ), "There is a same time step, twice in a row!"
-    nbr_sims = 2
-    assert_time1 = [
+    target_nbr_sims = 2
+    target_time_1 = [
         np.array([0.0, 1.0, 2.0], dtype=float),
         np.array([0.0, 1.0], dtype=float),
     ]
-    assert_values1 = [
+    target_value_1 = [
         np.array([0.1, 1.1, 2.1], dtype=float),
         np.array([0.2, 1.2], dtype=float),
     ]
     assert (
-        nbr_sims == test_tuple[0]
-    ), " Incorrect number of  Simulations imported! "
+        target_nbr_sims == test_nbr_sims
+    ), " Incorrect number of Simulations imported! "
 
     assert np.array_equal(
-        assert_time1[0], test_tuple[1][0]
+        target_time_1[0], test_time_list[0]
     ), " Incorrect timesteps imported!"
     assert np.array_equal(
-        assert_time1[1], test_tuple[1][1]
+        target_time_1[1], test_time_list[1]
     ), "Incorrect timesteps imported!"
 
     assert np.array_equal(
-        assert_values1[0], test_tuple[2][0]
+        target_value_1[0], test_data_list[0]
     ), "Incorrect Values imported!"
     assert np.array_equal(
-        assert_values1[1], test_tuple[2][1]
+        target_value_1[1], test_data_list[1]
     ), "Incorrect Values imported!"
 
 
@@ -122,17 +127,17 @@ def test_plot_timetable_dat():
     Tests that the number offigures created is equal to the number of
     Simulations.
     """
-    file_path = os.path.join(IMP_RES_TEST_DATA_DIR, "Surf_StLu2_test.dat")
+    file_path = os.path.join(IMP_RES_TEST_DATA_DIR, "Ib_test.dat")
 
     plot_list = plot_timetable_dat(
         file_path=file_path,
         dataLabel="DataLabel",
         title="Graph",
         savefig=False,
-        showfig=True,
+        showfig=False,
         savePath=None,
     )
-    number_of_figures = 1
+    number_of_figures = 2
     assert (
         len(plot_list) == number_of_figures
     ), "The number of figures does not match the number of simulations!"
@@ -174,8 +179,9 @@ def test_import_SP():
         ), "Incorrect Postion-Array Imported!"
 
     for x in range(len(assert_tuple[3]) - 1):
-        assert np.array_equal(test_tuple[3][x], assert_tuple[3][x])
-        "Incorrect Value-Array Imported!"
+        assert np.array_equal(
+            test_tuple[3][x], assert_tuple[3][x]
+        ), "Incorrect Value-Array Imported!"
 
 
 # @pytest.mark.parametrize(
@@ -184,33 +190,30 @@ def test_import_SP():
 # )
 def test_import_pos():
     """
-    Tests if the Imported values(gmsh mesh element tags,time,data array)
+    Tests if the imported values (gmsh mesh element tags, time, data array)
     from a POS file are correct.
     """
-    file_path = os.path.join(IMP_RES_TEST_DATA_DIR, "AxialeLaenge_test.pos")
+    test_posFile_path = os.path.join(
+        IMP_RES_TEST_DATA_DIR, "AxialeLaenge_test.pos"
+    )
     mesh_elemt_ids = np.load(
-        (os.path.join(IMP_RES_TEST_DATA_DIR, "test_import_tuple0.npy")),
+        (os.path.join(IMP_RES_TEST_DATA_DIR, "import_pos_mesh_elem_ids.npy")),
         allow_pickle=True,
     )
     time = np.load(
-        (os.path.join(IMP_RES_TEST_DATA_DIR, "test_import_tuple1.npy")),
+        (os.path.join(IMP_RES_TEST_DATA_DIR, "import_pos_time.npy")),
         allow_pickle=True,
     )
     data = np.load(
-        (os.path.join(IMP_RES_TEST_DATA_DIR, "test_import_tuple2.npy")),
+        (os.path.join(IMP_RES_TEST_DATA_DIR, "import_pos_data.npy")),
         allow_pickle=True,
     )
-    imp_mesh_elem, imp_time, imp_data = importPos(file_path)
+    imp_mesh_elem, imp_time, imp_data = importPos(test_posFile_path)
     assert np.array_equal(
         mesh_elemt_ids, imp_mesh_elem
     ), "Incorrect Mesh elements Imported!"
     assert np.array_equal(time, imp_time), "Incorrect Time stamps Imported!"
     assert np.array_equal(data, imp_data), "Incorrect Data Array Imported!"
-
-
-# result_import = get_result_files(os.path.join(IMP_RES_TEST_DATA_DIR, "functions", "import_results"))
-# np.save('get_result_files_dat.npy',result_import[0])
-# np.save('get_result_files_pos.npy',result_import[1])
 
 
 # @pytest.mark.parametrize(
@@ -223,7 +226,7 @@ def test_get_result_files():
     dat_file_list, pos_file_list = get_result_files(file_path)
 
     assert np.array_equal(
-        dat_file_list, ["Ib_test.dat", "Surf_StLu2_test.dat"]
+        dat_file_list, ["Ib_test.dat", "region_value_data.dat"]
     ), "Incorrect list of .dat files!"
     assert np.array_equal(
         pos_file_list,

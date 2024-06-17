@@ -45,9 +45,10 @@ PBohrung = Point("mittelPunktBohrung", 0, 0, 0, 5e-3)
 # Material aus Datenbank laden
 steel_1010 = ElectricalSteel(
     sheetThickness=1e-3,
-    lossParams=(0.0, 0.0, 0.0),
+    lossParams=None,
     referenceFrequency=0,
     referenceFluxDensity=0,
+    density=1,
 )
 steel_1010.loadMatFromDataBase("Material_new.db", "steel_1010")
 ndFe35 = Material()
@@ -281,7 +282,7 @@ cmd = createCmdCommand(
     onelabFile=myScript.proFilePath,
     gmshPath=r"C:\Software\onelab\gmsh.exe",
     getdpPath=r"C:\Software\onelab\getdp.exe",
-    useGUI=True,
+    useGUI=False,
     paramDict={"Flag_ClearResults": 1},
 )
 print(cmd)

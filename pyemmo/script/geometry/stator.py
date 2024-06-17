@@ -20,7 +20,7 @@
 from typing import Dict, List, Union, Literal
 import logging
 from matplotlib import pyplot as plt
-from numpy import pi, sign
+import numpy as np
 from swat_em import datamodel
 from .line import Line
 from .movingBand import MovingBand
@@ -190,7 +190,8 @@ class Stator:
     @property
     def slots(self) -> List[Slot]:
         """getSlots returns a list of physical elements of type slot in stator.physicalElementList.
-        The List is sortet in circumferderal (mathematically positive) direction so the first slot in the list is the one closest to the x-axis
+        The List is sortet in circumferderal (mathematically positive) and radial direction so the
+        first slot in the list is the one closest to the x-axis
 
         Returns:
             List[Slot]: List of slots
@@ -200,7 +201,24 @@ class Stator:
         for physElem in physicalElements:
             if physElem.type == "Slot":
                 slotList.append(physElem)
-        slotList.sort(key=Slot.getRadialPosition)
+        # if self.winding.get_coilspan()<1:
+        #     # tooth coil winding -> radial position sort
+        slotList.sort(key=Slot.get_circumferential_position)
+        wind = self.winding
+        if wind.get_num_layers() == 2:
+            layout = np.array(wind.get_phases())
+            # check if first and second layer are not equal
+            if (
+                not np.array_equal(layout[0, 0, :], layout[0, 1, :])
+                and wind.get_coilspan() > 1
+            ):
+                # Distributed winding with differnet layers
+                for i in range(wind.get_num_slots()):
+                    # sort the two slot sides separately in upper and lowee slot
+                    slotsides = slotList[2 * i : 2 * i + 2]
+                    # reverse because outer slot has index 0 according to swat-em
+                    slotsides.sort(key=Slot.get_radial_position, reverse=True)
+                    slotList[2 * i : 2 * i + 2] = slotsides
         return slotList
 
     @property
@@ -331,9 +349,9 @@ class Stator:
                 layer = 0  # there is only one layer
                 slotIDLayout = slotPos
             # Finally get winding direction and phase number (0,1,2 = u,v,w)
-            slot.windDirection = sign(layout[layer, slotIDLayout])
+            slot.windDirection = np.sign(layout[layer, slotIDLayout])
             # recalculate phase angle in rad
-            slot.phase = (abs(layout[layer, slotIDLayout]) - 1) * 2 * pi / 3
+            slot.phase = (abs(layout[layer, slotIDLayout]) - 1) * 2 * np.pi / 3
             slot.nbrTurns = self.winding.get_turns()
             slot.setColor()
 
@@ -530,9 +548,9 @@ class Stator:
         # get max. outer radius:
         r_out = self.outer_radius
         if not basisMeshsize:
-            basisMeshsize = 2 * pi * self.movingBandRadius / 360
+            basisMeshsize = 2 * np.pi * self.movingBandRadius / 360
             logging.debug(
-                "Setting basis mesh size to 2 * pi * self.movingBandRadius / 360 = %.3e",
+                "Setting basis mesh size to 2 * np.pi * self.movingBandRadius / 360 = %.3e",
                 basisMeshsize,
             )
         # set mesh gain factor to empirically developed default

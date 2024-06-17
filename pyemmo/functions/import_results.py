@@ -410,7 +410,7 @@ def get_result_files(
         result_folder (PathLike): Path to GetDP results.
 
     Returns:
-        Tuple[list[PathLike], list[PathLike]]: List of .pos and list of .dat
+        Tuple[list[PathLike], list[PathLike]]: List of .dat and list of .pos
             files in the given folder.
     """
     if os.path.isdir(result_folder):
