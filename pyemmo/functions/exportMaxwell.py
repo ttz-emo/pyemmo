@@ -74,10 +74,12 @@ def exportTabMaxwell(data: list, identifier: list[str], filepath: str) -> None:
     fileContent = ""
     for id in identifier:
         fileContent += '"' + id + '"\t'
+    fileContent = fileContent[:-1]
     fileContent += "\n"
     for i in range(len(data[0])):
         for dataVector in data:
             fileContent += f"{dataVector[i]}\t"
+        fileContent = fileContent[:-1]
         fileContent += "\n"
 
     with open(filepath, encoding="utf-8", mode="w") as tabFile:
