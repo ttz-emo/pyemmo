@@ -45,14 +45,11 @@ class Material:
         thermalConductivity: float = None,
         thermalCapacity: float = None,
     ):
-        # FIXME: Check input values for valid type
         self.name = name
         self.conductivity = conductivity
         self.relPermeability = relPermeability
         self.remanence = remanence
-        self._tempCoefRem = (
-            tempCoefRem  # coefficient for temperature dependency of remanent B
-        )
+        self.tempCoefRem = tempCoefRem
         if tempCoefRem and not remanence:
             warnings.warn(
                 "Temperature coefficient for Br is given without value for Br "
@@ -70,7 +67,7 @@ class Material:
             try:
                 # FIXME: Maybe check shapes before...
                 # if comparison results in ValueError, shapes could not be broadcasted
-                bhComp = self.BH == __o.BH
+                bhComp = numpy.array_equal(self.BH, __o.BH)
             except ValueError:
                 # comparison with empty array returns a ValueError
                 return False
@@ -334,6 +331,25 @@ class Material:
             self._remanence = remanence
         else:
             raise ValueError("Remanent flux density must be numeric.")
+
+    @tempCoefRem.setter
+    def tempCoefRem(self, new_temp_coef: float):
+        """setter for temperature coefficient of Br
+
+        Args:
+            new_temp_coef (float): temperature coefficient of Br
+
+        Raises:
+            ValueError: If given value is not numeric.
+        """
+        # ("br_" = f"{br20} * (1 + ({tempCoef} * (tempMag - 20)))", "Reference temperatur is 20°C",
+        if isinstance(new_temp_coef, (int, float)) or new_temp_coef is None:
+            self._tempCoefRem = new_temp_coef
+        else:
+            raise ValueError(
+                "Remanence flux density temperature coefficient must be numeric."
+                f"But is type {type(new_temp_coef)} of value: {new_temp_coef}"
+            )
 
     @property
     def density(self):

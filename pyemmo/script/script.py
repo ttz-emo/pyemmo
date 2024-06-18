@@ -30,6 +30,7 @@ import logging
 from math import pi
 from os.path import abspath, join
 from typing import TYPE_CHECKING, Dict, List, Literal, Tuple, Union
+import numpy as np
 from numpy import rad2deg, where
 from pygetdp import Function as FunctionGetDP
 from pygetdp import Group as GroupGetDP
@@ -1069,7 +1070,7 @@ class Script:
         )
         # Create single Bar regions
         if DOMAIN_BAR in rotorPhysicalsDict:
-            rotorPhysicalsDict[DOMAIN_BAR].sort(key=Slot.getRadialPosition)
+            rotorPhysicalsDict[DOMAIN_BAR].sort(key=Slot.get_radial_position)
             for i, region in enumerate(rotorPhysicalsDict[DOMAIN_BAR]):
                 domainList.append(Domain(f"Rotor_Bar_{i+1}", region))
         # add additional domains for every movinband part, to specify the
@@ -1422,6 +1423,11 @@ class Script:
         material = physicalElement.material
         if material not in matDict["material"]:
             matDict["material"].append(material)
+            # check that the material has eighter bh curve or permeability
+            if material.BH.size == 0 and not material.relPermeability:
+                raise RuntimeError(
+                    f"Material {material.name} has neither bh curve nor relative permability!"
+                )
             matDict["physicalElemID"].append([physicalElement.id])
         else:
             # otherwise find the index of the existing material
@@ -1495,9 +1501,21 @@ class Script:
                 physElemIDstr.append(str(physicalElementID))
             # add group for material
             matName = cleanName(mat.name)
-            self.group.add(id="group_" + matName, glist=physElemIDstr)
+            # FIXME: Group Add fails if mat name exists twice
+            # added workaround by adding _dup id
+            try:
+                self.group.add(id="group_" + matName, glist=physElemIDstr)
+            except ValueError as val_err:
+                if re.search(
+                    r"Identifier .* already in use.", val_err.args[0]
+                ):
+                    logging.warning(
+                        f"Material with name {matName} is defined multiple times, but with different properties. "
+                        "Trying to add it again with different identifier..."
+                    )
+                    matName = matName + "_dup"
+                    self.group.add(id="group_" + matName, glist=physElemIDstr)
             matFun = self.functionMaterial
-
             matFun.add_comment(f"New Material: {matName}\n", True)
             # add electrical conductivity
             conductivity = mat.conductivity

@@ -83,5 +83,10 @@ def test_translate_surfs():
     ]
 
     for i, (expected_id_ext, expected_len) in enumerate(expected_data):
-        assert geometry_list[i].idExt == expected_id_ext
-        assert len(geometry_list[i].curve) == expected_len
+        test_surf = geometry_list[i]
+        assert test_surf.idExt == expected_id_ext
+        assert len(test_surf.curve) == expected_len
+
+
+if __name__ == "__main__":
+    test_translate_surfs()

@@ -62,10 +62,20 @@ def calc_time_domain_core_loss(
     axial_length: float = 1.0,
     save_fields: bool = True,
 ) -> Tuple[Dict[str, np.ndarray], List[float]]:
-    """TODO: _summary_
+    """This function implements a time domain method for calculating the steel
+    sheet core loss. For more information about the calculation method see
+    `Lin u. a., „A Dynamic Core Loss Model for Soft Ferromagnetic and Power
+    Ferrite Materials in Transient Finite Element Analysis“
+    <https://ieeexplore.ieee.org/document/1284663>`_.
+
+    The implementation is based on a magnetic flux density fea result of at
+    least one electrical period. The result file (`b_filepath`) must be in
+    `Gmsh readable (.pos) format
+    <https://gmsh.info/doc/texinfo/#MSH-file-format>`_ and only contain the
+    element values of the object (core surface) of intrest.
 
     Args:
-        bFilePath (os.PathLike): _description_
+        bFilePath (os.PathLike): _description_ TODO
         lossFactor (dict): _description_
         symFactor (int): _description_
         axialLength (float, optional): _description_. Defaults to 1.0.
@@ -564,21 +574,6 @@ def write_simple(
     with open(filename, "w", encoding="utf-8") as resFile:
         for varStep in range(nbr_timesteps):
             resFile.write(f"{time[varStep]} {data[varStep]}\n")
-
-
-def adaptIronLossParams(
-    lossParams: Tuple[float, float, float], steelMat: ElectricalSteel
-) -> List[float]:
-    assert len(lossParams) == 3, "Number of loss parameters should be 3!"
-    assert isinstance(steelMat, ElectricalSteel), "Material should be steel"
-    freq = steelMat.referenceFrequency  # frequency in Hz
-    ind = steelMat.referenceFluxDensity  # induction in T
-    dens = steelMat.density  # density in kg/m³
-    dens = steelMat.density  # density in kg/m³
-    lossParams[0] = lossParams[0] * dens / freq / (ind**2)
-    lossParams[1] = lossParams[1] * dens / ((freq * ind) ** 2)
-    lossParams[2] = lossParams[2] * dens / ((freq * ind) ** 1.5)
-    # return lossParams
 
 
 def calcTimeDerivative(fieldFile: Union[str, os.PathLike]):
