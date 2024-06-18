@@ -189,7 +189,8 @@ class Stator:
     @property
     def slots(self) -> List[Slot]:
         """getSlots returns a list of physical elements of type slot in stator.physicalElementList.
-        The List is sortet in circumferderal (mathematically positive) direction so the first slot in the list is the one closest to the x-axis
+        The List is sortet in circumferderal (mathematically positive) and radial direction so the
+        first slot in the list is the one closest to the x-axis
 
         Returns:
             List[Slot]: List of slots
@@ -199,7 +200,24 @@ class Stator:
         for physElem in physicalElements:
             if physElem.type == "Slot":
                 slotList.append(physElem)
-        slotList.sort(key=Slot.getRadialPosition)
+        # if self.winding.get_coilspan()<1:
+        #     # tooth coil winding -> radial position sort
+        slotList.sort(key=Slot.get_circumferential_position)
+        wind = self.winding
+        layers = wind.get_num_layers()
+        if layers > 1:
+            if (
+                wind.get_coilspan() > 1
+                or wind.get_phases()[0][0][0] == wind.get_phases()[0][1][0]
+            ):
+                # Distributed winding with multi layer OR
+                # special case double layer tooth coil winding!
+                for i in range(wind.get_num_slots()):
+                    # sort the two slot sides separately in upper and lowee slot
+                    slotsides = slotList[2 * i : 2 * i + 2]
+                    # reverse because outer slot has index 0 according to swat-em
+                    slotsides.sort(key=Slot.get_radial_position, reverse=True)
+                    slotList[2 * i : 2 * i + 2] = slotsides
         return slotList
 
     @property
