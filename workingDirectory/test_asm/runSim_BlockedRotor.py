@@ -61,9 +61,9 @@ timestep = (
     (60 / (n * Nbr_Sect / multi)) if n > 0 else T_s / nbr_steps_per_period
 )
 winkelschritt = n / 60 * 360 * timestep  # Default: 0.703125
-nbrSteps = T_s * nbr_stator_periods / timestep
+nbr_timesteps = T_s * nbr_stator_periods / timestep
 
-thers = 100 # Thershold for bar resistance reset in A
+thers = 100  # Thershold for bar resistance reset in A
 
 logging.info("Simulation should execute %i time steps.", int(nbrSteps) + 1)
 logging.debug("Timestep %e s.", timestep)
@@ -139,6 +139,7 @@ if not os.path.isfile(json_res_path):
         json.dump(out_dict, jFile, indent=4, cls=NumpyEncoder)
 # %%
 # plot currents
+nbr_timesteps = len(results["time"]) # update number of timesteps with actual val
 fig, ax = plt.subplots()
 ax.plot(results["time"], results["current"]["a"], label="u")
 ax.plot(results["time"], results["current"]["b"], label="v")
@@ -256,10 +257,11 @@ if os.path.isfile(os.path.join(sim_res_dir, "Ts_vw.dat")):
 results["torque"]["mean"] = np.mean(
     [results["torque"]["stator"], results["torque"]["rotor"]], axis=0
 )
+
 ax.plot(
     results["time"],
     results["torque"]["mean"],
-    ".-",
+    "-",
     label="MST",
 )
 # ax.set_ylabel("Spannung in V")
@@ -273,6 +275,28 @@ ax.set_title("Drehmoment")
 ax.grid(True, "major", linestyle="-")
 ax.grid(True, "minor", linestyle="--")
 ax.minorticks_on()
+
+# %
+# PRINT DES MITTLEREN DREHOMMENTS
+M_mean_dyn = np.mean(
+    results["torque"]["stator"][
+        int(nbr_timesteps * (nbr_stator_periods - 1) / nbr_stator_periods) :
+    ]
+)
+print(
+    f"Das mittlere Drehmoment der letzten Periode (dynamisch) sind {M_mean_dyn:.2f} Nm"
+)
+# read data from static resistance calculation
+t_stat, M_stat = read_timetable_dat(
+    r"C:\Users\ganser\AppData\Local\Programs\pyemmo\workingDirectory\test_asm\res_Test_1PH8135_1_D0_W92_P14k4W_ohneRotNutSchlitz\blockedRotor_50Hz_80Periods_64Steps_R_stat\Ts.dat"
+)
+M_mean_stat = np.mean(M_stat[int(t_stat.size * 79 / 80) :])
+print(
+    f"Das mittlere Drehmoment der letzten Periode (statisch) sind {M_mean_stat:.2f} Nm"
+)
+
+# ax.plot(t_stat, M_stat, ".-", label="statischer Widerstand")
+# ax.legend()
 # %%
 # PLOT RESISTANCES
 resfile = os.path.join(sim_res_dir, "R_bar_1.dat")
@@ -328,7 +352,6 @@ if os.path.isfile(resfile):
 fig, ax = plt.subplots()
 ax: Axes = ax
 timestep = t[1] - t[0]
-nbr_timesteps = len(t)
 amp = np.abs(np.fft.rfft(R_bar, axis=0))
 # to get correct amplitude regarding the specific frequencies, the amplitudes
 # must be corrected by 1/nbrFreqs and DC-part by 1/(2*nbrFreqs) because its value
@@ -344,8 +367,11 @@ plt.stem(freqs, amp)
 # Export Data for Maxwell
 from pyemmo.functions.exportMaxwell import exportTabMaxwell
 
+mxwl_export_dir = os.path.join(sim_res_dir,"export_maxwell")
+if not os.path.isdir(mxwl_export_dir):
+    os.mkdir(mxwl_export_dir)
 # Export Bar Current
-f_name_mxwl_export = os.path.join(sim_res_dir, "I_Bar_1.tab")
+f_name_mxwl_export = os.path.join(mxwl_export_dir, "I_Bar_1.tab")
 if not os.path.isfile(f_name_mxwl_export):
     exportTabMaxwell(
         [out_dict["time"], I_bars[:, 0]],
@@ -353,7 +379,7 @@ if not os.path.isfile(f_name_mxwl_export):
         filepath=f_name_mxwl_export,
     )
 # Export Bar Voltage
-f_name_mxwl_export = os.path.join(sim_res_dir, "U_Bar_1.tab")
+f_name_mxwl_export = os.path.join(mxwl_export_dir, "U_Bar_1.tab")
 if not os.path.isfile(f_name_mxwl_export):
     exportTabMaxwell(
         [out_dict["time"], U_bars[:, 0]],
@@ -361,8 +387,13 @@ if not os.path.isfile(f_name_mxwl_export):
         filepath=f_name_mxwl_export,
     )
 # Export Torque
-f_name_mxwl_export = os.path.join(sim_res_dir, "torque.tab")
+f_name_mxwl_export = os.path.join(mxwl_export_dir, "torque.tab")
 if not os.path.isfile(f_name_mxwl_export):
+    if any(np.equal(results["torque"]["mean"].shape, 1)):
+        # reshape so single values are not in an own array
+        results["torque"]["mean"] = results["torque"]["mean"].reshape(
+            results["torque"]["mean"].size
+        )
     exportTabMaxwell(
         [out_dict["time"], results["torque"]["mean"]],
         identifier=["Time (s)", "Torque_Onelab (Nm)"],
