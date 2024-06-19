@@ -8,3 +8,5 @@ hypothesis>=6.98.17
 gmsh>=4.10.3
 Sphinx>=7.2.6
 GitPython
+# pyleecan==1.5.1
+h5py
