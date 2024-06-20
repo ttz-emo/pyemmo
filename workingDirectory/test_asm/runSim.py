@@ -16,6 +16,7 @@ from pyemmo.functions.import_results import (
 )
 from definitions import MODEL_NAME, MODEL_DIR
 
+
 class NumpyEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, np.ndarray):
@@ -55,7 +56,9 @@ multi = 8  # Default=4 number of Segments per timestep
 timestep = (60 / (n * Nbr_Sect / multi)) if n > 0 else T_s / 90
 winkelschritt = n / 60 * 360 * timestep  # Default: 0.703125
 nbrSteps = T_s / timestep * nbr_stator_periods
-logging.info("Simulation should execute %i time steps.", int(nbrSteps) + 1)
+logging.info(
+    "Simulation should execute %i time steps.", np.round(nbrSteps) + 1
+)
 logging.debug("Timestep %e s.", timestep)
 logging.debug("One time step equals %f° mechanical degrees.", winkelschritt)
 logging.debug("Stop time of simulation: %.7e s", int(nbrSteps) * timestep)
