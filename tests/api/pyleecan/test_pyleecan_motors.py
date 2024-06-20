@@ -49,7 +49,7 @@ for machineFile in os.listdir(MACHINE_FILE_DIR):
             f"Could not load machine. Error: {exce}"
         )
     else:
-        #Workaround for wrong material
+        # Workaround for wrong material
         CuMat = load.load(os.path.join(DATA_DIR, "Material", "Copper2.json"))
         try:
             if machine.rotor.winding.conductor.cond_mat.name == "Copper1":
@@ -87,8 +87,11 @@ machine_test_dict["FINAL_RESULT"] = (
 )
 print(machine_test_dict["FINAL_RESULT"])
 # Write results to "Results" folder because its not tracked by Git.
+res_folder = os.path.join(ROOT_DIR, "Results")
+if not os.path.isdir(res_folder):
+    os.makedirs(res_folder)
 with open(
-    os.path.join(ROOT_DIR, "Results", "pyleecan_machine_test.json"),
+    os.path.join(res_folder, "pyleecan_machine_test.json"),
     "w",
     encoding="utf-8",
 ) as jFile:
