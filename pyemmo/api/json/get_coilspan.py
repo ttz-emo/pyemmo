@@ -18,15 +18,21 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Function to get coil span from winding layout"""
-
+from typing import List
 import numpy as np
 
 
-def get_min_coilspan(wind_layout: np.ndarray) -> int:
+def get_min_coilspan(wind_layout: List[List[int]]) -> int:
     """Calculate the minimal coil span from a winding layout"""
+    # fix empty second layer for lower numpy version
+    if not wind_layout[0][1]:
+        layers = 1
+        for i, layer in enumerate(wind_layout):
+            wind_layout[i] = layer[0]
+    else:
+        layers = 2
     wind_layout = np.array(wind_layout)
-    layers = wind_layout.shape[1]
-    nbrSlots = wind_layout.shape[2] * 3  # phases
+    nbrSlots = wind_layout.shape[-1] * 3  # phases
     if layers == 2:
         # double layer
         first_coil_side = wind_layout[0, 0, 0]
