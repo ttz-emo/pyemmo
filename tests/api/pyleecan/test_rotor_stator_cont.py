@@ -32,7 +32,6 @@ from pyleecan.Classes.MachineSyRM import MachineSyRM
 from pyemmo.api.json.modelJSON import SurfaceAPI
 
 # from pyemmo.script.geometry.point import Point
-from pyemmo.definitions import TEST_DIR
 from pyemmo.api.json.modelJSON import createSurfaceDict
 from pyemmo.api.pyleecan.translate_surfs import translate_surface
 from pyemmo.api.pyleecan.get_rotor_stator_cont import (
@@ -177,25 +176,7 @@ def test_main_functions(test_function):
 def test_winding_contour_function():
     """test for function get_winding_cont() of pyleecan API."""
     machine: Machine = load(
-        abspath(join(TEST_DIR, "data", "03_synrm_muster_Bachelor.json"))
-    )
-    geometry_list, _ = get_translated_machine(machine)
-    geo_dict = createSurfaceDict(geometry_list)
-    contour_line_list = get_winding_cont(
-        lamination_surf=geo_dict["StNut"],
-        slot_surfs=[geo_dict["StCu0"]],
-        lamination=machine.stator,
-    )
-    # general asserts
-    assert contour_line_list is not None
-    assert len(contour_line_list) == 5
-    assert all(contour_line_list)  # no None objects
-
-
-def test_winding_contour_function():
-    """test for function get_winding_cont() of pyleecan API."""
-    machine: Machine = load(
-        abspath(join(TEST_DIR, "data", "03_synrm_muster_Bachelor.json"))
+        abspath(join(TEST_API_PYLCN_DATA_DIR, "03_synrm_muster_Bachelor.json"))
     )
     geometry_list, _ = get_translated_machine(machine)
     geo_dict = createSurfaceDict(geometry_list)
