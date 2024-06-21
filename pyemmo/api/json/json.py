@@ -468,6 +468,7 @@ def main(
         _open_onelab(apiScript, extendedInfo, gmsh, getdp)
 
     jsonLogFileHandler.close()  # close log file handler!
+    return apiScript
 
 
 def _open_onelab(

@@ -82,7 +82,7 @@ def main(
     )
     paramDict["flag_openGUI"] = use_gui
 
-    json_api_main(
+    script_obj = json_api_main(
         geo=geo_translation_dict,
         extInfo=paramDict,
         model=model_dir,
@@ -90,3 +90,4 @@ def main(
         getdp=getdp,
         # results=os.path.join(model_dir, "res")
     )
+    return script_obj
