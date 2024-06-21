@@ -20,8 +20,8 @@
 """This module defines the function generate_simulation to generate a pyleecan
 simulation object to use in pyleecan-api."""
 
-from pyleecan.Classes.Machine import Machine
-from pyleecan.Classes.Simulation import Simulation
+from pyleecan.Classes.Machine import Machine as PyleecanMachine
+from pyleecan.Classes.Simulation import Simulation as PyleecanSimulation
 from pyleecan.Classes.Simu1 import Simu1
 from pyleecan.Classes.InputCurrent import InputCurrent
 from pyleecan.Classes.OPdq import OPdq
@@ -29,22 +29,22 @@ import numpy as np
 
 
 def create_simulation(
-    machine: Machine,
+    machine: PyleecanMachine,
     i_d: float = 0.0,
     i_q: float = 0.0,
     speed: float = 1000.0,
-) -> Simulation:
-    """Create a Simulation object from a given machine
+) -> PyleecanSimulation:
+    """Create a Pyleecan Simulation object from a given machine
 
     Args:
-        machine (Machine): Actual pyleecan machine
+        machine (PyleecanMachine): Actual pyleecan machine
         id (float): Length axis (d-axis) current in A (eff). Defaults to 0.
         iq (float): Quadrature axis (q-axis) current in A (eff). Defaults to 0.
         speed (float): Initial speed for simulation in rpm. Defaults to 1000.0.
 
 
     Returns:
-        Simulation: Pyleecan Simulation object
+        PyleecanSimulation: Pyleecan Simulation object
     """
     simu = Simu1(name="PyEMMO_Simulation", machine=machine)
     # simu.path_result = "path/to/folder" Path to the Result folder to use

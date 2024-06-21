@@ -42,9 +42,9 @@ Function {
   // If only one pole is simulated in the model, the end rings of the A and B
   // sides must be crossed. If one or more pole pairs are simulated, they do not.
   If (NbrPolesInModel%2 == 1)
-    For k In {1:nbRotorBars}
-      NR1~{k} = NB1~{k}; // first node number for each endring resistance
-      k2 = (k<nbRotorBars) ? k+1 : 1.;
+    For k In {1:nbrRotorBars}
+      // Upper Branch
+      NRu1~{k} = NB1~{k}; // first node number for upper endring resistance
       // second node number for each endring resistance:
       NRu2~{k} = NIM1~{k}; // = intermediate node
 

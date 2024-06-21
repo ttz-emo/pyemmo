@@ -13,7 +13,7 @@ CleanName module
 ImportResults module
 --------------------
 
-.. automodule:: pyemmo.functions.importResults
+.. automodule:: pyemmo.functions.import_results
    :members:
    :undoc-members:
    :show-inheritance:

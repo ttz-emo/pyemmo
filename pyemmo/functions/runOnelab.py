@@ -630,7 +630,20 @@ def runCalcforCurrent(param: dict):
     return results_dict
 
 
-def main() -> None:
+def main(onelabFile, use_gui, gmsh="", getdp="", paramDict={}) -> bytes:
+
+    command = createCmdCommand(
+        onelabFile,
+        useGUI=use_gui,
+        gmshPath=gmsh,
+        getdpPath=getdp,
+        paramDict=paramDict,
+    )
+    comp_process = subprocess.run(command, check=False, capture_output=True)
+    return comp_process.stderr
+
+
+if __name__ == "__main__":
     # print("running main() of runOnelab.")
     # 1. Check that all argvs are valid!
     parser = ArgumentParser(
@@ -653,7 +666,8 @@ def main() -> None:
     )
     parser.add_argument(
         "--gui",
-        help="flag to decide if the file should be opened in the gui or command line. Defaults to False if flag is not mentioned",
+        help="flag to decide if the file should be opened in the gui or command line. "
+        "Defaults to False if flag is not mentioned",
         default=False,
         action="store_true",
     )
@@ -671,15 +685,4 @@ def main() -> None:
                     f"Provided gmsh executable was not found: {args.gmsh}"
                 )
             )
-
-    command = createCmdCommand(
-        args.onelabFile,
-        useGUI=args.gui,
-        gmshPath=args.gmsh,
-        getdpPath=args.getdp,
-    )
-    subprocess.run(command, check=False)
-
-
-if __name__ == "__main__":
-    main()
+    main(args.onelabFile, args.gui, args.gmsh, args.getdp)
