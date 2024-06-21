@@ -46,7 +46,12 @@ logging.getLogger().setLevel(logging.INFO)
 # )
 DATA_DIR = USER_DIR
 machine_file_list = ["SIPMSM_001.json", "Railway_Traction_noDucts.json"]
-machine_file_path = os.path.join(DATA_DIR, "Machine", machine_file_list[1])
+
+machine_file_path = os.path.join(DATA_DIR, "Machine", machine_file_list[0])
+machine_file_path = (
+    r"D:\pyemmo\tests\data\api\pyleecan\03_synrm_muster_Bachelor.json"
+)
+
 if not os.path.isfile(machine_file_path):  # make sure file exists
     raise FileNotFoundError(machine_file_path)
 
