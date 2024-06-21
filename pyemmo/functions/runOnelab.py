@@ -239,6 +239,7 @@ def createCmdCommand(
                     else:
                         # set the gmsh file extension to mesh
                         gmsh_command = f"{gmshPath} {filePath}.geo -run "
+                    # If log file name is given, add file logging flag:
                     if logFileName:
                         gmsh_command += f" -log {logFileName} "
                     # add post operations

@@ -83,7 +83,9 @@ DefineConstant[
   Flag_ImposedSpeed=1,
 
   // Directory in which the results will be stored
-  ResDir = AbsolutePath[ StrCat[PATH_RES, ResId] ],
+  // TODO: Add code to check that path or use the model folder + ResId as
+  //  default.
+  ResDir = AbsolutePath[ StrCat[res, ResId] ],
 
   // Extension defintion for the results
   ExtGmsh = ".pos",   // fields are stored in pos files (they are then loaded automatically into onelab)
