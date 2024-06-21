@@ -103,6 +103,22 @@ pyleecan_machine: Machine = (
         os.path.abspath(os.path.join(machineFolder, fileName))
     )
 )
+# Workaround for wrong material
+CuMat = load.load(os.path.join(DATA_DIR, "Material", "Copper2.json"))
+try:
+    if pyleecan_machine.rotor.winding.conductor.cond_mat.name == "Copper1":
+        pyleecan_machine.rotor.winding.conductor.cond_mat = CuMat
+except AttributeError:
+    pass
+except Exception as exce:
+    raise exce
+try:
+    if pyleecan_machine.stator.winding.conductor.cond_mat.name == "Copper1":
+        pyleecan_machine.stator.winding.conductor.cond_mat = CuMat
+except AttributeError:
+    pass
+except Exception as exce:
+    raise exce
 pyleecanAPI.main(
     pyleecan_machine, model_dir=os.path.join(resFolder, pyleecan_machine.name)
 )

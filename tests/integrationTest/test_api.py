@@ -163,7 +163,7 @@ class TestCases(unittest.TestCase):
             # self.check_content(base_simul_subfolder_path, simul_subfolder_path[test_id], target_file_types)
             # print()
 
-            # Point 4: check dat files value:
+            # Point 5: check dat files value:
             print("Test point 5: check values in dat files")
             dat_targets = glob.glob(
                 os.path.join(simul_subfolder_path[test_id], "*.dat")
@@ -225,8 +225,3 @@ class TestCases(unittest.TestCase):
             assert l == len(base_content) and messagePrinter(
                 f"SUCCESS: {result_file} content check ok"
             ), f"{result_file} content check failed."
-
-
-if __name__ == "__main__":
-    new_test = TestCases()
-    new_test.test_pyleecan()

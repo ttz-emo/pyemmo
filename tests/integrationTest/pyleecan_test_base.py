@@ -23,6 +23,7 @@ test_params = {
         "d_theta": 0.25,
         "test_data_folder": "tests\\data",
         "result_folder": "Results\\pyleecanAPI",
+        "result_folder": "Results\\pyleecanAPI",
     }
 }
 
@@ -45,6 +46,7 @@ def pyleecan_test_base(
     - test_params: Containt parameter dict for running test
     - result_path: string path where result should be stored
     - test_data_path: string path where json data for testing can be found
+    - test_data_path: string path where json data for testing can be found
     The following params are used in case running this alone e.g. for preparing base data:
     - test_type: type of test, default empty
     - test_id: test id, default empty
@@ -61,6 +63,11 @@ def pyleecan_test_base(
 
     # create machine
     if test_data_path == "":
+        machine_file_path = os.path.join(
+            ROOT_DIR,
+            test_params["test_data_folder"],
+            f"{test_type}\\{test_case}.json",
+        )
         machine_file_path = os.path.join(
             ROOT_DIR,
             test_params["test_data_folder"],
@@ -84,7 +91,11 @@ def pyleecan_test_base(
             pyleecan_machine.stator.winding.conductor.cond_mat.name
             == "Copper1"
         ):
-            pyleecan_machine.stator.winding.conductor.cond_mat = CuMat
+            if (
+                pyleecan_machine.stator.winding.conductor.cond_mat.name
+                == "Copper1"
+            ):
+                pyleecan_machine.stator.winding.conductor.cond_mat = CuMat
     except AttributeError:
         pass
     except Exception as exce:
@@ -93,6 +104,11 @@ def pyleecan_test_base(
     # Create result folder
     if result_path == "":
         curr_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
+        resFolder = os.path.join(
+            ROOT_DIR,
+            test_params["result_folder"],
+            f"{test_type}\\{curr_datetime}\\test_{test_id}\\{test_case}",
+        )
         resFolder = os.path.join(
             ROOT_DIR,
             test_params["result_folder"],
@@ -156,6 +172,13 @@ if __name__ == "__main__":
         # print("\n")
         result_path_true = os.path.join(result_path, test_case)
         try:
+            pyleecan_test_base(
+                test_params[test_type],
+                result_path=result_path_true,
+                test_type=test_type,
+                test_id=test_id,
+                test_case=test_case,
+            )
             pyleecan_test_base(
                 test_params[test_type],
                 result_path=result_path_true,
