@@ -2187,11 +2187,12 @@ class Script:
                 machine.stator.winding.save_to_file(
                     os.path.join(self.resultsPath, f"winding_{self.name}.wdg")
                 )
-                machine.stator.winding.plot_MMK(
-                    filename=os.path.join(
-                        self.resultsPath, rf".\{self.name}_MMF.png"
-                    ),
-                )
+                # FIXME: Cannot use plot function with Pyleecan-SWATEM version
+                # machine.stator.winding.plot_MMK(
+                #     filename=os.path.join(
+                #         self.resultsPath, rf".\{self.name}_MMF.png"
+                #     ),
+                # )
 
             # Stator angle for I_U = 1 p.u., I_V = -1/2, I_W = -1/2 in rad elec
             systemOffset = float(angle[where(mmfOrder == nbrPolePairs)])
