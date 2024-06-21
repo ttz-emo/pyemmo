@@ -1542,6 +1542,9 @@ class Script:
                 for bhValue in bhArray:
                     bString += str(bhValue[0]) + ","
                     hString += str(bhValue[1]) + ","
+                    if (i % 9 == 0) and (i != (bhArray.shape[0] - 1)):
+                        bString += "\n"
+                        hString += "\n"
                 bString = bString[0 : len(bString) - 1] + "}"
                 hString = hString[0 : len(hString) - 1] + "}"
                 matFun.add_params({f"Mat_h_{matName}": hString})
