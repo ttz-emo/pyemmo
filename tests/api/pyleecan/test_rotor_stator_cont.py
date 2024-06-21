@@ -195,9 +195,7 @@ def test_winding_contour_function():
 def test_winding_contour_function():
     """test for function get_winding_cont() of pyleecan API."""
     machine: Machine = load(
-        os.path.abspath(
-            os.path.join(TEST_DIR, "data", "03_synrm_muster_Bachelor.json")
-        )
+        abspath(join(TEST_DIR, "data", "03_synrm_muster_Bachelor.json"))
     )
     geometry_list, _ = get_translated_machine(machine)
     geo_dict = createSurfaceDict(geometry_list)
