@@ -16,40 +16,42 @@ test_cases = {
 }
 
 test_params = {
-    'api\\pyleecan': {
+    "api\\pyleecan": {
         "id": -10,
         "iq": 50,
         "rpm": 1000,
         "d_theta": 0.25,
         "test_data_folder": "tests\\data",
-        "result_folder": "Results\\pyleecanAPI"
+        "result_folder": "Results\\pyleecanAPI",
     }
 }
 
-test_type = 'api\\pyleecan'
+test_type = "api\\pyleecan"
 
 
-def pyleecan_test_base(test_params: list, 
-                       result_path: str = "",
-                       test_data_path: str = "", 
-                       test_type: str = "",
-                       test_id: int = 0,
-                       test_case: str = "",
-                       print_flag: bool = 0, debug_flag: bool = 0) :
-
-    '''
+def pyleecan_test_base(
+    test_params: list,
+    result_path: str = "",
+    test_data_path: str = "",
+    test_type: str = "",
+    test_id: int = 0,
+    test_case: str = "",
+    print_flag: bool = 0,
+    debug_flag: bool = 0,
+):
+    """
     Base test data prepper for Pyleecan API workflow test.
     Params:
     - test_params: Containt parameter dict for running test
     - result_path: string path where result should be stored
-    - test_data_path: string path where json data for testing can be found 
+    - test_data_path: string path where json data for testing can be found
     The following params are used in case running this alone e.g. for preparing base data:
     - test_type: type of test, default empty
     - test_id: test id, default empty
     - test_case: test case name, same as machine name, default empty
     - print_flag: default 0
     - debug_flag: default 0
-    '''
+    """
 
     # disable messages of matplotlib
     logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
@@ -57,10 +59,13 @@ def pyleecan_test_base(test_params: list,
     # logging.getLogger("numpy").setLevel(logging.ERROR)
     logging.getLogger().setLevel(logging.DEBUG)
 
-
-    #create machine
+    # create machine
     if test_data_path == "":
-        machine_file_path = os.path.join(ROOT_DIR, test_params["test_data_folder"], f"{test_type}\\{test_case}.json")
+        machine_file_path = os.path.join(
+            ROOT_DIR,
+            test_params["test_data_folder"],
+            f"{test_type}\\{test_case}.json",
+        )
     else:
         machine_file_path = test_data_path
     print(machine_file_path)
@@ -75,24 +80,31 @@ def pyleecan_test_base(test_params: list,
     except Exception as exce:
         raise exce
     try:
-        if pyleecan_machine.stator.winding.conductor.cond_mat.name == "Copper1":
+        if (
+            pyleecan_machine.stator.winding.conductor.cond_mat.name
+            == "Copper1"
+        ):
             pyleecan_machine.stator.winding.conductor.cond_mat = CuMat
     except AttributeError:
         pass
     except Exception as exce:
         raise exce
 
-    #Create result folder
+    # Create result folder
     if result_path == "":
         curr_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
-        resFolder = os.path.join(ROOT_DIR, test_params["result_folder"], f"{test_type}\\{curr_datetime}\\test_{test_id}\\{test_case}")
+        resFolder = os.path.join(
+            ROOT_DIR,
+            test_params["result_folder"],
+            f"{test_type}\\{curr_datetime}\\test_{test_id}\\{test_case}",
+        )
         if not os.path.isdir(resFolder):
             os.makedirs(resFolder)
     else:
         resFolder = result_path
 
-    #Run simulation
-    pyleecanAPI.main(pyleecan_machine, model_dir = resFolder)
+    # Run simulation
+    pyleecanAPI.main(pyleecan_machine, model_dir=resFolder)
     geo_file = os.path.join(resFolder, pyleecan_machine.name + ".geo")
     pro_file = os.path.join(resFolder, pyleecan_machine.name + ".pro")
 
@@ -118,15 +130,16 @@ def pyleecan_test_base(test_params: list,
         "pro": pro_file,
         "res": sim_res_dir,
         # "exe": findGetDP(),
-        "exe": r'H:\onelab-Windows64\getdp.exe',
+        "exe": r"H:\onelab-Windows64\getdp.exe",
         "gmsh": findGmsh(),
     }
     runCalcforCurrent(param_dict)
 
     return machine_file_path, resFolder
 
+
 if __name__ == "__main__":
-    from test_pytest import TestCases
+    from test_api import TestCases
 
     new_test = TestCases()
 
@@ -143,7 +156,13 @@ if __name__ == "__main__":
         # print("\n")
         result_path_true = os.path.join(result_path, test_case)
         try:
-            pyleecan_test_base(test_params[test_type], result_path=result_path_true, test_type=test_type, test_id=test_id, test_case=test_case)
+            pyleecan_test_base(
+                test_params[test_type],
+                result_path=result_path_true,
+                test_type=test_type,
+                test_id=test_id,
+                test_case=test_case,
+            )
         except AttributeError:
             file.write(f"Attribute error in {test_case}\n")
             pass
