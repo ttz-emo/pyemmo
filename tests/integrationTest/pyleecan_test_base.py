@@ -15,6 +15,7 @@ from pyemmo.functions.runOnelab import (
     createCmdCommand,
     log_subprocess_output,
 )
+from pyemmo.script.script import Script
 
 
 test_cases = {
@@ -110,11 +111,13 @@ def pyleecan_test_base(
         resFolder = result_path
 
     # Run simulation
-    pyleecanAPI.main(pyleecan_machine, model_dir=resFolder, use_gui=False)
-    geo_file = os.path.join(resFolder, pyleecan_machine.name + ".geo")
-    pro_file = os.path.join(resFolder, pyleecan_machine.name + ".pro")
+    pyemmo_script: Script = pyleecanAPI.main(
+        pyleecan_machine, model_dir=resFolder, use_gui=False
+    )
+    # geo_file = pyemmo_script.geoFilePath
+    pro_file = pyemmo_script.proFilePath
 
-    sim_res_dir = os.path.join(resFolder, f"res_{pyleecan_machine.name}")
+    sim_res_dir = pyemmo_script.resultsPath
     if not os.path.isdir(sim_res_dir):
         os.makedirs(sim_res_dir)
 
