@@ -50,7 +50,7 @@ def exportTabMaxwell(data: list, identifier: list[str], filepath: str) -> None:
 
     Args:
         data (list): List of data vectors.
-        identifier (list[str]): List of data identifier for Maxwell like 
+        identifier (list[str]): List of data identifier for Maxwell like
             "Time (s)", "H (A_per_meter)" or "B (tesla)".
         filepath (str): File path to write the results to. File
             extension must be ".tab"!
