@@ -134,52 +134,77 @@ class TestCases(unittest.TestCase):
                 ) and messagePrinter(
                     "SUCCESS: Simulation result subfolder exists!"
                 ), "ERROR: Simulation result subfolder does not exist"
+
+            with check("check base result folder existence"):
+                assert os.path.isdir(base_result_path) and messagePrinter(
+                    "SUCCESS: Base result subfolder exists!"
+                ), "ERROR: Base result subfolder does not exist"
+            with check("check base simulation folder existence"):
+                assert os.path.isdir(base_simul_path) and messagePrinter(
+                    "SUCCESS: Base simulation folder exists!"
+                ), "ERROR: Base simulation folder does not exist"
+
+            with check("check base simulation subfolder existence"):
+                assert os.path.isdir(
+                    base_simul_subfolder_path
+                ) and messagePrinter(
+                    "SUCCESS: Base simulation subfolder exists!"
+                ), "ERROR: Base simulation subfolder does not exist"
             print()
 
-            # Point 2: check if GMSH base files are generated
-            print("Test point 2: check if GMSH base files are generated")
-            self.check_file_counts(base_result_path, result_path[test_id])
-            print()
+            if (
+                os.path.isdir(base_result_path)
+                and os.path.isdir(base_simul_path)
+                and os.path.isdir(base_simul_subfolder_path)
+            ):
 
-            # Point 3: check if simulation data is generated
-            print("Test point 3: check if simulation data is generated")
-            self.check_file_counts(base_simul_path, simul_path[test_id])
-            self.check_file_counts(
-                base_simul_subfolder_path, simul_subfolder_path[test_id]
-            )
-            print()
+                # Point 2: check if GMSH base files are generated
+                print("Test point 2: check if GMSH base files are generated")
+                self.check_file_counts(base_result_path, result_path[test_id])
+                print()
 
-            # # Point 4: Check content of files - Takes to long, need another method.
-            # print("Test point 4: check content of simulation files")
-            # # target_file_types = ["geo", "pro", "msh","pre", "pos"]
-            # target_file_types = ["msh", "pre", "pos"]
-            # # 4.1 In main test folder
-            # self.check_content(base_result_path, result_path[test_id], target_file_types)
+                # Point 3: check if simulation data is generated
+                print("Test point 3: check if simulation data is generated")
+                self.check_file_counts(base_simul_path, simul_path[test_id])
+                self.check_file_counts(
+                    base_simul_subfolder_path, simul_subfolder_path[test_id]
+                )
+                print()
 
-            # #4.2 In simulation folder
-            # self.check_content(base_simul_path, simul_path[test_id], target_file_types)
+                # # Point 4: Check content of files - Takes to long, need another method.
+                # print("Test point 4: check content of simulation files")
+                # # target_file_types = ["geo", "pro", "msh","pre", "pos"]
+                # target_file_types = ["msh", "pre", "pos"]
+                # # 4.1 In main test folder
+                # self.check_content(base_result_path, result_path[test_id], target_file_types)
 
-            # #4.3 In simulation subfolder
-            # self.check_content(base_simul_subfolder_path, simul_subfolder_path[test_id], target_file_types)
-            # print()
+                # #4.2 In simulation folder
+                # self.check_content(base_simul_path, simul_path[test_id], target_file_types)
 
-            # Point 5: check dat files value:
-            print("Test point 5: check values in dat files")
-            dat_targets = glob.glob(
-                os.path.join(simul_subfolder_path[test_id], "*.dat")
-            )
-            dat_bases = glob.glob(
-                os.path.join(base_simul_subfolder_path, "*.dat")
-            )
-            for target_file, base_file in zip(dat_targets, dat_bases):
-                target_dat = read_timetable_dat(target_file)
-                base_dat = read_timetable_dat(base_file)
-                with check:
-                    assert target_dat == base_dat and messagePrinter(
-                        f"SUCCESS: {target_file} check ok"
-                    ), f"ERROR: mismatch found between base and target dat in {target_file}!"
+                # #4.3 In simulation subfolder
+                # self.check_content(base_simul_subfolder_path, simul_subfolder_path[test_id], target_file_types)
+                # print()
 
-            print("\n")
+                # Point 5: check dat files value:
+                print("Test point 5: check values in dat files")
+                dat_targets = glob.glob(
+                    os.path.join(simul_subfolder_path[test_id], "*.dat")
+                )
+                dat_bases = glob.glob(
+                    os.path.join(base_simul_subfolder_path, "*.dat")
+                )
+                for target_file, base_file in zip(dat_targets, dat_bases):
+                    target_dat = read_timetable_dat(target_file)
+                    base_dat = read_timetable_dat(base_file)
+                    with check:
+                        assert target_dat == base_dat and messagePrinter(
+                            f"SUCCESS: {target_file} check ok"
+                        ), f"ERROR: mismatch found between base and target dat in {target_file}!"
+
+                print("\n")
+            else:
+                print("No base file for comparison")
+                continue
 
         print("========TEST PYLEECAN API + SIMULATION DONE========")
 
@@ -225,3 +250,8 @@ class TestCases(unittest.TestCase):
             assert l == len(base_content) and messagePrinter(
                 f"SUCCESS: {result_file} content check ok"
             ), f"{result_file} content check failed."
+
+
+if __name__ == "__main__":
+    new_test = TestCases()
+    new_test.test_pyleecan()
