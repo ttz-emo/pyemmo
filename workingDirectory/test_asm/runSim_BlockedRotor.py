@@ -65,12 +65,14 @@ nbr_timesteps = T_s * nbr_stator_periods / timestep
 
 thers = 100  # Thershold for bar resistance reset in A
 
-logging.info("Simulation should execute %i time steps.", int(nbrSteps) + 1)
+logging.info(
+    "Simulation should execute %i time steps.", int(nbr_timesteps) + 1
+)
 logging.debug("Timestep %e s.", timestep)
 logging.debug("One time step equals %f° mechanical degrees.", winkelschritt)
-logging.debug("Stop time of simulation: %.7e s", int(nbrSteps) * timestep)
+logging.debug("Stop time of simulation: %.7e s", int(nbr_timesteps) * timestep)
 # %%
-resId = f"blockedRotor_{f_r}Hz_{nbr_stator_periods}Periods_{nbr_steps_per_period}Steps_R_dyn_thers_{thers}A"
+resId = f"blockedRotor_{f_r}Hz_{nbr_stator_periods}Periods_{nbr_steps_per_period}Steps_R_dyn2_thers_{thers}A"
 paramDict = {
     "getdp": {
         "freq_rotor": f_r,
@@ -115,9 +117,9 @@ paramDict = {
     # "exc": 0,
     # "axLen": 0.2,
     # "sym": 4,
-    "info": "Restart simulation to check R_Bar_runtime and calculate moving mean.",
+    "info": "Method changed to resetting bar resistance to previous value instaead of DC value.",
     "datetime": time.ctime(),
-    "PostOp": ["Get_LocalFields_Post"],  # GetBOnRadius - Get_LocalFields_Post
+    "PostOp": [],  # GetBOnRadius - Get_LocalFields_Post
 }
 sim_res_dir = os.path.join(paramDict["res"], resId)
 results = runCalcforCurrent(paramDict)
@@ -126,7 +128,7 @@ sim_duration = stop - start
 logging.info(
     "Simulation took %s", str(datetime.timedelta(seconds=sim_duration))
 )
-if sim_duration > nbrSteps:
+if sim_duration > nbr_timesteps:
     results["sim_duration"] = str(datetime.timedelta(seconds=sim_duration))
 # %%
 out_dict = paramDict.copy()
@@ -139,7 +141,9 @@ if not os.path.isfile(json_res_path):
         json.dump(out_dict, jFile, indent=4, cls=NumpyEncoder)
 # %%
 # plot currents
-nbr_timesteps = len(results["time"]) # update number of timesteps with actual val
+nbr_timesteps = len(
+    results["time"]
+)  # update number of timesteps with actual val
 fig, ax = plt.subplots()
 ax.plot(results["time"], results["current"]["a"], label="u")
 ax.plot(results["time"], results["current"]["b"], label="v")
@@ -191,8 +195,8 @@ if os.path.isfile(resfile):
     ax.grid(True)
     ax.legend(handles=[line_u[0], line_i[0]])
     ax.set_title(f"Stab {nBar+1}")
-
-    # %
+    ax.set_xlim(T_s * (nbr_stator_periods - 1), T_s * nbr_stator_periods)
+    # %%
     fig, ax = plt.subplots()
     ax: Axes = ax
     r_bar = np.mean(U_bars[1:, nBar] / I_bars[1:, nBar])
@@ -304,29 +308,37 @@ if os.path.isfile(resfile):
     R_bar_dc = 3.572345668067562e-05
     fig, ax = plt.subplots()
     ax: Axes = ax
+    # # Plot all bars:
     # for nBar in range(1,nbr_bars+1):
-    for nBar in (1, 1):
-        resfile = os.path.join(sim_res_dir, f"R_bar_{nBar}.dat")
-        if os.path.isfile(resfile):
-            t, R_bar = read_timetable_dat(resfile)
-            ax.plot(t, R_bar, label=f"R_bar_{nBar}", marker=".")
-    ax.plot(
-        [t[0], t[-1]], [R_bar_dc, R_bar_dc], label=f"R_bar (DC)", marker=None
-    )
-    ax.set_ylim(bottom=0, top=3 * R_bar_dc)
+    # resfile = os.path.join(sim_res_dir, f"R_bar_{nBar}.dat")
+    # if os.path.isfile(resfile):
+    #     t, R_bar = read_timetable_dat(resfile)
+    #     ax.plot(t, R_bar, label=f"R_bar_{nBar}", marker=".")
+
+    # Plot Bar 1 only:
+    resfile = os.path.join(sim_res_dir, f"R_bar_1.dat")
+    if os.path.isfile(resfile):
+        t, R_bar = read_timetable_dat(resfile)
+        ax.plot(t, R_bar, label=f"R (berechnet)", marker=".")
+    # Plot DC resistance line:
+    ax.plot([t[0], t[-1]], [R_bar_dc, R_bar_dc], label=f"R (DC)", marker=None)
+    ax.set_ylim(bottom=0, top=50 * R_bar_dc)
     # ax.set_xlim(0, T_s)
+    ax.set_xlim(T_s * (nbr_stator_periods - 1), T_s * nbr_stator_periods)
     ax.legend()
 
     axi: Axes = ax.twinx()
     axi.plot(
         results["time"],
-        np.abs(results["current"]["bars"][:, nBar - 1]),
+        np.abs(results["current"]["bars"][:, 0]),
         color="b",
-        label=f"Strom Stab {nBar}",
+        label="|Stabstrom|",
         marker=".",
+        alpha=0.3,
     )
     axi.set_ylabel("Strom in A")
     axi.grid(True)
+    ax.minorticks_on()
     axi.legend()
     ax.legend()
     # plt.close()
@@ -338,16 +350,9 @@ else:
 ## ADD PLOT OF RUNTIME RESISTANCE
 resfile = os.path.join(sim_res_dir, "R_bar_runtime_1.dat")
 if os.path.isfile(resfile):
-    # for nBar in range(1,nbr_bars+1):
-    for nBar in (1, 1):
-        resfile = os.path.join(sim_res_dir, f"R_bar_runtime_{nBar}.dat")
-        if os.path.isfile(resfile):
-            t, R_bar = read_timetable_dat(resfile)
-            ax.plot(t, R_bar, label=f"R_bar_{nBar} (runtime)", marker=".")
-    # ax.set_ylim(bottom=0, top=15 * R_bar_dc)
-    # ax.set_xlim(T_s/4, T_s*3/4)
+    t, R_bar = read_timetable_dat(resfile)
+    ax.plot(t, R_bar, label=f"R (Circuit)", marker=".")
     ax.legend()
-    # axi.set_ylim(0, 200)
 # %%
 fig, ax = plt.subplots()
 ax: Axes = ax
@@ -367,7 +372,7 @@ plt.stem(freqs, amp)
 # Export Data for Maxwell
 from pyemmo.functions.exportMaxwell import exportTabMaxwell
 
-mxwl_export_dir = os.path.join(sim_res_dir,"export_maxwell")
+mxwl_export_dir = os.path.join(sim_res_dir, "export_maxwell")
 if not os.path.isdir(mxwl_export_dir):
     os.mkdir(mxwl_export_dir)
 # Export Bar Current
@@ -401,4 +406,108 @@ if not os.path.isfile(f_name_mxwl_export):
     )
 # %%
 logging.shutdown()
-# %% FINAL
+# %%
+# PLOT STABSTROM, -SPANNUNG UND -WIDERSTAND
+# Plot U_bar
+fig, ax = plt.subplots()
+ax: Axes = ax
+nBar = 0
+line_u = ax.plot(
+    results["time"], U_bars[:, nBar], label="Spannung", color="b", marker="."
+)
+ax.set_ylabel("Spannung in V")
+ax.grid(alpha=0.5, color="b")
+ax.set_title(f"Stab {nBar+1}")
+ax.set_xlim(T_s * (nbr_stator_periods - 1), T_s * nbr_stator_periods)
+
+# Plot I_bar
+axi: Axes = ax.twinx()
+line_i = axi.plot(
+    results["time"],
+    results["current"]["bars"][:, nBar],
+    marker=".",
+    color="g",
+    label="Strom",
+)
+axi.set_ylabel("Strom in A")
+axi.grid(alpha=0.5, color="g")
+
+# Plot R_bar (runtime)
+axr = ax.twinx()
+axr.set_yticks([])
+resfile = os.path.join(sim_res_dir, f"R_bar_runtime_1.dat")
+t, R_bar_rt = read_timetable_dat(resfile)
+line_r = axr.plot(t, R_bar_rt, label=f"Stabwiderstand", marker=".", color="r")
+
+# Add single legend
+ax.legend(handles=[line_u[0], line_i[0], line_r[0]], loc=2)
+
+# %%
+# Compare torque
+fig, ax = plt.subplots()
+ax: Axes = ax
+nBar = 0
+
+ax.grid(alpha=0.5)
+ax.set_xlim(T_s * (nbr_stator_periods - 1), T_s * nbr_stator_periods)
+
+line_i = ax.plot(
+    results["time"],
+    results["torque"]["mean"],
+    marker=".",
+    markersize = 4,
+    mfc = (1,1,1),
+    label="Reset Previous Value",
+)
+resfile = r"C:\Users\ganser\AppData\Local\Programs\pyemmo\workingDirectory\test_asm\res_Test_1PH8135_1_D0_W92_P14k4W_ohneRotNutSchlitz\blockedRotor_50Hz_80Periods_128Steps_R_dyn_thers_100A\Ts.dat"
+t, torque_s = read_timetable_dat(resfile)
+resfile = r"C:\Users\ganser\AppData\Local\Programs\pyemmo\workingDirectory\test_asm\res_Test_1PH8135_1_D0_W92_P14k4W_ohneRotNutSchlitz\blockedRotor_50Hz_80Periods_128Steps_R_dyn_thers_100A\Tr.dat"
+t, torque_r = read_timetable_dat(resfile)
+torque_mean = np.mean([torque_s, torque_r], axis=0)
+line_i = ax.plot(
+    t,
+    torque_mean,
+    marker=".",
+    markersize = 4,
+    markevery = 1,
+    mfc = (1,1,1),
+    label="Reset DC",
+    alpha=1,
+)
+ax.legend()
+ax.set_xlabel("time in s")
+ax.set_ylabel("torque in Nm")
+ax.set_ylim(-40, 40)
+print(f"Mean Reset DC = {np.mean(torque_mean[int(t.size * 79 / 80) :])}")
+print(f"""Mean Reset Previous = {np.mean(results["torque"]["mean"][int(results["time"].size * 79 / 80) :])}""")
+
+#%%
+# Compare currents
+fig, ax = plt.subplots()
+ax: Axes = ax
+nBar = 0
+
+ax.grid(alpha=0.5)
+ax.set_title(f"Bar {nBar+1}")
+ax.set_xlim(T_s * (nbr_stator_periods - 1), T_s * nbr_stator_periods)
+
+line_i = ax.plot(
+    results["time"],
+    results["current"]["bars"][:, nBar],
+    marker=".",
+    label="Reset Previous Value",
+)
+
+resfile = r"C:\Users\ganser\AppData\Local\Programs\pyemmo\workingDirectory\test_asm\res_Test_1PH8135_1_D0_W92_P14k4W_ohneRotNutSchlitz\blockedRotor_50Hz_80Periods_128Steps_R_dyn_thers_100A\I_bar_1.dat"
+t, I_bar_dyn1 = read_timetable_dat(resfile)
+line_i = ax.plot(
+    t,
+    I_bar_dyn1,
+    marker="",
+    label="Reset DC",
+)
+ax.legend()
+ax.set_xlabel("time in s")
+ax.set_ylabel("current in A")
+
+#%%
