@@ -38,10 +38,13 @@ GIT = ['GitPython; python_version>="3.7"'] # requires python>=3.7 since 3.1.23!
 
 # find packages in source directory
 [tool.setuptools.packages.find]
-where = ["pyemmo"]
-# include = ["pkg*"]
+where = ["."]
+include = ["pyemmo*"]
 # exclude = ["additional*"]`
 namespaces = false
 
 [tool.black]
 line-length = 79
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
