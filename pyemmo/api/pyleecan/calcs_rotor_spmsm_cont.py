@@ -19,6 +19,7 @@
 #
 """Module: spmsm_rotor_contour_calculation"""
 
+from __future__ import annotations
 import math
 import copy
 from typing import Union, List

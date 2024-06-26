@@ -52,6 +52,7 @@ Example:
 
 """
 
+from __future__ import annotations
 from numpy import pi
 
 from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM

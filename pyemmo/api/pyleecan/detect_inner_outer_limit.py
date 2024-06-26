@@ -27,6 +27,7 @@ Functions:
         curves of the machine geometry.
 """
 
+from __future__ import annotations
 import math
 from ..json.SurfaceJSON import SurfaceAPI
 

@@ -20,6 +20,7 @@
 """This module defines the functions to calculate
 the iron losses from getdp b-field simulation results."""
 
+from __future__ import annotations
 from typing import List, Union, Dict, Tuple
 import os
 import gmsh

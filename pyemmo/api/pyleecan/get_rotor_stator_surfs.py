@@ -28,6 +28,7 @@ Functions:
     -   ``get_stator_surfs``: Extracts stator surfaces from the machine geometry.
 """
 
+from __future__ import annotations
 from ..json.SurfaceJSON import SurfaceAPI
 from .. import logger
 

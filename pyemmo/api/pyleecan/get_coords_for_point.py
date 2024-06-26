@@ -27,6 +27,7 @@ Functions:
     - get_y_for_point: Calculates the y-coordinate of a point on a circle.
 """
 
+from __future__ import annotations
 import math
 
 

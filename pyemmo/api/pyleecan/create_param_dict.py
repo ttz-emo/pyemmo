@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import annotations
 from pyleecan.Classes.Machine import Machine as PyleecanMachine
 from pyleecan.Classes.Simulation import Simulation as PyleecanSimulation
 from pyleecan.Classes.Lamination import Lamination

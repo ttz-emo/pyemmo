@@ -18,6 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for json api surface class"""
+from __future__ import annotations
 from typing import List, Union
 
 from numpy import pi

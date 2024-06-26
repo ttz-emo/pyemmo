@@ -19,6 +19,7 @@
 #
 """This module is about the model generation via json api"""
 
+from __future__ import annotations
 from math import radians
 from typing import Dict, List, Literal, Tuple, Union
 

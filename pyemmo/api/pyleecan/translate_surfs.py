@@ -33,6 +33,7 @@ Functions:
     -   ``translate_surfs``: Translates pyleecan surfaces into pyemmo surfaces.
 """
 
+from __future__ import annotations
 from math import pi
 from numpy import angle
 

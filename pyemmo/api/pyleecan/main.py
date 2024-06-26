@@ -19,6 +19,7 @@
 #
 """Main module of pyleecan api"""
 
+from __future__ import annotations
 import os
 from typing import Union
 from pyleecan.Classes.Machine import Machine as PyleecanMachine

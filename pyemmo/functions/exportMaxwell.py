@@ -18,6 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module to export data to Ansys Maxwell"""
+from __future__ import annotations
 from os import path
 from ..script.material.material import Material
 from . import cleanName

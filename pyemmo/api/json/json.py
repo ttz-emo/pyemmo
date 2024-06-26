@@ -21,6 +21,7 @@
 
 # import debugpy
 # debugpy.debug_this_thread()
+from __future__ import annotations
 import os
 import subprocess
 from os import mkdir

@@ -32,6 +32,7 @@ Functions:
 
 """
 
+from __future__ import annotations
 from typing import Union, List, Tuple, Dict
 
 from pyleecan.Classes.Machine import Machine as PyleecanMachine

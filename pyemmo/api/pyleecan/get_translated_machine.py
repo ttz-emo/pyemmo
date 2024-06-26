@@ -33,6 +33,7 @@ Functions:
         stator contours.
 """
 
+from __future__ import annotations
 import math
 
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM

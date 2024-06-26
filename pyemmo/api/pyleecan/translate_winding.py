@@ -36,6 +36,7 @@ Note:
     function directly in `createParamDict`.
 """
 
+from __future__ import annotations
 from typing import Union
 from pyleecan.Classes.Machine import Machine
 import swat_em as swatem

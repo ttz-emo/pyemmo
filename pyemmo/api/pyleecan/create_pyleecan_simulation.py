@@ -20,6 +20,7 @@
 """This module defines the function generate_simulation to generate a pyleecan
 simulation object to use in pyleecan-api."""
 
+from __future__ import annotations
 from pyleecan.Classes.Machine import Machine as PyleecanMachine
 from pyleecan.Classes.Simulation import Simulation as PyleecanSimulation
 from pyleecan.Classes.Simu1 import Simu1

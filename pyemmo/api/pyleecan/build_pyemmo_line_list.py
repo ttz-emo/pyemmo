@@ -47,6 +47,7 @@ Raises:
     IndexError: If pyleecan_line_list is empty.
 """
 
+from __future__ import annotations
 from typing import Union
 
 from pyleecan.Classes.Segment import Segment

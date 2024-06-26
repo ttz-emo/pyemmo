@@ -21,6 +21,7 @@
 This module is about import functions for model information (geometry and simulation information)
 from json files
 """
+from __future__ import annotations
 import json
 import numbers
 from typing import Dict, List, Tuple, Union, Literal, Any

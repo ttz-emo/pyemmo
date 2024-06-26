@@ -57,6 +57,7 @@ Raises:
     TypeError: If unable to generate contours of the given machine type.
 """
 
+from __future__ import annotations
 from typing import List, Union
 
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
