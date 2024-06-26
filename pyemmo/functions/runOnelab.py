@@ -158,11 +158,11 @@ def mergeAllGeoFiles(folderPath, gmshExe):
 def createCmdCommand(
     onelabFile: str,
     useGUI: bool,
-    gmshPath: Union[str, os.PathLike] = "",
-    getdpPath: Union[str, os.PathLike] = "",
-    logFileName: Union[str, os.PathLike] = "",
-    paramDict: Dict[str, Union[str, int, float]] = {},
-    postOperations: List[str] = [],
+    gmshPath: str | os.PathLike = "",
+    getdpPath: str | os.PathLike = "",
+    logFileName: str | os.PathLike = "",
+    paramDict: dict[str, str | int | float] = {},
+    postOperations: list[str] = [],
 ) -> str:
     """Create a cmd command to open a .geo or .pro file with the gmsh gui or
     run gmsh and getdp from the command line.
@@ -229,24 +229,27 @@ def createCmdCommand(
             if not useGUI:
                 if getdpPath:
                     # if command line and getdp specified
-                    getdp_command += f"{getdpPath} {onelabFile} -solve Analysis "  # run the simulation with specific getdp exe
-                    # the command is: "gmsh FILE.geo -run && getdp FILE.pro -solve Analysis"
-
-                    # # TODO: Check if mesh file exists -> if not, create command to generate .msh file
-                    # if not isfile(filePath+'.msh')
+                    # run the simulation with specific getdp exe
+                    getdp_command += (
+                        f"{getdpPath} {onelabFile} -solve Analysis "
+                    )
+                    # the command is: "getdp FILE.pro -solve Analysis"
                     if "msh" in paramDict:
-                        if isfile(paramDict["msh"]):
-                            # skip meshing
-                            # (meshFilePath, meshExt) = splitext(paramDict["msh"])
-                            # assert meshExt = ".msh"
-                            getdp_command += f"-msh {paramDict.pop('msh')} "
-                            gmsh_command = ""
+                        if paramDict["msh"]:
+                            if isfile(paramDict["msh"]):
+                                # make sure file exists -> skip meshing
+                                getdp_command += f"-msh {paramDict['msh']} "
+                                gmsh_command = ""
+                            else:
+                                raise FileNotFoundError(
+                                    f"""Given msh file was not found: {paramDict["msh"]}"""
+                                )
                         else:
-                            raise FileNotFoundError(
-                                f"""Given msh file was not found: {paramDict["msh"]}"""
-                            )
+                            gmsh_command = f"{gmshPath} {filePath}.geo -run "
+                        # allways remove "msh" field for getdp param setting later
+                        paramDict.pop("msh")
                     else:
-                        # set the gmsh file extension to mesh
+                        # no "msh" key -> create mesh command
                         gmsh_command = f"{gmshPath} {filePath}.geo -run "
                     # # If log file name is given, add file logging flag:
                     # if logFileName:
