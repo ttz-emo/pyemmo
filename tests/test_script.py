@@ -14,6 +14,6 @@ def test_runScript():
     curr_date = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     subprocess.run(
-        f"powershell.exe (pytest integrationTest/apiTest.py -rA --show-capture=stdout --show-progress -vvv ^| tee ./integrationTest/logs/test_summary_{curr_date}.log)",
+        f"powershell.exe (pytest tests/integrationTest/apiTest.py -rA --show-capture=stdout --show-progress -vvv ^| tee ./integrationTest/logs/test_summary_{curr_date}.log)",
         shell=True,
     )
