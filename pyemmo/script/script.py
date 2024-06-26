@@ -153,9 +153,10 @@ class Script:
         self._simulationParameters = default_param_dict
         # update simulation parameters with user parameters
         for key, paramDict in simuParams.items():
-            self._simulationParameters[key] = (
-                default_param_dict[key] | paramDict
-            )
+            self._simulationParameters[key] = {
+                **default_param_dict[key],
+                **paramDict,
+            }
         ### directory to save the model files
         self.scriptPath = scriptPath
         ### directory to save simulation results
@@ -341,8 +342,8 @@ class Script:
 
     @property
     def resultsPath(self) -> str:
-        """Getter of the attribute resPath
-        (path where the simulation results are stored)"""
+        """path to the folder where the simulation results are stored
+        (simulation results folder)"""
         return self._resPath
 
     @resultsPath.setter
@@ -2128,7 +2129,7 @@ class Script:
         # is the correct number of parameters
 
         # update machine parameters:
-        simuParamDict["GEO"] = simuParamDict["GEO"] | geometryParams
+        simuParamDict["GEO"] = {**simuParamDict["GEO"], **geometryParams}
 
         # 2. Set simulation parameters
         #   INIT_ROTOR_POS  -> Allready set in __init__
@@ -2187,11 +2188,12 @@ class Script:
                 machine.stator.winding.save_to_file(
                     os.path.join(self.resultsPath, f"winding_{self.name}.wdg")
                 )
-                machine.stator.winding.plot_MMK(
-                    filename=os.path.join(
-                        self.resultsPath, rf".\{self.name}_MMF.png"
-                    ),
-                )
+                # FIXME: Cannot use plot function with Pyleecan-SWATEM version
+                # machine.stator.winding.plot_MMK(
+                #     filename=os.path.join(
+                #         self.resultsPath, rf".\{self.name}_MMF.png"
+                #     ),
+                # )
 
             # Stator angle for I_U = 1 p.u., I_V = -1/2, I_W = -1/2 in rad elec
             systemOffset = float(angle[where(mmfOrder == nbrPolePairs)])

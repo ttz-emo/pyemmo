@@ -10,11 +10,14 @@ import re
 
 def updateConfig(test_type: str = "", test_id: int = "", test_case: str = ""):
     """
+    """
     Function to update config file to generate proper test file name
+    """
     """
 
     curr_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
     parser = ConfigParser()
+    config_path = os.path.join(os.path.abspath("."), "pytest.ini")
     config_path = os.path.join(os.path.abspath("."), "pytest.ini")
     parser.read(config_path)
     if test_type == "":
@@ -24,7 +27,12 @@ def updateConfig(test_type: str = "", test_id: int = "", test_case: str = ""):
             f"logs/{test_type}/test_{test_id}_{test_case}/{curr_datetime}.log"
         )
     parser.set("pytest", "log_file", dest_name)
+        dest_name = (
+            f"logs/{test_type}/test_{test_id}_{test_case}/{curr_datetime}.log"
+        )
+    parser.set("pytest", "log_file", dest_name)
 
+    with open(config_path, "w+") as config_file:
     with open(config_path, "w+") as config_file:
         parser.write(config_file)
     return curr_datetime, dest_name
@@ -35,7 +43,9 @@ def messagePrinter(msg: str = "Assert OK"):
     return True
 
 
+
 def count_files(folder_path: str) -> dict:
+    """
     """
     Function to count files of each type in a path.
     Args: folder_path: path to count in. Needs to be abs path to the dest folder
@@ -43,7 +53,15 @@ def count_files(folder_path: str) -> dict:
         - 1st entry being folder_path,
         - 2nd till n-th entries: key = file type, value = count
     """
+    Output: n-items Dict
+        - 1st entry being folder_path,
+        - 2nd till n-th entries: key = file type, value = count
+    """
     file_type_list_raw = glob.glob(os.path.join(folder_path, "*.*"))
+    file_type_list = [
+        x.split(".")[1]
+        for x in [x.split("\\")[-1] for x in file_type_list_raw]
+    ]
     file_type_list = [
         x.split(".")[1]
         for x in [x.split("\\")[-1] for x in file_type_list_raw]
@@ -68,6 +86,11 @@ def fileParser(raw_path: str):
         "PATH_RES",
     ]  # exclude lines whose values always get updated along with files
     with open(raw_path) as file:
+    exclude_indicators = [
+        "Color",
+        "PATH_RES",
+    ]  # exclude lines whose values always get updated along with files
+    with open(raw_path) as file:
         content = file.read()
         content_lines = content.split(";")
         temp = []
@@ -78,6 +101,7 @@ def fileParser(raw_path: str):
                 delete_target += re.findall(f"{ind}.*\n*", line)
             for targ in delete_target:
                 line = line.replace(targ, "")
+            line = line.replace("\n", "")
             line = line.replace("\n", "")
             exclude_flags = [x for x in exclude_indicators if x in line]
             if exclude_flags == []:
@@ -96,6 +120,19 @@ def fileParser(raw_path: str):
     #         a = cleaned.split("=")
 
     #     result[a[0]] = a[1]
+    # TODO: parse result into things
+    # for line in temp:
+    #     cleaned = line.replace("\n","").replace(" ","").replace("\t","")
+    #     if (cleaned.find("[")!=-1):
+    #         # print(cleaned.find("["))
+    #         # print(cleaned)
+    #         split_index = cleaned.find("[")
+    #         a = [cleaned[:split_index], cleaned[split_index+1 : -2]]
+    #     else:
+    #         a = cleaned.split("=")
+
+    #     result[a[0]] = a[1]
+
 
 
 def fileFilter(file_list: list, target_types: list) -> list:

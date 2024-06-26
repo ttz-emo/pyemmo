@@ -17,8 +17,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-import math
+"""detect_inner_outer_limit Module
 
+This module provides a function to detect and label the most inner and outer
+curves of the machine geometry.
+
+Functions:
+    -   detect_inner_outer_limit: Detects and labels the most inner and outer
+        curves of the machine geometry.
+"""
+
+from __future__ import annotations
+import math
 from ..json.SurfaceJSON import SurfaceAPI
 
 
@@ -28,23 +38,30 @@ def detect_inner_outer_limit(
     outer_radius: float,
     has_shaft: bool,
 ) -> list[SurfaceAPI]:
-    """Overwrites the name of the curve, if its the most outlying curve (-> ``OuterLimit``) or the most innerlying curve (-> ``InnerLimit``).
+    """Detects and labels the most inner and outer curves of the machine geometry.
+
+    Overwrites the name of the curve to "InnerLimit" if it is the most inner curve,
+    and to "OuterLimit" if it is the most outer curve.
 
     Attention when making the function call:\n
-    If the machine has an external rotor:\n
+    If the machine has an **outer rotor**:\n
     ``inner_radius``: ``rotorRint`` or ``statorRint``\n
     ``outer_radius``: ``statorRext`` or ``rotorRext``\n
+
     Combinations that work:
-    * ``rotorRint`` and ``statorRext``
-    * ``statorRint`` and ``rotorRext``
+
+        - ``rotorRint`` and ``statorRext``
+        - ``statorRint`` and ``rotorRext``
 
     Args:
-        geometryList (list[SurfaceAPI]): list of the machine surfaces
-        inner_radius (float): inner radius
-        outer_radius (float): outer radius
+        geometry_list (list[SurfaceAPI]): List of the machine surfaces.
+        inner_radius (float): Inner radius of the machine.
+        outer_radius (float): Outer radius of the machine.
+        has_shaft (bool): Indicates whether the machine has a shaft or not.
 
     Returns:
-        list[SurfaceAPI]: geometryList
+        list[SurfaceAPI]: Updated geometry list with curves labeled as
+        "InnerLimit" or "OuterLimit".
     """
     for surf in geometry_list:
         for curve in surf.curve:

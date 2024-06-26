@@ -1,11 +1,13 @@
 import os
 import logging
+from datetime import datetime
+from subprocess import Popen, PIPE, STDOUT
 
 from pyleecan.Functions import load
 from pyleecan.Classes.Machine import Machine
+from pyleecan.definitions import DATA_DIR
 
 from pyemmo.definitions import ROOT_DIR
-from pyleecan.definitions import DATA_DIR
 from pyemmo.api.pyleecan import main as pyleecanAPI
 from pyemmo import rootLogger
 
@@ -206,22 +208,24 @@ def pyleecan_test_base(
         resFolder = result_path
 
     # Run simulation
-    pyleecanAPI.main(pyleecan_machine, model_dir=resFolder)
-    geo_file = os.path.join(resFolder, pyleecan_machine.name + ".geo")
-    pro_file = os.path.join(resFolder, pyleecan_machine.name + ".pro")
+    pyemmo_script: Script = pyleecanAPI.main(
+        pyleecan_machine, model_dir=resFolder, use_gui=False
+    )
+    # geo_file = pyemmo_script.geoFilePath
+    pro_file = pyemmo_script.proFilePath
 
-    sim_res_dir = os.path.join(resFolder, f"res_{pyleecan_machine.name}")
+    sim_res_dir = pyemmo_script.resultsPath
     if not os.path.isdir(sim_res_dir):
         os.makedirs(sim_res_dir)
 
-    id = test_params["id"]
-    iq = test_params["iq"]
+    i_d = test_params["id"]
+    i_q = test_params["iq"]
     n = test_params["rpm"]
-    resid = f"id_{id}_iq_{iq}_n_{n}rpm"
+    resid = f"id_{i_d}_iq_{i_q}_n_{n}rpm"
     param_dict = {
         "getdp": {
-            "ID_RMS": id,
-            "IQ_RMS": iq,
+            "ID_RMS": i_d,
+            "IQ_RMS": i_q,
             "RPM": n,
             "d_theta": test_params["d_theta"],
             "ResId": resid,
@@ -235,7 +239,25 @@ def pyleecan_test_base(
         "exe": r"H:\onelab-Windows64\getdp.exe",
         "gmsh": findGmsh(),
     }
-    runCalcforCurrent(param_dict)
+    # runCalcforCurrent(param_dict)
+    cmdCommand = createCmdCommand(
+        pro_file,
+        useGUI=False,
+        gmshPath=param_dict["gmsh"],
+        getdpPath=param_dict["exe"],
+        paramDict=param_dict["getdp"],
+    )
+
+    logging.debug("cmd command is: %s", cmdCommand)
+    logging.info("Running simulation for result-ID '%s'", resid)
+    with Popen(cmdCommand, stdout=PIPE, stderr=STDOUT) as process:
+        with process.stdout:
+            log_subprocess_output(process.stdout)
+        exitcode = process.wait()  # 0 means success
+        if exitcode != 0:
+            raise RuntimeError(
+                f"Simulation for machine '{pyleecan_machine.name}' failed!"
+            )
 
     return machine_file_path, resFolder
 

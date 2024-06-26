@@ -21,6 +21,7 @@
 
 # import debugpy
 # debugpy.debug_this_thread()
+from __future__ import annotations
 import os
 import subprocess
 from os import mkdir
@@ -47,8 +48,8 @@ from .SurfaceJSON import SurfaceAPI
 
 
 def createMachine(
-    segmentSurfDict: Dict[str, SurfaceAPI], extendedInfo: dict
-) -> Tuple[MachineAllType, Dict[str, List[SurfaceAPI]]]:
+    segmentSurfDict: dict[str, SurfaceAPI], extendedInfo: dict
+) -> tuple[MachineAllType, dict[str, list[SurfaceAPI]]]:
     """create a pyemmo Machine object from a list of surfaces forming one machine segment
     (imported from matlab).
 
@@ -132,7 +133,7 @@ def createMachine(
     return machineSiemens, maschineSurfDict
 
 
-def createMeshSizeGUICode(machineSurfDict: Dict[str, List[SurfaceAPI]]):
+def createMeshSizeGUICode(machineSurfDict: dict[str, list[SurfaceAPI]]):
     """
     Create the gmsh fomatted code to set the mesh size of the machine surfaces via the GUI.
 
@@ -188,7 +189,7 @@ def createMeshSizeGUICode(machineSurfDict: Dict[str, List[SurfaceAPI]]):
         # if there were ids containing idExt
         if surfID_List:
             # create a List of all surfaces with idExt in it -> surfList
-            surfList: List[SurfaceAPI] = []
+            surfList: list[SurfaceAPI] = []
             for surfID in surfID_List:
                 surfList.extend(machineSurfDict[surfID])
             # get the mesh size
@@ -342,12 +343,12 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
 
 
 def main(
-    geo: Union[str, dict],
-    extInfo: Union[str, dict],
-    model: Union[str, os.PathLike],
-    gmsh: Union[str, os.PathLike] = "",
-    getdp: Union[str, os.PathLike] = "",
-    results: Union[str, os.PathLike] = "",
+    geo: str | dict,
+    extInfo: str | dict,
+    model: str | os.PathLike,
+    gmsh: str | os.PathLike = "",
+    getdp: str | os.PathLike = "",
+    results: str | os.PathLike = "",
 ):
     """The main function reads the JSON files (if given) and creates the .geo
     and .pro scripts for a onelab simulation.
@@ -467,7 +468,9 @@ def main(
     if importJSON.getFlagOpenGui(extendedInfo) is True:
         _open_onelab(apiScript, extendedInfo, gmsh, getdp)
 
+    logger.removeHandler(jsonLogFileHandler)
     jsonLogFileHandler.close()  # close log file handler!
+    return apiScript
 
 
 def _open_onelab(

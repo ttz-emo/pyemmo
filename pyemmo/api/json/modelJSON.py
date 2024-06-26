@@ -19,6 +19,7 @@
 #
 """This module is about the model generation via json api"""
 
+from __future__ import annotations
 from math import radians
 from typing import Dict, List, Literal, Tuple, Union
 
@@ -723,9 +724,11 @@ def getSlotPhase(
             you have multiple slot side (>2) per lamination segment.)
 
     Returns:
-        Literal['p','n']: Winding direction (
-            'p' = positiv = +z-direction;
-            'n' = negative = -z-direction)
+        Literal['p','n']: Winding direction
+
+            -   'p' = positiv = +z-direction
+            -   'n' = negative = -z-direction
+
         Literal["u", "v", "w"]: Phase indicator
 
     Raises:
@@ -812,7 +815,7 @@ def createWinding(extendedInfo: dict) -> datamodel:
     swatemWinding.set_phases(
         S=windLayout,
         turns=(importJSON.getNbrOfTurns(extendedInfo)),
-        w=get_min_coilspan(windLayout),
+        w=get_min_coilspan(windLayout, nbrSlots),
     )
     swatemWinding.analyse_wdg()  # analyse winding to make sure its valid and all parameters are set
     # make sure that number of parallel paths does not exceed max. possible paths of winding:

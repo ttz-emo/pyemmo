@@ -17,11 +17,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+"""Module: spmsm_rotor_contour_calculation"""
+
+from __future__ import annotations
 import math
 import copy
-from typing import Union
+from typing import Union, List
 
-from pyleecan.Classes.Machine import Machine
+from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 
 from ..json.SurfaceJSON import SurfaceAPI
 from ...script.geometry.point import Point
@@ -31,56 +34,19 @@ from ...functions.plot import plot
 from .. import logger
 
 
-def general_calc_spmsm_cont(
-    machine: Machine,
-    rotor_lam_surf_list: list[SurfaceAPI],
-    rotor_mag_surf_list: list[SurfaceAPI],
+def get_lr_points(
+    machine: MachineSIPMSM,
+    cont_line_list: List[Union[CircleArc, Line]],
+    is_internal: bool,
     radius: float,
-    is_internal_rotor: bool,
-) -> tuple[list[Union[Line, CircleArc]], Point, Point]:
-    """General calculations for creating the rotor contour: \n
-    * Filtering the lines that lie on the air gap
-    * Detecting the outer points of the rotor contour facing the air gap
-
-    Args:
-        machine (Machine): Pyleecan machine
-        rotorLamSurfList (list[SurfaceAPI]): List of the pyemmo-surfaces of the rotor
-        radius (float): Internal Rotor -> ``rotorRint`` | External Rotor -> ``rotorRext``
-        is_internal_rotor (bool): Internal or external rotor
-
-    Returns:
-        tuple[list[Union[Line, CircleArc]], Point, Point]: _description_
-    """
-    rotor_cont_line_list = []
-    # --------------------------------------------
-    # Filtering the lines that lie at the air gap:
-    # --------------------------------------------
-    # rotor lamination:
-    for curve in rotor_lam_surf_list[0].curve:
-        if not (
-            math.isclose(a=curve.startPoint.radius, b=radius, abs_tol=1e-6)
-        ) and not math.isclose(
-            a=curve.endPoint.radius, b=radius, abs_tol=1e-6
-        ):
-            rotor_cont_line_list.append(curve)
-
-    logger.debug("---")
-    logger.debug("Plot Überprüfung des Löschens der Seitenlinien.")
-    plot(rotor_cont_line_list, linewidth=1, markersize=3)
-    logger.debug("---")
-
-    # --------------------------------------------
-    # Filtering the outermost points of the rotor:
-    # --------------------------------------------
-    # r_point_rotor_cont = Point("rPointRotorCont", x=0, y=0, z=0, meshLength=0)
-    # l_point_rotor_cont = Point("lPointRotorCont", x=0, y=0, z=0, meshLength=0)
+):
     rotor_seg_angle = 360 / machine.rotor.comp_periodicity_geo()[0]
-
     if math.isclose(a=rotor_seg_angle, b=0, abs_tol=1e-6):
+        # FIXME: What does this test do?! rotor_seg_angle can not be 0!
         rotor_seg_angle = 180
 
-    if is_internal_rotor:
-        for curve in rotor_cont_line_list:
+    if is_internal:
+        for curve in cont_line_list:
             for point in curve.points:
                 angle_point = (
                     math.atan2(point.coordinate[1], point.coordinate[0])
@@ -119,7 +85,7 @@ def general_calc_spmsm_cont(
 
     else:
         smallest_prev_x_rotor = machine.rotor.Rext
-        for curve in rotor_cont_line_list:
+        for curve in cont_line_list:
             for point in curve.points:
                 if point.coordinate[0] < smallest_prev_x_rotor:
                     smallest_prev_x_rotor = point.coordinate[0]
@@ -130,6 +96,61 @@ def general_calc_spmsm_cont(
                     and point.coordinate[0] > radius
                 ):
                     r_point_rotor_cont = point
+    l_point_rotor_cont.name = "upper rotor contour point"
+    r_point_rotor_cont.name = "lower rotor contour point"
+    return (l_point_rotor_cont, r_point_rotor_cont)
+
+
+def general_calc_spmsm_cont(
+    machine: MachineSIPMSM,
+    rotor_lam_surf_list: list[SurfaceAPI],
+    rotor_mag_surf_list: list[SurfaceAPI],
+    radius: float,
+    is_internal_rotor: bool,
+) -> tuple[list[Union[Line, CircleArc]], Point, Point]:
+    """General calculations for creating the rotor contour: \n
+    * Filtering the lines that lie on the air gap
+    * Detecting the outer points of the rotor contour facing the air gap
+
+    Args:
+        machine (MachineSIPMSM): Pyleecan machine
+        rotorLamSurfList (list[SurfaceAPI]): List of the pyemmo-surfaces of the rotor
+        radius (float): if inner rotor ``rotor_rint``, if external rotor
+            ``rotor_rext``
+        is_internal_rotor (bool): Internal or external rotor
+
+    Returns:
+        Tuple[List[Union[Line, CircleArc]], Point, Point]: A tuple containing:
+            - A list of contour lines for the SPMSM rotor.
+            - The right point of the rotor contour.
+            - The left point of the rotor contour.
+    """
+    rotor_cont_line_list = []
+    # --------------------------------------------
+    # Filtering the lines that lie at the air gap:
+    # --------------------------------------------
+    # rotor lamination:
+    for curve in rotor_lam_surf_list[0].curve:
+        if not (
+            math.isclose(curve.startPoint.radius, radius, abs_tol=1e-6)
+        ) and not math.isclose(
+            a=curve.endPoint.radius, b=radius, abs_tol=1e-6
+        ):
+            rotor_cont_line_list.append(curve)
+
+    # logger.debug("---")
+    # logger.debug("Plot Überprüfung des Löschens der Seitenlinien.")
+    # plot(rotor_cont_line_list, linewidth=1, markersize=3)
+    # logger.debug("---")
+
+    # --------------------------------------------
+    # Filtering the outermost points of the rotor:
+    # --------------------------------------------
+    # r_point_rotor_cont = Point("rPointRotorCont", x=0, y=0, z=0, meshLength=0)
+    # l_point_rotor_cont = Point("lPointRotorCont", x=0, y=0, z=0, meshLength=0)
+    l_point_rotor_cont, r_point_rotor_cont = get_lr_points(
+        machine, rotor_cont_line_list, is_internal_rotor, radius
+    )
 
     for mag_surf in rotor_mag_surf_list:
         rotor_cont_line_list.extend(mag_surf.curve)
@@ -142,28 +163,40 @@ def general_calc_spmsm_cont(
 
 
 def calc_spmsm_rotor_cont(
-    machine: Machine,
+    machine: MachineSIPMSM,
     rotor_lam_surf_list: list,
     rotor_mag_surf_list: list,
     radius: float,
     is_internal_rotor: bool,
 ) -> tuple[list, Point, Point]:
-    """_summary_
+    """
+    Calculates the contour lines for the surface permanent magnet synchronous machine (SPMSM) rotor.
+
+    This function calculates the contour lines for the SPMSM rotor based on
+    the provided machine, rotor lamination surface list, rotor magnet surface list,
+    radius, and whether the rotor is internal or external.
 
     Args:
-        machine (Machine): _description_
-        rotorLamSurfList (list): _description_
-        rotorMagSurfList (list): _description_
-        radius (float): _description_
-        isInternalRotor (bool): _description_
+        machine (MachineSIPMSM): The PYLEECAN SPMSM machine.
+        rotor_lam_surf_list (List[Surface]): A list of rotor lamination surfaces.
+        rotor_mag_surf_list (List[Surface]): A list of rotor magnet surfaces.
+        radius (float): The radius of the rotor.
+        is_internal_rotor (bool): Whether the rotor is internal or external.
 
     Returns:
-        tuple[list, list, Point]: _description_
+        tuple[List, Point, Point]: A tuple containing:
+            - A list of contour lines for the SPMSM rotor.
+            - The right point of the rotor contour.
+            - The left point of the rotor contour.
+
+    Notes:
+        - The contour lines are calculated based on the provided machine, rotor lamination
+          surface list, rotor magnet surface list, radius, and whether the rotor is internal or external.
+        - Duplicate lines or circle arcs are filtered out based on the intersection points between
+          rotor lamination and magnet surfaces.
+        - The contour lines are plotted for visualization.
     """
 
-    # =================================================
-    # Erstellung der Rotor-Konturlinie fuer MovingBand:
-    # =================================================
     (
         rotor_cont_line_list,
         r_point_rotor_cont,
@@ -213,8 +246,8 @@ def calc_spmsm_rotor_cont(
                     rotor_cont_line_list.remove(rotor_mag_curve)
                     # plot(rotorContourLineList, linewidth=1, markersize=3, tag=True)
 
-    logger.debug("Plot contourLineList ")
-    plot(rotor_cont_line_list, linewidth=1, markersize=3, tag=True)
-    logger.debug("---")
+    # logger.debug("Plot contourLineList ")
+    # plot(rotor_cont_line_list, linewidth=1, markersize=3, tag=True)
+    # logger.debug("---")
 
     return rotor_cont_line_list, r_point_rotor_cont, l_point_rotor_cont

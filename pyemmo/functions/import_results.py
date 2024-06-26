@@ -19,6 +19,7 @@
 #
 """Module to import simulation results from GetDP (Onelab)"""
 
+from __future__ import annotations
 import os
 from os import path, PathLike
 from cmath import isclose

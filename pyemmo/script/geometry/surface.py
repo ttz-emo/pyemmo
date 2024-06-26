@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import annotations
 from random import random
 from typing import TYPE_CHECKING, List, Tuple, Type, Union
 
@@ -173,7 +174,7 @@ class Surface(Transformable):
 
     # TODO: Rename "curve"
     @curve.setter
-    def curve(self, curves: list[Line]) -> None:
+    def curve(self, curves: List[Line]) -> None:
         """Set line loop of surface
 
         Args:
@@ -270,7 +271,7 @@ class Surface(Transformable):
             List[Point]: _description_
         """
         LineLoop = self.curve
-        PointList: List[Point] = list()
+        PointList: List[Point] = []
         for line in LineLoop:
             if line.type == "CircleArc":
                 CenterPoint = line.center
@@ -400,7 +401,7 @@ class Surface(Transformable):
         Returns:
             Surface: Duplicated surface.
         """
-        newCurves: List[Union[Line, CircleArc, Spline]] = list()
+        newCurves: List[Union[Line, CircleArc, Spline]] = []
         for curve in self.curve:
             newCurves.append(curve.duplicate())
         s = Surface(name, newCurves)
@@ -491,14 +492,13 @@ class Surface(Transformable):
                 newCurves = curves + addCurves  # combine the remaining lines
                 # check if the remaining lines containing the touch points can be combined:
                 for dockPoint in touchpoints:
-                    lines2combine: List[Union[Line, CircleArc, Spline]] = (
-                        list()
-                    )
+                    lines2combine: List[Union[Line, CircleArc, Spline]] = []
                     # find the two lines in the two remaining curve lists containing the docking point:
                     for curve in newCurves:
                         for linePoint in curve.points:
                             if linePoint.isEqual(dockPoint):
-                                # if the line point and docking point coordinates are equal add the line to the combine lines-list:
+                                # if the line point and docking point coordinates
+                                # are equal add the line to the combine lines-list:
                                 lines2combine.append(curve)
                                 break  # break the loop
                     if len(lines2combine) == 2:
@@ -536,7 +536,7 @@ class Surface(Transformable):
 
     def recombineCurves(self) -> None:
         oldLoop = self.curve
-        newLoop: List[Union[Line, CircleArc, Spline]] = list()
+        newLoop: List[Union[Line, CircleArc, Spline]] = []
         while oldLoop:
             curve = oldLoop.pop()
             newCurve = None
@@ -609,7 +609,7 @@ class Surface(Transformable):
         oldLoop: List[Line] = self.curve
         # direction: List[int] = list()
         # direction = 1  # append 1 for first line, cause it sets the direction
-        newLoop: List[Line] = list()
+        newLoop: List[Line] = []
         # add first line to newLoop, because it doesnt need to be checked
         newLoop.append(oldLoop.pop(0))
         nbrLines = len(oldLoop)  # get the remaining number of lines

@@ -18,6 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for class StatorLamination"""
+from __future__ import annotations
 from typing import List
 from pyemmo.script.material.material import Material
 from .surface import Surface

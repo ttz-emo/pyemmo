@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import annotations
 from random import random
 from typing import List, Tuple, Union
 from matplotlib import pyplot as plt

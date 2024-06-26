@@ -1,13 +1,16 @@
+setuptools
 matplotlib>=3.3.4
-numpy>=1.25
+numpy>=1.23.1
 pandas>=1.2.4
 parse>=1.19.0
 pygetdp>=1.0.0
-# swat_em>=0.6.3 -> pyleecan friendly version of swat:
-git+https://gitlab.com/CedMrnl/swat-em.git
+swat_em>=0.6.3
+# -> pyleecan friendly version of swat:
+# git+https://gitlab.com/CedMrnl/swat-em.git
 gmsh>=4.10.3
 GitPython
-# pyleecan==1.5.1 -> TODO: install separatly without deps so we don't get in conflict
+pyleecan>=1.5.1
+
 # with the restricted pyleecan deps:
 # cloudpickle>=1.3.0
 # ezdxf==0.14.2

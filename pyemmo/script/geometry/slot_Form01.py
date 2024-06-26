@@ -18,6 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for class Slot_Form01"""
+from __future__ import annotations
 import math
 from .slot import Slot
 from .point import Point

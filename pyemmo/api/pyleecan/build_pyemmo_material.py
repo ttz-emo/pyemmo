@@ -17,21 +17,32 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""imports"""
+"""Module: pyemmo_material_conversion"""
+
+from __future__ import annotations
 from numpy import Inf
-from pyleecan.Classes.Material import Material as pyleecanMat
+from pyleecan.Classes.Material import Material as PyleecanMaterial
 from pyleecan.Classes.MatMagnetics import MatMagnetics
 from ...script.material.material import Material
 
 
-def build_pyemmo_material(pyleecan_material: pyleecanMat) -> Material:
-    """Translates a pyleecan-material into a pyemmo-material.
+def build_pyemmo_material(pyleecan_material: PyleecanMaterial) -> Material:
+    """Translates a pyleecan material into a pyemmo material.
+
+    This function translates a pyleecan material into a pyemmo material.
 
     Args:
-        pyleecanMaterial (pyleecanMat): Material in pyleecan format
+        pyleecan_material (PyleecanMaterial): The pyleecan material to be translated.
 
     Returns:
-        Material: Translated material in pyemmo format
+        Material: The translated pyemmo material.
+
+    Notes:
+        - Conductivity, relPermeability, remanence, tempCoefRem, BH, and density
+          are extracted from the pyleecan material to construct the pyemmo material.
+        - If any attribute is missing from the pyleecan material, it is set to None
+          in the pyemmo material.
+
     """
     # elec props
     try:
