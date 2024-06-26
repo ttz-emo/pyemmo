@@ -342,8 +342,8 @@ class Script:
 
     @property
     def resultsPath(self) -> str:
-        """Getter of the attribute resPath
-        (path where the simulation results are stored)"""
+        """path to the folder where the simulation results are stored
+        (simulation results folder)"""
         return self._resPath
 
     @resultsPath.setter

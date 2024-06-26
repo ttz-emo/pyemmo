@@ -530,6 +530,17 @@ def runCalcforCurrent(param: dict):
         if os.path.isfile(res_file):
             # get first char in machine side to index rotor and stator results
             _, results_dict["torque_vw"][side] = read_timetable_dat(res_file)
+    if {"rotor", "stator"} <= results_dict["torque"].keys():
+        # calc mean torque
+        results_dict["rotor torque"] = results_dict["torque"]["rotor"]
+        results_dict["stator torque"] = results_dict["torque"]["stator"]
+        results_dict["torque"] = np.mean(
+            [
+                results_dict["rotor torque"],
+                results_dict["stator torque"],
+            ],
+            axis=0,
+        )
 
     # 3. Flux results
     results_dict["flux"] = {}
