@@ -7,6 +7,7 @@ from pyleecan.Classes.Machine import Machine
 from pyemmo.definitions import ROOT_DIR
 from pyleecan.definitions import DATA_DIR
 from pyemmo.api.pyleecan import main as pyleecanAPI
+from pyemmo import rootLogger
 
 from pyemmo.functions.runOnelab import runCalcforCurrent, findGmsh, findGetDP
 from datetime import datetime
@@ -28,6 +29,91 @@ test_params = {
 }
 
 test_type = "api\\pyleecan"
+
+
+def pyleecanPrepTuple(test_cases, test_type):
+    """
+    Testing pyleecan API to generate GMSH and simulation files based on pyleecan machine json files.
+    There are 4 test points included:
+        - Check that simulation folders and subfolders are properly generated
+        - Check that GMSH and GetDP files are properly generated
+        - Check that simulation folders and files are generated
+        - Check that content of result file match base comparison data
+
+    """
+    # test_type = "api\\pyleecan"
+    # self.make_test_cases(test_type)
+    # self.test_cases[test_type] = make_test_cases(test_type)
+    # result_path = defaultdict(list)
+    # simul_path = defaultdict(list)
+    # simul_subfolder_path = defaultdict(list)
+    rootLogger.setLevel(logging.DEBUG)
+    curr_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    header_flg = True
+    param_tuples = list()
+
+    # print("========TEST PYLEECAN API + SIMULATION FLOW START========")
+    for test_id, test_case in test_cases[test_type][1:]:
+        # curr_datetime, _ = updateConfig(test_type, test_id, test_case) #REDUNDANT since API level log already exists in each folder
+
+        # preparing source and result folders
+        source_path = os.path.join(
+            ROOT_DIR,
+            test_params[test_type]["test_data_folder"],
+            f"{test_type}\\{test_case}.json",
+        )
+
+        # make sure source file exists -> REDUNDANT since test cases are created from test data folder content.
+        # assert os.path.isfile(source_path) and messagePrinter("SUCCESS: Source file exist"), "ERROR: Source file does not exist"
+
+        result_path = os.path.join(
+            ROOT_DIR,
+            test_params[test_type]["result_folder"],
+            f"{test_type}\\{curr_datetime}\\test_{test_id}\\{test_case}",
+        )
+        if not os.path.isdir(result_path):
+            os.makedirs(result_path)
+        base_result_path = os.path.join(
+            ROOT_DIR,
+            test_params[test_type]["test_data_folder"],
+            test_type,
+            f"comparison_base\\{test_case}",
+        )  # this can change to a different folder for base data
+
+        if test_type == "api\\pyleecan":
+            simul_path = os.path.join(result_path, f"res_{test_case}")
+            simul_subfolder = f"id_{test_params[test_type]['id']}_iq_{test_params[test_type]['iq']}_n_{test_params[test_type]['rpm']}rpm"
+            simul_subfolder_path = os.path.join(simul_path, simul_subfolder)
+            base_simul_path = os.path.join(
+                base_result_path, f"res_{test_case}"
+            )  # This can also change for another base data folder
+            base_simul_subfolder_path = os.path.join(
+                base_simul_path, simul_subfolder
+            )  # This can also change for another base data folder
+            if header_flg:
+                headers = "test_id, test_case, source_path, result_path, simul_path, simul_subfolder_path, base_result_path, base_simul_path, base_simul_subfolder_path"
+                param_tuples = param_tuples + [headers]
+                header_flg = False
+
+            param_tuples = param_tuples + [
+                (
+                    test_id,
+                    test_case,
+                    source_path,
+                    result_path,
+                    simul_path,
+                    simul_subfolder_path,
+                    base_result_path,
+                    base_simul_path,
+                    base_simul_subfolder_path,
+                )
+            ]
+
+        else:
+            continue
+
+    return param_tuples
 
 
 def pyleecan_test_base(
@@ -155,7 +241,7 @@ def pyleecan_test_base(
 
 
 if __name__ == "__main__":
-    from test_api import TestCases
+    from apiTest import TestCases
 
     new_test = TestCases()
 

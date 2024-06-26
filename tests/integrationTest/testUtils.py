@@ -104,17 +104,15 @@ def fileFilter(file_list: list, target_types: list) -> list:
     return result
 
 
-def make_test_cases(test_type: str, fixed_test_flg: bool = True) -> dict:
+def make_test_cases(test_type: str, fixed_test_flg: bool = True):
     """
-    Create a dictionary of test cases based on files in test data folder
-    By default, only runs for selected tests which has comparison data created.
-    Args:
-        - test_type: type of test
-        - fixed_test_flg: bool flag to use the designated test cases, or create test cases from available data.
+    Create a list of tuples of test ids & test cases based on files in test data folder
     """
-    test_cases = {}
+    # test_cases = {}
+    headers = "test_id, test_case"
+    # test_cases = {}
+    test_cases_from_files = [headers]
     test_files = glob.glob(os.path.join(TEST_DIR, "data", test_type, "*.json"))
-    print(test_files)
     test_names = list(
         map(
             lambda x: x.split(".")[0],
@@ -122,16 +120,26 @@ def make_test_cases(test_type: str, fixed_test_flg: bool = True) -> dict:
         )
     )
     for id, name in enumerate(test_names):
-        test_cases[id] = name
+        # test_cases[id] = name
+        test_cases_from_files.append((id, name))
 
-    test_cases_fixed = {
-        0: "IPMSM_B",
-        1: "SPMSM_003",
-        2: "SPMSM_003",
-        3: "Toyota_Prius",
-    }
+    # test_cases_fixed = {
+    #     0: "IPMSM_B",
+    #     1: "SPMSM_002",
+    #     2: "SPMSM_003",
+    #     3: "Toyota_Prius",
+    # }
+
+    test_cases_fixed = [headers]
+    if test_type == "api\\pyleecan":
+        test_cases_fixed = test_cases_fixed + [
+            (0, "IPMSM_B"),
+            (1, "SPMSM_002"),
+            (2, "SPMSM_003"),
+            (3, "Toyota_Prius"),
+        ]
 
     if fixed_test_flg:
         return test_cases_fixed
     else:
-        return test_cases
+        return test_cases_from_files
