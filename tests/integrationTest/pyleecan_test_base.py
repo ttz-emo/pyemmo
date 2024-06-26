@@ -11,8 +11,15 @@ from pyemmo.definitions import ROOT_DIR
 from pyemmo.api.pyleecan import main as pyleecanAPI
 from pyemmo import rootLogger
 
-from pyemmo.functions.runOnelab import runCalcforCurrent, findGmsh, findGetDP
+from pyemmo.functions.runOnelab import (
+    runCalcforCurrent,
+    findGmsh,
+    findGetDP,
+    createCmdCommand,
+    log_subprocess_output,
+)
 from datetime import datetime
+from pyemmo.script.script import Script
 
 test_cases = {
     0: "Toyota_Prius",
