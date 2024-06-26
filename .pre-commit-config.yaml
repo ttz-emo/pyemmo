@@ -44,6 +44,12 @@ repos:
     -   id: pyupgrade
         args: [--py36-plus]
 
+-   repo: https://github.com/verhovsky/pyupgrade-docs
+    rev: v0.3.0
+    hooks:
+    -   id: pyupgrade-docs
+        args: [--py36-plus]
+
 # -   repo: https://github.com/pre-commit/mirrors-mypy
 #     rev: '1.8.0'
 #     hooks:
