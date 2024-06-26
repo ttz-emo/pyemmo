@@ -153,9 +153,10 @@ class Script:
         self._simulationParameters = default_param_dict
         # update simulation parameters with user parameters
         for key, paramDict in simuParams.items():
-            self._simulationParameters[key] = (
-                default_param_dict[key] | paramDict
-            )
+            self._simulationParameters[key] = {
+                **default_param_dict[key],
+                **paramDict,
+            }
         ### directory to save the model files
         self.scriptPath = scriptPath
         ### directory to save simulation results
@@ -2128,7 +2129,7 @@ class Script:
         # is the correct number of parameters
 
         # update machine parameters:
-        simuParamDict["GEO"] = simuParamDict["GEO"] | geometryParams
+        simuParamDict["GEO"] = {**simuParamDict["GEO"], **geometryParams}
 
         # 2. Set simulation parameters
         #   INIT_ROTOR_POS  -> Allready set in __init__
