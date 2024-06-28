@@ -3,7 +3,7 @@ from datetime import datetime
 import os
 
 """
-Script to run pytest in powershell and save summary to date-marked log.
+Script to run pytest in powershell and save summary to date-marked log
 """
 
 log_path = f".\\integrationTest\\logs"
