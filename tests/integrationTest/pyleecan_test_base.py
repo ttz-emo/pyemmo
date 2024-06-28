@@ -20,6 +20,7 @@ from pyemmo.functions.runOnelab import (
 )
 from datetime import datetime
 from pyemmo.script.script import Script
+from testUtils import make_test_cases
 
 test_cases = {
     0: "Toyota_Prius",
@@ -270,37 +271,25 @@ def pyleecan_test_base(
 
 
 if __name__ == "__main__":
-    from apiTest import TestCases
+    # from integrationTest.apiTest import TestCases
 
-    new_test = TestCases()
+    test_cases= make_test_cases("api\\pyleecan")
+    print(type(test_cases[1]))
+    curr_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    test_cases = new_test.make_test_cases("api\\pyleecan")[test_type]
-
-    result_path = os.path.join(ROOT_DIR, "workingDirectory\\Vu\\for_testing")
+    result_path = os.path.join(ROOT_DIR, f"workingDirectory\\Vu\\for_testing\\{curr_datetime}")
     if not os.path.isdir(result_path):
         os.makedirs(result_path)
 
     file = open(os.path.join(result_path, "base_data_creation_log"), "w")
 
-    for test_id, test_case in test_cases.items():
+    for tup in test_cases[1:]:
         # print(test_case, ": ",os.path.isfile(os.path.join(ROOT_DIR, test_params[test_type]["test_data_folder"], f"{test_type}\\{test_case}.json")))
         # print("\n")
+        test_id, test_case = tup
         result_path_true = os.path.join(result_path, test_case)
         try:
-            pyleecan_test_base(
-                test_params[test_type],
-                result_path=result_path_true,
-                test_type=test_type,
-                test_id=test_id,
-                test_case=test_case,
-            )
-            pyleecan_test_base(
-                test_params[test_type],
-                result_path=result_path_true,
-                test_type=test_type,
-                test_id=test_id,
-                test_case=test_case,
-            )
+            pyleecan_test_base(test_params[test_type], result_path=result_path_true, test_type=test_type, test_id=test_id, test_case=test_case)
         except AttributeError:
             file.write(f"Attribute error in {test_case}\n")
             pass

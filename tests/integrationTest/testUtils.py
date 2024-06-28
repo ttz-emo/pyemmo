@@ -10,9 +10,7 @@ import re
 
 def updateConfig(test_type: str = "", test_id: int = "", test_case: str = ""):
     """
-    """
     Function to update config file to generate proper test file name
-    """
     """
 
     curr_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -24,15 +22,10 @@ def updateConfig(test_type: str = "", test_id: int = "", test_case: str = ""):
         dest_name = ""
     else:
         dest_name = (
-            f"logs/{test_type}/test_{test_id}_{test_case}/{curr_datetime}.log"
-        )
-    parser.set("pytest", "log_file", dest_name)
-        dest_name = (
-            f"logs/{test_type}/test_{test_id}_{test_case}/{curr_datetime}.log"
+            f"logs/{test_type}/{curr_datetime}/test_{test_id}_{test_case}/.log"
         )
     parser.set("pytest", "log_file", dest_name)
 
-    with open(config_path, "w+") as config_file:
     with open(config_path, "w+") as config_file:
         parser.write(config_file)
     return curr_datetime, dest_name
@@ -46,13 +39,11 @@ def messagePrinter(msg: str = "Assert OK"):
 
 def count_files(folder_path: str) -> dict:
     """
-    """
     Function to count files of each type in a path.
     Args: folder_path: path to count in. Needs to be abs path to the dest folder
     Output: n-items Dict
         - 1st entry being folder_path,
         - 2nd till n-th entries: key = file type, value = count
-    """
     Output: n-items Dict
         - 1st entry being folder_path,
         - 2nd till n-th entries: key = file type, value = count
@@ -81,11 +72,6 @@ def fileParser(raw_path: str):
     Returns a list of line-by-line breakdown of file content, with comments removed.
     """
     comment_indicators = ["//"]
-    exclude_indicators = [
-        "Color",
-        "PATH_RES",
-    ]  # exclude lines whose values always get updated along with files
-    with open(raw_path) as file:
     exclude_indicators = [
         "Color",
         "PATH_RES",

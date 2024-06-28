@@ -50,6 +50,9 @@ class TestCasesIntegration:
 
     Test content:
     1. Test Pyleecan API to create Pyleecan machine and generate simulations in Onelab
+    2. Check that GMSH and getDP files are generated
+    3. Check that simulation files are generated
+    4. Check dat files content are the same as base comparison 
     """
 
     def test_api_simul_folder_exist(self, test_tuple):
