@@ -1,3 +1,25 @@
+#
+# Copyright (c) 2018-2024 M. Schuler & Vu Nguyen, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+"""TODO: Module docstring"""
+
 import os
 import logging
 from datetime import datetime
@@ -20,6 +42,7 @@ from pyemmo.functions.runOnelab import (
 )
 from datetime import datetime
 from pyemmo.script.script import Script
+from tests import GETDP_EXE, GMSH_EXE
 from testUtils import make_test_cases
 
 test_cases = {
@@ -33,8 +56,8 @@ test_params = {
         "rpm": 1000,
         "d_theta": 0.25,
         "test_data_folder": "tests\\data",
-        "result_folder": "Results\\pyleecanAPI",
-        "result_folder": "Results\\pyleecanAPI",
+        "result_folder": "tests\\results",
+        # "result_folder": "Results\\pyleecanAPI",
     }
 }
 
@@ -244,8 +267,9 @@ def pyleecan_test_base(
         "pro": pro_file,
         "res": sim_res_dir,
         # "exe": findGetDP(),
-        "exe": r"H:\onelab-Windows64\getdp.exe",
-        "gmsh": findGmsh(),
+        # "exe": r"H:\onelab-Windows64\getdp.exe",
+        "exe": GETDP_EXE,
+        "gmsh": GMSH_EXE,
     }
     # runCalcforCurrent(param_dict)
     cmdCommand = createCmdCommand(
@@ -273,11 +297,13 @@ def pyleecan_test_base(
 if __name__ == "__main__":
     # from integrationTest.apiTest import TestCases
 
-    test_cases= make_test_cases("api\\pyleecan")
+    test_cases = make_test_cases("api\\pyleecan")
     print(type(test_cases[1]))
     curr_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    result_path = os.path.join(ROOT_DIR, f"workingDirectory\\Vu\\for_testing\\{curr_datetime}")
+    result_path = os.path.join(
+        ROOT_DIR, f"workingDirectory\\Vu\\for_testing\\{curr_datetime}"
+    )
     if not os.path.isdir(result_path):
         os.makedirs(result_path)
 
@@ -289,7 +315,13 @@ if __name__ == "__main__":
         test_id, test_case = tup
         result_path_true = os.path.join(result_path, test_case)
         try:
-            pyleecan_test_base(test_params[test_type], result_path=result_path_true, test_type=test_type, test_id=test_id, test_case=test_case)
+            pyleecan_test_base(
+                test_params[test_type],
+                result_path=result_path_true,
+                test_type=test_type,
+                test_id=test_id,
+                test_case=test_case,
+            )
         except AttributeError:
             file.write(f"Attribute error in {test_case}\n")
             pass

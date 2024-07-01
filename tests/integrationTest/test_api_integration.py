@@ -1,25 +1,47 @@
-import os
-from pyleecan_test_base import pyleecan_test_base, pyleecanPrepTuple
+#
+# Copyright (c) 2018-2024 M. Schuler & Vu Nguyen, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+"""TODO: Module docstring"""
 
+import os
 import glob
-from collections import defaultdict
-from pyemmo.definitions import ROOT_DIR
-from pyemmo import rootLogger
-from pyemmo.functions.import_results import read_timetable_dat
-import logging
-from datetime import datetime
-import unittest
+
+# from collections import defaultdict
+# import logging
+# from datetime import datetime
+# import unittest
 from pytest_check import check
 import pytest
-
+from pyleecan_test_base import pyleecan_test_base, pyleecanPrepTuple
 from testUtils import (
-    updateConfig,
+    # updateConfig,
     count_files,
     messagePrinter,
     fileParser,
     fileFilter,
     make_test_cases,
 )
+from pyemmo.definitions import ROOT_DIR
+
+# from pyemmo import rootLogger
+from pyemmo.functions.import_results import read_timetable_dat
 
 api_test_type = "api\\pyleecan"
 test_cases = {}
@@ -32,7 +54,7 @@ test_params = {
         "rpm": 1000,
         "d_theta": 0.25,
         "test_data_folder": "tests\\data",
-        "result_folder": "Results\\pyleecanAPI",
+        "result_folder": "tests\\results",
     }
 }
 
@@ -52,7 +74,7 @@ class TestCasesIntegration:
     1. Test Pyleecan API to create Pyleecan machine and generate simulations in Onelab
     2. Check that GMSH and getDP files are generated
     3. Check that simulation files are generated
-    4. Check dat files content are the same as base comparison 
+    4. Check dat files content are the same as base comparison
     """
 
     def test_api_simul_folder_exist(self, test_tuple):
@@ -136,7 +158,7 @@ class TestCasesIntegration:
             with check:
                 assert target_dat == base_dat and messagePrinter(
                     f"SUCCESS: {target_file} check ok"
-                ), f"ERROR: mismatch found between base and target dat in {target_file}!"
+                ), f"ERROR: mismatch found between base ({base_file}) and target dat ({target_file})! Base data: {base_dat}; Target data:{target_dat}"
 
         print("\n")
 
@@ -157,7 +179,7 @@ class TestCasesIntegration:
                 with check:
                     assert result_count == count and messagePrinter(
                         f"SUCCESS: .{file_type} count matches"
-                    ), f"ERROR: .{file_type} count mismatch!\nBase: {count}\nResult: {result_count}"
+                    ), f"ERROR: .{file_type} count mismatch! Base: {count}; Result: {result_count}"
 
     def check_content(self, base_path, target_path, target_types):
         """

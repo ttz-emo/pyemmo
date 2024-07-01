@@ -1,9 +1,34 @@
+#
+# Copyright (c) 2018-2024 M. Schuler & Vu Nguyen, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+"""TODO: Module docstring"""
+
 from configparser import ConfigParser
 import os
 import glob
 from collections import defaultdict
 from datetime import datetime
-from pyemmo.definitions import ROOT_DIR, TEST_DIR
+from pyemmo.definitions import (
+    # ROOT_DIR,
+    TEST_DIR,
+)
 
 import re
 
@@ -34,7 +59,6 @@ def updateConfig(test_type: str = "", test_id: int = "", test_case: str = ""):
 def messagePrinter(msg: str = "Assert OK"):
     print(msg)
     return True
-
 
 
 def count_files(folder_path: str) -> dict:
@@ -118,7 +142,6 @@ def fileParser(raw_path: str):
     #         a = cleaned.split("=")
 
     #     result[a[0]] = a[1]
-
 
 
 def fileFilter(file_list: list, target_types: list) -> list:
