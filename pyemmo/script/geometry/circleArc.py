@@ -498,3 +498,18 @@ class CircleArc(Line):
                 "failed. Could not find touchpoint."
             )
         )
+
+    def addToScript(self, script: "Script"):
+        """old function add to script
+
+        Args:
+            script (Script)
+        """
+        # Add points
+        for p in self.points:
+            p.addToScript(script)
+        self.center.addToScript(script)
+        # add arc
+        if not self._todesmerker:
+            self._todesmerker = True
+            script._addCurve(self)

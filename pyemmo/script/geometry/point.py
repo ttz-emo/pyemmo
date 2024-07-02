@@ -21,7 +21,7 @@
 from math import atan2, cos, sin
 from random import random
 from typing import TYPE_CHECKING, Tuple, Union
-
+import logging
 import matplotlib.pyplot as plt
 from numpy import array, array_equal, cross, pi, vdot
 from numpy.linalg import norm
@@ -408,32 +408,30 @@ class Point(Transformable):
 
         return R_Point
 
-    # def addToScript(self, script: Script) -> Union["Point", None]:
-    #  """ Mit addToScript wird der Punkt zum Skriptobjekt übergeben und in gmsh-Syntax übersetzt.
-    #  Transformationen von Punkten sind nach dem Aufruf nicht mehr erlaubt, da die neuen
-    # Koordinaten der Punkte nicht mehr erfasst werden.
-    #  Diese Methode sollte stets nur in Kombination mit generateScript (Klassenmethode von Script)
-    # verwendet werden.
+    def addToScript(self, script: "Script") -> Union["Point", None]:
+        """
+        Mit addToScript wird der Punkt zum Skriptobjekt übergeben und in
+        gmsh-Syntax übersetzt. Transformationen von Punkten sind nach dem Aufruf
+        nicht mehr erlaubt, da die neuen Koordinaten der Punkte nicht mehr erfasst
+        werden. Diese Methode sollte stets nur in Kombination mit generateScript
+        (Klassenmethode von Script) verwendet werden.
 
-    #     Input:
-    #         script : Script
-    #     Output:
-    #         None
+            Input:
+                script : Script
+            Output:
+                None
 
-    #     Beispiel:
-    #         myScript = Script(...)
-    #         P1.addToScript(myScript)
+            Beispiel:
+                myScript = Script(...)
+                P1.addToScript(myScript)
 
-    #     Returns:
-    #         _type_: _description_
-    #     """
-    #     if not self.isDrawn():
-    #         self._todesmerker = True
-    #         ans = script._addPoint(self)
-    #     else:
-    #         print(f"Point '{self.name}' is allready in a script.")
-    #         ans = None
-    #     return ans
+            Returns:
+                _type_: _description_
+        """
+        if self.isDrawn():
+            logging.warn(f"Point '{self.name}' is allready in a script.")
+            return None
+        return script._addPoint(self)
 
     def getAngleToX(
         self,

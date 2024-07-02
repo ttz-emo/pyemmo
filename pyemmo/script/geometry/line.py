@@ -393,6 +393,8 @@ class Line(Transformable):
         Args:
             script (Script)
         """
+        for p in self.points:
+            script._addPoint(p)
         self._todesmerker = True
         script._addCurve(self)
 
