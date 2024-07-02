@@ -23,10 +23,15 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 [Github-flavored Markdown](https://guides.github.com/features/mastering-markdown/)
 to write your content. -->
 
+<!-- ![PyEMMO project logo](./doc/images/PyEMMO_Logo.png) -->
+<img src="./doc/images/PyEMMO_Logo.png" width="200">
+
 # PyEMMO
+_**Py**thon **E**lectrical **M**achine **M**odelling in **O**NELAB_
 
 PyEMMO is a interface for modeling electrical machines in the open-source FEA software [Onelab](https://onelab.info/).
 The goal of the project is to automate model creation and the simulation workflow for electrical machines with ONELAB.
+<!-- That's why it name stands for **Py**thon **E**lectrical **M**achine **M**odelling in **O**NELAB -->
 
 
 ## Installation
@@ -37,9 +42,10 @@ Use the package manager [pip](https://pip.pypa.io/en/stable/) to install PyEMMO.
 pip install pyemmo
 ```
 
-You will need versions of [Gmsh](https://gmsh.info/) and [GetDP](https://getdp.info/) executables. While Gmsh can be directly installed from pip with the Gmsh-Python-API, you will need to download GetDP individually.
+You will need versions of [Gmsh](https://gmsh.info/) and [GetDP](https://getdp.info/) executables. While Gmsh can be directly installed from pip with the Gmsh Python-API, you will need to download GetDP individually.
 > [!WARNING]
-> Models created with PyEMMO fail with current GetDP version 3.6 due to mesh import error!
+> Models created with PyEMMO fail with current GetDP version 3.6.0 due to mesh import error!
+> You can check your GetDP version wirh  ``getdp --version``
 
 ## Usage
 
