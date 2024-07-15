@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied
+# Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -20,15 +21,17 @@
 """Module to import simulation results from GetDP (Onelab)"""
 
 import os
-from os import path, PathLike
-from cmath import isclose
-from typing import List, Tuple, Union
 import warnings
-from matplotlib.figure import Figure
-from matplotlib import pyplot as plt
-import numpy as np
-from parse import parse
+from cmath import isclose
+from os import PathLike, path
+from typing import List, Tuple, Union
+
 import gmsh
+import numpy as np
+from matplotlib import pyplot as plt
+from matplotlib.figure import Figure
+from parse import parse
+
 from .. import rootLogger as logger
 
 
@@ -60,15 +63,17 @@ def read_timetable_dat(
     """
     # make sure dat file exists
     if not os.path.isfile(file_path):
-        raise FileNotFoundError(
-            f"Given results file '{file_path}' did not exist!"
-        )
+        raise FileNotFoundError(f"Given results file '{file_path}' did not exist!")
     # Try to import the data via numpy. Should work for most cases!
     # standard 'delemiter' is whitespace.
     data_array = np.loadtxt(file_path, dtype=float, comments="#")
     if len(data_array.shape) == 1:
         # static simulation
-        assert data_array.size > 1  # there must be at least one time + value
+        if not data_array.size > 1:
+            # there must be at least one time + value
+            raise ValueError(
+                f"Less than one value was imported from {file_path}. " "There must be at least one time-value pair!"
+            )
         time = np.reshape(data_array[0], (1))
         values = data_array[1:]
     else:
@@ -98,24 +103,23 @@ def read_RegionValue_dat(
     """
     # make sure dat file exists
     if not os.path.isfile(file_path):
-        raise FileNotFoundError(
-            f"Given results file '{file_path}' did not exist!"
-        )
+        raise FileNotFoundError(f"Given results file '{file_path}' did not exist!")
     # import the data via numpy. Should work for most cases!
     # standard 'delemiter' is whitespace.
     data_array = np.loadtxt(file_path, dtype=float, comments="#")
     # make sure there is only one line of data in the results file
-    assert len(data_array.shape) == 1, "Multiple lines in 'RegionValue' format"
-    assert data_array.shape[0] > 0, f"No data in {file_path} results file!"
-    assert data_array.shape[0] % 2 == 0, "Odd number of values!"
+    if not len(data_array.shape) == 1:
+        raise ValueError("Multiple lines in 'RegionValue' format! " "There should only be one line containing all time steps!")
+    if not data_array.shape[0] > 0:
+        raise ValueError(f"No data in {file_path} results file!")
+    if not data_array.shape[0] % 2 == 0:
+        raise ValueError(f"Odd number of values in RegionValue formatted file {file_path}!")
     time = data_array[0::2]  # numpy slicing [start:stop:step]
     data = data_array[1::2]
     return time, data
 
 
-def split_data(
-    time: np.ndarray, data: np.ndarray
-) -> Tuple[int, List[np.ndarray], List[np.ndarray]]:
+def split_data(time: np.ndarray, data: np.ndarray) -> Tuple[int, List[np.ndarray], List[np.ndarray]]:
     """Split up the time-data value pairs if there are multiple time vectors
     (e.g. time=[0,1,2,3,0,1,2] -> time[0]=[0,1,2,3], time[1]=[0,1,2]).
     Time-vectors must be increasing.
@@ -132,9 +136,11 @@ def split_data(
     # make sure time and data are type ndarray
     if not isinstance(time, np.ndarray) or not isinstance(data, np.ndarray):
         raise TypeError("Time and data array must be numpy ndarray!")
-    assert len(time.shape) == 1, "Given time array is not a vector!"
-    # assert that data shape has number of timesteps
-    assert time.shape[0] in data.shape, "Time and data array have diverent len"
+    if not len(time.shape) == 1:
+        raise ValueError("Given time array is not a vector!")
+    # make sure that data shape has number of timesteps
+    if time.shape[0] not in data.shape:
+        raise ValueError("Time and data array have different length!")
     time_axis = data.shape.index(time.shape[0])  # get time axis
     # get the indices where time values are equal (e.g. time = [0, 0]) or the
     # difference of the time vector is negative (e.g. time = [0,1,2,0], so
@@ -194,9 +200,7 @@ def plot_timetable_dat(
         # check that max or min is not too close to zero to apply the y_lim
         maxVal = max(dataArray[sim])
         minVal = min(dataArray[sim])
-        if not (
-            isclose(maxVal, 0, abs_tol=0.1) or isclose(minVal, 0, abs_tol=0.1)
-        ):
+        if not (isclose(maxVal, 0, abs_tol=0.1) or isclose(minVal, 0, abs_tol=0.1)):
             fig.axes[0].set_ylim(
                 bottom=minVal * (1.1 if min(dataArray[sim]) < 0 else 0.9),
                 top=maxVal * (1.1 if max(dataArray[sim]) > 0 else 0.9),
@@ -239,9 +243,7 @@ def plot_all_dat(dir_path: PathLike) -> None:
 
 def importSP(
     posFilePath: str,
-) -> Tuple[
-    str, List[float], List[Tuple[float, float, float]], List[List[float]]
-]:
+) -> Tuple[str, List[float], List[Tuple[float, float, float]], List[List[float]]]:
     """Import values of POS files with the "Scalar Point" (SP) format
 
     Args:
@@ -296,18 +298,11 @@ def importSP(
             # valueList.clear()
         else:
             # if the parse function did not return values, the format was wrong
-            raise (
-                RuntimeError(
-                    f"Given file '{posFilePath}' did not contain "
-                    "SP formatted values!"
-                )
-            )
+            raise (RuntimeError(f"Given file '{posFilePath}' did not contain " "SP formatted values!"))
     return parsedName[0], time, pos, values
 
 
-def importPos(
-    pos_file: Union[str, PathLike]
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+def importPos(pos_file: Union[str, PathLike]) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Import POS file via gmsh api.
 
     TODO: Does not work for SP-formatted pos files.
@@ -339,33 +334,22 @@ def importPos(
     view_tags = gmsh.view.getTags()
     if view_tags.size == 0:
         gmsh.finalize()
-        raise ValueError(
-            f"Given file '{pos_file}' did not result in a Gmsh view. Is file "
-            "in gmsh POS-format?"
-        )
+        raise ValueError(f"Given file '{pos_file}' did not result in a Gmsh view. Is file " "in gmsh POS-format?")
     # get number of time steps in SIMULATION (not all time steps have to be
     # saved)
-    nbr_steps = int(
-        gmsh.view.option.getNumber(tag=view_tags[-1], name="NbTimeStep")
-    )
+    nbr_steps = int(gmsh.view.option.getNumber(tag=view_tags[-1], name="NbTimeStep"))
     time = []  # init time vector
     # init data containers with first time step
-    _, element_tags, cdata, ctime, nbr_components = gmsh.view.getModelData(
-        tag=view_tags[-1], step=0
-    )
+    _, element_tags, cdata, ctime, nbr_components = gmsh.view.getModelData(tag=view_tags[-1], step=0)
     # data format of 'cdata':
     #   vector: number of components = 3
     #   scalar: number of components = 1
     if not cdata:
-        _, element_tags, cdata, ctime, nbr_components = gmsh.view.getModelData(
-            view_tags[-1], nbr_steps - 1
-        )
+        _, element_tags, cdata, ctime, nbr_components = gmsh.view.getModelData(view_tags[-1], nbr_steps - 1)
         if not cdata:
             gmsh.finalize()
             raise ValueError(f"No data found in {pos_file}!")
-        warnings.warn(
-            f"Import file '{pos_file}' did only contain last timestep!"
-        )
+        warnings.warn(f"Import file '{pos_file}' did only contain last timestep!")
         # Only last time step happens if PostProcessing is called at runtime
         # (in 'Resolution').
         # Return only that timestep

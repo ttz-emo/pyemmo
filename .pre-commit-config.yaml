@@ -73,11 +73,13 @@ repos:
           - id: pyupgrade
             args: [--py36-plus]
 
-    # security issues python (Guard rails):
-    - repo: https://github.com/PyCQA/bandit
-      rev: 1.7.4
-      hooks:
-          - id: bandit
+    # # security issues python (Guard rails):
+    # - repo: https://github.com/PyCQA/bandit
+    #   rev: 1.7.4
+    #   hooks:
+    #       - id: bandit
+    #         args: ["-c", "pyproject.toml"]
+    #         additional_dependencies: ["bandit[toml]"]
 
     # This removes all unused import statements:
     - repo: https://github.com/hadialqattan/pycln

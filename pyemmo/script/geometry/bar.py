@@ -20,7 +20,8 @@
 """Module for Bar Physical Element"""
 
 from typing import List, Union
-from .physicalElement import PhysicalElement, Material, Surface
+
+from .physicalElement import Material, PhysicalElement, Surface
 
 
 class Bar(PhysicalElement):
@@ -46,12 +47,9 @@ class Bar(PhysicalElement):
         if isinstance(geometricalElement, Surface):
             geometricalElement = [geometricalElement]
         # make sure conductivity is defined for induced currents
-        assert (
-            material.conductivity > 0
-        ), f"Material of Bar ({name}) must be elec. conducting!"
-        super().__init__(
-            name=name, material=material, geometricalElement=geometricalElement
-        )
+        if material.conductivity is not None:
+            raise ValueError(f"Material of Bar ({name}) must have electrical conductivity!")
+        super().__init__(name=name, material=material, geometricalElement=geometricalElement)
         # the physical element type can be used to identify physical elements
         self.physicalElementType = "Bar"
         self.setColor("Orange")

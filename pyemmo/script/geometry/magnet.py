@@ -113,9 +113,7 @@ class Magnet(PhysicalElement):
             if newMagType in ("parallel", "radial", "tangential"):
                 self._magnetizationType = newMagType
                 return None
-        raise TypeError(
-            f'Wrong Magnetization Type: {newMagType}.\nMust be "parallel", "radial" or "tangential"'
-        )
+        raise TypeError(f'Wrong Magnetization Type: {newMagType}.\nMust be "parallel", "radial" or "tangential"')
 
     @property
     def magDir(self) -> Literal[-1, 1]:
@@ -131,9 +129,7 @@ class Magnet(PhysicalElement):
         if newMagDir in (-1, 1):
             self._magnetisationDirection = newMagDir
         else:
-            raise ValueError(
-                f"Magnetizarion direction not in (-1, 1), but is: {newMagDir}"
-            )
+            raise ValueError(f"Magnetizarion direction not in (-1, 1), but is: {newMagDir}")
 
     @property
     def magAngle(self) -> float:
@@ -151,7 +147,6 @@ class Magnet(PhysicalElement):
         Args:
             angle (float): offset angle in rad
         """
-        assert isinstance(
-            angle, float
-        ), f"Magnetization is not type float but {type(angle)}"
+        if not isinstance(angle, float):
+            raise ValueError(f"Given magnetization angle is not type float but {type(angle)}!")
         self._magnetisationVectorAngle = angle

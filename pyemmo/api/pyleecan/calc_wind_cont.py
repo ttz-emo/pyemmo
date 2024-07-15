@@ -20,13 +20,13 @@
 import math
 from typing import Union
 
-from ...script.geometry.line import Line
+from ...functions.plot import plot
 from ...script.geometry.circleArc import CircleArc
+from ...script.geometry.line import Line
 
 # from ...script.geometry.point import Point
 # from ...script.geometry import defaultCenterPoint
 from ..json.SurfaceJSON import SurfaceAPI
-from ...functions.plot import plot
 from .get_rotor_stator_surfs import get_stator_surfs
 
 
@@ -89,17 +89,11 @@ def calc_wind_contour(
 
     for curve in stator_cont_line_list:
         # TODO: Describe what this if-case is doing.
-        if (
-            curve.startPoint.radius > stator_rint
-            or curve.startPoint.radius > stator_rext
-        ) and math.isclose(
+        if (curve.startPoint.radius > stator_rint or curve.startPoint.radius > stator_rext) and math.isclose(
             a=curve.startPoint.radius, b=stator_rint, abs_tol=1e-6
         ) is False:
             slot_op_points.append(curve.startPoint)
-        elif (
-            curve.endPoint.radius > stator_rint
-            or curve.endPoint.radius > stator_rext
-        ) and math.isclose(
+        elif (curve.endPoint.radius > stator_rint or curve.endPoint.radius > stator_rext) and math.isclose(
             a=curve.endPoint.radius, b=stator_rint, abs_tol=1e-6
         ) is False:
             slot_op_points.append(curve.endPoint)
@@ -114,9 +108,8 @@ def calc_wind_contour(
     #     endPoint=stator_line_point_list[1],
     #     centerPoint=center_point,
     # )
-    assert (
-        len(slot_op_points) == 2
-    ), "Could not find exactly two points at the interface of slot and slot opening"
+    if len(slot_op_points) != 2:
+        raise RuntimeError("Could not find exactly two points at the interface of slot and slot opening")
 
     # determine slot opening line type: Line or CircleArc
     slot_surfs: list[SurfaceAPI] = []

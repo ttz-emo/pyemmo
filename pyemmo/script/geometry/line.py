@@ -20,7 +20,7 @@
 """Module of geometry class Line"""
 
 from random import random
-from typing import Tuple, Literal, TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal, Tuple
 
 import matplotlib.pyplot as plt
 from numpy import array
@@ -130,10 +130,7 @@ class Line(Transformable):
             newID (int): New ID of Line
         """
         if newID < self.ID:
-            raise ValueError(
-                "New ID of line is smaller than global ID count."
-                "New ID mus be existing!"
-            )
+            raise ValueError("New ID of line is smaller than global ID count." "New ID mus be existing!")
         Line.ID = newID
         self._id = newID
 
@@ -171,7 +168,8 @@ class Line(Transformable):
         Args:
             newStartPoint (Point)
         """
-        assert isinstance(newStartPoint, Point)
+        if not isinstance(newStartPoint, Point):
+            raise TypeError(f"Given start point has wrong type {type(newStartPoint)}!")
         self._startPoint = newStartPoint
 
     @property
@@ -190,7 +188,8 @@ class Line(Transformable):
         Args:
             newEndPoint (Point)
         """
-        assert isinstance(newEndPoint, Point)
+        if not isinstance(newEndPoint, Point):
+            raise TypeError(f"Given end point has wrong type ({type(newEndPoint)})")
         self._endPoint = newEndPoint
 
     @property
@@ -213,14 +212,10 @@ class Line(Transformable):
         """
         return Point(
             name=f"Middle point of {self.name}",
-            x=(self.startPoint.coordinate[0] + self.endPoint.coordinate[0])
-            / 2,
-            y=(self.startPoint.coordinate[1] + self.endPoint.coordinate[1])
-            / 2,
-            z=(self.startPoint.coordinate[2] + self.endPoint.coordinate[2])
-            / 2,
-            meshLength=(self.startPoint.meshLength + self.endPoint.meshLength)
-            / 2,
+            x=(self.startPoint.coordinate[0] + self.endPoint.coordinate[0]) / 2,
+            y=(self.startPoint.coordinate[1] + self.endPoint.coordinate[1]) / 2,
+            z=(self.startPoint.coordinate[2] + self.endPoint.coordinate[2]) / 2,
+            meshLength=(self.startPoint.meshLength + self.endPoint.meshLength) / 2,
         )
 
     def switchPoints(self) -> None:
@@ -519,15 +514,8 @@ class Line(Transformable):
             Trying to identify the point if its not given.
         """
         # pylint: disable=locally-disabled, unidiomatic-typecheck
-        if not type(addLine) == type(
-            self
-        ):  # make sure the line types are equal
-            raise (
-                TypeError(
-                    "Tried to combine lines, but the line types are different! "
-                    f"{type(self)} != {type(addLine)}"
-                )
-            )
+        if not type(addLine) == type(self):  # make sure the line types are equal
+            raise (TypeError("Tried to combine lines, but the line types are different! " f"{type(self)} != {type(addLine)}"))
         if not touchPoint:
             for p in self.points:
                 for addP in addLine.points:
@@ -536,11 +524,7 @@ class Line(Transformable):
                         break
         if touchPoint:
             # get the two points excluding the docking point
-            newPoints = [
-                point
-                for point in self.points + addLine.points
-                if not point.isEqual(touchPoint)
-            ]
+            newPoints = [point for point in self.points + addLine.points if not point.isEqual(touchPoint)]
             if len(newPoints) == 2:
                 # replace the combined line pattern in the old names if they contained
                 lName = self.name.replace("combinedLine_", "")
@@ -558,16 +542,9 @@ class Line(Transformable):
                     )
                 )
         else:
-            raise (
-                RuntimeError(
-                    f"Combination of lines ({self.name} and {addLine.name}) failed."
-                    "Could not find touchpoint."
-                )
-            )
+            raise (RuntimeError(f"Combination of lines ({self.name} and {addLine.name}) failed." "Could not find touchpoint."))
 
-    def containsPoint(
-        self, refPoint: Point, tol: float = DEFAULT_GEO_TOL
-    ) -> bool:
+    def containsPoint(self, refPoint: Point, tol: float = DEFAULT_GEO_TOL) -> bool:
         """This function checks if start or end point coordinates are equal to the given reference
         point.
 
@@ -578,8 +555,10 @@ class Line(Transformable):
         Returns:
             bool: True if line contains point, False if not.
         """
-        assert isinstance(refPoint, Point)
-        assert isinstance(tol, (int, float))
+        if not isinstance(refPoint, Point):
+            raise ValueError(f"Given reference point has wrong type ({type(refPoint)})")
+        if not isinstance(tol, (int, float)):
+            raise ValueError("Given tolerance is not type int or float!")
         for p in self.points:
             if p.isEqual(refPoint, tol=tol):
                 return True

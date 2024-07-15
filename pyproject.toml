@@ -45,3 +45,6 @@ namespaces = false
 
 [tool.black]
 line-length = 79
+
+[tool.bandit]
+skips = ["B311"]

@@ -23,14 +23,14 @@ from json files
 """
 import json
 import numbers
-from typing import Dict, List, Tuple, Union, Literal, Any
+from typing import Any, Dict, Literal, Tuple, Union
 
 from numpy import pi, zeros
 from numpy.linalg import norm
 
 from ...functions.cleanName import cleanName
-from ...script.material.material import Material
 from ...script.material.electricalSteel import ElectricalSteel
+from ...script.material.material import Material
 from .. import air
 
 # ================================ START EXTENDED INFO FUNCTIONS ===================================
@@ -48,11 +48,7 @@ def importExtInfo(extInfoPath: str) -> dict:
     with open(extInfoPath, encoding="utf-8") as extInfoFile:
         extInfo: dict = json.load(extInfoFile)
     if not isinstance(extInfo, dict):
-        raise (
-            ImportError(
-                f"The imported extended info file from '{extInfoPath}' was not imported as a dict!"
-            )
-        )
+        raise (ImportError(f"The imported extended info file from '{extInfoPath}' was not imported as a dict!"))
     return extInfo
 
 
@@ -62,12 +58,8 @@ def getMagDir(extendedInfo: dict) -> str:
     if magDirKey in extendedInfo.keys():
         if isinstance(extendedInfo[magDirKey], str):
             return extendedInfo[magDirKey]
-        raise ValueError(
-            f"Magnetization direction (magType) is not type str: {extendedInfo[magDirKey]}"
-        )
-    raise KeyError(
-        "Magnetization direction (magType) is missing from extended info dict!"
-    )
+        raise ValueError(f"Magnetization direction (magType) is not type str: {extendedInfo[magDirKey]}")
+    raise KeyError("Magnetization direction (magType) is missing from extended info dict!")
 
 
 def getCurrentAmpl(extendedInfo: dict) -> float:
@@ -88,9 +80,7 @@ def getCurrentdq(extendedInfo: dict) -> Tuple[float]:
     if "id" in extendedInfo.keys() and "iq" in extendedInfo.keys():
         return (extendedInfo["id"], extendedInfo["iq"])
     else:
-        raise KeyError(
-            "Identifier 'id' and/or 'iq' missing from extended Information dict!"
-        )
+        raise KeyError("Identifier 'id' and/or 'iq' missing from extended Information dict!")
 
 
 # ------------------------------------------------------------------------------
@@ -136,18 +126,11 @@ def getNbrOfTurns(extendedInfo: dict) -> float:
     """
     ntpsKey = "Ntps"
     if ntpsKey in extendedInfo.keys():
-        if isinstance(
-            extendedInfo[ntpsKey], numbers.Number
-        ) and not isinstance(extendedInfo[ntpsKey], bool):
+        if isinstance(extendedInfo[ntpsKey], numbers.Number) and not isinstance(extendedInfo[ntpsKey], bool):
             return float(extendedInfo[ntpsKey])
-        msg = (
-            "Number of turns per slot side variable (Ntps)"
-            f"is not a valid number: {extendedInfo[ntpsKey]}"
-        )
+        msg = "Number of turns per slot side variable (Ntps)" f"is not a valid number: {extendedInfo[ntpsKey]}"
         raise ValueError(msg)
-    raise KeyError(
-        f"Number of turns per slot side variable ('{ntpsKey}') missing from extended info dict!"
-    )
+    raise KeyError(f"Number of turns per slot side variable ('{ntpsKey}') missing from extended info dict!")
 
 
 def getRotFreq(extendedInfo: dict, unit: str = "Hz") -> float:
@@ -179,9 +162,7 @@ def getRotFreq(extendedInfo: dict, unit: str = "Hz") -> float:
         if unit in ("rpm", "1/min", "min^-1"):
             return rotFreq * 60
         raise AttributeError(f"Frequency unit not valid! Unit was '{unit}'")
-    raise KeyError(
-        f"Rotational frequency ('{rotFreqKey}') missing from extended info dict!"
-    )
+    raise KeyError(f"Rotational frequency ('{rotFreqKey}') missing from extended info dict!")
 
 
 def getSymFactor(extendedInfo: dict) -> int:
@@ -192,12 +173,8 @@ def getSymFactor(extendedInfo: dict) -> int:
         if float(symFactor).is_integer() and symFactor > 0:
             # symmetry is positiv integer
             return int(symFactor)
-        raise ValueError(
-            f"Symmetry factor ('{symFactorKey}') is not type int: {symFactor}"
-        )
-    raise KeyError(
-        f"Symmetry factor ('{symFactorKey}') missing from extended info dict!"
-    )
+        raise ValueError(f"Symmetry factor ('{symFactorKey}') is not type int: {symFactor}")
+    raise KeyError(f"Symmetry factor ('{symFactorKey}') missing from extended info dict!")
 
 
 def getNbrPolePairs(extendedInfo: dict) -> int:
@@ -208,12 +185,8 @@ def getNbrPolePairs(extendedInfo: dict) -> int:
         nbrPolePairs = extendedInfo[nppKey]
         if float(nbrPolePairs).is_integer():
             return int(nbrPolePairs)
-        raise ValueError(
-            f"number of pole pairs ('{nppKey}') is not type int: {nbrPolePairs}"
-        )
-    raise KeyError(
-        f"number of pole pairs ('{nppKey}') missing from extended info dict!"
-    )
+        raise ValueError(f"number of pole pairs ('{nppKey}') is not type int: {nbrPolePairs}")
+    raise KeyError(f"number of pole pairs ('{nppKey}') missing from extended info dict!")
 
 
 def getNbrSlots(extendedInfo: dict) -> int:
@@ -223,12 +196,8 @@ def getNbrSlots(extendedInfo: dict) -> int:
         nbrSlots = extendedInfo[nppKey]
         if float(nbrSlots).is_integer():
             return int(nbrSlots)
-        raise ValueError(
-            f"number of slots ('{nppKey}') is not type int: {nbrSlots}"
-        )
-    raise KeyError(
-        f"number of slots ('{nppKey}') missing from extended info dict!"
-    )
+        raise ValueError(f"number of slots ('{nppKey}') is not type int: {nbrSlots}")
+    raise KeyError(f"number of slots ('{nppKey}') missing from extended info dict!")
 
 
 def getElecFreq(extendedInfo: dict) -> float:
@@ -245,10 +214,7 @@ def getAxialLength(extendedInfo: dict) -> Dict[str, float]:
             "stator": extendedInfo["axLen_S"],
             "rotor": extendedInfo["axLen_R"],
         }
-    msg = (
-        "Axial length of rotor and/or stator ('axLen_R','axLen_S')"
-        "missing from extended info dict!"
-    )
+    msg = "Axial length of rotor and/or stator ('axLen_R','axLen_S')" "missing from extended info dict!"
     raise KeyError(msg)
 
 
@@ -278,8 +244,7 @@ def getSimuParams(extendedInfo: dict) -> Dict[str, Dict[str, float]]:
     simuParams = {
         "SYM": {
             "INIT_ROTOR_POS": extendedInfo["startPos"],
-            "ANGLE_INCREMENT": (endPos - extendedInfo["startPos"])
-            / extendedInfo["nbrSteps"],
+            "ANGLE_INCREMENT": (endPos - extendedInfo["startPos"]) / extendedInfo["nbrSteps"],
             "FINAL_ROTOR_POS": endPos,
             "Id_eff": idq[0],
             "Iq_eff": idq[1],
@@ -312,9 +277,7 @@ def getModelName(extendedInfo: dict) -> str:
     if mNKey in extendedInfo.keys():
         correctScriptName = cleanName(extendedInfo[mNKey])
         return correctScriptName
-    raise KeyError(
-        f"Name of model files ('{mNKey}') missing from extended info dict!"
-    )
+    raise KeyError(f"Name of model files ('{mNKey}') missing from extended info dict!")
 
 
 def getFlagOpenGui(extendedInfo: dict) -> bool:
@@ -332,9 +295,7 @@ def getFlagOpenGui(extendedInfo: dict) -> bool:
     fogKey = "flag_openGUI"
     if fogKey in extendedInfo.keys():
         return extendedInfo[fogKey]
-    raise KeyError(
-        f"Name of model files ('{fogKey}') missing from extended info dict!"
-    )
+    raise KeyError(f"Name of model files ('{fogKey}') missing from extended info dict!")
 
 
 def getMovingbandRadius(extendedInfo: dict) -> float:
@@ -346,9 +307,7 @@ def getMovingbandRadius(extendedInfo: dict) -> float:
     if mbKey in extendedInfo.keys():
         return float(extendedInfo[mbKey])
     else:
-        raise KeyError(
-            f"Movingband radius ('{mbKey}') missing from extended info dict!"
-        )
+        raise KeyError(f"Movingband radius ('{mbKey}') missing from extended info dict!")
 
 
 def getNbrParalellPaths(extendedInfo: dict) -> int:
@@ -358,10 +317,7 @@ def getNbrParalellPaths(extendedInfo: dict) -> int:
     if mbKey in extendedInfo.keys():
         if float(extendedInfo[mbKey]).is_integer():
             return int(extendedInfo[mbKey])
-        msg = (
-            "The parameter 'number of parallel paths per strand' was not an integer!"
-            f"But type {type(extendedInfo[mbKey])}"
-        )
+        msg = "The parameter 'number of parallel paths per strand' was not an integer!" f"But type {type(extendedInfo[mbKey])}"
         raise TypeError(msg)
     msg = f"Number of parallel paths per strand ('{mbKey}') missing from extended info dict!"
     raise KeyError(msg)
@@ -374,10 +330,7 @@ def getFlagCalcIronLoss(extendedInfo: dict) -> bool:
     if mbKey in extendedInfo.keys():
         if isinstance(extendedInfo[mbKey], bool):
             return extendedInfo[mbKey]
-        msg = (
-            "The parameter 'calcIronLoss' was not a bool!"
-            f"But type {type(extendedInfo[mbKey])}"
-        )
+        msg = "The parameter 'calcIronLoss' was not a bool!" f"But type {type(extendedInfo[mbKey])}"
         raise TypeError(msg)
     msg = f"Iron loss calculation flag ('{mbKey}') missing from extended info dict!"
     raise KeyError(msg)
@@ -399,10 +352,7 @@ def getMagAngle(extendedInfo: dict) -> dict:
     if mbKey in extendedInfo.keys():
         if isinstance(extendedInfo[mbKey], dict):
             return extendedInfo[mbKey]
-        msg = (
-            "The parameter 'magAngle' was not a dict!"
-            f"But type {type(extendedInfo[mbKey])}"
-        )
+        msg = "The parameter 'magAngle' was not a dict!" f"But type {type(extendedInfo[mbKey])}"
         raise TypeError(msg)
     msg = f"Magnetization angle flag ('{mbKey}') missing from extended info dict!"
     raise KeyError(msg)
@@ -459,23 +409,15 @@ def createMaterial(matDict: Dict[str, Dict[Literal["wert"], Any]]) -> Material:
             elif "kl_1" in bhDict.keys():
                 ...  # TODO: add temperatur depended BH curve to material
             else:
-                msg = (
-                    f"No valid keys for bh curve in material dict for material '{name}'."
-                    f"Keys are {bhDict.keys()}"
-                )
+                msg = f"No valid keys for bh curve in material dict for material '{name}'." f"Keys are {bhDict.keys()}"
                 raise KeyError(msg)
         if bhCurve is None:
             # check that there is a magnetic property
             if not permeability:
-                msg = (
-                    f"Material '{name}' does not have magnetic properties!"
-                    "(neither relative permeability nor BH-Curve)"
-                )
+                msg = f"Material '{name}' does not have magnetic properties!" "(neither relative permeability nor BH-Curve)"
                 raise AttributeError(msg)
     else:
-        raise ValueError(
-            f"Material '{name}' missing 'elektromagnetik' section!"
-        )
+        raise ValueError(f"Material '{name}' missing 'elektromagnetik' section!")
 
     if "dichte" in matDict.keys():
         density = matDict["dichte"]["wert"]
@@ -484,7 +426,8 @@ def createMaterial(matDict: Dict[str, Dict[Literal["wert"], Any]]) -> Material:
 
     try:
         sheetThickness = matDict["d"]["wert"]
-        assert sheetThickness < 1
+        if not sheetThickness < 1:
+            raise ValueError(f"Sheet thickness of material {name} is > 1: {sheetThickness}")
         mat = createSteelMaterial(
             matDict,
             name,
@@ -529,18 +472,14 @@ def createSteelMaterial(
             else:
                 lossParams.append(lossParam)
     except KeyError as keyErr:
-        raise KeyError(
-            "Missing loss parameter from material dict for material " + name
-        ) from keyErr
+        raise KeyError("Missing loss parameter from material dict for material " + name) from keyErr
     except Exception as exc:
         raise exc
 
     try:
         refInd = emDict["bez_ind"]["wert"]
     except KeyError as keyErr:
-        raise KeyError(
-            f"Missing reference induction from material dict for material '{name}'."
-        ) from keyErr
+        raise KeyError(f"Missing reference induction from material dict for material '{name}'.") from keyErr
     except Exception as exc:
         raise exc
 
@@ -569,9 +508,7 @@ def isAir(materialName: str):
         if not materialName:  # if materialName is empty
             return True
         raise TypeError("Imported material name is unempty list, not string!")
-    raise TypeError(
-        "Imported material name has type" + str(type(materialName))
-    )
+    raise TypeError("Imported material name has type" + str(type(materialName)))
 
 
 # ======================================= END MATERIAL FUNCTIONS ===================================

@@ -21,8 +21,9 @@
 from typing import List, Union
 
 from numpy import pi
-from ...script.geometry.line import Line
+
 from ...script.geometry.circleArc import CircleArc
+from ...script.geometry.line import Line
 from ...script.geometry.spline import Spline
 from ...script.geometry.surface import Surface
 from ...script.material.material import Material
@@ -92,10 +93,10 @@ class SurfaceAPI(Surface):
         self._idExt: str = idExt
         self._material: Material = material
         self._nbrSegments: int = nbrSegments
-        assert angle == 2 * pi / nbrSegments, (
-            f"Segment angle ({angle}) of surface {name} "
-            f"does not match 2*pi/nbrSegments ({2 * pi / nbrSegments})"
-        )
+        if not angle == 2 * pi / nbrSegments:
+            raise ValueError(
+                f"Segment angle ({angle}) of surface {name} " f"does not match 2*pi/nbrSegments ({2 * pi / nbrSegments})"
+            )
         self._angle: float = angle
         self._meshSize: float = meshSize
 
@@ -166,10 +167,7 @@ class SurfaceAPI(Surface):
             meshSize (float): Mesh size of the surface points.
         """
         if not isinstance(meshSize, (float, int)):
-            msg = (
-                f"Given mesh size for API surface '{self.name}'"
-                f"was not a number but type '{type(meshSize)}'!"
-            )
+            msg = f"Given mesh size for API surface '{self.name}'" f"was not a number but type '{type(meshSize)}'!"
             raise TypeError(msg)
         self._meshSize = meshSize
 
