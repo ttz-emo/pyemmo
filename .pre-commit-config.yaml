@@ -29,13 +29,17 @@ repos:
     - repo: https://github.com/psf/black
       rev: 24.1.1
       hooks:
-          - id: black
-            language_version: python3.9.13
-            # args: [--safe]
-            args:
-                - --line-length=128
+      # Removed black since black-jupyter runs on .py files aswell! see
+      # https://github.com/psf/black/issues/3641#issuecomment-1501064536
+          # - id: black
+          #   language_version: python3.9.13
+          #   # args: [--safe]
+          #   args:
+          #       - --line-length=128
           - id: black-jupyter
             language_version: python3.9.13
+            args:
+                - --line-length=128
 
     # ISORT: Sorts Python imports according to the defined style, in this case,
     # the "black" profile to make in compatible with the black hook above.
@@ -82,11 +86,11 @@ repos:
           - id: pycln
             args: [--all]
 
-    # Type checks Python code using the MyPy static type checker.
-    # We recommend to ignore missing imports in MyPy.
-    - repo: https://github.com/pre-commit/mirrors-mypy
-      rev: v1.10.1
-      hooks:
-          - id: mypy
-            # files: pyemmo
-            # args: []
+    # # Type checks Python code using the MyPy static type checker.
+    # # We recommend to ignore missing imports in MyPy.
+    # - repo: https://github.com/pre-commit/mirrors-mypy
+    #   rev: v1.10.1
+    #   hooks:
+    #       - id: mypy
+    #         # files: pyemmo
+    #         # args: []
