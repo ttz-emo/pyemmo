@@ -28,6 +28,7 @@ from matplotlib.axes import Axes
 from pyemmo.script.geometry.circleArc import CircleArc
 from pyemmo.script.geometry.line import Line
 from pyemmo.script.geometry.point import Point
+from pyemmo.script.geometry.spline import Spline
 from pyemmo.script.geometry.surface import Surface
 
 P1 = Point("P1", 0, 0, 0, 1)
@@ -83,6 +84,7 @@ S2 = Surface("S2", [L1, C1, L4])
 S2.plot(fig)
 
 # %%
+# TEST Center of gravity
 x = []
 y = []
 z = []
@@ -114,5 +116,50 @@ fig.show()
 
 # We can see that this leeds to an error because the arc segments need to be
 # discretized into several points...
+
+# %%
+# Dev Spline plot
+from splines import Bernstein
+
+control_points = np.array([[(0, 0), (1, 0), (1, 1), (2, 1)]])
+
+s = Bernstein(control_points)
+times = np.linspace(s.grid[0], s.grid[-1], 100)
+fig, ax = plt.subplots()
+for segment in control_points:
+    xy = np.transpose(segment)
+    ax.plot(*xy, "--")
+    ax.scatter(*xy, color="grey")
+xy_point_list = s.evaluate(times).T  # shape (2,100) -> (xy, index)
+# ax.add_patch(
+#     patches.Polygon(
+#         xy_point_list.T, edgecolor="m", fill=0, closed=False
+#     )
+# )
+ax.plot(*xy_point_list, "--")  # Equivalent to ax.plot(x_values, y_values, "--")
+ax.axis("equal")
+
+# %%
+# TEST SPLINE PLOT
+fig, ax = plt.subplots()
+colorList = ("blue", "red", "green")
+spline_type_list = ("Catmull-Rom Spline", "Bezierkurve", "Basis-Spline")
+for spline_type in (0, 1, 2):
+    points = S1.points
+    my_spline = Spline(
+        name=spline_type_list[spline_type],
+        startPoint=points.pop(0),
+        endPoint=points.pop(),
+        controlPoints=points,
+        SplineType=spline_type,
+    )
+    my_spline.plot(
+        fig=fig,
+        color=colorList[spline_type],
+        linewidth=1,
+        marker=".",
+        markersize=7,
+        tag=True,
+    )
 
 # %%

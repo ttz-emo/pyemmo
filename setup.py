@@ -50,9 +50,7 @@ except ImportError:  # Install setuptools if needed
 with open("pyemmo/version.py", encoding="utf-8") as versionFile:
     exec(versionFile.read())
 # from .pyemmo.version import __version__
-PYEMMO_VERSION = (
-    __version__  # # pylint: disable=locally-disabled, undefined-variable
-)
+PYEMMO_VERSION = __version__  # # pylint: disable=locally-disabled, undefined-variable
 
 # with open("README.md", "r", encoding="utf-8") as fh:
 #     long_description = fh.read()
@@ -69,6 +67,7 @@ install_requires = [
     "gmsh>=4.8.4",
     "pygetdp>=1.0.0",
     "swat-em>=0.6.3",
+    "splines>=0.3.2",
     # "pyleecan>=1.5.1", # -> TODO: test, because dependencies in pyleecan are
     # very restrictive.
     # "scipy>=1.6.3", # only used for matlab .mat-file import

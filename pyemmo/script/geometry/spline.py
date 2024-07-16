@@ -17,15 +17,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-from random import random
 from typing import List, Literal
 
-try:
-    from .point import Point
-    from .line import Line
-except ImportError:
-    from pyemmo.script.geometry.point import Point
-    from pyemmo.script.geometry.line import Line
+import matplotlib.pyplot as plt
+import numpy as np
+from splines import Bernstein, CatmullRom, Natural
+
+from ...definitions import LINE_COLOR, POINT_COLOR
+from .line import Line
+from .point import Point
+
+NBR_INTERPOLATION_POINTS = 100
 
 ###
 # Eine Instanz der Unterklasse Spilne ist ein Polynomzug, zwischen beliebig vielen Punkten (Objekte der Klasse Point) im dreidimensionalen Raum.
@@ -276,27 +278,73 @@ class Spline(Line):
             SP.name = name
         return SP
 
-    # def plot(
-    #     self,
-    #     fig=None,
-    #     linewidth=0.5,
-    #     color=[random() for i in range(3)],
-    #     marker=None,
-    #     markersize=1,
-    # ):
-    #     controlPoints = self.getControlPoints()
-    #     centerCoords = centerPoint.getCoordinate()
+    def plot(
+        self,
+        fig=None,
+        linewidth=0.5,
+        color=LINE_COLOR,
+        marker=None,
+        markersize=1,
+        tag=False,
+    ):
+        """TODO
 
-    #     if not fig:
-    #         fig, ax = plt.subplots()
-    #         ax.add_patch(arc)
-    #         ax.set_aspect("equal", adjustable="box")
-    #         ax.autoscale()
-    #         fig.set_dpi(300)
-    #     else:
-    #         fig.axes[0].add_patch(arc)
-    #     # if marker not None: Plot points
-    #     if marker:
-    #         centerPoint.plot(fig, marker, markersize, color=color)
-    #         self.startPoint.plot(fig, marker, markersize, color=color)
-    #         self.endPoint.plot(fig, marker, markersize, color=color)
+        Depended on the spline type the correct spline type in the ``splines``
+        module will be selected:
+
+        +-------+-----------------------------------+------------------------+
+        | Index | Gmsh Spline-Type                  | splines-module class   |
+        +=======+===================================+========================+
+        | 0     | Catmull-Rom Spline or C2 BSpline  | CatmullRom             |
+        +-------+-----------------------------------+------------------------+
+        | 1     | Bezierkurve                       | Bernstein              |
+        +-------+-----------------------------------+------------------------+
+        | 2     | Basis-Spline                      | Natural                |
+        +-------+-----------------------------------+------------------------+
+
+        Args:
+            fig (_type_, optional): _description_. Defaults to None.
+            linewidth (float, optional): _description_. Defaults to 0.5.
+            color (_type_, optional): _description_. Defaults to LINE_COLOR.
+            marker (_type_, optional): _description_. Defaults to None.
+            markersize (int, optional): _description_. Defaults to 1.
+        """
+        all_points = self.getPoints()
+        xy_list = []
+        for p in all_points:
+            xy_list.append((p.coordinate[0], p.coordinate[1]))
+        if self.splineType == 0:
+            spline = CatmullRom(xy_list)
+        elif self.splineType == 1:
+            spline = Bernstein([xy_list])
+        else:
+            spline = Natural(xy_list)
+        times = np.linspace(spline.grid[0], spline.grid[-1], 100)
+        # shape (2,100) -> (xy, index)
+        xy_point_list = spline.evaluate(times).T
+        if not fig:
+            fig, ax = plt.subplots()
+            ax.set_aspect("equal", adjustable="box")
+            ax.autoscale()
+            fig.set_dpi(300)
+        else:
+            ax = fig.axes[0]
+        ax.plot(
+            *xy_point_list,
+            linewidth=linewidth,
+            color=color,
+            label=self.name,
+        )
+        if tag:
+            # add tag to line
+            ax.annotate(
+                f"""Spline {self.id} ("{self.name}")""",
+                spline.evaluate(0.5),
+                textcoords="offset points",
+                xytext=(1, 1),
+                ha="left",
+            )
+        # if marker not None: Plot points
+        if marker:
+            for p in all_points:
+                p.plot(fig, marker, markersize, color=POINT_COLOR, tag=tag)
