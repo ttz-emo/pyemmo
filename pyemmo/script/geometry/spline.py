@@ -347,4 +347,10 @@ class Spline(Line):
         # if marker not None: Plot points
         if marker:
             for p in all_points:
-                p.plot(fig, marker, markersize, color=POINT_COLOR, tag=tag)
+                p.plot(
+                    fig,
+                    marker,
+                    markersize,
+                    color=color if color != LINE_COLOR else POINT_COLOR,
+                    tag=tag,
+                )

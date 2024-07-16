@@ -48,7 +48,7 @@ L2 = Line("L2", P2, P3)
 L3 = Line("L3", P3, P4)
 L4 = Line("L4", P4, P1)
 S1 = Surface("S1", [L1, L3, L2, L4])
-S1.plot(tag=True)
+S1.plot(tag=True, markersize=6)
 # %%
 S1.rotateZ(P1, np.pi / 4)
 fig, ax = plt.subplots()

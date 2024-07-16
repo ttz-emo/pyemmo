@@ -25,7 +25,7 @@ from matplotlib import pyplot as plt
 from matplotlib.patches import Arc
 from numpy import pi, rad2deg
 
-from ...definitions import DEFAULT_GEO_TOL, LINE_COLOR
+from ...definitions import DEFAULT_GEO_TOL, LINE_COLOR, POINT_COLOR
 from ..geometry import defaultCenterPoint
 from .line import Line
 from .point import Point
@@ -412,9 +412,27 @@ class CircleArc(Line):
             )
         # if marker not None: Plot points
         if marker:
-            centerPoint.plot(fig, marker, markersize, color=color, tag=tag)
-            self.startPoint.plot(fig, marker, markersize, color=color, tag=tag)
-            self.endPoint.plot(fig, marker, markersize, color=color, tag=tag)
+            centerPoint.plot(
+                fig,
+                marker,
+                markersize,
+                color=color if color != LINE_COLOR else POINT_COLOR,
+                tag=tag,
+            )
+            self.startPoint.plot(
+                fig,
+                marker,
+                markersize,
+                color=color if color != LINE_COLOR else POINT_COLOR,
+                tag=tag,
+            )
+            self.endPoint.plot(
+                fig,
+                marker,
+                markersize,
+                color=color if color != LINE_COLOR else POINT_COLOR,
+                tag=tag,
+            )
 
     def combine(self, addLine: "CircleArc", touchPoint: Point = None) -> "CircleArc":
         """combine two arcs and return them as new CircleArc

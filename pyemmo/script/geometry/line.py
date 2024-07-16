@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 from numpy import array
 from numpy.linalg import norm
 
-from ...definitions import DEFAULT_GEO_TOL, LINE_COLOR
+from ...definitions import DEFAULT_GEO_TOL, LINE_COLOR, POINT_COLOR
 from ..geometry import defaultCenterPoint
 from .point import Point
 from .transformable import Transformable
@@ -451,14 +451,14 @@ class Line(Transformable):
                 fig=fig,
                 marker=marker,
                 markersize=markersize,
-                color=color,
+                color=color if color != LINE_COLOR else POINT_COLOR,
                 tag=tag,
             )
             endPoint.plot(
                 fig=fig,
                 marker=marker,
                 markersize=markersize,
-                color=color,
+                color=color if color != LINE_COLOR else POINT_COLOR,
                 tag=tag,
             )
 
