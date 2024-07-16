@@ -1,58 +1,106 @@
-##
-## Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
-##
-## This file is part of PyEMMO
-## (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
-##
-## This program is free software: you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-##
-## This program is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with this program. If not, see <http://www.gnu.org/licenses/>.
-##
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied
+# Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
+# This uses the suggestions from:
+# https://medium.com/marvelous-mlops/welcome-to-pre-commit-heaven-5b622bb8ebce
+
 repos:
--   repo: https://github.com/psf/black
-    rev: 24.1.1
-    hooks:
-    -   id: black
-        language_version: python3.9.13
-        # args: [--safe]
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
-    hooks:
-    -   id: check-added-large-files
-    -   id: check-merge-conflict
-    -   id: check-yaml
-    -   id: end-of-file-fixer
-    # -   id: fix-encoding-pragma # fails with black formatting...
-    -   id: trailing-whitespace
-    -   id: debug-statements
+    # Run black as code formatter:
+    - repo: https://github.com/psf/black
+      rev: 24.1.1
+      hooks:
+      # Removed black since black-jupyter runs on .py files aswell! see
+      # https://github.com/psf/black/issues/3641#issuecomment-1501064536
+          # - id: black
+          #   language_version: python3.9.13
+          #   # args: [--safe]
+          #   args:
+          #       - --line-length=128
+          - id: black-jupyter
+            language_version: python3.9.13
+            args:
+                - --line-length=128
 
--   repo: https://github.com/asottile/pyupgrade
-    rev: v3.15.1
-    hooks:
-    -   id: pyupgrade
-        args: [--py36-plus]
+    # ISORT: Sorts Python imports according to the defined style, in this case,
+    # the "black" profile to make in compatible with the black hook above.
+    - repo: https://github.com/pycqa/isort
+      rev: 5.11.5
+      hooks:
+          - id: isort
+            args: ["--profile", "black"]
+    # PRE-COMMIT
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v4.5.0
+      hooks:
+          # guard rails
+          - id: check-ast
+          - id: check-added-large-files
+          - id: check-toml
+          - id: check-yaml
+          # formatters
+          - id: end-of-file-fixer
+          - id: mixed-line-ending # Corrects inconsistent line endings in files (LF, CRLF)
+          - id: trailing-whitespace
+          # code checkers
+          - id: debug-statements
+          - id: check-merge-conflict
+      # -   id: fix-encoding-pragma # fails with black formatting...
 
--   repo: https://github.com/verhovsky/pyupgrade-docs
-    rev: v0.3.0
-    hooks:
-    -   id: pyupgrade-docs
-        args: [--py36-plus]
+    # Upgrades Python code to newer syntax versions. 3.6 or greater:
+    - repo: https://github.com/asottile/pyupgrade
+      rev: v3.15.1
+      hooks:
+          - id: pyupgrade
+            args: [--py36-plus]
 
-# -   repo: https://github.com/pre-commit/mirrors-mypy
-#     rev: '1.8.0'
-#     hooks:
-#     -   id: mypy
-#         files: pyemmo
-#         args: []
+    # Upgrade documentation files: pyupgrade-docs provides a single executable
+    # (pyupgrade-docs) which will modify .rst / .md / .tex files in place.
+    - repo: https://github.com/verhovsky/pyupgrade-docs
+      rev: v0.3.0
+      hooks:
+        - id: pyupgrade-docs
+          args: [--py36-plus]
+
+    # # security issues python (Guard rails):
+    # - repo: https://github.com/PyCQA/bandit
+    #   rev: 1.7.4
+    #   hooks:
+    #       - id: bandit
+    #         args: ["-c", "pyproject.toml"]
+    #         additional_dependencies: ["bandit[toml]"]
+
+    # This removes all unused import statements:
+    - repo: https://github.com/hadialqattan/pycln
+      rev: v2.4.0
+      hooks:
+          - id: pycln
+            args: [--all]
+
+    # # Type checks Python code using the MyPy static type checker.
+    # # We recommend to ignore missing imports in MyPy.
+    # - repo: https://github.com/pre-commit/mirrors-mypy
+    #   rev: v1.10.1
+    #   hooks:
+    #       - id: mypy
+    #         # files: pyemmo
+    #         # args: []

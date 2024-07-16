@@ -20,16 +20,15 @@
 """Module: wind_contour_calculation"""
 
 from __future__ import annotations
-import math
-from typing import Union
 
-from ...script.geometry.line import Line
+import math
+
 from ...script.geometry.circleArc import CircleArc
+from ...script.geometry.line import Line
 
 # from ...script.geometry.point import Point
 # from ...script.geometry import defaultCenterPoint
 from ..json.SurfaceJSON import SurfaceAPI
-from ...functions.plot import plot
 
 
 def calc_wind_contour(
@@ -38,7 +37,7 @@ def calc_wind_contour(
     rint: float,
     rext: float,
     is_internal: bool,
-) -> list[Union[Line, CircleArc]]:
+) -> list[Line | CircleArc]:
     """Calculation for the contour of a slot with winding.
 
         TODO: Filterung der Konturlinien anpassen. Wicklungskontur(en) von der
@@ -63,7 +62,7 @@ def calc_wind_contour(
     # Innenkontur der Statorblechs abziehen. Die Interface-Linie zwischen
     # Nutschlitz und Wicklung ist diejenige Linie, die nicht in der Wicklungs-
     # UND Statorkontur vorkommt.
-    cont_line_list: list[Union[Line, CircleArc]] = []
+    cont_line_list: list[Line | CircleArc] = []
     if is_internal:
         r_airgap = rext
         r_lam = rint
@@ -104,16 +103,11 @@ def calc_wind_contour(
     # is_internal = rint
     for curve in cont_line_list:
         # TODO: Describe what this if-case is doing.
-        if (
-            curve.startPoint.radius > r_airgap
-            or curve.startPoint.radius > r_lam
-        ) and math.isclose(
+        if (curve.startPoint.radius > r_airgap or curve.startPoint.radius > r_lam) and math.isclose(
             a=curve.startPoint.radius, b=r_airgap, abs_tol=1e-6
         ) is False:
             slot_op_points.append(curve.startPoint)
-        elif (
-            curve.endPoint.radius > r_airgap or curve.endPoint.radius > r_lam
-        ) and math.isclose(
+        elif (curve.endPoint.radius > r_airgap or curve.endPoint.radius > r_lam) and math.isclose(
             a=curve.endPoint.radius, b=r_airgap, abs_tol=1e-6
         ) is False:
             slot_op_points.append(curve.endPoint)
@@ -126,9 +120,8 @@ def calc_wind_contour(
     #     endPoint=stator_line_point_list[1],
     #     centerPoint=center_point,
     # )
-    assert (
-        len(slot_op_points) == 2
-    ), "Could not find exactly two points at the interface of slot and slot opening"
+    if len(slot_op_points) != 2:
+        raise RuntimeError("Could not find exactly two points at the interface of slot and slot opening")
 
     # determine slot opening line type: Line or CircleArc
     # slot_surf_list: list[SurfaceAPI] = []

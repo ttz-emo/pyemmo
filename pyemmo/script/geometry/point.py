@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied
+# Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -18,19 +19,21 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for geometry element Point"""
+import logging
 from math import atan2, cos, sin
-from random import random
 from typing import TYPE_CHECKING, Tuple, Union
 
 import matplotlib.pyplot as plt
 from numpy import array, array_equal, cross, pi, vdot
 from numpy.linalg import norm
+
+from ...definitions import DEFAULT_GEO_TOL, POINT_COLOR
 from .transformable import Transformable
-from ...definitions import DEFAULT_GEO_TOL
 
 if TYPE_CHECKING:
-    from .line import Line
     from matplotlib.figure import Figure
+
+    from .line import Line
 
 
 ###
@@ -54,9 +57,7 @@ class Point(Transformable):
     # Diese Variable wird für die automatische ID-Vergabe der Punkte verwendet!
     pointID = 0
 
-    def __init__(
-        self, name: str, x: float, y: float, z: float, meshLength: float
-    ):
+    def __init__(self, name: str, x: float, y: float, z: float, meshLength: float):
         """Konstruktor der Klasse Point.
 
         Args:
@@ -124,10 +125,7 @@ class Point(Transformable):
             newID (int): New ID of point
         """
         if newID < self.pointID:
-            raise ValueError(
-                "New ID of point is smaller than global ID count."
-                "New ID mus be existing!"
-            )
+            raise ValueError("New ID of point is smaller than global ID count." "New ID mus be existing!")
         Point.pointID = newID
         self._id = newID
 
@@ -147,9 +145,8 @@ class Point(Transformable):
         Args:
             name (str): New Point name
         """
-        assert isinstance(
-            name, (str)
-        ), f"Name must be string, not {type(name)}"
+        if not isinstance(name, str):
+            raise TypeError(f"Name must be string, not {type(name)}")
         self._name = name
 
     @property
@@ -168,10 +165,10 @@ class Point(Transformable):
         Args:
             coordinate (Tuple[float, float, float]): New point coordinates.
         """
-        assert len(coordinate) == 3, "Number of point cooridinates must be 3!"
-        assert all(
-            isinstance(val, (int, float)) for val in coordinate
-        ), "Point coordinate values must be int or float!"
+        if len(coordinate) != 3:
+            raise ValueError("Number of point cooridinates must be 3!")
+        if not all(isinstance(val, (int, float)) for val in coordinate):
+            raise ValueError("Point coordinate values must be int or float!")
         self._x = coordinate[0]
         self._y = coordinate[1]
         self._z = coordinate[2]
@@ -242,16 +239,12 @@ class Point(Transformable):
         if not self._todesmerker:
             # durch Verschiebung Rotation im Ursprung!
             rotPointCoords = rotationPoint.coordinate
-            self.translate(
-                -rotPointCoords[0], -rotPointCoords[1], -rotPointCoords[2]
-            )
+            self.translate(-rotPointCoords[0], -rotPointCoords[1], -rotPointCoords[2])
             oldx = self._x
             oldy = self._y
             self._x = cos(angle) * oldx - sin(angle) * oldy
             self._y = sin(angle) * oldx + cos(angle) * oldy
-            self.translate(
-                rotPointCoords[0], rotPointCoords[1], rotPointCoords[2]
-            )
+            self.translate(rotPointCoords[0], rotPointCoords[1], rotPointCoords[2])
 
     def rotateX(self, rotationPoint: "Point", angle: float):
         """Mit rotateX() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die X-Achse mit
@@ -264,16 +257,12 @@ class Point(Transformable):
         if not self._todesmerker:
             # durch Verschiebung Rotation im Ursprung!
             rotPointCoords = rotationPoint.coordinate
-            self.translate(
-                -rotPointCoords[0], -rotPointCoords[1], -rotPointCoords[2]
-            )
+            self.translate(-rotPointCoords[0], -rotPointCoords[1], -rotPointCoords[2])
             oldy = self._y
             oldz = self._z
             self._y = cos(angle) * oldy - sin(angle) * oldz
             self._z = sin(angle) * oldy + cos(angle) * oldz
-            self.translate(
-                rotPointCoords[0], rotPointCoords[1], rotPointCoords[2]
-            )
+            self.translate(rotPointCoords[0], rotPointCoords[1], rotPointCoords[2])
 
     def rotateY(self, rotationPoint: "Point", angle: float):
         """Mit rotateY() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die Y-Achse mit
@@ -287,16 +276,12 @@ class Point(Transformable):
         if not self._todesmerker:
             # durch Verschiebung Rotation im Ursprung!
             rotPointCoords = rotationPoint.coordinate
-            self.translate(
-                -rotPointCoords[0], -rotPointCoords[1], -rotPointCoords[2]
-            )
+            self.translate(-rotPointCoords[0], -rotPointCoords[1], -rotPointCoords[2])
             oldx = self._x
             oldz = self._z
             self._x = cos(angle) * oldx + sin(angle) * oldz
             self._z = -sin(angle) * oldx + cos(angle) * oldz
-            self.translate(
-                rotPointCoords[0], rotPointCoords[1], rotPointCoords[2]
-            )
+            self.translate(rotPointCoords[0], rotPointCoords[1], rotPointCoords[2])
 
     def duplicate(self, name="") -> "Point":
         """Mit duplicate() wird ein neuer Punkt mit gleichen Koordinaten erzeugt. Dieser Punkt hat
@@ -363,9 +348,7 @@ class Point(Transformable):
         pV1endPoint = array(planeVector1.endPoint.coordinate)
         pV2startPoint = array(planeVector2.startPoint.coordinate)
         pV2endPoint = array(planeVector2.endPoint.coordinate)
-        normalVec = cross(
-            pV1endPoint - pV1startPoint, pV2endPoint - pV2startPoint
-        )
+        normalVec = cross(pV1endPoint - pV1startPoint, pV2endPoint - pV2startPoint)
 
         if array_equal(normalVec, [0, 0, 0]):
             # Plane_Vector1 parallel zu Plane_Vector2
@@ -386,9 +369,7 @@ class Point(Transformable):
 
         # 4) projection of point on plane -> intersectionPoint
         selfVec = array(self.coordinate)
-        lambda1 = (Constant - (vdot(normalVec, selfVec))) / (
-            norm(pow(normalVec, 2), 1)
-        )
+        lambda1 = (Constant - (vdot(normalVec, selfVec))) / (norm(pow(normalVec, 2), 1))
         # determine intersection by putting lambda in equation of h
         intersectionPoint = selfVec + lambda1 * normalVec
 
@@ -398,9 +379,7 @@ class Point(Transformable):
         # 6) Mirror point is intersection plus that vector
         mirPoint = intersectionPoint + vecPtoS
 
-        R_Point = Point(
-            self.name, mirPoint[0], mirPoint[1], mirPoint[2], self._meshLength
-        )
+        R_Point = Point(self.name, mirPoint[0], mirPoint[1], mirPoint[2], self._meshLength)
         if not name:
             R_Point.name = "P_" + str(abs(R_Point.id))
         else:
@@ -408,32 +387,30 @@ class Point(Transformable):
 
         return R_Point
 
-    # def addToScript(self, script: Script) -> Union["Point", None]:
-    #  """ Mit addToScript wird der Punkt zum Skriptobjekt übergeben und in gmsh-Syntax übersetzt.
-    #  Transformationen von Punkten sind nach dem Aufruf nicht mehr erlaubt, da die neuen
-    # Koordinaten der Punkte nicht mehr erfasst werden.
-    #  Diese Methode sollte stets nur in Kombination mit generateScript (Klassenmethode von Script)
-    # verwendet werden.
+    def addToScript(self, script: "Script") -> Union["Point", None]:
+        """
+        Mit addToScript wird der Punkt zum Skriptobjekt übergeben und in
+        gmsh-Syntax übersetzt. Transformationen von Punkten sind nach dem Aufruf
+        nicht mehr erlaubt, da die neuen Koordinaten der Punkte nicht mehr erfasst
+        werden. Diese Methode sollte stets nur in Kombination mit generateScript
+        (Klassenmethode von Script) verwendet werden.
 
-    #     Input:
-    #         script : Script
-    #     Output:
-    #         None
+            Input:
+                script : Script
+            Output:
+                None
 
-    #     Beispiel:
-    #         myScript = Script(...)
-    #         P1.addToScript(myScript)
+            Beispiel:
+                myScript = Script(...)
+                P1.addToScript(myScript)
 
-    #     Returns:
-    #         _type_: _description_
-    #     """
-    #     if not self.isDrawn():
-    #         self._todesmerker = True
-    #         ans = script._addPoint(self)
-    #     else:
-    #         print(f"Point '{self.name}' is allready in a script.")
-    #         ans = None
-    #     return ans
+            Returns:
+                _type_: _description_
+        """
+        if self.isDrawn():
+            logging.warn(f"Point '{self.name}' is allready in a script.")
+            return None
+        return script._addPoint(self)
 
     def getAngleToX(
         self,
@@ -462,9 +439,7 @@ class Point(Transformable):
             try:
                 cCoords = CenterPoint.coordinate
             except AttributeError:
-                ValueError(
-                    "CenterPoint was not class Point or array of coordinates"
-                )
+                ValueError("CenterPoint was not class Point or array of coordinates")
             except Exception as exce:
                 raise exce
         dupPoint = self.duplicate()
@@ -510,7 +485,7 @@ class Point(Transformable):
         fig: "Figure" = None,
         marker="o",
         markersize=1.0,
-        color=[random() for i in range(3)],
+        color=POINT_COLOR,
         tag=False,
     ):
         """Point plot
@@ -519,7 +494,7 @@ class Point(Transformable):
             fig (pyplot.Figure, optional): Defaults to None.
             marker (str, optional): Defaults to "o".
             markersize (float, optional): Defaults to 1.0.
-            color (list, optional): Defaults to [random() for i in range(3)].
+            color (list, optional): Defaults to DEFAULT_POINT_COLOR.
             tag (bool): Flag to print point id and name like "P `P_ID` ("`P_Name`")"
         """
         coords = self.coordinate

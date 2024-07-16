@@ -22,23 +22,24 @@
 # import debugpy
 # debugpy.debug_this_thread()
 from __future__ import annotations
+
+import datetime
+import json
+import logging
 import os
 import subprocess
 from os import mkdir
 from os.path import isdir, isfile, join
-from typing import Dict, List, Tuple, Union
-import logging
-import json
-import datetime
+
 from ... import logFmt
-from ...functions import runOnelab, calcIronLoss, import_results
+from ...functions import calcIronLoss, import_results, runOnelab
 from ...script.geometry.machineAllType import MachineAllType
 from ...script.geometry.rotor import Rotor
 from ...script.geometry.stator import Stator
-from ...script.script import Script
 from ...script.material import ElectricalSteel
+from ...script.script import Script
 from .. import logger
-from . import boundaryJSON, importJSON, modelJSON, apiNameDict
+from . import apiNameDict, boundaryJSON, importJSON, modelJSON
 from .SurfaceJSON import SurfaceAPI
 
 # from swat_em import analyse
@@ -73,9 +74,7 @@ def createMachine(
         rotorMBRadius=rotorMovingBandRadius,
     )
     # create the remaining machine surfaces
-    maschineSurfDict = modelJSON.createMachineGeometryFromSegment(
-        segmentSurfDict, symFactor
-    )
+    maschineSurfDict = modelJSON.createMachineGeometryFromSegment(segmentSurfDict, symFactor)
     # Log winding layout for debugging *before* createSlot() is called.
     logger.debug(f"Winding layout: {importJSON.getWindingList(extendedInfo)}")
     # create physical elements from the surfaces
@@ -242,9 +241,7 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
     }.items():
         for quantity in ["b_radial", "b_tangent"]:
             sign = "-" if side == "rotor" else "+"
-            resFilePath = join(
-                "CAT_RESDIR", quantity + "_airgap_" + side + ".pos"
-            )
+            resFilePath = join("CAT_RESDIR", quantity + "_airgap_" + side + ".pos")
             # resFilePath = abspath(
             #     join(script.getResultsPath(), quantity + "_airgap_" + side + ".pos")
             # )
@@ -268,9 +265,7 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
                 quantity,
                 "GetBOnRadius",
                 OnGrid=(
-                    f"{{{toothRadius}*Cos[$A*Pi/180],"
-                    f"{toothRadius}*Sin[$A*Pi/180],0}}"
-                    "{0:360/SymmetryFactor:0.5,0,0}"
+                    f"{{{toothRadius}*Cos[$A*Pi/180]," f"{toothRadius}*Sin[$A*Pi/180],0}}" "{0:360/SymmetryFactor:0.5,0,0}"
                 ),
                 File=join("CAT_RESDIR", quantity + "_tooth.pos"),
                 Name=f'"{quantity} (Tooth)"',
@@ -283,23 +278,15 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
             script.addPostOperation(
                 quantity,
                 "GetBOnRadius",
-                OnGrid=(
-                    f"{{{yokeRadius}*Cos[$A*Pi/180],"
-                    f"{yokeRadius}*Sin[$A*Pi/180],0}}"
-                    "{0:360/SymmetryFactor:0.5,0,0}"
-                ),
+                OnGrid=(f"{{{yokeRadius}*Cos[$A*Pi/180]," f"{yokeRadius}*Sin[$A*Pi/180],0}}" "{0:360/SymmetryFactor:0.5,0,0}"),
                 File=join("CAT_RESDIR", quantity + "_yoke.pos"),
                 Name=f'"{quantity} (Yoke)"',
             )
 
     ## 4. Add rotor and stator b-field export for iron loss calculation
     if importJSON.getFlagCalcIronLoss(extendedInfo):
-        rotorIronPhysicalID = [
-            str(phys.id) for phys in machine.rotor._domainLam.physicals
-        ]
-        statorIronPhysicalID = [
-            str(phys.id) for phys in machine.stator._domainLam.physicals
-        ]
+        rotorIronPhysicalID = [str(phys.id) for phys in machine.rotor._domainLam.physicals]
+        statorIronPhysicalID = [str(phys.id) for phys in machine.stator._domainLam.physicals]
         script.addPostOperation(
             "b",
             "GetBIron",
@@ -409,9 +396,7 @@ def main(
                 with open(geo, encoding="utf-8") as jsonFile:
                     machineGeoList = json.load(jsonFile)
                     # create dict with surface api (segment) objects from the surface list
-                    segmentSurfDict = modelJSON.importMachineGeometry(
-                        machineGeoList
-                    )
+                    segmentSurfDict = modelJSON.importMachineGeometry(machineGeoList)
             except FileNotFoundError as fnfe:
                 raise fnfe
             except Exception as exept:
@@ -421,9 +406,7 @@ def main(
     elif isinstance(geo, dict):
         segmentSurfDict = geo
     else:
-        raise TypeError(
-            f"Geometry file has to be type 'File' or 'dict', not {type(geo)}"
-        )
+        raise TypeError(f"Geometry file has to be type 'File' or 'dict', not {type(geo)}")
 
     # addition information
     if isinstance(extInfo, str):
@@ -431,15 +414,11 @@ def main(
             # import the extended information
             extendedInfo = importJSON.importExtInfo(extInfo)
         else:
-            raise (
-                FileNotFoundError(f"Given file path {extInfo} was not a file.")
-            )
+            raise (FileNotFoundError(f"Given file path {extInfo} was not a file."))
     elif isinstance(extInfo, dict):
         extendedInfo = extInfo
     else:
-        raise TypeError(
-            f"Model information file has to be type 'File' or 'dict', not {type(extInfo)}"
-        )
+        raise TypeError(f"Model information file has to be type 'File' or 'dict', not {type(extInfo)}")
 
     # generate the machine geometry
     machine, machineSurfDict = createMachine(segmentSurfDict, extendedInfo)
@@ -473,9 +452,7 @@ def main(
     return apiScript
 
 
-def _open_onelab(
-    apiScript: Script, extendedInfo: dict, gmsh: str = "", getdp: str = ""
-):
+def _open_onelab(apiScript: Script, extendedInfo: dict, gmsh: str = "", getdp: str = ""):
     """
     Private function to open ONELAB simulation in GUI and evaluate results
     """
@@ -487,9 +464,7 @@ def _open_onelab(
     else:
         # if gmsh was given by the user, check that its valid
         if not isfile(gmsh):
-            raise FileNotFoundError(
-                f"Provided gmsh executable was not found: {gmsh}"
-            )
+            raise FileNotFoundError(f"Provided gmsh executable was not found: {gmsh}")
     proFile = apiScript.proFilePath  # path to .pro file
     command = runOnelab.createCmdCommand(
         onelabFile=proFile,
@@ -503,6 +478,7 @@ def _open_onelab(
         capture_output=True,  # not importJSON.getFlagOpenGui(extendedInfo),
         text=True,
         check=False,
+        shell=False,
     )
     # print(f"StdOut:\n{calcInfo.stdout}")
     if calcInfo.stderr:
@@ -530,15 +506,12 @@ def _open_onelab(
                 _run_core_loss_calculation(resPath, apiScript)
             else:
                 logger.warning(
-                    "IRON LOSS CALCULATION: Iron loss calculation "
-                    "cannot be done for static simulation!",
+                    "IRON LOSS CALCULATION: Iron loss calculation " "cannot be done for static simulation!",
                 )
         # Plot Results for Debugging
         if logger.getEffectiveLevel() <= 10:
             # if the folder for results exists
-            import_results.plt.set_loglevel(
-                level="info"
-            )  # avoid matplotlib debug infos
+            import_results.plt.set_loglevel(level="info")  # avoid matplotlib debug infos
             for file in os.listdir(resPath):
                 filename, fileExt = os.path.splitext(file)
                 if fileExt == ".dat":
@@ -565,10 +538,7 @@ def _run_core_loss_calculation(resPath, apiScript: Script):
     brFilePath = join(resPath, "b_rotor.pos")
     bsFilePath = join(resPath, "b_stator.pos")
     nbrPolePairs = machine.nbrPolePairs
-    calcAngle = (
-        simulationParameters["SYM"]["FINAL_ROTOR_POS"]
-        - simulationParameters["SYM"]["INIT_ROTOR_POS"]
-    )
+    calcAngle = simulationParameters["SYM"]["FINAL_ROTOR_POS"] - simulationParameters["SYM"]["INIT_ROTOR_POS"]
     if 360 / nbrPolePairs > calcAngle:
         # make sure at least one electrical period has been simulated
         # pylint: disable=locally-disabled,  line-too-long
@@ -607,24 +577,12 @@ def _run_core_loss_calculation(resPath, apiScript: Script):
             sym_factor=machine.symmetryFactor,
             axial_length=machine.stator.axialLength,
         )
-        calcIronLoss.write_simple(
-            join(resPath, "Pv_hyst_R.dat"), time, ironLossR["hyst"]
-        )
-        calcIronLoss.write_simple(
-            join(resPath, "Pv_hyst_S.dat"), time, ironLossS["hyst"]
-        )
-        calcIronLoss.write_simple(
-            join(resPath, "Pv_eddy_R.dat"), time, ironLossR["eddy"]
-        )
-        calcIronLoss.write_simple(
-            join(resPath, "Pv_eddy_S.dat"), time, ironLossS["eddy"]
-        )
-        calcIronLoss.write_simple(
-            join(resPath, "Pv_exc_R.dat"), time, ironLossR["exc"]
-        )
-        calcIronLoss.write_simple(
-            join(resPath, "Pv_exc_S.dat"), time, ironLossS["exc"]
-        )
+        calcIronLoss.write_simple(join(resPath, "Pv_hyst_R.dat"), time, ironLossR["hyst"])
+        calcIronLoss.write_simple(join(resPath, "Pv_hyst_S.dat"), time, ironLossS["hyst"])
+        calcIronLoss.write_simple(join(resPath, "Pv_eddy_R.dat"), time, ironLossR["eddy"])
+        calcIronLoss.write_simple(join(resPath, "Pv_eddy_S.dat"), time, ironLossS["eddy"])
+        calcIronLoss.write_simple(join(resPath, "Pv_exc_R.dat"), time, ironLossR["exc"])
+        calcIronLoss.write_simple(join(resPath, "Pv_exc_S.dat"), time, ironLossS["exc"])
     else:
         logger.warning(
             "IRON LOSS CALCULATION: field file 'b_rotor.pos' or 'b_stator.pos' not found in '%s'",
@@ -650,9 +608,7 @@ def is_single_transient(res_dir: str) -> bool:
     if dat_file_list:
         # for dat_file in dat_file_list:
         # get time and data values of first file
-        time, data = import_results.read_timetable_dat(
-            join(res_dir, dat_file_list[0])
-        )
+        time, data = import_results.read_timetable_dat(join(res_dir, dat_file_list[0]))
         if time.size > 1:
             # get number of simulations in that file
             nbrSim, _, _ = import_results.split_data(time, data)

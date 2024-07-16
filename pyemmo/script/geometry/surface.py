@@ -18,13 +18,14 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 from __future__ import annotations
-from random import random
-from typing import TYPE_CHECKING, List, Tuple, Type, Union
+
+from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from numpy import mean
 
+from ...definitions import LINE_COLOR
 from .circleArc import CircleArc
 from .line import Line
 from .point import Point
@@ -61,9 +62,7 @@ class Surface(Transformable):
     """Statische Variable zur ID-Verwaltung"""
 
     ###Konstruktor der Klasse Surface
-    def __init__(
-        self, name: str, curves: List[Union[Line, CircleArc, Spline]]
-    ):
+    def __init__(self, name: str, curves: list[Line | CircleArc | Spline]):
         """Create a surface object.
 
         Args:
@@ -86,15 +85,13 @@ class Surface(Transformable):
         ###Farbe vom Netz.
         self._color = ""
         # init because _cut(=tools) is only accessed by method ``cutOut``
-        self._cut: List["Surface"] = []
+        self._cut: list[Surface] = []
         self._isTool: bool = False
         self._delete: bool = False
 
-    def __eq__(self, other: "Surface"):
+    def __eq__(self, other: Surface):
         # check type and number of points
-        if isinstance(other, self.__class__) and (
-            len(self.allPoints) == len(other.allPoints)
-        ):
+        if isinstance(other, self.__class__) and (len(self.allPoints) == len(other.allPoints)):
             # check that all points are equal
             otherPoints = other.allPoints
             for point in self.allPoints:
@@ -138,10 +135,7 @@ class Surface(Transformable):
             newID (int): New ID of surface
         """
         if newID < self.ID:
-            raise ValueError(
-                "New ID of surface is smaller than global ID count."
-                "New ID mus be existing!"
-            )
+            raise ValueError("New ID of surface is smaller than global ID count." "New ID mus be existing!")
         Surface.ID = newID
         self._id = newID
 
@@ -164,7 +158,7 @@ class Surface(Transformable):
         self._name = name
 
     @property
-    def curve(self) -> List[Union[Line, CircleArc, Spline]]:
+    def curve(self) -> list[Line | CircleArc | Spline]:
         """Getter of surface line loop.
 
         Returns:
@@ -174,7 +168,7 @@ class Surface(Transformable):
 
     # TODO: Rename "curve"
     @curve.setter
-    def curve(self, curves: List[Line]) -> None:
+    def curve(self, curves: list[Line]) -> None:
         """Set line loop of surface
 
         Args:
@@ -234,7 +228,7 @@ class Surface(Transformable):
             raise TypeError("Delete status was not type bool!")
 
     @property
-    def points(self) -> List[Point]:
+    def points(self) -> list[Point]:
         """Get all Points on the contour of a Surface
 
         Returns:
@@ -242,7 +236,7 @@ class Surface(Transformable):
         """
         LineLoop = self.curve
         if LineLoop:
-            PointList: List[Point] = []
+            PointList: list[Point] = []
             for line in LineLoop:
                 startPoint = line.startPoint
                 endPoint = line.endPoint
@@ -264,14 +258,14 @@ class Surface(Transformable):
         return mean(mlList)
 
     @property
-    def allPoints(self) -> List[Point]:
+    def allPoints(self) -> list[Point]:
         """Get all Points of a Surface (including rotation points of circle arcs)
 
         Returns:
             List[Point]: _description_
         """
         LineLoop = self.curve
-        PointList: List[Point] = []
+        PointList: list[Point] = []
         for line in LineLoop:
             if line.type == "CircleArc":
                 CenterPoint = line.center
@@ -290,7 +284,7 @@ class Surface(Transformable):
         return PointList
 
     @property
-    def tools(self) -> List[Type["Surface"]]:
+    def tools(self) -> list[type[Surface]]:
         """Get the list of tool surfaces to cut out of this surface
 
         ``tools`` has NO SETTER, because is only accessed by method ``cutOut()``
@@ -383,7 +377,7 @@ class Surface(Transformable):
             for p in allP:
                 p.rotateY(rotationPoint, angle)
 
-    def duplicate(self, name="") -> "Surface":
+    def duplicate(self, name="") -> Surface:
         """Mit duplicate() wird eine neue Fläche mit gleichen Eigenschaften zur
         Originalen erzeugt. Diese Fläche hat jedoch eine unterschiedliche ID.
 
@@ -401,7 +395,7 @@ class Surface(Transformable):
         Returns:
             Surface: Duplicated surface.
         """
-        newCurves: List[Union[Line, CircleArc, Spline]] = []
+        newCurves: list[Line | CircleArc | Spline] = []
         for curve in self.curve:
             newCurves.append(curve.duplicate())
         s = Surface(name, newCurves)
@@ -420,7 +414,7 @@ class Surface(Transformable):
         planeVector1: Line,
         planeVector2: Line,
         name: str = "",
-    ) -> "Surface":
+    ) -> Surface:
         """Mit mirror() kann eine Fläche an einer definierten Ebene gespiegelt werden.
         Bildpunkte werden hierbei generiert und eine Linie zwischen den Punkten erzeugt.
         Die Spiegelebene wird durch einen Aufpunkt (planePoint) und 2 Vektoren
@@ -441,9 +435,7 @@ class Surface(Transformable):
         allCurve.reverse()
         allNewCurve = []
         for aC in allCurve:
-            allNewCurve.append(
-                aC.mirror(planePoint, planeVector1, planeVector2)
-            )
+            allNewCurve.append(aC.mirror(planePoint, planeVector1, planeVector2))
 
         s = Surface(self._name, allNewCurve)
 
@@ -456,7 +448,7 @@ class Surface(Transformable):
 
         return s
 
-    def combine(self, addSurf: "Surface") -> "Surface":
+    def combine(self, addSurf: Surface) -> Surface:
         """combine two surfaces.
 
         Args:
@@ -492,7 +484,7 @@ class Surface(Transformable):
                 newCurves = curves + addCurves  # combine the remaining lines
                 # check if the remaining lines containing the touch points can be combined:
                 for dockPoint in touchpoints:
-                    lines2combine: List[Union[Line, CircleArc, Spline]] = []
+                    lines2combine: list[Line | CircleArc | Spline] = []
                     # find the two lines in the two remaining curve lists containing the docking point:
                     for curve in newCurves:
                         for linePoint in curve.points:
@@ -518,9 +510,7 @@ class Surface(Transformable):
                             # remove curves after loop, because otherwise the next curve item in the loop will be skiped (static indexing):
                             newCurves.remove(lines2combine[0])
                             newCurves.remove(lines2combine[1])
-                            combinedLine = lines2combine[0].combine(
-                                lines2combine[1], dockPoint
-                            )  # combine the two lines
+                            combinedLine = lines2combine[0].combine(lines2combine[1], dockPoint)  # combine the two lines
                             newCurves.append(combinedLine)
                 break  # break the outer curve for-loop, if the touchpoints where found
         if touchpoints:
@@ -536,7 +526,7 @@ class Surface(Transformable):
 
     def recombineCurves(self) -> None:
         oldLoop = self.curve
-        newLoop: List[Union[Line, CircleArc, Spline]] = []
+        newLoop: list[Line | CircleArc | Spline] = []
         while oldLoop:
             curve = oldLoop.pop()
             newCurve = None
@@ -560,7 +550,7 @@ class Surface(Transformable):
         self.curve = newLoop
         return None
 
-    def addToScript(self, script: "Script"):
+    def addToScript(self, script: Script):
         """Mit addToScript wird die Fläche zum Skriptobjekt übergeben und in gmsh-Syntax übersetzt.
         Transformationen von Flächen sind nach dem Aufruf nicht mehr erlaubt, da die neuen Koordinaten
         der Punkte nicht mehr erfasst werden. Diese Methode sollte stets nur in Kombination mit
@@ -606,10 +596,10 @@ class Surface(Transformable):
         Returns:
             List[Union[Line, CircleArc, Spline]]: New sorted line loop
         """
-        oldLoop: List[Line] = self.curve
+        oldLoop: list[Line] = self.curve
         # direction: List[int] = list()
         # direction = 1  # append 1 for first line, cause it sets the direction
-        newLoop: List[Line] = []
+        newLoop: list[Line] = []
         # add first line to newLoop, because it doesnt need to be checked
         newLoop.append(oldLoop.pop(0))
         nbrLines = len(oldLoop)  # get the remaining number of lines
@@ -656,7 +646,7 @@ class Surface(Transformable):
             if curve == oldCurve:
                 self._curves[i] = newCurve
 
-    def cutOut(self, ToolSurface: "Surface", keepTool: bool = True) -> None:
+    def cutOut(self, ToolSurface: Surface, keepTool: bool = True) -> None:
         """Cut out a Tool Surface from the Parent surface by Boolean Difference"""
         self._cut.append(ToolSurface)
         ToolSurface.setTool()  # set to the tool surface
@@ -721,7 +711,7 @@ class Surface(Transformable):
         self,
         fig: Figure = None,
         linewidth=0.5,
-        color=[random() for i in range(3)],
+        color=LINE_COLOR,
         marker=".",
         markersize=1,
         tag=False,
@@ -755,9 +745,7 @@ class Surface(Transformable):
                 ha="left",
             )
 
-    def getBoundingBox(
-        self, scalingFactor: float = 1.0
-    ) -> Tuple[List[float], List[float]]:
+    def getBoundingBox(self, scalingFactor: float = 1.0) -> tuple[list[float], list[float]]:
         """Get the minimum and maximum x and y values of the points
 
         Args:

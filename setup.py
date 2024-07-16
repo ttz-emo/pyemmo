@@ -50,9 +50,7 @@ except ImportError:  # Install setuptools if needed
 with open("pyemmo/version.py", encoding="utf-8") as versionFile:
     exec(versionFile.read())
 # from .pyemmo.version import __version__
-PYEMMO_VERSION = (
-    __version__  # # pylint: disable=locally-disabled, undefined-variable
-)
+PYEMMO_VERSION = __version__  # # pylint: disable=locally-disabled, undefined-variable
 
 # with open("README.md", "r", encoding="utf-8") as fh:
 #     long_description = fh.read()
@@ -69,6 +67,7 @@ install_requires = [
     "pandas>=1.2.4",
     "numpy>=1.23.1",
     "parse>=1.19.0",
+    "splines>=0.3.2",
 ]
 
 setuptools.setup(

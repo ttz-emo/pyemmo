@@ -22,13 +22,14 @@
 
 # pylint: disable=line-too-long
 
-from typing import Union
 import warnings
+from typing import Union
+
 import numpy
 from numpy.typing import NDArray
 
-from .materialManagement import getMaterial
 from ... import rootLogger as logger
+from .materialManagement import getMaterial
 
 
 class Material:
@@ -52,10 +53,7 @@ class Material:
         self.remanence = remanence
         self.tempCoefRem = tempCoefRem
         if tempCoefRem and not remanence:
-            warnings.warn(
-                "Temperature coefficient for Br is given without value for Br "
-                f"in Material {name}!"
-            )
+            warnings.warn("Temperature coefficient for Br is given without value for Br " f"in Material {name}!")
         self.BH = BH
 
         self.density = density
@@ -80,11 +78,7 @@ class Material:
                     if bhComp.dtype == bool:
                         bhComp = bhComp.all()
                 else:
-                    raise (
-                        ValueError(
-                            f"Comparison of BH curve resulted in unknown type '{type(bhComp)}'"
-                        )
-                    )
+                    raise (ValueError(f"Comparison of BH curve resulted in unknown type '{type(bhComp)}'"))
             if bhComp:
                 selfDict = self.__dict__.copy()
                 del selfDict["_BH"]
@@ -164,8 +158,10 @@ class Material:
     def conductivity(self) -> Union[float, int, None]:
         """get electrical conductivity
 
+
         Returns:
-            Union[float, int, None]: electrical conductivity in S/m
+            Union[float, int, None]: electrical conductivity in S/m or None if
+            not conductive.
         """
         return self._conductivity
 
@@ -211,14 +207,17 @@ class Material:
             return self._BH
         if self._BH.ndim < 3:
             # pylint: disable=locally-disabled,  line-too-long
-            warnings.warn(
-                f"Tried to access the BH-curve for temperature {temperature}°C, but there is only one BH-curve specified!",
-                UserWarning,
+            logger.warning(
+                "Tried to access the BH-curve for temperature %.1f°C, but there is only one BH-curve specified!",
+                temperature,
             )
             return self._BH
         # else:
-        assert self._BH.ndim == 3
-        # TODO: implement temperature depended bh curve
+        elif self._BH.ndim == 3:
+            ...
+            # TODO: implement temperature depended bh curve
+        else:
+            raise ValueError(f"BH curve of material {self.name} has invalid shape: " f"{self._BH.shape}!")
 
     # pylint: disable=invalid-name
     @BH.setter
@@ -295,14 +294,24 @@ class Material:
             raise ValueError("Material name must be type str.")
 
     @conductivity.setter
-    def conductivity(self, conductivity: Union[float, int]):
+    def conductivity(self, conductivity: Union[float, int, None]):
         """set the electrical conductivity of the material
 
         Args:
             conductivity (Union[float, int]): electrical conductivity in S/m
         """
-        if isinstance(conductivity, (int, float)) or conductivity is None:
-            self._conductivity = conductivity
+        if conductivity is None:
+            self._conductivity = None
+        elif isinstance(conductivity, (int, float)):
+            if conductivity > 0:
+                self._conductivity = conductivity
+            elif conductivity == 0:
+                # if zero than non-conductings
+                self._conductivity = None
+            else:
+                # negative conductivity...
+                raise ValueError("Conductivy can not be negative!" f"Given value: {conductivity}")
+
         else:
             raise ValueError("Conductivity must be numeric.")
 
@@ -313,10 +322,7 @@ class Material:
         Args:
             relPermeability (Union[float, int]): relative permeability
         """
-        if (
-            isinstance(relPermeability, (int, float))
-            or relPermeability is None
-        ):
+        if isinstance(relPermeability, (int, float)) or relPermeability is None:
             self._relPermeability = relPermeability
         else:
             raise ValueError("Relative permeability must be numeric.")
@@ -380,17 +386,9 @@ class Material:
                 self._density = density
                 return None
             else:
-                raise (
-                    ValueError(
-                        f"Value for material density must be a positive number, but is '{density}'"
-                    )
-                )
+                raise (ValueError(f"Value for material density must be a positive number, but is '{density}'"))
         else:
-            raise (
-                TypeError(
-                    f"Density of material must be a numeric value but is '{type(density)}':{density}"
-                )
-            )
+            raise (TypeError(f"Density of material must be a numeric value but is '{type(density)}':{density}"))
 
     @property
     def thermalConductivity(self):
@@ -458,11 +456,7 @@ class Material:
                 self._thermalCapacity = thermalCapacity
                 return None
             else:
-                raise (
-                    ValueError(
-                        f"Value for material thermalCapacity must be a positive number, but is '{thermalCapacity}'"
-                    )
-                )
+                raise (ValueError(f"Value for material thermalCapacity must be a positive number, but is '{thermalCapacity}'"))
         else:
             raise (
                 TypeError(
@@ -489,9 +483,7 @@ class Material:
         """
         if isinstance(is_linear, bool):
             if is_linear and self.BH.size != 0:
-                logger.warning(
-                    "Material %s was set linear and has BH curve!", self.name
-                )
+                logger.warning("Material %s was set linear and has BH curve!", self.name)
             self._linear = is_linear
         else:
             raise ValueError("Attribute linear must be type bool.")
@@ -510,8 +502,6 @@ class Material:
         ]
         for row in table:
             if row[1] is None:
-                row[1] = (
-                    "None"  # set to string because formatting None not supported
-                )
+                row[1] = "None"  # set to string because formatting None not supported
             print(f"{row[0]: >30} {row[1]: <15}")
         print("\n")
