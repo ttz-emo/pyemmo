@@ -17,24 +17,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-from random import random
 from typing import List, Tuple, Union
+
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
-from ..script.geometry.point import Point
-from ..script.geometry.surface import Surface
-from ..script.geometry.line import Line
+from ..definitions import LINE_COLOR, POINT_COLOR
 from ..script.geometry.circleArc import CircleArc
+from ..script.geometry.line import Line
+from ..script.geometry.point import Point
 from ..script.geometry.spline import Spline
+from ..script.geometry.surface import Surface
 
 
 def plot(
     geoList: List[Union[Surface, Line, CircleArc, Spline, Point]],
     fig: Figure = None,
     linewidth=0.5,
-    color=[random() for i in range(3)],
+    color=None,
     marker=".",
     markersize=1,
     tag=False,
@@ -71,14 +72,14 @@ def plot(
                     fig=fig,
                     marker=marker,
                     markersize=markersize,
-                    color=color,
+                    color=color if color else POINT_COLOR,
                     tag=tag,
                 )
             else:
                 geoObj.plot(
                     fig,
                     linewidth=linewidth,
-                    color=color,
+                    color=color if color else LINE_COLOR,
                     marker=marker,
                     markersize=markersize,
                     tag=tag,

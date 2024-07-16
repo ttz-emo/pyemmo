@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied
+# Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -20,14 +21,13 @@
 """Module for geometry element Point"""
 import logging
 from math import atan2, cos, sin
-from random import random
 from typing import TYPE_CHECKING, Tuple, Union
 
 import matplotlib.pyplot as plt
 from numpy import array, array_equal, cross, pi, vdot
 from numpy.linalg import norm
 
-from ...definitions import DEFAULT_GEO_TOL
+from ...definitions import DEFAULT_GEO_TOL, POINT_COLOR
 from .transformable import Transformable
 
 if TYPE_CHECKING:
@@ -485,7 +485,7 @@ class Point(Transformable):
         fig: "Figure" = None,
         marker="o",
         markersize=1.0,
-        color=[random() for i in range(3)],
+        color=POINT_COLOR,
         tag=False,
     ):
         """Point plot
@@ -494,7 +494,7 @@ class Point(Transformable):
             fig (pyplot.Figure, optional): Defaults to None.
             marker (str, optional): Defaults to "o".
             markersize (float, optional): Defaults to 1.0.
-            color (list, optional): Defaults to [random() for i in range(3)].
+            color (list, optional): Defaults to DEFAULT_POINT_COLOR.
             tag (bool): Flag to print point id and name like "P `P_ID` ("`P_Name`")"
         """
         coords = self.coordinate

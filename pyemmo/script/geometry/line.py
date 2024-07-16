@@ -19,14 +19,13 @@
 #
 """Module of geometry class Line"""
 
-from random import random
 from typing import TYPE_CHECKING, Literal, Tuple
 
 import matplotlib.pyplot as plt
 from numpy import array
 from numpy.linalg import norm
 
-from ...definitions import DEFAULT_GEO_TOL
+from ...definitions import DEFAULT_GEO_TOL, LINE_COLOR
 from ..geometry import defaultCenterPoint
 from .point import Point
 from .transformable import Transformable
@@ -405,7 +404,7 @@ class Line(Transformable):
         marker=None,
         markersize=1.0,
         linewidth=0.5,
-        color=[random() for i in range(3)],
+        color=LINE_COLOR,
         tag=False,
     ):
         """Line plot
