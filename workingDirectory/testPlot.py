@@ -20,12 +20,14 @@
 
 # %%
 from typing import List
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.axes import Axes
-from pyemmo.script.geometry.point import Point
-from pyemmo.script.geometry.line import Line
+
 from pyemmo.script.geometry.circleArc import CircleArc
+from pyemmo.script.geometry.line import Line
+from pyemmo.script.geometry.point import Point
 from pyemmo.script.geometry.surface import Surface
 
 P1 = Point("P1", 0, 0, 0, 1)
@@ -64,7 +66,7 @@ for i in range(4):
 plt.show()
 # %%
 
-curves: List[Line] = S1.getCurve()
+curves: List[Line] = S1.curve
 points: List[Point] = []
 for curve in curves:
     startPoint = curve.startPoint
@@ -85,7 +87,7 @@ x = []
 y = []
 z = []
 for p in points:
-    coords = p.getCoordinate()
+    coords = p.coordinate
     print(coords)
     x.append(coords[0])
     y.append(coords[1])
@@ -95,4 +97,22 @@ print([np.mean(x), np.mean(y), np.mean(z)])
 plt.plot(x, y, "bo")
 plt.plot(np.mean(x), np.mean(y), color="green", marker="x", markersize=12)
 plt.show()
+# %%
+# TEST PATCH
+from matplotlib import patches
+
+fig, ax = plt.subplots()
+xy_point_list = []
+for point in S2.points:
+    xyz = point.coordinate
+    xy_point_list.append((xyz[0], xyz[1]))
+polygon = patches.Polygon(xy_point_list, facecolor="b", edgecolor="m")
+ax.add_patch(polygon)
+ax.axis("equal")
+S2.plot(fig)
+fig.show()
+
+# We can see that this leeds to an error because the arc segments need to be
+# discretized into several points...
+
 # %%
