@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of
+# Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -17,10 +18,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+"""This module inits the program environment.
+
+The code is copied from the Pyleecan project and adapted for the use with
+PyEMMO. See https://github.com/Eomys/pyleecan for the original code."""
+
 import shutil
 from json import dump, load
 from os.path import isdir, isfile, join
+
 from matplotlib import font_manager
+
 from ..default_config_dict import default_config_dict
 from ..version import __version__
 
@@ -72,9 +80,7 @@ def init_user_dir():
 
     mat_path = join(USER_DIR, "Material")
     if not isdir(mat_path):
-        shutil.copytree(
-            join(MAIN_DIR, "script", "material").replace("\\", "/"), mat_path
-        )
+        shutil.copytree(join(MAIN_DIR, "script", "material").replace("\\", "/"), mat_path)
 
     # plot_path = join(USER_DIR, "Plot")
     # if not isdir(plot_path):
@@ -197,13 +203,9 @@ def get_config_dict():
         config_dict["PLOT"]["FONT_NAME"] = DEFAULT_FONT  # Default font
 
     # Update config_dict content
-    if "MACHINE_DIR" not in config_dict["MAIN"] or not isdir(
-        config_dict["MAIN"]["MACHINE_DIR"]
-    ):
+    if "MACHINE_DIR" not in config_dict["MAIN"] or not isdir(config_dict["MAIN"]["MACHINE_DIR"]):
         config_dict["MAIN"]["MACHINE_DIR"] = join(USER_DIR, "Machine")
-    if "MATLIB_DIR" not in config_dict["MAIN"] or not isdir(
-        config_dict["MAIN"]["MATLIB_DIR"]
-    ):
+    if "MATLIB_DIR" not in config_dict["MAIN"] or not isdir(config_dict["MAIN"]["MATLIB_DIR"]):
         config_dict["MAIN"]["MATLIB_DIR"] = join(USER_DIR, "Material")
     return config_dict
 
