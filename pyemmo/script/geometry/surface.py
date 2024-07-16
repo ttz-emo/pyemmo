@@ -17,13 +17,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-from random import random
 from typing import TYPE_CHECKING, List, Tuple, Type, Union
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from numpy import mean
 
+from ...definitions import LINE_COLOR
 from .circleArc import CircleArc
 from .line import Line
 from .point import Point
@@ -60,9 +60,7 @@ class Surface(Transformable):
     """Statische Variable zur ID-Verwaltung"""
 
     ###Konstruktor der Klasse Surface
-    def __init__(
-        self, name: str, curves: List[Union[Line, CircleArc, Spline]]
-    ):
+    def __init__(self, name: str, curves: List[Union[Line, CircleArc, Spline]]):
         """Create a surface object.
 
         Args:
@@ -91,9 +89,7 @@ class Surface(Transformable):
 
     def __eq__(self, other: "Surface"):
         # check type and number of points
-        if isinstance(other, self.__class__) and (
-            len(self.allPoints) == len(other.allPoints)
-        ):
+        if isinstance(other, self.__class__) and (len(self.allPoints) == len(other.allPoints)):
             # check that all points are equal
             otherPoints = other.allPoints
             for point in self.allPoints:
@@ -137,10 +133,7 @@ class Surface(Transformable):
             newID (int): New ID of surface
         """
         if newID < self.ID:
-            raise ValueError(
-                "New ID of surface is smaller than global ID count."
-                "New ID mus be existing!"
-            )
+            raise ValueError("New ID of surface is smaller than global ID count." "New ID mus be existing!")
         Surface.ID = newID
         self._id = newID
 
@@ -440,9 +433,7 @@ class Surface(Transformable):
         allCurve.reverse()
         allNewCurve = []
         for aC in allCurve:
-            allNewCurve.append(
-                aC.mirror(planePoint, planeVector1, planeVector2)
-            )
+            allNewCurve.append(aC.mirror(planePoint, planeVector1, planeVector2))
 
         s = Surface(self._name, allNewCurve)
 
@@ -491,9 +482,7 @@ class Surface(Transformable):
                 newCurves = curves + addCurves  # combine the remaining lines
                 # check if the remaining lines containing the touch points can be combined:
                 for dockPoint in touchpoints:
-                    lines2combine: List[Union[Line, CircleArc, Spline]] = (
-                        list()
-                    )
+                    lines2combine: List[Union[Line, CircleArc, Spline]] = list()
                     # find the two lines in the two remaining curve lists containing the docking point:
                     for curve in newCurves:
                         for linePoint in curve.points:
@@ -518,9 +507,7 @@ class Surface(Transformable):
                             # remove curves after loop, because otherwise the next curve item in the loop will be skiped (static indexing):
                             newCurves.remove(lines2combine[0])
                             newCurves.remove(lines2combine[1])
-                            combinedLine = lines2combine[0].combine(
-                                lines2combine[1], dockPoint
-                            )  # combine the two lines
+                            combinedLine = lines2combine[0].combine(lines2combine[1], dockPoint)  # combine the two lines
                             newCurves.append(combinedLine)
                 break  # break the outer curve for-loop, if the touchpoints where found
         if touchpoints:
@@ -721,7 +708,7 @@ class Surface(Transformable):
         self,
         fig: Figure = None,
         linewidth=0.5,
-        color=[random() for i in range(3)],
+        color=LINE_COLOR,
         marker=".",
         markersize=1,
         tag=False,
@@ -755,9 +742,7 @@ class Surface(Transformable):
                 ha="left",
             )
 
-    def getBoundingBox(
-        self, scalingFactor: float = 1.0
-    ) -> Tuple[List[float], List[float]]:
+    def getBoundingBox(self, scalingFactor: float = 1.0) -> Tuple[List[float], List[float]]:
         """Get the minimum and maximum x and y values of the points
 
         Args:
