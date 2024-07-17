@@ -2,6 +2,37 @@
 requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
+# tox config
+# [tool.tox]
+# envlist = ["py37", "py38", "py39", "py310"]
+# [tool.tox.envlist]
+# envs = [
+#     "py37",
+#     "py38",
+#     "py39",
+#     "py310",
+# ] # "py311" not compatible with pyleecan yet
+# [tool.tox.testenv]
+# deps = ["pytest", "pytest_check", "hypothesis"]
+# commands = ["pytest tests\\script tests\\functions tests\\api"]
+# setenv = ["PATH = {env:PATH}{:}/."]
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+envlist = py36, py37, py38, py39
+; envlist = py3913
+; skipsdist = true
+
+[testenv]
+deps =
+        pytest
+        pytest_check
+        hypothesis
+commands = pytest tests\\script tests\\functions tests\\api
+setenv =
+        PATH = {env:PATH}{:}/.
+"""
+
 [project]
 name = "pyemmo"
 authors = [
