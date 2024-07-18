@@ -62,7 +62,7 @@ I_eff = 50
 n = 0
 f_s = f_r + 2 * n / 60
 T_s = 1 / f_s
-nbr_stator_periods = 80
+nbr_stator_periods = 4
 nbr_steps_per_period = 128
 # Zum Abgleich mit Maxwell
 Nbr_Sect = 2048  # Bandsegmentierung
@@ -73,6 +73,7 @@ timestep = (
 winkelschritt = n / 60 * 360 * timestep  # Default: 0.703125
 nbr_timesteps = T_s * nbr_stator_periods / timestep
 
+flag_dynamic_resistance = False
 thers = 100  # Thershold for bar resistance reset in A
 
 logging.info(
@@ -87,7 +88,11 @@ logging.debug("Stop time of simulation: %.7e s", int(nbr_timesteps) * timestep)
 
 
 # %%
-resId = f"blockedRotor_{f_r}Hz_{nbr_stator_periods}Periods_{nbr_steps_per_period}Steps_R_dyn2_thers_{thers}A"
+resId = f"blockedRotor_{f_r}Hz_{nbr_stator_periods}Periods_{nbr_steps_per_period}Steps"
+if flag_dynamic_resistance:
+    resId += "_R_dyn2"
+    if thers:
+        resId += f"_thers_{thers}A"
 paramDict = {
     "getdp": {
         "freq_rotor": f_r,
@@ -110,13 +115,13 @@ paramDict = {
         "R_endring_segment": 16e-7 / 2,  # Initial value: 16e-7,
         "L_endring_segment": 2e-9 / 2,
         "Flag_Cir_RotorCage": 1,
-        "Flag_Dynamic_RotorBarResistance": 1,
+        "Flag_Dynamic_RotorBarResistance": flag_dynamic_resistance,
         "thers_dyn_Bar": thers,
         "Flag_Calculate_VW": 0,
         #                           fineMesh or coarseMesh
         "msh": os.path.join(MODEL_DIR, "coarseMesh.msh"),
         # "Flag_SecondOrder": 0,
-        "stop_criterion": 1e-8,
+        "stop_criterion": 1e-7,
     },
     "ResId": resId,
     "pro": os.path.join(MODEL_DIR, MODEL_NAME + ".pro"),
@@ -124,7 +129,7 @@ paramDict = {
         MODEL_DIR,
         "res_Test_1PH8135_1_D0_W92_P14k4W_ohneRotNutSchlitz",
     ),
-    "exe": r"C:\Users\ganser\AppData\Local\Programs\onelab-Windows64-230206\getdp.exe",
+    "exe": r"getdp.exe",
     "gmsh": r"C:\Users\ganser\AppData\Local\Programs\onelab-Windows64-230206\gmsh.exe",
     # "log": f"{resId}.log",  # log file name
     # "hyst": 0, # 172.04,
@@ -132,7 +137,7 @@ paramDict = {
     # "exc": 0,
     # "axLen": 0.2,
     # "sym": 4,
-    "info": "Method changed to resetting bar resistance to previous value instaead of DC value.",
+    "info": "Adapted magstadyn with axialLength in Formlation of induced current density.",
     "datetime": time.ctime(),
     "PostOp": [],  # GetBOnRadius - Get_LocalFields_Post
 }
