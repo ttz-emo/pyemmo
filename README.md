@@ -61,6 +61,20 @@ to discuss what you would like to change.
 
 Please make sure to update tests as appropriate.
 
+### Setup
+
+After cloning the repository, run the following command to install Git hooks:
+
+```sh
+./workingDirectory/install-hooks.sh
+```
+
+Or if you are on Windows:
+
+```sh
+install-hooks.bat
+```
+
 ## License
 
 [GPLv3](https://www.gnu.org/licenses/gpl-3.0.html)
