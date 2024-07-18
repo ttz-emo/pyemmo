@@ -40,13 +40,17 @@ def exportBH2Maxwell(material: Material, filepath: str = None) -> None:
             PYEMMO_RESULTS_FOLDER/MATERIAL_NAME_BH.tab .
     """
     if material.linear:
-        raise ValueError(f"Material {material.name} is linear! Can not export BH curve!")
+        raise ValueError(
+            f"Material {material.name} is linear! Can not export BH curve!"
+        )
     bh = material.BH
     b = bh[:, 0]
     h = bh[:, 1]
     header = ["H (A_per_meter)", "B (tesla)"]
     if not filepath:
-        filepath = path.join(RESULT_DIR, cleanName.cleanName(material.getName()) + "_BH.tab")
+        filepath = path.join(
+            RESULT_DIR, cleanName.cleanName(material.getName()) + "_BH.tab"
+        )
     exportTabMaxwell([h, b], header, filepath)
 
 
@@ -83,7 +87,9 @@ def exportTabMaxwell(data: list, identifier: list[str], filepath: str) -> None:
     if path.isfile(filepath):
         raise FileExistsError(f"Given .tab file allready exists: {filepath}")
     if not path.isdir(path.dirname(filepath)):
-        raise FileNotFoundError(f"Parent folder of given file path does not exist: {filepath}")
+        raise FileNotFoundError(
+            f"Parent folder of given file path does not exist: {filepath}"
+        )
 
     # check file path format
     _, ext = path.splitext(filepath)

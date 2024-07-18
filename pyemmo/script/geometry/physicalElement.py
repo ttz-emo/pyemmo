@@ -96,7 +96,9 @@ class PhysicalElement:
         if isinstance(newPhysicalElementType, str):
             self._physicalElementType = newPhysicalElementType
         else:
-            raise TypeError(f"Type of physicalElementType must be string, but is {type(newPhysicalElementType)}")
+            raise TypeError(
+                f"Type of physicalElementType must be string, but is {type(newPhysicalElementType)}"
+            )
 
     @property
     def type(self) -> str:
@@ -161,10 +163,17 @@ class PhysicalElement:
             newID (int): new physical element ID.
         """
         if not isinstance(newID, int):
-            raise TypeError(f"PhysicalElement ID must be positive integer! {newID}")
+            raise TypeError(
+                f"PhysicalElement ID must be positive integer! {newID}"
+            )
         if 1000 < newID < PhysicalElement.physicalID:
-            raise ValueError("New ID of PhysicalElement is smaller than global ID count." "Given newID must be existing!")
-        PhysicalElement.physicalID = newID  # set global ID to not overcount newID
+            raise ValueError(
+                "New ID of PhysicalElement is smaller than global ID count."
+                "Given newID must be existing!"
+            )
+        PhysicalElement.physicalID = (
+            newID  # set global ID to not overcount newID
+        )
         self._id = newID
 
     @property
@@ -177,7 +186,9 @@ class PhysicalElement:
         return self._geometricalElement
 
     @geometricalElement.setter
-    def geometricalElement(self, geometricalElement: Union[List[Surface], List[Line]]):
+    def geometricalElement(
+        self, geometricalElement: Union[List[Surface], List[Line]]
+    ):
         """Geometrical elements
 
         Args:
@@ -218,7 +229,9 @@ class PhysicalElement:
                 )
 
         if isLine and isSurface:
-            raise ValueError("Geometical element list should not contain Lines and Surfaces!")
+            raise ValueError(
+                "Geometical element list should not contain Lines and Surfaces!"
+            )
         if isLine:
             return Line
         if isSurface:

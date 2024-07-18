@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied
+# Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -74,7 +75,9 @@ def createMachine(
         rotorMBRadius=rotorMovingBandRadius,
     )
     # create the remaining machine surfaces
-    maschineSurfDict = modelJSON.createMachineGeometryFromSegment(segmentSurfDict, symFactor)
+    maschineSurfDict = modelJSON.createMachineGeometryFromSegment(
+        segmentSurfDict, symFactor
+    )
     # Log winding layout for debugging *before* createSlot() is called.
     logger.debug(f"Winding layout: {importJSON.getWindingList(extendedInfo)}")
     # create physical elements from the surfaces
@@ -241,7 +244,9 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
     }.items():
         for quantity in ["b_radial", "b_tangent"]:
             sign = "-" if side == "rotor" else "+"
-            resFilePath = join("CAT_RESDIR", quantity + "_airgap_" + side + ".pos")
+            resFilePath = join(
+                "CAT_RESDIR", quantity + "_airgap_" + side + ".pos"
+            )
             # resFilePath = abspath(
             #     join(script.getResultsPath(), quantity + "_airgap_" + side + ".pos")
             # )
@@ -265,7 +270,9 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
                 quantity,
                 "GetBOnRadius",
                 OnGrid=(
-                    f"{{{toothRadius}*Cos[$A*Pi/180]," f"{toothRadius}*Sin[$A*Pi/180],0}}" "{0:360/SymmetryFactor:0.5,0,0}"
+                    f"{{{toothRadius}*Cos[$A*Pi/180],"
+                    f"{toothRadius}*Sin[$A*Pi/180],0}}"
+                    "{0:360/SymmetryFactor:0.5,0,0}"
                 ),
                 File=join("CAT_RESDIR", quantity + "_tooth.pos"),
                 Name=f'"{quantity} (Tooth)"',
@@ -278,15 +285,23 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
             script.addPostOperation(
                 quantity,
                 "GetBOnRadius",
-                OnGrid=(f"{{{yokeRadius}*Cos[$A*Pi/180]," f"{yokeRadius}*Sin[$A*Pi/180],0}}" "{0:360/SymmetryFactor:0.5,0,0}"),
+                OnGrid=(
+                    f"{{{yokeRadius}*Cos[$A*Pi/180],"
+                    f"{yokeRadius}*Sin[$A*Pi/180],0}}"
+                    "{0:360/SymmetryFactor:0.5,0,0}"
+                ),
                 File=join("CAT_RESDIR", quantity + "_yoke.pos"),
                 Name=f'"{quantity} (Yoke)"',
             )
 
     ## 4. Add rotor and stator b-field export for iron loss calculation
     if importJSON.getFlagCalcIronLoss(extendedInfo):
-        rotorIronPhysicalID = [str(phys.id) for phys in machine.rotor._domainLam.physicals]
-        statorIronPhysicalID = [str(phys.id) for phys in machine.stator._domainLam.physicals]
+        rotorIronPhysicalID = [
+            str(phys.id) for phys in machine.rotor._domainLam.physicals
+        ]
+        statorIronPhysicalID = [
+            str(phys.id) for phys in machine.stator._domainLam.physicals
+        ]
         script.addPostOperation(
             "b",
             "GetBIron",
@@ -396,7 +411,9 @@ def main(
                 with open(geo, encoding="utf-8") as jsonFile:
                     machineGeoList = json.load(jsonFile)
                     # create dict with surface api (segment) objects from the surface list
-                    segmentSurfDict = modelJSON.importMachineGeometry(machineGeoList)
+                    segmentSurfDict = modelJSON.importMachineGeometry(
+                        machineGeoList
+                    )
             except FileNotFoundError as fnfe:
                 raise fnfe
             except Exception as exept:
@@ -406,7 +423,9 @@ def main(
     elif isinstance(geo, dict):
         segmentSurfDict = geo
     else:
-        raise TypeError(f"Geometry file has to be type 'File' or 'dict', not {type(geo)}")
+        raise TypeError(
+            f"Geometry file has to be type 'File' or 'dict', not {type(geo)}"
+        )
 
     # addition information
     if isinstance(extInfo, str):
@@ -414,11 +433,15 @@ def main(
             # import the extended information
             extendedInfo = importJSON.importExtInfo(extInfo)
         else:
-            raise (FileNotFoundError(f"Given file path {extInfo} was not a file."))
+            raise (
+                FileNotFoundError(f"Given file path {extInfo} was not a file.")
+            )
     elif isinstance(extInfo, dict):
         extendedInfo = extInfo
     else:
-        raise TypeError(f"Model information file has to be type 'File' or 'dict', not {type(extInfo)}")
+        raise TypeError(
+            f"Model information file has to be type 'File' or 'dict', not {type(extInfo)}"
+        )
 
     # generate the machine geometry
     machine, machineSurfDict = createMachine(segmentSurfDict, extendedInfo)
@@ -452,7 +475,9 @@ def main(
     return apiScript
 
 
-def _open_onelab(apiScript: Script, extendedInfo: dict, gmsh: str = "", getdp: str = ""):
+def _open_onelab(
+    apiScript: Script, extendedInfo: dict, gmsh: str = "", getdp: str = ""
+):
     """
     Private function to open ONELAB simulation in GUI and evaluate results
     """
@@ -464,7 +489,9 @@ def _open_onelab(apiScript: Script, extendedInfo: dict, gmsh: str = "", getdp: s
     else:
         # if gmsh was given by the user, check that its valid
         if not isfile(gmsh):
-            raise FileNotFoundError(f"Provided gmsh executable was not found: {gmsh}")
+            raise FileNotFoundError(
+                f"Provided gmsh executable was not found: {gmsh}"
+            )
     proFile = apiScript.proFilePath  # path to .pro file
     command = runOnelab.createCmdCommand(
         onelabFile=proFile,
@@ -506,12 +533,15 @@ def _open_onelab(apiScript: Script, extendedInfo: dict, gmsh: str = "", getdp: s
                 _run_core_loss_calculation(resPath, apiScript)
             else:
                 logger.warning(
-                    "IRON LOSS CALCULATION: Iron loss calculation " "cannot be done for static simulation!",
+                    "IRON LOSS CALCULATION: Iron loss calculation "
+                    "cannot be done for static simulation!",
                 )
         # Plot Results for Debugging
         if logger.getEffectiveLevel() <= 10:
             # if the folder for results exists
-            import_results.plt.set_loglevel(level="info")  # avoid matplotlib debug infos
+            import_results.plt.set_loglevel(
+                level="info"
+            )  # avoid matplotlib debug infos
             for file in os.listdir(resPath):
                 filename, fileExt = os.path.splitext(file)
                 if fileExt == ".dat":
@@ -538,12 +568,17 @@ def _run_core_loss_calculation(resPath, apiScript: Script):
     brFilePath = join(resPath, "b_rotor.pos")
     bsFilePath = join(resPath, "b_stator.pos")
     nbrPolePairs = machine.nbrPolePairs
-    calcAngle = simulationParameters["SYM"]["FINAL_ROTOR_POS"] - simulationParameters["SYM"]["INIT_ROTOR_POS"]
+    calcAngle = (
+        simulationParameters["SYM"]["FINAL_ROTOR_POS"]
+        - simulationParameters["SYM"]["INIT_ROTOR_POS"]
+    )
     if 360 / nbrPolePairs > calcAngle:
         # make sure at least one electrical period has been simulated
         # pylint: disable=locally-disabled,  line-too-long
         logger.warning(
-            "IRON LOSS CALCULATION: Simulated rotation (%.3f°) might be smaller than one electrical period! Iron loss calculation is only valid if at least one electrical period is simulated.",
+            "IRON LOSS CALCULATION: Simulated rotation (%.3f°) might be "
+            "smaller than one electrical period! Iron loss calculation is "
+            "only valid if at least one electrical period is simulated.",
             calcAngle,
         )
     rotorMat = machine.rotor._domainLam.physicals[0].material
@@ -577,15 +612,28 @@ def _run_core_loss_calculation(resPath, apiScript: Script):
             sym_factor=machine.symmetryFactor,
             axial_length=machine.stator.axialLength,
         )
-        calcIronLoss.write_simple(join(resPath, "Pv_hyst_R.dat"), time, ironLossR["hyst"])
-        calcIronLoss.write_simple(join(resPath, "Pv_hyst_S.dat"), time, ironLossS["hyst"])
-        calcIronLoss.write_simple(join(resPath, "Pv_eddy_R.dat"), time, ironLossR["eddy"])
-        calcIronLoss.write_simple(join(resPath, "Pv_eddy_S.dat"), time, ironLossS["eddy"])
-        calcIronLoss.write_simple(join(resPath, "Pv_exc_R.dat"), time, ironLossR["exc"])
-        calcIronLoss.write_simple(join(resPath, "Pv_exc_S.dat"), time, ironLossS["exc"])
+        calcIronLoss.write_simple(
+            join(resPath, "Pv_hyst_R.dat"), time, ironLossR["hyst"]
+        )
+        calcIronLoss.write_simple(
+            join(resPath, "Pv_hyst_S.dat"), time, ironLossS["hyst"]
+        )
+        calcIronLoss.write_simple(
+            join(resPath, "Pv_eddy_R.dat"), time, ironLossR["eddy"]
+        )
+        calcIronLoss.write_simple(
+            join(resPath, "Pv_eddy_S.dat"), time, ironLossS["eddy"]
+        )
+        calcIronLoss.write_simple(
+            join(resPath, "Pv_exc_R.dat"), time, ironLossR["exc"]
+        )
+        calcIronLoss.write_simple(
+            join(resPath, "Pv_exc_S.dat"), time, ironLossS["exc"]
+        )
     else:
         logger.warning(
-            "IRON LOSS CALCULATION: field file 'b_rotor.pos' or 'b_stator.pos' not found in '%s'",
+            "IRON LOSS CALCULATION: field file 'b_rotor.pos' or 'b_stator.pos'"
+            " not found in '%s'",
             resPath,
         )
 
@@ -608,7 +656,9 @@ def is_single_transient(res_dir: str) -> bool:
     if dat_file_list:
         # for dat_file in dat_file_list:
         # get time and data values of first file
-        time, data = import_results.read_timetable_dat(join(res_dir, dat_file_list[0]))
+        time, data = import_results.read_timetable_dat(
+            join(res_dir, dat_file_list[0])
+        )
         if time.size > 1:
             # get number of simulations in that file
             nbrSim, _, _ = import_results.split_data(time, data)

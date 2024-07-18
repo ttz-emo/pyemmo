@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied
+# Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -41,9 +42,9 @@ def calc_wind_contour(
     """Calculation for the contour of a slot with winding.
 
         TODO: Filterung der Konturlinien anpassen. Wicklungskontur(en) von der
-        Innenkontur der Blechs abziehen. Die Interface-Linie zwischen Nutschlitz
-        und Wicklung ist diejenige Linie, die nicht in der Wicklungs- UND Statorkontur
-        vorkommt.
+        Innenkontur der Blechs abziehen. Die Interface-Linie zwischen
+        Nutschlitz und Wicklung ist diejenige Linie, die nicht in der
+        Wicklungs- UND Statorkontur vorkommt.
 
     Args:
         lam_surf_list (list): A list of geometry elements.
@@ -55,8 +56,8 @@ def calc_wind_contour(
         lamination.
 
     Notes:
-        - The wind contour lines are calculated based on the provided geometry list
-          and lamination inner and outer radii.
+        - The wind contour lines are calculated based on the provided geometry
+          list and lamination inner and outer radii.
     """
     # TODO: Filterung der Konturlinien anpassen. Wicklungskontur(en) von der
     # Innenkontur der Statorblechs abziehen. Die Interface-Linie zwischen
@@ -103,11 +104,16 @@ def calc_wind_contour(
     # is_internal = rint
     for curve in cont_line_list:
         # TODO: Describe what this if-case is doing.
-        if (curve.startPoint.radius > r_airgap or curve.startPoint.radius > r_lam) and math.isclose(
+        if (
+            curve.startPoint.radius > r_airgap
+            or curve.startPoint.radius > r_lam
+        ) and math.isclose(
             a=curve.startPoint.radius, b=r_airgap, abs_tol=1e-6
         ) is False:
             slot_op_points.append(curve.startPoint)
-        elif (curve.endPoint.radius > r_airgap or curve.endPoint.radius > r_lam) and math.isclose(
+        elif (
+            curve.endPoint.radius > r_airgap or curve.endPoint.radius > r_lam
+        ) and math.isclose(
             a=curve.endPoint.radius, b=r_airgap, abs_tol=1e-6
         ) is False:
             slot_op_points.append(curve.endPoint)
@@ -121,7 +127,10 @@ def calc_wind_contour(
     #     centerPoint=center_point,
     # )
     if len(slot_op_points) != 2:
-        raise RuntimeError("Could not find exactly two points at the interface of slot and slot opening")
+        raise RuntimeError(
+            "Could not find exactly two points at the interface of slot and "
+            "slot opening"
+        )
 
     # determine slot opening line type: Line or CircleArc
     # slot_surf_list: list[SurfaceAPI] = []

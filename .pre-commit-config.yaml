@@ -39,7 +39,7 @@ repos:
           - id: black-jupyter
             language_version: python3.9.13
             args:
-                - --line-length=128
+                - --line-length=79
 
     # ISORT: Sorts Python imports according to the defined style, in this case,
     # the "black" profile to make in compatible with the black hook above.

@@ -55,7 +55,8 @@ def findGetDP(verbosity: bool = True) -> str:
 
 def findExe(exeName: str, verbosity: bool = True) -> str:
     """Search the local machine for the executalble given in exeName.
-    There are several searching stages and the function returns the exe path if one stage gives a result:
+    There are several searching stages and the function returns the exe path if
+    one stage gives a result:
         1. search with "which" command
         2. search the python path
         3. search the "User/appdate/local/programs" path
@@ -65,7 +66,8 @@ def findExe(exeName: str, verbosity: bool = True) -> str:
 
     Args:
         exeName (str): name of the executable. E.g. "myExe.exe" or just "myExe"
-        verbosity (bool): Print additional information to the command line if True. Defaults to True.
+        verbosity (bool): Print additional information to the command line if
+            True. Defaults to True.
 
     Raises:
         SystemError: If not run on Windows
@@ -80,7 +82,8 @@ def findExe(exeName: str, verbosity: bool = True) -> str:
     if not exePath:
         if verbosity:
             logging.debug(
-                "Could not find %s from command line. Trying to find it in python-path...",
+                """Could not find %s from command line.
+                Trying to find it in python-path...""",
                 executableName,
             )
         # second option: try to find gmsh in python path. (Should work since gmsh module is installed!)
@@ -90,18 +93,24 @@ def findExe(exeName: str, verbosity: bool = True) -> str:
                     if fileList == f"{executableName}.exe":
                         exePath = join(path, fileList)
                         if verbosity:
-                            logging.debug("Found %s in '%s'!", executableName, exePath)
+                            logging.debug(
+                                "Found %s in '%s'!", executableName, exePath
+                            )
                         return exePath
         if not exePath:
             if verbosity:
                 logging.debug(
-                    "%s was not found in 'path' Variable. Trying to find it in user home directory. This can take some time!",
+                    """%s was not found in 'path' Variable.
+                    Trying to find it in user home directory. This can take some time!""",
                     executableName,
                 )
-            # third option: try to find {executableName} in user/local/programs and subfolders. Takes time to iterate through all files
+            # third option: try to find {executableName} in user/local/programs
+            # and subfolders. Takes time to iterate through all files
             if sys.platform.startswith("win32"):
                 # is system windows; user-program-path:
-                userProgDir = normpath(join(expanduser("~"), "appdata", "local", "programs"))
+                userProgDir = normpath(
+                    join(expanduser("~"), "appdata", "local", "programs")
+                )
                 # try to find {executableName} in user programm path
                 if isdir(userProgDir):
                     for root, _, files in os.walk(userProgDir):
@@ -124,10 +133,14 @@ def findExe(exeName: str, verbosity: bool = True) -> str:
                     if verbosity:
                         logging.debug("Can't find home directory.")
             else:
-                raise SystemError(f"sys.platform is {sys.platform}, not 'win32'.  Could not find home directory")
+                raise SystemError(
+                    f"sys.platform is {sys.platform}, not 'win32'. "
+                    "Could not find home directory"
+                )
             if not exePath:
                 raise FileNotFoundError(
-                    f"Can not find {executableName} on your system! Please install {executableName} or set PATH Variable."
+                    f"Can not find {executableName} on your system! "
+                    "Please install {executableName} or set PATH Variable."
                 )
     else:
         if verbosity:
@@ -143,7 +156,9 @@ def mergeAllGeoFiles(folderPath, gmshExe):
     for filename in allFiles:
         if ".geo" in filename:  # if its a geo file
             geoFilePath = join(folderPath, filename)
-            allCommands.append(geoFilePath)  # append the total filename to allCommands
+            allCommands.append(
+                geoFilePath
+            )  # append the total filename to allCommands
     subprocess.run(allCommands, shell=False)
     return None
 
@@ -204,7 +219,9 @@ def createCmdCommand(
         # first part of the cmd command: open the geo or pro-file
         if not gmshPath:
             gmshPath = findGmsh()
-        gmsh_command = f'{gmshPath} "{onelabFile}"'  # the command is: 'gmsh "FILE.xxx"'
+        gmsh_command = (
+            f'{gmshPath} "{onelabFile}"'  # the command is: 'gmsh "FILE.xxx"'
+        )
         if ext.lower() == ".geo":
             # if its a geo file
             if not useGUI:
@@ -221,7 +238,9 @@ def createCmdCommand(
                 if getdpPath:
                     # if command line and getdp specified
                     # run the simulation with specific getdp exe
-                    getdp_command += f"{getdpPath} {onelabFile} -solve Analysis "
+                    getdp_command += (
+                        f"{getdpPath} {onelabFile} -solve Analysis "
+                    )
                     # the command is: "getdp FILE.pro -solve Analysis"
                     if "msh" in paramDict:
                         if paramDict["msh"]:
@@ -230,7 +249,9 @@ def createCmdCommand(
                                 getdp_command += f"-msh {paramDict['msh']} "
                                 gmsh_command = ""
                             else:
-                                raise FileNotFoundError(f"""Given msh file was not found: {paramDict["msh"]}""")
+                                raise FileNotFoundError(
+                                    f"""Given msh file was not found: {paramDict["msh"]}"""
+                                )
                         else:
                             gmsh_command = f"{gmshPath} {filePath}.geo -run "
                         # allways remove "msh" field for getdp param setting later
@@ -249,36 +270,56 @@ def createCmdCommand(
                             if isinstance(postOp, str):
                                 getdp_command += postOp + " "
                             else:
-                                raise (ValueError(f"Given Post Operation name was not a string: {type(postOp)}, {postOp}"))
+                                raise (
+                                    ValueError(
+                                        f"Given Post Operation name was not a string: {type(postOp)}, {postOp}"
+                                    )
+                                )
                 else:
                     # only command line specified
-                    gmsh_command += " -run"  # just run "gmsh FILE.pro -run", which auto-selects a getdp installation
+                    gmsh_command += " -run"  # just run "gmsh FILE.pro -run",
+                    # which auto-selects a getdp installation
             # else:
-            # if gui was specified, just leave the command as it is: "gmsh FILE.pro" to open gui
+            # if gui was specified, just leave the command as it is:
+            #   "gmsh FILE.pro" to open gui
         else:
             raise (
                 ValueError(
-                    f"File '{onelabFile}' has wrong file extension (not '.geo' or '.pro') or is missing file extension: {ext}"
+                    f"File '{onelabFile}' has wrong file extension (not '.geo'"
+                    " or '.pro') or is missing file extension: {ext}"
                 )
             )
         if paramDict:
             # if the paramDict is not empty or None
             if not isinstance(paramDict, dict):
-                raise TypeError(f"Parameter dict was not a dict, but type '{type(paramDict)}.'")
+                raise TypeError(
+                    f"Parameter dict was not a dict, but type '{type(paramDict)}.'"
+                )
             else:
                 # add verbosity if given
                 if "verbosity level" in paramDict:
                     getdp_command += f"-v {paramDict.pop('verbosity level')}"
                 for paramName, paramValue in paramDict.items():
                     if isinstance(paramValue, str):
-                        getdp_command += f" -setstring {paramName} {paramValue}"
+                        getdp_command += (
+                            f" -setstring {paramName} {paramValue}"
+                        )
                     elif isinstance(paramValue, (float, int)):
-                        getdp_command += f" -setnumber {paramName} {paramValue}"
+                        getdp_command += (
+                            f" -setnumber {paramName} {paramValue}"
+                        )
                     else:
-                        raise (TypeError(f"Parameter value was not string, float or int! -> {type(paramValue)}"))
+                        raise (
+                            TypeError(
+                                "Parameter value was not string, float or "
+                                f"int! -> {type(paramValue)}"
+                            )
+                        )
 
     else:
-        raise FileNotFoundError(f"Provided Onelab file was not found: {onelabFile}")
+        raise FileNotFoundError(
+            f"Provided Onelab file was not found: {onelabFile}"
+        )
     if gmsh_command and getdp_command:
         return gmsh_command + " && " + getdp_command
     elif gmsh_command:
@@ -298,18 +339,21 @@ def createGMSHCommand(
 
     Args:
         onelabFile (str): Path to the .geo or .pro file.
-        useGUI (bool): If True command will open the file in the gmsh gui (independed if its a geo or pro file).
-        gmshPath (str): Path to the gmsh executable. By defaults the gmsh exe is searched.
+        useGUI (bool): If True command will open the file in the gmsh gui
+            (independed if its a geo or pro file).
+        gmshPath (str): Path to the gmsh executable. By defaults the gmsh exe
+            is searched.
 
-            E.g. to set the onelab parameter "IQ_RMS" for the quadrature rms current to 10A the dict would look like:
+            E.g. to set the onelab parameter "IQ_RMS" for the quadrature rms
+            current to 10A the dict would look like:
 
             .. code:: python
 
                 {
                     "IQ_RMS": 10,
                 }
-
-        postOperations (List[str], optional): List containing the PostOperation names that should be performed after the solving stage.
+        postOperations (List[str], optional): List containing the PostOperation
+            names that should be performed after the solving stage.
             ! PostOperations will only be executed if a getdp executable is given !
 
     Returns:
@@ -327,7 +371,9 @@ def createGMSHCommand(
     if isfile(gmshFile):
         (filePath, ext) = splitext(gmshFile)
         # first part of the cmd command: open the geo or pro-file
-        command = f'{gmshPath} "{gmshFile}"'  # the command is: 'gmsh "FILE.xxx"'
+        command = (
+            f'{gmshPath} "{gmshFile}"'  # the command is: 'gmsh "FILE.xxx"'
+        )
         if ext.lower() == ".geo":
             # if its a geo file
             if not useGUI:
@@ -341,17 +387,22 @@ def createGMSHCommand(
         elif ext.lower() == ".pro":
             if not useGUI:
                 # only command line specified
-                command += " -run"  # just run "gmsh FILE.pro -run", which auto-selects a getdp installation
+                command += " -run"  # just run "gmsh FILE.pro -run", which
+                # auto-selects a getdp installation
             # else:
-            # if gui was specified, just leave the command as it is: "gmsh FILE.pro" to open gui
+            # if gui was specified, just leave the command as it is:
+            #   "gmsh FILE.pro" to open gui
         else:
             raise (
                 ValueError(
-                    f"File '{gmshFile}' has wrong file extension (not '.geo' or '.pro') or is missing file extension: {ext}"
+                    f"File '{gmshFile}' has wrong file extension (not '.geo' "
+                    f"or '.pro') or is missing file extension: {ext}"
                 )
             )
     else:
-        raise FileNotFoundError(f"Provided Onelab file was not found: {gmshFile}")
+        raise FileNotFoundError(
+            f"Provided Onelab file was not found: {gmshFile}"
+        )
     return command
 
 
@@ -362,14 +413,20 @@ def runCalcforCurrent(param: dict):
             logging.info(f"Creating results directory: {RES_DIR}")
             os.mkdir(RES_DIR)
         else:
-            raise RuntimeError("Result directory does not exist and can not be created: " + RES_DIR)
-    # adding additional results path because its initally set in the parameter geo file.
-    # But if the files are moved the results folder might not exist any more!
+            raise RuntimeError(
+                "Result directory does not exist and can not be created: "
+                + RES_DIR
+            )
+    # adding additional results path because its initally set in the parameter
+    # geo file. But if the files are moved the results folder might not exist
+    # any more!
     param["getdp"]["ResPath"] = RES_DIR
     pro_file = param["pro"]
     simulation_res_dir = os.path.join(RES_DIR, param["getdp"]["ResId"])
     # Remove previous results if flag activated
-    if "Flag_ClearResults" in param["getdp"] and os.path.isdir(simulation_res_dir):
+    if "Flag_ClearResults" in param["getdp"] and os.path.isdir(
+        simulation_res_dir
+    ):
         if param["getdp"]["Flag_ClearResults"]:
             logging.warning(
                 "Removing previous results from folder: %s",
@@ -397,7 +454,9 @@ def runCalcforCurrent(param: dict):
         )
 
         logging.debug("cmd command is: %s", cmdCommand)
-        logging.info("Running simulation for result-ID '%s'", param["getdp"]["ResId"])
+        logging.info(
+            "Running simulation for result-ID '%s'", param["getdp"]["ResId"]
+        )
 
         # calcInfo = subprocess.run(
         #     cmdCommand,
@@ -437,7 +496,9 @@ def runCalcforCurrent(param: dict):
         # raise RuntimeError(
         #     f"Result directory {simulation_res_dir} allready exists!"
         # )
-        logging.warning("Result directory %s allready exists!", simulation_res_dir)
+        logging.warning(
+            "Result directory %s allready exists!", simulation_res_dir
+        )
     ##########################################################################
     # EVALUATE RESULTS
     ##########################################################################
@@ -463,14 +524,20 @@ def runCalcforCurrent(param: dict):
         res_file = os.path.join(simulation_res_dir, f"I{index}.dat")
         if os.path.isfile(res_file):
             # get first char in machine side to index rotor and stator results
-            results_dict["time"], results_dict["current"][index] = read_timetable_dat(res_file)
+            results_dict["time"], results_dict["current"][index] = (
+                read_timetable_dat(res_file)
+            )
         else:
             # Error because we need to import time here!
-            raise FileNotFoundError(f"Could not find result file for phase current I{index}")
+            raise FileNotFoundError(
+                f"Could not find result file for phase current I{index}"
+            )
     # optional import bar currents
     res_file = os.path.join(simulation_res_dir, "I_bars.dat")
     if isfile(res_file):
-        results_dict["time"], results_dict["current"]["bars"] = read_timetable_dat(res_file)
+        results_dict["time"], results_dict["current"]["bars"] = (
+            read_timetable_dat(res_file)
+        )
 
     # 2. Torque Results
     results_dict["torque"] = {}
@@ -508,10 +575,14 @@ def runCalcforCurrent(param: dict):
     # 4. Induced voltage
     results_dict["inducedVoltage"] = {}
     for index in "ABC":
-        res_file = os.path.join(simulation_res_dir, f"InducedVoltage{index}.dat")
+        res_file = os.path.join(
+            simulation_res_dir, f"InducedVoltage{index}.dat"
+        )
         if os.path.isfile(res_file):
             # get first char in machine side to index rotor and stator results
-            _, results_dict["inducedVoltage"][index.lower()] = read_timetable_dat(res_file)
+            _, results_dict["inducedVoltage"][index.lower()] = (
+                read_timetable_dat(res_file)
+            )
 
     # 5. Rotor position
     res_file = os.path.join(simulation_res_dir, "RotorPos_deg.dat")
@@ -522,7 +593,9 @@ def runCalcforCurrent(param: dict):
     # 6. Core loss
     # Check if file hystLoss_rotor.dat allready exists -> loss allready calculated
     core_loss_dict = {}
-    if not os.path.exists(os.path.join(simulation_res_dir, "hystLoss_rotor.dat")):
+    if not os.path.exists(
+        os.path.join(simulation_res_dir, "hystLoss_rotor.dat")
+    ):
         if "GetBIron" in post_operations:
             # calculate core loss
             totalLoss = 0
@@ -547,7 +620,9 @@ def runCalcforCurrent(param: dict):
                         simulation_res_dir,
                         str(loss_type) + f"Loss_{side}" + ".dat",
                     )
-                    calcIronLoss.write_simple(core_loss_res_file, time, loss_data)
+                    calcIronLoss.write_simple(
+                        core_loss_res_file, time, loss_data
+                    )
                     # with open(ironLossResFile, mode="w+", encoding="utf-8") as file:
                     #     lossDataJSON = json.dumps(ironLossDictList, indent=3)
                     #     file.write(lossDataJSON)
@@ -580,7 +655,9 @@ def runCalcforCurrent(param: dict):
         logging.debug(
             f"{'Excess:':<14} {np.mean(core_loss_dict['rotor']['exc']) : 8.3f} W {np.mean(core_loss_dict['stator']['exc']) : 9.3f} W {np.mean(core_loss_dict['stator']['exc']+core_loss_dict['rotor']['exc']) : 9.3f} W"
         )
-        logging.debug("---------------------------------------------------------------------")
+        logging.debug(
+            "---------------------------------------------------------------------"
+        )
         logging.debug(
             f"{'Summe:':<14} {np.mean(core_loss_dict['rotor']['exc']+core_loss_dict['rotor']['eddy']+core_loss_dict['rotor']['hyst']) : 8.3f} W {np.mean(core_loss_dict['stator']['exc']+core_loss_dict['stator']['eddy']+core_loss_dict['stator']['hyst']) : 9.3f} W {np.mean(core_loss_dict['rotor']['exc']+core_loss_dict['rotor']['eddy']+core_loss_dict['rotor']['hyst']+core_loss_dict['stator']['exc']+core_loss_dict['stator']['eddy']+core_loss_dict['stator']['hyst']) : 9.3f} W"
         )
@@ -596,14 +673,18 @@ def main(onelabFile, use_gui, gmsh="", getdp="", paramDict={}) -> bytes:
         getdpPath=getdp,
         paramDict=paramDict,
     )
-    comp_process = subprocess.run(command, check=False, capture_output=True, shell=True)
+    comp_process = subprocess.run(
+        command, check=False, capture_output=True, shell=True
+    )
     return comp_process.stderr
 
 
 if __name__ == "__main__":
     # print("running main() of runOnelab.")
     # 1. Check that all argvs are valid!
-    parser = ArgumentParser(description="Open the given Onelab file with gmsh.")
+    parser = ArgumentParser(
+        description="Open the given Onelab file with gmsh."
+    )
 
     parser.add_argument(
         "onelabFile",
@@ -616,7 +697,9 @@ if __name__ == "__main__":
         type=str,
         default="",
     )
-    parser.add_argument("--getdp", help="path to the GetDP executable", type=str, default="")
+    parser.add_argument(
+        "--getdp", help="path to the GetDP executable", type=str, default=""
+    )
     parser.add_argument(
         "--gui",
         help="flag to decide if the file should be opened in the gui or command line. "
@@ -633,5 +716,9 @@ if __name__ == "__main__":
     else:
         # if provided check if its a correct file
         if not isfile(args.gmsh):
-            raise (FileNotFoundError(f"Provided gmsh executable was not found: {args.gmsh}"))
+            raise (
+                FileNotFoundError(
+                    f"Provided gmsh executable was not found: {args.gmsh}"
+                )
+            )
     main(args.onelabFile, args.gui, args.gmsh, args.getdp)

@@ -72,7 +72,12 @@ class CircleArc(Line):
         try:
             super().__init__(name, startPoint, endPoint, force)
         except ValueError as exce:
-            raise (ValueError("If you really want to draw a full circle" " consider using 4 circle arcs.")) from exce
+            raise (
+                ValueError(
+                    "If you really want to draw a full circle"
+                    " consider using 4 circle arcs."
+                )
+            ) from exce
         except Exception as exc:
             raise exc
 
@@ -270,9 +275,13 @@ class CircleArc(Line):
             CA2 = CA1.mirror(P0, yAxis, zAxis)
 
         """
-        startPoint = self.startPoint.mirror(planePoint, planeVector1, planeVector2)
+        startPoint = self.startPoint.mirror(
+            planePoint, planeVector1, planeVector2
+        )
         endPoint = self.endPoint.mirror(planePoint, planeVector1, planeVector2)
-        centerPoint = self._center.mirror(planePoint, planeVector1, planeVector2)
+        centerPoint = self._center.mirror(
+            planePoint, planeVector1, planeVector2
+        )
         mirArc = CircleArc(self.name, endPoint, centerPoint, startPoint)
         if name == "":
             mirArc.name = "CA_" + str(abs(mirArc.id))
@@ -294,8 +303,12 @@ class CircleArc(Line):
         startPoint = self.startPoint
         endPoint = self.endPoint
         centerPoint = self.center
-        angleStart = startPoint.getAngleToX(flag_deg=inDeg, CenterPoint=centerPoint)
-        angleEnd = endPoint.getAngleToX(flag_deg=inDeg, CenterPoint=centerPoint)
+        angleStart = startPoint.getAngleToX(
+            flag_deg=inDeg, CenterPoint=centerPoint
+        )
+        angleEnd = endPoint.getAngleToX(
+            flag_deg=inDeg, CenterPoint=centerPoint
+        )
         return angleStart, angleEnd
 
     def getAngle(self, inDeg=False) -> float:
@@ -374,7 +387,9 @@ class CircleArc(Line):
         diameter = self.radius * 2
         thetaStart, thetaEnd = self.getAnglesToX(inDeg=False)
         angleDiff = thetaEnd - thetaStart
-        if (atan2(sin(angleDiff), cos(angleDiff)) * 180 / pi) > 0:  # if rotation direction from start to end angle is positiv
+        if (
+            atan2(sin(angleDiff), cos(angleDiff)) * 180 / pi
+        ) > 0:  # if rotation direction from start to end angle is positiv
             theta1 = thetaStart
             theta2 = thetaEnd
         else:  # if the direction is negativ: switch points
@@ -434,7 +449,9 @@ class CircleArc(Line):
                 tag=tag,
             )
 
-    def combine(self, addLine: "CircleArc", touchPoint: Point = None) -> "CircleArc":
+    def combine(
+        self, addLine: "CircleArc", touchPoint: Point = None
+    ) -> "CircleArc":
         """combine two arcs and return them as new CircleArc
 
         Args:
@@ -447,12 +464,18 @@ class CircleArc(Line):
         if self == addLine:
             return self
         # pylint: disable=locally-disabled, unidiomatic-typecheck
-        if not type(addLine) == type(self):  # make sure the line types are equal
-            raise TypeError("Tried to combine lines, but the line types are different! " f"{type(self)} != {type(addLine)}")
+        if not type(addLine) == type(
+            self
+        ):  # make sure the line types are equal
+            raise TypeError(
+                "Tried to combine lines, but the line types are different! "
+                f"{type(self)} != {type(addLine)}"
+            )
         # make sure center points are equal
         if not self.center.isEqual(addLine.center):
             raise ValueError(
-                f"Tried to combine CircleArcs ({self.name} and " f"{addLine.name}) but the centerpoints are not matching!"
+                f"Tried to combine CircleArcs ({self.name} and "
+                f"{addLine.name}) but the centerpoints are not matching!"
             )
 
         if not touchPoint:
@@ -464,7 +487,11 @@ class CircleArc(Line):
                         break
         if touchPoint:
             # get the two points forming the new start and endpoint excluding the docking point
-            newPoints = [point for point in self.points + addLine.points if not point.isEqual(touchPoint)]
+            newPoints = [
+                point
+                for point in self.points + addLine.points
+                if not point.isEqual(touchPoint)
+            ]
             if len(newPoints) == 2:  # make sure there are exactly 2 points
                 # replace the combined line pattern in the old names if they contained
                 lName = self.name.replace("combinedLine_", "")
@@ -482,7 +509,12 @@ class CircleArc(Line):
                     "points to create a new line. There should be 2!"
                 )
             )
-        raise (RuntimeError(f"Combination of lines ({self.name} and {addLine.name}) " "failed. Could not find touchpoint."))
+        raise (
+            RuntimeError(
+                f"Combination of lines ({self.name} and {addLine.name}) "
+                "failed. Could not find touchpoint."
+            )
+        )
 
     def addToScript(self, script: "Script"):
         """old function add to script
