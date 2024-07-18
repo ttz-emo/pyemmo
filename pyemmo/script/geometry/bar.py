@@ -48,8 +48,12 @@ class Bar(PhysicalElement):
             geometricalElement = [geometricalElement]
         # make sure conductivity is defined for induced currents
         if material.conductivity is not None:
-            raise ValueError(f"Material of Bar ({name}) must have electrical conductivity!")
-        super().__init__(name=name, material=material, geometricalElement=geometricalElement)
+            raise ValueError(
+                f"Material of Bar ({name}) must have electrical conductivity!"
+            )
+        super().__init__(
+            name=name, material=material, geometricalElement=geometricalElement
+        )
         # the physical element type can be used to identify physical elements
         self.physicalElementType = "Bar"
         self.setColor("Orange")

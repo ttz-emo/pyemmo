@@ -63,7 +63,9 @@ def read_timetable_dat(
     """
     # make sure dat file exists
     if not os.path.isfile(file_path):
-        raise FileNotFoundError(f"Given results file '{file_path}' did not exist!")
+        raise FileNotFoundError(
+            f"Given results file '{file_path}' did not exist!"
+        )
     # Try to import the data via numpy. Should work for most cases!
     # standard 'delemiter' is whitespace.
     data_array = np.loadtxt(file_path, dtype=float, comments="#")
@@ -72,7 +74,8 @@ def read_timetable_dat(
         if not data_array.size > 1:
             # there must be at least one time + value
             raise ValueError(
-                f"Less than one value was imported from {file_path}. " "There must be at least one time-value pair!"
+                f"Less than one value was imported from {file_path}. "
+                "There must be at least one time-value pair!"
             )
         time = np.reshape(data_array[0], (1))
         values = data_array[1:]
@@ -103,23 +106,32 @@ def read_RegionValue_dat(
     """
     # make sure dat file exists
     if not os.path.isfile(file_path):
-        raise FileNotFoundError(f"Given results file '{file_path}' did not exist!")
+        raise FileNotFoundError(
+            f"Given results file '{file_path}' did not exist!"
+        )
     # import the data via numpy. Should work for most cases!
     # standard 'delemiter' is whitespace.
     data_array = np.loadtxt(file_path, dtype=float, comments="#")
     # make sure there is only one line of data in the results file
     if not len(data_array.shape) == 1:
-        raise ValueError("Multiple lines in 'RegionValue' format! " "There should only be one line containing all time steps!")
+        raise ValueError(
+            "Multiple lines in 'RegionValue' format! "
+            "There should only be one line containing all time steps!"
+        )
     if not data_array.shape[0] > 0:
         raise ValueError(f"No data in {file_path} results file!")
     if not data_array.shape[0] % 2 == 0:
-        raise ValueError(f"Odd number of values in RegionValue formatted file {file_path}!")
+        raise ValueError(
+            f"Odd number of values in RegionValue formatted file {file_path}!"
+        )
     time = data_array[0::2]  # numpy slicing [start:stop:step]
     data = data_array[1::2]
     return time, data
 
 
-def split_data(time: np.ndarray, data: np.ndarray) -> Tuple[int, List[np.ndarray], List[np.ndarray]]:
+def split_data(
+    time: np.ndarray, data: np.ndarray
+) -> Tuple[int, List[np.ndarray], List[np.ndarray]]:
     """Split up the time-data value pairs if there are multiple time vectors
     (e.g. time=[0,1,2,3,0,1,2] -> time[0]=[0,1,2,3], time[1]=[0,1,2]).
     Time-vectors must be increasing.
@@ -200,7 +212,9 @@ def plot_timetable_dat(
         # check that max or min is not too close to zero to apply the y_lim
         maxVal = max(dataArray[sim])
         minVal = min(dataArray[sim])
-        if not (isclose(maxVal, 0, abs_tol=0.1) or isclose(minVal, 0, abs_tol=0.1)):
+        if not (
+            isclose(maxVal, 0, abs_tol=0.1) or isclose(minVal, 0, abs_tol=0.1)
+        ):
             fig.axes[0].set_ylim(
                 bottom=minVal * (1.1 if min(dataArray[sim]) < 0 else 0.9),
                 top=maxVal * (1.1 if max(dataArray[sim]) > 0 else 0.9),
@@ -243,7 +257,9 @@ def plot_all_dat(dir_path: PathLike) -> None:
 
 def importSP(
     posFilePath: str,
-) -> Tuple[str, List[float], List[Tuple[float, float, float]], List[List[float]]]:
+) -> Tuple[
+    str, List[float], List[Tuple[float, float, float]], List[List[float]]
+]:
     """Import values of POS files with the "Scalar Point" (SP) format
 
     Args:
@@ -298,11 +314,18 @@ def importSP(
             # valueList.clear()
         else:
             # if the parse function did not return values, the format was wrong
-            raise (RuntimeError(f"Given file '{posFilePath}' did not contain " "SP formatted values!"))
+            raise (
+                RuntimeError(
+                    f"Given file '{posFilePath}' did not contain "
+                    "SP formatted values!"
+                )
+            )
     return parsedName[0], time, pos, values
 
 
-def importPos(pos_file: Union[str, PathLike]) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+def importPos(
+    pos_file: Union[str, PathLike]
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Import POS file via gmsh api.
 
     TODO: Does not work for SP-formatted pos files.
@@ -334,22 +357,33 @@ def importPos(pos_file: Union[str, PathLike]) -> Tuple[np.ndarray, np.ndarray, n
     view_tags = gmsh.view.getTags()
     if view_tags.size == 0:
         gmsh.finalize()
-        raise ValueError(f"Given file '{pos_file}' did not result in a Gmsh view. Is file " "in gmsh POS-format?")
+        raise ValueError(
+            f"Given file '{pos_file}' did not result in a Gmsh view. Is file "
+            "in gmsh POS-format?"
+        )
     # get number of time steps in SIMULATION (not all time steps have to be
     # saved)
-    nbr_steps = int(gmsh.view.option.getNumber(tag=view_tags[-1], name="NbTimeStep"))
+    nbr_steps = int(
+        gmsh.view.option.getNumber(tag=view_tags[-1], name="NbTimeStep")
+    )
     time = []  # init time vector
     # init data containers with first time step
-    _, element_tags, cdata, ctime, nbr_components = gmsh.view.getModelData(tag=view_tags[-1], step=0)
+    _, element_tags, cdata, ctime, nbr_components = gmsh.view.getModelData(
+        tag=view_tags[-1], step=0
+    )
     # data format of 'cdata':
     #   vector: number of components = 3
     #   scalar: number of components = 1
     if not cdata:
-        _, element_tags, cdata, ctime, nbr_components = gmsh.view.getModelData(view_tags[-1], nbr_steps - 1)
+        _, element_tags, cdata, ctime, nbr_components = gmsh.view.getModelData(
+            view_tags[-1], nbr_steps - 1
+        )
         if not cdata:
             gmsh.finalize()
             raise ValueError(f"No data found in {pos_file}!")
-        warnings.warn(f"Import file '{pos_file}' did only contain last timestep!")
+        warnings.warn(
+            f"Import file '{pos_file}' did only contain last timestep!"
+        )
         # Only last time step happens if PostProcessing is called at runtime
         # (in 'Resolution').
         # Return only that timestep

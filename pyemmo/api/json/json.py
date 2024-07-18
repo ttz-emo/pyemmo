@@ -74,7 +74,9 @@ def createMachine(
         rotorMBRadius=rotorMovingBandRadius,
     )
     # create the remaining machine surfaces
-    maschineSurfDict = modelJSON.createMachineGeometryFromSegment(segmentSurfDict, symFactor)
+    maschineSurfDict = modelJSON.createMachineGeometryFromSegment(
+        segmentSurfDict, symFactor
+    )
     # Log winding layout for debugging *before* createSlot() is called.
     logger.debug(f"Winding layout: {importJSON.getWindingList(extendedInfo)}")
     # create physical elements from the surfaces
@@ -241,7 +243,9 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
     }.items():
         for quantity in ["b_radial", "b_tangent"]:
             sign = "-" if side == "rotor" else "+"
-            resFilePath = join("CAT_RESDIR", quantity + "_airgap_" + side + ".pos")
+            resFilePath = join(
+                "CAT_RESDIR", quantity + "_airgap_" + side + ".pos"
+            )
             # resFilePath = abspath(
             #     join(script.getResultsPath(), quantity + "_airgap_" + side + ".pos")
             # )
@@ -265,7 +269,9 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
                 quantity,
                 "GetBOnRadius",
                 OnGrid=(
-                    f"{{{toothRadius}*Cos[$A*Pi/180]," f"{toothRadius}*Sin[$A*Pi/180],0}}" "{0:360/SymmetryFactor:0.5,0,0}"
+                    f"{{{toothRadius}*Cos[$A*Pi/180],"
+                    f"{toothRadius}*Sin[$A*Pi/180],0}}"
+                    "{0:360/SymmetryFactor:0.5,0,0}"
                 ),
                 File=join("CAT_RESDIR", quantity + "_tooth.pos"),
                 Name=f'"{quantity} (Tooth)"',
@@ -278,15 +284,23 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
             script.addPostOperation(
                 quantity,
                 "GetBOnRadius",
-                OnGrid=(f"{{{yokeRadius}*Cos[$A*Pi/180]," f"{yokeRadius}*Sin[$A*Pi/180],0}}" "{0:360/SymmetryFactor:0.5,0,0}"),
+                OnGrid=(
+                    f"{{{yokeRadius}*Cos[$A*Pi/180],"
+                    f"{yokeRadius}*Sin[$A*Pi/180],0}}"
+                    "{0:360/SymmetryFactor:0.5,0,0}"
+                ),
                 File=join("CAT_RESDIR", quantity + "_yoke.pos"),
                 Name=f'"{quantity} (Yoke)"',
             )
 
     ## 4. Add rotor and stator b-field export for iron loss calculation
     if importJSON.getFlagCalcIronLoss(extendedInfo):
-        rotorIronPhysicalID = [str(phys.id) for phys in machine.rotor._domainLam.physicals]
-        statorIronPhysicalID = [str(phys.id) for phys in machine.stator._domainLam.physicals]
+        rotorIronPhysicalID = [
+            str(phys.id) for phys in machine.rotor._domainLam.physicals
+        ]
+        statorIronPhysicalID = [
+            str(phys.id) for phys in machine.stator._domainLam.physicals
+        ]
         script.addPostOperation(
             "b",
             "GetBIron",
@@ -395,7 +409,9 @@ def main(
     else:
         # if gmsh was given by the user, check that its valid
         if not isfile(gmsh):
-            raise FileNotFoundError(f"Provided gmsh executable was not found: {gmsh}")
+            raise FileNotFoundError(
+                f"Provided gmsh executable was not found: {gmsh}"
+            )
 
     # get geometry
     if isinstance(geo, str):
@@ -405,7 +421,9 @@ def main(
                 with open(geo, encoding="utf-8") as jsonFile:
                     machineGeoList = json.load(jsonFile)
                     # create dict with surface api (segment) objects from the surface list
-                    segmentSurfDict = modelJSON.importMachineGeometry(machineGeoList)
+                    segmentSurfDict = modelJSON.importMachineGeometry(
+                        machineGeoList
+                    )
             except FileNotFoundError as fnfe:
                 raise fnfe
             except Exception as exept:
@@ -415,7 +433,9 @@ def main(
     elif isinstance(geo, dict):
         segmentSurfDict = geo
     else:
-        raise TypeError(f"Geometry file has to be type 'File' or 'dict', not {type(geo)}")
+        raise TypeError(
+            f"Geometry file has to be type 'File' or 'dict', not {type(geo)}"
+        )
 
     # addition information
     if isinstance(extInfo, str):
@@ -423,11 +443,15 @@ def main(
             # import the extended information
             extendedInfo = importJSON.importExtInfo(extInfo)
         else:
-            raise (FileNotFoundError(f"Given file path {extInfo} was not a file."))
+            raise (
+                FileNotFoundError(f"Given file path {extInfo} was not a file.")
+            )
     elif isinstance(extInfo, dict):
         extendedInfo = extInfo
     else:
-        raise TypeError(f"Model information file has to be type 'File' or 'dict', not {type(extInfo)}")
+        raise TypeError(
+            f"Model information file has to be type 'File' or 'dict', not {type(extInfo)}"
+        )
 
     # generate the machine geometry
     machine, machineSurfDict = createMachine(segmentSurfDict, extendedInfo)
@@ -497,13 +521,17 @@ def main(
     if (
         importJSON.getFlagCalcIronLoss(extendedInfo)
         and isdir(resPath)
-        and simulationParameters["SYM"]["ANALYSIS_TYPE"] == 1  # transient simulation
+        and simulationParameters["SYM"]["ANALYSIS_TYPE"]
+        == 1  # transient simulation
     ):
         # FIXME: Implement better check for simulation status
         brFilePath = join(resPath, "b_rotor.pos")
         bsFilePath = join(resPath, "b_stator.pos")
         nbrPolePairs = machine.nbrPolePairs
-        calcAngle = simulationParameters["SYM"]["FINAL_ROTOR_POS"] - simulationParameters["SYM"]["INIT_ROTOR_POS"]
+        calcAngle = (
+            simulationParameters["SYM"]["FINAL_ROTOR_POS"]
+            - simulationParameters["SYM"]["INIT_ROTOR_POS"]
+        )
         if 360 / nbrPolePairs > calcAngle:
             # make sure at least one electrical period has been simulated
             # pylint: disable=locally-disabled,  line-too-long
@@ -542,18 +570,33 @@ def main(
                 sym_factor=importJSON.getSymFactor(extendedInfo),
                 axial_length=importJSON.getAxialLength(extendedInfo)["stator"],
             )
-            calcIronLoss.write_simple(join(resPath, "Pv_hyst_R.dat"), time, ironLossR["hyst"])
-            calcIronLoss.write_simple(join(resPath, "Pv_hyst_S.dat"), time, ironLossS["hyst"])
-            calcIronLoss.write_simple(join(resPath, "Pv_eddy_R.dat"), time, ironLossR["eddy"])
-            calcIronLoss.write_simple(join(resPath, "Pv_eddy_S.dat"), time, ironLossS["eddy"])
-            calcIronLoss.write_simple(join(resPath, "Pv_exc_R.dat"), time, ironLossR["exc"])
-            calcIronLoss.write_simple(join(resPath, "Pv_exc_S.dat"), time, ironLossS["exc"])
+            calcIronLoss.write_simple(
+                join(resPath, "Pv_hyst_R.dat"), time, ironLossR["hyst"]
+            )
+            calcIronLoss.write_simple(
+                join(resPath, "Pv_hyst_S.dat"), time, ironLossS["hyst"]
+            )
+            calcIronLoss.write_simple(
+                join(resPath, "Pv_eddy_R.dat"), time, ironLossR["eddy"]
+            )
+            calcIronLoss.write_simple(
+                join(resPath, "Pv_eddy_S.dat"), time, ironLossS["eddy"]
+            )
+            calcIronLoss.write_simple(
+                join(resPath, "Pv_exc_R.dat"), time, ironLossR["exc"]
+            )
+            calcIronLoss.write_simple(
+                join(resPath, "Pv_exc_S.dat"), time, ironLossS["exc"]
+            )
         else:
             logger.warning(
                 "IRON LOSS CALCULATION: B field results file 'b_rotor.pos' or 'b_stator.pos' not found in '%s'",
                 resPath,
             )
-    if importJSON.getFlagCalcIronLoss(extendedInfo) and simulationParameters["SYM"]["ANALYSIS_TYPE"] == 0:  # static simulation
+    if (
+        importJSON.getFlagCalcIronLoss(extendedInfo)
+        and simulationParameters["SYM"]["ANALYSIS_TYPE"] == 0
+    ):  # static simulation
         # FIXME: Improve check because simulation type can be changed in gmsh GUI
         logger.warning(
             "IRON LOSS CALCULATION: Iron loss calculation cannot be done for static simulation!",
@@ -566,7 +609,9 @@ def main(
         resPath = apiScript.resultsPath
         if isdir(resPath):
             # if the folder for results exists
-            import_results.plt.set_loglevel(level="info")  # avoid matplotlib debug infos
+            import_results.plt.set_loglevel(
+                level="info"
+            )  # avoid matplotlib debug infos
             for file in os.listdir(resPath):
                 filename, fileExt = os.path.splitext(file)
                 if fileExt == ".dat":

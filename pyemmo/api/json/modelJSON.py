@@ -113,7 +113,9 @@ def createLine(
         )
     # else invalid linetype
     else:
-        raise ValueError(f"Linetype '{lineType}' of line '{lineName}' not found. (Should be 'Arc' or 'Line')")
+        raise ValueError(
+            f"Linetype '{lineType}' of line '{lineName}' not found. (Should be 'Arc' or 'Line')"
+        )
     return line
 
 
@@ -171,12 +173,18 @@ def getSurfaceLineList(
     .. - 'MpDesc'
     """
     if not isinstance(lineDictList, list):
-        raise ValueError(f"line dict list has wrong type: {type(lineDictList)}")
+        raise ValueError(
+            f"line dict list has wrong type: {type(lineDictList)}"
+        )
     if meshLen is not None and not isinstance(meshLen, (int, float)):
-        raise ValueError(f"mesh size has wrong type: {type(meshLen)}. Should be float, int or None.")
+        raise ValueError(
+            f"mesh size has wrong type: {type(meshLen)}. Should be float, int or None."
+        )
     lineList: List[Line] = []
     pointList: List[Point] = []
-    for lineID, lineDict in enumerate(lineDictList):  # for each line in lineDict
+    for lineID, lineDict in enumerate(
+        lineDictList
+    ):  # for each line in lineDict
         # import line-point coordinates
         # start point
         coordsP1 = (lineDict["ApX"], lineDict["ApY"], lineDict["ApZ"])
@@ -261,8 +269,12 @@ def createAPISurf(areaDict: dict) -> SurfaceAPI:
     try:
         surf = SurfaceAPI(
             name=areaDict["Name"],
-            idExt=areaDict["IdExt"],  # get short area name ("IdExt") as dict key
-            curves=getSurfaceLineList(lineDictList=areaDict["Lines"], meshLen=areaDict["Meshsize"]),
+            idExt=areaDict[
+                "IdExt"
+            ],  # get short area name ("IdExt") as dict key
+            curves=getSurfaceLineList(
+                lineDictList=areaDict["Lines"], meshLen=areaDict["Meshsize"]
+            ),
             material=importJSON.createMaterial(areaDict["Material"]),
             nbrSegments=areaDict["Quantity"],
             angle=areaDict["Angel"],
@@ -324,7 +336,10 @@ def createSurfaceDict(surfList: List[SurfaceAPI]) -> Dict[str, SurfaceAPI]:
         ValueError: if a member of surfList is not type SurfaceAPI
     """
     if not isinstance(surfList, list):
-        msg = "The argument given for surface list was not list," f"but {type(surfList)}. Should be a list!"
+        msg = (
+            "The argument given for surface list was not list,"
+            f"but {type(surfList)}. Should be a list!"
+        )
         raise ValueError(msg)
 
     surfaceDict: Dict[str, SurfaceAPI] = {}
@@ -371,7 +386,9 @@ def rotateDuplicate(geoObj: Transformable, angle: float) -> Transformable:
     return geoObj.duplicate()
 
 
-def createMachineGeometryFromSegment(segmentSurfDict: Dict[str, SurfaceAPI], symFactor: int) -> Dict[str, List[SurfaceAPI]]:
+def createMachineGeometryFromSegment(
+    segmentSurfDict: Dict[str, SurfaceAPI], symFactor: int
+) -> Dict[str, List[SurfaceAPI]]:
     """
     Generate (rotate and duplicate) all Surfaces of the machine from a segment (list of surfaces)
     and return them as surface-list
@@ -464,12 +481,18 @@ def createPhysicalSurfaces(
     # determine if single point of surface is inside the Movingband radius,
     # because if one point is inside, all the others have to be too.
     # FIXME: This assumes all machine are inner rotor!
-    machineSide = "Rotor" if surfList[0].curve[0].startPoint.calcDist() <= rotorMBRadius else "Stator"
+    machineSide = (
+        "Rotor"
+        if surfList[0].curve[0].startPoint.calcDist() <= rotorMBRadius
+        else "Stator"
+    )
 
     if "StCu" in idExt:  # if is stator slot
         slots: List[Slot] = list()
         for surf in surfList:
-            slot = createSlot(surf=surf, material=surf.material, extendedInfo=extendedInfo)
+            slot = createSlot(
+                surf=surf, material=surf.material, extendedInfo=extendedInfo
+            )
             slots.append(slot)
         return slots, machineSide
     if "Mag" in idExt:  # if is magnet
@@ -517,7 +540,9 @@ def createPhysicalSurfaces(
             material=surfList[0].material,
         )
         return [lam], machineSide
-    physElem = PhysicalElement(name=idExt, geometricalElement=surfList, material=surfList[0].material)
+    physElem = PhysicalElement(
+        name=idExt, geometricalElement=surfList, material=surfList[0].material
+    )
     physElem.setColor()  # set random color for all surfs
     # FIXME: Is it really necessary to return a list here? Seems to allway be just a PE...
     return [physElem], machineSide
@@ -586,11 +611,17 @@ def phase2angle(phaseChar: Literal["u", "v", "w"]) -> float:
             return 2 * pi / 3
         if phaseChar.lower() == "w":
             return -2 * pi / 3
-        raise ValueError(f'Phase ID "{phaseChar}" is not uvw! Can not determine phase angle!')
-    raise ValueError(f'Phase ID "{phaseChar}"is not a single character!', phaseChar)
+        raise ValueError(
+            f'Phase ID "{phaseChar}" is not uvw! Can not determine phase angle!'
+        )
+    raise ValueError(
+        f'Phase ID "{phaseChar}"is not a single character!', phaseChar
+    )
 
 
-def phase2color(phaseChar: Literal["u", "v", "w"]) -> Literal["IndianRed", "Yellow", "Aquamarine"]:
+def phase2color(
+    phaseChar: Literal["u", "v", "w"]
+) -> Literal["IndianRed", "Yellow", "Aquamarine"]:
     """Get gmsh mesh color name for a phase-character. See `gmsh colors
     <https://gitlab.onelab.info/gmsh/gmsh/blob/gmsh_4_11_0/src/common/Colors.h>`_
     for all available colors.
@@ -617,9 +648,13 @@ def phase2color(phaseChar: Literal["u", "v", "w"]) -> Literal["IndianRed", "Yell
             return "Yellow4"
         if phaseChar.lower() == "w":
             return "Cyan"
-        raise ValueError(f'Phase ID "{phaseChar}" is not uvw! Can not determine phase angle!')
+        raise ValueError(
+            f'Phase ID "{phaseChar}" is not uvw! Can not determine phase angle!'
+        )
 
-    raise ValueError(f'Phase ID "{phaseChar}"is not a single character!', phaseChar)
+    raise ValueError(
+        f'Phase ID "{phaseChar}"is not a single character!', phaseChar
+    )
 
 
 def getSlotInfo(slotSurfName: str) -> Tuple[int, int]:
@@ -648,7 +683,9 @@ def getSlotInfo(slotSurfName: str) -> Tuple[int, int]:
             if slotSide.isdecimal():  # string is int
                 slotSide = int(slotSide)
             else:
-                raise ValueError(f"Slot side was not decimal. Slot name: '{slotSurfName}'")
+                raise ValueError(
+                    f"Slot side was not decimal. Slot name: '{slotSurfName}'"
+                )
         else:
             # Slot side is empty -> there is one layer side
             slotSide = 0  # 0 to index first/only winding layer
@@ -659,13 +696,17 @@ def getSlotInfo(slotSurfName: str) -> Tuple[int, int]:
                 msg = f"Segment number was not decimal. Slot name: '{slotSurfName}'"
                 raise ValueError(msg)
         else:
-            raise RuntimeError(f"Could not determine segment number from '{slotSurfName}'.")
+            raise RuntimeError(
+                f"Could not determine segment number from '{slotSurfName}'."
+            )
         return slotSide, segmentNbr
     msg = f'Slot identifier "StCu" was not in surface name: {slotSurfName}'
     raise ValueError(msg)
 
 
-def getSlotPhase(windingLayout: list[list[int]], segmentNbr: int, slotSide: int) -> (Literal["p", "n"], Literal["u", "v", "w"]):
+def getSlotPhase(
+    windingLayout: list[list[int]], segmentNbr: int, slotSide: int
+) -> (Literal["p", "n"], Literal["u", "v", "w"]):
     """Gets the name (u, v, w) of the Phase with it's direction (+, -)
 
     Args:
@@ -720,7 +761,9 @@ def getSlotPhase(windingLayout: list[list[int]], segmentNbr: int, slotSide: int)
     raise RuntimeError("Could not determine phase index by slot number.")
 
 
-def createSlot(surf: SurfaceAPI, material: Material, extendedInfo: dict) -> Slot:
+def createSlot(
+    surf: SurfaceAPI, material: Material, extendedInfo: dict
+) -> Slot:
     """create a Physical Element of type Slot.
 
     Args:
@@ -764,10 +807,14 @@ def createWinding(extendedInfo: dict) -> datamodel:
     # symFactor = importJSON.getSymFactor(extendedInfo)
     # format winding layout for swat_em
     windLayout = importJSON.getWindingList(extendedInfo)
-    swatemWinding.set_phases(S=windLayout, turns=(importJSON.getNbrOfTurns(extendedInfo)))
+    swatemWinding.set_phases(
+        S=windLayout, turns=(importJSON.getNbrOfTurns(extendedInfo))
+    )
     swatemWinding.analyse_wdg()  # analyse winding to make sure its valid and all parameters are set
     # make sure that number of parallel paths does not exceed max. possible paths of winding:
-    if max(swatemWinding.get_parallel_connections()) < importJSON.getNbrParalellPaths(extendedInfo):
+    if max(
+        swatemWinding.get_parallel_connections()
+    ) < importJSON.getNbrParalellPaths(extendedInfo):
         logger.warning(
             "The given number of parallel windings paths (%i) exceeds possible paths of the winding layout (%i)!",
             importJSON.getNbrParalellPaths(extendedInfo),
