@@ -28,6 +28,7 @@ doc/UML_Diagrams/*
 
 # Exclude testPosImport content
 workingDirectory/testPosImport/*
+workingDirectory/test_asm/*.html
 # Exclude onelab test installation
 tests/data/*onelab/
 tests/GETDP_TEST_PATH
