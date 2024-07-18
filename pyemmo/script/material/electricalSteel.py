@@ -55,15 +55,6 @@ class ElectricalSteel(Material):
             thermalConductivity,
             thermalCapacity,
         )
-        # make sure density is given since we need it to calculate loss
-        # parameters in core loss calculation.
-        if lossParams:
-            if not self.density:
-                raise ValueError(
-                    f"Material {name} missing value for attribute density!"
-                    "If values for loss parameter are given, "
-                    "you also need to specify material density!"
-                )
         self.sheetThickness = sheetThickness
         self.referenceFrequency = referenceFrequency
         self.referenceFluxDensity = referenceFluxDensity
@@ -93,10 +84,18 @@ class ElectricalSteel(Material):
             if newThickness > 0:
                 self._sheetThickness = newThickness
             else:
-                raise (ValueError(f"Value for material sheet thickness must be a positive number, but is '{newThickness}'"))
+                raise (
+                    ValueError(
+                        f"Value for material sheet thickness must be a "
+                        "positive number, but is '{newThickness}'"
+                    )
+                )
         else:
             raise (
-                TypeError(f"Sheet thickness of material must be a numeric value but is '{type(newThickness)}':{newThickness}")
+                TypeError(
+                    f"Sheet thickness of material must be a numeric value but "
+                    "is '{type(newThickness)}':{newThickness}"
+                )
             )
 
     @property
@@ -128,7 +127,9 @@ class ElectricalSteel(Material):
         return self._lossParams
 
     @lossParams.setter
-    def lossParams(self, newLossParams: Union[Tuple[float, float, float], None]) -> None:
+    def lossParams(
+        self, newLossParams: Union[Tuple[float, float, float], None]
+    ) -> None:
         """Setter of iron loss parameters in W/m³.
 
         Args:
@@ -145,32 +146,49 @@ class ElectricalSteel(Material):
                 )
             for lossparam in newLossParams:
                 if not isinstance(lossparam, (float, int)):
-                    raise TypeError(f"Given loss parameter has wrong type: {type(lossparam)}. " "Must be float or int.")
+                    raise TypeError(
+                        f"Given loss parameter has wrong type: {type(lossparam)}. "
+                        "Must be float or int."
+                    )
             # test if loss parameters are in W/kg or W/m³ by checking the value
             # range. Typically hysteresis loss value is between 1.0...5.0 W/kg;
             # eddy current value is between 0.2...2.0 W/kg.
             if newLossParams[0] < 20 and newLossParams[1] < 5:
                 rootLogger.warning(
                     (
-                        "Looks like the loss parameters for material %s are given in "
-                        "W/kg (not W/m³). Trying to calculate correct values..."
+                        "Looks like the loss parameters for material %s are "
+                        "given in W/kg (not W/m³). "
+                        "Trying to calculate correct values..."
                     ),
                     self.name,
                 )
                 newLossParams = self._adapt_loss_params(newLossParams)
             self._lossParams = newLossParams
 
-    def _adapt_loss_params(self, lossParams: Tuple[float, float, float]) -> Tuple[float, float, float]:
+    def _adapt_loss_params(
+        self, lossParams: Tuple[float, float, float]
+    ) -> Tuple[float, float, float]:
         """"""
         freq = self.referenceFrequency  # frequency in Hz
         if not freq:
-            raise ValueError("Adaption of core loss parameters failed. No reference frequency given!")
+            raise ValueError(
+                "Adaption of core loss parameters failed. "
+                "No reference frequency given!"
+            )
         ind = self.referenceFluxDensity  # induction in T
         if not ind:
-            raise ValueError("Adaption of core loss parameters failed. No reference induction given!")
+            raise ValueError(
+                "Adaption of core loss parameters failed."
+                "No reference induction given!"
+            )
+        # make sure density is given!
+        if not self.density:
+            raise ValueError(
+                f"Material {self.name} missing value for attribute density!"
+                "If values for loss parameter are given, "
+                "you also need to specify material density!"
+            )
         dens = self.density  # density in kg/m³
-        if not dens:
-            raise ValueError("Adaption of core loss parameters failed. Material has no value for density!")
         lossParams[0] = lossParams[0] * dens / freq / (ind**2)
         lossParams[1] = lossParams[1] * dens / ((freq * ind) ** 2)
         lossParams[2] = lossParams[2] * dens / ((freq * ind) ** 1.5)
@@ -187,7 +205,9 @@ class ElectricalSteel(Material):
         return self._referenceFrequency
 
     @referenceFrequency.setter
-    def referenceFrequency(self, newReferenceFrequency: Union[int, float]) -> None:
+    def referenceFrequency(
+        self, newReferenceFrequency: Union[int, float]
+    ) -> None:
         """Setter of reference frequency in Hz
 
         Args:
@@ -213,7 +233,9 @@ class ElectricalSteel(Material):
         return self._referenceFluxDensity
 
     @referenceFluxDensity.setter
-    def referenceFluxDensity(self, newReferenceFluxDensity: Union[int, float]) -> None:
+    def referenceFluxDensity(
+        self, newReferenceFluxDensity: Union[int, float]
+    ) -> None:
         """Setter of reference flux density in T
 
         Args:
@@ -243,6 +265,8 @@ class ElectricalSteel(Material):
         ]
         for row in table:
             if row[1] is None:
-                row[1] = "None"  # set to string because formatting None not supported
+                row[1] = (
+                    "None"  # set to string because formatting None not supported
+                )
             print(f"{row[0]: >25} {row[1]: <15}")
         print("\n")
