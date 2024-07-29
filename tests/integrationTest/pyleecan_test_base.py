@@ -20,30 +20,23 @@
 #
 """TODO: Module docstring"""
 
-import os
 import logging
+import os
 from datetime import datetime
-from subprocess import Popen, PIPE, STDOUT
+from subprocess import PIPE, STDOUT, Popen
 
-from pyleecan.Functions import load
 from pyleecan.Classes.Machine import Machine
 from pyleecan.definitions import DATA_DIR
+from pyleecan.Functions import load
 
-from pyemmo.definitions import ROOT_DIR
-from pyemmo.api.pyleecan import main as pyleecanAPI
 from pyemmo import rootLogger
-
-from pyemmo.functions.runOnelab import (
-    runCalcforCurrent,
-    findGmsh,
-    findGetDP,
-    createCmdCommand,
-    log_subprocess_output,
-)
-from datetime import datetime
+from pyemmo.api.pyleecan import main as pyleecanAPI
+from pyemmo.definitions import ROOT_DIR
+from pyemmo.functions.runOnelab import createCmdCommand, log_subprocess_output
 from pyemmo.script.script import Script
 from tests import GETDP_EXE, GMSH_EXE
-from testUtils import make_test_cases
+
+from .testUtils import make_test_cases
 
 test_cases = {
     0: "Toyota_Prius",
@@ -324,15 +317,11 @@ if __name__ == "__main__":
             )
         except AttributeError:
             file.write(f"Attribute error in {test_case}\n")
-            pass
         except RuntimeError:
             print(f"Runtime error in {test_case}\n")
-            pass
         except ValueError:
             print(f"Value error in {test_case}\n")
-            pass
         except FileNotFoundError:
             print(f"FileNotFoundError in {test_case}\n")
-            pass
     file.close()
     # print(os.path.join(os.path.abspath('.'), "pytest.ini"))
