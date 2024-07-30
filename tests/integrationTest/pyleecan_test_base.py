@@ -22,7 +22,7 @@
 
 # from __future__ import absolute_import
 
-from testUtils import sysPathPrepone
+from .testUtils import sysPathPrepone
 
 sysPathPrepone("H:\\my-pyemmo")
 
@@ -35,14 +35,13 @@ from pyleecan.Classes.Machine import Machine
 from pyleecan.definitions import DATA_DIR
 from pyleecan.Functions import load
 
-# from tests import GETDP_EXE, GMSH_EXE # this causes ImportError: cannot import name 'GETDP_EXE' from 'tests' (H:\my_venv\lib\site-packages\tests\__init__.py)
-from testUtils import make_test_cases
-
 from pyemmo import rootLogger
 from pyemmo.api.pyleecan import main as pyleecanAPI
 from pyemmo.definitions import ROOT_DIR
 from pyemmo.functions.runOnelab import createCmdCommand, log_subprocess_output
 from pyemmo.script.script import Script
+
+from .testUtils import make_test_cases
 
 test_cases = {
     0: "Toyota_Prius",

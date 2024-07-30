@@ -20,28 +20,30 @@
 #
 """TODO: Module docstring"""
 
-import os
 import glob
+import os
+
+import pytest
 
 # from collections import defaultdict
 # import logging
 # from datetime import datetime
 # import unittest
 from pytest_check import check
-import pytest
-from pyleecan_test_base import pyleecan_test_base, pyleecanPrepTuple
-from testUtils import (
-    # updateConfig,
-    count_files,
-    messagePrinter,
-    fileParser,
-    fileFilter,
-    make_test_cases,
-)
+
 from pyemmo.definitions import ROOT_DIR
 
 # from pyemmo import rootLogger
 from pyemmo.functions.import_results import read_timetable_dat
+
+from .pyleecan_test_base import pyleecan_test_base, pyleecanPrepTuple
+from .testUtils import (  # updateConfig,
+    count_files,
+    fileFilter,
+    fileParser,
+    make_test_cases,
+    messagePrinter,
+)
 
 api_test_type = "api\\pyleecan"
 test_cases = {}
