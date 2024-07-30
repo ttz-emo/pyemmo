@@ -1,8 +1,8 @@
-// This script was created with pyemmo (Version 1.3.1b1, git 66f607)
+// This script was created with pyemmo (Version 1.3.1b1, git 86642f)
 
 // This script has initally be written by Diogo Pinto and is adapted for the use with pyemmo by Max Ganser
 
-Include "Toyota_Prius_param.geo"
+Include "SPMSM_002_param.geo"
 
 // Strings defining the Parameter tree =========================================
 // Options for the Analysis Setting
@@ -76,39 +76,32 @@ Group
 }
 
 Group{
-    Surf_cutA0 = Region[ {3, 2} ];
-    Surf_cutA1 = Region[ {5, 4} ];
-    Surf_bn0 = Region[ 16 ];
-    Rotor_Bnd_MB_1 = Region[ 7 ];
-    Rotor_Bnd_MB_2 = Region[ 8 ];
-    Rotor_Bnd_MB_3 = Region[ 9 ];
-    Rotor_Bnd_MB_4 = Region[ 10 ];
-    Rotor_Bnd_MB_5 = Region[ 11 ];
-    Rotor_Bnd_MB_6 = Region[ 12 ];
-    Rotor_Bnd_MB_7 = Region[ 13 ];
-    Rotor_Bnd_MB_8 = Region[ 14 ];
-    Rotor_Bnd_MB = Region[ {7, 8, 9, 10, 11, 12, 13, 14} ];
-    Rotor_Bnd_MBaux = Region[ {8, 9, 10, 11, 12, 13, 14} ];
-    Rotor_Airgap = Region[ 31 ];
-    Rotor_Magnets = Region[ {19, 21} ];
-    RotorCC = Region[ {18, 20, 22, 30, 31, 17} ];
-    Surf_Inf = Region[ 15 ];
-    Stator_Bnd_MB = Region[ 6 ];
-    Stator_Airgap = Region[ 33 ];
-    StatorCC = Region[ {32, 33, 23, 24, 25, 26, 27, 28, 29} ];
-    Stator_Ind_Ap = Region[ {24, 25} ];
-    Stator_Ind_Cm = Region[ {26, 27} ];
-    Stator_Ind_Bp = Region[ {28, 29} ];
-    DomainNL = Region[ {17, 23} ];
-    DomainL = Region[ {18, 19, 20, 21, 22, 30, 31, 24, 25, 26, 27, 28, 29, 32, 33} ];
+    Surf_cutA0 = Region[ {} ];
+    Surf_cutA1 = Region[ {} ];
+    Rotor_Bnd_MB = Region[ 3 ];
+    Rotor_Bnd_MB_1 = Region[ 3 ];
+    Rotor_Airgap = Region[ 18 ];
+    Rotor_Magnets = Region[ {6, 7, 8, 9} ];
+    RotorCC = Region[ {17, 18, 5} ];
+    Surf_Inf = Region[ 4 ];
+    Stator_Bnd_MB = Region[ 2 ];
+    Stator_Airgap = Region[ 20 ];
+    StatorCC = Region[ {19, 20, 10, 11, 12, 13, 14, 15, 16} ];
+    Stator_Ind_Ap = Region[ 11 ];
+    Stator_Ind_Am = Region[ 12 ];
+    Stator_Ind_Cp = Region[ 13 ];
+    Stator_Ind_Cm = Region[ 14 ];
+    Stator_Ind_Bp = Region[ 15 ];
+    Stator_Ind_Bm = Region[ 16 ];
+    DomainNL = Region[ {5, 10} ];
+    DomainL = Region[ {6, 7, 8, 9, 17, 18, 11, 12, 13, 14, 15, 16, 19, 20} ];
     MovingBand_PhysicalNb = Region[ 0 ];
-    Domain_Lam = Region[ {17, 23} ];
+    Domain_Lam = Region[ {5, 10} ];
     DomainPlotMovingGeo = Region[ 1 ];
-    group_PYEMMO_AIR = Region[ {7, 8, 9, 10, 11, 12, 13, 14, 31, 30, 6, 33, 32, 0} ];
-    group_MagnetPrius = Region[ {19, 21} ];
-    group_Air = Region[ {18, 20, 22} ];
-    group_M400_50A = Region[ {17, 23} ];
-    group_Copper2 = Region[ {24, 25, 26, 27, 28, 29} ];
+    group_PYEMMO_AIR = Region[ {3, 18, 17, 2, 20, 19, 0} ];
+    group_Magnet1 = Region[ {6, 7, 8, 9} ];
+    group_M400_50A = Region[ {5, 10} ];
+    group_Copper2 = Region[ {11, 12, 13, 14, 15, 16} ];
     }
 
 //=============================================================================
@@ -899,25 +892,15 @@ Function{
     density_PYEMMO_AIR = 1.2041 ;// density of PYEMMO_AIR
     density[group_PYEMMO_AIR] = density_PYEMMO_AIR ;
     
-    // New Material: MagnetPrius
-    sigma_MagnetPrius = 625000.0 ;
-    sigma[group_MagnetPrius] = sigma_MagnetPrius ;
-    muR_MagnetPrius = 1.05 ;
-    nu_MagnetPrius = 1/(muR_MagnetPrius * mu0) ;
-    nu[group_MagnetPrius] = nu_MagnetPrius ;
-    br_MagnetPrius = 1.24 * (1 + (-0.001 * (tempMag - 20))) ;// Reference temperatur is 20°C
-    Printf("Remanence flux density of magnet material MagnetPrius at temperature %.1f °C is %.5f T",tempMag, br_MagnetPrius);
-    density_MagnetPrius = 7500.0 ;// density of MagnetPrius
-    density[group_MagnetPrius] = density_MagnetPrius ;
-    
-    // New Material: Air
-    sigma_Air = 0 ;
-    sigma[group_Air] = sigma_Air ;
-    muR_Air = 1 ;
-    nu_Air = 1/(muR_Air * mu0) ;
-    nu[group_Air] = nu_Air ;
-    density_Air = 1.2044 ;// density of Air
-    density[group_Air] = density_Air ;
+    // New Material: Magnet1
+    sigma_Magnet1 = 625000.0 ;
+    sigma[group_Magnet1] = sigma_Magnet1 ;
+    muR_Magnet1 = 1.05 ;
+    nu_Magnet1 = 1/(muR_Magnet1 * mu0) ;
+    nu[group_Magnet1] = nu_Magnet1 ;
+    br_Magnet1 = 1.0 ;
+    density_Magnet1 = 7500.0 ;// density of Magnet1
+    density[group_Magnet1] = density_Magnet1 ;
     
     // New Material: M400_50A
     sigma_M400_50A = 2173913.0434782607 ;
@@ -958,8 +941,10 @@ Function{
     density[group_Copper2] = density_Copper2 ;
     }
 Function{
-    br[Region[19]] = 1*br_MagnetPrius * Vector[Cos[0.5489482152997663 + RotorPosition[]], Sin[0.5489482152997663 + RotorPosition[]], 0] ;
-    br[Region[21]] = 1*br_MagnetPrius * Vector[Cos[0.23644994809768194 + RotorPosition[]], Sin[0.23644994809768194 + RotorPosition[]], 0] ;
+    br[Region[6]] = 1*br_Magnet1 * XYZ[]/Norm[XYZ[]] ;
+    br[Region[7]] = -1*br_Magnet1 * XYZ[]/Norm[XYZ[]] ;
+    br[Region[8]] = 1*br_Magnet1 * XYZ[]/Norm[XYZ[]] ;
+    br[Region[9]] = -1*br_Magnet1 * XYZ[]/Norm[XYZ[]] ;
     }
 
 
@@ -977,16 +962,16 @@ Include "machine_magstadyn_a.pro"
 PostOperation{
     { Name GetBOnRadius; NameOfPostProcessing MagStaDyn_a_2D; 
          Operation {  
-            Print [ b_radial, OnGrid {(0.08049999999999999*(1-0.0001))*Cos[$A*Pi/180],(0.08049999999999999*(1-0.0001))*Sin[$A*Pi/180],0}{0:360/SymmetryFactor:0.5,0,0}, File StrCat[ResDir,"b_radial_airgap_rotor.pos"], Name "b_radial (airgap rotor)" ]; 
+            Print [ b_radial, OnGrid {(0.0274*(1-0.0001))*Cos[$A*Pi/180],(0.0274*(1-0.0001))*Sin[$A*Pi/180],0}{0:360/SymmetryFactor:0.5,0,0}, File StrCat[ResDir,"b_radial_airgap_rotor.pos"], Name "b_radial (airgap rotor)" ]; 
             }
          Operation {  
-            Print [ b_tangent, OnGrid {(0.08049999999999999*(1-0.0001))*Cos[$A*Pi/180],(0.08049999999999999*(1-0.0001))*Sin[$A*Pi/180],0}{0:360/SymmetryFactor:0.5,0,0}, File StrCat[ResDir,"b_tangent_airgap_rotor.pos"], Name "b_tangent (airgap rotor)" ]; 
+            Print [ b_tangent, OnGrid {(0.0274*(1-0.0001))*Cos[$A*Pi/180],(0.0274*(1-0.0001))*Sin[$A*Pi/180],0}{0:360/SymmetryFactor:0.5,0,0}, File StrCat[ResDir,"b_tangent_airgap_rotor.pos"], Name "b_tangent (airgap rotor)" ]; 
             }
          Operation {  
-            Print [ b_radial, OnGrid {(0.08065*(1+0.0001))*Cos[$A*Pi/180],(0.08065*(1+0.0001))*Sin[$A*Pi/180],0}{0:360/SymmetryFactor:0.5,0,0}, File StrCat[ResDir,"b_radial_airgap_stator.pos"], Name "b_radial (airgap stator)" ]; 
+            Print [ b_radial, OnGrid {(0.0276*(1+0.0001))*Cos[$A*Pi/180],(0.0276*(1+0.0001))*Sin[$A*Pi/180],0}{0:360/SymmetryFactor:0.5,0,0}, File StrCat[ResDir,"b_radial_airgap_stator.pos"], Name "b_radial (airgap stator)" ]; 
             }
          Operation {  
-            Print [ b_tangent, OnGrid {(0.08065*(1+0.0001))*Cos[$A*Pi/180],(0.08065*(1+0.0001))*Sin[$A*Pi/180],0}{0:360/SymmetryFactor:0.5,0,0}, File StrCat[ResDir,"b_tangent_airgap_stator.pos"], Name "b_tangent (airgap stator)" ]; 
+            Print [ b_tangent, OnGrid {(0.0276*(1+0.0001))*Cos[$A*Pi/180],(0.0276*(1+0.0001))*Sin[$A*Pi/180],0}{0:360/SymmetryFactor:0.5,0,0}, File StrCat[ResDir,"b_tangent_airgap_stator.pos"], Name "b_tangent (airgap stator)" ]; 
             }
          Operation {  
             Print [ b_radial, OnGrid {0.7*Cos[$A*Pi/180],0.7*Sin[$A*Pi/180],0}{0:360/SymmetryFactor:0.5,0,0}, File StrCat[ResDir,"b_radial_tooth.pos"], Name "b_radial (Tooth)" ]; 

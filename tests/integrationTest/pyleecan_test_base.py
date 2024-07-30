@@ -22,7 +22,7 @@
 
 # from __future__ import absolute_import
 
-from .testUtils import sysPathPrepone
+from testUtils import sysPathPrepone
 
 sysPathPrepone("H:\\my-pyemmo")
 
@@ -41,7 +41,7 @@ from pyemmo.definitions import ROOT_DIR
 from pyemmo.functions.runOnelab import createCmdCommand, log_subprocess_output
 from pyemmo.script.script import Script
 
-from .testUtils import make_test_cases
+from testUtils import make_test_cases
 
 test_cases = {
     0: "Toyota_Prius",
@@ -59,92 +59,7 @@ test_params = {
     }
 }
 
-test_type = "api\\pyleecan"
-
-
-def pyleecanPrepTuple(test_cases, test_type):
-    """
-    Testing pyleecan API to generate GMSH and simulation files based on pyleecan machine json files.
-    There are 4 test points included:
-        - Check that simulation folders and subfolders are properly generated
-        - Check that GMSH and GetDP files are properly generated
-        - Check that simulation folders and files are generated
-        - Check that content of result file match base comparison data
-
-    """
-    # test_type = "api\\pyleecan"
-    # self.make_test_cases(test_type)
-    # self.test_cases[test_type] = make_test_cases(test_type)
-    # result_path = defaultdict(list)
-    # simul_path = defaultdict(list)
-    # simul_subfolder_path = defaultdict(list)
-    rootLogger.setLevel(logging.DEBUG)
-    curr_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
-
-    header_flg = True
-    param_tuples = list()
-
-    # print("========TEST PYLEECAN API + SIMULATION FLOW START========")
-    for test_id, test_case in test_cases[test_type][1:]:
-        # curr_datetime, _ = updateConfig(test_type, test_id, test_case) #REDUNDANT since API level log already exists in each folder
-
-        # preparing source and result folders
-        source_path = os.path.join(
-            ROOT_DIR,
-            test_params[test_type]["test_data_folder"],
-            f"{test_type}\\{test_case}.json",
-        )
-
-        # make sure source file exists -> REDUNDANT since test cases are created from test data folder content.
-        # assert os.path.isfile(source_path) and messagePrinter("SUCCESS: Source file exist"), "ERROR: Source file does not exist"
-
-        result_path = os.path.join(
-            ROOT_DIR,
-            test_params[test_type]["result_folder"],
-            f"{test_type}\\{curr_datetime}\\test_{test_id}\\{test_case}",
-        )
-        if not os.path.isdir(result_path):
-            os.makedirs(result_path)
-        base_result_path = os.path.join(
-            ROOT_DIR,
-            test_params[test_type]["test_data_folder"],
-            test_type,
-            f"comparison_base\\{test_case}",
-        )  # this can change to a different folder for base data
-
-        if test_type == "api\\pyleecan":
-            simul_path = os.path.join(result_path, f"res_{test_case}")
-            simul_subfolder = f"id_{test_params[test_type]['id']}_iq_{test_params[test_type]['iq']}_n_{test_params[test_type]['rpm']}rpm"
-            simul_subfolder_path = os.path.join(simul_path, simul_subfolder)
-            base_simul_path = os.path.join(
-                base_result_path, f"res_{test_case}"
-            )  # This can also change for another base data folder
-            base_simul_subfolder_path = os.path.join(
-                base_simul_path, simul_subfolder
-            )  # This can also change for another base data folder
-            if header_flg:
-                headers = "test_id, test_case, source_path, result_path, simul_path, simul_subfolder_path, base_result_path, base_simul_path, base_simul_subfolder_path"
-                param_tuples = param_tuples + [headers]
-                header_flg = False
-
-            param_tuples = param_tuples + [
-                (
-                    test_id,
-                    test_case,
-                    source_path,
-                    result_path,
-                    simul_path,
-                    simul_subfolder_path,
-                    base_result_path,
-                    base_simul_path,
-                    base_simul_subfolder_path,
-                )
-            ]
-
-        else:
-            continue
-
-    return param_tuples
+# test_type = "api\\pyleecan"
 
 
 def pyleecan_test_base(
@@ -160,10 +75,11 @@ def pyleecan_test_base(
     """
     Base test data prepper for Pyleecan API workflow test.
     Params:
-    - test_params: Containt parameter dict for running test
-    - result_path: string path where result should be stored
-    - test_data_path: string path where json data for testing can be found
-    - test_data_path: string path where json data for testing can be found
+    - test_params: Contains parameter dict for running test
+    - result_path: string path where result should be stored, default empty (so that timestamped folder can be generated)
+    - test_data_path: string path where json data for testing can be found (default empty, so that data path from test_params will be used)
+
+    When running this file as stand alone e.g. for preparing base data, result_path should be path to desired base data locations.
     The following params are used in case running this alone e.g. for preparing base data:
     - test_type: type of test, default empty
     - test_id: test id, default empty
@@ -180,11 +96,6 @@ def pyleecan_test_base(
 
     # create machine
     if test_data_path == "":
-        machine_file_path = os.path.join(
-            ROOT_DIR,
-            test_params["test_data_folder"],
-            f"{test_type}\\{test_case}.json",
-        )
         machine_file_path = os.path.join(
             ROOT_DIR,
             test_params["test_data_folder"],
@@ -208,11 +119,7 @@ def pyleecan_test_base(
             pyleecan_machine.stator.winding.conductor.cond_mat.name
             == "Copper1"
         ):
-            if (
-                pyleecan_machine.stator.winding.conductor.cond_mat.name
-                == "Copper1"
-            ):
-                pyleecan_machine.stator.winding.conductor.cond_mat = CuMat
+            pyleecan_machine.stator.winding.conductor.cond_mat = CuMat
     except AttributeError:
         pass
     except Exception as exce:
@@ -221,11 +128,6 @@ def pyleecan_test_base(
     # Create result folder
     if result_path == "":
         curr_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
-        resFolder = os.path.join(
-            ROOT_DIR,
-            test_params["result_folder"],
-            f"{test_type}\\{curr_datetime}\\test_{test_id}\\{test_case}",
-        )
         resFolder = os.path.join(
             ROOT_DIR,
             test_params["result_folder"],
@@ -293,40 +195,115 @@ def pyleecan_test_base(
 
     return machine_file_path, resFolder
 
+def pyleecanPrepTuple(test_cases, test_type):
+    """
+    This function generates test paramemters for Pyleecan API testing.
+    It basically generate test data folders and return the list of folders as a tuple for use in test cases.
+    Input:
+        - test_cases->list: list of test case names
+        - test_type->string: type of test performed
+    Output: tuple of test data folders
+
+    """
+    rootLogger.setLevel(logging.DEBUG)
+    curr_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    header_flg = True
+    param_tuples = list()
+
+    # print("========TEST PYLEECAN API + SIMULATION FLOW START========")
+    for test_id, test_case in test_cases[test_type][1:]:
+        # curr_datetime, _ = updateConfig(test_type, test_id, test_case) #REDUNDANT since API level log already exists in each folder
+
+        # preparing source and result folders
+        source_path = os.path.join(
+            ROOT_DIR,
+            test_params[test_type]["test_data_folder"],
+            f"{test_type}\\{test_case}.json",
+        )
+
+        # make sure source file exists -> REDUNDANT since test cases are created from test data folder content.
+        # assert os.path.isfile(source_path) and messagePrinter("SUCCESS: Source file exist"), "ERROR: Source file does not exist"
+
+        result_path = os.path.join(
+            ROOT_DIR,
+            test_params[test_type]["result_folder"],
+            f"{test_type}\\{curr_datetime}\\test_{test_id}\\{test_case}",
+        )
+        if not os.path.isdir(result_path):
+            os.makedirs(result_path)
+        
+        base_result_path = os.path.join(
+                ROOT_DIR,
+                test_params[test_type]["test_data_folder"],
+                test_type,
+                f"comparison_base\\{test_case}",
+            )  # this can change to a different folder for base data
+
+        try:
+            if test_type == "api\\pyleecan":
+                pyleecan_test_base  (
+                    test_params[test_type],
+                    result_path=result_path,
+                    test_data_path=source_path,
+                )
+                simul_path = os.path.join(result_path, f"res_{test_case}")
+                simul_subfolder = f"id_{test_params[test_type]['id']}_iq_{test_params[test_type]['iq']}_n_{test_params[test_type]['rpm']}rpm"
+                simul_subfolder_path = os.path.join(simul_path, simul_subfolder)
+                base_simul_path = os.path.join(
+                    base_result_path, f"res_{test_case}"
+                )  # This can also change for another base data folder
+                base_simul_subfolder_path = os.path.join(
+                    base_simul_path, simul_subfolder
+                )  # This can also change for another base data folder
+                if header_flg:
+                    headers = "test_id, test_case, source_path, result_path, simul_path, simul_subfolder_path, base_result_path, base_simul_path, base_simul_subfolder_path"
+                    param_tuples = param_tuples + [headers]
+                    header_flg = False
+
+                param_tuples = param_tuples + [
+                    (
+                        test_id,
+                        test_case,
+                        source_path,
+                        result_path,
+                        simul_path,
+                        simul_subfolder_path,
+                        base_result_path,
+                        base_simul_path,
+                        base_simul_subfolder_path,
+                    )
+                ]
+
+            else:
+                continue
+        except RuntimeError:
+            continue
+
+    return param_tuples
+
 
 if __name__ == "__main__":
 
-    # import sys
+    #ONLY RUN THIS BY ITSELF IF YOU WANT TO CREATE BASE DATA
+    from distutils.dir_util import copy_tree
+    import shutil
 
-    # path_temp = []
-    # for path in sys.path:
-    #     if path == "H:\\my-pyemmo":
-    #         path_temp.append(path)
-    # for path in sys.path:
-    #     if path == "H:\\my-pyemmo":
-    #         continue
-    #     else:
-    #         path_temp.append(path)
-    # sys.path = path_temp
-
-    # for idx, path in enumerate(sys.path, 1):
-    #     print(f'{idx} - {path}')
-
-    # import tests
-
-    # print(f'\nrequests module location - {tests.__file__}')
-
-    # from integrationTest.apiTest import TestCases
-
-    test_cases = make_test_cases("api\\pyleecan")
-    print(type(test_cases[1]))
+    test_type = "api\\pyleecan"
+    test_cases = make_test_cases(test_type)
     curr_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     result_path = os.path.join(
-        ROOT_DIR, f"workingDirectory\\Vu\\for_testing\\{curr_datetime}"
+        # ROOT_DIR, f"workingDirectory\\Vu\\for_testing\\{curr_datetime}"
+        ROOT_DIR, f"{test_params["test_data_folder"]}\\{test_type}\\comparison_base"
     )
     if not os.path.isdir(result_path):
         os.makedirs(result_path)
+    
+    #Backup existing data 
+    backup_path = os.path.join(
+        result_path, "backup"
+    )
 
     file = open(os.path.join(result_path, "base_data_creation_log"), "w")
 
@@ -335,6 +312,22 @@ if __name__ == "__main__":
         # print("\n")
         test_id, test_case = tup
         result_path_true = os.path.join(result_path, test_case)
+        backup_path_true = os.path.join(backup_path, test_case)
+        
+        
+        
+        #copy existing base as new backup, and cleanup base result folder
+        if os.path.isdir(result_path_true):
+            #remove existing backup
+            if os.path.isdir(backup_path_true):
+                shutil.rmtree(backup_path_true)
+                os.makedirs(backup_path_true)
+            else:
+                os.makedirs(backup_path_true)
+            copy_tree(result_path_true, backup_path_true)
+            shutil.rmtree(result_path_true)
+
+        #create base data
         try:
             pyleecan_test_base(
                 test_params[test_type],

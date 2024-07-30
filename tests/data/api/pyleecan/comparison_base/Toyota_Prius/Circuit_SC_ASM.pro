@@ -41,13 +41,13 @@ Function {
 
   // If only one pole is simulated in the model, the end rings of the A and B
   // sides must be crossed. If one or more pole pairs are simulated, they do not.
-  If (NbrPolesInModel == 1)
+  If (NbrPolesInModel%2 == 1)
     For k In {1:nbrRotorBars}
       // Upper Branch
       NRu1~{k} = NB1~{k}; // first node number for upper endring resistance
       // second node number for each endring resistance:
-      NRu2~{k} = NIM1~{k}; // = intermediate node 
-      
+      NRu2~{k} = NIM1~{k}; // = intermediate node
+
       NLu1~{k} = NRu2~{k}; // first node number for each endring inductance (= output of resistance)
       // second node number for each endring inductance:
       k2 = (k<nbrRotorBars) ? k+1 : 1.; // We need this since in the next inline
@@ -58,7 +58,7 @@ Function {
       // Lower Branch
       NRl1~{k} = NB3~{k}; // first node number for lower endring resistance
       // second node number for lower endring resistance:
-      NRl2~{k} = NIM2~{k}; // = lower intermediate node 
+      NRl2~{k} = NIM2~{k}; // = lower intermediate node
 
       NLl1~{k} = NRl2~{k}; // first node number for lower endring inductance (= output of lower resistance)
       // second node number for lower endring inductance:
@@ -74,12 +74,12 @@ Function {
         // NL1~{k} = NB3~{k}; // first node number for each endring inductance
         // // second node number for each endring inductance:
         // NL2~{k} = (k<nbrRotorBars) ? NB3~{k2} : NB3~{1} ;
-  
+
         // Upper Branch
         NRu1~{k} = NB1~{k}; // first node number for upper endring resistance
         // second node number for each endring resistance:
-        NRu2~{k} = NIM1~{k}; // = intermediate node 
-        
+        NRu2~{k} = NIM1~{k}; // = intermediate node
+
         NLu1~{k} = NRu2~{k}; // first node number for each endring inductance (=
         // output of resistance)
         // second node number for each endring inductance:
@@ -88,12 +88,12 @@ Function {
         // evaluated at runtime, even if only one of the option is used (like in
         // a real if-case).
         NLu2~{k} = (k<nbrRotorBars) ? NB1~{k2} : NB1~{1} ;
-  
+
         // Lower Branch
         NRl1~{k} = NB3~{k}; // first node number for lower endring resistance
         // second node number for lower endring resistance:
-        NRl2~{k} = NIM2~{k}; // = lower intermediate node 
-  
+        NRl2~{k} = NIM2~{k}; // = lower intermediate node
+
         NLl1~{k} = NRl2~{k}; // first node number for lower endring inductance (=
         // output of lower resistance)
         // second node number for lower endring inductance:

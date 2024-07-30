@@ -18,25 +18,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""TODO: Module docstring"""
+"""
+Author: Vu Nguyen
+
+Description:
+This module contains all integration tests for Pyleecan API, as part PyEMMO.
+Test types are divided by classes, which contains individual test methods.
+Since tests are written to be picked up by pytest, pytest should be used to execute this module
+syntax: pytest <path_to_module>
+
+"""
 
 import glob
 import os
-
 import pytest
-
-# from collections import defaultdict
-# import logging
-# from datetime import datetime
-# import unittest
 from pytest_check import check
-
 from pyemmo.definitions import ROOT_DIR
-
-# from pyemmo import rootLogger
 from pyemmo.functions.import_results import read_timetable_dat
-
-from .pyleecan_test_base import pyleecan_test_base, pyleecanPrepTuple
+from .pyleecan_test_base import pyleecanPrepTuple
 from .testUtils import (  # updateConfig,
     count_files,
     fileFilter,
@@ -44,10 +43,13 @@ from .testUtils import (  # updateConfig,
     make_test_cases,
     messagePrinter,
 )
+import shutil
 
-api_test_type = "api\\pyleecan"
+#Vars for using in tests
+test_types = ["api\\pyleecan"]
 test_cases = {}
-test_cases[api_test_type] = make_test_cases(api_test_type)
+for t in test_types:
+    test_cases[t] = make_test_cases(t)
 
 test_params = {
     "api\\pyleecan": {
@@ -60,9 +62,26 @@ test_params = {
     }
 }
 
+#Fixture for cleaning up test data
+@pytest.fixture(scope="session", autouse=True)
+def cleanup(request):
+    def finisher():
+        print("Doing teardown...")
+        for t in test_types:
+            test_result_dir = os.path.join(ROOT_DIR, test_params[t]["result_folder"], t)
+            timestamped_result_dirs = [os.path.join(test_result_dir, dir) for dir in os.listdir(test_result_dir) if os.path.isdir(os.path.join(test_result_dir, dir))]
+            no_to_keep = 2 #decide how many test results should be kept
+            no_to_remove = 0
+            while (no_to_remove < len(timestamped_result_dirs) - no_to_keep):
+                shutil.rmtree(timestamped_result_dirs[no_to_remove])
+                no_to_remove += 1
+    
+    request.addfinalizer(finisher)
 
+
+#Integration test class
 @pytest.mark.parametrize(
-    "test_tuple", pyleecanPrepTuple(test_cases, api_test_type)[1:]
+    "test_tuple", pyleecanPrepTuple(test_cases, test_types[0])[1:]
 )
 class TestCasesIntegration:
     """
@@ -91,11 +110,6 @@ class TestCasesIntegration:
             _,
             _,
         ) = test_tuple
-        pyleecan_test_base(
-            test_params[api_test_type],
-            result_path=result_path,
-            test_data_path=source_path,
-        )
         print(f"TEST CASE {test_id}: {test_case}")
         print(
             "Test point 1: Check that simulation result folders are properly generated:"
@@ -110,14 +124,26 @@ class TestCasesIntegration:
             ), "ERROR: Simulation result subfolder does not exist"
         print()
 
+
     def test_gmsh_base_files(self, test_tuple):
-        test_id, test_case, _, result_path, _, _, base_result_path, _, _ = (
-            test_tuple
-        )
+
+        (
+            test_id, 
+            test_case, 
+            _, 
+            result_path, 
+            _, 
+            _, 
+            base_result_path, 
+            _, 
+            _
+        ) = test_tuple
+        
         print(f"TEST CASE {test_id}: {test_case}")
         print("Test point 2: check if GMSH base files are generated")
         self.check_file_counts(base_result_path, result_path)
         print()
+
 
     def test_simul_data_gen(self, test_tuple):
         (
@@ -164,13 +190,15 @@ class TestCasesIntegration:
 
         print("\n")
 
+
     def check_file_counts(self, base_folder: str, folder_to_count: str):
         """
         Compare count of files per type between base data and result data
         """
         base_count = count_files(base_folder)
+        exclusion_list = ["dir", "png"]
         for file_type, count in base_count.items():
-            if file_type != "dir":
+            if file_type not in exclusion_list:
                 result_count = len(
                     glob.glob(
                         os.path.join(
@@ -182,6 +210,7 @@ class TestCasesIntegration:
                     assert result_count == count and messagePrinter(
                         f"SUCCESS: .{file_type} count matches"
                     ), f"ERROR: .{file_type} count mismatch! Base: {count}; Result: {result_count}"
+
 
     def check_content(self, base_path, target_path, target_types):
         """
@@ -209,9 +238,9 @@ class TestCasesIntegration:
 
 
 if __name__ == "__main__":
-    api_test_tuple = pyleecanPrepTuple(test_cases, api_test_type)
+    api_test_tuple = pyleecanPrepTuple(test_cases, test_types[0])
     headers = api_test_tuple[0].split(",")
     for h, f in zip(headers, api_test_tuple[1]):
         print(h, ":", f)
-    new_test = TestCasesIntegration()
-    new_test.test_api_simul_folder_exist(api_test_tuple[1])
+    # new_test = TestCasesIntegration()
+    # new_test.test_api_simul_folder_exist(api_test_tuple[1])

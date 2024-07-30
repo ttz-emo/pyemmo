@@ -1,4 +1,4 @@
-// This script was created with pyemmo (Version 1.3.1b1, git 66f607)
+// This script was created with pyemmo (Version 1.3.1b1, git 86642f)
 
 // MACHINE SPECIFIC VALUES 
 SYMMETRY_FACTOR = 2;
@@ -16,7 +16,7 @@ Id_eff = 0;
 Iq_eff = 0;
 FLAG_NL = 1;
 SPEED_RPM = 1000.0000000000001;
-PATH_RES = "H:/my-pyemmo/workingDirectory/Vu/for_testing/20240730_092221/SPMSM_003/res_SPMSM_003";
+PATH_RES = "H:/my-pyemmo/workingDirectory/Vu/for_testing/SPMSM_003/res_SPMSM_003";
 ParkAngOffset = 150.04999999999995;
 ANALYSIS_TYPE = 0;
 FLAG_CHANGE_ROT_DIR = 0;
