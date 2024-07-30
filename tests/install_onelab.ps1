@@ -64,5 +64,9 @@ else {
     # $env:GMSH_TEST_PATH = "$store_path\onelab-Windows64\gmsh.exe"
     [System.Environment]::SetEnvironmentVariable('GMSH_TEST_PATH', "$store_path\onelab-Windows64\gmsh.exe", 'User')
     $env:GETDP_TEST_PATH = "$store_path\onelab-Windows64\getdp.exe"
+
+    #Note - Vu: need to add this so that getDP is also consistently visible to future sessions
+    [System.Environment]::SetEnvironmentVariable('GETDP_TEST_PATH', "$store_path\onelab-Windows64\getdp.exe", 'User')
+
 }
 Set-Location ..

@@ -17,10 +17,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-import platform
 import os
+import platform
 import subprocess
-from os.path import join, dirname, abspath
+from os.path import abspath, dirname, join
+
 from pyemmo.definitions import TEST_DIR
 
 try:
@@ -56,8 +57,12 @@ if platform.system() == "Windows":
         # subprocess failed -> no determination of executables
         pass
     else:
-        gmsh_exe_id = "GMSH_TEST_PATH"  # default file name from ps script
-        getdp_exe_id = "GETDP_TEST_PATH"  # default file name from ps script
+        gmsh_exe_id = os.environ[
+            "GMSH_TEST_PATH"
+        ]  # default file name from ps script
+        getdp_exe_id = os.environ[
+            "GETDP_TEST_PATH"
+        ]  # default file name from ps script
 
         exe_paths = []
         for file in (gmsh_exe_id, getdp_exe_id):

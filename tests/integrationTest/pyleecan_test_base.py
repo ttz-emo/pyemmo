@@ -20,30 +20,29 @@
 #
 """TODO: Module docstring"""
 
-import os
-import logging
-from datetime import datetime
-from subprocess import Popen, PIPE, STDOUT
+# from __future__ import absolute_import
 
-from pyleecan.Functions import load
+from testUtils import sysPathPrepone
+
+sysPathPrepone("H:\\my-pyemmo")
+
+import logging
+import os
+from datetime import datetime
+from subprocess import PIPE, STDOUT, Popen
+
 from pyleecan.Classes.Machine import Machine
 from pyleecan.definitions import DATA_DIR
+from pyleecan.Functions import load
 
-from pyemmo.definitions import ROOT_DIR
-from pyemmo.api.pyleecan import main as pyleecanAPI
-from pyemmo import rootLogger
-
-from pyemmo.functions.runOnelab import (
-    runCalcforCurrent,
-    findGmsh,
-    findGetDP,
-    createCmdCommand,
-    log_subprocess_output,
-)
-from datetime import datetime
-from pyemmo.script.script import Script
-from tests import GETDP_EXE, GMSH_EXE
+# from tests import GETDP_EXE, GMSH_EXE # this causes ImportError: cannot import name 'GETDP_EXE' from 'tests' (H:\my_venv\lib\site-packages\tests\__init__.py)
 from testUtils import make_test_cases
+
+from pyemmo import rootLogger
+from pyemmo.api.pyleecan import main as pyleecanAPI
+from pyemmo.definitions import ROOT_DIR
+from pyemmo.functions.runOnelab import createCmdCommand, log_subprocess_output
+from pyemmo.script.script import Script
 
 test_cases = {
     0: "Toyota_Prius",
@@ -268,8 +267,10 @@ def pyleecan_test_base(
         "res": sim_res_dir,
         # "exe": findGetDP(),
         # "exe": r"H:\onelab-Windows64\getdp.exe",
-        "exe": GETDP_EXE,
-        "gmsh": GMSH_EXE,
+        "exe": os.environ["GETDP_TEST_PATH"],
+        "gmsh": os.environ["GMSH_TEST_PATH"],
+        # "exe": GETDP_EXE,
+        # "gmsh": GMSH_EXE,
     }
     # runCalcforCurrent(param_dict)
     cmdCommand = createCmdCommand(
@@ -295,6 +296,27 @@ def pyleecan_test_base(
 
 
 if __name__ == "__main__":
+
+    # import sys
+
+    # path_temp = []
+    # for path in sys.path:
+    #     if path == "H:\\my-pyemmo":
+    #         path_temp.append(path)
+    # for path in sys.path:
+    #     if path == "H:\\my-pyemmo":
+    #         continue
+    #     else:
+    #         path_temp.append(path)
+    # sys.path = path_temp
+
+    # for idx, path in enumerate(sys.path, 1):
+    #     print(f'{idx} - {path}')
+
+    # import tests
+
+    # print(f'\nrequests module location - {tests.__file__}')
+
     # from integrationTest.apiTest import TestCases
 
     test_cases = make_test_cases("api\\pyleecan")
@@ -324,15 +346,11 @@ if __name__ == "__main__":
             )
         except AttributeError:
             file.write(f"Attribute error in {test_case}\n")
-            pass
         except RuntimeError:
             print(f"Runtime error in {test_case}\n")
-            pass
         except ValueError:
             print(f"Value error in {test_case}\n")
-            pass
         except FileNotFoundError:
             print(f"FileNotFoundError in {test_case}\n")
-            pass
     file.close()
     # print(os.path.join(os.path.abspath('.'), "pytest.ini"))

@@ -20,17 +20,14 @@
 #
 """TODO: Module docstring"""
 
-from configparser import ConfigParser
-import os
 import glob
-from collections import defaultdict
-from datetime import datetime
-from pyemmo.definitions import (
-    # ROOT_DIR,
-    TEST_DIR,
-)
-
+import os
 import re
+from collections import defaultdict
+from configparser import ConfigParser
+from datetime import datetime
+
+from pyemmo.definitions import TEST_DIR  # ROOT_DIR,
 
 
 def updateConfig(test_type: str = "", test_id: int = "", test_case: str = ""):
@@ -189,3 +186,18 @@ def make_test_cases(test_type: str, fixed_test_flg: bool = True):
         return test_cases_fixed
     else:
         return test_cases_from_files
+
+
+def sysPathPrepone(path_to_prepone):
+    import sys
+
+    path_temp = []
+    for path in sys.path:
+        if path == "H:\\my-pyemmo":
+            path_temp.append(path)
+    for path in sys.path:
+        if path == "H:\\my-pyemmo":
+            continue
+        else:
+            path_temp.append(path)
+    sys.path = path_temp
