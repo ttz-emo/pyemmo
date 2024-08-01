@@ -22,9 +22,6 @@
 
 # from __future__ import absolute_import
 
-from testUtils import sysPathPrepone
-
-sysPathPrepone("H:\\my-pyemmo")
 
 import logging
 import os
@@ -41,7 +38,8 @@ from pyemmo.definitions import ROOT_DIR
 from pyemmo.functions.runOnelab import createCmdCommand, log_subprocess_output
 from pyemmo.script.script import Script
 
-from testUtils import make_test_cases
+from .. import GETDP_EXE, GMSH_EXE
+from .testUtils import make_test_cases
 
 test_cases = {
     0: "Toyota_Prius",
@@ -168,8 +166,8 @@ def pyleecan_test_base(
         "res": sim_res_dir,
         # "exe": findGetDP(),
         # "exe": r"H:\onelab-Windows64\getdp.exe",
-        "exe": os.environ["GETDP_TEST_PATH"],
-        "gmsh": os.environ["GMSH_TEST_PATH"],
+        "exe": GETDP_EXE,
+        "gmsh": GMSH_EXE,
         # "exe": GETDP_EXE,
         # "gmsh": GMSH_EXE,
     }
@@ -194,6 +192,7 @@ def pyleecan_test_base(
             )
 
     return machine_file_path, resFolder
+
 
 def pyleecanPrepTuple(test_cases, test_type):
     """
@@ -232,24 +231,26 @@ def pyleecanPrepTuple(test_cases, test_type):
         )
         if not os.path.isdir(result_path):
             os.makedirs(result_path)
-        
+
         base_result_path = os.path.join(
-                ROOT_DIR,
-                test_params[test_type]["test_data_folder"],
-                test_type,
-                f"comparison_base\\{test_case}",
-            )  # this can change to a different folder for base data
+            ROOT_DIR,
+            test_params[test_type]["test_data_folder"],
+            test_type,
+            f"comparison_base\\{test_case}",
+        )  # this can change to a different folder for base data
 
         try:
             if test_type == "api\\pyleecan":
-                pyleecan_test_base  (
+                pyleecan_test_base(
                     test_params[test_type],
                     result_path=result_path,
                     test_data_path=source_path,
                 )
                 simul_path = os.path.join(result_path, f"res_{test_case}")
                 simul_subfolder = f"id_{test_params[test_type]['id']}_iq_{test_params[test_type]['iq']}_n_{test_params[test_type]['rpm']}rpm"
-                simul_subfolder_path = os.path.join(simul_path, simul_subfolder)
+                simul_subfolder_path = os.path.join(
+                    simul_path, simul_subfolder
+                )
                 base_simul_path = os.path.join(
                     base_result_path, f"res_{test_case}"
                 )  # This can also change for another base data folder
@@ -284,26 +285,26 @@ def pyleecanPrepTuple(test_cases, test_type):
 
 
 if __name__ == "__main__":
-
-    #ONLY RUN THIS BY ITSELF IF YOU WANT TO CREATE BASE DATA
-    from distutils.dir_util import copy_tree
+    # ONLY RUN THIS BY ITSELF IF YOU WANT TO CREATE BASE DATA
     import shutil
+    from distutils.dir_util import copy_tree
 
     test_type = "api\\pyleecan"
     test_cases = make_test_cases(test_type)
     curr_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
 
+    # ROOT_DIR, f"workingDirectory\\Vu\\for_testing\\{curr_datetime}"
     result_path = os.path.join(
-        # ROOT_DIR, f"workingDirectory\\Vu\\for_testing\\{curr_datetime}"
-        ROOT_DIR, f"{test_params["test_data_folder"]}\\{test_type}\\comparison_base"
+        ROOT_DIR,
+        test_params["test_data_folder"],
+        test_type,
+        "comparison_base",
     )
     if not os.path.isdir(result_path):
         os.makedirs(result_path)
-    
-    #Backup existing data 
-    backup_path = os.path.join(
-        result_path, "backup"
-    )
+
+    # Backup existing data
+    backup_path = os.path.join(result_path, "backup")
 
     file = open(os.path.join(result_path, "base_data_creation_log"), "w")
 
@@ -313,12 +314,10 @@ if __name__ == "__main__":
         test_id, test_case = tup
         result_path_true = os.path.join(result_path, test_case)
         backup_path_true = os.path.join(backup_path, test_case)
-        
-        
-        
-        #copy existing base as new backup, and cleanup base result folder
+
+        # copy existing base as new backup, and cleanup base result folder
         if os.path.isdir(result_path_true):
-            #remove existing backup
+            # remove existing backup
             if os.path.isdir(backup_path_true):
                 shutil.rmtree(backup_path_true)
                 os.makedirs(backup_path_true)
@@ -327,7 +326,7 @@ if __name__ == "__main__":
             copy_tree(result_path_true, backup_path_true)
             shutil.rmtree(result_path_true)
 
-        #create base data
+        # create base data
         try:
             pyleecan_test_base(
                 test_params[test_type],
