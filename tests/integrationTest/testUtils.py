@@ -147,7 +147,7 @@ def fileFilter(file_list: list, target_types: list) -> list:
     return result
 
 
-def make_test_cases(test_type: str, fixed_test_flg: bool = True):
+def make_test_cases(test_type: str, fixed_test_flg: bool = False):
     """
     Create a list of tuples of test ids & test cases based on files in test data folder
     """
@@ -162,9 +162,9 @@ def make_test_cases(test_type: str, fixed_test_flg: bool = True):
             map(lambda x: x.split("\\")[-1], test_files),
         )
     )
-    for id, name in enumerate(test_names):
+    for test_id, name in enumerate(test_names):
         # test_cases[id] = name
-        test_cases_from_files.append((id, name))
+        test_cases_from_files.append((test_id, name))
 
     # test_cases_fixed = {
     #     0: "IPMSM_B",
@@ -186,18 +186,3 @@ def make_test_cases(test_type: str, fixed_test_flg: bool = True):
         return test_cases_fixed
     else:
         return test_cases_from_files
-
-
-def sysPathPrepone(path_to_prepone):
-    import sys
-
-    path_temp = []
-    for path in sys.path:
-        if path == "H:\\my-pyemmo":
-            path_temp.append(path)
-    for path in sys.path:
-        if path == "H:\\my-pyemmo":
-            continue
-        else:
-            path_temp.append(path)
-    sys.path = path_temp
