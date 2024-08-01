@@ -43,6 +43,8 @@ if (Test-Path $store_path) {
     Write-Output "Onelab allready installed!"
 }
 else {
+    # download and install ONELAB!
+    # Remove-Item $test_path -Recurse -Force -Confirm:$false
     New-Item -Path $store_path -ItemType Directory
 
     $zip_filepath = $store_path + "\onelab.zip"
@@ -61,12 +63,10 @@ else {
         Expand-Archive ($zip_filepath) -DestinationPath $store_path
         Remove-Item  $zip_filepath
     }
-    # $env:GMSH_TEST_PATH = "$store_path\onelab-Windows64\gmsh.exe"
-    [System.Environment]::SetEnvironmentVariable('GMSH_TEST_PATH', "$store_path\onelab-Windows64\gmsh.exe", 'User')
-    $env:GETDP_TEST_PATH = "$store_path\onelab-Windows64\getdp.exe"
-
-    #Note - Vu: need to add this so that getDP is also consistently visible to future sessions
-    [System.Environment]::SetEnvironmentVariable('GETDP_TEST_PATH', "$store_path\onelab-Windows64\getdp.exe", 'User')
+    "$store_path\onelab-Windows64\gmsh.exe" > 'GMSH_TEST_PATH'
+    "$store_path\onelab-Windows64\getdp.exe" > 'GETDP_TEST_PATH'
+    # [System.Environment]::SetEnvironmentVariable('GMSH_TEST_PATH', "$store_path\onelab-Windows64\gmsh.exe", [System.EnvironmentVariableTarget]::User)
+    # [System.Environment]::SetEnvironmentVariable('GETDP_TEST_PATH', "$store_path\onelab-Windows64\getdp.exe", [System.EnvironmentVariableTarget]::User)
 
 }
 Set-Location ..

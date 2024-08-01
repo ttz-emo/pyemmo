@@ -49,35 +49,26 @@ GMSH_EXE = ""
 GETDP_EXE = ""
 if platform.system() == "Windows":
     # Download and install the newest ONELAB installation for testing
-    try:
-        subprocess.run(
-            ["powershell", f"{TEST_DIR}\\install_onelab.ps1"], check=True
-        )
-    except subprocess.CalledProcessError:
-        # subprocess failed -> no determination of executables
-        pass
-    else:
-        gmsh_exe_id = os.environ[
-            "GMSH_TEST_PATH"
-        ]  # default file name from ps script
-        getdp_exe_id = os.environ[
-            "GETDP_TEST_PATH"
-        ]  # default file name from ps script
+    subprocess.run(
+        ["powershell", f"{TEST_DIR}\\install_onelab.ps1"], check=True
+    )
+    gmsh_exe_id = "GMSH_TEST_PATH"  # default file name from ps script
+    getdp_exe_id = "GETDP_TEST_PATH"  # default file name from ps script
 
-        exe_paths = []
-        for file in (gmsh_exe_id, getdp_exe_id):
-            # utf-16 encoding default for my powershell version
-            with open(os.path.join(TEST_DIR, file), encoding="utf-16") as f:
-                # read exe path but skip newline char
-                exe_paths.append(f.readline()[:-1])
-        # set Gmsh and GetDP paths
-        for path in exe_paths:
-            if "gmsh.exe" in path:
-                GMSH_EXE = path
-            elif "getdp.exe" in path:
-                GETDP_EXE = path
-            else:
-                pass
+    exe_paths = []
+    for file in (gmsh_exe_id, getdp_exe_id):
+        # utf-16 encoding default for my powershell version
+        with open(os.path.join(TEST_DIR, file), encoding="utf-16") as f:
+            # read exe path but skip newline char
+            exe_paths.append(f.readline()[:-1])
+    # set Gmsh and GetDP paths
+    for path in exe_paths:
+        if "gmsh.exe" in path:
+            GMSH_EXE = path
+        elif "getdp.exe" in path:
+            GETDP_EXE = path
+        else:
+            pass
 # # Skipping environ var solution because vs-code needs to be restarted to
 # # actually get the environ changes...
 # if gmsh_exe_id in my_env:
