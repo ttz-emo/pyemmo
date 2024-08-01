@@ -31,10 +31,14 @@ syntax: pytest <path_to_module>
 
 import glob
 import os
+import shutil
+
 import pytest
 from pytest_check import check
+
 from pyemmo.definitions import ROOT_DIR
 from pyemmo.functions.import_results import read_timetable_dat
+
 from .pyleecan_test_base import pyleecanPrepTuple
 from .testUtils import (  # updateConfig,
     count_files,
@@ -43,13 +47,12 @@ from .testUtils import (  # updateConfig,
     make_test_cases,
     messagePrinter,
 )
-import shutil
 
-#Vars for using in tests
+# Vars for using in tests
 test_types = ["api\\pyleecan"]
 test_cases = {}
 for t in test_types:
-    test_cases[t] = make_test_cases(t)
+    test_cases[t] = make_test_cases(t, fixed_test_flg=False)
 
 test_params = {
     "api\\pyleecan": {
@@ -62,24 +65,31 @@ test_params = {
     }
 }
 
-#Fixture for cleaning up test data
+
+# Fixture for cleaning up test data
 @pytest.fixture(scope="session", autouse=True)
 def cleanup(request):
     def finisher():
         print("Doing teardown...")
         for t in test_types:
-            test_result_dir = os.path.join(ROOT_DIR, test_params[t]["result_folder"], t)
-            timestamped_result_dirs = [os.path.join(test_result_dir, dir) for dir in os.listdir(test_result_dir) if os.path.isdir(os.path.join(test_result_dir, dir))]
-            no_to_keep = 2 #decide how many test results should be kept
+            test_result_dir = os.path.join(
+                ROOT_DIR, test_params[t]["result_folder"], t
+            )
+            timestamped_result_dirs = [
+                os.path.join(test_result_dir, dir)
+                for dir in os.listdir(test_result_dir)
+                if os.path.isdir(os.path.join(test_result_dir, dir))
+            ]
+            no_to_keep = 2  # decide how many test results should be kept
             no_to_remove = 0
-            while (no_to_remove < len(timestamped_result_dirs) - no_to_keep):
+            while no_to_remove < len(timestamped_result_dirs) - no_to_keep:
                 shutil.rmtree(timestamped_result_dirs[no_to_remove])
                 no_to_remove += 1
-    
+
     request.addfinalizer(finisher)
 
 
-#Integration test class
+# Integration test class
 @pytest.mark.parametrize(
     "test_tuple", pyleecanPrepTuple(test_cases, test_types[0])[1:]
 )
@@ -124,26 +134,16 @@ class TestCasesIntegration:
             ), "ERROR: Simulation result subfolder does not exist"
         print()
 
-
     def test_gmsh_base_files(self, test_tuple):
 
-        (
-            test_id, 
-            test_case, 
-            _, 
-            result_path, 
-            _, 
-            _, 
-            base_result_path, 
-            _, 
-            _
-        ) = test_tuple
-        
+        (test_id, test_case, _, result_path, _, _, base_result_path, _, _) = (
+            test_tuple
+        )
+
         print(f"TEST CASE {test_id}: {test_case}")
         print("Test point 2: check if GMSH base files are generated")
         self.check_file_counts(base_result_path, result_path)
         print()
-
 
     def test_simul_data_gen(self, test_tuple):
         (
@@ -190,7 +190,6 @@ class TestCasesIntegration:
 
         print("\n")
 
-
     def check_file_counts(self, base_folder: str, folder_to_count: str):
         """
         Compare count of files per type between base data and result data
@@ -210,7 +209,6 @@ class TestCasesIntegration:
                     assert result_count == count and messagePrinter(
                         f"SUCCESS: .{file_type} count matches"
                     ), f"ERROR: .{file_type} count mismatch! Base: {count}; Result: {result_count}"
-
 
     def check_content(self, base_path, target_path, target_types):
         """
@@ -240,7 +238,7 @@ class TestCasesIntegration:
 if __name__ == "__main__":
     api_test_tuple = pyleecanPrepTuple(test_cases, test_types[0])
     headers = api_test_tuple[0].split(",")
-    for h, f in zip(headers, api_test_tuple[1]):
-        print(h, ":", f)
+    for header, f in zip(headers, api_test_tuple[1]):
+        print(header, ":", f)
     # new_test = TestCasesIntegration()
     # new_test.test_api_simul_folder_exist(api_test_tuple[1])
