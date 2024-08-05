@@ -286,6 +286,11 @@ def createCmdCommand(
             for paramName, paramValue in paramDict.items():
                 if isinstance(paramValue, str):
                     getdp_command += f" -setstring {paramName} {paramValue}"
+                elif isinstance(paramValue, bool):
+                    # convert bool to int!
+                    getdp_command += (
+                        f" -setnumber {paramName} {int(paramValue)}"
+                    )
                 elif isinstance(paramValue, (float, int)):
                     getdp_command += f" -setnumber {paramName} {paramValue}"
                 else:
