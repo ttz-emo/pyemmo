@@ -188,7 +188,7 @@ class TestCasesIntegration:
         #         "Base simulation result subfolder exists, continuing tests..."
         #     ), "ERROR: Base simulation result subfolder does not exist, nothing to compare"
         if not os.path.isdir(base_simul_subfolder_path):
-            LOGGER.warning(f"Base simulation result subfolder for {test_case} does not exist, nothing to compare")
+            LOGGER.info(f"Base simulation result subfolder for {test_case} does not exist, nothing to compare")
         else:
             dat_targets = glob.glob(os.path.join(simul_subfolder_path, "*.dat"))
             dat_bases = glob.glob(os.path.join(base_simul_subfolder_path, "*.dat"))
