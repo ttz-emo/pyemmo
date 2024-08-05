@@ -42,8 +42,6 @@ if add_StreamHandler:
     root_logger.addHandler(c_handler)
 
 logger = logging.getLogger("matplotlib").setLevel(logging.WARNING)
-
-
 # %%
 
 logging.debug(f"Start simulation at {time.ctime()}")
@@ -67,7 +65,7 @@ timestep = (
 winkelschritt = n / 60 * 360 * timestep  # Default: 0.703125
 nbr_timesteps = T_s * nbr_stator_periods / timestep
 
-flag_dynamic_resistance = False
+flag_dynamic_resistance = True
 thers = 100  # Thershold for bar resistance reset in A
 
 logging.info(
@@ -222,7 +220,8 @@ if os.path.isfile(resfile):
     ax.grid(True)
     ax.legend(handles=[line_u[0], line_i[0]])
     ax.set_title(f"Stab {nBar+1}")
-    ax.set_xlim(T_s * (nbr_stator_periods - 1), T_s * nbr_stator_periods)
+    if t[-1] > 2 * T_s:
+        ax.set_xlim(T_s * (nbr_stator_periods - 1), T_s * nbr_stator_periods)
     # %%
     # Plot: R = U/I (Stab)
     fig, ax = plt.subplots()
@@ -368,15 +367,16 @@ if os.path.isfile(resfile):
     #     ax.plot(t, R_bar, label=f"R_bar_{nBar}", marker=".")
 
     # Plot Bar 1 only:
-    resfile = os.path.join(sim_res_dir, f"R_bar_1.dat")
+    resfile = os.path.join(sim_res_dir, "R_bar_1.dat")
     if os.path.isfile(resfile):
         t, R_bar = read_timetable_dat(resfile)
-        ax.plot(t, R_bar, label=f"R (berechnet)", marker=".")
+        ax.plot(t, R_bar, label="R (berechnet)", marker=".")
     # Plot DC resistance line:
-    ax.plot([t[0], t[-1]], [R_bar_dc, R_bar_dc], label=f"R (DC)", marker=None)
-    ax.set_ylim(bottom=0, top=50 * R_bar_dc)
+    ax.plot([t[0], t[-1]], [R_bar_dc, R_bar_dc], label="R (DC)", marker=None)
+    ax.set_ylim(bottom=0, top=100 * R_bar_dc)
     # ax.set_xlim(0, T_s)
-    ax.set_xlim(T_s * (nbr_stator_periods - 1), T_s * nbr_stator_periods)
+    if t[-1] >= nbr_stator_periods * T_s:
+        ax.set_xlim(T_s * (nbr_stator_periods - 1), T_s * nbr_stator_periods)
     ax.legend()
 
     axi: Axes = ax.twinx()
@@ -403,7 +403,7 @@ else:
 resfile = os.path.join(sim_res_dir, "R_bar_runtime_1.dat")
 if os.path.isfile(resfile):
     t, R_bar = read_timetable_dat(resfile)
-    ax.plot(t, R_bar, label=f"R (Circuit)", marker=".")
+    ax.plot(t, R_bar, label=f"R_runtime (Circuit)", marker=".", ls="--")
     ax.legend()
 
 
