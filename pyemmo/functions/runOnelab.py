@@ -397,7 +397,7 @@ def runCalcforCurrent(param: dict):
             )
     # adding additional results path because its initally set in the parameter geo file.
     # But if the files are moved the results folder might not exist any more!
-    param["getdp"]["ResPath"] = RES_DIR
+    param["getdp"]["res"] = RES_DIR
     pro_file = param["pro"]
     simulation_res_dir = os.path.join(RES_DIR, param["getdp"]["ResId"])
     # Remove previous results if flag activated
