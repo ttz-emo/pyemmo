@@ -32,18 +32,18 @@ from pyleecan.Classes.Machine import Machine
 from pyleecan.definitions import DATA_DIR
 from pyleecan.Functions import load
 
-from pyemmo import rootLogger
 from pyemmo.api.pyleecan import main as pyleecanAPI
 from pyemmo.definitions import ROOT_DIR
 from pyemmo.functions.runOnelab import createCmdCommand, log_subprocess_output
 from pyemmo.script.script import Script
 
 from .. import GETDP_EXE, GMSH_EXE
+from . import LOGGER
 from .testUtils import make_test_cases
 
-test_cases = {
-    0: "Toyota_Prius",
-}
+# test_cases = {
+#     0: "Toyota_Prius",
+# }
 
 test_params = {
     "api\\pyleecan": {
@@ -53,11 +53,8 @@ test_params = {
         "d_theta": 0.25,
         "test_data_folder": "tests\\data",
         "result_folder": "tests\\results",
-        # "result_folder": "Results\\pyleecanAPI",
     }
 }
-
-# test_type = "api\\pyleecan"
 
 
 def pyleecan_test_base(
@@ -101,7 +98,7 @@ def pyleecan_test_base(
         )
     else:
         machine_file_path = test_data_path
-    print(machine_file_path)
+    LOGGER.info("Path of actual machine file is %s", machine_file_path)
     pyleecan_machine: Machine = load.load(machine_file_path)
 
     CuMat = load.load(os.path.join(DATA_DIR, "Material", "Copper2.json"))
@@ -129,7 +126,9 @@ def pyleecan_test_base(
         resFolder = os.path.join(
             ROOT_DIR,
             test_params["result_folder"],
-            f"{test_type}\\{curr_datetime}\\test_{test_id}\\{test_case}",
+            test_type,
+            curr_datetime,
+            f"test_{test_id}\\{test_case}",
         )
         if not os.path.isdir(resFolder):
             os.makedirs(resFolder)
@@ -137,6 +136,7 @@ def pyleecan_test_base(
         resFolder = result_path
 
     # Run simulation
+    LOGGER.info("Running Pyleecan API for machine: %s", test_case)
     pyemmo_script: Script = pyleecanAPI.main(
         pyleecan_machine, model_dir=resFolder, use_gui=False
     )
@@ -180,8 +180,8 @@ def pyleecan_test_base(
         paramDict=param_dict["getdp"],
     )
 
-    logging.debug("cmd command is: %s", cmdCommand)
-    logging.info("Running simulation for result-ID '%s'", resid)
+    LOGGER.debug("cmd command is: %s", cmdCommand)
+    LOGGER.info("Running simulation for result-ID '%s'", resid)
     with Popen(cmdCommand, stdout=PIPE, stderr=STDOUT) as process:
         with process.stdout:
             log_subprocess_output(process.stdout)
@@ -190,6 +190,7 @@ def pyleecan_test_base(
             raise RuntimeError(
                 f"Simulation for machine '{pyleecan_machine.name}' failed!"
             )
+    return pyemmo_script
 
     return machine_file_path, resFolder
 
@@ -204,11 +205,11 @@ def pyleecanPrepTuple(test_cases, test_type):
     Output: tuple of test data folders
 
     """
-    rootLogger.setLevel(logging.DEBUG)
+    # rootLogger.setLevel(logging.DEBUG)
     curr_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     header_flg = True
-    param_tuples = list()
+    param_tuples = []
 
     # print("========TEST PYLEECAN API + SIMULATION FLOW START========")
     for test_id, test_case in test_cases[test_type][1:]:
@@ -218,7 +219,8 @@ def pyleecanPrepTuple(test_cases, test_type):
         source_path = os.path.join(
             ROOT_DIR,
             test_params[test_type]["test_data_folder"],
-            f"{test_type}\\{test_case}.json",
+            test_type,
+            f"{test_case}.json",
         )
 
         # make sure source file exists -> REDUNDANT since test cases are created from test data folder content.
@@ -227,26 +229,30 @@ def pyleecanPrepTuple(test_cases, test_type):
         result_path = os.path.join(
             ROOT_DIR,
             test_params[test_type]["result_folder"],
-            f"{test_type}\\{curr_datetime}\\test_{test_id}\\{test_case}",
+            test_type,
+            curr_datetime,
+            f"test_{test_id}_{test_case}",
         )
         if not os.path.isdir(result_path):
             os.makedirs(result_path)
 
+        # this can change to a different folder for base data:
         base_result_path = os.path.join(
             ROOT_DIR,
             test_params[test_type]["test_data_folder"],
             test_type,
-            f"comparison_base\\{test_case}",
-        )  # this can change to a different folder for base data
+            "comparison_base",
+            test_case,
+        )
 
         try:
             if test_type == "api\\pyleecan":
-                pyleecan_test_base(
+                pyemmo_script: Script = pyleecan_test_base(
                     test_params[test_type],
                     result_path=result_path,
                     test_data_path=source_path,
                 )
-                simul_path = os.path.join(result_path, f"res_{test_case}")
+                simul_path = pyemmo_script.resultsPath
                 simul_subfolder = f"id_{test_params[test_type]['id']}_iq_{test_params[test_type]['iq']}_n_{test_params[test_type]['rpm']}rpm"
                 simul_subfolder_path = os.path.join(
                     simul_path, simul_subfolder
@@ -275,12 +281,14 @@ def pyleecanPrepTuple(test_cases, test_type):
                         base_simul_subfolder_path,
                     )
                 ]
-
             else:
                 continue
         except RuntimeError:
             continue
-
+        except Exception as exce:
+            LOGGER.warning(
+                f"test for {test_case} failed. exce.args[0]: " + exce.args[0]
+            )
     return param_tuples
 
 
