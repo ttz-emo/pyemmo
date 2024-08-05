@@ -39,7 +39,8 @@ from pytest_check import check
 from pyemmo.definitions import ROOT_DIR
 from pyemmo.functions.import_results import read_timetable_dat
 
-from .pyleecan_test_base import pyleecanPrepTuple
+from . import LOGGER
+from .pyleecan_test_base import pyleecanPrepTuple, test_params
 from .testUtils import (  # updateConfig,
     count_files,
     fileFilter,
@@ -54,23 +55,25 @@ test_cases = {}
 for t in test_types:
     test_cases[t] = make_test_cases(t, fixed_test_flg=False)
 
-test_params = {
-    "api\\pyleecan": {
-        "id": -10,
-        "iq": 50,
-        "rpm": 1000,
-        "d_theta": 0.25,
-        "test_data_folder": "tests\\data",
-        "result_folder": "tests\\results",
-    }
-}
+# test_params = {
+#     "api\\pyleecan": {
+#         "id": -10,
+#         "iq": 50,
+#         "rpm": 1000,
+#         "d_theta": 0.25,
+#         "test_data_folder": "tests\\data",
+#         "result_folder": "tests\\results",
+#     }
+# }
 
 
 # Fixture for cleaning up test data
 @pytest.fixture(scope="session", autouse=True)
 def cleanup(request):
+    from . import LOGGER
+
     def finisher():
-        print("Doing teardown...")
+        LOGGER.info("Doing teardown...")
         for t in test_types:
             test_result_dir = os.path.join(
                 ROOT_DIR, test_params[t]["result_folder"], t
@@ -91,7 +94,9 @@ def cleanup(request):
 
 # Integration test class
 @pytest.mark.parametrize(
-    "test_tuple", pyleecanPrepTuple(test_cases, test_types[0])[1:]
+    "test_tuple",
+    pyleecanPrepTuple(test_cases, test_types[0])[1:],
+    scope="session",
 )
 class TestCasesIntegration:
     """
@@ -120,8 +125,8 @@ class TestCasesIntegration:
             _,
             _,
         ) = test_tuple
-        print(f"TEST CASE {test_id}: {test_case}")
-        print(
+        LOGGER.info(f"TEST CASE {test_id}: {test_case}")
+        LOGGER.info(
             "Test point 1: Check that simulation result folders are properly generated:"
         )
         with check("check simulation folder existence"):
@@ -132,7 +137,6 @@ class TestCasesIntegration:
             assert os.path.isdir(simul_subfolder_path) and messagePrinter(
                 "SUCCESS: Simulation result subfolder exists!"
             ), "ERROR: Simulation result subfolder does not exist"
-        print()
 
     def test_gmsh_base_files(self, test_tuple):
 
@@ -140,10 +144,9 @@ class TestCasesIntegration:
             test_tuple
         )
 
-        print(f"TEST CASE {test_id}: {test_case}")
-        print("Test point 2: check if GMSH base files are generated")
+        LOGGER.info(f"TEST CASE {test_id}: {test_case}")
+        LOGGER.info("Test point 2: check if GMSH base files are generated")
         self.check_file_counts(base_result_path, result_path)
-        print()
 
     def test_simul_data_gen(self, test_tuple):
         (
@@ -157,11 +160,10 @@ class TestCasesIntegration:
             base_simul_path,
             base_simul_subfolder_path,
         ) = test_tuple
-        print(f"TEST CASE {test_id}: {test_case}")
-        print("Test point 3: check if simulation data is generated")
+        LOGGER.info(f"TEST CASE {test_id}: {test_case}")
+        LOGGER.info("Test point 3: check if simulation data is generated")
         self.check_file_counts(base_simul_path, simul_path)
         self.check_file_counts(base_simul_subfolder_path, simul_subfolder_path)
-        print()
 
     def test_dat_file_vals(self, test_tuple):
 
@@ -176,8 +178,8 @@ class TestCasesIntegration:
             _,
             base_simul_subfolder_path,
         ) = test_tuple
-        print(f"TEST CASE {test_id}: {test_case}")
-        print("Test point 5: check values in dat files")
+        LOGGER.info(f"TEST CASE {test_id}: {test_case}")
+        LOGGER.info("Test point 5: check values in dat files")
         dat_targets = glob.glob(os.path.join(simul_subfolder_path, "*.dat"))
         dat_bases = glob.glob(os.path.join(base_simul_subfolder_path, "*.dat"))
         for target_file, base_file in zip(dat_targets, dat_bases):
@@ -187,8 +189,6 @@ class TestCasesIntegration:
                 assert target_dat == base_dat and messagePrinter(
                     f"SUCCESS: {target_file} check ok"
                 ), f"ERROR: mismatch found between base ({base_file}) and target dat ({target_file})! Base data: {base_dat}; Target data:{target_dat}"
-
-        print("\n")
 
     def check_file_counts(self, base_folder: str, folder_to_count: str):
         """
@@ -239,6 +239,6 @@ if __name__ == "__main__":
     api_test_tuple = pyleecanPrepTuple(test_cases, test_types[0])
     headers = api_test_tuple[0].split(",")
     for header, f in zip(headers, api_test_tuple[1]):
-        print(header, ":", f)
+        LOGGER.info(header, ":", f)
     # new_test = TestCasesIntegration()
     # new_test.test_api_simul_folder_exist(api_test_tuple[1])
