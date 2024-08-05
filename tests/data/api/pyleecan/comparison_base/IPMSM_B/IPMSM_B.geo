@@ -1,4 +1,4 @@
-// This script was created with pyemmo (Version 1.3.1b1, git 66f607)
+// This script was created with pyemmo (Version 1.3.1b1, git 6eeae4)
 
 DefineConstant[
  Flag_ExpertMode = {1,Name '01View/Expert Mode', Choices {0, 1}}
@@ -429,9 +429,9 @@ If (!Flag_individualColoring)
 Color SkyBlue {Surface {37}; }
 Color Red {Surface {20}; }
 Color Red {Surface {22}; }
-Color MidnightBlue {Surface {19}; }
-Color IndianRed4 {Surface {21}; }
-Color DarkSlateGray2 {Surface {23}; }
+Color Chocolate {Surface {19}; }
+Color Grey86 {Surface {21}; }
+Color Grey43 {Surface {23}; }
 Color SkyBlue {Surface {36}; }
 Color SteelBlue {Surface {13}; }
 Color SkyBlue {Surface {44}; }

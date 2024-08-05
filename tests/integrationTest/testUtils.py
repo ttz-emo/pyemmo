@@ -188,3 +188,13 @@ def make_test_cases(test_type: str, fixed_test_flg: bool = False):
         return test_cases_fixed
     else:
         return test_cases_from_files
+
+
+def check_folder_type(input_path: str):
+    input_folder_name = input_path.split("\\")[-1]
+    if "res" in input_folder_name:
+        return "simul"
+    elif "id_" in input_folder_name:
+        return "simul_sub"
+    else:
+        return "result"

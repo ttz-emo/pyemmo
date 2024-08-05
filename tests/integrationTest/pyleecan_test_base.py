@@ -38,7 +38,7 @@ from pyleecan.definitions import DATA_DIR
 from pyleecan.Functions import load
 
 from pyemmo.api.pyleecan import main as pyleecanAPI
-from pyemmo.definitions import ROOT_DIR
+from pyemmo.definitions import ROOT_DIR, TEST_DIR
 from pyemmo.functions.runOnelab import createCmdCommand, log_subprocess_output
 from pyemmo.script.script import Script
 
@@ -228,6 +228,16 @@ def pyleecanPrepTuple(test_cases, test_type):
 
     header_flg = True
     param_tuples = []
+    result_path_all = os.path.join(
+        ROOT_DIR,
+        test_params[test_type]["result_folder"],
+        test_type,
+        curr_datetime
+    )
+    if not os.path.isdir(result_path_all):
+        os.makedirs(result_path_all)
+    log_file = open(os.path.join(result_path_all, f"simulation.log"),"w+")
+    log_file.write(f"Pyleecan API simulation log on {curr_datetime}\n")
 
     for test_id, test_case in test_cases[test_type][1:]:
         # curr_datetime, _ = updateConfig(test_type, test_id, test_case) #REDUNDANT since API level log already exists in each folder
@@ -244,10 +254,7 @@ def pyleecanPrepTuple(test_cases, test_type):
         # assert os.path.isfile(source_path) and messagePrinter("SUCCESS: Source file exist"), "ERROR: Source file does not exist"
 
         result_path = os.path.join(
-            ROOT_DIR,
-            test_params[test_type]["result_folder"],
-            test_type,
-            curr_datetime,
+            result_path_all,
             f"test_{test_id}_{test_case}",
         )
         if not os.path.isdir(result_path):
@@ -261,7 +268,7 @@ def pyleecanPrepTuple(test_cases, test_type):
             "comparison_base",
             test_case,
         )
-
+        
         try:
             if test_type == "api\\pyleecan":
                 pyemmo_script: Script = pyleecan_test_base(
@@ -269,13 +276,15 @@ def pyleecanPrepTuple(test_cases, test_type):
                     result_path=result_path,
                     test_data_path=source_path,
                 )
+                log_file.write(f"Simulation successful for {test_case}.json\n")
                 simul_path = pyemmo_script.resultsPath
+                simul_folder = simul_path.split("/")[-1]
                 simul_subfolder = f"id_{test_params[test_type]['id']}_iq_{test_params[test_type]['iq']}_n_{test_params[test_type]['rpm']}rpm"
                 simul_subfolder_path = os.path.join(
                     simul_path, simul_subfolder
                 )
                 base_simul_path = os.path.join(
-                    base_result_path, f"res_{test_case}"
+                    base_result_path, simul_folder
                 )  # This can also change for another base data folder
                 base_simul_subfolder_path = os.path.join(
                     base_simul_path, simul_subfolder
@@ -300,12 +309,20 @@ def pyleecanPrepTuple(test_cases, test_type):
                 ]
             else:
                 continue
-        except RuntimeError:
+        except RuntimeError as err:
+            LOGGER.warning(
+                f"{err.__str__()}, cannot start tests for {test_case}"
+            )
+            log_file.write(f"{err.__str__()}, cannot start tests for {test_case}.json\n")
             continue
         except Exception as exce:
             LOGGER.warning(
                 f"test for {test_case} failed. exce.args[0]: " + exce.args[0]
             )
+            log_file.write(f"test for {test_case} failed. exce.args[0]: " + exce.args[0] + "\n")
+    
+    log_file.close()
+
     return param_tuples
 
 

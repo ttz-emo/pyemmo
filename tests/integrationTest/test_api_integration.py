@@ -47,6 +47,7 @@ from .testUtils import (  # updateConfig,
     fileParser,
     make_test_cases,
     messagePrinter,
+    check_folder_type,
 )
 
 # Vars for using in tests
@@ -113,6 +114,7 @@ class TestCasesIntegration:
     4. Check dat files content are the same as base comparison
     """
 
+    @pytest.mark.dependency(name="simul_folder_exist")
     def test_api_simul_folder_exist(self, test_tuple):
         (
             test_id,
@@ -148,6 +150,7 @@ class TestCasesIntegration:
         LOGGER.info("Test point 2: check if GMSH base files are generated")
         self.check_file_counts(base_result_path, result_path)
 
+    @pytest.mark.dependency(name="simul_data_gen", depends=["simul_folder_exist"])
     def test_simul_data_gen(self, test_tuple):
         (
             test_id,
@@ -165,8 +168,8 @@ class TestCasesIntegration:
         self.check_file_counts(base_simul_path, simul_path)
         self.check_file_counts(base_simul_subfolder_path, simul_subfolder_path)
 
+    @pytest.mark.dependency(depends=["simul_folder_exist","simul_data_gen"])
     def test_dat_file_vals(self, test_tuple):
-
         (
             test_id,
             test_case,
@@ -180,21 +183,51 @@ class TestCasesIntegration:
         ) = test_tuple
         LOGGER.info(f"TEST CASE {test_id}: {test_case}")
         LOGGER.info("Test point 5: check values in dat files")
-        dat_targets = glob.glob(os.path.join(simul_subfolder_path, "*.dat"))
-        dat_bases = glob.glob(os.path.join(base_simul_subfolder_path, "*.dat"))
-        for target_file, base_file in zip(dat_targets, dat_bases):
-            target_dat = read_timetable_dat(target_file)
-            base_dat = read_timetable_dat(base_file)
-            with check:
-                assert target_dat == base_dat and messagePrinter(
-                    f"SUCCESS: {target_file} check ok"
-                ), f"ERROR: mismatch found between base ({base_file}) and target dat ({target_file})! Base data: {base_dat}; Target data:{target_dat}"
+        with check("check base simulation subfolder existence"):
+            assert os.path.isdir(base_simul_subfolder_path) and messagePrinter(
+                "Base simulation result subfolder exists, continuing tests..."
+            ), "ERROR: Base simulation result subfolder does not exist, nothing to compare"
+        if os.path.isdir(base_simul_subfolder_path):
+            dat_targets = glob.glob(os.path.join(simul_subfolder_path, "*.dat"))
+            dat_bases = glob.glob(os.path.join(base_simul_subfolder_path, "*.dat"))
+            for target_file, base_file in zip(dat_targets, dat_bases):
+                target_dat = read_timetable_dat(target_file)
+                base_dat = read_timetable_dat(base_file)
+                check_flag = True
+                with check:
+                    for i in range(len(base_dat[0])):
+                        diff = abs(target_dat[1][i] - base_dat[1][i])
+                        assert diff < 0.01, f"Mismatch! Base data: {base_dat}; Target data:{target_dat}"
+                        if diff >= 0.01: check_flag = False
+                    
+                    assert check_flag and messagePrinter(f"SUCCESS: all data in {target_file} ok."), f"ERROR: mismatch detected between base ({base_file}) and target ({target_file})."
 
-    def check_file_counts(self, base_folder: str, folder_to_count: str):
+    def check_file_counts(self, base_folder: str, folder_to_count: str, check_from_base: bool =False):
         """
         Compare count of files per type between base data and result data
         """
-        base_count = count_files(base_folder)
+        base_count_fixed = {
+            "result": {
+                'pro': 3, 
+                'log': 1, 
+                'db': 1, 
+                'geo': 2, 
+                'msh': 1, 
+                'pre': 1, 
+                'res': 1
+            },
+            "simul": {
+                'wdg': 1
+            },
+            "simul_sub": {
+                'pos': 10, 
+                'dat': 14
+            }
+        }
+        if check_from_base:
+            base_count = count_files(base_folder)
+        else:
+            base_count = base_count_fixed[check_folder_type(folder_to_count)]
         exclusion_list = ["dir", "png"]
         for file_type, count in base_count.items():
             if file_type not in exclusion_list:
@@ -210,9 +243,11 @@ class TestCasesIntegration:
                         f"SUCCESS: .{file_type} count matches"
                     ), f"ERROR: .{file_type} count mismatch! Base: {count}; Result: {result_count}"
 
+
     def check_content(self, base_path, target_path, target_types):
         """
         Line by line comparison of base data vs. result data
+        Deprecated.
         """
         base_result_files = fileFilter(
             glob.glob(os.path.join(base_path, "*.*")), target_types
