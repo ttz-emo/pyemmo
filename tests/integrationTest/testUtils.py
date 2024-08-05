@@ -29,6 +29,8 @@ from datetime import datetime
 
 from pyemmo.definitions import TEST_DIR  # ROOT_DIR,
 
+from . import LOGGER
+
 
 def updateConfig(test_type: str = "", test_id: int = "", test_case: str = ""):
     """
@@ -54,7 +56,7 @@ def updateConfig(test_type: str = "", test_id: int = "", test_case: str = ""):
 
 
 def messagePrinter(msg: str = "Assert OK"):
-    print(msg)
+    LOGGER.info(msg)
     return True
 
 
