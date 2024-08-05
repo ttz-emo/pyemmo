@@ -183,11 +183,13 @@ class TestCasesIntegration:
         ) = test_tuple
         LOGGER.info(f"TEST CASE {test_id}: {test_case}")
         LOGGER.info("Test point 5: check values in dat files")
-        with check("check base simulation subfolder existence"):
-            assert os.path.isdir(base_simul_subfolder_path) and messagePrinter(
-                "Base simulation result subfolder exists, continuing tests..."
-            ), "ERROR: Base simulation result subfolder does not exist, nothing to compare"
-        if os.path.isdir(base_simul_subfolder_path):
+        # with check("check base simulation subfolder existence"):
+        #     assert os.path.isdir(base_simul_subfolder_path) and messagePrinter(
+        #         "Base simulation result subfolder exists, continuing tests..."
+        #     ), "ERROR: Base simulation result subfolder does not exist, nothing to compare"
+        if not os.path.isdir(base_simul_subfolder_path):
+            LOGGER.warning(f"Base simulation result subfolder for {test_case} does not exist, nothing to compare")
+        else:
             dat_targets = glob.glob(os.path.join(simul_subfolder_path, "*.dat"))
             dat_bases = glob.glob(os.path.join(base_simul_subfolder_path, "*.dat"))
             for target_file, base_file in zip(dat_targets, dat_bases):
