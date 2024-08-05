@@ -280,25 +280,20 @@ def createCmdCommand(
                 raise TypeError(
                     f"Parameter dict was not a dict, but type '{type(paramDict)}.'"
                 )
-            else:
-                # add verbosity if given
-                if "verbosity level" in paramDict:
-                    getdp_command += f"-v {paramDict.pop('verbosity level')}"
-                for paramName, paramValue in paramDict.items():
-                    if isinstance(paramValue, str):
-                        getdp_command += (
-                            f" -setstring {paramName} {paramValue}"
+            # add verbosity if given
+            if "verbosity level" in paramDict:
+                getdp_command += f"-v {paramDict.pop('verbosity level')}"
+            for paramName, paramValue in paramDict.items():
+                if isinstance(paramValue, str):
+                    getdp_command += f" -setstring {paramName} {paramValue}"
+                elif isinstance(paramValue, (float, int)):
+                    getdp_command += f" -setnumber {paramName} {paramValue}"
+                else:
+                    raise (
+                        TypeError(
+                            f"Parameter value was not string, float or int! -> {type(paramValue)}"
                         )
-                    elif isinstance(paramValue, (float, int)):
-                        getdp_command += (
-                            f" -setnumber {paramName} {paramValue}"
-                        )
-                    else:
-                        raise (
-                            TypeError(
-                                f"Parameter value was not string, float or int! -> {type(paramValue)}"
-                            )
-                        )
+                    )
 
     else:
         raise FileNotFoundError(
