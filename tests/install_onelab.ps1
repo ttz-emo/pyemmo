@@ -45,6 +45,8 @@ if (Test-Path $store_path) {
     Write-Output "Onelab already installed!"
 }
 else {
+    # download and install ONELAB!
+    # Remove-Item $test_path -Recurse -Force -Confirm:$false
     New-Item -Path $store_path -ItemType Directory
 
     $zip_filepath = $store_path + "\onelab.zip"

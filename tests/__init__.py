@@ -51,17 +51,27 @@ if platform.system() == "Windows":
     # Download and install the newest ONELAB installation for testing
     try:
         p = subprocess.run(
-            ["powershell", f"{TEST_DIR}\\install_onelab.ps1"], check=True, capture_output=True
+            ["powershell", f"{TEST_DIR}\\install_onelab.ps1"],
+            check=True,
+            capture_output=True,
         )
     except subprocess.CalledProcessError:
         # subprocess failed -> no determination of executables
         pass
     else:
-        output = [x for x in p.stdout.decode().split("\r\n") if len(x)>1]
-        check_installed = [x for x in p.stdout.decode().split("\r\n") if "Onelab already installed!" in x]
+        output = [x for x in p.stdout.decode().split("\r\n") if len(x) > 1]
+        check_installed = [
+            x
+            for x in p.stdout.decode().split("\r\n")
+            if "Onelab already installed!" in x
+        ]
         if len(check_installed) >= 1:
-            GMSH_EXE = os.environ["GMSH_TEST_PATH"]  # default file name from ps script
-            GETDP_EXE = os.environ["GETDP_TEST_PATH"] # default file name from ps script
+            GMSH_EXE = os.environ[
+                "GMSH_TEST_PATH"
+            ]  # default file name from ps script
+            GETDP_EXE = os.environ[
+                "GETDP_TEST_PATH"
+            ]  # default file name from ps script
         else:
             GMSH_EXE = output[-2]
             GETDP_EXE = output[-1]
