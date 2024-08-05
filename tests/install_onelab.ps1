@@ -70,13 +70,5 @@ else {
     }
 }
 Set-Location ..
-if (-not [System.Environment]::GetEnvironmentVariable('GMSH_TEST_PATH')) {
-    [System.Environment]::SetEnvironmentVariable('GMSH_TEST_PATH', "$store_path\onelab-Windows64\gmsh.exe", 'User')
-    # $env:GMSH_TEST_PATH = "$store_path\onelab-Windows64\gmsh.exe"
-}
-
-if (-not [System.Environment]::GetEnvironmentVariable('GETDP_TEST_PATH')) {
-    [System.Environment]::SetEnvironmentVariable('GETDP_TEST_PATH', "$store_path\onelab-Windows64\getdp.exe", 'User')
-    # $env:GETDP_TEST_PATH = "$store_path\onelab-Windows64\getdp.exe"
-}
+    # TODO: Check that executables actually exist before returning them!
 Write-Output "$store_path\onelab-Windows64\gmsh.exe" "$store_path\onelab-Windows64\getdp.exe"
