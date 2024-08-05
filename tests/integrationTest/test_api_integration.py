@@ -34,7 +34,7 @@ import os
 import shutil
 
 import pytest
-from pytest_check import check
+from pytest_check import check  # to allow multiple failures per test
 
 from pyemmo.definitions import ROOT_DIR
 from pyemmo.functions.import_results import read_timetable_dat
