@@ -19,9 +19,10 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """
-This module runs the Pyleecan API simulation for selected machines, and create a tuple of result directories for use in testing.
-It can be expanded to support other types of tests.
-Running this module by itself will create base data for comparison in the actual tests.
+This module runs the Pyleecan API simulation for selected machines, and create
+a tuple of result directories for use in testing. It can be expanded to support
+other types of tests. Running this module by itself will create base data for
+comparison in the actual tests.
 """
 
 # from __future__ import absolute_import
@@ -38,7 +39,7 @@ from pyleecan.definitions import DATA_DIR
 from pyleecan.Functions import load
 
 from pyemmo.api.pyleecan import main as pyleecanAPI
-from pyemmo.definitions import ROOT_DIR, TEST_DIR
+from pyemmo.definitions import ROOT_DIR
 from pyemmo.functions.runOnelab import createCmdCommand, log_subprocess_output
 from pyemmo.script.script import Script
 
@@ -207,6 +208,7 @@ def pyleecan_test_base(
         if exitcode != 0:
             raise RuntimeError(
                 f"Simulation for machine '{pyleecan_machine.name}' failed!"
+                f"Stderr:\n{process.stderr}\n"
             )
     return pyemmo_script
 
@@ -232,11 +234,11 @@ def pyleecanPrepTuple(test_cases, test_type):
         ROOT_DIR,
         test_params[test_type]["result_folder"],
         test_type,
-        curr_datetime
+        curr_datetime,
     )
     if not os.path.isdir(result_path_all):
         os.makedirs(result_path_all)
-    log_file = open(os.path.join(result_path_all, f"simulation.log"),"w+")
+    log_file = open(os.path.join(result_path_all, f"simulation.log"), "w+")
     log_file.write(f"Pyleecan API simulation log on {curr_datetime}\n")
 
     for test_id, test_case in test_cases[test_type][1:]:
@@ -268,7 +270,7 @@ def pyleecanPrepTuple(test_cases, test_type):
             "comparison_base",
             test_case,
         )
-        
+
         try:
             if test_type == "api\\pyleecan":
                 pyemmo_script: Script = pyleecan_test_base(
@@ -313,14 +315,20 @@ def pyleecanPrepTuple(test_cases, test_type):
             LOGGER.warning(
                 f"{err.__str__()}, cannot start tests for {test_case}"
             )
-            log_file.write(f"{err.__str__()}, cannot start tests for {test_case}.json\n")
+            log_file.write(
+                f"{err.__str__()}, cannot start tests for {test_case}.json\n"
+            )
             continue
         except Exception as exce:
             LOGGER.warning(
                 f"test for {test_case} failed. exce.args[0]: " + exce.args[0]
             )
-            log_file.write(f"test for {test_case} failed. exce.args[0]: " + exce.args[0] + "\n")
-    
+            log_file.write(
+                f"test for {test_case} failed. exce.args[0]: "
+                + exce.args[0]
+                + "\n"
+            )
+
     log_file.close()
 
     return param_tuples
@@ -347,7 +355,7 @@ if __name__ == "__main__":
     # ROOT_DIR, f"workingDirectory\\Vu\\for_testing\\{curr_datetime}"
     result_path = os.path.join(
         ROOT_DIR,
-        test_params["test_data_folder"],
+        test_params[test_type]["test_data_folder"],
         test_type,
         "comparison_base",
     )
