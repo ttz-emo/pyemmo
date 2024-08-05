@@ -68,16 +68,15 @@ else {
     if (Test-Path $zip_filepath) {
         Remove-Item $zip_filepath
     }
-    if (-not [System.Environment]::GetEnvironmentVariable('GMSH_TEST_PATH')) {
-        [System.Environment]::SetEnvironmentVariable('GMSH_TEST_PATH', "$store_path\onelab-Windows64\gmsh.exe", 'User')
-        # $env:GMSH_TEST_PATH = "$store_path\onelab-Windows64\gmsh.exe"
-    }
-
-    if (-not [System.Environment]::GetEnvironmentVariable('GETDP_TEST_PATH')) {
-        [System.Environment]::SetEnvironmentVariable('GETDP_TEST_PATH', "$store_path\onelab-Windows64\getdp.exe", 'User')
-        # $env:GETDP_TEST_PATH = "$store_path\onelab-Windows64\getdp.exe"
-    }
-    Write-Output "$store_path\onelab-Windows64\gmsh.exe" "$store_path\onelab-Windows64\getdp.exe"
-
 }
 Set-Location ..
+if (-not [System.Environment]::GetEnvironmentVariable('GMSH_TEST_PATH')) {
+    [System.Environment]::SetEnvironmentVariable('GMSH_TEST_PATH', "$store_path\onelab-Windows64\gmsh.exe", 'User')
+    # $env:GMSH_TEST_PATH = "$store_path\onelab-Windows64\gmsh.exe"
+}
+
+if (-not [System.Environment]::GetEnvironmentVariable('GETDP_TEST_PATH')) {
+    [System.Environment]::SetEnvironmentVariable('GETDP_TEST_PATH', "$store_path\onelab-Windows64\getdp.exe", 'User')
+    # $env:GETDP_TEST_PATH = "$store_path\onelab-Windows64\getdp.exe"
+}
+Write-Output "$store_path\onelab-Windows64\gmsh.exe" "$store_path\onelab-Windows64\getdp.exe"
