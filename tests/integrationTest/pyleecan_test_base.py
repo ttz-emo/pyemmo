@@ -296,7 +296,7 @@ def pyleecanPrepTuple(test_cases, test_type):
             else:
                 continue
         except RuntimeError:
-            continue
+            continue #skip the machines for which there is problem with simulation
 
     return param_tuples
 
