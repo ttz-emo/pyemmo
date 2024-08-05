@@ -32,9 +32,12 @@ syntax: pytest <path_to_module>
 import glob
 import os
 import pytest
-from pytest_check import check
+import shutil
+
+from pytest_check import check # to allow multiple failures per test
 from pyemmo.definitions import ROOT_DIR
 from pyemmo.functions.import_results import read_timetable_dat
+
 from .pyleecan_test_base import pyleecanPrepTuple
 from .testUtils import (  # updateConfig,
     count_files,
@@ -43,7 +46,7 @@ from .testUtils import (  # updateConfig,
     make_test_cases,
     messagePrinter,
 )
-import shutil
+
 
 #Vars for using in tests
 test_types = ["api\\pyleecan"]
@@ -186,7 +189,7 @@ class TestCasesIntegration:
             with check:
                 assert target_dat == base_dat and messagePrinter(
                     f"SUCCESS: {target_file} check ok"
-                ), f"ERROR: mismatch found between base ({base_file}) and target dat ({target_file})! Base data: {base_dat}; Target data:{target_dat}"
+                ), f"ERROR: mismatch found between base ({base_file}) and target dat ({target_file})!"
 
         print("\n")
 

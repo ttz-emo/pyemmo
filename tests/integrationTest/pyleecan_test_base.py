@@ -18,16 +18,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""TODO: Module docstring"""
+"""
+This module runs the Pyleecan API simulation for selected machines, and create a tuple of result directories for use in testing.
+It can be expanded to support other types of tests.
+Running this module by itself will create base data for comparison in the actual tests.
+"""
 
 # from __future__ import absolute_import
 
-from testUtils import sysPathPrepone
+# from testUtils import sysPathPrepone
 
-sysPathPrepone("H:\\my-pyemmo")
+# sysPathPrepone("H:\\my-pyemmo")
 
 import logging
 import os
+import sys
 from datetime import datetime
 from subprocess import PIPE, STDOUT, Popen
 
@@ -41,7 +46,21 @@ from pyemmo.definitions import ROOT_DIR
 from pyemmo.functions.runOnelab import createCmdCommand, log_subprocess_output
 from pyemmo.script.script import Script
 
+# logic to add local path to beginning of sys path
+path_temp = []
+for path in sys.path:
+    if path == ROOT_DIR:
+        path_temp.append(path)
+        break
+for path in sys.path:
+    if path == ROOT_DIR:
+        continue
+    else:
+        path_temp.append(path)
+sys.path = path_temp
+
 from testUtils import make_test_cases
+from tests import GETDP_EXE, GMSH_EXE
 
 test_cases = {
     0: "Toyota_Prius",
@@ -142,7 +161,7 @@ def pyleecan_test_base(
     pyemmo_script: Script = pyleecanAPI.main(
         pyleecan_machine, model_dir=resFolder, use_gui=False
     )
-    # geo_file = pyemmo_script.geoFilePath
+    # geo_file = pyemmo_script.geoFilePath # Seems to be redundant
     pro_file = pyemmo_script.proFilePath
 
     sim_res_dir = pyemmo_script.resultsPath
@@ -168,10 +187,10 @@ def pyleecan_test_base(
         "res": sim_res_dir,
         # "exe": findGetDP(),
         # "exe": r"H:\onelab-Windows64\getdp.exe",
-        "exe": os.environ["GETDP_TEST_PATH"],
-        "gmsh": os.environ["GMSH_TEST_PATH"],
-        # "exe": GETDP_EXE,
-        # "gmsh": GMSH_EXE,
+        # "exe": os.environ["GETDP_TEST_PATH"],
+        # "gmsh": os.environ["GMSH_TEST_PATH"],
+        "exe": GETDP_EXE,
+        "gmsh": GMSH_EXE,
     }
     # runCalcforCurrent(param_dict)
     cmdCommand = createCmdCommand(
@@ -211,7 +230,6 @@ def pyleecanPrepTuple(test_cases, test_type):
     header_flg = True
     param_tuples = list()
 
-    # print("========TEST PYLEECAN API + SIMULATION FLOW START========")
     for test_id, test_case in test_cases[test_type][1:]:
         # curr_datetime, _ = updateConfig(test_type, test_id, test_case) #REDUNDANT since API level log already exists in each folder
 
@@ -282,10 +300,15 @@ def pyleecanPrepTuple(test_cases, test_type):
 
     return param_tuples
 
+def write_error_to_log(log_file,  test_case, error_class):
+    if hasattr(error_class, "message"):
+        log_file.write(f"{type(error_class).__name__} in {test_case}: {error_class.message}\n")
+    else:
+        log_file.write(f"{type(error_class).__name__} in {test_case}\n")
 
 if __name__ == "__main__":
-
-    #ONLY RUN THIS BY ITSELF IF YOU WANT TO CREATE BASE DATA
+    
+    # ONLY RUN THIS BY ITSELF IF YOU WANT TO CREATE BASE DATA
     from distutils.dir_util import copy_tree
     import shutil
 
@@ -295,7 +318,7 @@ if __name__ == "__main__":
 
     result_path = os.path.join(
         # ROOT_DIR, f"workingDirectory\\Vu\\for_testing\\{curr_datetime}"
-        ROOT_DIR, f"{test_params["test_data_folder"]}\\{test_type}\\comparison_base"
+        ROOT_DIR, test_params[test_type]["test_data_folder"], f"{test_type}\\comparison_base"
     )
     if not os.path.isdir(result_path):
         os.makedirs(result_path)
@@ -305,11 +328,16 @@ if __name__ == "__main__":
         result_path, "backup"
     )
 
-    file = open(os.path.join(result_path, "base_data_creation_log"), "w")
+    log_file_path = os.path.join(result_path, "base_data_creation_log.log")
+    if not os.path.isfile(log_file_path):
+        log_file = open(log_file_path, "w")
+    else:
+        log_file = open(log_file_path, "a")
+        log_file.write("\n")
+
+    log_file.write(f"Base data creation on {curr_datetime}\n")
 
     for tup in test_cases[1:]:
-        # print(test_case, ": ",os.path.isfile(os.path.join(ROOT_DIR, test_params[test_type]["test_data_folder"], f"{test_type}\\{test_case}.json")))
-        # print("\n")
         test_id, test_case = tup
         result_path_true = os.path.join(result_path, test_case)
         backup_path_true = os.path.join(backup_path, test_case)
@@ -336,13 +364,7 @@ if __name__ == "__main__":
                 test_id=test_id,
                 test_case=test_case,
             )
-        except AttributeError:
-            file.write(f"Attribute error in {test_case}\n")
-        except RuntimeError:
-            print(f"Runtime error in {test_case}\n")
-        except ValueError:
-            print(f"Value error in {test_case}\n")
-        except FileNotFoundError:
-            print(f"FileNotFoundError in {test_case}\n")
-    file.close()
-    # print(os.path.join(os.path.abspath('.'), "pytest.ini"))
+            log_file.write(f"Successfully created base data for {test_case}\n")
+        except Exception as ex:
+            log_file.write(f"{type(ex).__name__} in {test_case}: {ex.__str__()}\n")
+    log_file.close()
