@@ -11,6 +11,7 @@ gmsh>=4.10.3
 Sphinx>=7.2.6 # for doc
 GitPython
 pytest-check # for integration tests
+pytest-dependency
 tox
 tox-pyenv
 wheel
