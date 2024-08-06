@@ -151,7 +151,8 @@ def fileFilter(file_list: list, target_types: list) -> list:
 
 def make_test_cases(test_type: str, fixed_test_flg: bool = False):
     """
-    Create a list of tuples of test ids & test cases based on files in test data folder
+    Create a list of tuples of test ids & test cases based on files in test
+    data folder.
     """
     # test_cases = {}
     headers = "test_id, test_case"
@@ -186,8 +187,7 @@ def make_test_cases(test_type: str, fixed_test_flg: bool = False):
 
     if fixed_test_flg:
         return test_cases_fixed
-    else:
-        return test_cases_from_files
+    return test_cases_from_files
 
 
 def check_folder_type(input_path: str):

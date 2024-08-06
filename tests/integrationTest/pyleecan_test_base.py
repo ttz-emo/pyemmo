@@ -58,11 +58,9 @@ sys.path = path_temp
 
 from .. import GETDP_EXE, GMSH_EXE
 from . import LOGGER
-from .testUtils import make_test_cases
 
-# test_cases = {
-#     0: "Toyota_Prius",
-# }
+# from .testUtils import make_test_cases
+
 
 test_params = {
     "api\\pyleecan": {
@@ -88,18 +86,22 @@ def pyleecan_test_base(
 ):
     """
     Base test data prepper for Pyleecan API workflow test.
-    Params:
-    - test_params: Contains parameter dict for running test
-    - result_path: string path where result should be stored, default empty (so that timestamped folder can be generated)
-    - test_data_path: string path where json data for testing can be found (default empty, so that data path from test_params will be used)
+    When running this file as stand alone e.g. for preparing base data,
+    result_path should be path to desired base data locations.
+    The following params are used in case running this alone e.g. for preparing
+    base data.
 
-    When running this file as stand alone e.g. for preparing base data, result_path should be path to desired base data locations.
-    The following params are used in case running this alone e.g. for preparing base data:
-    - test_type: type of test, default empty
-    - test_id: test id, default empty
-    - test_case: test case name, same as machine name, default empty
-    - print_flag: default 0
-    - debug_flag: default 0
+    Args:
+        test_params (dict): Contains parameter for running test
+        result_path (str): Path where result should be stored, default empty
+            (so that timestamped folder can be generated)
+        test_data_path (str): Path where json data for testing can be found
+            Defaults to "", so that data path from test_params will be used.
+        test_type (str): type of test, default empty
+        test_id (int): test id, default 0
+        test_case (str): test case name, same as machine name, default empty
+        print_flag (int): default 0
+        debug_flag (int): default 0
     """
 
     # disable messages of matplotlib
@@ -118,6 +120,7 @@ def pyleecan_test_base(
     else:
         machine_file_path = test_data_path
     LOGGER.info("Path of actual machine file is %s", machine_file_path)
+    # pylint: disable=locally-disabled, no-member
     pyleecan_machine: Machine = load.load(machine_file_path)
 
     CuMat = load.load(os.path.join(DATA_DIR, "Material", "Copper2.json"))
@@ -216,11 +219,24 @@ def pyleecan_test_base(
 def pyleecanPrepTuple(test_cases, test_type):
     """
     This function generates test paramemters for Pyleecan API testing.
-    It basically generate test data folders and return the list of folders as a tuple for use in test cases.
-    Input:
-        - test_cases->list: list of test case names
-        - test_type->string: type of test performed
-    Output: tuple of test data folders
+    It basically generate test data folders and return the list of folders as
+    a tuple for use in test cases.
+
+    Args:
+        test_cases (list): list of test case names
+        test_type (str): type of test performed
+    Returns:
+        list[tuple]: list of test data tuples with headers as first element.
+        Headers (str) are:
+        - test_id
+        - test_case
+        - source_path
+        - result_path
+        - simul_path
+        - simul_subfolder_path
+        - base_result_path
+        - base_simul_path
+        - base_simul_subfolder_path
 
     """
     # rootLogger.setLevel(logging.DEBUG)
@@ -347,7 +363,14 @@ if __name__ == "__main__":
     from distutils.dir_util import copy_tree
 
     test_type = "api\\pyleecan"
-    test_cases = make_test_cases(test_type)
+    test_cases = [
+        ("test_id", "test_case"),
+        (0, "IPMSM_B"),
+        (1, "SPMSM_002"),
+        (2, "SPMSM_003"),
+        (3, "Toyota_Prius"),
+    ]
+    # test_cases = make_test_cases(test_type)
     curr_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     # ROOT_DIR, f"workingDirectory\\Vu\\for_testing\\{curr_datetime}"
@@ -363,7 +386,7 @@ if __name__ == "__main__":
     # Backup existing data
     backup_path = os.path.join(result_path, "backup")
 
-    log_file_path = os.path.join(result_path, "base_data_creation_log.log")
+    log_file_path = os.path.join(result_path, "base_data_creation.log")
     if not os.path.isfile(log_file_path):
         log_file = open(log_file_path, "w")
     else:
@@ -398,8 +421,8 @@ if __name__ == "__main__":
                 test_case=test_case,
             )
             log_file.write(f"Successfully created base data for {test_case}\n")
-        except Exception as ex:
+        except Exception as exce:
             log_file.write(
-                f"{type(ex).__name__} in {test_case}: {ex.__str__()}\n"
+                f"{type(exce).__name__} in {test_case}: {exce.__str__()}\n"
             )
     log_file.close()
