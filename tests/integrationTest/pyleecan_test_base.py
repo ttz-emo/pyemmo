@@ -212,8 +212,6 @@ def pyleecan_test_base(
             )
     return pyemmo_script
 
-    return machine_file_path, resFolder
-
 
 def pyleecanPrepTuple(test_cases, test_type):
     """
