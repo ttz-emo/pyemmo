@@ -32,7 +32,7 @@ import logging
 import os
 import sys
 from datetime import datetime
-from subprocess import PIPE, STDOUT, Popen
+from subprocess import PIPE, Popen
 
 from pyleecan.Classes.Machine import Machine
 from pyleecan.definitions import DATA_DIR
@@ -182,6 +182,7 @@ def pyleecan_test_base(
             "ResId": resid,
             "Flag_PrintFields": print_flag,
             "Flag_Debug": debug_flag,
+            "verbosity level": 3,
         },
         "ResId": resid,
         "pro": pro_file,
@@ -204,14 +205,17 @@ def pyleecan_test_base(
 
     LOGGER.debug("cmd command is: %s", cmdCommand)
     LOGGER.info("Running simulation for result-ID '%s'", resid)
-    with Popen(cmdCommand, stdout=PIPE, stderr=STDOUT) as process:
-        with process.stdout:
-            log_subprocess_output(process.stdout)
+    # with Popen(cmdCommand, stdout=PIPE, stderr=STDOUT) as process:
+    with Popen(cmdCommand, stdout=PIPE, stderr=PIPE) as process:
+        with process:
+            error_message = log_subprocess_output(
+                process.stdout, process.stderr
+            )
         exitcode = process.wait()  # 0 means success
         if exitcode != 0:
             raise RuntimeError(
-                f"Simulation for machine '{pyleecan_machine.name}' failed!"
-                f"Stderr:\n{process.stderr}\n"
+                "Simulation for machine '%s' failed due to:\n\t%s"
+                % (pyleecan_machine.name, error_message)
             )
     return pyemmo_script
 
@@ -327,10 +331,10 @@ def pyleecanPrepTuple(test_cases, test_type):
                 continue
         except RuntimeError as err:
             LOGGER.warning(
-                f"{err.__str__()}, cannot start tests for {test_case}"
+                "Cannot start tests for %s:\n%s", test_case, err.__str__()
             )
             log_file.write(
-                f"{err.__str__()}, cannot start tests for {test_case}.json\n"
+                f"{str(err)}, cannot start tests for {test_case}.json\n"
             )
             continue
         except Exception as exce:
