@@ -62,7 +62,7 @@ test_cases = {}
 # Fix test cases for acutal machines to be testes from data folder:
 test_cases["api\\pyleecan"] = [
     ("test_id", "test_case"),
-    (0, "IPMSM_B"),
+    (0, "IPMSM_B"),  # TODO: mark as failing instead of skipping!
     (1, "SPMSM_002"),
     (2, "SPMSM_003"),
     (3, "Toyota_Prius"),
@@ -142,11 +142,9 @@ class TestCasesIntegration:
             ), "ERROR: Simulation result subfolder does not exist"
 
     def test_gmsh_base_files(self, test_tuple):
-
         (test_id, test_case, _, result_path, _, _, base_result_path, _, _) = (
             test_tuple
         )
-
         LOGGER.info(f"TEST CASE {test_id}: {test_case}")
         LOGGER.info("Test point 2: check if GMSH base files are generated")
         self.check_file_counts(base_result_path, result_path)
@@ -222,7 +220,7 @@ class TestCasesIntegration:
         self,
         base_folder: str,
         folder_to_count: str,
-        check_from_base: bool = False,
+        check_from_base: bool = True,
     ):
         """
         Compare count of files per type between base data and result data
