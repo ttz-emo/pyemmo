@@ -1,0 +1,11 @@
+{
+	"ID": 391,
+	"name": "silver",
+	"conductivity": 61000000.0,
+	"relPermeability": 0.99998,
+	"remanence": "no information",
+	"BHCurve_type": "Linear",
+	"B": [],
+	"H": [],
+	"Temp": []
+}

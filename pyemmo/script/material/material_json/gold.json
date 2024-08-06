@@ -1,0 +1,11 @@
+{
+	"ID": 376,
+	"name": "gold",
+	"conductivity": 41000000.0,
+	"relPermeability": 0.99996,
+	"remanence": "no information",
+	"BHCurve_type": "Linear",
+	"B": [],
+	"H": [],
+	"Temp": []
+}

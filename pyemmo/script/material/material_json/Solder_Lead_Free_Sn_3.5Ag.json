@@ -1,0 +1,11 @@
+{
+	"ID": 95,
+	"name": "Solder_Lead_Free_Sn_3.5Ag",
+	"conductivity": 8120000.0,
+	"relPermeability": 0.0,
+	"remanence": "no information",
+	"BHCurve_type": "Linear",
+	"B": [],
+	"H": [],
+	"Temp": []
+}

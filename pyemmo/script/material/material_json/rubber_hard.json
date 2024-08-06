@@ -1,0 +1,11 @@
+{
+	"ID": 390,
+	"name": "rubber_hard",
+	"conductivity": 1e-15,
+	"relPermeability": 0.0,
+	"remanence": "no information",
+	"BHCurve_type": "Linear",
+	"B": [],
+	"H": [],
+	"Temp": []
+}

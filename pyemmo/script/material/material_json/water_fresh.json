@@ -1,0 +1,11 @@
+{
+	"ID": 401,
+	"name": "water_fresh",
+	"conductivity": 0.01,
+	"relPermeability": 0.999991,
+	"remanence": "no information",
+	"BHCurve_type": "Linear",
+	"B": [],
+	"H": [],
+	"Temp": []
+}

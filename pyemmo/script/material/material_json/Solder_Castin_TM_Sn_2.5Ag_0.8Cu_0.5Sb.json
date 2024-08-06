@@ -1,0 +1,11 @@
+{
+	"ID": 93,
+	"name": "Solder_Castin_TM_Sn_2.5Ag_0.8Cu_0.5Sb",
+	"conductivity": 8250000.0,
+	"relPermeability": 0.0,
+	"remanence": "no information",
+	"BHCurve_type": "Linear",
+	"B": [],
+	"H": [],
+	"Temp": []
+}

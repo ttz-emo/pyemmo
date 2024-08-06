@@ -1,0 +1,11 @@
+{
+	"ID": 384,
+	"name": "nickel",
+	"conductivity": 14500000.0,
+	"relPermeability": 600.0,
+	"remanence": "no information",
+	"BHCurve_type": "Linear",
+	"B": [],
+	"H": [],
+	"Temp": []
+}

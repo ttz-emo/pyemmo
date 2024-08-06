@@ -1,0 +1,11 @@
+{
+	"ID": 377,
+	"name": "graphite",
+	"conductivity": 70000.0,
+	"relPermeability": 0.0,
+	"remanence": "no information",
+	"BHCurve_type": "Linear",
+	"B": [],
+	"H": [],
+	"Temp": []
+}

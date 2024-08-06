@@ -1,0 +1,11 @@
+{
+	"ID": 374,
+	"name": "copper",
+	"conductivity": 58000000.0,
+	"relPermeability": 0.999991,
+	"remanence": "no information",
+	"BHCurve_type": "Linear",
+	"B": [],
+	"H": [],
+	"Temp": []
+}

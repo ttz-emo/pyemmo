@@ -1,0 +1,11 @@
+{
+	"ID": 370,
+	"name": "cast_iron",
+	"conductivity": 1500000.0,
+	"relPermeability": 60.0,
+	"remanence": "no information",
+	"BHCurve_type": "Linear",
+	"B": [],
+	"H": [],
+	"Temp": []
+}

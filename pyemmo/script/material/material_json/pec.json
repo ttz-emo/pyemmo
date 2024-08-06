@@ -1,0 +1,11 @@
+{
+	"ID": 386,
+	"name": "pec",
+	"conductivity": 1e+30,
+	"relPermeability": 0.0,
+	"remanence": "no information",
+	"BHCurve_type": "Linear",
+	"B": [],
+	"H": [],
+	"Temp": []
+}

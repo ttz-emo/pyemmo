@@ -1,0 +1,11 @@
+{
+	"ID": 367,
+	"name": "beryllium",
+	"conductivity": 25000000.0,
+	"relPermeability": 1.00000079,
+	"remanence": "no information",
+	"BHCurve_type": "Linear",
+	"B": [],
+	"H": [],
+	"Temp": []
+}

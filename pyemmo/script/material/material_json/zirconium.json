@@ -1,0 +1,11 @@
+{
+	"ID": 404,
+	"name": "zirconium",
+	"conductivity": 24400000.0,
+	"relPermeability": 0.0,
+	"remanence": "no information",
+	"BHCurve_type": "Linear",
+	"B": [],
+	"H": [],
+	"Temp": []
+}

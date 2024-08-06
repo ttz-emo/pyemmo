@@ -1,0 +1,11 @@
+{
+	"ID": 364,
+	"name": "aluminum_EC",
+	"conductivity": 36000000.0,
+	"relPermeability": 1.000021,
+	"remanence": "no information",
+	"BHCurve_type": "Linear",
+	"B": [],
+	"H": [],
+	"Temp": []
+}

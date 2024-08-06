@@ -1,0 +1,11 @@
+{
+	"ID": 97,
+	"name": "Tantalum_Nitride",
+	"conductivity": 7400.0,
+	"relPermeability": 0.0,
+	"remanence": "no information",
+	"BHCurve_type": "Linear",
+	"B": [],
+	"H": [],
+	"Temp": []
+}

@@ -1,0 +1,11 @@
+{
+	"ID": 375,
+	"name": "ferrite",
+	"conductivity": 0.01,
+	"relPermeability": 1000.0,
+	"remanence": "no information",
+	"BHCurve_type": "Linear",
+	"B": [],
+	"H": [],
+	"Temp": []
+}

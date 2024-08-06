@@ -1,0 +1,11 @@
+{
+	"ID": 365,
+	"name": "aluminum_no2_EC",
+	"conductivity": 33000000.0,
+	"relPermeability": 1.000021,
+	"remanence": "no information",
+	"BHCurve_type": "Linear",
+	"B": [],
+	"H": [],
+	"Temp": []
+}

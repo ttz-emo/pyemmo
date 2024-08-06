@@ -1,0 +1,11 @@
+{
+	"ID": 380,
+	"name": "lead",
+	"conductivity": 5000000.0,
+	"relPermeability": 0.999983,
+	"remanence": "no information",
+	"BHCurve_type": "Linear",
+	"B": [],
+	"H": [],
+	"Temp": []
+}

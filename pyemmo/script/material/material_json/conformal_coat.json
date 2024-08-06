@@ -1,0 +1,11 @@
+{
+	"ID": 373,
+	"name": "conformal_coat",
+	"conductivity": 0.0,
+	"relPermeability": 1.0,
+	"remanence": "no information",
+	"BHCurve_type": "Linear",
+	"B": [],
+	"H": [],
+	"Temp": []
+}

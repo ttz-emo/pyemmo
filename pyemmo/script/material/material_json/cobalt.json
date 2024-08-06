@@ -1,0 +1,11 @@
+{
+	"ID": 372,
+	"name": "cobalt",
+	"conductivity": 10000000.0,
+	"relPermeability": 250.0,
+	"remanence": "no information",
+	"BHCurve_type": "Linear",
+	"B": [],
+	"H": [],
+	"Temp": []
+}

@@ -1,0 +1,11 @@
+{
+	"ID": 399,
+	"name": "tungsten",
+	"conductivity": 18200000.0,
+	"relPermeability": 0.0,
+	"remanence": "no information",
+	"BHCurve_type": "Linear",
+	"B": [],
+	"H": [],
+	"Temp": []
+}

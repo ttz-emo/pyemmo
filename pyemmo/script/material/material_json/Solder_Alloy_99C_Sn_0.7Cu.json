@@ -1,0 +1,11 @@
+{
+	"ID": 92,
+	"name": "Solder_Alloy_99C_Sn_0.7Cu",
+	"conductivity": 7540000.0,
+	"relPermeability": 0.0,
+	"remanence": "no information",
+	"BHCurve_type": "Linear",
+	"B": [],
+	"H": [],
+	"Temp": []
+}

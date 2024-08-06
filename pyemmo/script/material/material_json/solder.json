@@ -1,0 +1,11 @@
+{
+	"ID": 392,
+	"name": "solder",
+	"conductivity": 7000000.0,
+	"relPermeability": 0.0,
+	"remanence": "no information",
+	"BHCurve_type": "Linear",
+	"B": [],
+	"H": [],
+	"Temp": []
+}

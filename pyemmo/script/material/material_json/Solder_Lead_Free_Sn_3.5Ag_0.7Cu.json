@@ -1,0 +1,11 @@
+{
+	"ID": 96,
+	"name": "Solder_Lead_Free_Sn_3.5Ag_0.7Cu",
+	"conductivity": 7540000.0,
+	"relPermeability": 0.0,
+	"remanence": "no information",
+	"BHCurve_type": "Linear",
+	"B": [],
+	"H": [],
+	"Temp": []
+}

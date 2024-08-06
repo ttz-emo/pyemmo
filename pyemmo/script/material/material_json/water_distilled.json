@@ -1,0 +1,11 @@
+{
+	"ID": 400,
+	"name": "water_distilled",
+	"conductivity": 0.0002,
+	"relPermeability": 0.999991,
+	"remanence": "no information",
+	"BHCurve_type": "Linear",
+	"B": [],
+	"H": [],
+	"Temp": []
+}
