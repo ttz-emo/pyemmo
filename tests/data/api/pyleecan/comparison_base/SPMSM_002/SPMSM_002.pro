@@ -1,4 +1,4 @@
-// This script was created with pyemmo (Version 1.3.1b1, git 5c6b9b)
+// This script was created with pyemmo (Version 1.3.1b1, git 88fce2)
 
 // This script has initally be written by Diogo Pinto and is adapted for the use with pyemmo by Max Ganser
 

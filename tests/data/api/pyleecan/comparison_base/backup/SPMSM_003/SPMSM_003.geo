@@ -1,4 +1,4 @@
-// This script was created with pyemmo (Version 1.3.1b1, git 6eeae4)
+// This script was created with pyemmo (Version 1.3.1b1, git 5c6b9b)
 
 DefineConstant[
  Flag_ExpertMode = {1,Name '01View/Expert Mode', Choices {0, 1}}
@@ -17,411 +17,411 @@ Mesh.Algorithm = 6; // Frontal-Delaunay for 2D meshes
 
 
 // Points
-point_pylc_dup = 1653; Point(1653) = {0.2, 0.0, 0, 0.009999999999999998*gmsf};
-point_pylc_dup = 1654; Point(1654) = {0.116, 0.0, 0, 0.0009719626168224236*gmsf};
-PointM41_dup = 1660; Point(1660) = {0.11520000000000001, 0, 0, 0.0008859813084112094*gmsf};
-PointM31_dup = 1661; Point(1661) = {0.1144, 0, 0, 0.0007999999999999937*gmsf};
-point_pylc_dup = 1651; Point(1651) = {0.0225, 0.0, 0, 0.01940492957746467*gmsf};
-point_pylc_dup = 1652; Point(1652) = {0.1, 0.0, 0, 0.003577464788732372*gmsf};
-PointM11_dup = 1656; Point(1656) = {0.1128, 0, 0, 0.0009633802816901378*gmsf};
-PointM21_dup = 1658; Point(1658) = {0.1136, 0, 0, 0.0007999999999999952*gmsf};
-point_pylc_dup = 1663; Point(1663) = {-0.2, 2.4492935982947065e-17, 0.0, 0.009999999999999998*gmsf};
-point_pylc_dup = 1664; Point(1664) = {-0.116, 1.4205902870109297e-17, 0.0, 0.0009719626168224236*gmsf};
-PointM41_dup = 1666; Point(1666) = {-0.11520000000000001, 1.410793112617751e-17, 0.0, 0.0008859813084112094*gmsf};
-PointM31_dup = 1667; Point(1667) = {-0.1144, 1.400995938224572e-17, 0.0, 0.0007999999999999937*gmsf};
-point_pylc_dup = 1669; Point(1669) = {-0.0225, 2.7554552980815448e-18, 0.0, 0.01940492957746467*gmsf};
-point_pylc_dup = 1670; Point(1670) = {-0.1, 1.2246467991473533e-17, 0.0, 0.003577464788732372*gmsf};
-PointM11_dup = 1672; Point(1672) = {-0.1128, 1.3814015894382144e-17, 0.0, 0.0009633802816901378*gmsf};
-PointM21_dup = 1674; Point(1674) = {-0.1136, 1.3911987638313932e-17, 0.0, 0.0007999999999999952*gmsf};
-point_pylc = 1578; Point(1578) = {1.3777276490407724e-18, 0.0225, 0, 0.01940492957746467*gmsf};
-point_pylc = 1579; Point(1579) = {0, 0, 0, 0.001*gmsf};
-point_pylc_dup = 1727; Point(1727) = {0.09876883405950741, 0.015643446504063286, 0, 0.003577464788732372*gmsf};
-point_pylc_dup = 1728; Point(1728) = {0.1106210941466483, 0.01752066008455088, 0, 0.0011267605633802748*gmsf};
-point_pylc_dup = 1731; Point(1731) = {-0.1106210941466483, 0.017520660084550894, 0, 0.0011267605633802748*gmsf};
-point_pylc_dup = 1733; Point(1733) = {-0.09876883405950741, 0.0156434465040633, 0, 0.003577464788732372*gmsf};
-point_pylc = 1595; Point(1595) = {0.17320508075688776, 0.09999999999999999, 0, 0.009999999999999998*gmsf};
-point_pylc_dup = 1693; Point(1693) = {0.10000000000000003, 0.17320508075688773, 0.0, 0.009999999999999998*gmsf};
-point_pylc_dup = 1696; Point(1696) = {4.163336342344337e-17, 0.20000000000000004, 0.0, 0.009999999999999998*gmsf};
-point_pylc_dup = 1699; Point(1699) = {-0.09999999999999998, 0.17320508075688776, 0.0, 0.009999999999999998*gmsf};
-point_pylc_dup = 1702; Point(1702) = {-0.1732050807568877, 0.10000000000000005, 0.0, 0.009999999999999998*gmsf};
-PointM32 = 1650; Point(1650) = {0.09907330619293979, 0.057199999999999994, 0, 0.0007999999999999937*gmsf};
-PointM32_dup = 1677; Point(1677) = {0.05720000000000002, 0.09907330619293978, 0.0, 0.0007999999999999937*gmsf};
-PointM32_dup = 1680; Point(1680) = {2.7755575615628914e-17, 0.1144, 0.0, 0.0007999999999999937*gmsf};
-PointM32_dup = 1683; Point(1683) = {-0.05719999999999999, 0.09907330619293979, 0.0, 0.0007999999999999923*gmsf};
-PointM32_dup = 1686; Point(1686) = {-0.09907330619293976, 0.05720000000000003, 0.0, 0.0007999999999999937*gmsf};
-PointM42_dup = 2129; Point(2129) = {0.09976612651596735, 0.0576, 0, 0.0008859813084112094*gmsf};
-PointM42_dup = 2139; Point(2139) = {0.057600000000000026, 0.09976612651596733, 0.0, 0.0008859813084112094*gmsf};
-PointM42_dup = 2149; Point(2149) = {2.7755575615628914e-17, 0.11520000000000001, 0.0, 0.0008859813084112094*gmsf};
-PointM42_dup = 2159; Point(2159) = {-0.05759999999999999, 0.09976612651596735, 0.0, 0.0008859813084112094*gmsf};
-PointM42_dup = 2169; Point(2169) = {-0.09976612651596732, 0.05760000000000003, 0.0, 0.0008859813084112094*gmsf};
-point_pylc_dup = 2009; Point(2009) = {0.11371145625611974, 0.022928251483978635, 0, 0.0009719626168224236*gmsf};
-point_pylc_dup = 2011; Point(2011) = {0.11763254095460662, 0.02371888084549514, 0, 0.0014018691588785004*gmsf};
-point_pylc_dup = 2012; Point(2012) = {0.11373220920115029, 0.03827511711576839, 0, 0.0014018691588784976*gmsf};
-point_pylc_dup = 2013; Point(2013) = {0.10994113556111196, 0.03699927987857611, 0, 0.0009719626168224222*gmsf};
-point_pylc_dup = 2016; Point(2016) = {0.1004589468389949, 0.057999999999999996, 0, 0.0009719626168224236*gmsf};
-point_pylc_dup = 2029; Point(2029) = {0.08701288407713331, 0.07671217637754361, 0.0, 0.0009719626168224236*gmsf};
-point_pylc_dup = 2031; Point(2031) = {0.09001332835565515, 0.07935742383883823, 0.0, 0.0014018691588785004*gmsf};
-point_pylc_dup = 2032; Point(2032) = {0.07935742383883825, 0.09001332835565515, 0.0, 0.0014018691588784976*gmsf};
-point_pylc_dup = 2033; Point(2033) = {0.07671217637754364, 0.08701288407713331, 0.0, 0.0009719626168224236*gmsf};
-point_pylc_dup = 2036; Point(2036) = {0.058000000000000024, 0.10045894683899488, 0.0, 0.0009719626168224236*gmsf};
-point_pylc_dup = 2049; Point(2049) = {0.03699927987857613, 0.10994113556111194, 0.0, 0.0009719626168224236*gmsf};
-point_pylc_dup = 2051; Point(2051) = {0.038275117115768406, 0.11373220920115028, 0.0, 0.0014018691588784976*gmsf};
-point_pylc_dup = 2052; Point(2052) = {0.023718880845495158, 0.11763254095460662, 0.0, 0.0014018691588784976*gmsf};
-point_pylc_dup = 2053; Point(2053) = {0.02292825148397866, 0.11371145625611975, 0.0, 0.0009719626168224236*gmsf};
-point_pylc_dup = 2056; Point(2056) = {2.7755575615628914e-17, 0.11600000000000002, 0.0, 0.0009719626168224236*gmsf};
-point_pylc_dup = 2069; Point(2069) = {-0.022928251483978628, 0.11371145625611974, 0.0, 0.0009719626168224236*gmsf};
-point_pylc_dup = 2071; Point(2071) = {-0.023718880845495133, 0.11763254095460662, 0.0, 0.0014018691588785004*gmsf};
-point_pylc_dup = 2072; Point(2072) = {-0.038275117115768385, 0.11373220920115029, 0.0, 0.0014018691588784976*gmsf};
-point_pylc_dup = 2073; Point(2073) = {-0.036999279878576104, 0.10994113556111196, 0.0, 0.0009719626168224222*gmsf};
-point_pylc_dup = 2076; Point(2076) = {-0.05799999999999999, 0.1004589468389949, 0.0, 0.0009719626168224222*gmsf};
-point_pylc_dup = 2089; Point(2089) = {-0.0767121763775436, 0.08701288407713333, 0.0, 0.0009719626168224222*gmsf};
-point_pylc_dup = 2091; Point(2091) = {-0.0793574238388382, 0.09001332835565515, 0.0, 0.0014018691588784976*gmsf};
-point_pylc_dup = 2092; Point(2092) = {-0.09001332835565512, 0.07935742383883826, 0.0, 0.0014018691588784976*gmsf};
-point_pylc_dup = 2093; Point(2093) = {-0.08701288407713328, 0.07671217637754364, 0.0, 0.0009719626168224222*gmsf};
-point_pylc_dup = 2096; Point(2096) = {-0.10045894683899487, 0.05800000000000004, 0.0, 0.0009719626168224236*gmsf};
-point_pylc_dup = 2109; Point(2109) = {-0.10994113556111193, 0.03699927987857615, 0.0, 0.0009719626168224236*gmsf};
-point_pylc_dup = 2111; Point(2111) = {-0.11373220920115026, 0.03827511711576844, 0.0, 0.0014018691588784976*gmsf};
-point_pylc_dup = 2112; Point(2112) = {-0.11763254095460662, 0.023718880845495185, 0.0, 0.0014018691588784976*gmsf};
-point_pylc_dup = 2113; Point(2113) = {-0.11371145625611975, 0.022928251483978687, 0.0, 0.0009719626168224236*gmsf};
-point_pylc_dup = 1751; Point(1751) = {0.11852260087141653, 0.018772135804827707, 0, 0.0014018691588784976*gmsf};
-point_pylc_dup = 1753; Point(1753) = {0.14321480938629497, 0.02268299743083347, 0, 0.004088785046728965*gmsf};
-point_pylc_dup = 1756; Point(1756) = {0.13536916184209424, 0.05196335268406853, 0, 0.004088785046728965*gmsf};
-point_pylc_dup = 1758; Point(1758) = {0.11202965117966421, 0.04300415394543603, 0, 0.0014018691588784976*gmsf};
-point_pylc_dup = 1781; Point(1781) = {0.09325751537483652, 0.07551844692598049, 0.0, 0.0014018691588785004*gmsf};
-point_pylc_dup = 1783; Point(1783) = {0.1126861644112608, 0.09125145670222641, 0.0, 0.004088785046728967*gmsf};
-point_pylc_dup = 1786; Point(1786) = {0.09125145670222644, 0.11268616441126075, 0.0, 0.004088785046728965*gmsf};
-point_pylc_dup = 1788; Point(1788) = {0.0755184469259805, 0.09325751537483651, 0.0, 0.0014018691588785004*gmsf};
-point_pylc_dup = 1811; Point(1811) = {0.043004153945436045, 0.11202965117966421, 0.0, 0.0014018691588784976*gmsf};
-point_pylc_dup = 1813; Point(1813) = {0.051963352684068556, 0.13536916184209424, 0.0, 0.004088785046728965*gmsf};
-point_pylc_dup = 1816; Point(1816) = {0.022682997430833497, 0.14321480938629494, 0.0, 0.004088785046728962*gmsf};
-point_pylc_dup = 1818; Point(1818) = {0.01877213580482772, 0.11852260087141653, 0.0, 0.0014018691588784976*gmsf};
-point_pylc_dup = 1841; Point(1841) = {-0.0187721358048277, 0.11852260087141653, 0.0, 0.0014018691588784976*gmsf};
-point_pylc_dup = 1843; Point(1843) = {-0.02268299743083346, 0.14321480938629497, 0.0, 0.004088785046728965*gmsf};
-point_pylc_dup = 1846; Point(1846) = {-0.05196335268406852, 0.13536916184209424, 0.0, 0.004088785046728965*gmsf};
-point_pylc_dup = 1848; Point(1848) = {-0.043004153945436024, 0.11202965117966421, 0.0, 0.0014018691588784976*gmsf};
-point_pylc_dup = 1871; Point(1871) = {-0.07551844692598048, 0.09325751537483652, 0.0, 0.0014018691588784976*gmsf};
-point_pylc_dup = 1873; Point(1873) = {-0.0912514567022264, 0.1126861644112608, 0.0, 0.004088785046728965*gmsf};
-point_pylc_dup = 1876; Point(1876) = {-0.11268616441126074, 0.09125145670222644, 0.0, 0.004088785046728962*gmsf};
-point_pylc_dup = 1878; Point(1878) = {-0.09325751537483648, 0.0755184469259805, 0.0, 0.0014018691588784976*gmsf};
-point_pylc_dup = 1901; Point(1901) = {-0.11202965117966421, 0.04300415394543608, 0.0, 0.0014018691588785004*gmsf};
-point_pylc_dup = 1903; Point(1903) = {-0.13536916184209422, 0.051963352684068584, 0.0, 0.004088785046728965*gmsf};
-point_pylc_dup = 1906; Point(1906) = {-0.14321480938629494, 0.022682997430833532, 0.0, 0.004088785046728962*gmsf};
-point_pylc_dup = 1908; Point(1908) = {-0.11852260087141651, 0.01877213580482775, 0.0, 0.0014018691588784976*gmsf};
+point_pylc_dup = 6044; Point(6044) = {0.2, 0.0, 0, 0.009999999999999998*gmsf};
+point_pylc_dup = 6045; Point(6045) = {0.116, 0.0, 0, 0.0009719626168224236*gmsf};
+PointM41_dup = 6051; Point(6051) = {0.11520000000000001, 0, 0, 0.0008859813084112094*gmsf};
+PointM31_dup = 6052; Point(6052) = {0.1144, 0, 0, 0.0007999999999999937*gmsf};
+point_pylc_dup = 6042; Point(6042) = {0.0225, 0.0, 0, 0.01940492957746467*gmsf};
+point_pylc_dup = 6043; Point(6043) = {0.1, 0.0, 0, 0.003577464788732372*gmsf};
+PointM11_dup = 6047; Point(6047) = {0.1128, 0, 0, 0.0009633802816901378*gmsf};
+PointM21_dup = 6049; Point(6049) = {0.1136, 0, 0, 0.0007999999999999952*gmsf};
+point_pylc_dup = 6054; Point(6054) = {-0.2, 2.4492935982947065e-17, 0.0, 0.009999999999999998*gmsf};
+point_pylc_dup = 6055; Point(6055) = {-0.116, 1.4205902870109297e-17, 0.0, 0.0009719626168224236*gmsf};
+PointM41_dup = 6057; Point(6057) = {-0.11520000000000001, 1.410793112617751e-17, 0.0, 0.0008859813084112094*gmsf};
+PointM31_dup = 6058; Point(6058) = {-0.1144, 1.400995938224572e-17, 0.0, 0.0007999999999999937*gmsf};
+point_pylc_dup = 6060; Point(6060) = {-0.0225, 2.7554552980815448e-18, 0.0, 0.01940492957746467*gmsf};
+point_pylc_dup = 6061; Point(6061) = {-0.1, 1.2246467991473533e-17, 0.0, 0.003577464788732372*gmsf};
+PointM11_dup = 6063; Point(6063) = {-0.1128, 1.3814015894382144e-17, 0.0, 0.0009633802816901378*gmsf};
+PointM21_dup = 6065; Point(6065) = {-0.1136, 1.3911987638313932e-17, 0.0, 0.0007999999999999952*gmsf};
+point_pylc = 5969; Point(5969) = {1.3777276490407724e-18, 0.0225, 0, 0.01940492957746467*gmsf};
+point_pylc = 5970; Point(5970) = {0, 0, 0, 0.001*gmsf};
+point_pylc_dup = 6118; Point(6118) = {0.09876883405950741, 0.015643446504063286, 0, 0.003577464788732372*gmsf};
+point_pylc_dup = 6119; Point(6119) = {0.1106210941466483, 0.01752066008455088, 0, 0.0011267605633802748*gmsf};
+point_pylc_dup = 6122; Point(6122) = {-0.1106210941466483, 0.017520660084550894, 0, 0.0011267605633802748*gmsf};
+point_pylc_dup = 6124; Point(6124) = {-0.09876883405950741, 0.0156434465040633, 0, 0.003577464788732372*gmsf};
+point_pylc = 5986; Point(5986) = {0.17320508075688776, 0.09999999999999999, 0, 0.009999999999999998*gmsf};
+point_pylc_dup = 6084; Point(6084) = {0.10000000000000003, 0.17320508075688773, 0.0, 0.009999999999999998*gmsf};
+point_pylc_dup = 6087; Point(6087) = {4.163336342344337e-17, 0.20000000000000004, 0.0, 0.009999999999999998*gmsf};
+point_pylc_dup = 6090; Point(6090) = {-0.09999999999999998, 0.17320508075688776, 0.0, 0.009999999999999998*gmsf};
+point_pylc_dup = 6093; Point(6093) = {-0.1732050807568877, 0.10000000000000005, 0.0, 0.009999999999999998*gmsf};
+PointM32 = 6041; Point(6041) = {0.09907330619293979, 0.057199999999999994, 0, 0.0007999999999999937*gmsf};
+PointM32_dup = 6068; Point(6068) = {0.05720000000000002, 0.09907330619293978, 0.0, 0.0007999999999999937*gmsf};
+PointM32_dup = 6071; Point(6071) = {2.7755575615628914e-17, 0.1144, 0.0, 0.0007999999999999937*gmsf};
+PointM32_dup = 6074; Point(6074) = {-0.05719999999999999, 0.09907330619293979, 0.0, 0.0007999999999999923*gmsf};
+PointM32_dup = 6077; Point(6077) = {-0.09907330619293976, 0.05720000000000003, 0.0, 0.0007999999999999937*gmsf};
+PointM42_dup = 6520; Point(6520) = {0.09976612651596735, 0.0576, 0, 0.0008859813084112094*gmsf};
+PointM42_dup = 6530; Point(6530) = {0.057600000000000026, 0.09976612651596733, 0.0, 0.0008859813084112094*gmsf};
+PointM42_dup = 6540; Point(6540) = {2.7755575615628914e-17, 0.11520000000000001, 0.0, 0.0008859813084112094*gmsf};
+PointM42_dup = 6550; Point(6550) = {-0.05759999999999999, 0.09976612651596735, 0.0, 0.0008859813084112094*gmsf};
+PointM42_dup = 6560; Point(6560) = {-0.09976612651596732, 0.05760000000000003, 0.0, 0.0008859813084112094*gmsf};
+point_pylc_dup = 6400; Point(6400) = {0.11371145625611974, 0.022928251483978635, 0, 0.0009719626168224236*gmsf};
+point_pylc_dup = 6402; Point(6402) = {0.11763254095460662, 0.02371888084549514, 0, 0.0014018691588785004*gmsf};
+point_pylc_dup = 6403; Point(6403) = {0.11373220920115029, 0.03827511711576839, 0, 0.0014018691588784976*gmsf};
+point_pylc_dup = 6404; Point(6404) = {0.10994113556111196, 0.03699927987857611, 0, 0.0009719626168224222*gmsf};
+point_pylc_dup = 6407; Point(6407) = {0.1004589468389949, 0.057999999999999996, 0, 0.0009719626168224236*gmsf};
+point_pylc_dup = 6420; Point(6420) = {0.08701288407713331, 0.07671217637754361, 0.0, 0.0009719626168224236*gmsf};
+point_pylc_dup = 6422; Point(6422) = {0.09001332835565515, 0.07935742383883823, 0.0, 0.0014018691588785004*gmsf};
+point_pylc_dup = 6423; Point(6423) = {0.07935742383883825, 0.09001332835565515, 0.0, 0.0014018691588784976*gmsf};
+point_pylc_dup = 6424; Point(6424) = {0.07671217637754364, 0.08701288407713331, 0.0, 0.0009719626168224236*gmsf};
+point_pylc_dup = 6427; Point(6427) = {0.058000000000000024, 0.10045894683899488, 0.0, 0.0009719626168224236*gmsf};
+point_pylc_dup = 6440; Point(6440) = {0.03699927987857613, 0.10994113556111194, 0.0, 0.0009719626168224236*gmsf};
+point_pylc_dup = 6442; Point(6442) = {0.038275117115768406, 0.11373220920115028, 0.0, 0.0014018691588784976*gmsf};
+point_pylc_dup = 6443; Point(6443) = {0.023718880845495158, 0.11763254095460662, 0.0, 0.0014018691588784976*gmsf};
+point_pylc_dup = 6444; Point(6444) = {0.02292825148397866, 0.11371145625611975, 0.0, 0.0009719626168224236*gmsf};
+point_pylc_dup = 6447; Point(6447) = {2.7755575615628914e-17, 0.11600000000000002, 0.0, 0.0009719626168224236*gmsf};
+point_pylc_dup = 6460; Point(6460) = {-0.022928251483978628, 0.11371145625611974, 0.0, 0.0009719626168224236*gmsf};
+point_pylc_dup = 6462; Point(6462) = {-0.023718880845495133, 0.11763254095460662, 0.0, 0.0014018691588785004*gmsf};
+point_pylc_dup = 6463; Point(6463) = {-0.038275117115768385, 0.11373220920115029, 0.0, 0.0014018691588784976*gmsf};
+point_pylc_dup = 6464; Point(6464) = {-0.036999279878576104, 0.10994113556111196, 0.0, 0.0009719626168224222*gmsf};
+point_pylc_dup = 6467; Point(6467) = {-0.05799999999999999, 0.1004589468389949, 0.0, 0.0009719626168224222*gmsf};
+point_pylc_dup = 6480; Point(6480) = {-0.0767121763775436, 0.08701288407713333, 0.0, 0.0009719626168224222*gmsf};
+point_pylc_dup = 6482; Point(6482) = {-0.0793574238388382, 0.09001332835565515, 0.0, 0.0014018691588784976*gmsf};
+point_pylc_dup = 6483; Point(6483) = {-0.09001332835565512, 0.07935742383883826, 0.0, 0.0014018691588784976*gmsf};
+point_pylc_dup = 6484; Point(6484) = {-0.08701288407713328, 0.07671217637754364, 0.0, 0.0009719626168224222*gmsf};
+point_pylc_dup = 6487; Point(6487) = {-0.10045894683899487, 0.05800000000000004, 0.0, 0.0009719626168224236*gmsf};
+point_pylc_dup = 6500; Point(6500) = {-0.10994113556111193, 0.03699927987857615, 0.0, 0.0009719626168224236*gmsf};
+point_pylc_dup = 6502; Point(6502) = {-0.11373220920115026, 0.03827511711576844, 0.0, 0.0014018691588784976*gmsf};
+point_pylc_dup = 6503; Point(6503) = {-0.11763254095460662, 0.023718880845495185, 0.0, 0.0014018691588784976*gmsf};
+point_pylc_dup = 6504; Point(6504) = {-0.11371145625611975, 0.022928251483978687, 0.0, 0.0009719626168224236*gmsf};
+point_pylc_dup = 6142; Point(6142) = {0.11852260087141653, 0.018772135804827707, 0, 0.0014018691588784976*gmsf};
+point_pylc_dup = 6144; Point(6144) = {0.14321480938629497, 0.02268299743083347, 0, 0.004088785046728965*gmsf};
+point_pylc_dup = 6147; Point(6147) = {0.13536916184209424, 0.05196335268406853, 0, 0.004088785046728965*gmsf};
+point_pylc_dup = 6149; Point(6149) = {0.11202965117966421, 0.04300415394543603, 0, 0.0014018691588784976*gmsf};
+point_pylc_dup = 6172; Point(6172) = {0.09325751537483652, 0.07551844692598049, 0.0, 0.0014018691588785004*gmsf};
+point_pylc_dup = 6174; Point(6174) = {0.1126861644112608, 0.09125145670222641, 0.0, 0.004088785046728967*gmsf};
+point_pylc_dup = 6177; Point(6177) = {0.09125145670222644, 0.11268616441126075, 0.0, 0.004088785046728965*gmsf};
+point_pylc_dup = 6179; Point(6179) = {0.0755184469259805, 0.09325751537483651, 0.0, 0.0014018691588785004*gmsf};
+point_pylc_dup = 6202; Point(6202) = {0.043004153945436045, 0.11202965117966421, 0.0, 0.0014018691588784976*gmsf};
+point_pylc_dup = 6204; Point(6204) = {0.051963352684068556, 0.13536916184209424, 0.0, 0.004088785046728965*gmsf};
+point_pylc_dup = 6207; Point(6207) = {0.022682997430833497, 0.14321480938629494, 0.0, 0.004088785046728962*gmsf};
+point_pylc_dup = 6209; Point(6209) = {0.01877213580482772, 0.11852260087141653, 0.0, 0.0014018691588784976*gmsf};
+point_pylc_dup = 6232; Point(6232) = {-0.0187721358048277, 0.11852260087141653, 0.0, 0.0014018691588784976*gmsf};
+point_pylc_dup = 6234; Point(6234) = {-0.02268299743083346, 0.14321480938629497, 0.0, 0.004088785046728965*gmsf};
+point_pylc_dup = 6237; Point(6237) = {-0.05196335268406852, 0.13536916184209424, 0.0, 0.004088785046728965*gmsf};
+point_pylc_dup = 6239; Point(6239) = {-0.043004153945436024, 0.11202965117966421, 0.0, 0.0014018691588784976*gmsf};
+point_pylc_dup = 6262; Point(6262) = {-0.07551844692598048, 0.09325751537483652, 0.0, 0.0014018691588784976*gmsf};
+point_pylc_dup = 6264; Point(6264) = {-0.0912514567022264, 0.1126861644112608, 0.0, 0.004088785046728965*gmsf};
+point_pylc_dup = 6267; Point(6267) = {-0.11268616441126074, 0.09125145670222644, 0.0, 0.004088785046728962*gmsf};
+point_pylc_dup = 6269; Point(6269) = {-0.09325751537483648, 0.0755184469259805, 0.0, 0.0014018691588784976*gmsf};
+point_pylc_dup = 6292; Point(6292) = {-0.11202965117966421, 0.04300415394543608, 0.0, 0.0014018691588785004*gmsf};
+point_pylc_dup = 6294; Point(6294) = {-0.13536916184209422, 0.051963352684068584, 0.0, 0.004088785046728965*gmsf};
+point_pylc_dup = 6297; Point(6297) = {-0.14321480938629494, 0.022682997430833532, 0.0, 0.004088785046728962*gmsf};
+point_pylc_dup = 6299; Point(6299) = {-0.11852260087141651, 0.01877213580482775, 0.0, 0.0014018691588784976*gmsf};
 
 // Lines and Curves
-Line_dup = 965;Line(Line_dup) = {1653, 1654}; 
-lowerLine4_dup = 968;Line(lowerLine4_dup) = {1654, 1660}; 
-lowerLine3_dup = 969;Line(lowerLine3_dup) = {1661, 1660}; 
-Line_dup = 964;Line(Line_dup) = {1651, 1652}; 
-lowerLine1_dup = 966;Line(lowerLine1_dup) = {1652, 1656}; 
-lowerLine2_dup = 967;Line(lowerLine2_dup) = {1656, 1658}; 
-Line_dup = 970;Line(Line_dup) = {1663, 1664}; 
-lowerLine4_dup = 971;Line(lowerLine4_dup) = {1664, 1666}; 
-lowerLine3_dup = 972;Line(lowerLine3_dup) = {1667, 1666}; 
-Line_dup = 973;Line(Line_dup) = {1669, 1670}; 
-lowerLine1_dup = 974;Line(lowerLine1_dup) = {1670, 1672}; 
-lowerLine2_dup = 975;Line(lowerLine2_dup) = {1672, 1674}; 
-InnerLimit = 913;Circle(InnerLimit) = {1669, 1579, 1578}; 
-InnerLimit = 915;Circle(InnerLimit) = {1578, 1579, 1651}; 
-MB_CurveRotor = 953;Circle(MB_CurveRotor) = {1658, 1579, 1674}; 
-rotorBand1_dup = 1173;Circle(rotorBand1_dup) = {1656, 1579, 1672}; 
-Line_dup = 1010;Line(Line_dup) = {1727, 1728}; 
-CircleArc_dup = 1012;Circle(CircleArc_dup) = {1728, 1579, 1731}; 
-Line_dup = 1013;Line(Line_dup) = {1731, 1733}; 
-CircleArc_dup = 1015;Circle(CircleArc_dup) = {1733, 1579, 1727}; 
-CircleArc_dup = 1161;Circle(CircleArc_dup) = {1652, 1579, 1727}; 
-CircleArc_dup = 1163;Circle(CircleArc_dup) = {1733, 1579, 1670}; 
-OuterLimit = 924;Circle(OuterLimit) = {1595, 1579, 1653}; 
-OuterLimit_dup = 989;Circle(OuterLimit_dup) = {1693, 1579, 1595}; 
-OuterLimit_dup = 991;Circle(OuterLimit_dup) = {1696, 1579, 1693}; 
-OuterLimit_dup = 993;Circle(OuterLimit_dup) = {1699, 1579, 1696}; 
-OuterLimit_dup = 995;Circle(OuterLimit_dup) = {1702, 1579, 1699}; 
-OuterLimit_dup = 997;Circle(OuterLimit_dup) = {1663, 1579, 1702}; 
-MB_CurveStator = 961;Circle(MB_CurveStator) = {1661, 1579, 1650}; 
-MB_CurveStator_dup = 977;Circle(MB_CurveStator_dup) = {1650, 1579, 1677}; 
-MB_CurveStator_dup = 979;Circle(MB_CurveStator_dup) = {1677, 1579, 1680}; 
-MB_CurveStator_dup = 981;Circle(MB_CurveStator_dup) = {1680, 1579, 1683}; 
-MB_CurveStator_dup = 983;Circle(MB_CurveStator_dup) = {1683, 1579, 1686}; 
-MB_CurveStator_dup = 985;Circle(MB_CurveStator_dup) = {1686, 1579, 1667}; 
-statorCircle4_dup = 1251;Circle(statorCircle4_dup) = {1660, 1579, 2129}; 
-upperLine3_dup = 1255;Line(upperLine3_dup) = {1650, 2129}; 
-statorCircle4_dup = 1257;Circle(statorCircle4_dup) = {2129, 1579, 2139}; 
-upperLine3_dup = 1261;Line(upperLine3_dup) = {1677, 2139}; 
-statorCircle4_dup = 1263;Circle(statorCircle4_dup) = {2139, 1579, 2149}; 
-upperLine3_dup = 1267;Line(upperLine3_dup) = {1680, 2149}; 
-statorCircle4_dup = 1269;Circle(statorCircle4_dup) = {2149, 1579, 2159}; 
-upperLine3_dup = 1273;Line(upperLine3_dup) = {1683, 2159}; 
-statorCircle4_dup = 1275;Circle(statorCircle4_dup) = {2159, 1579, 2169}; 
-upperLine3_dup = 1279;Line(upperLine3_dup) = {1686, 2169}; 
-statorCircle4_dup = 1281;Circle(statorCircle4_dup) = {2169, 1579, 1666}; 
-CircleArc_dup = 1179;Circle(CircleArc_dup) = {1654, 1579, 2009}; 
-Line_dup = 1180;Line(Line_dup) = {2009, 2011}; 
-Line_dup = 1181;Line(Line_dup) = {2012, 2013}; 
-CircleArc_dup = 1183;Circle(CircleArc_dup) = {2013, 1579, 2016}; 
-interface_line_slot_opening___slot_dup = 1185;Circle(interface_line_slot_opening___slot_dup) = {2011, 1579, 2012}; 
-upperLine4_dup = 1189;Line(upperLine4_dup) = {2016, 2129}; 
-CircleArc_dup = 1191;Circle(CircleArc_dup) = {2016, 1579, 2029}; 
-Line_dup = 1192;Line(Line_dup) = {2029, 2031}; 
-Line_dup = 1193;Line(Line_dup) = {2032, 2033}; 
-CircleArc_dup = 1195;Circle(CircleArc_dup) = {2033, 1579, 2036}; 
-interface_line_slot_opening___slot_dup = 1197;Circle(interface_line_slot_opening___slot_dup) = {2031, 1579, 2032}; 
-upperLine4_dup = 1201;Line(upperLine4_dup) = {2036, 2139}; 
-CircleArc_dup = 1203;Circle(CircleArc_dup) = {2036, 1579, 2049}; 
-Line_dup = 1204;Line(Line_dup) = {2049, 2051}; 
-Line_dup = 1205;Line(Line_dup) = {2052, 2053}; 
-CircleArc_dup = 1207;Circle(CircleArc_dup) = {2053, 1579, 2056}; 
-interface_line_slot_opening___slot_dup = 1209;Circle(interface_line_slot_opening___slot_dup) = {2051, 1579, 2052}; 
-upperLine4_dup = 1213;Line(upperLine4_dup) = {2056, 2149}; 
-CircleArc_dup = 1215;Circle(CircleArc_dup) = {2056, 1579, 2069}; 
-Line_dup = 1216;Line(Line_dup) = {2069, 2071}; 
-Line_dup = 1217;Line(Line_dup) = {2072, 2073}; 
-CircleArc_dup = 1219;Circle(CircleArc_dup) = {2073, 1579, 2076}; 
-interface_line_slot_opening___slot_dup = 1221;Circle(interface_line_slot_opening___slot_dup) = {2071, 1579, 2072}; 
-upperLine4_dup = 1225;Line(upperLine4_dup) = {2076, 2159}; 
-CircleArc_dup = 1227;Circle(CircleArc_dup) = {2076, 1579, 2089}; 
-Line_dup = 1228;Line(Line_dup) = {2089, 2091}; 
-Line_dup = 1229;Line(Line_dup) = {2092, 2093}; 
-CircleArc_dup = 1231;Circle(CircleArc_dup) = {2093, 1579, 2096}; 
-interface_line_slot_opening___slot_dup = 1233;Circle(interface_line_slot_opening___slot_dup) = {2091, 1579, 2092}; 
-upperLine4_dup = 1237;Line(upperLine4_dup) = {2096, 2169}; 
-CircleArc_dup = 1239;Circle(CircleArc_dup) = {2096, 1579, 2109}; 
-Line_dup = 1240;Line(Line_dup) = {2109, 2111}; 
-Line_dup = 1241;Line(Line_dup) = {2112, 2113}; 
-CircleArc_dup = 1243;Circle(CircleArc_dup) = {2113, 1579, 1664}; 
-interface_line_slot_opening___slot_dup = 1245;Circle(interface_line_slot_opening___slot_dup) = {2111, 1579, 2112}; 
-Line_dup = 1016;Line(Line_dup) = {2016, 1595}; 
-CircleArc_dup = 1024;Circle(CircleArc_dup) = {2011, 1579, 1751}; 
-Line_dup = 1025;Line(Line_dup) = {1751, 1753}; 
-CircleArc_dup = 1027;Circle(CircleArc_dup) = {1753, 1579, 1756}; 
-Line_dup = 1028;Line(Line_dup) = {1756, 1758}; 
-CircleArc_dup = 1030;Circle(CircleArc_dup) = {1758, 1579, 2012}; 
-Line_dup = 1034;Line(Line_dup) = {2036, 1693}; 
-CircleArc_dup = 1042;Circle(CircleArc_dup) = {2031, 1579, 1781}; 
-Line_dup = 1043;Line(Line_dup) = {1781, 1783}; 
-CircleArc_dup = 1045;Circle(CircleArc_dup) = {1783, 1579, 1786}; 
-Line_dup = 1046;Line(Line_dup) = {1786, 1788}; 
-CircleArc_dup = 1048;Circle(CircleArc_dup) = {1788, 1579, 2032}; 
-Line_dup = 1052;Line(Line_dup) = {2056, 1696}; 
-CircleArc_dup = 1060;Circle(CircleArc_dup) = {2051, 1579, 1811}; 
-Line_dup = 1061;Line(Line_dup) = {1811, 1813}; 
-CircleArc_dup = 1063;Circle(CircleArc_dup) = {1813, 1579, 1816}; 
-Line_dup = 1064;Line(Line_dup) = {1816, 1818}; 
-CircleArc_dup = 1066;Circle(CircleArc_dup) = {1818, 1579, 2052}; 
-Line_dup = 1070;Line(Line_dup) = {2076, 1699}; 
-CircleArc_dup = 1078;Circle(CircleArc_dup) = {2071, 1579, 1841}; 
-Line_dup = 1079;Line(Line_dup) = {1841, 1843}; 
-CircleArc_dup = 1081;Circle(CircleArc_dup) = {1843, 1579, 1846}; 
-Line_dup = 1082;Line(Line_dup) = {1846, 1848}; 
-CircleArc_dup = 1084;Circle(CircleArc_dup) = {1848, 1579, 2072}; 
-Line_dup = 1088;Line(Line_dup) = {2096, 1702}; 
-CircleArc_dup = 1096;Circle(CircleArc_dup) = {2091, 1579, 1871}; 
-Line_dup = 1097;Line(Line_dup) = {1871, 1873}; 
-CircleArc_dup = 1099;Circle(CircleArc_dup) = {1873, 1579, 1876}; 
-Line_dup = 1100;Line(Line_dup) = {1876, 1878}; 
-CircleArc_dup = 1102;Circle(CircleArc_dup) = {1878, 1579, 2092}; 
-CircleArc_dup = 1114;Circle(CircleArc_dup) = {2111, 1579, 1901}; 
-Line_dup = 1115;Line(Line_dup) = {1901, 1903}; 
-CircleArc_dup = 1117;Circle(CircleArc_dup) = {1903, 1579, 1906}; 
-Line_dup = 1118;Line(Line_dup) = {1906, 1908}; 
-CircleArc_dup = 1120;Circle(CircleArc_dup) = {1908, 1579, 2112}; 
-CircleArc_dup = 1125;Circle(CircleArc_dup) = {1751, 1579, 1758}; 
-CircleArc_dup = 1131;Circle(CircleArc_dup) = {1781, 1579, 1788}; 
-CircleArc_dup = 1137;Circle(CircleArc_dup) = {1811, 1579, 1818}; 
-CircleArc_dup = 1143;Circle(CircleArc_dup) = {1841, 1579, 1848}; 
-CircleArc_dup = 1149;Circle(CircleArc_dup) = {1871, 1579, 1878}; 
-CircleArc_dup = 1155;Circle(CircleArc_dup) = {1901, 1579, 1908}; 
+Line_dup = 3510;Line(Line_dup) = {6044, 6045};
+lowerLine4_dup = 3513;Line(lowerLine4_dup) = {6045, 6051};
+lowerLine3_dup = 3514;Line(lowerLine3_dup) = {6052, 6051};
+Line_dup = 3509;Line(Line_dup) = {6042, 6043};
+lowerLine1_dup = 3511;Line(lowerLine1_dup) = {6043, 6047};
+lowerLine2_dup = 3512;Line(lowerLine2_dup) = {6047, 6049};
+Line_dup = 3515;Line(Line_dup) = {6054, 6055};
+lowerLine4_dup = 3516;Line(lowerLine4_dup) = {6055, 6057};
+lowerLine3_dup = 3517;Line(lowerLine3_dup) = {6058, 6057};
+Line_dup = 3518;Line(Line_dup) = {6060, 6061};
+lowerLine1_dup = 3519;Line(lowerLine1_dup) = {6061, 6063};
+lowerLine2_dup = 3520;Line(lowerLine2_dup) = {6063, 6065};
+InnerLimit = 3458;Circle(InnerLimit) = {6060, 5970, 5969};
+InnerLimit = 3460;Circle(InnerLimit) = {5969, 5970, 6042};
+MB_CurveRotor = 3498;Circle(MB_CurveRotor) = {6049, 5970, 6065};
+rotorBand1_dup = 3718;Circle(rotorBand1_dup) = {6047, 5970, 6063};
+Line_dup = 3555;Line(Line_dup) = {6118, 6119};
+CircleArc_dup = 3557;Circle(CircleArc_dup) = {6119, 5970, 6122};
+Line_dup = 3558;Line(Line_dup) = {6122, 6124};
+CircleArc_dup = 3560;Circle(CircleArc_dup) = {6124, 5970, 6118};
+CircleArc_dup = 3706;Circle(CircleArc_dup) = {6043, 5970, 6118};
+CircleArc_dup = 3708;Circle(CircleArc_dup) = {6124, 5970, 6061};
+OuterLimit = 3469;Circle(OuterLimit) = {5986, 5970, 6044};
+OuterLimit_dup = 3534;Circle(OuterLimit_dup) = {6084, 5970, 5986};
+OuterLimit_dup = 3536;Circle(OuterLimit_dup) = {6087, 5970, 6084};
+OuterLimit_dup = 3538;Circle(OuterLimit_dup) = {6090, 5970, 6087};
+OuterLimit_dup = 3540;Circle(OuterLimit_dup) = {6093, 5970, 6090};
+OuterLimit_dup = 3542;Circle(OuterLimit_dup) = {6054, 5970, 6093};
+MB_CurveStator = 3506;Circle(MB_CurveStator) = {6052, 5970, 6041};
+MB_CurveStator_dup = 3522;Circle(MB_CurveStator_dup) = {6041, 5970, 6068};
+MB_CurveStator_dup = 3524;Circle(MB_CurveStator_dup) = {6068, 5970, 6071};
+MB_CurveStator_dup = 3526;Circle(MB_CurveStator_dup) = {6071, 5970, 6074};
+MB_CurveStator_dup = 3528;Circle(MB_CurveStator_dup) = {6074, 5970, 6077};
+MB_CurveStator_dup = 3530;Circle(MB_CurveStator_dup) = {6077, 5970, 6058};
+statorCircle4_dup = 3796;Circle(statorCircle4_dup) = {6051, 5970, 6520};
+upperLine3_dup = 3800;Line(upperLine3_dup) = {6041, 6520};
+statorCircle4_dup = 3802;Circle(statorCircle4_dup) = {6520, 5970, 6530};
+upperLine3_dup = 3806;Line(upperLine3_dup) = {6068, 6530};
+statorCircle4_dup = 3808;Circle(statorCircle4_dup) = {6530, 5970, 6540};
+upperLine3_dup = 3812;Line(upperLine3_dup) = {6071, 6540};
+statorCircle4_dup = 3814;Circle(statorCircle4_dup) = {6540, 5970, 6550};
+upperLine3_dup = 3818;Line(upperLine3_dup) = {6074, 6550};
+statorCircle4_dup = 3820;Circle(statorCircle4_dup) = {6550, 5970, 6560};
+upperLine3_dup = 3824;Line(upperLine3_dup) = {6077, 6560};
+statorCircle4_dup = 3826;Circle(statorCircle4_dup) = {6560, 5970, 6057};
+CircleArc_dup = 3724;Circle(CircleArc_dup) = {6045, 5970, 6400};
+Line_dup = 3725;Line(Line_dup) = {6400, 6402};
+Line_dup = 3726;Line(Line_dup) = {6403, 6404};
+CircleArc_dup = 3728;Circle(CircleArc_dup) = {6404, 5970, 6407};
+interface_line_slot_opening___slot_dup = 3730;Circle(interface_line_slot_opening___slot_dup) = {6402, 5970, 6403};
+upperLine4_dup = 3734;Line(upperLine4_dup) = {6407, 6520};
+CircleArc_dup = 3736;Circle(CircleArc_dup) = {6407, 5970, 6420};
+Line_dup = 3737;Line(Line_dup) = {6420, 6422};
+Line_dup = 3738;Line(Line_dup) = {6423, 6424};
+CircleArc_dup = 3740;Circle(CircleArc_dup) = {6424, 5970, 6427};
+interface_line_slot_opening___slot_dup = 3742;Circle(interface_line_slot_opening___slot_dup) = {6422, 5970, 6423};
+upperLine4_dup = 3746;Line(upperLine4_dup) = {6427, 6530};
+CircleArc_dup = 3748;Circle(CircleArc_dup) = {6427, 5970, 6440};
+Line_dup = 3749;Line(Line_dup) = {6440, 6442};
+Line_dup = 3750;Line(Line_dup) = {6443, 6444};
+CircleArc_dup = 3752;Circle(CircleArc_dup) = {6444, 5970, 6447};
+interface_line_slot_opening___slot_dup = 3754;Circle(interface_line_slot_opening___slot_dup) = {6442, 5970, 6443};
+upperLine4_dup = 3758;Line(upperLine4_dup) = {6447, 6540};
+CircleArc_dup = 3760;Circle(CircleArc_dup) = {6447, 5970, 6460};
+Line_dup = 3761;Line(Line_dup) = {6460, 6462};
+Line_dup = 3762;Line(Line_dup) = {6463, 6464};
+CircleArc_dup = 3764;Circle(CircleArc_dup) = {6464, 5970, 6467};
+interface_line_slot_opening___slot_dup = 3766;Circle(interface_line_slot_opening___slot_dup) = {6462, 5970, 6463};
+upperLine4_dup = 3770;Line(upperLine4_dup) = {6467, 6550};
+CircleArc_dup = 3772;Circle(CircleArc_dup) = {6467, 5970, 6480};
+Line_dup = 3773;Line(Line_dup) = {6480, 6482};
+Line_dup = 3774;Line(Line_dup) = {6483, 6484};
+CircleArc_dup = 3776;Circle(CircleArc_dup) = {6484, 5970, 6487};
+interface_line_slot_opening___slot_dup = 3778;Circle(interface_line_slot_opening___slot_dup) = {6482, 5970, 6483};
+upperLine4_dup = 3782;Line(upperLine4_dup) = {6487, 6560};
+CircleArc_dup = 3784;Circle(CircleArc_dup) = {6487, 5970, 6500};
+Line_dup = 3785;Line(Line_dup) = {6500, 6502};
+Line_dup = 3786;Line(Line_dup) = {6503, 6504};
+CircleArc_dup = 3788;Circle(CircleArc_dup) = {6504, 5970, 6055};
+interface_line_slot_opening___slot_dup = 3790;Circle(interface_line_slot_opening___slot_dup) = {6502, 5970, 6503};
+Line_dup = 3561;Line(Line_dup) = {6407, 5986};
+CircleArc_dup = 3569;Circle(CircleArc_dup) = {6402, 5970, 6142};
+Line_dup = 3570;Line(Line_dup) = {6142, 6144};
+CircleArc_dup = 3572;Circle(CircleArc_dup) = {6144, 5970, 6147};
+Line_dup = 3573;Line(Line_dup) = {6147, 6149};
+CircleArc_dup = 3575;Circle(CircleArc_dup) = {6149, 5970, 6403};
+Line_dup = 3579;Line(Line_dup) = {6427, 6084};
+CircleArc_dup = 3587;Circle(CircleArc_dup) = {6422, 5970, 6172};
+Line_dup = 3588;Line(Line_dup) = {6172, 6174};
+CircleArc_dup = 3590;Circle(CircleArc_dup) = {6174, 5970, 6177};
+Line_dup = 3591;Line(Line_dup) = {6177, 6179};
+CircleArc_dup = 3593;Circle(CircleArc_dup) = {6179, 5970, 6423};
+Line_dup = 3597;Line(Line_dup) = {6447, 6087};
+CircleArc_dup = 3605;Circle(CircleArc_dup) = {6442, 5970, 6202};
+Line_dup = 3606;Line(Line_dup) = {6202, 6204};
+CircleArc_dup = 3608;Circle(CircleArc_dup) = {6204, 5970, 6207};
+Line_dup = 3609;Line(Line_dup) = {6207, 6209};
+CircleArc_dup = 3611;Circle(CircleArc_dup) = {6209, 5970, 6443};
+Line_dup = 3615;Line(Line_dup) = {6467, 6090};
+CircleArc_dup = 3623;Circle(CircleArc_dup) = {6462, 5970, 6232};
+Line_dup = 3624;Line(Line_dup) = {6232, 6234};
+CircleArc_dup = 3626;Circle(CircleArc_dup) = {6234, 5970, 6237};
+Line_dup = 3627;Line(Line_dup) = {6237, 6239};
+CircleArc_dup = 3629;Circle(CircleArc_dup) = {6239, 5970, 6463};
+Line_dup = 3633;Line(Line_dup) = {6487, 6093};
+CircleArc_dup = 3641;Circle(CircleArc_dup) = {6482, 5970, 6262};
+Line_dup = 3642;Line(Line_dup) = {6262, 6264};
+CircleArc_dup = 3644;Circle(CircleArc_dup) = {6264, 5970, 6267};
+Line_dup = 3645;Line(Line_dup) = {6267, 6269};
+CircleArc_dup = 3647;Circle(CircleArc_dup) = {6269, 5970, 6483};
+CircleArc_dup = 3659;Circle(CircleArc_dup) = {6502, 5970, 6292};
+Line_dup = 3660;Line(Line_dup) = {6292, 6294};
+CircleArc_dup = 3662;Circle(CircleArc_dup) = {6294, 5970, 6297};
+Line_dup = 3663;Line(Line_dup) = {6297, 6299};
+CircleArc_dup = 3665;Circle(CircleArc_dup) = {6299, 5970, 6503};
+CircleArc_dup = 3670;Circle(CircleArc_dup) = {6142, 5970, 6149};
+CircleArc_dup = 3676;Circle(CircleArc_dup) = {6172, 5970, 6179};
+CircleArc_dup = 3682;Circle(CircleArc_dup) = {6202, 5970, 6209};
+CircleArc_dup = 3688;Circle(CircleArc_dup) = {6232, 5970, 6239};
+CircleArc_dup = 3694;Circle(CircleArc_dup) = {6262, 5970, 6269};
+CircleArc_dup = 3700;Circle(CircleArc_dup) = {6292, 5970, 6299};
 
 // Surfaces
 
-Curve Loop(121) = {1173,975,-953,-967};
-Surf_rotorAirGap2_dup = {121};
-Plane Surface(Surf_rotorAirGap2_dup) = {121};
+Curve Loop(359) = {3718,3520,-3498,-3512};
+Surf_rotorAirGap2_dup = {359};
+Plane Surface(Surf_rotorAirGap2_dup) = {359};
 
-Curve Loop(107) = {1010,1012,1013,1015};
-Surf_Magnet_dup = {107};
-Plane Surface(Surf_Magnet_dup) = {107};
+Curve Loop(345) = {3555,3557,3558,3560};
+Surf_Magnet_dup = {345};
+Plane Surface(Surf_Magnet_dup) = {345};
 
-Curve Loop(120) = {1161,1010,1012,1013,1163,974,-1173,-966};
-Surf_rotorAirGap1_dup = {120};
-Plane Surface(Surf_rotorAirGap1_dup) = {120};
+Curve Loop(358) = {3706,3555,3557,3558,3708,3519,-3718,-3511};
+Surf_rotorAirGap1_dup = {358};
+Plane Surface(Surf_rotorAirGap1_dup) = {358};
 
-Curve Loop(106) = {964,1161,-1015,1163,-973,913,915};
-Surf_Rotorblech_dup = {106};
-Plane Surface(Surf_Rotorblech_dup) = {106};
+Curve Loop(344) = {3509,3706,-3560,3708,-3518,3458,3460};
+Surf_Rotorblech_dup = {344};
+Plane Surface(Surf_Rotorblech_dup) = {344};
 
-Curve Loop(128) = {1251,-1255,-961,969};
-Surf_statorAirGap2_dup = {128};
-Plane Surface(Surf_statorAirGap2_dup) = {128};
+Curve Loop(366) = {3796,-3800,-3506,3514};
+Surf_statorAirGap2_dup = {366};
+Plane Surface(Surf_statorAirGap2_dup) = {366};
 
-Curve Loop(129) = {1257,-1261,-977,1255};
-Surf_statorAirGap2_dup = {129};
-Plane Surface(Surf_statorAirGap2_dup) = {129};
+Curve Loop(367) = {3802,-3806,-3522,3800};
+Surf_statorAirGap2_dup = {367};
+Plane Surface(Surf_statorAirGap2_dup) = {367};
 
-Curve Loop(130) = {1263,-1267,-979,1261};
-Surf_statorAirGap2_dup = {130};
-Plane Surface(Surf_statorAirGap2_dup) = {130};
+Curve Loop(368) = {3808,-3812,-3524,3806};
+Surf_statorAirGap2_dup = {368};
+Plane Surface(Surf_statorAirGap2_dup) = {368};
 
-Curve Loop(131) = {1269,-1273,-981,1267};
-Surf_statorAirGap2_dup = {131};
-Plane Surface(Surf_statorAirGap2_dup) = {131};
+Curve Loop(369) = {3814,-3818,-3526,3812};
+Surf_statorAirGap2_dup = {369};
+Plane Surface(Surf_statorAirGap2_dup) = {369};
 
-Curve Loop(132) = {1275,-1279,-983,1273};
-Surf_statorAirGap2_dup = {132};
-Plane Surface(Surf_statorAirGap2_dup) = {132};
+Curve Loop(370) = {3820,-3824,-3528,3818};
+Surf_statorAirGap2_dup = {370};
+Plane Surface(Surf_statorAirGap2_dup) = {370};
 
-Curve Loop(133) = {1281,-972,-985,1279};
-Surf_statorAirGap2_dup = {133};
-Plane Surface(Surf_statorAirGap2_dup) = {133};
+Curve Loop(371) = {3826,-3517,-3530,3824};
+Surf_statorAirGap2_dup = {371};
+Plane Surface(Surf_statorAirGap2_dup) = {371};
 
-Curve Loop(122) = {1179,1180,1185,1181,1183,1189,-1251,-968};
-Surf_statorAirGap1_dup = {122};
-Plane Surface(Surf_statorAirGap1_dup) = {122};
+Curve Loop(360) = {3724,3725,3730,3726,3728,3734,-3796,-3513};
+Surf_statorAirGap1_dup = {360};
+Plane Surface(Surf_statorAirGap1_dup) = {360};
 
-Curve Loop(123) = {1191,1192,1197,1193,1195,1201,-1257,-1189};
-Surf_statorAirGap1_dup = {123};
-Plane Surface(Surf_statorAirGap1_dup) = {123};
+Curve Loop(361) = {3736,3737,3742,3738,3740,3746,-3802,-3734};
+Surf_statorAirGap1_dup = {361};
+Plane Surface(Surf_statorAirGap1_dup) = {361};
 
-Curve Loop(124) = {1203,1204,1209,1205,1207,1213,-1263,-1201};
-Surf_statorAirGap1_dup = {124};
-Plane Surface(Surf_statorAirGap1_dup) = {124};
+Curve Loop(362) = {3748,3749,3754,3750,3752,3758,-3808,-3746};
+Surf_statorAirGap1_dup = {362};
+Plane Surface(Surf_statorAirGap1_dup) = {362};
 
-Curve Loop(125) = {1215,1216,1221,1217,1219,1225,-1269,-1213};
-Surf_statorAirGap1_dup = {125};
-Plane Surface(Surf_statorAirGap1_dup) = {125};
+Curve Loop(363) = {3760,3761,3766,3762,3764,3770,-3814,-3758};
+Surf_statorAirGap1_dup = {363};
+Plane Surface(Surf_statorAirGap1_dup) = {363};
 
-Curve Loop(126) = {1227,1228,1233,1229,1231,1237,-1275,-1225};
-Surf_statorAirGap1_dup = {126};
-Plane Surface(Surf_statorAirGap1_dup) = {126};
+Curve Loop(364) = {3772,3773,3778,3774,3776,3782,-3820,-3770};
+Surf_statorAirGap1_dup = {364};
+Plane Surface(Surf_statorAirGap1_dup) = {364};
 
-Curve Loop(127) = {1239,1240,1245,1241,1243,971,-1281,-1237};
-Surf_statorAirGap1_dup = {127};
-Plane Surface(Surf_statorAirGap1_dup) = {127};
+Curve Loop(365) = {3784,3785,3790,3786,3788,3516,-3826,-3782};
+Surf_statorAirGap1_dup = {365};
+Plane Surface(Surf_statorAirGap1_dup) = {365};
 
-Curve Loop(108) = {1016,924,965,1179,1180,1024,1025,1027,1028,1030,1181,1183};
-Surf_Statorblech_dup = {108};
-Plane Surface(Surf_Statorblech_dup) = {108};
+Curve Loop(346) = {3561,3469,3510,3724,3725,3569,3570,3572,3573,3575,3726,3728};
+Surf_Statorblech_dup = {346};
+Plane Surface(Surf_Statorblech_dup) = {346};
 
-Curve Loop(109) = {1034,989,-1016,1191,1192,1042,1043,1045,1046,1048,1193,1195};
-Surf_Statorblech_dup = {109};
-Plane Surface(Surf_Statorblech_dup) = {109};
+Curve Loop(347) = {3579,3534,-3561,3736,3737,3587,3588,3590,3591,3593,3738,3740};
+Surf_Statorblech_dup = {347};
+Plane Surface(Surf_Statorblech_dup) = {347};
 
-Curve Loop(110) = {1052,991,-1034,1203,1204,1060,1061,1063,1064,1066,1205,1207};
-Surf_Statorblech_dup = {110};
-Plane Surface(Surf_Statorblech_dup) = {110};
+Curve Loop(348) = {3597,3536,-3579,3748,3749,3605,3606,3608,3609,3611,3750,3752};
+Surf_Statorblech_dup = {348};
+Plane Surface(Surf_Statorblech_dup) = {348};
 
-Curve Loop(111) = {1070,993,-1052,1215,1216,1078,1079,1081,1082,1084,1217,1219};
-Surf_Statorblech_dup = {111};
-Plane Surface(Surf_Statorblech_dup) = {111};
+Curve Loop(349) = {3615,3538,-3597,3760,3761,3623,3624,3626,3627,3629,3762,3764};
+Surf_Statorblech_dup = {349};
+Plane Surface(Surf_Statorblech_dup) = {349};
 
-Curve Loop(112) = {1088,995,-1070,1227,1228,1096,1097,1099,1100,1102,1229,1231};
-Surf_Statorblech_dup = {112};
-Plane Surface(Surf_Statorblech_dup) = {112};
+Curve Loop(350) = {3633,3540,-3615,3772,3773,3641,3642,3644,3645,3647,3774,3776};
+Surf_Statorblech_dup = {350};
+Plane Surface(Surf_Statorblech_dup) = {350};
 
-Curve Loop(113) = {970,-1243,-1241,-1120,-1118,-1117,-1115,-1114,-1240,-1239,1088,-997};
-Surf_Statorblech_dup = {113};
-Plane Surface(Surf_Statorblech_dup) = {113};
+Curve Loop(351) = {3515,-3788,-3786,-3665,-3663,-3662,-3660,-3659,-3785,-3784,3633,-3542};
+Surf_Statorblech_dup = {351};
+Plane Surface(Surf_Statorblech_dup) = {351};
 
-Curve Loop(114) = {1125,-1028,-1027,-1025};
-Surf_Stator_Nut_dup = {114};
-Plane Surface(Surf_Stator_Nut_dup) = {114};
+Curve Loop(352) = {3670,-3573,-3572,-3570};
+Surf_Stator_Nut_dup = {352};
+Plane Surface(Surf_Stator_Nut_dup) = {352};
 
-Curve Loop(115) = {1131,-1046,-1045,-1043};
-Surf_Stator_Nut_dup = {115};
-Plane Surface(Surf_Stator_Nut_dup) = {115};
+Curve Loop(353) = {3676,-3591,-3590,-3588};
+Surf_Stator_Nut_dup = {353};
+Plane Surface(Surf_Stator_Nut_dup) = {353};
 
-Curve Loop(116) = {1137,-1064,-1063,-1061};
-Surf_Stator_Nut_dup = {116};
-Plane Surface(Surf_Stator_Nut_dup) = {116};
+Curve Loop(354) = {3682,-3609,-3608,-3606};
+Surf_Stator_Nut_dup = {354};
+Plane Surface(Surf_Stator_Nut_dup) = {354};
 
-Curve Loop(117) = {1143,-1082,-1081,-1079};
-Surf_Stator_Nut_dup = {117};
-Plane Surface(Surf_Stator_Nut_dup) = {117};
+Curve Loop(355) = {3688,-3627,-3626,-3624};
+Surf_Stator_Nut_dup = {355};
+Plane Surface(Surf_Stator_Nut_dup) = {355};
 
-Curve Loop(118) = {1149,-1100,-1099,-1097};
-Surf_Stator_Nut_dup = {118};
-Plane Surface(Surf_Stator_Nut_dup) = {118};
+Curve Loop(356) = {3694,-3645,-3644,-3642};
+Surf_Stator_Nut_dup = {356};
+Plane Surface(Surf_Stator_Nut_dup) = {356};
 
-Curve Loop(119) = {1155,-1118,-1117,-1115};
-Surf_Stator_Nut_dup = {119};
-Plane Surface(Surf_Stator_Nut_dup) = {119};
+Curve Loop(357) = {3700,-3663,-3662,-3660};
+Surf_Stator_Nut_dup = {357};
+Plane Surface(Surf_Stator_Nut_dup) = {357};
 
 // Color code
 If (!Flag_individualColoring)
-Color SkyBlue {Surface {121}; }
-Color Red {Surface {107}; }
-Color SkyBlue {Surface {120}; }
-Color SteelBlue {Surface {106}; }
-Color SkyBlue {Surface {128}; }
-Color SkyBlue {Surface {129}; }
-Color SkyBlue {Surface {130}; }
-Color SkyBlue {Surface {131}; }
-Color SkyBlue {Surface {132}; }
-Color SkyBlue {Surface {133}; }
-Color SkyBlue {Surface {122}; }
-Color SkyBlue {Surface {123}; }
-Color SkyBlue {Surface {124}; }
-Color SkyBlue {Surface {125}; }
-Color SkyBlue {Surface {126}; }
-Color SkyBlue {Surface {127}; }
-Color SteelBlue4 {Surface {108}; }
-Color SteelBlue4 {Surface {109}; }
-Color SteelBlue4 {Surface {110}; }
-Color SteelBlue4 {Surface {111}; }
-Color SteelBlue4 {Surface {112}; }
-Color SteelBlue4 {Surface {113}; }
-Color Magenta {Surface {114}; }
-Color Magenta {Surface {115}; }
-Color Cyan {Surface {116}; }
-Color Cyan {Surface {117}; }
-Color Yellow4 {Surface {118}; }
-Color Yellow4 {Surface {119}; }
+Color SkyBlue {Surface {359}; }
+Color Red {Surface {345}; }
+Color SkyBlue {Surface {358}; }
+Color SteelBlue {Surface {344}; }
+Color SkyBlue {Surface {366}; }
+Color SkyBlue {Surface {367}; }
+Color SkyBlue {Surface {368}; }
+Color SkyBlue {Surface {369}; }
+Color SkyBlue {Surface {370}; }
+Color SkyBlue {Surface {371}; }
+Color SkyBlue {Surface {360}; }
+Color SkyBlue {Surface {361}; }
+Color SkyBlue {Surface {362}; }
+Color SkyBlue {Surface {363}; }
+Color SkyBlue {Surface {364}; }
+Color SkyBlue {Surface {365}; }
+Color SteelBlue4 {Surface {346}; }
+Color SteelBlue4 {Surface {347}; }
+Color SteelBlue4 {Surface {348}; }
+Color SteelBlue4 {Surface {349}; }
+Color SteelBlue4 {Surface {350}; }
+Color SteelBlue4 {Surface {351}; }
+Color Magenta {Surface {352}; }
+Color Magenta {Surface {353}; }
+Color Cyan {Surface {354}; }
+Color Cyan {Surface {355}; }
+Color Yellow4 {Surface {356}; }
+Color Yellow4 {Surface {357}; }
 EndIf
 
 // Physical Elements
 // primaryLineS
-Physical Curve("primaryLineS", 3) = {965,968,969};
+Physical Curve("primaryLineS", 3) = {3510,3513,3514};
 // primaryLineR
-Physical Curve("primaryLineR", 2) = {964,966,967};
+Physical Curve("primaryLineR", 2) = {3509,3511,3512};
 // slaveLineS
-Physical Curve("slaveLineS", 5) = {970,971,972};
+Physical Curve("slaveLineS", 5) = {3515,3516,3517};
 // slaveLineR
-Physical Curve("slaveLineR", 4) = {973,974,975};
+Physical Curve("slaveLineR", 4) = {3518,3519,3520};
 // innerLimit
-Physical Curve("innerLimit", 10) = {913,915};
+Physical Curve("innerLimit", 10) = {3458,3460};
 // Rotor_Bnd_MB_1
-Physical Curve("Rotor_Bnd_MB_1", 7) = {953};
+Physical Curve("Rotor_Bnd_MB_1", 7) = {3498};
 // Rotor_Bnd_MB_2
-Physical Curve("Rotor_Bnd_MB_2", 8) = {953};
+Physical Curve("Rotor_Bnd_MB_2", 8) = {3498};
 // LuR2
-Physical Surface("LuR2", 21) = {121};
+Physical Surface("LuR2", 21) = {359};
 // Mag0_0
-Physical Surface("Mag0_0", 12) = {107};
+Physical Surface("Mag0_0", 12) = {345};
 // LuR1
-Physical Surface("LuR1", 20) = {120};
+Physical Surface("LuR1", 20) = {358};
 // Pol
-Physical Surface("Pol", 11) = {106};
+Physical Surface("Pol", 11) = {344};
 // outerLimit
-Physical Curve("outerLimit", 9) = {924,989,991,993,995,997};
+Physical Curve("outerLimit", 9) = {3469,3534,3536,3538,3540,3542};
 // mbStator
-Physical Curve("mbStator", 6) = {961,977,979,981,983,985};
+Physical Curve("mbStator", 6) = {3506,3522,3524,3526,3528,3530};
 // StLu2
-Physical Surface("StLu2", 23) = {128,129,130,131,132,133};
+Physical Surface("StLu2", 23) = {366,367,368,369,370,371};
 // StLu1
-Physical Surface("StLu1", 22) = {122,123,124,125,126,127};
+Physical Surface("StLu1", 22) = {360,361,362,363,364,365};
 // StNut
-Physical Surface("StNut", 13) = {108,109,110,111,112,113};
+Physical Surface("StNut", 13) = {346,347,348,349,350,351};
 // StCu0_0_Up
-Physical Surface("StCu0_0_Up", 14) = {114};
+Physical Surface("StCu0_0_Up", 14) = {352};
 // StCu0_1_Up
-Physical Surface("StCu0_1_Up", 15) = {115};
+Physical Surface("StCu0_1_Up", 15) = {353};
 // StCu0_2_Wn
-Physical Surface("StCu0_2_Wn", 16) = {116};
+Physical Surface("StCu0_2_Wn", 16) = {354};
 // StCu0_3_Wn
-Physical Surface("StCu0_3_Wn", 17) = {117};
+Physical Surface("StCu0_3_Wn", 17) = {355};
 // StCu0_4_Vp
-Physical Surface("StCu0_4_Vp", 18) = {118};
+Physical Surface("StCu0_4_Vp", 18) = {356};
 // StCu0_5_Vp
-Physical Surface("StCu0_5_Vp", 19) = {119};
+Physical Surface("StCu0_5_Vp", 19) = {357};
 
 DefineConstant[
 	mm = 1e-3,
@@ -440,16 +440,16 @@ If(Flag_SpecifyMeshSize)
 		StLu1_msf = {1000.0, Name StrCat[INPUT_MESH, "05Mesh Size/Statorluftspalt 1 [mm]"],Min 100.0, Max 10000.0, Step 0.1,Visible Flag_SpecifyMeshSize},
 		StLu2_msf = {1000.0, Name StrCat[INPUT_MESH, "05Mesh Size/Statorluftspalt 2 [mm]"],Min 100.0, Max 10000.0, Step 0.1,Visible Flag_SpecifyMeshSize}
 	];
-	MeshSize { PointsOf {Surface{ 107 };} } = Mag_msf*mm;
-	MeshSize { PointsOf {Surface{ 106 };} } = Pol_msf*mm;
-	MeshSize { PointsOf {Surface{ 120,121 };} } = LuR_msf*mm;
-	MeshSize { PointsOf {Surface{ 120 };} } = LuR1_msf*mm;
-	MeshSize { PointsOf {Surface{ 121 };} } = LuR2_msf*mm;
-	MeshSize { PointsOf {Surface{ 114,115,116,117,118,119 };} } = StCu_msf*mm;
-	MeshSize { PointsOf {Surface{ 108,109,110,111,112,113 };} } = StNut_msf*mm;
-	MeshSize { PointsOf {Surface{ 122,123,124,125,126,127,128,129,130,131,132,133 };} } = StLu_msf*mm;
-	MeshSize { PointsOf {Surface{ 122,123,124,125,126,127 };} } = StLu1_msf*mm;
-	MeshSize { PointsOf {Surface{ 128,129,130,131,132,133 };} } = StLu2_msf*mm;
+	MeshSize { PointsOf {Surface{ 345 };} } = Mag_msf*mm;
+	MeshSize { PointsOf {Surface{ 344 };} } = Pol_msf*mm;
+	MeshSize { PointsOf {Surface{ 358,359 };} } = LuR_msf*mm;
+	MeshSize { PointsOf {Surface{ 358 };} } = LuR1_msf*mm;
+	MeshSize { PointsOf {Surface{ 359 };} } = LuR2_msf*mm;
+	MeshSize { PointsOf {Surface{ 352,353,354,355,356,357 };} } = StCu_msf*mm;
+	MeshSize { PointsOf {Surface{ 346,347,348,349,350,351 };} } = StNut_msf*mm;
+	MeshSize { PointsOf {Surface{ 360,361,362,363,364,365,366,367,368,369,370,371 };} } = StLu_msf*mm;
+	MeshSize { PointsOf {Surface{ 360,361,362,363,364,365 };} } = StLu1_msf*mm;
+	MeshSize { PointsOf {Surface{ 366,367,368,369,370,371 };} } = StLu2_msf*mm;
 EndIf
 
 // Mesh operations
@@ -457,13 +457,13 @@ EndIf
 // Do not switch mesh algorithm on failure, because this led to mesh errors in the past.
 Mesh.AlgorithmSwitchOnFailure = 0;DefineConstant[Flag_CompoundMesh = {0, Name StrCat[INPUT_MESH, "Compound Mesh"], Choices {0,1}, Help "Use Compound Mesh to ignore lines between segments while meshing.",Visible Flag_ExpertMode}];
 If (Flag_CompoundMesh)
-Compound Surface{108,109,110,111,112,113}; // stator domainLam
-Compound Surface{128,129,130,131,132,133}; // stator airGap
+Compound Surface{346,347,348,349,350,351}; // stator domainLam
+Compound Surface{366,367,368,369,370,371}; // stator airGap
 EndIf // (Flag_CompoundMesh)
 
 // Add Periodic Mesh to model symmetry boundary-lines
-primaryLines = {964,966,967,965,968,969};
-secondaryLines = {973,974,975,970,971,972};
+primaryLines = {3509,3511,3512,3510,3513,3514};
+secondaryLines = {3518,3519,3520,3515,3516,3517};
 Periodic Curve{secondaryLines[]} = {primaryLines[]} Rotate {{0,0,1}, {0,0,0}, 2*Pi/2};
 
 // Add mesh size setting for Movingband lines
@@ -471,10 +471,10 @@ DefineConstant[
 	NbrMbSegments = {890.0, Name StrCat[INPUT_MESH, "Number of Rotor Movingband Segments"],Max 1440, Min 180, Step 10, Help "Set the number of mesh segments on the interface between rotor/statorairgap and movingband. Value represents number of segments on whole circle.", Visible Flag_ExpertMode},
 	r_MB_R = 0.1136
 ];
-MB_LinesR = {953,987};
+MB_LinesR = {3498,3532};
 MeshSize{ PointsOf{Line{MB_LinesR[]};}} = 2*Pi*r_MB_R/NbrMbSegments;
 
-MB_LinesS = {961,977,979,981,983,985};
+MB_LinesS = {3506,3522,3524,3526,3528,3530};
 MeshSize{ PointsOf{Line{MB_LinesS[]};}} = 2*Pi*0.1144/NbrMbSegments;
 
 Mesh.SurfaceFaces = 0; // don't show mesh faces (only edges)
@@ -484,4 +484,4 @@ rotorBndLines[] = Boundary{ Physical Surface{ 12 }; };
 rotorBndLines[] += CombinedBoundary{ Physical Surface{ 11 }; };
 rotorBndLines[] += CombinedBoundary{ Physical Surface{ 21 }; };
 statorBndLines[] = Boundary{ Physical Surface{ 3,5,6,9,13,14,15,16,17,18,19,22,23 }; };
-Physical Line("DomainPlotMovingGeo",1) = {rotorBndLines[], statorBndLines[]}; 
+Physical Line("DomainPlotMovingGeo",1) = {rotorBndLines[], statorBndLines[]};
