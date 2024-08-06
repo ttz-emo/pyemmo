@@ -95,7 +95,18 @@ def cleanup(request):
 
 # Integration test class
 @pytest.mark.parametrize(
-    "test_tuple",
+    # "test_tuple",
+    (
+        "test_id",
+        "test_case",
+        "source_path",
+        "result_path",
+        "simul_path",
+        "simul_subfolder_path",
+        "base_result_path", 
+        "base_simul_path", 
+        "base_simul_subfolder_path"
+    ),
     pyleecanPrepTuple(test_cases, test_types[0])[1:],
     scope="session",
 )
@@ -115,18 +126,17 @@ class TestCasesIntegration:
     """
 
     @pytest.mark.dependency(name="simul_folder_exist")
-    def test_api_simul_folder_exist(self, test_tuple):
-        (
-            test_id,
-            test_case,
-            source_path,
-            result_path,
-            simul_path,
-            simul_subfolder_path,
-            _,
-            _,
-            _,
-        ) = test_tuple
+    def test_api_simul_folder_exist(
+        self,
+        test_id,
+        test_case,
+        source_path,
+        result_path,
+        simul_path,
+        simul_subfolder_path,
+        base_result_path, base_simul_path, base_simul_subfolder_path
+    ):
+        # ) = test_tuple
         LOGGER.info(f"TEST CASE {test_id}: {test_case}")
         LOGGER.info(
             "Test point 1: Check that simulation result folders are properly generated:"
@@ -140,47 +150,77 @@ class TestCasesIntegration:
                 "SUCCESS: Simulation result subfolder exists!"
             ), "ERROR: Simulation result subfolder does not exist"
 
-    def test_gmsh_base_files(self, test_tuple):
+    def test_gmsh_base_files(
+        self, 
+        # test_tuple
+        test_id,
+        test_case,
+        source_path,
+        result_path,
+        simul_path,
+        simul_subfolder_path,
+        base_result_path, base_simul_path, base_simul_subfolder_path
+    ):
 
-        (test_id, test_case, _, result_path, _, _, base_result_path, _, _) = (
-            test_tuple
-        )
+        # (test_id, test_case, _, result_path, _, _, base_result_path, _, _) = (
+        #     test_tuple
+        # )
 
         LOGGER.info(f"TEST CASE {test_id}: {test_case}")
         LOGGER.info("Test point 2: check if GMSH base files are generated")
         self.check_file_counts(base_result_path, result_path)
 
     @pytest.mark.dependency(name="simul_data_gen", depends=["simul_folder_exist"])
-    def test_simul_data_gen(self, test_tuple):
-        (
-            test_id,
-            test_case,
-            _,
-            _,
-            simul_path,
-            simul_subfolder_path,
-            _,
-            base_simul_path,
-            base_simul_subfolder_path,
-        ) = test_tuple
+    def test_simul_data_gen(
+        self, 
+        # test_tuple
+        test_id,
+        test_case,
+        source_path,
+        result_path,
+        simul_path,
+        simul_subfolder_path,
+        base_result_path, base_simul_path, base_simul_subfolder_path
+    ):
+        # (
+        #     test_id,
+        #     test_case,
+        #     _,
+        #     _,
+        #     simul_path,
+        #     simul_subfolder_path,
+        #     _,
+        #     base_simul_path,
+        #     base_simul_subfolder_path,
+        # ) = test_tuple
         LOGGER.info(f"TEST CASE {test_id}: {test_case}")
         LOGGER.info("Test point 3: check if simulation data is generated")
         self.check_file_counts(base_simul_path, simul_path)
         self.check_file_counts(base_simul_subfolder_path, simul_subfolder_path)
 
     @pytest.mark.dependency(depends=["simul_folder_exist","simul_data_gen"])
-    def test_dat_file_vals(self, test_tuple):
-        (
-            test_id,
-            test_case,
-            _,
-            _,
-            _,
-            simul_subfolder_path,
-            _,
-            _,
-            base_simul_subfolder_path,
-        ) = test_tuple
+    def test_dat_file_vals(
+        self, 
+        # test_tuple
+        test_id,
+        test_case,
+        source_path,
+        result_path,
+        simul_path,
+        simul_subfolder_path,
+        base_result_path, base_simul_path, base_simul_subfolder_path
+    ):
+        # (
+        #     test_id,
+        #     test_case,
+        #     _,
+        #     _,
+        #     _,
+        #     simul_subfolder_path,
+        #     _,
+        #     _,
+        #     base_simul_subfolder_path,
+        # ) = test_tuple
         LOGGER.info(f"TEST CASE {test_id}: {test_case}")
         LOGGER.info("Test point 5: check values in dat files")
         # with check("check base simulation subfolder existence"):
