@@ -19,17 +19,17 @@
 #
 import math
 
+from pyleecan.Classes.Machine import Machine
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
 from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 from pyleecan.Classes.MachineSyRM import MachineSyRM
-from pyleecan.Classes.Machine import Machine
 
-from ...script.geometry.point import Point
+from ...functions.plot import plot
 from ...script.geometry.circleArc import CircleArc
 from ...script.geometry.line import Line
-from ...functions.plot import plot
-from ..json.SurfaceJSON import SurfaceAPI
+from ...script.geometry.point import Point
 from .. import air
+from ..json.SurfaceJSON import SurfaceAPI
 from .create_geo_dict import create_geo_dict
 from .get_coords_for_point import get_x_for_point, get_y_for_point
 
@@ -122,9 +122,9 @@ def build_bands_rotor(
     plot(rotor_air_gap1_curves, linewidth=1, markersize=3, tag=True)
     print("---")
 
-    # -----------------
-    # Rotor outer band:
-    # -----------------
+    # ------------------------------------
+    # Rotor outer band (Movingband Curve):
+    # ------------------------------------
     # Points:
     point_m21 = Point(
         name="PointM21",
@@ -140,18 +140,47 @@ def build_bands_rotor(
         z=0,
         meshLength=mb_mesh_len,
     )
-    # Curves:
-    rotor_circle2 = CircleArc(
-        name="MB_CurveRotor",
-        startPoint=point_m21,
-        endPoint=point_m22,
-        centerPoint=center_point,
-    )
+    rotor_mb_arcs = []
+    if nbr_rotor_seg == 2:
+        # TODO: Improve this. This is only a workaround for sym-factor = 2!
+        # add third point to make arc < 180 deg!
+        point_m23 = Point(
+            name="PointM22",
+            x=get_x_for_point(band_radius_list[1], angle_rotor / 2),
+            y=get_y_for_point(band_radius_list[1], angle_rotor / 2),
+            z=0,
+            meshLength=mb_mesh_len,
+        )
+        rotor_mb_arcs.append(
+            CircleArc(
+                name="MB_CurveRotor_1",
+                startPoint=point_m21,
+                endPoint=point_m23,
+                centerPoint=center_point,
+            )
+        )
+        rotor_mb_arcs.append(
+            CircleArc(
+                name="MB_CurveRotor_2",
+                startPoint=point_m23,
+                endPoint=point_m22,
+                centerPoint=center_point,
+            )
+        )
+    else:
+        rotor_mb_arcs.append(
+            CircleArc(
+                name="MB_CurveRotor",
+                startPoint=point_m21,
+                endPoint=point_m22,
+                centerPoint=center_point,
+            )
+        )
 
     # Adding curves to list:
     rotor_air_gap2_curves = []
     rotor_air_gap2_curves.append(rotor_circle1)
-    rotor_air_gap2_curves.append(rotor_circle2)
+    rotor_air_gap2_curves.extend(rotor_mb_arcs)
     rotor_air_gap2_curves.append(
         Line(name="lowerLine2", startPoint=point_m11, endPoint=point_m21)
     )
@@ -169,7 +198,7 @@ def build_bands_rotor(
         angle=angle_rotor,
         meshSize=1.0,
     )
-    mb_radius = rotor_circle2.startPoint.radius
+    mb_radius = band_radius_list[1]
 
     # --------------------------------
     # RotorBandsCurves only for plots:
