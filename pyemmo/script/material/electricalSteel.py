@@ -18,10 +18,12 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """This module holds the electrical steel lamination Material-class definition"""
-import numpy
 from typing import Tuple, Union
-from .material import Material
+
+import numpy
+
 from ... import rootLogger
+from .material import Material
 
 
 class ElectricalSteel(Material):
@@ -53,12 +55,6 @@ class ElectricalSteel(Material):
             thermalConductivity,
             thermalCapacity,
         )
-        # make sure density is given since we need it to calculate loss
-        # parameters in core loss calculation.
-        if lossParams:
-            assert (
-                self.density
-            ), "No value for electrical steel material density given!"
         self.sheetThickness = sheetThickness
         self.referenceFrequency = referenceFrequency
         self.referenceFluxDensity = referenceFluxDensity
@@ -90,13 +86,15 @@ class ElectricalSteel(Material):
             else:
                 raise (
                     ValueError(
-                        f"Value for material sheet thickness must be a positive number, but is '{newThickness}'"
+                        f"Value for material sheet thickness must be a "
+                        "positive number, but is '{newThickness}'"
                     )
                 )
         else:
             raise (
                 TypeError(
-                    f"Sheet thickness of material must be a numeric value but is '{type(newThickness)}':{newThickness}"
+                    f"Sheet thickness of material must be a numeric value but "
+                    "is '{type(newThickness)}':{newThickness}"
                 )
             )
 
@@ -129,36 +127,43 @@ class ElectricalSteel(Material):
         return self._lossParams
 
     @lossParams.setter
-    def lossParams(self, newLossParams: Tuple[float, float, float]) -> None:
+    def lossParams(
+        self, newLossParams: Union[Tuple[float, float, float], None]
+    ) -> None:
         """Setter of iron loss parameters in W/m³.
 
         Args:
-            newLossParams (Tuple[float,float,float]): New iron loss parameters
-            (order in Tuple hysteresis, eddy current, excess)
+            newLossParams (Tuple[float,float,float] or None): New iron loss
+                parameters (order in Tuple hysteresis, eddy current, excess)
         """
         if newLossParams is None:
             self._lossParams = None
-            return None
-        assert (
-            len(newLossParams) == 3
-        ), "There must be exactly 3 loss parameters for hysteresis, eddy current and excess loss."
-        for lossparam in newLossParams:
-            assert isinstance(
-                lossparam, (float, int)
-            ), f"Given loss parameter has wrong type: {type(lossparam)}. Must be float or int."
-        # test if loss parameters are in W/kg or W/m³ by checking the value
-        # range. Typically hysteresis loss value is between 1.0...5.0 W/kg;
-        # eddy current value is between 0.2...2.0 W/kg.
-        if newLossParams[0] < 20 and newLossParams[1] < 5:
-            rootLogger.warning(
-                (
-                    "Looks like the loss parameters for material %s are given in "
-                    "W/kg (not W/m³). Trying to calculate correct values..."
-                ),
-                self.name,
-            )
-            newLossParams = self._adapt_loss_params(newLossParams)
-        self._lossParams = newLossParams
+        else:
+            if len(newLossParams) != 3:
+                raise ValueError(
+                    "There must be exactly 3 loss parameters for "
+                    f"hysteresis, eddy current and excess loss. lossParams: {newLossParams}"
+                )
+            for lossparam in newLossParams:
+                if not isinstance(lossparam, (float, int)):
+                    raise TypeError(
+                        f"Given loss parameter has wrong type: {type(lossparam)}. "
+                        "Must be float or int."
+                    )
+            # test if loss parameters are in W/kg or W/m³ by checking the value
+            # range. Typically hysteresis loss value is between 1.0...5.0 W/kg;
+            # eddy current value is between 0.2...2.0 W/kg.
+            if newLossParams[0] < 20 and newLossParams[1] < 5:
+                rootLogger.warning(
+                    (
+                        "Looks like the loss parameters for material %s are "
+                        "given in W/kg (not W/m³). "
+                        "Trying to calculate correct values..."
+                    ),
+                    self.name,
+                )
+                newLossParams = self._adapt_loss_params(newLossParams)
+            self._lossParams = newLossParams
 
     def _adapt_loss_params(
         self, lossParams: Tuple[float, float, float]
@@ -167,18 +172,23 @@ class ElectricalSteel(Material):
         freq = self.referenceFrequency  # frequency in Hz
         if not freq:
             raise ValueError(
-                "Adaption of core loss parameters failed. No reference frequency given!"
+                "Adaption of core loss parameters failed. "
+                "No reference frequency given!"
             )
         ind = self.referenceFluxDensity  # induction in T
         if not ind:
             raise ValueError(
-                "Adaption of core loss parameters failed. No reference induction given!"
+                "Adaption of core loss parameters failed."
+                "No reference induction given!"
+            )
+        # make sure density is given!
+        if not self.density:
+            raise ValueError(
+                f"Material {self.name} missing value for attribute density!"
+                "If values for loss parameter are given, "
+                "you also need to specify material density!"
             )
         dens = self.density  # density in kg/m³
-        if not dens:
-            raise ValueError(
-                "Adaption of core loss parameters failed. Material has no value for density!"
-            )
         lossParams[0] = lossParams[0] * dens / freq / (ind**2)
         lossParams[1] = lossParams[1] * dens / ((freq * ind) ** 2)
         lossParams[2] = lossParams[2] * dens / ((freq * ind) ** 1.5)
@@ -203,9 +213,12 @@ class ElectricalSteel(Material):
         Args:
             newLossParams (Tuple[float,float,float]): New reference frequency in Hz
         """
-        assert isinstance(
-            newReferenceFrequency, (float, int)
-        ), f"Given reference frequency for iron loss parameters has wrong type: {type(newReferenceFrequency)}. Must be float or int."
+        if not isinstance(newReferenceFrequency, (float, int)):
+            raise TypeError(
+                "Given reference frequency for iron loss parameters has "
+                f"wrong type: {type(newReferenceFrequency)}. "
+                "Must be float or int."
+            )
         self._referenceFrequency = newReferenceFrequency
 
     @property
@@ -229,9 +242,12 @@ class ElectricalSteel(Material):
             newReferenceFluxDensity (Tuple[float,float,float]): New reference
                 flux density in T
         """
-        assert isinstance(
-            newReferenceFluxDensity, (float, int)
-        ), f"Given parameter for reference flux density has wrong type: {type(newReferenceFluxDensity)}. Must be float or int."
+        if not isinstance(newReferenceFluxDensity, (float, int)):
+            raise TypeError(
+                "Given parameter for reference flux density has "
+                f"wrong type: {type(newReferenceFluxDensity)}. "
+                "Must be float or int."
+            )
         self._referenceFluxDensity = newReferenceFluxDensity
 
     def print(self) -> None:

@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied
+# Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -20,15 +21,17 @@
 """Module to import simulation results from GetDP (Onelab)"""
 
 import os
-from os import path, PathLike
-from cmath import isclose
-from typing import List, Tuple, Union
 import warnings
-from matplotlib.figure import Figure
-from matplotlib import pyplot as plt
-import numpy as np
-from parse import parse
+from cmath import isclose
+from os import PathLike, path
+from typing import List, Tuple, Union
+
 import gmsh
+import numpy as np
+from matplotlib import pyplot as plt
+from matplotlib.figure import Figure
+from parse import parse
+
 from .. import rootLogger as logger
 
 
@@ -68,7 +71,12 @@ def read_timetable_dat(
     data_array = np.loadtxt(file_path, dtype=float, comments="#")
     if len(data_array.shape) == 1:
         # static simulation
-        assert data_array.size > 1  # there must be at least one time + value
+        if not data_array.size > 1:
+            # there must be at least one time + value
+            raise ValueError(
+                f"Less than one value was imported from {file_path}. "
+                "There must be at least one time-value pair!"
+            )
         time = np.reshape(data_array[0], (1))
         values = data_array[1:]
     else:
@@ -105,9 +113,17 @@ def read_RegionValue_dat(
     # standard 'delemiter' is whitespace.
     data_array = np.loadtxt(file_path, dtype=float, comments="#")
     # make sure there is only one line of data in the results file
-    assert len(data_array.shape) == 1, "Multiple lines in 'RegionValue' format"
-    assert data_array.shape[0] > 0, f"No data in {file_path} results file!"
-    assert data_array.shape[0] % 2 == 0, "Odd number of values!"
+    if not len(data_array.shape) == 1:
+        raise ValueError(
+            "Multiple lines in 'RegionValue' format! "
+            "There should only be one line containing all time steps!"
+        )
+    if not data_array.shape[0] > 0:
+        raise ValueError(f"No data in {file_path} results file!")
+    if not data_array.shape[0] % 2 == 0:
+        raise ValueError(
+            f"Odd number of values in RegionValue formatted file {file_path}!"
+        )
     time = data_array[0::2]  # numpy slicing [start:stop:step]
     data = data_array[1::2]
     return time, data
@@ -132,9 +148,11 @@ def split_data(
     # make sure time and data are type ndarray
     if not isinstance(time, np.ndarray) or not isinstance(data, np.ndarray):
         raise TypeError("Time and data array must be numpy ndarray!")
-    assert len(time.shape) == 1, "Given time array is not a vector!"
-    # assert that data shape has number of timesteps
-    assert time.shape[0] in data.shape, "Time and data array have diverent len"
+    if not len(time.shape) == 1:
+        raise ValueError("Given time array is not a vector!")
+    # make sure that data shape has number of timesteps
+    if time.shape[0] not in data.shape:
+        raise ValueError("Time and data array have different length!")
     time_axis = data.shape.index(time.shape[0])  # get time axis
     # get the indices where time values are equal (e.g. time = [0, 0]) or the
     # difference of the time vector is negative (e.g. time = [0,1,2,0], so

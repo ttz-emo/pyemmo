@@ -21,13 +21,14 @@
 
 # pylint: disable=line-too-long
 
-from typing import Union
 import warnings
+from typing import Union
+
 import numpy
 from numpy.typing import NDArray
 
-from .materialManagement import getMaterial
 from ... import rootLogger as logger
+from .materialManagement import getMaterial
 
 
 class Material:
@@ -163,8 +164,10 @@ class Material:
     def conductivity(self) -> Union[float, int, None]:
         """get electrical conductivity
 
+
         Returns:
-            Union[float, int, None]: electrical conductivity in S/m
+            Union[float, int, None]: electrical conductivity in S/m or None if
+            not conductive.
         """
         return self._conductivity
 
@@ -210,14 +213,20 @@ class Material:
             return self._BH
         if self._BH.ndim < 3:
             # pylint: disable=locally-disabled,  line-too-long
-            warnings.warn(
-                f"Tried to access the BH-curve for temperature {temperature}°C, but there is only one BH-curve specified!",
-                UserWarning,
+            logger.warning(
+                "Tried to access the BH-curve for temperature %.1f°C, but there is only one BH-curve specified!",
+                temperature,
             )
             return self._BH
         # else:
-        assert self._BH.ndim == 3
-        # TODO: implement temperature depended bh curve
+        elif self._BH.ndim == 3:
+            ...
+            # TODO: implement temperature depended bh curve
+        else:
+            raise ValueError(
+                f"BH curve of material {self.name} has invalid shape: "
+                f"{self._BH.shape}!"
+            )
 
     # pylint: disable=invalid-name
     @BH.setter
@@ -294,14 +303,27 @@ class Material:
             raise ValueError("Material name must be type str.")
 
     @conductivity.setter
-    def conductivity(self, conductivity: Union[float, int]):
+    def conductivity(self, conductivity: Union[float, int, None]):
         """set the electrical conductivity of the material
 
         Args:
             conductivity (Union[float, int]): electrical conductivity in S/m
         """
-        if isinstance(conductivity, (int, float)) or conductivity is None:
-            self._conductivity = conductivity
+        if conductivity is None:
+            self._conductivity = None
+        elif isinstance(conductivity, (int, float)):
+            if conductivity > 0:
+                self._conductivity = conductivity
+            elif conductivity == 0:
+                # if zero than non-conductings
+                self._conductivity = None
+            else:
+                # negative conductivity...
+                raise ValueError(
+                    "Conductivy can not be negative!"
+                    f"Given value: {conductivity}"
+                )
+
         else:
             raise ValueError("Conductivity must be numeric.")
 

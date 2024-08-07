@@ -20,15 +20,15 @@
 """This module defines the functions to calculate
 the iron losses from getdp b-field simulation results."""
 
-from typing import List, Union, Dict, Tuple
 import os
+from typing import Dict, List, Tuple, Union
+
 import gmsh
 import numpy as np
 import numpy.typing as npt
 
 # from matplotlib import pyplot as plt
 from .import_results import importPos
-from ..script.material import ElectricalSteel
 
 
 def main(
@@ -162,9 +162,10 @@ def calc_time_domain_core_loss(
     eddy_loss = integrate_field(
         np.array(eddy_loss_field), time[1:], element_tags
     )
-    assert (
-        eddy_loss.size == nbr_timesteps
-    ), f"Integration should result in {nbr_timesteps} values!"
+    if eddy_loss.size != nbr_timesteps:
+        raise RuntimeError(
+            f"Integration should result in {nbr_timesteps} values!"
+        )
     # skip first value, because its 0:
     eddy_loss = eddy_loss[1:] * sym_factor * axial_length  # correct values
     core_loss["eddy"] = eddy_loss
@@ -202,9 +203,10 @@ def calc_time_domain_core_loss(
         exc_loss = integrate_field(
             np.array(exc_loss_field), time, element_tags
         )
-        assert (
-            exc_loss.size == nbr_timesteps
-        ), f"Integration should result in {nbr_timesteps} values!"
+        if exc_loss.size != nbr_timesteps:
+            raise RuntimeError(
+                f"Integration should result in {nbr_timesteps} values!"
+            )
         # skip first value, because its 0:
         exc_loss = exc_loss[1:] * sym_factor * axial_length  # correct values
         core_loss["exc"] = exc_loss
@@ -298,21 +300,14 @@ def calc_freq_domain_core_loss(
     # ------------------------- Calculate eddy current losses -------------------------
     eddy_loss_factor = loss_factor["eddy"]  # loss parameter
     # loss function for eddy current loss from paper:
-    eddy_loss_field = np.linalg.norm(
+    eddy_loss_field: np.ndarray = np.linalg.norm(
         eddy_loss_factor * (freqs**2) * (amp.transpose() ** 2), axis=0
     )
     eddy_loss = integrate_field(eddy_loss_field.transpose(), freqs, elem_tags)[
         1:
     ]
-    assert (
-        eddy_loss.size == nbr_freqs
-    ), f"Integration should result in {nbr_freqs} values!"
-    eddy_loss = integrate_field(eddy_loss_field.transpose(), freqs, elem_tags)[
-        1:
-    ]
-    assert (
-        eddy_loss.size == nbr_freqs
-    ), f"Integration should result in {nbr_freqs} values!"
+    if eddy_loss.size != nbr_freqs:
+        raise RuntimeError(f"Integration should result in {nbr_freqs} values!")
     # skip first value, because its 0
     eddy_loss = eddy_loss * sym_factor * axial_length  # correct values
     core_loss["eddy"] = eddy_loss
@@ -326,12 +321,10 @@ def calc_freq_domain_core_loss(
         exc_loss = integrate_field(
             exc_loss_field.transpose(), freqs, elem_tags
         )[1:]
-        exc_loss = integrate_field(
-            exc_loss_field.transpose(), freqs, elem_tags
-        )[1:]
-        assert (
-            exc_loss.size == nbr_freqs
-        ), f"Integration should result in {nbr_freqs} values!"
+        if exc_loss.size != nbr_freqs:
+            raise RuntimeError(
+                f"Integration should result in {nbr_freqs} values!"
+            )
         # skip first value, because its 0:
         exc_loss = exc_loss * sym_factor * axial_length  # correct values
         core_loss["exc"] = exc_loss
@@ -564,9 +557,16 @@ def write_simple(
     """
     nbr_timesteps = len(time)
     if isinstance(data, np.ndarray):
-        assert np.any(np.equal(data.shape, nbr_timesteps))
+        if not np.any(np.equal(data.shape, nbr_timesteps)):
+            raise ValueError(
+                "No axis of the given data array does match the length of the time vector."
+            )
     elif isinstance(data, list):
-        assert len(data) == nbr_timesteps
+        if len(data) != nbr_timesteps:
+            raise ValueError(
+                "Length of the data vector does not match length of time vector "
+                f"{len(data)} != {nbr_timesteps}"
+            )
     else:
         raise TypeError(
             f"Data type was not numpy.ndarray or list, but {type(data)}."

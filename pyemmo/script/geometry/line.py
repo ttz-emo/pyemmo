@@ -19,14 +19,13 @@
 #
 """Module of geometry class Line"""
 
-from random import random
-from typing import Tuple, Literal, TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal, Tuple
 
 import matplotlib.pyplot as plt
 from numpy import array
 from numpy.linalg import norm
 
-from ...definitions import DEFAULT_GEO_TOL
+from ...definitions import DEFAULT_GEO_TOL, LINE_COLOR, POINT_COLOR
 from ..geometry import defaultCenterPoint
 from .point import Point
 from .transformable import Transformable
@@ -171,7 +170,10 @@ class Line(Transformable):
         Args:
             newStartPoint (Point)
         """
-        assert isinstance(newStartPoint, Point)
+        if not isinstance(newStartPoint, Point):
+            raise TypeError(
+                f"Given start point has wrong type {type(newStartPoint)}!"
+            )
         self._startPoint = newStartPoint
 
     @property
@@ -190,7 +192,10 @@ class Line(Transformable):
         Args:
             newEndPoint (Point)
         """
-        assert isinstance(newEndPoint, Point)
+        if not isinstance(newEndPoint, Point):
+            raise TypeError(
+                f"Given end point has wrong type ({type(newEndPoint)})"
+            )
         self._endPoint = newEndPoint
 
     @property
@@ -393,6 +398,8 @@ class Line(Transformable):
         Args:
             script (Script)
         """
+        for p in self.points:
+            script._addPoint(p)
         self._todesmerker = True
         script._addCurve(self)
 
@@ -408,7 +415,7 @@ class Line(Transformable):
         marker=None,
         markersize=1.0,
         linewidth=0.5,
-        color=[random() for i in range(3)],
+        color=LINE_COLOR,
         tag=False,
     ):
         """Line plot
@@ -455,14 +462,14 @@ class Line(Transformable):
                 fig=fig,
                 marker=marker,
                 markersize=markersize,
-                color=color,
+                color=color if color != LINE_COLOR else POINT_COLOR,
                 tag=tag,
             )
             endPoint.plot(
                 fig=fig,
                 marker=marker,
                 markersize=markersize,
-                color=color,
+                color=color if color != LINE_COLOR else POINT_COLOR,
                 tag=tag,
             )
 
@@ -576,8 +583,12 @@ class Line(Transformable):
         Returns:
             bool: True if line contains point, False if not.
         """
-        assert isinstance(refPoint, Point)
-        assert isinstance(tol, (int, float))
+        if not isinstance(refPoint, Point):
+            raise ValueError(
+                f"Given reference point has wrong type ({type(refPoint)})"
+            )
+        if not isinstance(tol, (int, float)):
+            raise ValueError("Given tolerance is not type int or float!")
         for p in self.points:
             if p.isEqual(refPoint, tol=tol):
                 return True

@@ -23,16 +23,15 @@ from json files
 """
 import json
 import numbers
-from typing import Dict, List, Tuple, Union, Literal, Any
+from typing import Any, Dict, Literal, Tuple, Union
 
 from numpy import pi, zeros
 from numpy.linalg import norm
 
 from ...functions.cleanName import cleanName
-from ...script.material.material import Material
 from ...script.material.electricalSteel import ElectricalSteel
-from .. import air
-from .. import logger
+from ...script.material.material import Material
+from .. import air, logger
 
 # ================================ START EXTENDED INFO FUNCTIONS ===================================
 
@@ -492,7 +491,10 @@ def createMaterial(matDict: Dict[str, Dict[Literal["wert"], Any]]) -> Material:
 
     try:
         sheetThickness = matDict["d"]["wert"]
-        assert sheetThickness < 1
+        if not sheetThickness < 1:
+            raise ValueError(
+                f"Sheet thickness of material {name} is > 1: {sheetThickness}"
+            )
         mat = createSteelMaterial(
             matDict,
             name,

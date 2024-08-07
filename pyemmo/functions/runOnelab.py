@@ -17,15 +17,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-import sys
-import os
-from os.path import expanduser, isdir, isfile, join, normpath, splitext
-from typing import Dict, Union, List
 import logging
-from shutil import which
+import os
 import subprocess
-from subprocess import Popen, PIPE, STDOUT
+import sys
 from argparse import ArgumentParser
+from os.path import expanduser, isdir, isfile, join, normpath, splitext
+from shutil import which
+from subprocess import PIPE, STDOUT, Popen
+from typing import Dict, List, Union
+
 import numpy as np
 
 from . import calcIronLoss
@@ -150,7 +151,7 @@ def mergeAllGeoFiles(folderPath, gmshExe):
             allCommands.append(
                 geoFilePath
             )  # append the total filename to allCommands
-    subprocess.run(allCommands, shell=True)
+    subprocess.run(allCommands, shell=False)
     return None
 
 
@@ -678,7 +679,7 @@ def main() -> None:
         gmshPath=args.gmsh,
         getdpPath=args.getdp,
     )
-    subprocess.run(command, check=False)
+    subprocess.run(command, check=False, shell=False)
 
 
 if __name__ == "__main__":

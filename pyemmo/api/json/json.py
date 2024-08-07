@@ -19,6 +19,10 @@
 #
 """This is the main module of the json api to create a machine model in Onelab."""
 
+import datetime
+import json
+import logging
+
 # import debugpy
 # debugpy.debug_this_thread()
 import os
@@ -26,18 +30,16 @@ import subprocess
 from os import mkdir
 from os.path import isdir, isfile, join
 from typing import Dict, List, Tuple, Union
-import logging
-import json
-import datetime
+
 from ... import logFmt
-from ...functions import runOnelab, calcIronLoss, import_results
+from ...functions import calcIronLoss, import_results, runOnelab
 from ...script.geometry.machineAllType import MachineAllType
 from ...script.geometry.rotor import Rotor
 from ...script.geometry.stator import Stator
-from ...script.script import Script
 from ...script.material import ElectricalSteel
+from ...script.script import Script
 from .. import logger
-from . import boundaryJSON, importJSON, modelJSON, apiNameDict
+from . import apiNameDict, boundaryJSON, importJSON, modelJSON
 from .SurfaceJSON import SurfaceAPI
 
 # from swat_em import analyse
@@ -500,6 +502,7 @@ def _open_onelab(
         capture_output=True,  # not importJSON.getFlagOpenGui(extendedInfo),
         text=True,
         check=False,
+        shell=False,
     )
     # print(f"StdOut:\n{calcInfo.stdout}")
     if calcInfo.stderr:

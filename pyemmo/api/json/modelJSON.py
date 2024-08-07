@@ -22,12 +22,12 @@
 from math import radians
 from typing import Dict, List, Literal, Tuple, Union
 
-from numpy import pi, sign, array
-from numpy.linalg import norm
+from numpy import pi, sign
 from swat_em import datamodel
 
 from ...script.geometry.airArea import AirArea
 from ...script.geometry.airGap import AirGap
+from ...script.geometry.bar import Bar
 from ...script.geometry.circleArc import CircleArc
 from ...script.geometry.line import Line
 from ...script.geometry.magnet import Magnet
@@ -37,15 +37,12 @@ from ...script.geometry.rotorLamination import RotorLamination
 from ...script.geometry.slot import Slot
 from ...script.geometry.spline import Spline
 from ...script.geometry.statorLamination import StatorLamination
-from ...script.geometry.bar import Bar
-from ...script.geometry.surface import Surface
 from ...script.geometry.transformable import Transformable
 from ...script.material.material import Material
-from ...definitions import DEFAULT_GEO_TOL
-from . import importJSON, globalCenterPoint
 from .. import logger
-from .SurfaceJSON import SurfaceAPI
+from . import globalCenterPoint, importJSON
 from .get_coilspan import get_min_coilspan
+from .SurfaceJSON import SurfaceAPI
 
 # from .. import calc_phaseangle_starvoltageV2
 # analyse.calc_phaseangle_starvoltage = calc_phaseangle_starvoltageV2
@@ -218,23 +215,26 @@ def getSurfaceLineList(
             # endpoint of penultimate (vorletzte) line must be first point
             # of this line (==last line in curve loop)
             startPoint = pointList[-1]
-            assert startPoint.coordinate == coordsP1, (
-                f"Start point ({startPoint.name}) of last line {lineDict['LineName']} "
-                "is NOT endpoint of previous line. Check line loop!"
-            )
+            if not startPoint.coordinate == coordsP1:
+                raise ValueError(
+                    f"Start point ({startPoint.name}) of last line {lineDict['LineName']} "
+                    "is NOT endpoint of previous line. Check line loop!"
+                )
             endPoint = pointList[0]
-            assert endPoint.coordinate == coordsP2, (
-                f"End point ({endPoint.name}) of last line ('{lineDict['LineName']}') "
-                "in line loop is NOT startpoint of first line. Check line loop!"
-            )
+            if not endPoint.coordinate == coordsP2:
+                raise ValueError(
+                    f"End point ({endPoint.name}) of last line ('{lineDict['LineName']}') "
+                    "in line loop is NOT startpoint of first line. Check line loop!"
+                )
         else:
             # ATTENTION: StartPoint of new line must be EndPoint of last line
             startPoint = pointList[-1]
             # make sure the coordinates are correct
-            assert startPoint.coordinate == coordsP1, (
-                f"End point ({startPoint.name}) of last line in line loop is NOT "
-                f"startpoint of this line ('{lineDict['LineName']}'). Check line loop!"
-            )
+            if not startPoint.coordinate == coordsP1:
+                raise ValueError(
+                    f"End point ({startPoint.name}) of last line in line loop is NOT "
+                    f"startpoint of this line ('{lineDict['LineName']}'). Check line loop!"
+                )
             endPoint = Point(
                 lineDict["EpName"],
                 coordsP2[0],

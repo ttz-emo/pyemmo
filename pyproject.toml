@@ -45,3 +45,12 @@ namespaces = false
 
 [tool.black]
 line-length = 79
+
+[tool.bandit]
+skips = ["B311", "B404", "B603"]
+# B311: using random standard libary to create plot colors -> could be resolved
+# by predefining colors or just using balck or blue... TODO
+# B404: We need subprocess to start simulations
+# B603: subprocess mit "shell = False" - Dies minimiert das Risiko von
+# Shell-Injection-Angriffen und sollte bevorzugt verwendet werden (gegenüber
+# "shell = True").

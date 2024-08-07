@@ -21,16 +21,16 @@
 
 # make all annotations strings, to avoid import errors in type checking case
 from __future__ import annotations
-import os
-import re
-import shutil
 
 # import warnings
 import logging
+import os
+import re
+import shutil
 from math import pi
 from os.path import abspath, join
-from typing import TYPE_CHECKING, Dict, List, Literal, Tuple, Union
-import numpy as np
+from typing import TYPE_CHECKING, Literal
+
 from numpy import rad2deg, where
 from pygetdp import Function as FunctionGetDP
 from pygetdp import Group as GroupGetDP
@@ -40,20 +40,21 @@ from pygetdp.postoperation import PostopItem
 from ..definitions import DEFAULT_GEO_TOL, MAIN_DIR
 from ..functions.cleanName import cleanName, isValidFilename
 
-# global domain dict to connect existing pyemmo Domains with domains for magstatdyn
+# global domain dict to connect existing pyemmo Domains with domains for
+# magstatdyn file
 from . import (
+    DOMAIN_AIRGAP,
+    DOMAIN_BAR,
+    DOMAIN_CONDUCTING,
+    DOMAIN_LAMINATION,
+    DOMAIN_LINEAR,
+    DOMAIN_NON_CONDUCTING,
+    DOMAIN_NON_LINEAR,
     boundaryDomainDict,
     default_param_dict,
     rotorDomainDict,
     statorDomainDict,
     versionStr,
-    DOMAIN_AIRGAP,
-    DOMAIN_LINEAR,
-    DOMAIN_NON_LINEAR,
-    DOMAIN_LAMINATION,
-    DOMAIN_BAR,
-    DOMAIN_CONDUCTING,
-    DOMAIN_NON_CONDUCTING,
 )
 from .geometry.domain import Domain
 from .geometry.line import Line
@@ -64,11 +65,11 @@ from .geometry.surface import Surface
 from .material.electricalSteel import ElectricalSteel
 
 if TYPE_CHECKING:
-    from .geometry.machineAllType import MachineAllType
-    from .material.material import Material
-    from .geometry.point import Point
     from .geometry.circleArc import CircleArc
+    from .geometry.machineAllType import MachineAllType
+    from .geometry.point import Point
     from .geometry.spline import Spline
+    from .material.material import Material
 
 
 class Script:
@@ -141,7 +142,7 @@ class Script:
                 }
             }
         """
-        ###Name des Skriptes
+        # Name des Skriptes
         if isValidFilename(name):
             self.name = name
         else:
@@ -156,9 +157,9 @@ class Script:
             self._simulationParameters[key] = (
                 default_param_dict[key] | paramDict
             )
-        ### directory to save the model files
+        # directory to save the model files
         self.scriptPath = scriptPath
-        ### directory to save simulation results
+        # directory to save simulation results
         self.resultsPath = (
             abspath(resultsPath).replace("\\", "/")
             if resultsPath
@@ -166,27 +167,27 @@ class Script:
                 "\\", "/"
             )
         )
-        ###Punkte in Gmsh-Syntax
+        # point code (in gmsh syntax)
         self.pointCode: str = "\n// Points\n"
-        ###Alle erzeugten Punkte
+        # all points
         self.pointArray: list[Point] = []
-        ###Alle Linien in Gmsh-Syntax
+        # line code (gmsh syntax)
         self.curveCode: str = "\n// Lines and Curves\n"
-        ###Alle erzeugten Linien
+        # all generated lines
         self._curveList: list[Line | CircleArc | Spline] = []
-        ###Alle Flächen in Gmsh-Syntax
+        # all surfaces (gmsh syntax)
         self.areaCode: str = "\n// Surfaces\n"
-        ###Alle erzeugten Flächen
+        # all generated surfaces
         self.areaArray: list[Surface] = []
 
         self.colorCode: str = ""  # code for mesh colors
 
-        ###Alle erzeugenten Physicals in Gmsh-Syntax
+        # PhysicalElement code (gmsh syntax)
         self.physicalElementCode: str = "\n// Physical Elements\n"
-        ###Alle erzeugten Physicals
+        # all generatedPhysicals
         self.physicalElementArray: list[PhysicalElement] = []
 
-        ###Alle bereits erzeugten Materialien
+        # Alle bereits erzeugten Materialien
         self.group = GroupGetDP()
         self._materialDict: dict[str, list[list[int]]] = {
             "material": [],
@@ -217,12 +218,11 @@ class Script:
         # }
         self.factory = factory  # gmsh geometry kernel
 
-        ### FOR DEBUGGING ###
+        # FOR DEBUGGING:
         self.nbrIdedentPoints: int = 0
         self.idedentPoints: list[Point] = []
         self.nbrIdedentLines: int = 0
         self.idedentLines: list[Line | CircleArc | Spline] = []
-        ### END FOR DEBUGGING ###
 
         # add machine domains
         self._machine = machine  # do not set machine via setter function!
@@ -1560,7 +1560,7 @@ class Script:
                 for i, bhValue in enumerate(bhArray):
                     bString += str(bhValue[0]) + ","
                     hString += str(bhValue[1]) + ","
-                    if (i % 9 == 0) and ((i - 1) != bhArray.shape[0]):
+                    if (i % 9 == 0) and (i != (bhArray.shape[0] - 1)):
                         bString += "\n"
                         hString += "\n"
                 bString = bString[0 : len(bString) - 1] + "}"

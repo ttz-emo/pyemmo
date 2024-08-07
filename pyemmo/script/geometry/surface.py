@@ -17,13 +17,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-from random import random
 from typing import TYPE_CHECKING, List, Tuple, Type, Union
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from numpy import mean
 
+from ...definitions import LINE_COLOR
 from .circleArc import CircleArc
 from .line import Line
 from .point import Point
@@ -721,7 +721,7 @@ class Surface(Transformable):
         self,
         fig: Figure = None,
         linewidth=0.5,
-        color=[random() for i in range(3)],
+        color=LINE_COLOR,
         marker=".",
         markersize=1,
         tag=False,
