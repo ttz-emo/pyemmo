@@ -5,7 +5,7 @@
 	"relPermeability": 1.00018,
 	"remanence": "no information",
 	"BHCurve_type": "Linear",
-	"B": [],
 	"H": [],
+	"B": [],
 	"Temp": []
 }

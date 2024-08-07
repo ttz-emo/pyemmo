@@ -36,8 +36,8 @@ def create_material_json(json_folder, mat_db, mode="sep"):
             mat_dict_all[row[0]]["BHCurve_type"] = row[5]
             cursor.execute("SELECT * FROM BH_CURVE WHERE ID = %d" % row[0])
             bh_data = cursor.fetchall()
-            mat_dict_all[row[0]]["B"] = [row[2] for row in bh_data]
             mat_dict_all[row[0]]["H"] = [row[1] for row in bh_data]
+            mat_dict_all[row[0]]["B"] = [row[2] for row in bh_data]
             mat_dict_all[row[0]]["Temp"] = [row[3] for row in bh_data]
 
         with open(
@@ -56,8 +56,8 @@ def create_material_json(json_folder, mat_db, mode="sep"):
             mat_dict["BHCurve_type"] = row[5]
             cursor.execute("SELECT * FROM BH_CURVE WHERE ID = %d" % row[0])
             bh_data = cursor.fetchall()
-            mat_dict["B"] = [row[2] for row in bh_data]
             mat_dict["H"] = [row[1] for row in bh_data]
+            mat_dict["B"] = [row[2] for row in bh_data]
             mat_dict["Temp"] = [row[3] for row in bh_data]
             with open(
                 os.path.join(json_folder_path, f"{row[1]}.json"), "w"

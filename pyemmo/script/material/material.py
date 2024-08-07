@@ -25,7 +25,13 @@ from typing import Union
 import warnings
 import numpy
 from numpy.typing import NDArray
+import os
+import json
+import pathlib
+import pandas as pd
+from matplotlib import pyplot as plt
 
+from pyemmo.definitions import ROOT_DIR
 from .materialManagement import getMaterial
 from ... import rootLogger as logger
 
@@ -127,6 +133,178 @@ class Material:
         if not self.linear:
             # if material is nonlinear load BH
             self.BH = rawMat["BH"]
+
+    def load(self, materialName=""):
+        if materialName == "":
+            if self.name == "":
+                raise RuntimeError("Material name undefined, cannot load.")
+            else:
+                json_path = os.path.join(
+                    ROOT_DIR,
+                    f"pyemmo/script/material/material_json/{self.name}.json",
+                )
+        else:
+            json_path = os.path.join(
+                ROOT_DIR,
+                f"pyemmo/script/material/material_json/{materialName}.json",
+            )
+        try:
+            with open(json_path) as file:
+                mat_dict = json.load(file)
+            self.name = mat_dict["name"]
+            self.conductivity = mat_dict["conductivity"]
+            self.relPermeability = mat_dict["relPermeability"]
+            if isinstance(mat_dict["remanence"], str):
+                self.remanence = 0
+            else:
+                self.remanence = mat_dict["remanence"]
+            if mat_dict["BHCurve_type"] == "linear":
+                self.linear = 1
+            else:
+                self.linear = 0
+                self.BH = [
+                    mat_dict["H"],
+                    mat_dict["B"],
+                    [
+                        temp if not isinstance(temp, str) else None
+                        for temp in mat_dict["Temp"]
+                    ],
+                ]
+        except FileNotFoundError:
+            logger.error(FileNotFoundError)
+
+    def save(self):
+        if self.name == "":
+            raise RuntimeError("Material needs to have a name!")
+        else:
+            material_folder = os.path.join(
+                ROOT_DIR, "pyemmo/script/material/material_json"
+            )
+            mat_dict = {}
+            mat_dict["ID"] = (
+                len([f for f in os.listdir(material_folder) if ".json" in f])
+                + 1
+            )
+            mat_dict["name"] = self.name
+            mat_dict["conductivity"] = self.conductivity
+            mat_dict["relPermeability"] = self.relPermeability
+            if self.remanence == None:
+                mat_dict["remanence"] = "no information"
+            else:
+                mat_dict["remanence"] = self.remanence
+            mat_dict["BHCurve_type"] = ""
+            mat_dict["B"] = []
+            mat_dict["H"] = []
+            mat_dict["Temp"] = []
+            if self.linear:
+                mat_dict["BHCurve_type"] = "linear"
+            else:
+                mat_dict["BHCurve_type"] = "NL"
+                mat_dict["H"] = self.BH[0]
+                mat_dict["B"] = self.BH[1]
+                mat_dict["Temp"] = [
+                    "no information" if val == None else val
+                    for val in self.BH[2]
+                ]
+            with open(
+                os.path.join(material_folder, f"{self.name}.json"), "w"
+            ) as file:
+                json.dump(mat_dict, file, indent="\t")
+
+    def delete(self):
+        json_path = os.path.join(
+            ROOT_DIR, f"pyemmo/script/material/material_json/{self.name}.json"
+        )
+        print(json_path)
+        try:
+            # pathlib.Path.unlink(json_path)
+            os.remove(json_path)
+        except FileNotFoundError:
+            logger.warning(
+                f"{self.name}.json is already deleted or does not exist."
+            )
+
+    def addBHData(self, H, B, temp=None, update_db=False):
+        if type(H) != type(B):
+            raise RuntimeError(
+                f"H ({type(H)}) and B ({type(B)}) need to be same type!"
+            )
+        else:
+            if isinstance(H, list):
+                if len(H) != len(B):
+                    raise RuntimeError(
+                        f"H ({len(H)}) and B({len(B)}) need to be the same length!"
+                    )
+                    return
+                self.BH[0] += H
+                self.BH[1] += B
+                if temp == None:
+                    self.BH[2] += [None for i in range(len(H))]
+                else:
+                    self.BH[2] += temp
+            else:
+                self.BH[0].append(H)
+                self.BH[1].append(B)
+                self.BH[2].append(temp)
+
+        if update_db:
+            self.save()
+
+    def addBHCurveFromFile(
+        self, data, overwrite: bool = True, update_db: bool = False
+    ):
+        if overwrite:
+            self.BH = [[], [], []]
+        if isinstance(data, dict):
+            H = data["H"]
+            B = data["B"]
+            try:
+                temp = data["Temp"]
+            except KeyError:
+                temp = None
+            for i in range(len(data)):
+                if temp == None:
+                    self.addBHCurve(self, B[i], H[i])
+                else:
+                    self.addBHCurve(self, B[i], H[i], temp[i])
+        else:
+            try:
+                file = pd.read_table(data)
+            except UnicodeDecodeError:
+                file = pd.read_excel(data)
+            allValue = file.values
+            for i in range(len(allValue)):
+                try:
+                    self.addBHData(
+                        allValue[i][0],
+                        allValue[i][1],
+                        allValue[i][2],
+                        standalone=False,
+                    )
+                except IndexError:
+                    self.addBHData(
+                        allValue[i][0], allValue[i][1], standalone=False
+                    )
+        if update_db:
+            self.save()
+
+    def plotBHCurve(self):
+        json_path = os.path.join(
+            ROOT_DIR, f"pyemmo/script/material/material_json/{self.name}.json"
+        )
+        with open(json_path) as file:
+            mat_dict = json.load(file)
+        h, b = zip(*sorted(zip(mat_dict["H"], mat_dict["B"])))
+        plt.plot(h, b)
+        plt.grid(b=True, which="major", color="#666666", linestyle="-")
+        plt.minorticks_on()
+        plt.grid(
+            b=True, which="minor", color="#999999", linestyle="-", alpha=0.2
+        )
+        plt.xlim(h[0], h[len(h) - 1])
+        plt.title(f"BH-Curve for {self.name}")
+        plt.xlabel("Field intensity H")
+        plt.ylabel("Flux density B")
 
     # def isLinear(self) -> bool:
     #     """check if the material is linear or has BH curve
