@@ -784,14 +784,14 @@ class Script:
             if curveType == "Line":
                 code = (
                     f"{curveName} = {curveID};"
-                    f"Line({curveName}) = {{{startPointID}, {endPointID}}}; \n"
+                    f"Line({curveName}) = {{{startPointID}, {endPointID}}};\n"
                 )
             elif curveType == "CircleArc":
                 curve: CircleArc = curve
                 centerPointID = curve.center.id
                 code = (
                     f"{curveName} = {curveID};"
-                    f"Circle({curveName}) = {{{startPointID}, {centerPointID}, {endPointID}}}; \n"
+                    f"Circle({curveName}) = {{{startPointID}, {centerPointID}, {endPointID}}};\n"
                 )
                 ###
                 # # test add Transfinite curve mesh
@@ -1743,7 +1743,7 @@ class Script:
         self.group.add("DomainPlotMovingGeo", [plotID])
         geoCode += (
             f"statorBndLines[] = Boundary{{ Physical Surface{{ {statorIdStr} }}; }};\n"
-            + f"""Physical Line("DomainPlotMovingGeo",{plotID}) = {{rotorBndLines[], statorBndLines[]}}; \n"""
+            + f"""Physical Line("DomainPlotMovingGeo",{plotID}) = {{rotorBndLines[], statorBndLines[]}};\n"""
             # f"Hide {{ Line{{ Line '*' }}; }} \n"
             # + f"Hide {{ Point{{ Point '*' }}; }} \n"
             # + f"Show{{ Line {{rotorBndLines[], statorBndLines[]}}; }} \n"
@@ -2245,7 +2245,7 @@ class Script:
         """Create the string code for the parameter file"""
         self._setParameters()  # set Parameters to write code
         paramDict = self.simParams
-        paramCode: str = "// MACHINE SPECIFIC VALUES \n"
+        paramCode: str = "// MACHINE SPECIFIC VALUES\n"
         for paramName, paramValue in paramDict["GEO"].items():
             paramCode += self._getParamCode(paramName, paramValue)
         paramCode += "// SIMULATION SPECIFIC VALUES\n"

@@ -19,9 +19,10 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """
-This module runs the Pyleecan API simulation for selected machines, and create a tuple of result directories for use in testing.
-It can be expanded to support other types of tests.
-Running this module by itself will create base data for comparison in the actual tests.
+This module runs the Pyleecan API simulation for selected machines, and create
+a tuple of result directories for use in testing. It can be expanded to support
+other types of tests. Running this module by itself will create base data for
+comparison in the actual tests.
 """
 
 # from __future__ import absolute_import
@@ -31,15 +32,15 @@ import logging
 import os
 import sys
 from datetime import datetime
-from subprocess import PIPE, STDOUT, Popen
-import pytest
+from subprocess import PIPE, Popen
 
+import pytest
 from pyleecan.Classes.Machine import Machine
 from pyleecan.definitions import DATA_DIR
 from pyleecan.Functions import load
 
 from pyemmo.api.pyleecan import main as pyleecanAPI
-from pyemmo.definitions import ROOT_DIR, TEST_DIR
+from pyemmo.definitions import ROOT_DIR
 from pyemmo.functions.runOnelab import createCmdCommand, log_subprocess_output
 from pyemmo.script.script import Script
 
@@ -58,11 +59,9 @@ sys.path = path_temp
 
 from .. import GETDP_EXE, GMSH_EXE
 from . import LOGGER
-from .testUtils import make_test_cases
 
-# test_cases = {
-#     0: "Toyota_Prius",
-# }
+# from .testUtils import make_test_cases
+
 
 test_params = {
     "api\\pyleecan": {
@@ -88,18 +87,22 @@ def pyleecan_test_base(
 ):
     """
     Base test data prepper for Pyleecan API workflow test.
-    Params:
-    - test_params: Contains parameter dict for running test
-    - result_path: string path where result should be stored, default empty (so that timestamped folder can be generated)
-    - test_data_path: string path where json data for testing can be found (default empty, so that data path from test_params will be used)
+    When running this file as stand alone e.g. for preparing base data,
+    result_path should be path to desired base data locations.
+    The following params are used in case running this alone e.g. for preparing
+    base data.
 
-    When running this file as stand alone e.g. for preparing base data, result_path should be path to desired base data locations.
-    The following params are used in case running this alone e.g. for preparing base data:
-    - test_type: type of test, default empty
-    - test_id: test id, default empty
-    - test_case: test case name, same as machine name, default empty
-    - print_flag: default 0
-    - debug_flag: default 0
+    Args:
+        test_params (dict): Contains parameter for running test
+        result_path (str): Path where result should be stored, default empty
+            (so that timestamped folder can be generated)
+        test_data_path (str): Path where json data for testing can be found
+            Defaults to "", so that data path from test_params will be used.
+        test_type (str): type of test, default empty
+        test_id (int): test id, default 0
+        test_case (str): test case name, same as machine name, default empty
+        print_flag (int): default 0
+        debug_flag (int): default 0
     """
 
     # disable messages of matplotlib
@@ -118,6 +121,7 @@ def pyleecan_test_base(
     else:
         machine_file_path = test_data_path
     LOGGER.info("Path of actual machine file is %s", machine_file_path)
+    # pylint: disable=locally-disabled, no-member
     pyleecan_machine: Machine = load.load(machine_file_path)
 
     CuMat = load.load(os.path.join(DATA_DIR, "Material", "Copper2.json"))
@@ -179,6 +183,7 @@ def pyleecan_test_base(
             "ResId": resid,
             "Flag_PrintFields": print_flag,
             "Flag_Debug": debug_flag,
+            "verbosity level": 3,
         },
         "ResId": resid,
         "pro": pro_file,
@@ -201,27 +206,42 @@ def pyleecan_test_base(
 
     LOGGER.debug("cmd command is: %s", cmdCommand)
     LOGGER.info("Running simulation for result-ID '%s'", resid)
-    with Popen(cmdCommand, stdout=PIPE, stderr=STDOUT) as process:
-        with process.stdout:
-            log_subprocess_output(process.stdout)
+    # with Popen(cmdCommand, stdout=PIPE, stderr=STDOUT) as process:
+    with Popen(cmdCommand, stdout=PIPE, stderr=PIPE) as process:
+        with process:
+            error_message = log_subprocess_output(
+                process.stdout, process.stderr
+            )
         exitcode = process.wait()  # 0 means success
         if exitcode != 0:
             raise RuntimeError(
-                f"Simulation for machine '{pyleecan_machine.name}' failed!"
+                "Simulation for machine '%s' failed due to:\n\t%s"
+                % (pyleecan_machine.name, error_message)
             )
     return pyemmo_script
-
-    return machine_file_path, resFolder
 
 
 def pyleecanPrepTuple(test_cases, test_type):
     """
     This function generates test paramemters for Pyleecan API testing.
-    It basically generate test data folders and return the list of folders as a tuple for use in test cases.
-    Input:
-        - test_cases->list: list of test case names
-        - test_type->string: type of test performed
-    Output: tuple of test data folders
+    It basically generate test data folders and return the list of folders as
+    a tuple for use in test cases.
+
+    Args:
+        test_cases (list): list of test case names
+        test_type (str): type of test performed
+    Returns:
+        list[tuple]: list of test data tuples with headers as first element.
+        Headers (str) are:
+        - test_id
+        - test_case
+        - source_path
+        - result_path
+        - simul_path
+        - simul_subfolder_path
+        - base_result_path
+        - base_simul_path
+        - base_simul_subfolder_path
 
     """
     # rootLogger.setLevel(logging.DEBUG)
@@ -233,11 +253,11 @@ def pyleecanPrepTuple(test_cases, test_type):
         ROOT_DIR,
         test_params[test_type]["result_folder"],
         test_type,
-        curr_datetime
+        curr_datetime,
     )
     if not os.path.isdir(result_path_all):
         os.makedirs(result_path_all)
-    log_file = open(os.path.join(result_path_all, f"simulation.log"),"w+")
+    log_file = open(os.path.join(result_path_all, f"simulation.log"), "w+")
     log_file.write(f"Pyleecan API simulation log on {curr_datetime}\n")
 
     for test_id, test_case in test_cases[test_type][1:]:
@@ -278,28 +298,38 @@ def pyleecanPrepTuple(test_cases, test_type):
                     test_data_path=source_path,
                 )
                 log_file.write(f"Simulation successful for {test_case}.json\n")
-            
+
             except RuntimeError as err:
                 LOGGER.warning(
                     f"{err.__str__()}, cannot start tests for {test_case}"
                 )
-                log_file.write(f"{err.__str__()}, cannot start tests for {test_case}.json\n")
+                log_file.write(
+                    f"{err.__str__()}, cannot start tests for {test_case}.json\n"
+                )
                 success_flag = False
-            
+
             except Exception as exce:
                 LOGGER.warning(
-                    f"test for {test_case} failed. exce.args[0]: " + exce.args[0]
+                    f"test for {test_case} failed. exce.args[0]: "
+                    + exce.args[0]
                 )
-                log_file.write(f"test for {test_case} failed. exce.args[0]: " + exce.args[0] + "\n")
+                log_file.write(
+                    f"test for {test_case} failed. exce.args[0]: "
+                    + exce.args[0]
+                    + "\n"
+                )
                 success_flag = False
             # simul_path = pyemmo_script.resultsPath
-            simul_path = [os.path.join(result_path,dir) for dir in os.listdir(result_path) if os.path.isdir(os.path.join(result_path,dir)) and "res_" in dir][0]
+            simul_path = [
+                os.path.join(result_path, dir)
+                for dir in os.listdir(result_path)
+                if os.path.isdir(os.path.join(result_path, dir))
+                and "res_" in dir
+            ][0]
             # simul_folder = simul_path.split("/")[-1]
             simul_folder = simul_path.split("\\")[-1]
             simul_subfolder = f"id_{test_params[test_type]['id']}_iq_{test_params[test_type]['iq']}_n_{test_params[test_type]['rpm']}rpm"
-            simul_subfolder_path = os.path.join(
-                simul_path, simul_subfolder
-            )
+            simul_subfolder_path = os.path.join(simul_path, simul_subfolder)
             base_simul_path = os.path.join(
                 base_result_path, simul_folder
             )  # This can also change for another base data folder
@@ -337,12 +367,14 @@ def pyleecanPrepTuple(test_cases, test_type):
                         base_result_path,
                         base_simul_path,
                         base_simul_subfolder_path,
-                        marks=pytest.mark.xfail(reason=f"Simulation failed for {test_case}")
+                        marks=pytest.mark.xfail(
+                            reason=f"Simulation failed for {test_case}"
+                        ),
                     )
                 ]
         else:
-                continue
-    
+            continue
+
     log_file.close()
 
     return param_tuples
@@ -363,13 +395,20 @@ if __name__ == "__main__":
     from distutils.dir_util import copy_tree
 
     test_type = "api\\pyleecan"
-    test_cases = make_test_cases(test_type)
+    test_cases = [
+        ("test_id", "test_case"),
+        (0, "IPMSM_B"),
+        (1, "SPMSM_002"),
+        (2, "SPMSM_003"),
+        (3, "Toyota_Prius"),
+    ]
+    # test_cases = make_test_cases(test_type)
     curr_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     # ROOT_DIR, f"workingDirectory\\Vu\\for_testing\\{curr_datetime}"
     result_path = os.path.join(
         ROOT_DIR,
-        test_params["test_data_folder"],
+        test_params[test_type]["test_data_folder"],
         test_type,
         "comparison_base",
     )
@@ -379,7 +418,7 @@ if __name__ == "__main__":
     # Backup existing data
     backup_path = os.path.join(result_path, "backup")
 
-    log_file_path = os.path.join(result_path, "base_data_creation_log.log")
+    log_file_path = os.path.join(result_path, "base_data_creation.log")
     if not os.path.isfile(log_file_path):
         log_file = open(log_file_path, "w")
     else:
@@ -414,8 +453,8 @@ if __name__ == "__main__":
                 test_case=test_case,
             )
             log_file.write(f"Successfully created base data for {test_case}\n")
-        except Exception as ex:
+        except Exception as exce:
             log_file.write(
-                f"{type(ex).__name__} in {test_case}: {ex.__str__()}\n"
+                f"{type(exce).__name__} in {test_case}: {exce.__str__()}\n"
             )
     log_file.close()

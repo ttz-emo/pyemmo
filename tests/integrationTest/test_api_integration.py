@@ -24,7 +24,9 @@ Author: Vu Nguyen
 Description:
 This module contains all integration tests for Pyleecan API, as part PyEMMO.
 Test types are divided by classes, which contains individual test methods.
-Since tests are written to be picked up by pytest, pytest should be used to execute this module
+Since tests are written to be picked up by pytest, pytest should be used to
+execute this module.
+
 syntax: pytest <path_to_module>
 
 """
@@ -41,31 +43,30 @@ from pyemmo.functions.import_results import read_timetable_dat
 
 from . import LOGGER
 from .pyleecan_test_base import pyleecanPrepTuple, test_params
-from .testUtils import (  # updateConfig,
+from .testUtils import (
+    check_folder_type,
     count_files,
     fileFilter,
     fileParser,
-    make_test_cases,
     messagePrinter,
-    check_folder_type,
 )
 
 # Vars for using in tests
 test_types = ["api\\pyleecan"]
 test_cases = {}
-for t in test_types:
-    test_cases[t] = make_test_cases(t, fixed_test_flg=False)
 
-# test_params = {
-#     "api\\pyleecan": {
-#         "id": -10,
-#         "iq": 50,
-#         "rpm": 1000,
-#         "d_theta": 0.25,
-#         "test_data_folder": "tests\\data",
-#         "result_folder": "tests\\results",
-#     }
-# }
+## Auto generate test cases from machine files in tests\data\api\pyleecan dir:
+# for t in test_types:
+#     test_cases[t] = make_test_cases(t, fixed_test_flg=True)
+
+# Fix test cases for acutal machines to be testes from data folder:
+test_cases["api\\pyleecan"] = [
+    ("test_id", "test_case"),
+    (0, "IPMSM_B"),  # TODO: mark as failing instead of skipping!
+    (1, "SPMSM_002"),
+    (2, "SPMSM_003"),
+    (3, "Toyota_Prius"),
+]
 
 
 # Fixture for cleaning up test data
@@ -103,9 +104,9 @@ def cleanup(request):
         "result_path",
         "simul_path",
         "simul_subfolder_path",
-        "base_result_path", 
-        "base_simul_path", 
-        "base_simul_subfolder_path"
+        "base_result_path",
+        "base_simul_path",
+        "base_simul_subfolder_path",
     ),
     pyleecanPrepTuple(test_cases, test_types[0])[1:],
     scope="session",
@@ -134,7 +135,9 @@ class TestCasesIntegration:
         result_path,
         simul_path,
         simul_subfolder_path,
-        base_result_path, base_simul_path, base_simul_subfolder_path
+        base_result_path,
+        base_simul_path,
+        base_simul_subfolder_path,
     ):
         # ) = test_tuple
         LOGGER.info(f"TEST CASE {test_id}: {test_case}")
@@ -151,7 +154,7 @@ class TestCasesIntegration:
             ), "ERROR: Simulation result subfolder does not exist"
 
     def test_gmsh_base_files(
-        self, 
+        self,
         # test_tuple
         test_id,
         test_case,
@@ -159,7 +162,9 @@ class TestCasesIntegration:
         result_path,
         simul_path,
         simul_subfolder_path,
-        base_result_path, base_simul_path, base_simul_subfolder_path
+        base_result_path,
+        base_simul_path,
+        base_simul_subfolder_path,
     ):
 
         # (test_id, test_case, _, result_path, _, _, base_result_path, _, _) = (
@@ -170,9 +175,11 @@ class TestCasesIntegration:
         LOGGER.info("Test point 2: check if GMSH base files are generated")
         self.check_file_counts(base_result_path, result_path)
 
-    @pytest.mark.dependency(name="simul_data_gen", depends=["simul_folder_exist"])
+    @pytest.mark.dependency(
+        name="simul_data_gen", depends=["simul_folder_exist"]
+    )
     def test_simul_data_gen(
-        self, 
+        self,
         # test_tuple
         test_id,
         test_case,
@@ -180,7 +187,9 @@ class TestCasesIntegration:
         result_path,
         simul_path,
         simul_subfolder_path,
-        base_result_path, base_simul_path, base_simul_subfolder_path
+        base_result_path,
+        base_simul_path,
+        base_simul_subfolder_path,
     ):
         # (
         #     test_id,
@@ -198,9 +207,9 @@ class TestCasesIntegration:
         self.check_file_counts(base_simul_path, simul_path)
         self.check_file_counts(base_simul_subfolder_path, simul_subfolder_path)
 
-    @pytest.mark.dependency(depends=["simul_folder_exist","simul_data_gen"])
+    @pytest.mark.dependency(depends=["simul_folder_exist", "simul_data_gen"])
     def test_dat_file_vals(
-        self, 
+        self,
         # test_tuple
         test_id,
         test_case,
@@ -208,7 +217,9 @@ class TestCasesIntegration:
         result_path,
         simul_path,
         simul_subfolder_path,
-        base_result_path, base_simul_path, base_simul_subfolder_path
+        base_result_path,
+        base_simul_path,
+        base_simul_subfolder_path,
     ):
         # (
         #     test_id,
@@ -228,10 +239,16 @@ class TestCasesIntegration:
         #         "Base simulation result subfolder exists, continuing tests..."
         #     ), "ERROR: Base simulation result subfolder does not exist, nothing to compare"
         if not os.path.isdir(base_simul_subfolder_path):
-            LOGGER.info(f"Base simulation result subfolder for {test_case} does not exist, nothing to compare")
+            LOGGER.info(
+                f"Base simulation result subfolder for {test_case} does not exist, nothing to compare"
+            )
         else:
-            dat_targets = glob.glob(os.path.join(simul_subfolder_path, "*.dat"))
-            dat_bases = glob.glob(os.path.join(base_simul_subfolder_path, "*.dat"))
+            dat_targets = glob.glob(
+                os.path.join(simul_subfolder_path, "*.dat")
+            )
+            dat_bases = glob.glob(
+                os.path.join(base_simul_subfolder_path, "*.dat")
+            )
             for target_file, base_file in zip(dat_targets, dat_bases):
                 target_dat = read_timetable_dat(target_file)
                 base_dat = read_timetable_dat(base_file)
@@ -239,32 +256,37 @@ class TestCasesIntegration:
                 with check:
                     for i in range(len(base_dat[0])):
                         diff = abs(target_dat[1][i] - base_dat[1][i])
-                        assert diff < 0.01, f"Mismatch! Base data: {base_dat}; Target data:{target_dat}"
-                        if diff >= 0.01: check_flag = False
-                    
-                    assert check_flag and messagePrinter(f"SUCCESS: all data in {target_file} ok."), f"ERROR: mismatch detected between base ({base_file}) and target ({target_file})."
+                        assert (
+                            diff < 0.01
+                        ), f"Mismatch! Base data: {base_dat}; Target data:{target_dat}"
+                        if diff >= 0.01:
+                            check_flag = False
 
-    def check_file_counts(self, base_folder: str, folder_to_count: str, check_from_base: bool =False):
+                    assert check_flag and messagePrinter(
+                        f"SUCCESS: all data in {target_file} ok."
+                    ), f"ERROR: mismatch detected between base ({base_file}) and target ({target_file})."
+
+    def check_file_counts(
+        self,
+        base_folder: str,
+        folder_to_count: str,
+        check_from_base: bool = True,
+    ):
         """
         Compare count of files per type between base data and result data
         """
         base_count_fixed = {
             "result": {
-                'pro': 3, 
-                'log': 1, 
-                'db': 1, 
-                'geo': 2, 
-                'msh': 1, 
-                'pre': 1, 
-                'res': 1
+                "pro": 3,
+                "log": 1,
+                "db": 1,
+                "geo": 2,
+                "msh": 1,
+                "pre": 1,
+                "res": 1,
             },
-            "simul": {
-                'wdg': 1
-            },
-            "simul_sub": {
-                'pos': 10, 
-                'dat': 14
-            }
+            "simul": {"wdg": 1},
+            "simul_sub": {"pos": 10, "dat": 14},
         }
         if check_from_base:
             base_count = count_files(base_folder)
@@ -284,7 +306,6 @@ class TestCasesIntegration:
                     assert result_count == count and messagePrinter(
                         f"SUCCESS: .{file_type} count matches"
                     ), f"ERROR: .{file_type} count mismatch! Base: {count}; Result: {result_count}"
-
 
     def check_content(self, base_path, target_path, target_types):
         """

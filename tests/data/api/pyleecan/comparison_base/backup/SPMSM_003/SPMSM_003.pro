@@ -1,4 +1,4 @@
-// This script was created with pyemmo (Version 1.3.1b1, git 6eeae4)
+// This script was created with pyemmo (Version 1.3.1b1, git bc8992)
 
 // This script has initally be written by Diogo Pinto and is adapted for the use with pyemmo by Max Ganser
 
@@ -882,7 +882,7 @@ Function
 Function{
     DefineFunction[br, js];
     mu0 = 4.e-7 * Pi ;
-    
+
     // New Material: PYEMMO_AIR
     sigma_PYEMMO_AIR = 0 ;
     sigma[group_PYEMMO_AIR] = sigma_PYEMMO_AIR ;
@@ -891,7 +891,7 @@ Function{
     nu[group_PYEMMO_AIR] = nu_PYEMMO_AIR ;
     density_PYEMMO_AIR = 1.2041 ;// density of PYEMMO_AIR
     density[group_PYEMMO_AIR] = density_PYEMMO_AIR ;
-    
+
     // New Material: Magnet3
     sigma_Magnet3 = 625000.0 ;
     sigma[group_Magnet3] = sigma_Magnet3 ;
@@ -901,7 +901,7 @@ Function{
     br_Magnet3 = 1.2 ;
     density_Magnet3 = 7500.0 ;// density of Magnet3
     density[group_Magnet3] = density_Magnet3 ;
-    
+
     // New Material: M400_50A
     sigma_M400_50A = 2173913.0434782607 ;
     sigma[group_M400_50A] = sigma_M400_50A ;
@@ -930,7 +930,7 @@ Function{
     dhdb_NL[group_M400_50A] = dhdb_NL_M400_50A[$1] ;
     density_M400_50A = 7650.0 ;// density of M400_50A
     density[group_M400_50A] = density_M400_50A ;
-    
+
     // New Material: Copper2
     sigma_Copper2 = 45454545.45454546 ;
     sigma[group_Copper2] = sigma_Copper2 ;
@@ -957,35 +957,35 @@ DefineConstant[
 ];
 Include "machine_magstadyn_a.pro"
 PostOperation{
-    { Name GetBOnRadius; NameOfPostProcessing MagStaDyn_a_2D; 
-         Operation {  
-            Print [ b_radial, OnGrid {(0.1136*(1-0.0001))*Cos[$A*Pi/180],(0.1136*(1-0.0001))*Sin[$A*Pi/180],0}{0:360/SymmetryFactor:0.5,0,0}, File StrCat[ResDir,"b_radial_airgap_rotor.pos"], Name "b_radial (airgap rotor)" ]; 
+    { Name GetBOnRadius; NameOfPostProcessing MagStaDyn_a_2D;
+         Operation {
+            Print [ b_radial, OnGrid {(0.1136*(1-0.0001))*Cos[$A*Pi/180],(0.1136*(1-0.0001))*Sin[$A*Pi/180],0}{0:360/SymmetryFactor:0.5,0,0}, File StrCat[ResDir,"b_radial_airgap_rotor.pos"], Name "b_radial (airgap rotor)" ];
             }
-         Operation {  
-            Print [ b_tangent, OnGrid {(0.1136*(1-0.0001))*Cos[$A*Pi/180],(0.1136*(1-0.0001))*Sin[$A*Pi/180],0}{0:360/SymmetryFactor:0.5,0,0}, File StrCat[ResDir,"b_tangent_airgap_rotor.pos"], Name "b_tangent (airgap rotor)" ]; 
+         Operation {
+            Print [ b_tangent, OnGrid {(0.1136*(1-0.0001))*Cos[$A*Pi/180],(0.1136*(1-0.0001))*Sin[$A*Pi/180],0}{0:360/SymmetryFactor:0.5,0,0}, File StrCat[ResDir,"b_tangent_airgap_rotor.pos"], Name "b_tangent (airgap rotor)" ];
             }
-         Operation {  
-            Print [ b_radial, OnGrid {(0.1144*(1+0.0001))*Cos[$A*Pi/180],(0.1144*(1+0.0001))*Sin[$A*Pi/180],0}{0:360/SymmetryFactor:0.5,0,0}, File StrCat[ResDir,"b_radial_airgap_stator.pos"], Name "b_radial (airgap stator)" ]; 
+         Operation {
+            Print [ b_radial, OnGrid {(0.1144*(1+0.0001))*Cos[$A*Pi/180],(0.1144*(1+0.0001))*Sin[$A*Pi/180],0}{0:360/SymmetryFactor:0.5,0,0}, File StrCat[ResDir,"b_radial_airgap_stator.pos"], Name "b_radial (airgap stator)" ];
             }
-         Operation {  
-            Print [ b_tangent, OnGrid {(0.1144*(1+0.0001))*Cos[$A*Pi/180],(0.1144*(1+0.0001))*Sin[$A*Pi/180],0}{0:360/SymmetryFactor:0.5,0,0}, File StrCat[ResDir,"b_tangent_airgap_stator.pos"], Name "b_tangent (airgap stator)" ]; 
+         Operation {
+            Print [ b_tangent, OnGrid {(0.1144*(1+0.0001))*Cos[$A*Pi/180],(0.1144*(1+0.0001))*Sin[$A*Pi/180],0}{0:360/SymmetryFactor:0.5,0,0}, File StrCat[ResDir,"b_tangent_airgap_stator.pos"], Name "b_tangent (airgap stator)" ];
             }
-         Operation {  
-            Print [ b_radial, OnGrid {0.7*Cos[$A*Pi/180],0.7*Sin[$A*Pi/180],0}{0:360/SymmetryFactor:0.5,0,0}, File StrCat[ResDir,"b_radial_tooth.pos"], Name "b_radial (Tooth)" ]; 
+         Operation {
+            Print [ b_radial, OnGrid {0.7*Cos[$A*Pi/180],0.7*Sin[$A*Pi/180],0}{0:360/SymmetryFactor:0.5,0,0}, File StrCat[ResDir,"b_radial_tooth.pos"], Name "b_radial (Tooth)" ];
             }
-         Operation {  
-            Print [ b_tangent, OnGrid {0.7*Cos[$A*Pi/180],0.7*Sin[$A*Pi/180],0}{0:360/SymmetryFactor:0.5,0,0}, File StrCat[ResDir,"b_tangent_tooth.pos"], Name "b_tangent (Tooth)" ]; 
+         Operation {
+            Print [ b_tangent, OnGrid {0.7*Cos[$A*Pi/180],0.7*Sin[$A*Pi/180],0}{0:360/SymmetryFactor:0.5,0,0}, File StrCat[ResDir,"b_tangent_tooth.pos"], Name "b_tangent (Tooth)" ];
             }
-         Operation {  
-            Print [ b_radial, OnGrid {0.9*Cos[$A*Pi/180],0.9*Sin[$A*Pi/180],0}{0:360/SymmetryFactor:0.5,0,0}, File StrCat[ResDir,"b_radial_yoke.pos"], Name "b_radial (Yoke)" ]; 
+         Operation {
+            Print [ b_radial, OnGrid {0.9*Cos[$A*Pi/180],0.9*Sin[$A*Pi/180],0}{0:360/SymmetryFactor:0.5,0,0}, File StrCat[ResDir,"b_radial_yoke.pos"], Name "b_radial (Yoke)" ];
             }
-         Operation {  
-            Print [ b_tangent, OnGrid {0.9*Cos[$A*Pi/180],0.9*Sin[$A*Pi/180],0}{0:360/SymmetryFactor:0.5,0,0}, File StrCat[ResDir,"b_tangent_yoke.pos"], Name "b_tangent (Yoke)" ]; 
+         Operation {
+            Print [ b_tangent, OnGrid {0.9*Cos[$A*Pi/180],0.9*Sin[$A*Pi/180],0}{0:360/SymmetryFactor:0.5,0,0}, File StrCat[ResDir,"b_tangent_yoke.pos"], Name "b_tangent (Yoke)" ];
             }
     }
-    { Name GetMagnetLosses; NameOfPostProcessing MagStaDyn_a_2D; 
-         Operation {  
-            Print [ JouleLosses[Rotor_Magnets], OnGlobal , Format TimeTable, File StrCat[ResDir,"Pv_eddy_Mag.dat"] ]; 
+    { Name GetMagnetLosses; NameOfPostProcessing MagStaDyn_a_2D;
+         Operation {
+            Print [ JouleLosses[Rotor_Magnets], OnGlobal , Format TimeTable, File StrCat[ResDir,"Pv_eddy_Mag.dat"] ];
             }
     }
     }
