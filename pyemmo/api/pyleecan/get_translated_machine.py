@@ -76,9 +76,7 @@ def build_bands_rotor(
     """
     nbr_rotor_seg = machine.rotor.comp_periodicity_geo()[0]
     angle_rotor = 2 * math.pi / nbr_rotor_seg  # [rad]
-    center_point = Point(
-        name="centerPointBand", x=0, y=0, z=0, meshLength=1e-3
-    )
+    center_point = Point(name="centerPointBand", x=0, y=0, z=0, meshLength=1e-3)
 
     # -----------------
     # Rotor inner band:
@@ -250,9 +248,7 @@ def build_bands_stator(
     """
     nbr_stator_seg = machine.stator.slot.Zs
     angle_stator = 2 * math.pi / nbr_stator_seg  # [rad]
-    center_point = Point(
-        name="centerPointBand", x=0, y=0, z=0, meshLength=1e-3
-    )
+    center_point = Point(name="centerPointBand", x=0, y=0, z=0, meshLength=1e-3)
 
     # ------------------
     # Stator outer band:
@@ -353,13 +349,9 @@ def build_bands_stator(
         centerPoint=center_point,
     )
 
-    lower_line3 = Line(
-        name="lowerLine3", startPoint=point_m31, endPoint=point_m41
-    )
+    lower_line3 = Line(name="lowerLine3", startPoint=point_m31, endPoint=point_m41)
 
-    upper_line3 = Line(
-        name="upperLine3", startPoint=point_m32, endPoint=point_m42
-    )
+    upper_line3 = Line(name="upperLine3", startPoint=point_m32, endPoint=point_m42)
 
     # Adding curves to list 'curvesStLu2':
     curves_stlu2 = []

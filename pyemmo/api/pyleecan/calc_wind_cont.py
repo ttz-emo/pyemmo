@@ -102,17 +102,14 @@ def calc_wind_contour(
     for curve in cont_line_list:
         # TODO: Describe what this if-case is doing.
         if (
-            curve.startPoint.radius > r_airgap
-            or curve.startPoint.radius > r_lam
+            curve.startPoint.radius > r_airgap or curve.startPoint.radius > r_lam
         ) and math.isclose(
             a=curve.startPoint.radius, b=r_airgap, abs_tol=1e-6
         ) is False:
             slot_op_points.append(curve.startPoint)
         elif (
             curve.endPoint.radius > r_airgap or curve.endPoint.radius > r_lam
-        ) and math.isclose(
-            a=curve.endPoint.radius, b=r_airgap, abs_tol=1e-6
-        ) is False:
+        ) and math.isclose(a=curve.endPoint.radius, b=r_airgap, abs_tol=1e-6) is False:
             slot_op_points.append(curve.endPoint)
 
     # For translating SlotW22:

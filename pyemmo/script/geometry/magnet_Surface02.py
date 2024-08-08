@@ -113,10 +113,7 @@ class Magnet_Surface02(Magnet):
             coordCentre[2],
             1,
         )
-        xMag4 = (
-            math.sqrt(math.pow(r_Mag, 2) - math.pow(width_M / 2, 2))
-            + centreMagX
-        )
+        xMag4 = math.sqrt(math.pow(r_Mag, 2) - math.pow(width_M / 2, 2)) + centreMagX
         pMagnet4 = Point(
             "pMagnet4",
             xMag4 + coordCentre[0],

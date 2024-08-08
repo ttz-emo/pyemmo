@@ -131,32 +131,24 @@ class MachineAllType:
         )
 
         ###rotorMoving beinhaltet alle Physical Elements, die während der Simulation rotiert werden müssen (Rotor).
-        self._rotorMoving = Domain(
-            "Rotor_Moving", rotor._rotorMoving.physicals
-        )
+        self._rotorMoving = Domain("Rotor_Moving", rotor._rotorMoving.physicals)
         ###mbBaux beinhaltet alle Hilfslinien des MovingBands (Ergänzung zum Vollkreis), die wegen der Symmetrie ergänzt werden mussten. MovingBand auf der Rotorseite muss ein vollständiger Kreis beschreiben.
         self._mbBaux = Domain("Rotor_Bnd_MBaux", rotor._mbBaux.physicals)
         ###DomainAirGapRotor beinhaltet alle Physical Elements, die einen Luftspalt auf der Rotorseite (Luftspalt bis zum Moving Band) beschreiben.
-        self._domainAirGapRotor = Domain(
-            "Rotor_Airgap", rotor._domainAirGap.physicals
-        )
+        self._domainAirGapRotor = Domain("Rotor_Airgap", rotor._domainAirGap.physicals)
         ###DomainAirGapStator beinhaltet alle Physical Elements, die einen Luftspalt auf der Statorseite (Luftspalt ab dem Moving Band bis Statorinnenseite) beschreiben.
         self._domainAirGapStator = Domain(
             "Stator_Airgap", stator._domainAirGap.physicals
         )
 
         if (
-            len(
-                self.rotor._domainPrimary.physicals
-                + stator._domainPrimary.physicals
-            )
+            len(self.rotor._domainPrimary.physicals + stator._domainPrimary.physicals)
             > 0
         ):
             ###primarykante der elektrischen Maschine.
             self._domainPrimary = Domain(
                 "PrimaryRegion_Rotor",
-                rotor._domainPrimary.physicals
-                + stator._domainPrimary.physicals,
+                rotor._domainPrimary.physicals + stator._domainPrimary.physicals,
             )
             ###Slavekante der elektrischen Maschine.
             self._domainSlave = Domain(
@@ -198,9 +190,7 @@ class MachineAllType:
         if isinstance(nameVal, str):
             self._name = nameVal
         else:
-            raise TypeError(
-                f"Given name was not type str, but '{type(nameVal)}'"
-            )
+            raise TypeError(f"Given name was not type str, but '{type(nameVal)}'")
 
     @property
     def symmetryFactor(self) -> int:
@@ -220,9 +210,7 @@ class MachineAllType:
             # logger.debug("Symmetry factor winding: %s",{sym_winding})
             sym_factor = min(sym_winding, sym_machine)
             return sym_factor
-        raise RuntimeError(
-            "Tried to compute sym factor, but rotor/stator not defined!"
-        )
+        raise RuntimeError("Tried to compute sym factor, but rotor/stator not defined!")
 
     # @symmetryFactor.setter
     # def symmetryFactor(self, symFactor: int):
@@ -399,9 +387,7 @@ class MachineAllType:
         logging.debug("Using automatic mesh generation.")
         if not basisMeshsize:
             # calc movingband hight
-            h_mb = abs(
-                self.rotor.movingBandRadius - self.stator.movingBandRadius
-            )
+            h_mb = abs(self.rotor.movingBandRadius - self.stator.movingBandRadius)
             basisMeshsize = h_mb
             logging.debug(
                 "Setting basis mesh size to movingband hight = %.3e",

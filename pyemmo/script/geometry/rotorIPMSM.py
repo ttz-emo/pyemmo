@@ -49,9 +49,7 @@ class RotorIPMSM(Rotor):
         magnetDict=None,
         airGapDict=None,
     ):
-        super().__init__(
-            physicalElementList=[], name="RotorIPMSM", axLen=axLen
-        )
+        super().__init__(physicalElementList=[], name="RotorIPMSM", axLen=axLen)
         self._laminationType = laminationType
         self._magnetType = magnetType
 
@@ -60,15 +58,11 @@ class RotorIPMSM(Rotor):
         if float(nbrGeoParts).is_integer():
             self._nbrGeoParts = int(nbrGeoParts)
         else:
-            raise ValueError(
-                f"The number of segments is not an integer: {nbrGeoParts}"
-            )
+            raise ValueError(f"The number of segments is not an integer: {nbrGeoParts}")
         if float(symmetryFactor).is_integer():
             self._symmetryFactor = int(symmetryFactor)
         else:
-            raise ValueError(
-                f"The symmetry factor is not an integer: {symmetryFactor}"
-            )
+            raise ValueError(f"The symmetry factor is not an integer: {symmetryFactor}")
         # Wenn laminationDict nicht None: Setzte Lamination Parameter
         if laminationDict:
             self.addLaminationParameter(laminationDict)
@@ -94,16 +88,12 @@ class RotorIPMSM(Rotor):
                 "machineCentrePoint"
             ]
         else:
-            print(
-                "No definition of lamination. Use addLaminationParameter() first!"
-            )
+            print("No definition of lamination. Use addLaminationParameter() first!")
 
     def addAirGapParameter(self, airGapDict):
         self._airGapDict = airGapDict
         if self._laminationDict == None:
-            print(
-                "No defination of rotorpart. Use addLaminationParameter() first!"
-            )
+            print("No defination of rotorpart. Use addLaminationParameter() first!")
 
     def createRotor(self):
         if self._laminationDict == None or self._magnetDict == None:
@@ -116,9 +106,7 @@ class RotorIPMSM(Rotor):
                     RotorLamination_Sheet01_Standard,
                 )
 
-                laminationPart = RotorLamination_Sheet01_Standard(
-                    self._laminationDict
-                )
+                laminationPart = RotorLamination_Sheet01_Standard(self._laminationDict)
 
             if self._magnetType == "magnet_Slot01":
                 from .magnet_Slot01 import MagnetSlot01
@@ -151,9 +139,7 @@ class RotorIPMSM(Rotor):
         allAngleParallel = [angleParallel1]
         alpha = self._angleGeoParts * 2
         for i in range(1, int(self._nbrGeoParts / 2)):
-            dockingPointM.rotateZ(
-                self._laminationDict["machineCentrePoint"], alpha
-            )
+            dockingPointM.rotateZ(self._laminationDict["machineCentrePoint"], alpha)
             coordDPM = dockingPointM.coordinate
             angle = math.atan2(coordDPM[1], coordDPM[0])
             allAngleParallel.append(angle)
@@ -244,9 +230,7 @@ class RotorIPMSM(Rotor):
         # create airgap surface
         s_AirGap = Surface("sAir", [l_rechts, l_aussen, l_links, l_innen])
         s_AirGap.setMeshLength(airGapLength)
-        RotorAirgap = AirGap(
-            "airGapRotor", [s_AirGap], self._airGapDict["material"]
-        )
+        RotorAirgap = AirGap("airGapRotor", [s_AirGap], self._airGapDict["material"])
         self._physicalRaw.append(RotorAirgap)
 
     def _createDuplicate(self):
@@ -273,9 +257,7 @@ class RotorIPMSM(Rotor):
         for i in range(1, int(self._nbrGeoParts / 2)):
             for s in allGeo:
                 sNew = s.duplicate(name=s.name + "_duplicate_" + str(i))
-                sNew.rotateZ(
-                    self._laminationDict["machineCentrePoint"], i * alpha
-                )
+                sNew.rotateZ(self._laminationDict["machineCentrePoint"], i * alpha)
                 listGeo.append(sNew)
 
         wholeLamination = RotorLamination(
@@ -297,9 +279,7 @@ class RotorIPMSM(Rotor):
             magSur = []
             for s in allGeo2:
                 sNew2 = s.duplicate(name=s.name + "_duplicate_" + str(i))
-                sNew2.rotateZ(
-                    self._laminationDict["machineCentrePoint"], i * alpha
-                )
+                sNew2.rotateZ(self._laminationDict["machineCentrePoint"], i * alpha)
                 magSur.append(sNew2)
             mag2 = Magnet(
                 "magnet_SPMSM",
@@ -334,14 +314,10 @@ class RotorIPMSM(Rotor):
         for i in range(1, int(self._nbrGeoParts / 2)):
             for s in AirGapGeo:
                 sNew = s.duplicate(name=s.name + "_duplicate_" + str(i))
-                sNew.rotateZ(
-                    self._laminationDict["machineCentrePoint"], i * alpha
-                )
+                sNew.rotateZ(self._laminationDict["machineCentrePoint"], i * alpha)
                 AirgapGeoList.append(sNew)
 
-        wholeAirGap = AirGap(
-            "rotorAirGap", AirgapGeoList, self._airGapDict["material"]
-        )
+        wholeAirGap = AirGap("rotorAirGap", AirgapGeoList, self._airGapDict["material"])
         self._physicalElements.append(wholeAirGap)
 
     def _createConstraintLine(self):
@@ -396,9 +372,7 @@ class RotorIPMSM(Rotor):
 
         # Rotate and Duplicate
         for i in range(0, self._nbrGeoParts):
-            c2 = mbNegDirection.duplicate(
-                mbNegDirection.name + "_duplicate_" + str(i)
-            )
+            c2 = mbNegDirection.duplicate(mbNegDirection.name + "_duplicate_" + str(i))
             c2.rotateZ(self._laminationDict["machineCentrePoint"], i * angle)
             mbRotor1.append(c2)
 
@@ -444,18 +418,14 @@ class RotorIPMSM(Rotor):
             self._physicalRaw[2]
             .geometricalElement[0]
             .curve[0]
-            .duplicate(
-                name="lAirgapprimary"
-            )  # duplicate part of airgap on x-axis
+            .duplicate(name="lAirgapprimary")  # duplicate part of airgap on x-axis
         )
         lAirGapprimary.rotateZ(
             self._laminationDict["machineCentrePoint"], -angle
         )  # Rückrotation damit Linie auf x-Achse liegt
 
         # create primaryLine and append to physicalElement
-        primaryLine1 = PrimaryLine(
-            "primary_RotorLine", [lLamprimary, lAirGapprimary]
-        )
+        primaryLine1 = PrimaryLine("primary_RotorLine", [lLamprimary, lAirGapprimary])
         self._physicalElements.append(primaryLine1)
 
         ## Slavelines ##
@@ -483,19 +453,13 @@ class RotorIPMSM(Rotor):
         self._domainL = Domain("DomainL_Rotor", allPhy["domainL"])
         self._domainNL = Domain("DomainNL_Rotor", allPhy["domainNL"])
 
-        self._rotorMoving = Domain(
-            "DomainRotor_Moving", allPhy["rotor_moving"]
-        )
+        self._rotorMoving = Domain("DomainRotor_Moving", allPhy["rotor_moving"])
         self._mbBaux = Domain("Domain_Rotor_Bnd_MBaux", allPhy["mb_Mbaux"])
         self._domainAirGap = Domain("Domain_Rotor_Airgap", allPhy["airGap"])
 
-        self._domainPrimary = Domain(
-            "Domain_PrimaryRegion_Rotor", allPhy["primary"]
-        )
+        self._domainPrimary = Domain("Domain_PrimaryRegion_Rotor", allPhy["primary"])
         self._domainSlave = Domain("Domain_SlaveRegion_Rotor", allPhy["slave"])
-        self._domainInnerLimit = Domain(
-            "Domain_InnerLimit_Rotor", allPhy["limit"]
-        )
+        self._domainInnerLimit = Domain("Domain_InnerLimit_Rotor", allPhy["limit"])
 
     # def sortPhysicals(self):
     #     phy_domainS = []  # Eingeprägte Ströme

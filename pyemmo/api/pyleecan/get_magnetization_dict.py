@@ -157,9 +157,7 @@ def get_magnetization_dict(
         mag_angle_dict = machine.rotor.hole[0].comp_magnetization_dict()
         if len(mag_angle_dict) == 1:
             angle_point_ref = angle_point_ref_list[0]
-            magnetization_type = machine.rotor.hole[
-                0
-            ].magnet_0.type_magnetization
+            magnetization_type = machine.rotor.hole[0].magnet_0.type_magnetization
 
             if magnetization_type in (0, 1):  # radial & parallel
                 magnetization_angle = angle_point_ref

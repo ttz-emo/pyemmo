@@ -321,8 +321,7 @@ class Material:
             else:
                 # negative conductivity...
                 raise ValueError(
-                    "Conductivy can not be negative!"
-                    f"Given value: {conductivity}"
+                    "Conductivy can not be negative!" f"Given value: {conductivity}"
                 )
 
         else:
@@ -335,10 +334,7 @@ class Material:
         Args:
             relPermeability (Union[float, int]): relative permeability
         """
-        if (
-            isinstance(relPermeability, (int, float))
-            or relPermeability is None
-        ):
+        if isinstance(relPermeability, (int, float)) or relPermeability is None:
             self._relPermeability = relPermeability
         else:
             raise ValueError("Relative permeability must be numeric.")
@@ -532,8 +528,6 @@ class Material:
         ]
         for row in table:
             if row[1] is None:
-                row[1] = (
-                    "None"  # set to string because formatting None not supported
-                )
+                row[1] = "None"  # set to string because formatting None not supported
             print(f"{row[0]: >30} {row[1]: <15}")
         print("\n")

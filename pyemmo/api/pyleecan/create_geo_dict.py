@@ -139,9 +139,7 @@ def create_geo_dict(
             save_space_temp.extend(split1.split("-"))
         all_surfs_labels_split2.append(save_space_temp)
 
-        logger.debug(
-            "Geometry translation of %s started:", all_surfs_labels[i]
-        )
+        logger.debug("Geometry translation of %s started:", all_surfs_labels[i])
 
         # translating the surface
         pyemmo_surf, angle_point_ref_list = translate_surface(
@@ -212,9 +210,7 @@ def create_geo_dict(
             machine,
             rotor_contour_line_list,
             is_internal_rotor,
-            radius=(
-                machine.rotor.Rint if is_internal_rotor else machine.rotor.Rext
-            ),
+            radius=(machine.rotor.Rint if is_internal_rotor else machine.rotor.Rext),
         )
 
     else:

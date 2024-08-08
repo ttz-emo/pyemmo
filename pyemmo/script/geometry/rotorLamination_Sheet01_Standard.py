@@ -107,9 +107,7 @@ class RotorLamination_Sheet01_Standard(RotorLamination):
         lBlech2 = Line("lBlech2", pRotor1, pWelle1)
 
         # Flächenerzeugen
-        surfaceRotor = Surface(
-            "surfaceRotor", [lWelle, lBlech1, lRotorAussen, lBlech2]
-        )
+        surfaceRotor = Surface("surfaceRotor", [lWelle, lBlech1, lRotorAussen, lBlech2])
 
         surfaceRotor.setMeshColor(colorDict["SteelBlue"])
 

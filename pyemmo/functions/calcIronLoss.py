@@ -98,9 +98,7 @@ def calc_time_domain_core_loss(
         # extract filename from path
         _, filename = os.path.split(b_filepath)  # get filename with ext
         filename, _ = os.path.splitext(filename)  # get pure filename
-    hyst_loss_field = calc_hyst_loss_ucp(
-        time, b_field_data, loss_factor["hyst"]
-    )
+    hyst_loss_field = calc_hyst_loss_ucp(time, b_field_data, loss_factor["hyst"])
     if save_fields:
         # save the View to a pos file
         model = gmsh.model.getCurrent()  # or just get current model...
@@ -136,9 +134,7 @@ def calc_time_domain_core_loss(
     # loss function for eddy current loss from paper:
     step_time = time[1] - time[0]
     diff_b = np.diff(b_field_data, axis=0) / step_time  # calc dBdt
-    eddy_loss_field = np.sum(
-        eddy_factor / 2 / (np.pi**2) * (diff_b**2), axis=2
-    )
+    eddy_loss_field = np.sum(eddy_factor / 2 / (np.pi**2) * (diff_b**2), axis=2)
     # meanEddyLossField = np.mean(eddyLossField, axis=0)
     # eddyLoss = integrateField(np.array([meanEddyLossField]), [time[0]], elementTags)
     if save_fields:
@@ -160,13 +156,9 @@ def calc_time_domain_core_loss(
             os.path.dirname(b_filepath), f"p_eddy_from_{filename}.pos"
         )
         gmsh.view.write(actual_view, p_filepath)
-    eddy_loss = integrate_field(
-        np.array(eddy_loss_field), time[1:], element_tags
-    )
+    eddy_loss = integrate_field(np.array(eddy_loss_field), time[1:], element_tags)
     if eddy_loss.size != nbr_timesteps:
-        raise RuntimeError(
-            f"Integration should result in {nbr_timesteps} values!"
-        )
+        raise RuntimeError(f"Integration should result in {nbr_timesteps} values!")
     # skip first value, because its 0:
     eddy_loss = eddy_loss[1:] * sym_factor * axial_length  # correct values
     core_loss["eddy"] = eddy_loss
@@ -175,9 +167,7 @@ def calc_time_domain_core_loss(
     if loss_factor["exc"] > 0:
         excess_loss_constant = 8.763363  # constant factor (from paper)
         exc_loss_field = np.sum(
-            loss_factor["exc"]
-            / excess_loss_constant
-            * np.power(diff_b**2, 0.75),
+            loss_factor["exc"] / excess_loss_constant * np.power(diff_b**2, 0.75),
             axis=2,
         )
         if save_fields:
@@ -201,13 +191,9 @@ def calc_time_domain_core_loss(
             gmsh.view.write(actual_view, p_filepath)
         # meanExcLossField = np.mean(excLossField, axis=0)
         # excLoss = integrateField(np.array([meanExcLossField]), [time[0]], elementTags)
-        exc_loss = integrate_field(
-            np.array(exc_loss_field), time, element_tags
-        )
+        exc_loss = integrate_field(np.array(exc_loss_field), time, element_tags)
         if exc_loss.size != nbr_timesteps:
-            raise RuntimeError(
-                f"Integration should result in {nbr_timesteps} values!"
-            )
+            raise RuntimeError(f"Integration should result in {nbr_timesteps} values!")
         # skip first value, because its 0:
         exc_loss = exc_loss[1:] * sym_factor * axial_length  # correct values
         core_loss["exc"] = exc_loss
@@ -279,22 +265,14 @@ def calc_freq_domain_core_loss(
     # we have to double the value for amp[0] and use only nbrFreqs for amp[1:]
     freqs = np.fft.rfftfreq(nbr_timesteps, timestep)
     nbr_freqs = len(freqs)
-    amp = np.concatenate(
-        ([amp[0] / nbr_freqs / 2], amp[1:] / (nbr_freqs)), axis=0
-    )
-    amp = np.concatenate(
-        ([amp[0] / nbr_freqs / 2], amp[1:] / (nbr_freqs)), axis=0
-    )
+    amp = np.concatenate(([amp[0] / nbr_freqs / 2], amp[1:] / (nbr_freqs)), axis=0)
+    amp = np.concatenate(([amp[0] / nbr_freqs / 2], amp[1:] / (nbr_freqs)), axis=0)
     # norm of xyz comp. -> hystLossField has shape (nbrElements, nbrFreqs)
     hyst_loss_field = np.linalg.norm(
         hyst_loss_factor * freqs * (amp.transpose() ** 2), axis=0
     )
-    hyst_loss = integrate_field(hyst_loss_field.transpose(), freqs, elem_tags)[
-        1:
-    ]
-    hyst_loss = integrate_field(hyst_loss_field.transpose(), freqs, elem_tags)[
-        1:
-    ]
+    hyst_loss = integrate_field(hyst_loss_field.transpose(), freqs, elem_tags)[1:]
+    hyst_loss = integrate_field(hyst_loss_field.transpose(), freqs, elem_tags)[1:]
     # skip first value, because its 0
     core_loss["hyst"] = hyst_loss * sym_factor * axial_length  # correct values
 
@@ -304,9 +282,7 @@ def calc_freq_domain_core_loss(
     eddy_loss_field: np.ndarray = np.linalg.norm(
         eddy_loss_factor * (freqs**2) * (amp.transpose() ** 2), axis=0
     )
-    eddy_loss = integrate_field(eddy_loss_field.transpose(), freqs, elem_tags)[
-        1:
-    ]
+    eddy_loss = integrate_field(eddy_loss_field.transpose(), freqs, elem_tags)[1:]
     if eddy_loss.size != nbr_freqs:
         raise RuntimeError(f"Integration should result in {nbr_freqs} values!")
     # skip first value, because its 0
@@ -319,13 +295,9 @@ def calc_freq_domain_core_loss(
         exc_loss_field = np.linalg.norm(
             exc_loss_factor * (freqs**1.5) * (amp.transpose() ** 1.5)
         )
-        exc_loss = integrate_field(
-            exc_loss_field.transpose(), freqs, elem_tags
-        )[1:]
+        exc_loss = integrate_field(exc_loss_field.transpose(), freqs, elem_tags)[1:]
         if exc_loss.size != nbr_freqs:
-            raise RuntimeError(
-                f"Integration should result in {nbr_freqs} values!"
-            )
+            raise RuntimeError(f"Integration should result in {nbr_freqs} values!")
         # skip first value, because its 0:
         exc_loss = exc_loss * sym_factor * axial_length  # correct values
         core_loss["exc"] = exc_loss
@@ -360,9 +332,7 @@ def calc_hyst_loss_ucp(
                 b_old = b_field_data[it - 1, ie, comp]
                 find_ext(it, ie, comp, b_old, b_new, uex)
                 # calc Hm
-                h_m[it, ie, comp] = (
-                    hyst_loss_factor / np.pi * uex[it, ie, comp]
-                )
+                h_m[it, ie, comp] = hyst_loss_factor / np.pi * uex[it, ie, comp]
                 if uex[it, ie, comp] == 0:
                     H[it, ie, comp] = np.sqrt(h_m[it, ie, comp] ** 2)
                 else:
@@ -451,9 +421,7 @@ def calc_hyst_loss_sin(
     timestep = time[1] - time[0]
     freqs = np.fft.rfftfreq(np.shape(b_field_data_fft)[0], timestep)
     nbr_freqs = len(freqs)
-    amp = np.concatenate(
-        ([amp[0] / nbr_freqs / 2], amp[1:] / (nbr_freqs)), axis=0
-    )
+    amp = np.concatenate(([amp[0] / nbr_freqs / 2], amp[1:] / (nbr_freqs)), axis=0)
     phase = np.angle(b_fft)
     for elem in range(nbr_elements):
         # FIXME: Assume that freq. of max. amplitude is the same for x and y comp.
@@ -525,9 +493,7 @@ def integrate_field(
                 time=time_val,
             )
         # integrate:
-        gmsh.plugin.setNumber(
-            "Integrate", "View", gmsh.view.getIndex(view_tag)
-        )
+        gmsh.plugin.setNumber("Integrate", "View", gmsh.view.getIndex(view_tag))
         integrate_view = gmsh.plugin.run("Integrate")
         _, _, integrated_data = gmsh.view.getListData(integrate_view)
         # dataType is allways SP after integration
@@ -569,9 +535,7 @@ def write_simple(
                 f"{len(data)} != {nbr_timesteps}"
             )
     else:
-        raise TypeError(
-            f"Data type was not numpy.ndarray or list, but {type(data)}."
-        )
+        raise TypeError(f"Data type was not numpy.ndarray or list, but {type(data)}.")
     with open(filename, "w", encoding="utf-8") as resFile:
         for varStep in range(nbr_timesteps):
             resFile.write(f"{time[varStep]} {data[varStep]}\n")

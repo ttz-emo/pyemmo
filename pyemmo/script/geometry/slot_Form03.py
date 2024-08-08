@@ -63,17 +63,11 @@ class Slot_Form03(Slot):
         pS4.rotateZ(PCentre, angle_slotOP)
 
         pS5 = pS1.duplicate()
-        pS5.translate(
-            self.machineDict["h_Wedge"], self.machineDict["w_Wedge"] / 2, 0
-        )
+        pS5.translate(self.machineDict["h_Wedge"], self.machineDict["w_Wedge"] / 2, 0)
         pS6 = pS3.duplicate()
-        pS6.translate(
-            self.machineDict["h_Slot"], self.machineDict["r_Slot"], 0
-        )
+        pS6.translate(self.machineDict["h_Slot"], self.machineDict["r_Slot"], 0)
         pS7 = pS3.duplicate()
-        pS7.translate(
-            self.machineDict["h_Slot"] + self.machineDict["r_Slot"], 0, 0
-        )
+        pS7.translate(self.machineDict["h_Slot"] + self.machineDict["r_Slot"], 0, 0)
         pRot = pS3.duplicate()
         pRot.translate(self.machineDict["h_Slot"], 0, 0)
 

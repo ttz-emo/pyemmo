@@ -145,9 +145,7 @@ class Rotor:
         return self._physicalElements
 
     @physicalElements.setter
-    def physicalElements(
-        self, physicalElementsList: List[PhysicalElement]
-    ) -> None:
+    def physicalElements(self, physicalElementsList: List[PhysicalElement]) -> None:
         """Setter of PhysicalElements-List
 
         Args:
@@ -169,9 +167,7 @@ class Rotor:
             self._physicalElements = [physicalElementsList]
             self._createDomainForRotor()  # recreate domains for rotor with new elements
             return None
-        raise TypeError(
-            f"physicalElementList- type: {type(physicalElementsList)}."
-        )
+        raise TypeError(f"physicalElementList- type: {type(physicalElementsList)}.")
 
     def addPhysicalElements(self, physicalElementList: List[PhysicalElement]):
         """Append PhysicalElements to the rotor and recreate domains"""

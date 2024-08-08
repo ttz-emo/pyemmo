@@ -113,9 +113,7 @@ def getMaterialArray(
                     elif unitB.lower() == "tesla":
                         bSI = bVal
                     else:
-                        raise ValueError(
-                            "Unit for magnetic flux density not defined."
-                        )
+                        raise ValueError("Unit for magnetic flux density not defined.")
                     # B-Wert in der B[]-Liste abspeichern (nach einander).
                     B.append(bSI)
                 # Listen in ein BH-Dict abspeichern.

@@ -48,30 +48,22 @@ def get_lr_points(
         for curve in cont_line_list:
             for point in curve.points:
                 angle_point = (
-                    math.atan2(point.coordinate[1], point.coordinate[0])
-                    / math.pi
-                    * 180
+                    math.atan2(point.coordinate[1], point.coordinate[0]) / math.pi * 180
                 )
                 if math.isclose(a=angle_point, b=0, abs_tol=1e-6):
                     angle_point = 180
                 if (
-                    math.isclose(
-                        a=angle_point, b=rotor_seg_angle, abs_tol=1e-6
-                    )
+                    math.isclose(a=angle_point, b=rotor_seg_angle, abs_tol=1e-6)
                     and (
                         (point.radius < machine.rotor.Rext)
                         or (
-                            math.isclose(
-                                point.radius, machine.rotor.Rext, abs_tol=1e-6
-                            )
+                            math.isclose(point.radius, machine.rotor.Rext, abs_tol=1e-6)
                         )
                     )
                     and (
                         point.radius > machine.rotor.Rint
                         or (
-                            math.isclose(
-                                point.radius, machine.rotor.Rint, abs_tol=1e-6
-                            )
+                            math.isclose(point.radius, machine.rotor.Rint, abs_tol=1e-6)
                         )
                     )
                 ):
@@ -132,9 +124,7 @@ def general_calc_spmsm_cont(
     for curve in rotor_lam_surf_list[0].curve:
         if not (
             math.isclose(curve.startPoint.radius, radius, abs_tol=1e-6)
-        ) and not math.isclose(
-            a=curve.endPoint.radius, b=radius, abs_tol=1e-6
-        ):
+        ) and not math.isclose(a=curve.endPoint.radius, b=radius, abs_tol=1e-6):
             rotor_cont_line_list.append(curve)
 
     # logger.debug("---")

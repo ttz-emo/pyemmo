@@ -76,9 +76,7 @@ def detect_inner_outer_limit(
                     curve.name = "InnerLimit"
             if math.isclose(
                 a=curve.startPoint.radius, b=outer_radius, abs_tol=1e-6
-            ) and math.isclose(
-                a=curve.endPoint.radius, b=outer_radius, abs_tol=1e-6
-            ):
+            ) and math.isclose(a=curve.endPoint.radius, b=outer_radius, abs_tol=1e-6):
                 curve.name = "OuterLimit"
 
     return geometry_list

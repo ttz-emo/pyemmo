@@ -81,9 +81,7 @@ class Magnet_Surface03(Magnet):
         magnetheight: float = self._machineDict["h_M"]
         magnetWidth: float = self._machineDict["w_Mag"]
 
-        globalCenter: Point = self._machineDict[
-            "machineCentrePoint"
-        ].duplicate()
+        globalCenter: Point = self._machineDict["machineCentrePoint"].duplicate()
         centerCoords = globalCenter.coordinate
 
         # Konstuktion der Punkte an der x-Achse

@@ -184,13 +184,9 @@ def findLines(
         UserWarning: If SurfID is not found in the MachineSurfList
         ValueError: If SurfID is found more than once in the surface list
     """
-    areaOfSurfID = [
-        area for area in segmentSurfDict.values() if (surfID == area.idExt)
-    ]
+    areaOfSurfID = [area for area in segmentSurfDict.values() if (surfID == area.idExt)]
     if not areaOfSurfID:  # SurfID not in Surface Dict
-        apiLogger.warning(
-            "Surface ID '%s' not found in machine surface list.", surfID
-        )
+        apiLogger.warning("Surface ID '%s' not found in machine surface list.", surfID)
         return None, None
     if len(areaOfSurfID) != 1:
         # there should only be one area in the list "areaOfSurfID"
@@ -482,9 +478,7 @@ def createBoundaries(
         material=movingBandMaterial,
     )
 
-    rotorPhysicals.append(
-        movingBandRotorInner
-    )  # rotor side of inner Movingband
+    rotorPhysicals.append(movingBandRotorInner)  # rotor side of inner Movingband
     if movingBandRotorAuxList:  # MB_Rotor_a is not None if sym>1
         for movingBandAux in movingBandRotorAuxList:
             rotorPhysicals.append(movingBandAux)  # outer movingband if sym>1

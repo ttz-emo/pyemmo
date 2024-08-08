@@ -91,10 +91,7 @@ def calcPhaseangleStarvoltageCorr(volVecList):
             # (=kmSum[0]*np.exp(1j*2*np.pi/3); mathematically positive), then
             # the phase order is inverted (uwv instead of uvw) and the rotation direction
             # is clockwise.
-            if (
-                np.abs(km_sum[2] - km_sum[0] * np.exp(1j * 2 * np.pi / 3))
-                < 1e-9
-            ):
+            if np.abs(km_sum[2] - km_sum[0] * np.exp(1j * 2 * np.pi / 3)) < 1e-9:
                 sequence.append(-1)  # math. negative
             else:
                 # otherwise its counter clockwise

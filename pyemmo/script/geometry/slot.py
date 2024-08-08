@@ -101,9 +101,7 @@ class Slot(PhysicalElement):
         if windDir in (1, -1):
             self._windDirection = windDir
         else:
-            raise (
-                ValueError(f"Winding direction was not -1 or +1: {windDir}")
-            )
+            raise (ValueError(f"Winding direction was not -1 or +1: {windDir}"))
 
     @property
     def phase(self) -> float:
@@ -124,9 +122,7 @@ class Slot(PhysicalElement):
         if isinstance(phaseAngle, (int, float)):
             self._phase = phaseAngle
         else:
-            raise (
-                ValueError(f"Phase angle was not a valid number: {phaseAngle}")
-            )
+            raise (ValueError(f"Phase angle was not a valid number: {phaseAngle}"))
 
     @property
     def nbrTurns(self) -> int:
@@ -151,16 +147,10 @@ class Slot(PhysicalElement):
             if nbrTurnsInFace.is_integer():
                 self._nbrTurns = int(nbrTurnsInFace)
             else:
-                raise (
-                    ValueError(
-                        f"Number of turns is not type int: {nbrTurnsInFace}"
-                    )
-                )
+                raise (ValueError(f"Number of turns is not type int: {nbrTurnsInFace}"))
         else:
             raise (
-                ValueError(
-                    f"Number of turns in face is not a number: {nbrTurnsInFace}"
-                )
+                ValueError(f"Number of turns in face is not a number: {nbrTurnsInFace}")
             )
 
     def getPhase(self, phaseStr: str = None) -> Union[float, str]:

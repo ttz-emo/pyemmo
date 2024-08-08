@@ -97,16 +97,12 @@ class StatorPMSM(Stator):
         if float(nbrGeoParts).is_integer():
             self.nbrGeoParts = int(nbrGeoParts)
         else:
-            raise ValueError(
-                f"The number of segments is not an integer: {nbrGeoParts}"
-            )
+            raise ValueError(f"The number of segments is not an integer: {nbrGeoParts}")
         ###Faktor des Teilmodells. Bei einem Vollmodell ist dieser Wert 1. Bei einem Viertelmodell 4.
         if float(symmetryFactor).is_integer():
             self.symmetryFactor = int(symmetryFactor)
         else:
-            raise ValueError(
-                f"The symmetry factor is not an integer: {symmetryFactor}"
-            )
+            raise ValueError(f"The symmetry factor is not an integer: {symmetryFactor}")
 
         ###Dictionary mit Blechparameter.
         self.laminationDict = None
@@ -137,9 +133,7 @@ class StatorPMSM(Stator):
                 "machineCentrePoint"
             ]
         else:
-            print(
-                "No definition of lamination. Use addLaminationParameter() first!"
-            )
+            print("No definition of lamination. Use addLaminationParameter() first!")
 
     def addAirGapParameter(self, airGapDict: dict):
         """Mit addAirGapParameter werden alle Parameter in das Airgapdictionary abgespeichert.
@@ -161,9 +155,7 @@ class StatorPMSM(Stator):
             )
         else:
             if self.laminationType == "sheet01_standard":
-                laminationPart = StatorLamination_Sheet01_Standard(
-                    self.laminationDict
-                )
+                laminationPart = StatorLamination_Sheet01_Standard(self.laminationDict)
 
             if self.slotType == "slotForm_01":
                 slotPart = Slot_Form01(self.slotDict)
@@ -234,18 +226,10 @@ class StatorPMSM(Stator):
                 lElem["LaminationLine"].endPoint = changePointSOP
 
         for lElem in allLamL2:
-            if statorSheet1.betweenLinePart[0].startPoint.isEqual(
-                statorAirDockPoint
-            ):
-                lElem["LaminationLine"].startPoint = (
-                    slot1.laminationDockingPoint[0]
-                )
-            elif statorSheet1.betweenLinePart[0].endPoint.isEqual(
-                statorAirDockPoint
-            ):
-                lElem["LaminationLine"].endPoint = (
-                    slot1.laminationDockingPoint[0]
-                )
+            if statorSheet1.betweenLinePart[0].startPoint.isEqual(statorAirDockPoint):
+                lElem["LaminationLine"].startPoint = slot1.laminationDockingPoint[0]
+            elif statorSheet1.betweenLinePart[0].endPoint.isEqual(statorAirDockPoint):
+                lElem["LaminationLine"].endPoint = slot1.laminationDockingPoint[0]
 
         curveOfStatorSheet1 = statorSheet1.geometricalElement[0].curve
         curveOfStatorSheet1 = curveOfStatorSheet1 + slot1.laminationDockingLine
@@ -254,9 +238,7 @@ class StatorPMSM(Stator):
     def _addAirSpace(self):
         """Mit addAirSpace() wird der Luftraum auf der Statorseite bis zum Movingband erzeugt und Materialeigenschaften definiert."""
         airGapLength = self.airGapDict["width"] / 4
-        centerPoint: Point = self.laminationDict[
-            "machineCentrePoint"
-        ].duplicate()
+        centerPoint: Point = self.laminationDict["machineCentrePoint"].duplicate()
         alpha = self.angleGeoParts
         pAir1: Point = self.physicalRaw[1].airDockingPoint[0].duplicate()
         pAir1.translate(
@@ -283,9 +265,7 @@ class StatorPMSM(Stator):
     def _createDuplicate(self):
         # duplicate
         allGeo = self.physicalRaw[0].geometricalElement
-        centerPoint: Point = self.laminationDict[
-            "machineCentrePoint"
-        ].duplicate()
+        centerPoint: Point = self.laminationDict["machineCentrePoint"].duplicate()
         pH1 = self.physicalRaw[0].betweenLinePart[0].startPoint
         hilfsLinie1 = Line("L_hilf1", centerPoint, pH1)
         ez = Point(
@@ -305,9 +285,7 @@ class StatorPMSM(Stator):
         for i in range(1, int(self.nbrGeoParts / 2)):
             for s in allGeo:
                 sNew = s.duplicate()
-                sNew.rotateZ(
-                    self.laminationDict["machineCentrePoint"], i * alpha
-                )
+                sNew.rotateZ(self.laminationDict["machineCentrePoint"], i * alpha)
                 listGeo.append(sNew)
 
         wholeLamination = StatorLamination(
@@ -319,9 +297,7 @@ class StatorPMSM(Stator):
 
         # duplicate Slot
         slotSurfs: list[Surface] = [self.physicalRaw[1].geometricalElement[1]]
-        surfaceSlot2 = slotSurfs[0].mirror(
-            centerPoint, hilfsLinie1, hilfsLinie2
-        )
+        surfaceSlot2 = slotSurfs[0].mirror(centerPoint, hilfsLinie1, hilfsLinie2)
         slotSurfs.insert(0, surfaceSlot2)
         slot1 = Slot("", [surfaceSlot2], self.slotDict["material"])
         slot1.name = "slot_" + str(slot1.id)
@@ -332,9 +308,7 @@ class StatorPMSM(Stator):
         for i in range(1, int(self.nbrGeoParts / 2)):
             for s in slotSurfs:
                 sNew2 = s.duplicate()
-                sNew2.rotateZ(
-                    self.laminationDict["machineCentrePoint"], i * alpha
-                )
+                sNew2.rotateZ(self.laminationDict["machineCentrePoint"], i * alpha)
                 slot3 = Slot("", [sNew2], self.slotDict["material"])
                 slot3.name = "slot_" + str(slot3.id)
                 allSlot.append(slot3)
@@ -349,9 +323,7 @@ class StatorPMSM(Stator):
         for i in range(1, int(self.nbrGeoParts / 2)):
             for s in allGeo3:
                 sNew = s.duplicate()
-                sNew.rotateZ(
-                    self.laminationDict["machineCentrePoint"], i * alpha
-                )
+                sNew.rotateZ(self.laminationDict["machineCentrePoint"], i * alpha)
                 listGeo3.append(sNew)
 
         if self.slotDict["slot_OPAir"]:
@@ -367,17 +339,13 @@ class StatorPMSM(Stator):
 
         # duplicate AirGap
         allGeo4 = self.physicalRaw[2].geometricalElement
-        surfaceAirGap2 = allGeo4[0].mirror(
-            centerPoint, hilfsLinie1, hilfsLinie2
-        )
+        surfaceAirGap2 = allGeo4[0].mirror(centerPoint, hilfsLinie1, hilfsLinie2)
         allGeo4.append(surfaceAirGap2)
         listGeo4 = []
         for i in range(1, int(self.nbrGeoParts / 2)):
             for s in allGeo4:
                 sNew = s.duplicate()
-                sNew.rotateZ(
-                    self.laminationDict["machineCentrePoint"], i * alpha
-                )
+                sNew.rotateZ(self.laminationDict["machineCentrePoint"], i * alpha)
                 listGeo4.append(sNew)
 
         wholeAirGap = AirGap(

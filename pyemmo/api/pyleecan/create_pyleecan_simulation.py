@@ -64,8 +64,6 @@ def create_simulation(
     simu.input.time = time
 
     # Angular discretization along the airgap circonference
-    angular_disc = np.linspace(
-        start=0, stop=2 * np.pi, num=2048, endpoint=False
-    )
+    angular_disc = np.linspace(start=0, stop=2 * np.pi, num=2048, endpoint=False)
     simu.input.angle = angular_disc
     return simu

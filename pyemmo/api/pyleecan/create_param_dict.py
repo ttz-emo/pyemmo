@@ -92,9 +92,7 @@ def create_param_dict(
 
     lam_with_mag: Lamination = None
 
-    if (
-        pyleecan_simulation.machine.rotor.has_magnet()
-    ):  # Test, if rotor has magnet(s)
+    if pyleecan_simulation.machine.rotor.has_magnet():  # Test, if rotor has magnet(s)
         lam_with_mag = pyleecan_simulation.machine.rotor
 
     elif (
@@ -116,9 +114,7 @@ def create_param_dict(
                 # The magnetization Type for all magnets in the machine will be set
                 # in the same Type as the firt magnet in the list.
 
-                pyemmo_mag_type = lam_with_mag.hole[
-                    0
-                ].magnet_0.type_magnetization
+                pyemmo_mag_type = lam_with_mag.hole[0].magnet_0.type_magnetization
 
             else:  # If lamWithMag has only one magnet
                 pyemmo_mag_type = lam_with_mag.hole.magnet_0.type_magnetization
@@ -133,9 +129,7 @@ def create_param_dict(
                 # The magnetization Type for all magnets in the machine will be set
                 # in the same Type as the firt magnet in the list.
 
-                pyemmo_mag_type = lam_with_mag.slot[
-                    0
-                ].magnet_0.type_magnetization
+                pyemmo_mag_type = lam_with_mag.slot[0].magnet_0.type_magnetization
 
             else:  # If rotor has only one magnet
                 pyemmo_mag_type = lam_with_mag.magnet.type_magnetization

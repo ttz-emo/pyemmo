@@ -45,9 +45,7 @@ class InvalidSheetThicknessError(Exception):
         message -- explanation of the error
     """
 
-    def __init__(
-        self, sheet_thickness, message="Invalid sheet thickness provided"
-    ):
+    def __init__(self, sheet_thickness, message="Invalid sheet thickness provided"):
         self.input_value = sheet_thickness
         self.message = message
         super().__init__(self.message)
@@ -156,9 +154,9 @@ def getNbrOfTurns(extendedInfo: dict) -> float:
     """
     ntpsKey = "Ntps"
     if ntpsKey in extendedInfo.keys():
-        if isinstance(
-            extendedInfo[ntpsKey], numbers.Number
-        ) and not isinstance(extendedInfo[ntpsKey], bool):
+        if isinstance(extendedInfo[ntpsKey], numbers.Number) and not isinstance(
+            extendedInfo[ntpsKey], bool
+        ):
             return float(extendedInfo[ntpsKey])
         msg = (
             "Number of turns per slot side variable (Ntps)"
@@ -243,12 +241,8 @@ def getNbrSlots(extendedInfo: dict) -> int:
         nbrSlots = extendedInfo[nppKey]
         if float(nbrSlots).is_integer():
             return int(nbrSlots)
-        raise ValueError(
-            f"number of slots ('{nppKey}') is not type int: {nbrSlots}"
-        )
-    raise KeyError(
-        f"number of slots ('{nppKey}') missing from extended info dict!"
-    )
+        raise ValueError(f"number of slots ('{nppKey}') is not type int: {nbrSlots}")
+    raise KeyError(f"number of slots ('{nppKey}') missing from extended info dict!")
 
 
 def getElecFreq(extendedInfo: dict) -> float:
@@ -332,9 +326,7 @@ def getModelName(extendedInfo: dict) -> str:
     if mNKey in extendedInfo.keys():
         correctScriptName = cleanName(extendedInfo[mNKey])
         return correctScriptName
-    raise KeyError(
-        f"Name of model files ('{mNKey}') missing from extended info dict!"
-    )
+    raise KeyError(f"Name of model files ('{mNKey}') missing from extended info dict!")
 
 
 def getFlagOpenGui(extendedInfo: dict) -> bool:
@@ -352,9 +344,7 @@ def getFlagOpenGui(extendedInfo: dict) -> bool:
     fogKey = "flag_openGUI"
     if fogKey in extendedInfo.keys():
         return extendedInfo[fogKey]
-    raise KeyError(
-        f"Name of model files ('{fogKey}') missing from extended info dict!"
-    )
+    raise KeyError(f"Name of model files ('{fogKey}') missing from extended info dict!")
 
 
 def getMovingbandRadius(extendedInfo: dict) -> float:
@@ -501,9 +491,7 @@ def createMaterial(matDict: dict[str, dict[Literal["wert"], Any]]) -> Material:
                 )
                 permeability = 1.0
     else:
-        raise ValueError(
-            f"Material '{name}' missing 'elektromagnetik' section!"
-        )
+        raise ValueError(f"Material '{name}' missing 'elektromagnetik' section!")
 
     density = matDict.get("dichte", {}).get("wert")
     if not isinstance(density, (int, float)):
@@ -609,9 +597,7 @@ def isAir(materialName: str):
         if not materialName:  # if materialName is empty
             return True
         raise TypeError("Imported material name is unempty list, not string!")
-    raise TypeError(
-        "Imported material name has type" + str(type(materialName))
-    )
+    raise TypeError("Imported material name has type" + str(type(materialName)))
 
 
 # ======================================= END MATERIAL FUNCTIONS ===================================
