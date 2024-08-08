@@ -19,29 +19,30 @@
 #
 """Module for PMSM Stator"""
 from __future__ import annotations
-from typing import List
+
 import math
 
 from pyemmo.script.geometry.physicalElement import PhysicalElement
-from .stator import Stator, datamodel
-from .statorLamination import StatorLamination
-from .slot import Slot
-from .line import Line
-from .circleArc import CircleArc
-from .point import Point
-from .surface import Surface
+
 from .airArea import AirArea
 from .airGap import AirGap
+from .circleArc import CircleArc
 from .limitLine import LimitLine
+from .line import Line
 from .movingBand import MovingBand
-from .slaveLine import SlaveLine
+from .point import Point
 from .primaryLine import PrimaryLine
-from .statorLamination_Sheet01_Standard import (
-    StatorLamination_Sheet01_Standard,
-)
+from .slaveLine import SlaveLine
+from .slot import Slot
 from .slot_Form01 import Slot_Form01
 from .slot_Form02 import Slot_Form02
 from .slot_Form03 import Slot_Form03
+from .stator import Stator, datamodel
+from .statorLamination import StatorLamination
+from .statorLamination_Sheet01_Standard import (
+    StatorLamination_Sheet01_Standard,
+)
+from .surface import Surface
 
 
 ###
@@ -173,7 +174,7 @@ class StatorPMSM(Stator):
             if self.slotType == "slotForm_02":
                 slotPart = Slot_Form02(self.slotDict)
 
-            self.physicalRaw: List[PhysicalElement] = [
+            self.physicalRaw: list[PhysicalElement] = [
                 laminationPart,
                 slotPart,
             ]
@@ -317,7 +318,7 @@ class StatorPMSM(Stator):
         self._physicalElements.append(wholeLamination)
 
         # duplicate Slot
-        slotSurfs: List[Surface] = [self.physicalRaw[1].geometricalElement[1]]
+        slotSurfs: list[Surface] = [self.physicalRaw[1].geometricalElement[1]]
         surfaceSlot2 = slotSurfs[0].mirror(
             centerPoint, hilfsLinie1, hilfsLinie2
         )
@@ -400,7 +401,7 @@ class StatorPMSM(Stator):
                 pLimitOuter2,
             )
         ]
-        mbStator: List[CircleArc] = [
+        mbStator: list[CircleArc] = [
             self.physicalRaw[2].geometricalElement[0].curve[0].duplicate()
         ]
         mbStator[0].rotateZ(machineCenterPoint, -1 * angle)
