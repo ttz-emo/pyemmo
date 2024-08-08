@@ -53,14 +53,6 @@ pyemmo.api.pyleecan.calcs\_rotor\_spmsm\_cont module
    :undoc-members:
    :show-inheritance:
 
-pyemmo.api.pyleecan.createS1S2 module
--------------------------------------
-
-.. automodule:: pyemmo.api.pyleecan.createS1S2
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 pyemmo.api.pyleecan.create\_geo\_dict module
 --------------------------------------------
 
@@ -85,10 +77,10 @@ pyemmo.api.pyleecan.create\_pyleecan\_simulation module
    :undoc-members:
    :show-inheritance:
 
-pyemmo.api.pyleecan.detectInnerOuterLimit module
-------------------------------------------------
+pyemmo.api.pyleecan.detect_inner_outer_limit module
+---------------------------------------------------
 
-.. automodule:: pyemmo.api.pyleecan.detectInnerOuterLimit
+.. automodule:: pyemmo.api.pyleecan.detect_inner_outer_limit
    :members:
    :undoc-members:
    :show-inheritance:
