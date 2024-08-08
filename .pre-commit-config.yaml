@@ -25,29 +25,23 @@
 # https://medium.com/marvelous-mlops/welcome-to-pre-commit-heaven-5b622bb8ebce
 
 repos:
-  # ISORT: Sorts Python imports according to the defined style, in this case,
-  # the "black" profile to make in compatible with the black hook above.
+  # ISORT: Sorts Python imports according to the defined style. The tool options are
+  # controled by the pyproject.toml
   - repo: https://github.com/pycqa/isort
     rev: 5.11.5
     hooks:
       - id: isort
         name: isort (python)
-        args: []
   # Run black as code formatter:
   - repo: https://github.com/psf/black
     rev: 24.1.1
     hooks:
-      # Removed black since black-jupyter runs on .py files aswell! see
+      # Removed black since black-jupyter runs on .py files aswell! See
       # https://github.com/psf/black/issues/3641#issuecomment-1501064536
-      # - id: black
-      #   language_version: python3.9.13
-      #   # args: [--safe]
-      #   args:
-      #       - --line-length=128
       - id: black-jupyter
-        language_version: python3.9.13
-        args:
-          - --line-length=79
+        # language_version: python3.9.13
+        # args:
+        #   - --line-length=79
   # PRE-COMMIT
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
