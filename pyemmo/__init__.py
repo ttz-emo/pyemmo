@@ -19,14 +19,15 @@
 #
 """Init of pyemmo package. Overloads the function calc_phaseangle_starvoltageV2
 of site-package swat-em, because there is a mistake in the original implementation."""
+import datetime
+import logging
 import os
 import platform
 from os.path import isdir
 from typing import List, Literal
-import logging
-import datetime
-from swat_em import analyse
+
 import numpy as np
+from swat_em import analyse
 
 # import debugpy
 # debugpy.debug_this_thread()

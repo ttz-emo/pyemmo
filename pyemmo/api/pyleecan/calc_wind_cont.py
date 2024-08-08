@@ -26,9 +26,6 @@ import math
 
 from ...script.geometry.circleArc import CircleArc
 from ...script.geometry.line import Line
-
-# from ...script.geometry.point import Point
-# from ...script.geometry import defaultCenterPoint
 from ..json.SurfaceJSON import SurfaceAPI
 
 

@@ -20,37 +20,37 @@
 """Module for Class Rotor"""
 
 import copy
-from typing import *
 import logging
-from matplotlib import pyplot as plt
 from math import pi
-from . import default_domain_dict
-from .magnet import Magnet
-from .movingBand import MovingBand
-from .surface import Surface
-from .line import Line, Point
-from .domain import Domain
-from .physicalElement import PhysicalElement
+from typing import *
+
+from matplotlib import pyplot as plt
+
+from ...definitions import DEFAULT_GEO_TOL
 from .. import (
-    DOMAIN_PRIMARY,
-    DOMAIN_SECONDARY,
-    DOMAIN_LIMIT,
-    DOMAIN_MOVINGBAND,
-    DOMAIN_MOVINGBAND_AUX,
+    DOMAIN,
     DOMAIN_AIRGAP,
-    DOMAIN_ROTOR,
-    DOMAIN_STRANDED,
-    DOMAIN_MAGNET,
-    DOMAIN_LAMINATION,
     DOMAIN_BAR,
     DOMAIN_CONDUCTING,
-    DOMAIN_NON_CONDUCTING,
-    DOMAIN,
-    DOMAIN_NON_LINEAR,
+    DOMAIN_LAMINATION,
+    DOMAIN_LIMIT,
     DOMAIN_LINEAR,
+    DOMAIN_MAGNET,
+    DOMAIN_MOVINGBAND,
+    DOMAIN_MOVINGBAND_AUX,
+    DOMAIN_NON_CONDUCTING,
+    DOMAIN_NON_LINEAR,
+    DOMAIN_PRIMARY,
+    DOMAIN_SECONDARY,
 )
 from ..material.electricalSteel import ElectricalSteel
-from ...definitions import DEFAULT_GEO_TOL
+from . import default_domain_dict
+from .domain import Domain
+from .line import Line, Point
+from .magnet import Magnet
+from .movingBand import MovingBand
+from .physicalElement import PhysicalElement
+from .surface import Surface
 
 
 class Rotor:

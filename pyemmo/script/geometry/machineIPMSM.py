@@ -17,14 +17,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+from math import pi
 from typing import Dict
-from math import pi, gcd
+
 import swat_em
 
-from ..script import default_param_dict
 from ... import logging
-from .machineAllType import MachineAllType
+from ..script import default_param_dict
 from .domain import Domain
+from .machineAllType import MachineAllType
 from .rotorIPMSM import RotorIPMSM
 from .statorSPMSM import StatorPMSM
 

@@ -20,9 +20,11 @@
 """Module: pyemmo_material_conversion"""
 
 from __future__ import annotations
+
 from numpy import Inf
 from pyleecan.Classes.Material import Material as PyleecanMaterial
 from pyleecan.Classes.MatMagnetics import MatMagnetics
+
 from ...script.material.material import Material
 
 

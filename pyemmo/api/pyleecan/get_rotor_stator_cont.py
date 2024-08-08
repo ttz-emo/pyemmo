@@ -33,29 +33,25 @@ Functions:
 """
 
 from __future__ import annotations
-from typing import Union, List, Tuple, Dict
 
+from pyleecan.Classes.LamSlotWind import LamSlotWind
 from pyleecan.Classes.Machine import Machine as PyleecanMachine
-from pyleecan.Classes.MachineSCIM import MachineSCIM
-from pyleecan.Classes.LamSlotWind import LamSlot, LamSlotWind
 
 from ...script.geometry.circleArc import CircleArc
 from ...script.geometry.line import Line
 from ...script.geometry.point import Point
-from ...functions.plot import plot
 from ..json.SurfaceJSON import SurfaceAPI
-from .get_rotor_stator_surfs import get_rotor_surfs
-from .calcs_rotor_spmsm_cont import calc_spmsm_rotor_cont
-from .calcs_even_rotor_cont import calc_even_rotor_cont
 from .calc_wind_cont import calc_wind_contour
-from .get_rotor_stator_surfs import get_stator_surfs
+from .calcs_even_rotor_cont import calc_even_rotor_cont
+from .calcs_rotor_spmsm_cont import calc_spmsm_rotor_cont
+from .get_rotor_stator_surfs import get_rotor_surfs
 
 
 def get_spmsm_rotor_cont(
     geometry_list: list,
     machine: PyleecanMachine,
     is_internal_rotor: bool = True,
-) -> tuple[list[Union[Line, CircleArc]], Point, Point]:
+) -> tuple[list[Line | CircleArc], Point, Point]:
     """
     Get the list of curves of the contour of the rotor with a surface magnet.
 
@@ -107,7 +103,7 @@ def get_even_rotor_cont(
     geometry_list: list,
     machine: PyleecanMachine,
     is_internal_rotor: bool = True,
-) -> tuple[list[Union[Line, CircleArc]], Point, Point]:
+) -> tuple[list[Line | CircleArc], Point, Point]:
     """
     Get the list of curves of the contour of the rotor for Interior Permanent
     Magnet Synchronous Machine (IPMSM) and Synchronous Reluctance Machine (SynRM).
@@ -154,9 +150,9 @@ def get_even_rotor_cont(
 
 def get_winding_cont(
     lamination_surf: SurfaceAPI,
-    slot_surfs: List[SurfaceAPI],
+    slot_surfs: list[SurfaceAPI],
     lamination: LamSlotWind,
-) -> list[Union[Line, CircleArc]]:
+) -> list[Line | CircleArc]:
     """
     Get the list of curves of the contour of a LamSlotWind object.
 

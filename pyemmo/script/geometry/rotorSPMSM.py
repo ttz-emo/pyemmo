@@ -18,25 +18,26 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 from __future__ import annotations
-from .physicalElement import PhysicalElement
-from .spline import Spline
+
+import math
+
+from .airArea import AirArea
+from .airGap import AirGap
+from .circleArc import CircleArc
 from .domain import Domain
+from .limitLine import LimitLine
+from .line import Line
+from .magnet import Magnet
+from .movingBand import MovingBand
+from .physicalElement import PhysicalElement
+from .point import Point
+from .primaryLine import PrimaryLine
 from .rotor import Rotor
 from .rotorLamination import RotorLamination
 from .rotorLamination_Sheet01_Standard import RotorLamination_Sheet01_Standard
-from .magnet import Magnet
-from .line import Line
-from .circleArc import CircleArc
-from .point import Point
-from .surface import Surface
-from .airArea import AirArea
-from .airGap import AirGap
-from .movingBand import MovingBand
-from .limitLine import LimitLine
-from .primaryLine import PrimaryLine
 from .slaveLine import SlaveLine
-import math
-from typing import List, Union
+from .spline import Spline
+from .surface import Surface
 
 
 ###
@@ -162,7 +163,7 @@ class RotorSPMSM(Rotor):
                     self.magnetDict["magnetisationType"],
                 )
 
-            self._physicalElements: List[PhysicalElement] = [
+            self._physicalElements: list[PhysicalElement] = [
                 laminationPart,
                 magnetPart,
             ]
@@ -264,7 +265,7 @@ class RotorSPMSM(Rotor):
             pMagAir.duplicate()
         )  # mmagnet center point on airgap side
         for line in self._physicalElements[1].airLinePart:
-            line: Union[Line, CircleArc, Spline]
+            line: Line | CircleArc | Spline
             if pMagAir in line.points:  # only set mesh on line near airgap
                 line.setMeshLength(
                     airGapLength
@@ -317,7 +318,7 @@ class RotorSPMSM(Rotor):
     ###createDuplicate() vervollständig die Geometrie zum gewünschten Teil- bzw. Vollmodell.
     def _createDuplicate(self):
         # duplicate Rotorsheet (to get one rotor segment)
-        rotorLam: Union[RotorLamination, RotorLamination_Sheet01_Standard] = (
+        rotorLam: RotorLamination | RotorLamination_Sheet01_Standard = (
             self._physicalElements[0]
         )
         rotorLamSurfList = rotorLam.geometricalElement
@@ -350,9 +351,9 @@ class RotorSPMSM(Rotor):
         magSurfList = magnet.geometricalElement
         surfaceMag2 = magSurfList[0].mirror(PCentre, hilfsLinie1, hilfsLinie2)
         magSurfList.append(surfaceMag2)
-        dupMagnetList: List[Magnet] = []
+        dupMagnetList: list[Magnet] = []
         for i in range(1, int(self.nbrGeoParts / 2)):
-            dupMagSurfList: List[Surface] = (
+            dupMagSurfList: list[Surface] = (
                 []
             )  # clear previous magnet surf list
             for magSurf in magSurfList:
@@ -449,7 +450,7 @@ class RotorSPMSM(Rotor):
 
         # create moving band lines
         airgap_surf1: Surface = self._physicalElements[3].geometricalElement[0]
-        mb_line_list: List[CircleArc] = []
+        mb_line_list: list[CircleArc] = []
         mbNegDirection = airgap_surf1.curve[1].duplicate()
         mbNegDirection.rotateZ(
             self.laminationDict["machineCentrePoint"], -angle

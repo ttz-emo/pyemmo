@@ -18,11 +18,12 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 from typing import List
-from .rotorLamination import RotorLamination
+
 from .. import colorDict
-from .point import Point
-from .line import Line
 from .circleArc import CircleArc
+from .line import Line
+from .point import Point
+from .rotorLamination import RotorLamination
 from .surface import Surface
 
 

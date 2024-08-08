@@ -20,8 +20,9 @@
 from typing import List
 
 from pyemmo.script.material.material import Material
-from .surface import Surface
+
 from .physicalElement import PhysicalElement
+from .surface import Surface
 
 
 ###

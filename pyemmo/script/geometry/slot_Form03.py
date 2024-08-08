@@ -21,9 +21,10 @@ from .slot import Slot
 
 """Module for class Slot_Form03"""
 import math
-from .point import Point
-from .line import Line
+
 from .circleArc import CircleArc
+from .line import Line
+from .point import Point
 from .surface import Surface
 
 

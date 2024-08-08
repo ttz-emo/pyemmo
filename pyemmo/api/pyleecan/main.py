@@ -20,25 +20,26 @@
 """Main module of pyleecan api"""
 
 from __future__ import annotations
+
 import os
-from typing import Union
+
 from pyleecan.Classes.Machine import Machine as PyleecanMachine
-from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
-from pyleecan.Classes.MachineSyRM import MachineSyRM
 from pyleecan.Classes.MachineSCIM import MachineSCIM
+from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
+from pyleecan.Classes.MachineSyRM import MachineSyRM
 
 from ..json.json import main as json_api_main
-from .get_translated_machine import get_translated_machine
-from .create_pyleecan_simulation import create_simulation
 from .create_param_dict import create_param_dict
+from .create_pyleecan_simulation import create_simulation
+from .get_translated_machine import get_translated_machine
 
 
 def main(
     pyleecan_machine: PyleecanMachine,
     model_dir: str,
-    gmsh: Union[str, os.PathLike] = "",
-    getdp: Union[str, os.PathLike] = "",
+    gmsh: str | os.PathLike = "",
+    getdp: str | os.PathLike = "",
     use_gui: bool = True,
 ):
     """Main of pyleecan api.

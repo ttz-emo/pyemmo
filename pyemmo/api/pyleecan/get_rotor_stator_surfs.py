@@ -29,8 +29,9 @@ Functions:
 """
 
 from __future__ import annotations
-from ..json.SurfaceJSON import SurfaceAPI
+
 from .. import logger
+from ..json.SurfaceJSON import SurfaceAPI
 
 
 def get_rotor_surfs(

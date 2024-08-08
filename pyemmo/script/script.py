@@ -39,9 +39,6 @@ from pygetdp.postoperation import PostopItem
 
 from ..definitions import DEFAULT_GEO_TOL, MAIN_DIR
 from ..functions.cleanName import cleanName, isValidFilename
-
-# global domain dict to connect existing pyemmo Domains with domains for
-# magstatdyn file
 from . import (
     DOMAIN_AIRGAP,
     DOMAIN_BAR,

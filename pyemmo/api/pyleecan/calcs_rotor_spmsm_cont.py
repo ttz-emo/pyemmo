@@ -20,23 +20,22 @@
 """Module: spmsm_rotor_contour_calculation"""
 
 from __future__ import annotations
-import math
+
 import copy
-from typing import Union, List
+import math
 
 from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 
-from ..json.SurfaceJSON import SurfaceAPI
-from ...script.geometry.point import Point
-from ...script.geometry.line import Line
 from ...script.geometry.circleArc import CircleArc
-from ...functions.plot import plot
+from ...script.geometry.line import Line
+from ...script.geometry.point import Point
 from .. import logger
+from ..json.SurfaceJSON import SurfaceAPI
 
 
 def get_lr_points(
     machine: MachineSIPMSM,
-    cont_line_list: List[Union[CircleArc, Line]],
+    cont_line_list: list[CircleArc | Line],
     is_internal: bool,
     radius: float,
 ):
@@ -107,7 +106,7 @@ def general_calc_spmsm_cont(
     rotor_mag_surf_list: list[SurfaceAPI],
     radius: float,
     is_internal_rotor: bool,
-) -> tuple[list[Union[Line, CircleArc]], Point, Point]:
+) -> tuple[list[Line | CircleArc], Point, Point]:
     """General calculations for creating the rotor contour: \n
     * Filtering the lines that lie on the air gap
     * Detecting the outer points of the rotor contour facing the air gap

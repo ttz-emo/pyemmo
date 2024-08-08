@@ -20,19 +20,17 @@
 """This module creates the boundary physical elements for models created via the json-api"""
 
 from __future__ import annotations
-from typing import Dict, List, Tuple, Union
+
 from numpy import pi
 
-# from matplotlib import pyplot as plt
-# from ..functions.plot import plot
-from ...script.geometry.transformable import Transformable
 from ...script.geometry import physicalsDict
 from ...script.geometry.limitLine import LimitLine
 from ...script.geometry.line import Line
-from ...script.geometry.primaryLine import PrimaryLine
 from ...script.geometry.movingBand import MovingBand
 from ...script.geometry.physicalElement import PhysicalElement
+from ...script.geometry.primaryLine import PrimaryLine
 from ...script.geometry.slaveLine import SlaveLine
+from ...script.geometry.transformable import Transformable
 from ...script.material.material import Material
 from .. import air
 from .. import logger as apiLogger
@@ -48,10 +46,10 @@ from .SurfaceJSON import SurfaceAPI
 
 
 def getPrimaryLines(
-    segmentSurfDict: Dict[str, SurfaceAPI],
+    segmentSurfDict: dict[str, SurfaceAPI],
     rotorAirgapRadius: float,
     pinballRadius: float = 1e-6,
-) -> Tuple[List[Line], List[Line]]:
+) -> tuple[list[Line], list[Line]]:
     """Extract the primary lines for the Link boundary condition.
         Since the geometry is allways constructed from the horizontal x-axis the lines must lie
         on that axis with a tolerance given by pinballRadius.
@@ -67,8 +65,8 @@ def getPrimaryLines(
     Returns:
         Tuple[List[Line],List[Line]]: List of stator and rotor primary lines (StatorList,RotorList).
     """
-    rotorMLList: List[Line] = []  # Rotor primarylines
-    statorMLList: List[Line] = []  # Stator primarylines
+    rotorMLList: list[Line] = []  # Rotor primarylines
+    statorMLList: list[Line] = []  # Stator primarylines
     for area in segmentSurfDict.values():  # for every surface
         for line in area.curve:  # for each line
             # get the coordinates of the startpoint
@@ -99,10 +97,10 @@ def getPrimaryLines(
 
 
 def createSecondaryLines(
-    statorPrimaryLines: List[Line],
-    rotorPrimaryLines: List[Line],
+    statorPrimaryLines: list[Line],
+    rotorPrimaryLines: list[Line],
     symFactor: int,
-) -> Tuple[List[Line], List[Line]]:
+) -> tuple[list[Line], list[Line]]:
     """duplicate the stator and rotor primary lines to get the secondary lines. For primary lines
     see function "getPrimaryLines".
     Lines are created by duplicating the primary lines and rotating them by 2*pi/symFactor.
@@ -115,8 +113,8 @@ def createSecondaryLines(
         Tuple[List[Line], List[Line]]: List of stator and rotor secondary lines
         (StatorList, RotorList).
     """
-    rotorSLList: List[Line] = list()  # Rotor slavelines
-    statorSLList: List[Line] = list()  # Stator slavelines
+    rotorSLList: list[Line] = list()  # Rotor slavelines
+    statorSLList: list[Line] = list()  # Stator slavelines
     for primaryLine in statorPrimaryLines:
         slaveLine = primaryLine.duplicate()  # duplicate
         # and rotate primaryline to get slaveline
@@ -160,10 +158,10 @@ def findLine(lineName: str, lineIDList) -> bool:
 
 
 def findLines(
-    segmentSurfDict: Dict[str, SurfaceAPI],
+    segmentSurfDict: dict[str, SurfaceAPI],
     surfID: str,
-    lineIDList: List[Union[List[str], str]],
-) -> Tuple[List[Line], SurfaceAPI]:
+    lineIDList: list[list[str] | str],
+) -> tuple[list[Line], SurfaceAPI]:
     """
     findLines looks for a surface in segmentSurfDict by the SurfID and checks if this
     surface has lines containing the LindIDList IDs.
@@ -198,7 +196,7 @@ def findLines(
         # there should only be one area in the list "areaOfSurfID"
         msg = f"Surface with ID '{surfID}' was found more than once in the list of machine surfaces"
         raise ValueError(msg)
-    lineList: List[Line] = []
+    lineList: list[Line] = []
     for line in areaOfSurfID[0].curve:
         linename = line.name
         if findLine(linename, lineIDList):
@@ -207,11 +205,11 @@ def findLines(
 
 
 def getBoundaryLines(
-    segmentSurfDict: Dict[str, SurfaceAPI],
+    segmentSurfDict: dict[str, SurfaceAPI],
     surfID: str,
-    lineIDList: Union[str, List[str]],
+    lineIDList: str | list[str],
     symFactor: int,
-) -> Union[List[Line], None]:
+) -> list[Line] | None:
     """
     getBoundaryLines can be used to get specific boundary lines for a Onelab model out of the
     machine surfaces by identifying them through surface ID and a list of related line IDs
@@ -244,9 +242,9 @@ def getBoundaryLines(
 
 def createMBLines(
     movingBandLineDict: dict,
-    segmentSurfDict: Dict[str, SurfaceAPI],
+    segmentSurfDict: dict[str, SurfaceAPI],
     symFactor: int,
-) -> List[Line]:
+) -> list[Line]:
     """
     createMBLines finds the inner Movingband lines in the list of SurfaceAPI objects by the IDs
     in MBLineDict and generates the corresponding number of movingband lines for the given symmetry
@@ -278,7 +276,7 @@ def createMBLines(
 
 def createMBAux(
     symFaktor: int, rotorMovingBandInnerLines: list, material=air
-) -> List[MovingBand]:
+) -> list[MovingBand]:
     """
     createMBAux creates the outer Movingband lines of the rotor and add them to
     pyemmo-Movingband objects depended on symmetry
@@ -291,8 +289,8 @@ def createMBAux(
     Returns:
         List[MovingBand]: Auxilliary moving band list.
     """
-    movingBandAuxList: List[MovingBand] = []
-    mbAuxLines: List[Line] = []
+    movingBandAuxList: list[MovingBand] = []
+    mbAuxLines: list[Line] = []
     symAngle = 2 * pi / symFaktor
     # here order of for-loops had to be changed because for example for symFaktor=4
     # we need 3 auxiliary movingband (mb) objects, each containing the same number
@@ -317,10 +315,10 @@ def createMBAux(
 
 
 def createMB(
-    segmentSurfDict: Dict[str, SurfaceAPI],
+    segmentSurfDict: dict[str, SurfaceAPI],
     symFactor: int,
     material: Material = air,
-) -> Tuple[MovingBand, MovingBand, Union[List[MovingBand], None]]:
+) -> tuple[MovingBand, MovingBand, list[MovingBand] | None]:
     """
     createMB generates all pyemmo Movingband objects needed for a simulation.
 
@@ -376,10 +374,10 @@ def createMB(
 
 
 def getLimitLines(
-    limitLineDict: Dict[str, List[str]],
-    machineSurfList: List[SurfaceAPI],
+    limitLineDict: dict[str, list[str]],
+    machineSurfList: list[SurfaceAPI],
     symFactor: int,
-) -> Union[List[Line], None]:
+) -> list[Line] | None:
     """
     getLimitLines identifies the inner or outer boundary lines from the machine surfaces by the
     line-IDs in LimitLineDict and duplicates them if needed.
@@ -413,10 +411,10 @@ def getLimitLines(
 
 
 def createBoundaries(
-    segmentSurfDict: Dict[str, SurfaceAPI],
+    segmentSurfDict: dict[str, SurfaceAPI],
     symFactor: int,
     rotorMBRadius: float,
-) -> Tuple[List[PhysicalElement], List[PhysicalElement]]:
+) -> tuple[list[PhysicalElement], list[PhysicalElement]]:
     """finds or creates all essential boundary lines and adds them to corresponding
     PhysicalElements (LimitLine, MovingBand, PrimaryLine, SecondaryLine,...).
 
@@ -436,8 +434,8 @@ def createBoundaries(
         AttributeError: If no surface for the inner limit lines could be found.
     """
     # Create lists for Stator and Rotor boundaries
-    rotorPhysicals: List[PhysicalElement] = []
-    statorPhysicals: List[PhysicalElement] = []
+    rotorPhysicals: list[PhysicalElement] = []
+    statorPhysicals: list[PhysicalElement] = []
 
     # 1: primary-Slave
     if symFactor > 1:
@@ -557,7 +555,7 @@ def createBoundaries(
     return statorPhysicals, rotorPhysicals
 
 
-def geoElemList(physElemList: List[PhysicalElement]) -> List[Transformable]:
+def geoElemList(physElemList: list[PhysicalElement]) -> list[Transformable]:
     """Create a list of geometrical elements (type Transformable) from a list of PhysicalElements"""
     geoList = []
     if isinstance(physElemList, list):

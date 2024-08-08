@@ -21,14 +21,14 @@
 ###Noch nicht in die Doku. Funktioniert zunächst eingeschränkt für einzelne Linien wie beim Luis.
 # def loadFromStep(self, stepFiles, unit, meshLength):
 try:
-    from .point import Point
-    from .line import Line
     from .circleArc import CircleArc
+    from .line import Line
+    from .point import Point
     from .surface import Surface
 except ImportError:
-    from point import Point
-    from line import Line
     from circleArc import CircleArc
+    from line import Line
+    from point import Point
     from surface import Surface
 
 

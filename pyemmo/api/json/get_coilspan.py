@@ -19,6 +19,7 @@
 #
 """Function to get coil span from winding layout"""
 from typing import List
+
 import numpy as np
 
 

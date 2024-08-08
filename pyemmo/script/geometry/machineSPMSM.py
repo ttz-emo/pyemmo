@@ -17,10 +17,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+import math
+
 from .machineAllType import MachineAllType
 from .rotorSPMSM import RotorSPMSM
 from .statorSPMSM import StatorPMSM, datamodel
-import math
 
 
 ###

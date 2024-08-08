@@ -18,8 +18,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 from __future__ import annotations
+
 import xml.etree.ElementTree as ET
-from typing import List, Dict, Union
 from math import pi
 
 
@@ -27,7 +27,7 @@ from math import pi
 ###
 def getMaterialArray(
     xmlPath: str,
-) -> List[Dict[str, Union[str, float, List[float]]]]:
+) -> list[dict[str, str | float | list[float]]]:
     """Die Funktion getMaterialArray() ist ein Parser speziell für die erstellten XML-Dokumente
     aus den Maxwell-Materialdaten (.amat). Als Input dient der vollständige Pfad der XML-Datei.
     Eine Liste mit allen Materialien und den Eigenschaften: elektrische Leitfähigkeit, magnetsiche

@@ -19,13 +19,14 @@
 #
 """Dieses Modul dient als Schnittstelle zur Bearbeitung der Material-Datenbank.
 Zusätzlich kann die Software DB-Browser zur Visualisierung der Datenbank verwendet werden."""
-from genericpath import isfile
-import sqlite3
-import pathlib
 import os
-import pandas
-import matplotlib.pyplot as plt
+import pathlib
+import sqlite3
 from typing import Dict, Union
+
+import matplotlib.pyplot as plt
+import pandas
+from genericpath import isfile
 
 
 def addMaterial(

@@ -18,7 +18,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for Class Domain"""
-from typing import List, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Union
+
 from pyemmo.script.geometry.physicalElement import PhysicalElement
 
 if TYPE_CHECKING:

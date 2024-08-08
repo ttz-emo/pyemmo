@@ -17,24 +17,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+import math
 from typing import List
 
-from pyemmo.script.geometry.physicalElement import PhysicalElement
+from .airGap import AirGap
+from .circleArc import CircleArc
 from .domain import Domain
+from .limitLine import LimitLine
+from .line import Line
+from .magnet import Magnet
+from .movingBand import MovingBand
+from .point import Point
+from .primaryLine import PrimaryLine
 from .rotor import Rotor
 from .rotorLamination import RotorLamination
-from .magnet import Magnet
-from .line import Line
-from .circleArc import CircleArc
-from .point import Point
-from .surface import Surface
-from .airArea import AirArea
-from .airGap import AirGap
-from .movingBand import MovingBand
-from .limitLine import LimitLine
-from .primaryLine import PrimaryLine
 from .slaveLine import SlaveLine
-import math
+from .surface import Surface
 
 
 class RotorIPMSM(Rotor):

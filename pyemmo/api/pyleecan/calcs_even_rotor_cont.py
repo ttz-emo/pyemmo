@@ -20,20 +20,19 @@
 """Module: rotor_contour_calculation"""
 
 from __future__ import annotations
-import math
-from typing import Union
 
-from ..json.SurfaceJSON import SurfaceAPI
-from ...script.geometry.point import Point
-from ...script.geometry.line import Line
+import math
+
 from ...script.geometry.circleArc import CircleArc
-from ...functions.plot import plot
+from ...script.geometry.line import Line
+from ...script.geometry.point import Point
+from ..json.SurfaceJSON import SurfaceAPI
 
 
 def calc_even_rotor_cont(
     rotor_lam_surf_list: list[SurfaceAPI],
     radius: float,
-) -> tuple[list[Union[Line, CircleArc]], Point, Point]:
+) -> tuple[list[Line | CircleArc], Point, Point]:
     """
     Calculates the contour lines for the even rotor contour.
 

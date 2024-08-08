@@ -30,6 +30,7 @@ Classes:
 """
 
 from __future__ import annotations
+
 from ...script.geometry.point import Point
 
 

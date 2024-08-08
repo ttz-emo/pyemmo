@@ -37,9 +37,9 @@ Note:
 """
 
 from __future__ import annotations
-from typing import Union
-from pyleecan.Classes.Machine import Machine
+
 import swat_em as swatem
+from pyleecan.Classes.Machine import Machine
 
 
 def translate_winding(
@@ -47,11 +47,11 @@ def translate_winding(
 ) -> tuple[
     swatem.datamodel,
     list[
-        Union[
-            list[Union[list[int], list[int]]],
-            list[Union[list[int], list[int]]],
-            list[Union[list[int], list[int]]],
-        ]
+        (
+            list[list[int] | list[int]]
+            | list[list[int] | list[int]]
+            | list[list[int] | list[int]]
+        )
     ],
 ]:
     """

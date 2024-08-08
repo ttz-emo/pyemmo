@@ -50,7 +50,8 @@ except ImportError:  # Install setuptools if needed
 with open("pyemmo/version.py", encoding="utf-8") as versionFile:
     exec(versionFile.read())
 # from .pyemmo.version import __version__
-PYEMMO_VERSION = __version__  # # pylint: disable=locally-disabled, undefined-variable
+# pylint: disable=locally-disabled, undefined-variable
+PYEMMO_VERSION = __version__
 
 # with open("README.md", "r", encoding="utf-8") as fh:
 #     long_description = fh.read()

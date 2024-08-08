@@ -136,7 +136,9 @@ xy_point_list = s.evaluate(times).T  # shape (2,100) -> (xy, index)
 #         xy_point_list.T, edgecolor="m", fill=0, closed=False
 #     )
 # )
-ax.plot(*xy_point_list, "--")  # Equivalent to ax.plot(x_values, y_values, "--")
+ax.plot(
+    *xy_point_list, "--"
+)  # Equivalent to ax.plot(x_values, y_values, "--")
 ax.axis("equal")
 
 # %%

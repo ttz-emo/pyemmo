@@ -53,11 +53,11 @@ Example:
 """
 
 from __future__ import annotations
-from numpy import pi
 
-from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
-from pyleecan.Classes.MachineIPMSM import MachineIPMSM
+from numpy import pi
 from pyleecan.Classes.Machine import Machine
+from pyleecan.Classes.MachineIPMSM import MachineIPMSM
+from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 
 from ..json.SurfaceJSON import SurfaceAPI
 

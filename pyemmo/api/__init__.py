@@ -19,6 +19,7 @@
 #
 """Init for API subpackage"""
 import logging
+
 from .. import logFmt, rootLogger
 from ..script.material.material import Material
 

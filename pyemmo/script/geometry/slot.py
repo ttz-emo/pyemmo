@@ -18,14 +18,16 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for class Slot"""
+from math import degrees, isclose, pi
 from typing import List, Literal, Tuple, Union
+
+from numpy import mean
+
 from pyemmo.script.geometry.line import Line
 from pyemmo.script.geometry.surface import Surface
 from pyemmo.script.material.material import Material
+
 from .physicalElement import PhysicalElement
-from .. import colorDict
-from math import degrees, isclose, pi
-from numpy import mean
 
 
 ###

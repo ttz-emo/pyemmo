@@ -28,7 +28,6 @@ from .magnet import Magnet
 from .point import Point
 from .surface import Surface
 
-
 ###
 # Ein Objekt der Klasse Magnet_Surface02:
 # \image html magnet_Surface02.png

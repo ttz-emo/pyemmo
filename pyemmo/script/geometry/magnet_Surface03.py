@@ -19,12 +19,11 @@
 #
 """Module for toolkit magnet Surface03"""
 import math
-from typing import Dict, Any
+from typing import Any, Dict
 
 from .. import colorDict
 from .line import Line
 from .magnet import Magnet
-from .physicalElement import PhysicalElement
 from .point import Point
 from .surface import Surface
 

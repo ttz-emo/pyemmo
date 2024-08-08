@@ -20,6 +20,7 @@
 """Module for Class Rotor"""
 
 from typing import Dict, List
+
 from .physicalElement import PhysicalElement
 from .rotor import Rotor
 

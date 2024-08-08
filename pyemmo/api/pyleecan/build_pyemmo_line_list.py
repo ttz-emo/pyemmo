@@ -48,21 +48,20 @@ Raises:
 """
 
 from __future__ import annotations
-from typing import Union
 
-from pyleecan.Classes.Segment import Segment
 from pyleecan.Classes.Arc1 import Arc1
 from pyleecan.Classes.Arc2 import Arc2
 from pyleecan.Classes.Arc3 import Arc3
+from pyleecan.Classes.Segment import Segment
 
-from ...script.geometry.line import Line
 from ...script.geometry.circleArc import CircleArc
+from ...script.geometry.line import Line
 from .build_pyemmo_point import build_pyemmo_point
 
 
 def build_pyemmo_line_list(
-    pyleecan_line_list: list[Union[Segment, Arc1, Arc2, Arc3]],
-) -> list[Union[Line, CircleArc]]:
+    pyleecan_line_list: list[Segment | Arc1 | Arc2 | Arc3],
+) -> list[Line | CircleArc]:
     """Translates a list of pyleecan curves into a list of pyemmo curves.
 
     This function translates a list of pyleecan curves (Segment, Arc1, Arc2, Arc3)

@@ -19,10 +19,11 @@
 #
 """Module for class StatorLamination"""
 from __future__ import annotations
-from typing import List
+
 from pyemmo.script.material.material import Material
-from .surface import Surface
+
 from .physicalElement import PhysicalElement
+from .surface import Surface
 
 
 ###
@@ -36,7 +37,7 @@ class StatorLamination(PhysicalElement):
     def __init__(
         self,
         name: str,
-        geometricalElement: List[Surface],
+        geometricalElement: list[Surface],
         material: Material,
         phyID=None,
     ):

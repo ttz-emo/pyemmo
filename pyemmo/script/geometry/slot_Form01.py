@@ -19,11 +19,13 @@
 #
 """Module for class Slot_Form01"""
 from __future__ import annotations
+
 import math
-from .slot import Slot
-from .point import Point
-from .line import Line
+
 from .circleArc import CircleArc
+from .line import Line
+from .point import Point
+from .slot import Slot
 from .surface import Surface
 
 

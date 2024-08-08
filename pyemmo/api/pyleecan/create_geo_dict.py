@@ -58,35 +58,28 @@ Raises:
 """
 
 from __future__ import annotations
-from typing import List, Union
 
-from pyleecan.Classes.MachineIPMSM import MachineIPMSM
-from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
-from pyleecan.Classes.MachineSyRM import MachineSyRM
 from pyleecan.Classes.LamHole import LamHole
 from pyleecan.Classes.LamSlotMag import LamSlotMag
-from pyleecan.Classes.LamSlotWind import LamSlotWind
 from pyleecan.Classes.LamSquirrelCage import LamSquirrelCage
+from pyleecan.Classes.Machine import Machine as PyleecanMachine
 from pyleecan.Classes.SurfLine import SurfLine
 
-from pyleecan.Classes.Machine import Machine as PyleecanMachine
-
-from ...functions.plot import plot
-from ...script.geometry.line import Line
 from ...script.geometry.circleArc import CircleArc
+from ...script.geometry.line import Line
 from ...script.geometry.point import Point
-from ..json.SurfaceJSON import SurfaceAPI
 from .. import logger
 from ..json.modelJSON import createSurfaceDict
-from .translate_surfs import translate_surface
-from .get_rotor_stator_cont import (
-    get_spmsm_rotor_cont,
-    get_winding_cont,
-    get_even_rotor_cont,
-)
+from ..json.SurfaceJSON import SurfaceAPI
 from .calcs_rotor_spmsm_cont import get_lr_points
 from .detect_inner_outer_limit import detect_inner_outer_limit
 from .get_magnetization_dict import get_magnetization_dict
+from .get_rotor_stator_cont import (
+    get_even_rotor_cont,
+    get_spmsm_rotor_cont,
+    get_winding_cont,
+)
+from .translate_surfs import translate_surface
 
 
 def create_geo_dict(
@@ -94,8 +87,8 @@ def create_geo_dict(
     is_internal_rotor: bool,
 ) -> tuple[
     list[SurfaceAPI],
-    list[Union[Line, CircleArc]],
-    list[Union[Line, CircleArc]],
+    list[Line | CircleArc],
+    list[Line | CircleArc],
     Point,
     Point,
     dict,
@@ -121,7 +114,7 @@ def create_geo_dict(
             - Point: Leftmost point of the rotor contour.
             - dict: Dictionary containing magnetization information.
     """
-    all_surfaces: List[SurfLine] = machine.rotor.build_geometry(
+    all_surfaces: list[SurfLine] = machine.rotor.build_geometry(
         sym=machine.rotor.comp_periodicity_geo()[0], alpha=0
     )
 
@@ -131,7 +124,7 @@ def create_geo_dict(
 
     all_surfs_labels = []
     all_surfs_labels_split2 = []
-    geometry_list: List[SurfaceAPI] = []
+    geometry_list: list[SurfaceAPI] = []
     angle_point_ref_list = []
 
     logger.debug("Geometry translation started")
