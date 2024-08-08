@@ -4,3134 +4,4173 @@
 	"conductivity": 0.0,
 	"relPermeability": 0.0,
 	"remanence": "no information",
-	"BHCurve_type": "NL",
-	"H": [
-		0.0,
-		1.0,
-		2.0,
-		3.0,
-		4.0,
-		5.0,
-		6.0,
-		7.0,
-		8.0,
-		9.0,
-		10.0,
-		11.0,
-		12.0,
-		13.0,
-		14.0,
-		15.0,
-		16.0,
-		17.0,
-		18.0,
-		19.0,
-		20.0,
-		21.0,
-		22.0,
-		23.0,
-		24.0,
-		25.0,
-		26.0,
-		27.0,
-		28.0,
-		29.0,
-		30.0,
-		31.0,
-		32.0,
-		33.0,
-		34.0,
-		35.0,
-		36.0,
-		37.0,
-		38.0,
-		39.0,
-		40.0,
-		41.0,
-		42.0,
-		43.0,
-		44.0,
-		45.0,
-		46.0,
-		47.0,
-		48.0,
-		49.0,
-		50.0,
-		51.0,
-		52.0,
-		53.0,
-		54.0,
-		55.0,
-		56.0,
-		57.0,
-		58.0,
-		59.0,
-		60.0,
-		61.0,
-		62.0,
-		63.0,
-		64.0,
-		65.0,
-		66.0,
-		67.0,
-		68.0,
-		69.0,
-		70.0,
-		71.0,
-		72.0,
-		73.0,
-		74.0,
-		75.0,
-		76.0,
-		77.0,
-		78.0,
-		79.0,
-		80.0,
-		81.0,
-		82.0,
-		83.0,
-		84.0,
-		85.0,
-		86.0,
-		87.0,
-		88.0,
-		89.0,
-		90.0,
-		91.0,
-		92.0,
-		93.0,
-		94.0,
-		95.0,
-		96.0,
-		97.0,
-		98.0,
-		99.0,
-		100.0,
-		101.0,
-		102.0,
-		103.0,
-		104.0,
-		105.0,
-		106.0,
-		107.0,
-		108.0,
-		109.0,
-		110.0,
-		111.0,
-		112.0,
-		113.0,
-		114.0,
-		115.0,
-		116.0,
-		117.0,
-		118.0,
-		119.0,
-		120.0,
-		121.0,
-		122.0,
-		123.0,
-		124.0,
-		125.0,
-		126.0,
-		127.0,
-		128.0,
-		129.0,
-		130.0,
-		131.0,
-		132.0,
-		133.0,
-		134.0,
-		135.0,
-		136.0,
-		137.0,
-		138.0,
-		139.0,
-		140.0,
-		141.0,
-		142.0,
-		143.0,
-		144.0,
-		145.0,
-		146.0,
-		147.0,
-		148.0,
-		149.0,
-		150.0,
-		151.0,
-		152.0,
-		153.0,
-		154.0,
-		155.0,
-		156.0,
-		157.0,
-		158.0,
-		159.0,
-		160.0,
-		161.0,
-		162.0,
-		163.0,
-		164.0,
-		165.0,
-		166.0,
-		167.0,
-		168.0,
-		169.0,
-		170.0,
-		171.0,
-		172.0,
-		173.0,
-		174.0,
-		175.0,
-		176.0,
-		177.0,
-		178.0,
-		179.0,
-		180.0,
-		181.0,
-		182.0,
-		183.0,
-		184.0,
-		185.0,
-		186.0,
-		187.0,
-		188.0,
-		189.0,
-		190.0,
-		191.0,
-		192.0,
-		193.0,
-		194.0,
-		195.0,
-		196.0,
-		197.0,
-		198.0,
-		199.0,
-		200.0,
-		201.0,
-		202.0,
-		203.0,
-		204.0,
-		205.0,
-		206.0,
-		207.0,
-		208.0,
-		209.0,
-		210.0,
-		211.0,
-		212.0,
-		213.0,
-		214.0,
-		215.0,
-		216.0,
-		217.0,
-		218.0,
-		219.0,
-		220.0,
-		221.0,
-		222.0,
-		223.0,
-		224.0,
-		225.0,
-		226.0,
-		227.0,
-		228.0,
-		229.0,
-		230.0,
-		231.0,
-		232.0,
-		233.0,
-		234.0,
-		235.0,
-		236.0,
-		237.0,
-		238.0,
-		239.0,
-		240.0,
-		241.0,
-		242.0,
-		243.0,
-		244.0,
-		245.0,
-		246.0,
-		247.0,
-		248.0,
-		249.0,
-		250.0,
-		251.0,
-		252.0,
-		253.0,
-		254.0,
-		255.0,
-		256.0,
-		257.0,
-		258.0,
-		259.0,
-		260.0,
-		261.0,
-		262.0,
-		263.0,
-		264.0,
-		265.0,
-		266.0,
-		267.0,
-		268.0,
-		269.0,
-		270.0,
-		271.0,
-		272.0,
-		273.0,
-		274.0,
-		275.0,
-		276.0,
-		277.0,
-		278.0,
-		279.0,
-		280.0,
-		281.0,
-		282.0,
-		283.0,
-		284.0,
-		285.0,
-		286.0,
-		287.0,
-		288.0,
-		289.0,
-		290.0,
-		291.0,
-		292.0,
-		293.0,
-		294.0,
-		295.0,
-		296.0,
-		297.0,
-		298.0,
-		299.0,
-		300.0,
-		301.0,
-		302.0,
-		303.0,
-		304.0,
-		305.0,
-		306.0,
-		307.0,
-		308.0,
-		309.0,
-		310.0,
-		311.0,
-		312.0,
-		313.0,
-		314.0,
-		315.0,
-		316.0,
-		317.0,
-		318.0,
-		319.0,
-		320.0,
-		321.0,
-		322.0,
-		323.0,
-		324.0,
-		325.0,
-		326.0,
-		327.0,
-		328.0,
-		329.0,
-		330.0,
-		331.0,
-		332.0,
-		333.0,
-		334.0,
-		335.0,
-		336.0,
-		337.0,
-		338.0,
-		339.0,
-		340.0,
-		341.0,
-		342.0,
-		343.0,
-		344.0,
-		345.0,
-		346.0,
-		347.0,
-		348.0,
-		349.0,
-		350.0,
-		351.0,
-		352.0,
-		353.0,
-		354.0,
-		355.0,
-		356.0,
-		357.0,
-		358.0,
-		359.0,
-		360.0,
-		361.0,
-		362.0,
-		363.0,
-		364.0,
-		365.0,
-		366.0,
-		367.0,
-		368.0,
-		369.0,
-		370.0,
-		371.0,
-		372.0,
-		373.0,
-		374.0,
-		375.0,
-		376.0,
-		377.0,
-		378.0,
-		379.0,
-		380.0,
-		381.0,
-		382.0,
-		383.0,
-		384.0,
-		385.0,
-		386.0,
-		387.0,
-		388.0,
-		389.0,
-		390.0,
-		391.0,
-		392.0,
-		393.0,
-		394.0,
-		395.0,
-		396.0,
-		397.0,
-		398.0,
-		399.0,
-		400.0,
-		401.0,
-		402.0,
-		403.0,
-		404.0,
-		405.0,
-		406.0,
-		407.0,
-		408.0,
-		409.0,
-		410.0,
-		411.0,
-		412.0,
-		413.0,
-		414.0,
-		415.0,
-		416.0,
-		417.0,
-		418.0,
-		419.0,
-		420.0,
-		421.0,
-		422.0,
-		423.0,
-		424.0,
-		425.0,
-		426.0,
-		427.0,
-		428.0,
-		429.0,
-		430.0,
-		431.0,
-		432.0,
-		433.0,
-		434.0,
-		435.0,
-		436.0,
-		437.0,
-		438.0,
-		439.0,
-		440.0,
-		441.0,
-		442.0,
-		443.0,
-		444.0,
-		445.0,
-		446.0,
-		447.0,
-		448.0,
-		449.0,
-		450.0,
-		451.0,
-		452.0,
-		453.0,
-		454.0,
-		455.0,
-		456.0,
-		457.0,
-		458.0,
-		459.0,
-		460.0,
-		461.0,
-		462.0,
-		463.0,
-		464.0,
-		465.0,
-		466.0,
-		467.0,
-		468.0,
-		469.0,
-		470.0,
-		471.0,
-		472.0,
-		473.0,
-		474.0,
-		475.0,
-		476.0,
-		477.0,
-		478.0,
-		479.0,
-		480.0,
-		481.0,
-		482.0,
-		483.0,
-		484.0,
-		485.0,
-		486.0,
-		487.0,
-		488.0,
-		489.0,
-		490.0,
-		491.0,
-		492.0,
-		493.0,
-		494.0,
-		495.0,
-		496.0,
-		497.0,
-		498.0,
-		499.0,
-		500.0,
-		501.0,
-		502.0,
-		503.0,
-		504.0,
-		505.0,
-		506.0,
-		507.0,
-		508.0,
-		509.0,
-		510.0,
-		511.0,
-		512.0,
-		513.0,
-		514.0,
-		515.0,
-		516.0,
-		517.0,
-		518.0,
-		519.0,
-		520.0,
-		521.0,
-		522.0,
-		523.0,
-		524.0,
-		525.0,
-		526.0,
-		527.0,
-		528.0,
-		529.0,
-		530.0,
-		531.0,
-		532.0,
-		533.0,
-		534.0,
-		535.0,
-		536.0,
-		537.0,
-		538.0,
-		539.0,
-		540.0,
-		541.0,
-		542.0,
-		543.0,
-		544.0,
-		545.0,
-		546.0,
-		547.0,
-		548.0,
-		549.0,
-		550.0,
-		551.0,
-		552.0,
-		553.0,
-		554.0,
-		555.0,
-		556.0,
-		557.0,
-		558.0,
-		559.0,
-		560.0,
-		561.0,
-		562.0,
-		563.0,
-		564.0,
-		565.0,
-		566.0,
-		567.0,
-		568.0,
-		569.0,
-		570.0,
-		571.0,
-		572.0,
-		573.0,
-		574.0,
-		575.0,
-		576.0,
-		577.0,
-		578.0,
-		579.0,
-		580.0,
-		581.0,
-		582.0,
-		583.0,
-		584.0,
-		585.0,
-		586.0,
-		587.0,
-		588.0,
-		589.0,
-		590.0,
-		591.0,
-		592.0,
-		593.0,
-		594.0,
-		595.0,
-		596.0,
-		597.0,
-		598.0,
-		599.0,
-		600.0,
-		601.0,
-		602.0,
-		603.0,
-		604.0,
-		605.0,
-		606.0,
-		607.0,
-		608.0,
-		609.0,
-		610.0,
-		611.0,
-		612.0,
-		613.0,
-		614.0,
-		615.0,
-		616.0,
-		617.0,
-		618.0,
-		619.0,
-		620.0,
-		621.0,
-		622.0,
-		623.0,
-		624.0,
-		625.0,
-		626.0,
-		627.0,
-		628.0,
-		629.0,
-		630.0,
-		631.0,
-		632.0,
-		633.0,
-		634.0,
-		635.0,
-		636.0,
-		637.0,
-		638.0,
-		639.0,
-		640.0,
-		641.0,
-		642.0,
-		643.0,
-		644.0,
-		645.0,
-		646.0,
-		647.0,
-		648.0,
-		649.0,
-		650.0,
-		651.0,
-		652.0,
-		653.0,
-		654.0,
-		655.0,
-		656.0,
-		657.0,
-		658.0,
-		659.0,
-		660.0,
-		661.0,
-		662.0,
-		663.0,
-		664.0,
-		665.0,
-		666.0,
-		667.0,
-		668.0,
-		669.0,
-		670.0,
-		671.0,
-		672.0,
-		673.0,
-		674.0,
-		675.0,
-		676.0,
-		677.0,
-		678.0,
-		679.0,
-		680.0,
-		681.0,
-		682.0,
-		683.0,
-		684.0,
-		685.0,
-		686.0,
-		687.0,
-		688.0,
-		689.0,
-		690.0,
-		691.0,
-		692.0,
-		693.0,
-		694.0,
-		695.0,
-		696.0,
-		697.0,
-		698.0,
-		699.0,
-		700.0,
-		701.0,
-		702.0,
-		703.0,
-		704.0,
-		705.0,
-		706.0,
-		707.0,
-		708.0,
-		709.0,
-		710.0,
-		711.0,
-		712.0,
-		713.0,
-		714.0,
-		715.0,
-		716.0,
-		717.0,
-		718.0,
-		719.0,
-		720.0,
-		721.0,
-		722.0,
-		723.0,
-		724.0,
-		725.0,
-		726.0,
-		727.0,
-		728.0,
-		729.0,
-		730.0,
-		731.0,
-		732.0,
-		733.0,
-		734.0,
-		735.0,
-		736.0,
-		737.0,
-		738.0,
-		739.0,
-		740.0,
-		741.0,
-		742.0,
-		743.0,
-		744.0,
-		745.0,
-		746.0,
-		747.0,
-		748.0,
-		749.0,
-		750.0,
-		751.0,
-		752.0,
-		753.0,
-		754.0,
-		755.0,
-		756.0,
-		757.0,
-		758.0,
-		759.0,
-		760.0,
-		761.0,
-		762.0,
-		763.0,
-		764.0,
-		765.0,
-		766.0,
-		767.0,
-		768.0,
-		769.0,
-		770.0,
-		771.0,
-		772.0,
-		773.0,
-		774.0,
-		775.0,
-		776.0,
-		777.0,
-		778.0,
-		779.0,
-		780.0,
-		781.0,
-		782.0,
-		783.0,
-		784.0,
-		785.0,
-		786.0,
-		787.0,
-		788.0,
-		789.0,
-		790.0,
-		791.0,
-		792.0,
-		793.0,
-		794.0,
-		795.0,
-		796.0,
-		797.0,
-		798.0,
-		799.0,
-		800.0,
-		801.0,
-		811.0,
-		821.0,
-		831.0,
-		841.0,
-		851.0,
-		861.0,
-		871.0,
-		881.0,
-		891.0,
-		901.0,
-		911.0,
-		921.0,
-		931.0,
-		941.0,
-		951.0,
-		961.0,
-		971.0,
-		981.0,
-		991.0,
-		1001.0,
-		1011.0,
-		1021.0,
-		1031.0,
-		1041.0,
-		1051.0,
-		1061.0,
-		1071.0,
-		1081.0,
-		1091.0,
-		1101.0,
-		1111.0,
-		1121.0,
-		1131.0,
-		1141.0,
-		1151.0,
-		1161.0,
-		1171.0,
-		1181.0,
-		1191.0,
-		1201.0,
-		1211.0,
-		1221.0,
-		1231.0,
-		1241.0,
-		1251.0,
-		1261.0,
-		1271.0,
-		1281.0,
-		1291.0,
-		1301.0,
-		1311.0,
-		1321.0,
-		1331.0,
-		1341.0,
-		1351.0,
-		1361.0,
-		1371.0,
-		1381.0,
-		1391.0,
-		1401.0,
-		1411.0,
-		1421.0,
-		1431.0,
-		1441.0,
-		1451.0,
-		1461.0,
-		1471.0,
-		1481.0,
-		1491.0,
-		1501.0,
-		1511.0,
-		1521.0,
-		1531.0,
-		1541.0,
-		1551.0,
-		1561.0,
-		1571.0,
-		1581.0,
-		1591.0,
-		1601.0,
-		1611.0,
-		1621.0,
-		1631.0,
-		1641.0,
-		1651.0,
-		1661.0,
-		1671.0,
-		1681.0,
-		1691.0,
-		1701.0,
-		1711.0,
-		1721.0,
-		1731.0,
-		1741.0,
-		1751.0,
-		1761.0,
-		1771.0,
-		1781.0,
-		1791.0,
-		1801.0,
-		1811.0,
-		1821.0,
-		1831.0,
-		1841.0,
-		1851.0,
-		1861.0,
-		1871.0,
-		1881.0,
-		1891.0,
-		1901.0,
-		1911.0,
-		1921.0,
-		1931.0,
-		1941.0,
-		1951.0,
-		1961.0,
-		1971.0,
-		1981.0,
-		1991.0,
-		2001.0,
-		2011.0,
-		2021.0,
-		2031.0,
-		2041.0,
-		2051.0,
-		2061.0,
-		2071.0,
-		2081.0,
-		2091.0,
-		2101.0,
-		2111.0,
-		2121.0,
-		2131.0,
-		2141.0,
-		2151.0,
-		2161.0,
-		2171.0,
-		2181.0,
-		2191.0,
-		2201.0,
-		2211.0,
-		2221.0,
-		2231.0,
-		2241.0,
-		2251.0,
-		2261.0,
-		2271.0,
-		2281.0,
-		2291.0,
-		2301.0,
-		2311.0,
-		2321.0,
-		2331.0,
-		2341.0,
-		2351.0,
-		2361.0,
-		2371.0,
-		2381.0,
-		2391.0,
-		2401.0,
-		2411.0,
-		2421.0,
-		2431.0,
-		2441.0,
-		2451.0,
-		2461.0,
-		2471.0,
-		2481.0,
-		2491.0,
-		2501.0,
-		2511.0,
-		2521.0,
-		2531.0,
-		2541.0,
-		2551.0,
-		2561.0,
-		2571.0,
-		2581.0,
-		2591.0,
-		2601.0,
-		2611.0,
-		2621.0,
-		2631.0,
-		2641.0,
-		2651.0,
-		2661.0,
-		2671.0,
-		2681.0,
-		2691.0,
-		2701.0,
-		2711.0,
-		2721.0,
-		2731.0,
-		2741.0,
-		2751.0,
-		2761.0,
-		2771.0,
-		2781.0,
-		2791.0,
-		2801.0,
-		2811.0,
-		2821.0,
-		2831.0,
-		2841.0,
-		2851.0,
-		2861.0,
-		2871.0,
-		2881.0,
-		2891.0,
-		2901.0,
-		2911.0,
-		2921.0,
-		2931.0,
-		2941.0,
-		2951.0,
-		2961.0,
-		2971.0,
-		2981.0,
-		2991.0,
-		3001.0,
-		3011.0,
-		3021.0,
-		3031.0,
-		3041.0,
-		3051.0,
-		3061.0,
-		3071.0,
-		3081.0,
-		3091.0,
-		3101.0,
-		3111.0,
-		3121.0,
-		3131.0,
-		3141.0,
-		3151.0,
-		3161.0,
-		3171.0,
-		3181.0,
-		3191.0
-	],
-	"B": [
-		0.0,
-		0.000945516,
-		0.0022603,
-		0.00393822,
-		0.00597311,
-		0.00835885,
-		0.0110893,
-		0.0141582,
-		0.0175596,
-		0.0212873,
-		0.025335,
-		0.0296967,
-		0.0343663,
-		0.0393375,
-		0.0446043,
-		0.0501605,
-		0.0559999,
-		0.0621164,
-		0.0685038,
-		0.0751561,
-		0.0820671,
-		0.0892306,
-		0.0966404,
-		0.104291,
-		0.112175,
-		0.120287,
-		0.128621,
-		0.13717,
-		0.145929,
-		0.154892,
-		0.164052,
-		0.173402,
-		0.182938,
-		0.192653,
-		0.20254,
-		0.212594,
-		0.222808,
-		0.233176,
-		0.243692,
-		0.25435,
-		0.265144,
-		0.276068,
-		0.287115,
-		0.29828,
-		0.309555,
-		0.320936,
-		0.332416,
-		0.343988,
-		0.355647,
-		0.367387,
-		0.3792,
-		0.391082,
-		0.403026,
-		0.415026,
-		0.427076,
-		0.43917,
-		0.4513,
-		0.463462,
-		0.47565,
-		0.487856,
-		0.500075,
-		0.513831,
-		0.530017,
-		0.547685,
-		0.565884,
-		0.583667,
-		0.600083,
-		0.6152,
-		0.629809,
-		0.64405,
-		0.658061,
-		0.671979,
-		0.685943,
-		0.700092,
-		0.714672,
-		0.729644,
-		0.744714,
-		0.759588,
-		0.773973,
-		0.787575,
-		0.800101,
-		0.811744,
-		0.822921,
-		0.83367,
-		0.844029,
-		0.854035,
-		0.863728,
-		0.873143,
-		0.882321,
-		0.891298,
-		0.900113,
-		0.908813,
-		0.917409,
-		0.925883,
-		0.934218,
-		0.942396,
-		0.950402,
-		0.958216,
-		0.965822,
-		0.973204,
-		0.980342,
-		0.987221,
-		0.993822,
-		1.00013,
-		1.00622,
-		1.01219,
-		1.01805,
-		1.02378,
-		1.02939,
-		1.03489,
-		1.04027,
-		1.04554,
-		1.05069,
-		1.05574,
-		1.06066,
-		1.06548,
-		1.07019,
-		1.07479,
-		1.07928,
-		1.08366,
-		1.08794,
-		1.09212,
-		1.09619,
-		1.10015,
-		1.10405,
-		1.10791,
-		1.11174,
-		1.11552,
-		1.11926,
-		1.12296,
-		1.12661,
-		1.13022,
-		1.13378,
-		1.1373,
-		1.14077,
-		1.14419,
-		1.14755,
-		1.15087,
-		1.15413,
-		1.15733,
-		1.16048,
-		1.16358,
-		1.16661,
-		1.16959,
-		1.1725,
-		1.17535,
-		1.17814,
-		1.18087,
-		1.18352,
-		1.18612,
-		1.18864,
-		1.19109,
-		1.19348,
-		1.19579,
-		1.19803,
-		1.20019,
-		1.20231,
-		1.20442,
-		1.2065,
-		1.20857,
-		1.21062,
-		1.21266,
-		1.21468,
-		1.21668,
-		1.21866,
-		1.22063,
-		1.22258,
-		1.22451,
-		1.22643,
-		1.22832,
-		1.2302,
-		1.23206,
-		1.2339,
-		1.23573,
-		1.23754,
-		1.23932,
-		1.24109,
-		1.24285,
-		1.24458,
-		1.24629,
-		1.24799,
-		1.24967,
-		1.25132,
-		1.25296,
-		1.25458,
-		1.25618,
-		1.25777,
-		1.25933,
-		1.26087,
-		1.26239,
-		1.2639,
-		1.26538,
-		1.26685,
-		1.26829,
-		1.26972,
-		1.27112,
-		1.2725,
-		1.27387,
-		1.27521,
-		1.27653,
-		1.27784,
-		1.27912,
-		1.28038,
-		1.28162,
-		1.28284,
-		1.28404,
-		1.28521,
-		1.28637,
-		1.2875,
-		1.28862,
-		1.28971,
-		1.29078,
-		1.29183,
-		1.29286,
-		1.29386,
-		1.29484,
-		1.29581,
-		1.29674,
-		1.29766,
-		1.29856,
-		1.29943,
-		1.30028,
-		1.30111,
-		1.30195,
-		1.30278,
-		1.3036,
-		1.30442,
-		1.30524,
-		1.30606,
-		1.30687,
-		1.30767,
-		1.30848,
-		1.30927,
-		1.31007,
-		1.31086,
-		1.31165,
-		1.31244,
-		1.31322,
-		1.31399,
-		1.31477,
-		1.31554,
-		1.3163,
-		1.31707,
-		1.31783,
-		1.31858,
-		1.31933,
-		1.32008,
-		1.32083,
-		1.32157,
-		1.3223,
-		1.32304,
-		1.32377,
-		1.3245,
-		1.32522,
-		1.32594,
-		1.32666,
-		1.32737,
-		1.32808,
-		1.32878,
-		1.32949,
-		1.33018,
-		1.33088,
-		1.33157,
-		1.33226,
-		1.33294,
-		1.33363,
-		1.3343,
-		1.33498,
-		1.33565,
-		1.33632,
-		1.33698,
-		1.33764,
-		1.3383,
-		1.33895,
-		1.3396,
-		1.34025,
-		1.34089,
-		1.34153,
-		1.34217,
-		1.3428,
-		1.34343,
-		1.34406,
-		1.34469,
-		1.34531,
-		1.34592,
-		1.34654,
-		1.34715,
-		1.34775,
-		1.34836,
-		1.34896,
-		1.34955,
-		1.35015,
-		1.35074,
-		1.35132,
-		1.35191,
-		1.35249,
-		1.35307,
-		1.35364,
-		1.35421,
-		1.35478,
-		1.35534,
-		1.3559,
-		1.35646,
-		1.35702,
-		1.35757,
-		1.35812,
-		1.35866,
-		1.3592,
-		1.35974,
-		1.36028,
-		1.36081,
-		1.36134,
-		1.36187,
-		1.36239,
-		1.36291,
-		1.36343,
-		1.36394,
-		1.36445,
-		1.36496,
-		1.36546,
-		1.36596,
-		1.36646,
-		1.36696,
-		1.36745,
-		1.36794,
-		1.36842,
-		1.36891,
-		1.36939,
-		1.36986,
-		1.37034,
-		1.37081,
-		1.37128,
-		1.37174,
-		1.3722,
-		1.37266,
-		1.37312,
-		1.37357,
-		1.37402,
-		1.37447,
-		1.37491,
-		1.37535,
-		1.37579,
-		1.37623,
-		1.37666,
-		1.37709,
-		1.37751,
-		1.37794,
-		1.37836,
-		1.37877,
-		1.37919,
-		1.3796,
-		1.38001,
-		1.38042,
-		1.38082,
-		1.38122,
-		1.38162,
-		1.38201,
-		1.3824,
-		1.38279,
-		1.38318,
-		1.38356,
-		1.38394,
-		1.38432,
-		1.3847,
-		1.38507,
-		1.38544,
-		1.3858,
-		1.38617,
-		1.38653,
-		1.38689,
-		1.38724,
-		1.3876,
-		1.38795,
-		1.38829,
-		1.38864,
-		1.38898,
-		1.38932,
-		1.38966,
-		1.38999,
-		1.39032,
-		1.39065,
-		1.39098,
-		1.3913,
-		1.39162,
-		1.39194,
-		1.39225,
-		1.39257,
-		1.39288,
-		1.39319,
-		1.39349,
-		1.39379,
-		1.39409,
-		1.39439,
-		1.39468,
-		1.39498,
-		1.39526,
-		1.39555,
-		1.39584,
-		1.39612,
-		1.3964,
-		1.39667,
-		1.39695,
-		1.39722,
-		1.39749,
-		1.39775,
-		1.39802,
-		1.39828,
-		1.39854,
-		1.39879,
-		1.39905,
-		1.3993,
-		1.39955,
-		1.3998,
-		1.40004,
-		1.40028,
-		1.40052,
-		1.40076,
-		1.401,
-		1.40123,
-		1.40147,
-		1.40171,
-		1.40194,
-		1.40218,
-		1.40241,
-		1.40265,
-		1.40288,
-		1.40312,
-		1.40335,
-		1.40358,
-		1.40381,
-		1.40405,
-		1.40428,
-		1.40451,
-		1.40474,
-		1.40497,
-		1.4052,
-		1.40543,
-		1.40566,
-		1.40589,
-		1.40612,
-		1.40635,
-		1.40657,
-		1.4068,
-		1.40703,
-		1.40725,
-		1.40748,
-		1.40771,
-		1.40793,
-		1.40816,
-		1.40838,
-		1.4086,
-		1.40883,
-		1.40905,
-		1.40927,
-		1.4095,
-		1.40972,
-		1.40994,
-		1.41016,
-		1.41038,
-		1.4106,
-		1.41082,
-		1.41104,
-		1.41126,
-		1.41148,
-		1.4117,
-		1.41192,
-		1.41214,
-		1.41235,
-		1.41257,
-		1.41279,
-		1.413,
-		1.41322,
-		1.41343,
-		1.41365,
-		1.41386,
-		1.41408,
-		1.41429,
-		1.41451,
-		1.41472,
-		1.41493,
-		1.41514,
-		1.41536,
-		1.41557,
-		1.41578,
-		1.41599,
-		1.4162,
-		1.41641,
-		1.41662,
-		1.41683,
-		1.41704,
-		1.41725,
-		1.41746,
-		1.41766,
-		1.41787,
-		1.41808,
-		1.41829,
-		1.41849,
-		1.4187,
-		1.4189,
-		1.41911,
-		1.41931,
-		1.41952,
-		1.41972,
-		1.41993,
-		1.42013,
-		1.42033,
-		1.42054,
-		1.42074,
-		1.42094,
-		1.42114,
-		1.42134,
-		1.42154,
-		1.42174,
-		1.42194,
-		1.42214,
-		1.42234,
-		1.42254,
-		1.42274,
-		1.42294,
-		1.42314,
-		1.42333,
-		1.42353,
-		1.42373,
-		1.42393,
-		1.42412,
-		1.42432,
-		1.42451,
-		1.42471,
-		1.4249,
-		1.4251,
-		1.42529,
-		1.42549,
-		1.42568,
-		1.42587,
-		1.42606,
-		1.42626,
-		1.42645,
-		1.42664,
-		1.42683,
-		1.42702,
-		1.42721,
-		1.4274,
-		1.42759,
-		1.42778,
-		1.42797,
-		1.42816,
-		1.42835,
-		1.42854,
-		1.42872,
-		1.42891,
-		1.4291,
-		1.42929,
-		1.42947,
-		1.42966,
-		1.42984,
-		1.43003,
-		1.43021,
-		1.4304,
-		1.43058,
-		1.43077,
-		1.43095,
-		1.43113,
-		1.43132,
-		1.4315,
-		1.43168,
-		1.43186,
-		1.43205,
-		1.43223,
-		1.43241,
-		1.43259,
-		1.43277,
-		1.43295,
-		1.43313,
-		1.43331,
-		1.43349,
-		1.43367,
-		1.43384,
-		1.43402,
-		1.4342,
-		1.43438,
-		1.43455,
-		1.43473,
-		1.43491,
-		1.43508,
-		1.43526,
-		1.43543,
-		1.43561,
-		1.43578,
-		1.43596,
-		1.43613,
-		1.43631,
-		1.43648,
-		1.43665,
-		1.43683,
-		1.437,
-		1.43717,
-		1.43734,
-		1.43751,
-		1.43769,
-		1.43786,
-		1.43803,
-		1.4382,
-		1.43837,
-		1.43854,
-		1.43871,
-		1.43888,
-		1.43904,
-		1.43921,
-		1.43938,
-		1.43955,
-		1.43972,
-		1.43988,
-		1.44005,
-		1.44022,
-		1.44038,
-		1.44055,
-		1.44071,
-		1.44088,
-		1.44104,
-		1.44121,
-		1.44137,
-		1.44154,
-		1.4417,
-		1.44187,
-		1.44203,
-		1.44219,
-		1.44235,
-		1.44252,
-		1.44268,
-		1.44284,
-		1.443,
-		1.44316,
-		1.44332,
-		1.44348,
-		1.44364,
-		1.4438,
-		1.44396,
-		1.44412,
-		1.44428,
-		1.44444,
-		1.4446,
-		1.44476,
-		1.44491,
-		1.44507,
-		1.44523,
-		1.44539,
-		1.44554,
-		1.4457,
-		1.44586,
-		1.44601,
-		1.44617,
-		1.44632,
-		1.44648,
-		1.44663,
-		1.44679,
-		1.44694,
-		1.44709,
-		1.44725,
-		1.4474,
-		1.44755,
-		1.44771,
-		1.44786,
-		1.44801,
-		1.44816,
-		1.44831,
-		1.44846,
-		1.44862,
-		1.44877,
-		1.44892,
-		1.44907,
-		1.44922,
-		1.44937,
-		1.44952,
-		1.44966,
-		1.44981,
-		1.44996,
-		1.45011,
-		1.45026,
-		1.45041,
-		1.45055,
-		1.4507,
-		1.45085,
-		1.45099,
-		1.45114,
-		1.45129,
-		1.45143,
-		1.45158,
-		1.45172,
-		1.45187,
-		1.45201,
-		1.45216,
-		1.4523,
-		1.45244,
-		1.45259,
-		1.45273,
-		1.45287,
-		1.45302,
-		1.45316,
-		1.4533,
-		1.45344,
-		1.45358,
-		1.45373,
-		1.45387,
-		1.45401,
-		1.45415,
-		1.45429,
-		1.45443,
-		1.45457,
-		1.45471,
-		1.45485,
-		1.45499,
-		1.45513,
-		1.45527,
-		1.4554,
-		1.45554,
-		1.45568,
-		1.45582,
-		1.45595,
-		1.45609,
-		1.45623,
-		1.45637,
-		1.4565,
-		1.45664,
-		1.45677,
-		1.45691,
-		1.45704,
-		1.45718,
-		1.45731,
-		1.45745,
-		1.45758,
-		1.45772,
-		1.45785,
-		1.45799,
-		1.45812,
-		1.45825,
-		1.45838,
-		1.45852,
-		1.45865,
-		1.45878,
-		1.45891,
-		1.45905,
-		1.45918,
-		1.45931,
-		1.45944,
-		1.45957,
-		1.4597,
-		1.45983,
-		1.45996,
-		1.46009,
-		1.46022,
-		1.46035,
-		1.46048,
-		1.46061,
-		1.46074,
-		1.46086,
-		1.46099,
-		1.46112,
-		1.46125,
-		1.46138,
-		1.4615,
-		1.46163,
-		1.46176,
-		1.46188,
-		1.46201,
-		1.46214,
-		1.46226,
-		1.46239,
-		1.46251,
-		1.46264,
-		1.46276,
-		1.46289,
-		1.46301,
-		1.46314,
-		1.46326,
-		1.46338,
-		1.46351,
-		1.46363,
-		1.46375,
-		1.46388,
-		1.464,
-		1.46412,
-		1.46424,
-		1.46437,
-		1.46449,
-		1.46461,
-		1.46473,
-		1.46485,
-		1.46497,
-		1.46509,
-		1.46522,
-		1.46534,
-		1.46546,
-		1.46558,
-		1.4657,
-		1.46581,
-		1.46593,
-		1.46605,
-		1.46617,
-		1.46629,
-		1.46641,
-		1.46653,
-		1.46665,
-		1.46781,
-		1.46896,
-		1.47009,
-		1.4712,
-		1.4723,
-		1.47337,
-		1.47443,
-		1.47547,
-		1.47649,
-		1.4775,
-		1.47849,
-		1.47947,
-		1.48043,
-		1.48138,
-		1.48232,
-		1.48324,
-		1.48415,
-		1.48505,
-		1.48594,
-		1.48682,
-		1.48769,
-		1.48855,
-		1.4894,
-		1.49024,
-		1.49108,
-		1.49191,
-		1.49273,
-		1.49354,
-		1.49435,
-		1.49516,
-		1.49596,
-		1.49676,
-		1.49755,
-		1.49834,
-		1.49913,
-		1.49991,
-		1.5007,
-		1.50148,
-		1.50227,
-		1.50305,
-		1.50383,
-		1.50462,
-		1.5054,
-		1.50618,
-		1.50696,
-		1.50774,
-		1.50852,
-		1.5093,
-		1.51008,
-		1.51085,
-		1.51163,
-		1.5124,
-		1.51318,
-		1.51395,
-		1.51472,
-		1.51549,
-		1.51626,
-		1.51703,
-		1.5178,
-		1.51856,
-		1.51933,
-		1.52009,
-		1.52085,
-		1.52162,
-		1.52238,
-		1.52313,
-		1.52389,
-		1.52465,
-		1.5254,
-		1.52615,
-		1.5269,
-		1.52765,
-		1.5284,
-		1.52915,
-		1.52989,
-		1.53063,
-		1.53138,
-		1.53211,
-		1.53285,
-		1.53359,
-		1.53432,
-		1.53505,
-		1.53578,
-		1.53651,
-		1.53724,
-		1.53796,
-		1.53868,
-		1.5394,
-		1.54012,
-		1.54083,
-		1.54155,
-		1.54226,
-		1.54296,
-		1.54367,
-		1.54437,
-		1.54508,
-		1.54577,
-		1.54647,
-		1.54716,
-		1.54786,
-		1.54854,
-		1.54923,
-		1.54991,
-		1.55059,
-		1.55127,
-		1.55195,
-		1.55262,
-		1.55329,
-		1.55396,
-		1.55462,
-		1.55528,
-		1.55594,
-		1.5566,
-		1.55725,
-		1.5579,
-		1.55855,
-		1.55919,
-		1.55983,
-		1.56047,
-		1.5611,
-		1.56173,
-		1.56236,
-		1.56298,
-		1.5636,
-		1.56422,
-		1.56483,
-		1.56544,
-		1.56605,
-		1.56665,
-		1.56725,
-		1.56785,
-		1.56844,
-		1.56903,
-		1.56962,
-		1.5702,
-		1.57078,
-		1.57135,
-		1.57192,
-		1.57249,
-		1.57305,
-		1.57361,
-		1.57416,
-		1.57471,
-		1.57526,
-		1.5758,
-		1.57634,
-		1.57688,
-		1.57741,
-		1.57793,
-		1.57846,
-		1.57897,
-		1.57949,
-		1.58,
-		1.5805,
-		1.581,
-		1.5815,
-		1.58199,
-		1.58248,
-		1.58296,
-		1.58344,
-		1.58391,
-		1.58438,
-		1.58485,
-		1.58531,
-		1.58576,
-		1.58621,
-		1.58666,
-		1.5871,
-		1.58753,
-		1.58797,
-		1.58839,
-		1.58881,
-		1.58923,
-		1.58964,
-		1.59005,
-		1.59045,
-		1.59084,
-		1.59123,
-		1.59162,
-		1.592,
-		1.59238,
-		1.59275,
-		1.59311,
-		1.59347,
-		1.59382,
-		1.59417,
-		1.59452,
-		1.59485,
-		1.59519,
-		1.59551,
-		1.59583,
-		1.59615,
-		1.59646,
-		1.59676,
-		1.59706,
-		1.59735,
-		1.59764,
-		1.59792,
-		1.5982,
-		1.59846,
-		1.59873,
-		1.59899,
-		1.59924,
-		1.59948,
-		1.59972,
-		1.59995,
-		1.60018,
-		1.6004,
-		1.60062,
-		1.60083,
-		1.60103,
-		1.60122,
-		1.60141,
-		1.6016,
-		1.60177,
-		1.60195,
-		1.60211,
-		1.60227,
-		1.60242,
-		1.60256,
-		1.6027,
-		1.60283,
-		1.60296,
-		1.60307,
-		1.60319,
-		1.60329,
-		1.60339,
-		1.60348,
-		1.60356,
-		1.60364,
-		1.60371,
-		1.60377,
-		1.60383,
-		1.60388,
-		1.60392,
-		1.60396,
-		1.60399,
-		1.60401,
-		1.60402
-	],
-	"Temp": [
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information"
-	]
+	"linear": false,
+	"BHCurve": {
+		"default": [
+			[
+				0.0,
+				0.0
+			],
+			[
+				1.0,
+				0.000945516
+			],
+			[
+				2.0,
+				0.0022603
+			],
+			[
+				3.0,
+				0.00393822
+			],
+			[
+				4.0,
+				0.00597311
+			],
+			[
+				5.0,
+				0.00835885
+			],
+			[
+				6.0,
+				0.0110893
+			],
+			[
+				7.0,
+				0.0141582
+			],
+			[
+				8.0,
+				0.0175596
+			],
+			[
+				9.0,
+				0.0212873
+			],
+			[
+				10.0,
+				0.025335
+			],
+			[
+				11.0,
+				0.0296967
+			],
+			[
+				12.0,
+				0.0343663
+			],
+			[
+				13.0,
+				0.0393375
+			],
+			[
+				14.0,
+				0.0446043
+			],
+			[
+				15.0,
+				0.0501605
+			],
+			[
+				16.0,
+				0.0559999
+			],
+			[
+				17.0,
+				0.0621164
+			],
+			[
+				18.0,
+				0.0685038
+			],
+			[
+				19.0,
+				0.0751561
+			],
+			[
+				20.0,
+				0.0820671
+			],
+			[
+				21.0,
+				0.0892306
+			],
+			[
+				22.0,
+				0.0966404
+			],
+			[
+				23.0,
+				0.104291
+			],
+			[
+				24.0,
+				0.112175
+			],
+			[
+				25.0,
+				0.120287
+			],
+			[
+				26.0,
+				0.128621
+			],
+			[
+				27.0,
+				0.13717
+			],
+			[
+				28.0,
+				0.145929
+			],
+			[
+				29.0,
+				0.154892
+			],
+			[
+				30.0,
+				0.164052
+			],
+			[
+				31.0,
+				0.173402
+			],
+			[
+				32.0,
+				0.182938
+			],
+			[
+				33.0,
+				0.192653
+			],
+			[
+				34.0,
+				0.20254
+			],
+			[
+				35.0,
+				0.212594
+			],
+			[
+				36.0,
+				0.222808
+			],
+			[
+				37.0,
+				0.233176
+			],
+			[
+				38.0,
+				0.243692
+			],
+			[
+				39.0,
+				0.25435
+			],
+			[
+				40.0,
+				0.265144
+			],
+			[
+				41.0,
+				0.276068
+			],
+			[
+				42.0,
+				0.287115
+			],
+			[
+				43.0,
+				0.29828
+			],
+			[
+				44.0,
+				0.309555
+			],
+			[
+				45.0,
+				0.320936
+			],
+			[
+				46.0,
+				0.332416
+			],
+			[
+				47.0,
+				0.343988
+			],
+			[
+				48.0,
+				0.355647
+			],
+			[
+				49.0,
+				0.367387
+			],
+			[
+				50.0,
+				0.3792
+			],
+			[
+				51.0,
+				0.391082
+			],
+			[
+				52.0,
+				0.403026
+			],
+			[
+				53.0,
+				0.415026
+			],
+			[
+				54.0,
+				0.427076
+			],
+			[
+				55.0,
+				0.43917
+			],
+			[
+				56.0,
+				0.4513
+			],
+			[
+				57.0,
+				0.463462
+			],
+			[
+				58.0,
+				0.47565
+			],
+			[
+				59.0,
+				0.487856
+			],
+			[
+				60.0,
+				0.500075
+			],
+			[
+				61.0,
+				0.513831
+			],
+			[
+				62.0,
+				0.530017
+			],
+			[
+				63.0,
+				0.547685
+			],
+			[
+				64.0,
+				0.565884
+			],
+			[
+				65.0,
+				0.583667
+			],
+			[
+				66.0,
+				0.600083
+			],
+			[
+				67.0,
+				0.6152
+			],
+			[
+				68.0,
+				0.629809
+			],
+			[
+				69.0,
+				0.64405
+			],
+			[
+				70.0,
+				0.658061
+			],
+			[
+				71.0,
+				0.671979
+			],
+			[
+				72.0,
+				0.685943
+			],
+			[
+				73.0,
+				0.700092
+			],
+			[
+				74.0,
+				0.714672
+			],
+			[
+				75.0,
+				0.729644
+			],
+			[
+				76.0,
+				0.744714
+			],
+			[
+				77.0,
+				0.759588
+			],
+			[
+				78.0,
+				0.773973
+			],
+			[
+				79.0,
+				0.787575
+			],
+			[
+				80.0,
+				0.800101
+			],
+			[
+				81.0,
+				0.811744
+			],
+			[
+				82.0,
+				0.822921
+			],
+			[
+				83.0,
+				0.83367
+			],
+			[
+				84.0,
+				0.844029
+			],
+			[
+				85.0,
+				0.854035
+			],
+			[
+				86.0,
+				0.863728
+			],
+			[
+				87.0,
+				0.873143
+			],
+			[
+				88.0,
+				0.882321
+			],
+			[
+				89.0,
+				0.891298
+			],
+			[
+				90.0,
+				0.900113
+			],
+			[
+				91.0,
+				0.908813
+			],
+			[
+				92.0,
+				0.917409
+			],
+			[
+				93.0,
+				0.925883
+			],
+			[
+				94.0,
+				0.934218
+			],
+			[
+				95.0,
+				0.942396
+			],
+			[
+				96.0,
+				0.950402
+			],
+			[
+				97.0,
+				0.958216
+			],
+			[
+				98.0,
+				0.965822
+			],
+			[
+				99.0,
+				0.973204
+			],
+			[
+				100.0,
+				0.980342
+			],
+			[
+				101.0,
+				0.987221
+			],
+			[
+				102.0,
+				0.993822
+			],
+			[
+				103.0,
+				1.00013
+			],
+			[
+				104.0,
+				1.00622
+			],
+			[
+				105.0,
+				1.01219
+			],
+			[
+				106.0,
+				1.01805
+			],
+			[
+				107.0,
+				1.02378
+			],
+			[
+				108.0,
+				1.02939
+			],
+			[
+				109.0,
+				1.03489
+			],
+			[
+				110.0,
+				1.04027
+			],
+			[
+				111.0,
+				1.04554
+			],
+			[
+				112.0,
+				1.05069
+			],
+			[
+				113.0,
+				1.05574
+			],
+			[
+				114.0,
+				1.06066
+			],
+			[
+				115.0,
+				1.06548
+			],
+			[
+				116.0,
+				1.07019
+			],
+			[
+				117.0,
+				1.07479
+			],
+			[
+				118.0,
+				1.07928
+			],
+			[
+				119.0,
+				1.08366
+			],
+			[
+				120.0,
+				1.08794
+			],
+			[
+				121.0,
+				1.09212
+			],
+			[
+				122.0,
+				1.09619
+			],
+			[
+				123.0,
+				1.10015
+			],
+			[
+				124.0,
+				1.10405
+			],
+			[
+				125.0,
+				1.10791
+			],
+			[
+				126.0,
+				1.11174
+			],
+			[
+				127.0,
+				1.11552
+			],
+			[
+				128.0,
+				1.11926
+			],
+			[
+				129.0,
+				1.12296
+			],
+			[
+				130.0,
+				1.12661
+			],
+			[
+				131.0,
+				1.13022
+			],
+			[
+				132.0,
+				1.13378
+			],
+			[
+				133.0,
+				1.1373
+			],
+			[
+				134.0,
+				1.14077
+			],
+			[
+				135.0,
+				1.14419
+			],
+			[
+				136.0,
+				1.14755
+			],
+			[
+				137.0,
+				1.15087
+			],
+			[
+				138.0,
+				1.15413
+			],
+			[
+				139.0,
+				1.15733
+			],
+			[
+				140.0,
+				1.16048
+			],
+			[
+				141.0,
+				1.16358
+			],
+			[
+				142.0,
+				1.16661
+			],
+			[
+				143.0,
+				1.16959
+			],
+			[
+				144.0,
+				1.1725
+			],
+			[
+				145.0,
+				1.17535
+			],
+			[
+				146.0,
+				1.17814
+			],
+			[
+				147.0,
+				1.18087
+			],
+			[
+				148.0,
+				1.18352
+			],
+			[
+				149.0,
+				1.18612
+			],
+			[
+				150.0,
+				1.18864
+			],
+			[
+				151.0,
+				1.19109
+			],
+			[
+				152.0,
+				1.19348
+			],
+			[
+				153.0,
+				1.19579
+			],
+			[
+				154.0,
+				1.19803
+			],
+			[
+				155.0,
+				1.20019
+			],
+			[
+				156.0,
+				1.20231
+			],
+			[
+				157.0,
+				1.20442
+			],
+			[
+				158.0,
+				1.2065
+			],
+			[
+				159.0,
+				1.20857
+			],
+			[
+				160.0,
+				1.21062
+			],
+			[
+				161.0,
+				1.21266
+			],
+			[
+				162.0,
+				1.21468
+			],
+			[
+				163.0,
+				1.21668
+			],
+			[
+				164.0,
+				1.21866
+			],
+			[
+				165.0,
+				1.22063
+			],
+			[
+				166.0,
+				1.22258
+			],
+			[
+				167.0,
+				1.22451
+			],
+			[
+				168.0,
+				1.22643
+			],
+			[
+				169.0,
+				1.22832
+			],
+			[
+				170.0,
+				1.2302
+			],
+			[
+				171.0,
+				1.23206
+			],
+			[
+				172.0,
+				1.2339
+			],
+			[
+				173.0,
+				1.23573
+			],
+			[
+				174.0,
+				1.23754
+			],
+			[
+				175.0,
+				1.23932
+			],
+			[
+				176.0,
+				1.24109
+			],
+			[
+				177.0,
+				1.24285
+			],
+			[
+				178.0,
+				1.24458
+			],
+			[
+				179.0,
+				1.24629
+			],
+			[
+				180.0,
+				1.24799
+			],
+			[
+				181.0,
+				1.24967
+			],
+			[
+				182.0,
+				1.25132
+			],
+			[
+				183.0,
+				1.25296
+			],
+			[
+				184.0,
+				1.25458
+			],
+			[
+				185.0,
+				1.25618
+			],
+			[
+				186.0,
+				1.25777
+			],
+			[
+				187.0,
+				1.25933
+			],
+			[
+				188.0,
+				1.26087
+			],
+			[
+				189.0,
+				1.26239
+			],
+			[
+				190.0,
+				1.2639
+			],
+			[
+				191.0,
+				1.26538
+			],
+			[
+				192.0,
+				1.26685
+			],
+			[
+				193.0,
+				1.26829
+			],
+			[
+				194.0,
+				1.26972
+			],
+			[
+				195.0,
+				1.27112
+			],
+			[
+				196.0,
+				1.2725
+			],
+			[
+				197.0,
+				1.27387
+			],
+			[
+				198.0,
+				1.27521
+			],
+			[
+				199.0,
+				1.27653
+			],
+			[
+				200.0,
+				1.27784
+			],
+			[
+				201.0,
+				1.27912
+			],
+			[
+				202.0,
+				1.28038
+			],
+			[
+				203.0,
+				1.28162
+			],
+			[
+				204.0,
+				1.28284
+			],
+			[
+				205.0,
+				1.28404
+			],
+			[
+				206.0,
+				1.28521
+			],
+			[
+				207.0,
+				1.28637
+			],
+			[
+				208.0,
+				1.2875
+			],
+			[
+				209.0,
+				1.28862
+			],
+			[
+				210.0,
+				1.28971
+			],
+			[
+				211.0,
+				1.29078
+			],
+			[
+				212.0,
+				1.29183
+			],
+			[
+				213.0,
+				1.29286
+			],
+			[
+				214.0,
+				1.29386
+			],
+			[
+				215.0,
+				1.29484
+			],
+			[
+				216.0,
+				1.29581
+			],
+			[
+				217.0,
+				1.29674
+			],
+			[
+				218.0,
+				1.29766
+			],
+			[
+				219.0,
+				1.29856
+			],
+			[
+				220.0,
+				1.29943
+			],
+			[
+				221.0,
+				1.30028
+			],
+			[
+				222.0,
+				1.30111
+			],
+			[
+				223.0,
+				1.30195
+			],
+			[
+				224.0,
+				1.30278
+			],
+			[
+				225.0,
+				1.3036
+			],
+			[
+				226.0,
+				1.30442
+			],
+			[
+				227.0,
+				1.30524
+			],
+			[
+				228.0,
+				1.30606
+			],
+			[
+				229.0,
+				1.30687
+			],
+			[
+				230.0,
+				1.30767
+			],
+			[
+				231.0,
+				1.30848
+			],
+			[
+				232.0,
+				1.30927
+			],
+			[
+				233.0,
+				1.31007
+			],
+			[
+				234.0,
+				1.31086
+			],
+			[
+				235.0,
+				1.31165
+			],
+			[
+				236.0,
+				1.31244
+			],
+			[
+				237.0,
+				1.31322
+			],
+			[
+				238.0,
+				1.31399
+			],
+			[
+				239.0,
+				1.31477
+			],
+			[
+				240.0,
+				1.31554
+			],
+			[
+				241.0,
+				1.3163
+			],
+			[
+				242.0,
+				1.31707
+			],
+			[
+				243.0,
+				1.31783
+			],
+			[
+				244.0,
+				1.31858
+			],
+			[
+				245.0,
+				1.31933
+			],
+			[
+				246.0,
+				1.32008
+			],
+			[
+				247.0,
+				1.32083
+			],
+			[
+				248.0,
+				1.32157
+			],
+			[
+				249.0,
+				1.3223
+			],
+			[
+				250.0,
+				1.32304
+			],
+			[
+				251.0,
+				1.32377
+			],
+			[
+				252.0,
+				1.3245
+			],
+			[
+				253.0,
+				1.32522
+			],
+			[
+				254.0,
+				1.32594
+			],
+			[
+				255.0,
+				1.32666
+			],
+			[
+				256.0,
+				1.32737
+			],
+			[
+				257.0,
+				1.32808
+			],
+			[
+				258.0,
+				1.32878
+			],
+			[
+				259.0,
+				1.32949
+			],
+			[
+				260.0,
+				1.33018
+			],
+			[
+				261.0,
+				1.33088
+			],
+			[
+				262.0,
+				1.33157
+			],
+			[
+				263.0,
+				1.33226
+			],
+			[
+				264.0,
+				1.33294
+			],
+			[
+				265.0,
+				1.33363
+			],
+			[
+				266.0,
+				1.3343
+			],
+			[
+				267.0,
+				1.33498
+			],
+			[
+				268.0,
+				1.33565
+			],
+			[
+				269.0,
+				1.33632
+			],
+			[
+				270.0,
+				1.33698
+			],
+			[
+				271.0,
+				1.33764
+			],
+			[
+				272.0,
+				1.3383
+			],
+			[
+				273.0,
+				1.33895
+			],
+			[
+				274.0,
+				1.3396
+			],
+			[
+				275.0,
+				1.34025
+			],
+			[
+				276.0,
+				1.34089
+			],
+			[
+				277.0,
+				1.34153
+			],
+			[
+				278.0,
+				1.34217
+			],
+			[
+				279.0,
+				1.3428
+			],
+			[
+				280.0,
+				1.34343
+			],
+			[
+				281.0,
+				1.34406
+			],
+			[
+				282.0,
+				1.34469
+			],
+			[
+				283.0,
+				1.34531
+			],
+			[
+				284.0,
+				1.34592
+			],
+			[
+				285.0,
+				1.34654
+			],
+			[
+				286.0,
+				1.34715
+			],
+			[
+				287.0,
+				1.34775
+			],
+			[
+				288.0,
+				1.34836
+			],
+			[
+				289.0,
+				1.34896
+			],
+			[
+				290.0,
+				1.34955
+			],
+			[
+				291.0,
+				1.35015
+			],
+			[
+				292.0,
+				1.35074
+			],
+			[
+				293.0,
+				1.35132
+			],
+			[
+				294.0,
+				1.35191
+			],
+			[
+				295.0,
+				1.35249
+			],
+			[
+				296.0,
+				1.35307
+			],
+			[
+				297.0,
+				1.35364
+			],
+			[
+				298.0,
+				1.35421
+			],
+			[
+				299.0,
+				1.35478
+			],
+			[
+				300.0,
+				1.35534
+			],
+			[
+				301.0,
+				1.3559
+			],
+			[
+				302.0,
+				1.35646
+			],
+			[
+				303.0,
+				1.35702
+			],
+			[
+				304.0,
+				1.35757
+			],
+			[
+				305.0,
+				1.35812
+			],
+			[
+				306.0,
+				1.35866
+			],
+			[
+				307.0,
+				1.3592
+			],
+			[
+				308.0,
+				1.35974
+			],
+			[
+				309.0,
+				1.36028
+			],
+			[
+				310.0,
+				1.36081
+			],
+			[
+				311.0,
+				1.36134
+			],
+			[
+				312.0,
+				1.36187
+			],
+			[
+				313.0,
+				1.36239
+			],
+			[
+				314.0,
+				1.36291
+			],
+			[
+				315.0,
+				1.36343
+			],
+			[
+				316.0,
+				1.36394
+			],
+			[
+				317.0,
+				1.36445
+			],
+			[
+				318.0,
+				1.36496
+			],
+			[
+				319.0,
+				1.36546
+			],
+			[
+				320.0,
+				1.36596
+			],
+			[
+				321.0,
+				1.36646
+			],
+			[
+				322.0,
+				1.36696
+			],
+			[
+				323.0,
+				1.36745
+			],
+			[
+				324.0,
+				1.36794
+			],
+			[
+				325.0,
+				1.36842
+			],
+			[
+				326.0,
+				1.36891
+			],
+			[
+				327.0,
+				1.36939
+			],
+			[
+				328.0,
+				1.36986
+			],
+			[
+				329.0,
+				1.37034
+			],
+			[
+				330.0,
+				1.37081
+			],
+			[
+				331.0,
+				1.37128
+			],
+			[
+				332.0,
+				1.37174
+			],
+			[
+				333.0,
+				1.3722
+			],
+			[
+				334.0,
+				1.37266
+			],
+			[
+				335.0,
+				1.37312
+			],
+			[
+				336.0,
+				1.37357
+			],
+			[
+				337.0,
+				1.37402
+			],
+			[
+				338.0,
+				1.37447
+			],
+			[
+				339.0,
+				1.37491
+			],
+			[
+				340.0,
+				1.37535
+			],
+			[
+				341.0,
+				1.37579
+			],
+			[
+				342.0,
+				1.37623
+			],
+			[
+				343.0,
+				1.37666
+			],
+			[
+				344.0,
+				1.37709
+			],
+			[
+				345.0,
+				1.37751
+			],
+			[
+				346.0,
+				1.37794
+			],
+			[
+				347.0,
+				1.37836
+			],
+			[
+				348.0,
+				1.37877
+			],
+			[
+				349.0,
+				1.37919
+			],
+			[
+				350.0,
+				1.3796
+			],
+			[
+				351.0,
+				1.38001
+			],
+			[
+				352.0,
+				1.38042
+			],
+			[
+				353.0,
+				1.38082
+			],
+			[
+				354.0,
+				1.38122
+			],
+			[
+				355.0,
+				1.38162
+			],
+			[
+				356.0,
+				1.38201
+			],
+			[
+				357.0,
+				1.3824
+			],
+			[
+				358.0,
+				1.38279
+			],
+			[
+				359.0,
+				1.38318
+			],
+			[
+				360.0,
+				1.38356
+			],
+			[
+				361.0,
+				1.38394
+			],
+			[
+				362.0,
+				1.38432
+			],
+			[
+				363.0,
+				1.3847
+			],
+			[
+				364.0,
+				1.38507
+			],
+			[
+				365.0,
+				1.38544
+			],
+			[
+				366.0,
+				1.3858
+			],
+			[
+				367.0,
+				1.38617
+			],
+			[
+				368.0,
+				1.38653
+			],
+			[
+				369.0,
+				1.38689
+			],
+			[
+				370.0,
+				1.38724
+			],
+			[
+				371.0,
+				1.3876
+			],
+			[
+				372.0,
+				1.38795
+			],
+			[
+				373.0,
+				1.38829
+			],
+			[
+				374.0,
+				1.38864
+			],
+			[
+				375.0,
+				1.38898
+			],
+			[
+				376.0,
+				1.38932
+			],
+			[
+				377.0,
+				1.38966
+			],
+			[
+				378.0,
+				1.38999
+			],
+			[
+				379.0,
+				1.39032
+			],
+			[
+				380.0,
+				1.39065
+			],
+			[
+				381.0,
+				1.39098
+			],
+			[
+				382.0,
+				1.3913
+			],
+			[
+				383.0,
+				1.39162
+			],
+			[
+				384.0,
+				1.39194
+			],
+			[
+				385.0,
+				1.39225
+			],
+			[
+				386.0,
+				1.39257
+			],
+			[
+				387.0,
+				1.39288
+			],
+			[
+				388.0,
+				1.39319
+			],
+			[
+				389.0,
+				1.39349
+			],
+			[
+				390.0,
+				1.39379
+			],
+			[
+				391.0,
+				1.39409
+			],
+			[
+				392.0,
+				1.39439
+			],
+			[
+				393.0,
+				1.39468
+			],
+			[
+				394.0,
+				1.39498
+			],
+			[
+				395.0,
+				1.39526
+			],
+			[
+				396.0,
+				1.39555
+			],
+			[
+				397.0,
+				1.39584
+			],
+			[
+				398.0,
+				1.39612
+			],
+			[
+				399.0,
+				1.3964
+			],
+			[
+				400.0,
+				1.39667
+			],
+			[
+				401.0,
+				1.39695
+			],
+			[
+				402.0,
+				1.39722
+			],
+			[
+				403.0,
+				1.39749
+			],
+			[
+				404.0,
+				1.39775
+			],
+			[
+				405.0,
+				1.39802
+			],
+			[
+				406.0,
+				1.39828
+			],
+			[
+				407.0,
+				1.39854
+			],
+			[
+				408.0,
+				1.39879
+			],
+			[
+				409.0,
+				1.39905
+			],
+			[
+				410.0,
+				1.3993
+			],
+			[
+				411.0,
+				1.39955
+			],
+			[
+				412.0,
+				1.3998
+			],
+			[
+				413.0,
+				1.40004
+			],
+			[
+				414.0,
+				1.40028
+			],
+			[
+				415.0,
+				1.40052
+			],
+			[
+				416.0,
+				1.40076
+			],
+			[
+				417.0,
+				1.401
+			],
+			[
+				418.0,
+				1.40123
+			],
+			[
+				419.0,
+				1.40147
+			],
+			[
+				420.0,
+				1.40171
+			],
+			[
+				421.0,
+				1.40194
+			],
+			[
+				422.0,
+				1.40218
+			],
+			[
+				423.0,
+				1.40241
+			],
+			[
+				424.0,
+				1.40265
+			],
+			[
+				425.0,
+				1.40288
+			],
+			[
+				426.0,
+				1.40312
+			],
+			[
+				427.0,
+				1.40335
+			],
+			[
+				428.0,
+				1.40358
+			],
+			[
+				429.0,
+				1.40381
+			],
+			[
+				430.0,
+				1.40405
+			],
+			[
+				431.0,
+				1.40428
+			],
+			[
+				432.0,
+				1.40451
+			],
+			[
+				433.0,
+				1.40474
+			],
+			[
+				434.0,
+				1.40497
+			],
+			[
+				435.0,
+				1.4052
+			],
+			[
+				436.0,
+				1.40543
+			],
+			[
+				437.0,
+				1.40566
+			],
+			[
+				438.0,
+				1.40589
+			],
+			[
+				439.0,
+				1.40612
+			],
+			[
+				440.0,
+				1.40635
+			],
+			[
+				441.0,
+				1.40657
+			],
+			[
+				442.0,
+				1.4068
+			],
+			[
+				443.0,
+				1.40703
+			],
+			[
+				444.0,
+				1.40725
+			],
+			[
+				445.0,
+				1.40748
+			],
+			[
+				446.0,
+				1.40771
+			],
+			[
+				447.0,
+				1.40793
+			],
+			[
+				448.0,
+				1.40816
+			],
+			[
+				449.0,
+				1.40838
+			],
+			[
+				450.0,
+				1.4086
+			],
+			[
+				451.0,
+				1.40883
+			],
+			[
+				452.0,
+				1.40905
+			],
+			[
+				453.0,
+				1.40927
+			],
+			[
+				454.0,
+				1.4095
+			],
+			[
+				455.0,
+				1.40972
+			],
+			[
+				456.0,
+				1.40994
+			],
+			[
+				457.0,
+				1.41016
+			],
+			[
+				458.0,
+				1.41038
+			],
+			[
+				459.0,
+				1.4106
+			],
+			[
+				460.0,
+				1.41082
+			],
+			[
+				461.0,
+				1.41104
+			],
+			[
+				462.0,
+				1.41126
+			],
+			[
+				463.0,
+				1.41148
+			],
+			[
+				464.0,
+				1.4117
+			],
+			[
+				465.0,
+				1.41192
+			],
+			[
+				466.0,
+				1.41214
+			],
+			[
+				467.0,
+				1.41235
+			],
+			[
+				468.0,
+				1.41257
+			],
+			[
+				469.0,
+				1.41279
+			],
+			[
+				470.0,
+				1.413
+			],
+			[
+				471.0,
+				1.41322
+			],
+			[
+				472.0,
+				1.41343
+			],
+			[
+				473.0,
+				1.41365
+			],
+			[
+				474.0,
+				1.41386
+			],
+			[
+				475.0,
+				1.41408
+			],
+			[
+				476.0,
+				1.41429
+			],
+			[
+				477.0,
+				1.41451
+			],
+			[
+				478.0,
+				1.41472
+			],
+			[
+				479.0,
+				1.41493
+			],
+			[
+				480.0,
+				1.41514
+			],
+			[
+				481.0,
+				1.41536
+			],
+			[
+				482.0,
+				1.41557
+			],
+			[
+				483.0,
+				1.41578
+			],
+			[
+				484.0,
+				1.41599
+			],
+			[
+				485.0,
+				1.4162
+			],
+			[
+				486.0,
+				1.41641
+			],
+			[
+				487.0,
+				1.41662
+			],
+			[
+				488.0,
+				1.41683
+			],
+			[
+				489.0,
+				1.41704
+			],
+			[
+				490.0,
+				1.41725
+			],
+			[
+				491.0,
+				1.41746
+			],
+			[
+				492.0,
+				1.41766
+			],
+			[
+				493.0,
+				1.41787
+			],
+			[
+				494.0,
+				1.41808
+			],
+			[
+				495.0,
+				1.41829
+			],
+			[
+				496.0,
+				1.41849
+			],
+			[
+				497.0,
+				1.4187
+			],
+			[
+				498.0,
+				1.4189
+			],
+			[
+				499.0,
+				1.41911
+			],
+			[
+				500.0,
+				1.41931
+			],
+			[
+				501.0,
+				1.41952
+			],
+			[
+				502.0,
+				1.41972
+			],
+			[
+				503.0,
+				1.41993
+			],
+			[
+				504.0,
+				1.42013
+			],
+			[
+				505.0,
+				1.42033
+			],
+			[
+				506.0,
+				1.42054
+			],
+			[
+				507.0,
+				1.42074
+			],
+			[
+				508.0,
+				1.42094
+			],
+			[
+				509.0,
+				1.42114
+			],
+			[
+				510.0,
+				1.42134
+			],
+			[
+				511.0,
+				1.42154
+			],
+			[
+				512.0,
+				1.42174
+			],
+			[
+				513.0,
+				1.42194
+			],
+			[
+				514.0,
+				1.42214
+			],
+			[
+				515.0,
+				1.42234
+			],
+			[
+				516.0,
+				1.42254
+			],
+			[
+				517.0,
+				1.42274
+			],
+			[
+				518.0,
+				1.42294
+			],
+			[
+				519.0,
+				1.42314
+			],
+			[
+				520.0,
+				1.42333
+			],
+			[
+				521.0,
+				1.42353
+			],
+			[
+				522.0,
+				1.42373
+			],
+			[
+				523.0,
+				1.42393
+			],
+			[
+				524.0,
+				1.42412
+			],
+			[
+				525.0,
+				1.42432
+			],
+			[
+				526.0,
+				1.42451
+			],
+			[
+				527.0,
+				1.42471
+			],
+			[
+				528.0,
+				1.4249
+			],
+			[
+				529.0,
+				1.4251
+			],
+			[
+				530.0,
+				1.42529
+			],
+			[
+				531.0,
+				1.42549
+			],
+			[
+				532.0,
+				1.42568
+			],
+			[
+				533.0,
+				1.42587
+			],
+			[
+				534.0,
+				1.42606
+			],
+			[
+				535.0,
+				1.42626
+			],
+			[
+				536.0,
+				1.42645
+			],
+			[
+				537.0,
+				1.42664
+			],
+			[
+				538.0,
+				1.42683
+			],
+			[
+				539.0,
+				1.42702
+			],
+			[
+				540.0,
+				1.42721
+			],
+			[
+				541.0,
+				1.4274
+			],
+			[
+				542.0,
+				1.42759
+			],
+			[
+				543.0,
+				1.42778
+			],
+			[
+				544.0,
+				1.42797
+			],
+			[
+				545.0,
+				1.42816
+			],
+			[
+				546.0,
+				1.42835
+			],
+			[
+				547.0,
+				1.42854
+			],
+			[
+				548.0,
+				1.42872
+			],
+			[
+				549.0,
+				1.42891
+			],
+			[
+				550.0,
+				1.4291
+			],
+			[
+				551.0,
+				1.42929
+			],
+			[
+				552.0,
+				1.42947
+			],
+			[
+				553.0,
+				1.42966
+			],
+			[
+				554.0,
+				1.42984
+			],
+			[
+				555.0,
+				1.43003
+			],
+			[
+				556.0,
+				1.43021
+			],
+			[
+				557.0,
+				1.4304
+			],
+			[
+				558.0,
+				1.43058
+			],
+			[
+				559.0,
+				1.43077
+			],
+			[
+				560.0,
+				1.43095
+			],
+			[
+				561.0,
+				1.43113
+			],
+			[
+				562.0,
+				1.43132
+			],
+			[
+				563.0,
+				1.4315
+			],
+			[
+				564.0,
+				1.43168
+			],
+			[
+				565.0,
+				1.43186
+			],
+			[
+				566.0,
+				1.43205
+			],
+			[
+				567.0,
+				1.43223
+			],
+			[
+				568.0,
+				1.43241
+			],
+			[
+				569.0,
+				1.43259
+			],
+			[
+				570.0,
+				1.43277
+			],
+			[
+				571.0,
+				1.43295
+			],
+			[
+				572.0,
+				1.43313
+			],
+			[
+				573.0,
+				1.43331
+			],
+			[
+				574.0,
+				1.43349
+			],
+			[
+				575.0,
+				1.43367
+			],
+			[
+				576.0,
+				1.43384
+			],
+			[
+				577.0,
+				1.43402
+			],
+			[
+				578.0,
+				1.4342
+			],
+			[
+				579.0,
+				1.43438
+			],
+			[
+				580.0,
+				1.43455
+			],
+			[
+				581.0,
+				1.43473
+			],
+			[
+				582.0,
+				1.43491
+			],
+			[
+				583.0,
+				1.43508
+			],
+			[
+				584.0,
+				1.43526
+			],
+			[
+				585.0,
+				1.43543
+			],
+			[
+				586.0,
+				1.43561
+			],
+			[
+				587.0,
+				1.43578
+			],
+			[
+				588.0,
+				1.43596
+			],
+			[
+				589.0,
+				1.43613
+			],
+			[
+				590.0,
+				1.43631
+			],
+			[
+				591.0,
+				1.43648
+			],
+			[
+				592.0,
+				1.43665
+			],
+			[
+				593.0,
+				1.43683
+			],
+			[
+				594.0,
+				1.437
+			],
+			[
+				595.0,
+				1.43717
+			],
+			[
+				596.0,
+				1.43734
+			],
+			[
+				597.0,
+				1.43751
+			],
+			[
+				598.0,
+				1.43769
+			],
+			[
+				599.0,
+				1.43786
+			],
+			[
+				600.0,
+				1.43803
+			],
+			[
+				601.0,
+				1.4382
+			],
+			[
+				602.0,
+				1.43837
+			],
+			[
+				603.0,
+				1.43854
+			],
+			[
+				604.0,
+				1.43871
+			],
+			[
+				605.0,
+				1.43888
+			],
+			[
+				606.0,
+				1.43904
+			],
+			[
+				607.0,
+				1.43921
+			],
+			[
+				608.0,
+				1.43938
+			],
+			[
+				609.0,
+				1.43955
+			],
+			[
+				610.0,
+				1.43972
+			],
+			[
+				611.0,
+				1.43988
+			],
+			[
+				612.0,
+				1.44005
+			],
+			[
+				613.0,
+				1.44022
+			],
+			[
+				614.0,
+				1.44038
+			],
+			[
+				615.0,
+				1.44055
+			],
+			[
+				616.0,
+				1.44071
+			],
+			[
+				617.0,
+				1.44088
+			],
+			[
+				618.0,
+				1.44104
+			],
+			[
+				619.0,
+				1.44121
+			],
+			[
+				620.0,
+				1.44137
+			],
+			[
+				621.0,
+				1.44154
+			],
+			[
+				622.0,
+				1.4417
+			],
+			[
+				623.0,
+				1.44187
+			],
+			[
+				624.0,
+				1.44203
+			],
+			[
+				625.0,
+				1.44219
+			],
+			[
+				626.0,
+				1.44235
+			],
+			[
+				627.0,
+				1.44252
+			],
+			[
+				628.0,
+				1.44268
+			],
+			[
+				629.0,
+				1.44284
+			],
+			[
+				630.0,
+				1.443
+			],
+			[
+				631.0,
+				1.44316
+			],
+			[
+				632.0,
+				1.44332
+			],
+			[
+				633.0,
+				1.44348
+			],
+			[
+				634.0,
+				1.44364
+			],
+			[
+				635.0,
+				1.4438
+			],
+			[
+				636.0,
+				1.44396
+			],
+			[
+				637.0,
+				1.44412
+			],
+			[
+				638.0,
+				1.44428
+			],
+			[
+				639.0,
+				1.44444
+			],
+			[
+				640.0,
+				1.4446
+			],
+			[
+				641.0,
+				1.44476
+			],
+			[
+				642.0,
+				1.44491
+			],
+			[
+				643.0,
+				1.44507
+			],
+			[
+				644.0,
+				1.44523
+			],
+			[
+				645.0,
+				1.44539
+			],
+			[
+				646.0,
+				1.44554
+			],
+			[
+				647.0,
+				1.4457
+			],
+			[
+				648.0,
+				1.44586
+			],
+			[
+				649.0,
+				1.44601
+			],
+			[
+				650.0,
+				1.44617
+			],
+			[
+				651.0,
+				1.44632
+			],
+			[
+				652.0,
+				1.44648
+			],
+			[
+				653.0,
+				1.44663
+			],
+			[
+				654.0,
+				1.44679
+			],
+			[
+				655.0,
+				1.44694
+			],
+			[
+				656.0,
+				1.44709
+			],
+			[
+				657.0,
+				1.44725
+			],
+			[
+				658.0,
+				1.4474
+			],
+			[
+				659.0,
+				1.44755
+			],
+			[
+				660.0,
+				1.44771
+			],
+			[
+				661.0,
+				1.44786
+			],
+			[
+				662.0,
+				1.44801
+			],
+			[
+				663.0,
+				1.44816
+			],
+			[
+				664.0,
+				1.44831
+			],
+			[
+				665.0,
+				1.44846
+			],
+			[
+				666.0,
+				1.44862
+			],
+			[
+				667.0,
+				1.44877
+			],
+			[
+				668.0,
+				1.44892
+			],
+			[
+				669.0,
+				1.44907
+			],
+			[
+				670.0,
+				1.44922
+			],
+			[
+				671.0,
+				1.44937
+			],
+			[
+				672.0,
+				1.44952
+			],
+			[
+				673.0,
+				1.44966
+			],
+			[
+				674.0,
+				1.44981
+			],
+			[
+				675.0,
+				1.44996
+			],
+			[
+				676.0,
+				1.45011
+			],
+			[
+				677.0,
+				1.45026
+			],
+			[
+				678.0,
+				1.45041
+			],
+			[
+				679.0,
+				1.45055
+			],
+			[
+				680.0,
+				1.4507
+			],
+			[
+				681.0,
+				1.45085
+			],
+			[
+				682.0,
+				1.45099
+			],
+			[
+				683.0,
+				1.45114
+			],
+			[
+				684.0,
+				1.45129
+			],
+			[
+				685.0,
+				1.45143
+			],
+			[
+				686.0,
+				1.45158
+			],
+			[
+				687.0,
+				1.45172
+			],
+			[
+				688.0,
+				1.45187
+			],
+			[
+				689.0,
+				1.45201
+			],
+			[
+				690.0,
+				1.45216
+			],
+			[
+				691.0,
+				1.4523
+			],
+			[
+				692.0,
+				1.45244
+			],
+			[
+				693.0,
+				1.45259
+			],
+			[
+				694.0,
+				1.45273
+			],
+			[
+				695.0,
+				1.45287
+			],
+			[
+				696.0,
+				1.45302
+			],
+			[
+				697.0,
+				1.45316
+			],
+			[
+				698.0,
+				1.4533
+			],
+			[
+				699.0,
+				1.45344
+			],
+			[
+				700.0,
+				1.45358
+			],
+			[
+				701.0,
+				1.45373
+			],
+			[
+				702.0,
+				1.45387
+			],
+			[
+				703.0,
+				1.45401
+			],
+			[
+				704.0,
+				1.45415
+			],
+			[
+				705.0,
+				1.45429
+			],
+			[
+				706.0,
+				1.45443
+			],
+			[
+				707.0,
+				1.45457
+			],
+			[
+				708.0,
+				1.45471
+			],
+			[
+				709.0,
+				1.45485
+			],
+			[
+				710.0,
+				1.45499
+			],
+			[
+				711.0,
+				1.45513
+			],
+			[
+				712.0,
+				1.45527
+			],
+			[
+				713.0,
+				1.4554
+			],
+			[
+				714.0,
+				1.45554
+			],
+			[
+				715.0,
+				1.45568
+			],
+			[
+				716.0,
+				1.45582
+			],
+			[
+				717.0,
+				1.45595
+			],
+			[
+				718.0,
+				1.45609
+			],
+			[
+				719.0,
+				1.45623
+			],
+			[
+				720.0,
+				1.45637
+			],
+			[
+				721.0,
+				1.4565
+			],
+			[
+				722.0,
+				1.45664
+			],
+			[
+				723.0,
+				1.45677
+			],
+			[
+				724.0,
+				1.45691
+			],
+			[
+				725.0,
+				1.45704
+			],
+			[
+				726.0,
+				1.45718
+			],
+			[
+				727.0,
+				1.45731
+			],
+			[
+				728.0,
+				1.45745
+			],
+			[
+				729.0,
+				1.45758
+			],
+			[
+				730.0,
+				1.45772
+			],
+			[
+				731.0,
+				1.45785
+			],
+			[
+				732.0,
+				1.45799
+			],
+			[
+				733.0,
+				1.45812
+			],
+			[
+				734.0,
+				1.45825
+			],
+			[
+				735.0,
+				1.45838
+			],
+			[
+				736.0,
+				1.45852
+			],
+			[
+				737.0,
+				1.45865
+			],
+			[
+				738.0,
+				1.45878
+			],
+			[
+				739.0,
+				1.45891
+			],
+			[
+				740.0,
+				1.45905
+			],
+			[
+				741.0,
+				1.45918
+			],
+			[
+				742.0,
+				1.45931
+			],
+			[
+				743.0,
+				1.45944
+			],
+			[
+				744.0,
+				1.45957
+			],
+			[
+				745.0,
+				1.4597
+			],
+			[
+				746.0,
+				1.45983
+			],
+			[
+				747.0,
+				1.45996
+			],
+			[
+				748.0,
+				1.46009
+			],
+			[
+				749.0,
+				1.46022
+			],
+			[
+				750.0,
+				1.46035
+			],
+			[
+				751.0,
+				1.46048
+			],
+			[
+				752.0,
+				1.46061
+			],
+			[
+				753.0,
+				1.46074
+			],
+			[
+				754.0,
+				1.46086
+			],
+			[
+				755.0,
+				1.46099
+			],
+			[
+				756.0,
+				1.46112
+			],
+			[
+				757.0,
+				1.46125
+			],
+			[
+				758.0,
+				1.46138
+			],
+			[
+				759.0,
+				1.4615
+			],
+			[
+				760.0,
+				1.46163
+			],
+			[
+				761.0,
+				1.46176
+			],
+			[
+				762.0,
+				1.46188
+			],
+			[
+				763.0,
+				1.46201
+			],
+			[
+				764.0,
+				1.46214
+			],
+			[
+				765.0,
+				1.46226
+			],
+			[
+				766.0,
+				1.46239
+			],
+			[
+				767.0,
+				1.46251
+			],
+			[
+				768.0,
+				1.46264
+			],
+			[
+				769.0,
+				1.46276
+			],
+			[
+				770.0,
+				1.46289
+			],
+			[
+				771.0,
+				1.46301
+			],
+			[
+				772.0,
+				1.46314
+			],
+			[
+				773.0,
+				1.46326
+			],
+			[
+				774.0,
+				1.46338
+			],
+			[
+				775.0,
+				1.46351
+			],
+			[
+				776.0,
+				1.46363
+			],
+			[
+				777.0,
+				1.46375
+			],
+			[
+				778.0,
+				1.46388
+			],
+			[
+				779.0,
+				1.464
+			],
+			[
+				780.0,
+				1.46412
+			],
+			[
+				781.0,
+				1.46424
+			],
+			[
+				782.0,
+				1.46437
+			],
+			[
+				783.0,
+				1.46449
+			],
+			[
+				784.0,
+				1.46461
+			],
+			[
+				785.0,
+				1.46473
+			],
+			[
+				786.0,
+				1.46485
+			],
+			[
+				787.0,
+				1.46497
+			],
+			[
+				788.0,
+				1.46509
+			],
+			[
+				789.0,
+				1.46522
+			],
+			[
+				790.0,
+				1.46534
+			],
+			[
+				791.0,
+				1.46546
+			],
+			[
+				792.0,
+				1.46558
+			],
+			[
+				793.0,
+				1.4657
+			],
+			[
+				794.0,
+				1.46581
+			],
+			[
+				795.0,
+				1.46593
+			],
+			[
+				796.0,
+				1.46605
+			],
+			[
+				797.0,
+				1.46617
+			],
+			[
+				798.0,
+				1.46629
+			],
+			[
+				799.0,
+				1.46641
+			],
+			[
+				800.0,
+				1.46653
+			],
+			[
+				801.0,
+				1.46665
+			],
+			[
+				811.0,
+				1.46781
+			],
+			[
+				821.0,
+				1.46896
+			],
+			[
+				831.0,
+				1.47009
+			],
+			[
+				841.0,
+				1.4712
+			],
+			[
+				851.0,
+				1.4723
+			],
+			[
+				861.0,
+				1.47337
+			],
+			[
+				871.0,
+				1.47443
+			],
+			[
+				881.0,
+				1.47547
+			],
+			[
+				891.0,
+				1.47649
+			],
+			[
+				901.0,
+				1.4775
+			],
+			[
+				911.0,
+				1.47849
+			],
+			[
+				921.0,
+				1.47947
+			],
+			[
+				931.0,
+				1.48043
+			],
+			[
+				941.0,
+				1.48138
+			],
+			[
+				951.0,
+				1.48232
+			],
+			[
+				961.0,
+				1.48324
+			],
+			[
+				971.0,
+				1.48415
+			],
+			[
+				981.0,
+				1.48505
+			],
+			[
+				991.0,
+				1.48594
+			],
+			[
+				1001.0,
+				1.48682
+			],
+			[
+				1011.0,
+				1.48769
+			],
+			[
+				1021.0,
+				1.48855
+			],
+			[
+				1031.0,
+				1.4894
+			],
+			[
+				1041.0,
+				1.49024
+			],
+			[
+				1051.0,
+				1.49108
+			],
+			[
+				1061.0,
+				1.49191
+			],
+			[
+				1071.0,
+				1.49273
+			],
+			[
+				1081.0,
+				1.49354
+			],
+			[
+				1091.0,
+				1.49435
+			],
+			[
+				1101.0,
+				1.49516
+			],
+			[
+				1111.0,
+				1.49596
+			],
+			[
+				1121.0,
+				1.49676
+			],
+			[
+				1131.0,
+				1.49755
+			],
+			[
+				1141.0,
+				1.49834
+			],
+			[
+				1151.0,
+				1.49913
+			],
+			[
+				1161.0,
+				1.49991
+			],
+			[
+				1171.0,
+				1.5007
+			],
+			[
+				1181.0,
+				1.50148
+			],
+			[
+				1191.0,
+				1.50227
+			],
+			[
+				1201.0,
+				1.50305
+			],
+			[
+				1211.0,
+				1.50383
+			],
+			[
+				1221.0,
+				1.50462
+			],
+			[
+				1231.0,
+				1.5054
+			],
+			[
+				1241.0,
+				1.50618
+			],
+			[
+				1251.0,
+				1.50696
+			],
+			[
+				1261.0,
+				1.50774
+			],
+			[
+				1271.0,
+				1.50852
+			],
+			[
+				1281.0,
+				1.5093
+			],
+			[
+				1291.0,
+				1.51008
+			],
+			[
+				1301.0,
+				1.51085
+			],
+			[
+				1311.0,
+				1.51163
+			],
+			[
+				1321.0,
+				1.5124
+			],
+			[
+				1331.0,
+				1.51318
+			],
+			[
+				1341.0,
+				1.51395
+			],
+			[
+				1351.0,
+				1.51472
+			],
+			[
+				1361.0,
+				1.51549
+			],
+			[
+				1371.0,
+				1.51626
+			],
+			[
+				1381.0,
+				1.51703
+			],
+			[
+				1391.0,
+				1.5178
+			],
+			[
+				1401.0,
+				1.51856
+			],
+			[
+				1411.0,
+				1.51933
+			],
+			[
+				1421.0,
+				1.52009
+			],
+			[
+				1431.0,
+				1.52085
+			],
+			[
+				1441.0,
+				1.52162
+			],
+			[
+				1451.0,
+				1.52238
+			],
+			[
+				1461.0,
+				1.52313
+			],
+			[
+				1471.0,
+				1.52389
+			],
+			[
+				1481.0,
+				1.52465
+			],
+			[
+				1491.0,
+				1.5254
+			],
+			[
+				1501.0,
+				1.52615
+			],
+			[
+				1511.0,
+				1.5269
+			],
+			[
+				1521.0,
+				1.52765
+			],
+			[
+				1531.0,
+				1.5284
+			],
+			[
+				1541.0,
+				1.52915
+			],
+			[
+				1551.0,
+				1.52989
+			],
+			[
+				1561.0,
+				1.53063
+			],
+			[
+				1571.0,
+				1.53138
+			],
+			[
+				1581.0,
+				1.53211
+			],
+			[
+				1591.0,
+				1.53285
+			],
+			[
+				1601.0,
+				1.53359
+			],
+			[
+				1611.0,
+				1.53432
+			],
+			[
+				1621.0,
+				1.53505
+			],
+			[
+				1631.0,
+				1.53578
+			],
+			[
+				1641.0,
+				1.53651
+			],
+			[
+				1651.0,
+				1.53724
+			],
+			[
+				1661.0,
+				1.53796
+			],
+			[
+				1671.0,
+				1.53868
+			],
+			[
+				1681.0,
+				1.5394
+			],
+			[
+				1691.0,
+				1.54012
+			],
+			[
+				1701.0,
+				1.54083
+			],
+			[
+				1711.0,
+				1.54155
+			],
+			[
+				1721.0,
+				1.54226
+			],
+			[
+				1731.0,
+				1.54296
+			],
+			[
+				1741.0,
+				1.54367
+			],
+			[
+				1751.0,
+				1.54437
+			],
+			[
+				1761.0,
+				1.54508
+			],
+			[
+				1771.0,
+				1.54577
+			],
+			[
+				1781.0,
+				1.54647
+			],
+			[
+				1791.0,
+				1.54716
+			],
+			[
+				1801.0,
+				1.54786
+			],
+			[
+				1811.0,
+				1.54854
+			],
+			[
+				1821.0,
+				1.54923
+			],
+			[
+				1831.0,
+				1.54991
+			],
+			[
+				1841.0,
+				1.55059
+			],
+			[
+				1851.0,
+				1.55127
+			],
+			[
+				1861.0,
+				1.55195
+			],
+			[
+				1871.0,
+				1.55262
+			],
+			[
+				1881.0,
+				1.55329
+			],
+			[
+				1891.0,
+				1.55396
+			],
+			[
+				1901.0,
+				1.55462
+			],
+			[
+				1911.0,
+				1.55528
+			],
+			[
+				1921.0,
+				1.55594
+			],
+			[
+				1931.0,
+				1.5566
+			],
+			[
+				1941.0,
+				1.55725
+			],
+			[
+				1951.0,
+				1.5579
+			],
+			[
+				1961.0,
+				1.55855
+			],
+			[
+				1971.0,
+				1.55919
+			],
+			[
+				1981.0,
+				1.55983
+			],
+			[
+				1991.0,
+				1.56047
+			],
+			[
+				2001.0,
+				1.5611
+			],
+			[
+				2011.0,
+				1.56173
+			],
+			[
+				2021.0,
+				1.56236
+			],
+			[
+				2031.0,
+				1.56298
+			],
+			[
+				2041.0,
+				1.5636
+			],
+			[
+				2051.0,
+				1.56422
+			],
+			[
+				2061.0,
+				1.56483
+			],
+			[
+				2071.0,
+				1.56544
+			],
+			[
+				2081.0,
+				1.56605
+			],
+			[
+				2091.0,
+				1.56665
+			],
+			[
+				2101.0,
+				1.56725
+			],
+			[
+				2111.0,
+				1.56785
+			],
+			[
+				2121.0,
+				1.56844
+			],
+			[
+				2131.0,
+				1.56903
+			],
+			[
+				2141.0,
+				1.56962
+			],
+			[
+				2151.0,
+				1.5702
+			],
+			[
+				2161.0,
+				1.57078
+			],
+			[
+				2171.0,
+				1.57135
+			],
+			[
+				2181.0,
+				1.57192
+			],
+			[
+				2191.0,
+				1.57249
+			],
+			[
+				2201.0,
+				1.57305
+			],
+			[
+				2211.0,
+				1.57361
+			],
+			[
+				2221.0,
+				1.57416
+			],
+			[
+				2231.0,
+				1.57471
+			],
+			[
+				2241.0,
+				1.57526
+			],
+			[
+				2251.0,
+				1.5758
+			],
+			[
+				2261.0,
+				1.57634
+			],
+			[
+				2271.0,
+				1.57688
+			],
+			[
+				2281.0,
+				1.57741
+			],
+			[
+				2291.0,
+				1.57793
+			],
+			[
+				2301.0,
+				1.57846
+			],
+			[
+				2311.0,
+				1.57897
+			],
+			[
+				2321.0,
+				1.57949
+			],
+			[
+				2331.0,
+				1.58
+			],
+			[
+				2341.0,
+				1.5805
+			],
+			[
+				2351.0,
+				1.581
+			],
+			[
+				2361.0,
+				1.5815
+			],
+			[
+				2371.0,
+				1.58199
+			],
+			[
+				2381.0,
+				1.58248
+			],
+			[
+				2391.0,
+				1.58296
+			],
+			[
+				2401.0,
+				1.58344
+			],
+			[
+				2411.0,
+				1.58391
+			],
+			[
+				2421.0,
+				1.58438
+			],
+			[
+				2431.0,
+				1.58485
+			],
+			[
+				2441.0,
+				1.58531
+			],
+			[
+				2451.0,
+				1.58576
+			],
+			[
+				2461.0,
+				1.58621
+			],
+			[
+				2471.0,
+				1.58666
+			],
+			[
+				2481.0,
+				1.5871
+			],
+			[
+				2491.0,
+				1.58753
+			],
+			[
+				2501.0,
+				1.58797
+			],
+			[
+				2511.0,
+				1.58839
+			],
+			[
+				2521.0,
+				1.58881
+			],
+			[
+				2531.0,
+				1.58923
+			],
+			[
+				2541.0,
+				1.58964
+			],
+			[
+				2551.0,
+				1.59005
+			],
+			[
+				2561.0,
+				1.59045
+			],
+			[
+				2571.0,
+				1.59084
+			],
+			[
+				2581.0,
+				1.59123
+			],
+			[
+				2591.0,
+				1.59162
+			],
+			[
+				2601.0,
+				1.592
+			],
+			[
+				2611.0,
+				1.59238
+			],
+			[
+				2621.0,
+				1.59275
+			],
+			[
+				2631.0,
+				1.59311
+			],
+			[
+				2641.0,
+				1.59347
+			],
+			[
+				2651.0,
+				1.59382
+			],
+			[
+				2661.0,
+				1.59417
+			],
+			[
+				2671.0,
+				1.59452
+			],
+			[
+				2681.0,
+				1.59485
+			],
+			[
+				2691.0,
+				1.59519
+			],
+			[
+				2701.0,
+				1.59551
+			],
+			[
+				2711.0,
+				1.59583
+			],
+			[
+				2721.0,
+				1.59615
+			],
+			[
+				2731.0,
+				1.59646
+			],
+			[
+				2741.0,
+				1.59676
+			],
+			[
+				2751.0,
+				1.59706
+			],
+			[
+				2761.0,
+				1.59735
+			],
+			[
+				2771.0,
+				1.59764
+			],
+			[
+				2781.0,
+				1.59792
+			],
+			[
+				2791.0,
+				1.5982
+			],
+			[
+				2801.0,
+				1.59846
+			],
+			[
+				2811.0,
+				1.59873
+			],
+			[
+				2821.0,
+				1.59899
+			],
+			[
+				2831.0,
+				1.59924
+			],
+			[
+				2841.0,
+				1.59948
+			],
+			[
+				2851.0,
+				1.59972
+			],
+			[
+				2861.0,
+				1.59995
+			],
+			[
+				2871.0,
+				1.60018
+			],
+			[
+				2881.0,
+				1.6004
+			],
+			[
+				2891.0,
+				1.60062
+			],
+			[
+				2901.0,
+				1.60083
+			],
+			[
+				2911.0,
+				1.60103
+			],
+			[
+				2921.0,
+				1.60122
+			],
+			[
+				2931.0,
+				1.60141
+			],
+			[
+				2941.0,
+				1.6016
+			],
+			[
+				2951.0,
+				1.60177
+			],
+			[
+				2961.0,
+				1.60195
+			],
+			[
+				2971.0,
+				1.60211
+			],
+			[
+				2981.0,
+				1.60227
+			],
+			[
+				2991.0,
+				1.60242
+			],
+			[
+				3001.0,
+				1.60256
+			],
+			[
+				3011.0,
+				1.6027
+			],
+			[
+				3021.0,
+				1.60283
+			],
+			[
+				3031.0,
+				1.60296
+			],
+			[
+				3041.0,
+				1.60307
+			],
+			[
+				3051.0,
+				1.60319
+			],
+			[
+				3061.0,
+				1.60329
+			],
+			[
+				3071.0,
+				1.60339
+			],
+			[
+				3081.0,
+				1.60348
+			],
+			[
+				3091.0,
+				1.60356
+			],
+			[
+				3101.0,
+				1.60364
+			],
+			[
+				3111.0,
+				1.60371
+			],
+			[
+				3121.0,
+				1.60377
+			],
+			[
+				3131.0,
+				1.60383
+			],
+			[
+				3141.0,
+				1.60388
+			],
+			[
+				3151.0,
+				1.60392
+			],
+			[
+				3161.0,
+				1.60396
+			],
+			[
+				3171.0,
+				1.60399
+			],
+			[
+				3181.0,
+				1.60401
+			],
+			[
+				3191.0,
+				1.60402
+			]
+		]
+	}
 }

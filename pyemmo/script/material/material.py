@@ -23,7 +23,7 @@
 
 from typing import Union
 import warnings
-import numpy
+import numpy as np
 from numpy.typing import NDArray
 import os
 import json
@@ -84,7 +84,7 @@ class Material:
                 raise exce
             if not isinstance(bhComp, bool):
                 # comparison with not empty array returns ndarray with dtype:bool
-                if isinstance(bhComp, numpy.ndarray):
+                if isinstance(bhComp, np.ndarray):
                     if bhComp.dtype == bool:
                         bhComp = bhComp.all()
                 else:
@@ -158,18 +158,10 @@ class Material:
                 self.remanence = 0
             else:
                 self.remanence = mat_dict["remanence"]
-            if mat_dict["BHCurve_type"] == "linear":
-                self.linear = 1
-            else:
-                self.linear = 0
-                self.BH = [
-                    mat_dict["H"],
-                    mat_dict["B"],
-                    [
-                        temp if not isinstance(temp, str) else None
-                        for temp in mat_dict["Temp"]
-                    ],
-                ]
+            self.linear = mat_dict["linear"]
+            if not self.linear:
+                for temp_key in mat_dict["BHCurve"].keys():
+                    self.set_BH(mat_dict["BHCurve"][temp_key], temp_key)
         except FileNotFoundError:
             logger.error(FileNotFoundError)
 
@@ -192,20 +184,14 @@ class Material:
                 mat_dict["remanence"] = "no information"
             else:
                 mat_dict["remanence"] = self.remanence
-            mat_dict["BHCurve_type"] = ""
-            mat_dict["B"] = []
-            mat_dict["H"] = []
-            mat_dict["Temp"] = []
-            if self.linear:
-                mat_dict["BHCurve_type"] = "linear"
-            else:
-                mat_dict["BHCurve_type"] = "NL"
-                mat_dict["H"] = self.BH[0]
-                mat_dict["B"] = self.BH[1]
-                mat_dict["Temp"] = [
-                    "no information" if val == None else val
-                    for val in self.BH[2]
-                ]
+            mat_dict["linear"] = self.linear
+            mat_dict["BHCurve"] = {}
+            if not self.linear:
+                for temp_key in self._BH.keys():
+                    mat_dict["BHCurve"][temp_key] = self.get_BH(
+                        temp_key
+                    ).tolist()
+
             with open(
                 os.path.join(material_folder, f"{self.name}.json"), "w"
             ) as file:
@@ -224,87 +210,71 @@ class Material:
                 f"{self.name}.json is already deleted or does not exist."
             )
 
-    def addBHData(self, H, B, temp=None, update_db=False):
-        if type(H) != type(B):
-            raise RuntimeError(
-                f"H ({type(H)}) and B ({type(B)}) need to be same type!"
+    # def addBHCurveFromFile(
+    #     self, data, update_db: bool = False
+    # ):
+    #     try:
+    #         file = pd.read_table(data)
+    #     except UnicodeDecodeError:
+    #         file = pd.read_excel(data)
+    #     allValue = file.values
+    #     try:
+    #         temp_list = set([row[2] for row in allValue])
+    #         for temp in temp_list:
+    #             if temp == "no information": temp_key = "default"
+    #             else: temp_key = temp
+    #             self.set_BH(
+    #                 [[row[0], row[1]] for row in allValue if row[2] == temp],
+    #                 temp_key
+    #             )
+    #     except IndexError:
+    #         self.set_BH(
+    #                 [[row[0], row[1]] for row in allValue]
+    #             )
+    #     if update_db:
+    #         self.save()
+
+    def plotBHCurve(self, temp=None):
+        """
+        Function to plot BH curve
+        Args:
+            temp: chosen temperature for the curve. can be "default", or a specific temp.
+                - if none is defined, all BH curves for all temps will be plotted
+        Returns:
+            None
+        """
+        if self.linear:
+            warnings.warn("Material is linear, there is no curve")
+            return
+        if temp == None:
+            for t in self._BH.keys():
+                if self._BH[t].size:
+                    h = [row[0] for row in self._BH[t]]
+                    b = [row[1] for row in self._BH[t]]
+                    label = lambda: "default" if t == "default" else f"{t}°C"
+                    plt.plot(h, b, label=label())
+        else:
+            BH_vals = self.get_BH(temp)
+            h = [row[0] for row in BH_vals]
+            b = [row[1] for row in BH_vals]
+            label = lambda: (
+                "default" if temp not in self._BH.keys() else f"{t}°C"
             )
-        else:
-            if isinstance(H, list):
-                if len(H) != len(B):
-                    raise RuntimeError(
-                        f"H ({len(H)}) and B({len(B)}) need to be the same length!"
-                    )
-                    return
-                self.BH[0] += H
-                self.BH[1] += B
-                if temp == None:
-                    self.BH[2] += [None for i in range(len(H))]
-                else:
-                    self.BH[2] += temp
-            else:
-                self.BH[0].append(H)
-                self.BH[1].append(B)
-                self.BH[2].append(temp)
-
-        if update_db:
-            self.save()
-
-    def addBHCurveFromFile(
-        self, data, overwrite: bool = True, update_db: bool = False
-    ):
-        if overwrite:
-            self.BH = [[], [], []]
-        if isinstance(data, dict):
-            H = data["H"]
-            B = data["B"]
-            try:
-                temp = data["Temp"]
-            except KeyError:
-                temp = None
-            for i in range(len(data)):
-                if temp == None:
-                    self.addBHCurve(self, B[i], H[i])
-                else:
-                    self.addBHCurve(self, B[i], H[i], temp[i])
-        else:
-            try:
-                file = pd.read_table(data)
-            except UnicodeDecodeError:
-                file = pd.read_excel(data)
-            allValue = file.values
-            for i in range(len(allValue)):
-                try:
-                    self.addBHData(
-                        allValue[i][0],
-                        allValue[i][1],
-                        allValue[i][2],
-                        standalone=False,
-                    )
-                except IndexError:
-                    self.addBHData(
-                        allValue[i][0], allValue[i][1], standalone=False
-                    )
-        if update_db:
-            self.save()
-
-    def plotBHCurve(self):
-        json_path = os.path.join(
-            ROOT_DIR, f"pyemmo/script/material/material_json/{self.name}.json"
-        )
-        with open(json_path) as file:
-            mat_dict = json.load(file)
-        h, b = zip(*sorted(zip(mat_dict["H"], mat_dict["B"])))
-        plt.plot(h, b)
-        plt.grid(b=True, which="major", color="#666666", linestyle="-")
+            plt.plot(h, b, label=label())
+        plt.grid(visible=True, which="major", color="#666666", linestyle="-")
         plt.minorticks_on()
         plt.grid(
-            b=True, which="minor", color="#999999", linestyle="-", alpha=0.2
+            visible=True,
+            which="minor",
+            color="#999999",
+            linestyle="-",
+            alpha=0.2,
         )
-        plt.xlim(h[0], h[len(h) - 1])
+        # plt.xlim(h[0], h[len(h) - 1])
         plt.title(f"BH-Curve for {self.name}")
         plt.xlabel("Field intensity H")
         plt.ylabel("Flux density B")
+        plt.legend(loc="upper right")
 
     # def isLinear(self) -> bool:
     #     """check if the material is linear or has BH curve
@@ -378,7 +348,25 @@ class Material:
         return self._tempCoefRem
 
     @property
-    def BH(self, temperature: float = None) -> NDArray:
+    def BH(self) -> NDArray:
+        """getter property of BH
+        Returns:
+            numpy.ndarray: _description_:
+        NOTE: This only returns BH curve for default temperature. Use get_BH() to get BH curve for specifc temperature instead!
+        """
+        return self.get_BH()
+        # if self._BH.ndim < 3:
+        #     # pylint: disable=locally-disabled,  line-too-long
+        #     warnings.warn(
+        #         f"Tried to access the BH-curve for temperature {temperature}°C, but there is only one BH-curve specified!",
+        #         UserWarning,
+        #     )
+        #     return self._BH
+        # # else:
+        # assert self._BH.ndim == 3
+        # TODO: implement temperature depended bh curve
+
+    def get_BH(self, temperature: float = None):
         """getter of BH
 
         Args:
@@ -388,38 +376,135 @@ class Material:
             numpy.ndarray: _description_
         """
         if not temperature:
-            return self._BH
-        if self._BH.ndim < 3:
-            # pylint: disable=locally-disabled,  line-too-long
-            warnings.warn(
-                f"Tried to access the BH-curve for temperature {temperature}°C, but there is only one BH-curve specified!",
-                UserWarning,
-            )
-            return self._BH
-        # else:
-        assert self._BH.ndim == 3
-        # TODO: implement temperature depended bh curve
+            if not self._BH["default"]:
+                warnings.warn(
+                    "BH-Curve is linear, or default curve has not been set.\n Please set default curve (syntax: obj.BH = <NDArray>) or use get_BH(temperature)",
+                    UserWarning,
+                )
+            return np.array(self._BH["default"])
+        try:
+            return np.array(self._BH[temperature])
+        except KeyError:
+            if self.linear:
+                warnings.warn(
+                    f"Tried to access the BH-curve for temperature {temperature}°C, but BH-Curve is linear!",
+                    UserWarning,
+                )
+                return np.empty(0)
+            elif len(self._BH.keys()) < 2:
+                warnings.warn(
+                    f"Tried to access the BH-curve for temperature {temperature}°C, but there is only one BH-curve specified!",
+                    UserWarning,
+                )
+                return np.array(self._BH["default"])
+            else:
+                warnings.warn(
+                    f"No BH-curve registered for temperature {temperature}°C!",
+                    UserWarning,
+                )
+                return np.empty(0)
+        # if self._BH.ndim < 3:
+        #     # pylint: disable=locally-disabled,  line-too-long
+        #     warnings.warn(
+        #         f"Tried to access the BH-curve for temperature {temperature}°C, but there is only one BH-curve specified!",
+        #         UserWarning,
+        #     )
+        #     return self._BH
+        # # else:
+        # assert self._BH.ndim == 3
 
     # pylint: disable=invalid-name
     @BH.setter
     def BH(self, newBH: NDArray):
+        """setter property of BH curve.
+
+        Args:
+            BH (numpy.ndarray): BH curve (2D array) with shape (X,2) ->
+            [[B1, H1],[B2, H2],[B3, H3],...]
+        Returns:
+            None
+        NOTE: this sets the curve for the default temperature only. Use set_BH() to set BH Curve for specific temperature
+        """
+        self.set_BH(newBH)
+
+    def _set_BH_decorator(set_BH):
+        """
+        decorator to extend the function of set_BH to also accepts dict or file path
+        """
+
+        def setBHWrapper(self, data, temp: float = None):
+            if isinstance(data, dict):
+                if len(data) < 1:
+                    raise (ValueError("There is no BH data to add!"))
+                    return
+                else:
+                    for temp in data.keys():
+                        temp_key = lambda: (
+                            "default" if temp == "no information" else temp
+                        )
+                        set_BH(self, data[temp], temp_key())
+            elif isinstance(data, str):
+                try:
+                    file = pd.read_table(data)
+                except UnicodeDecodeError:
+                    file = pd.read_excel(data)
+                except FileNotFoundError:
+                    warnings.warn("Cannot load, file does not exist")
+                    return
+                allValue = file.values
+                try:
+                    temp_list = {row[2] for row in allValue}
+                    for temp in temp_list:
+                        if temp == "no information":
+                            temp_key = "default"
+                        else:
+                            temp_key = temp
+                        set_BH(
+                            self,
+                            [
+                                [row[0], row[1]]
+                                for row in allValue
+                                if row[2] == temp
+                            ],
+                            temp_key,
+                        )
+                except IndexError:
+                    set_BH(self, [[row[0], row[1]] for row in allValue])
+            else:
+                set_BH(self, data)
+
+        return setBHWrapper
+
+    @_set_BH_decorator
+    def set_BH(self, newBH: NDArray, temp: float = None):
         """setter of BH curve.
 
         Args:
             BH (numpy.ndarray): BH curve (2D array) with shape (X,2) ->
             [[B1, H1],[B2, H2],[B3, H3],...]
+            temperature (float): temperature of the curve. defaults to None (meaning default temperature)
+        Returns:
+            None
         """
-        if newBH is None:
+        if not hasattr(self, "_BH"):
+            self._BH = {}
+        if not temp:
+            temp_key = "default"
+        else:
+            temp_key = temp
+        if not newBH:
             # if BH is None, set empty array
-            self._BH = numpy.empty(0)
-            self.linear = True
+            self._BH[temp_key] = np.empty(0)
+            if temp_key == "default":
+                self.linear = True
         elif isinstance(newBH, list):
             # if list is given, set numpy array
             # RECALL SETTER to check valid BH shape
             # self.linear = False # no need to set here because setter is
             # recalled
-            self.BH = numpy.array(newBH)
-        elif isinstance(newBH, numpy.ndarray):
+            self._BH[temp_key] = np.array(newBH)
+            self.linear = False
+        elif isinstance(newBH, np.ndarray):
             if newBH.ndim == 2:
                 # number of dimensions must be 2
                 if newBH.shape[1] == 2:
@@ -427,7 +512,7 @@ class Material:
                     if newBH.shape[0] < 2:
                         raise ValueError(
                             (
-                                "Too view points in BH curve of material %s! At least specify 3 value pairs.",
+                                "Too few points in BH curve of material %s! At least specify 2 value pairs.",
                                 self.name,
                             )
                         )
@@ -438,7 +523,7 @@ class Material:
                             self.name,
                         )
                     # set BH curve
-                    self._BH = newBH
+                    self._BH[temp_key] = newBH
                     self.linear = False
                 else:
                     raise (

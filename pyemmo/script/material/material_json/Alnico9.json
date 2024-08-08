@@ -4,44 +4,53 @@
 	"conductivity": 2000000.0,
 	"relPermeability": 0.0,
 	"remanence": "no information",
-	"BHCurve_type": "NL",
-	"H": [
-		-119366.0,
-		-117775.0,
-		-116183.0,
-		-113000.0,
-		-106634.0,
-		-101859.0,
-		-97085.0,
-		-92310.0,
-		-79577.0,
-		-71619.0,
-		0.0
-	],
-	"B": [
-		0.0,
-		0.54,
-		0.66,
-		0.7,
-		0.78,
-		0.81,
-		0.85,
-		0.88,
-		0.93,
-		0.96,
-		1.05
-	],
-	"Temp": [
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information",
-		"no information"
-	]
+	"linear": false,
+	"BHCurve": {
+		"default": [
+			[
+				-119366.0,
+				0.0
+			],
+			[
+				-117775.0,
+				0.54
+			],
+			[
+				-116183.0,
+				0.66
+			],
+			[
+				-113000.0,
+				0.7
+			],
+			[
+				-106634.0,
+				0.78
+			],
+			[
+				-101859.0,
+				0.81
+			],
+			[
+				-97085.0,
+				0.85
+			],
+			[
+				-92310.0,
+				0.88
+			],
+			[
+				-79577.0,
+				0.93
+			],
+			[
+				-71619.0,
+				0.96
+			],
+			[
+				0.0,
+				1.05
+			]
+		]
+	}
 }
