@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied
+# Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -17,96 +18,107 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-import math
-from typing import Union
+"""Module: wind_contour_calculation"""
 
-from ...script.geometry.line import Line
+from __future__ import annotations
+
+import math
+
 from ...script.geometry.circleArc import CircleArc
+from ...script.geometry.line import Line
 
 # from ...script.geometry.point import Point
 # from ...script.geometry import defaultCenterPoint
 from ..json.SurfaceJSON import SurfaceAPI
-from ...functions.plot import plot
-from .get_rotor_stator_surfs import get_stator_surfs
 
 
 def calc_wind_contour(
-    geometry_list: list[SurfaceAPI],
-    stator_rint: float,
-    stator_rext: float,
-) -> list[Union[Line, CircleArc]]:
+    lam_surf: SurfaceAPI,
+    slot_surf_list: list[SurfaceAPI],
+    rint: float,
+    rext: float,
+    is_internal: bool,
+) -> list[Line | CircleArc]:
     """Calculation for the contour of a slot with winding.
 
         TODO: Filterung der Konturlinien anpassen. Wicklungskontur(en) von der
-        Innenkontur der Statorblechs abziehen. Die Interface-Linie zwischen Nutschlitz
-        und Wicklung ist diejenige Linie, die nicht in der Wicklungs- UND Statorkontur
-        vorkommt.
+        Innenkontur der Blechs abziehen. Die Interface-Linie zwischen
+        Nutschlitz und Wicklung ist diejenige Linie, die nicht in der
+        Wicklungs- UND Statorkontur vorkommt.
 
     Args:
-        geometryList (list): List with all surfaces of the machine (Pyemmo format)
-        statorRint (float): Inner radius of stator
-        statorRext (float): Outer radius of stator
+        lam_surf_list (list): A list of geometry elements.
+        rint (float): The inner radius of the lamination.
+        rext (float): The outer radius of the lamination.
 
     Returns:
-        list[Union[Line, CircleArc]]: list of the stator contour lines
-    """
-    stator_cont_line_list: list[Union[Line, CircleArc]] = []
-    stator_lam_surf_list = get_stator_surfs(geometry_list=geometry_list)
+        list[Union[Line, CircleArc]]: A list of wind contour lines for the
+        lamination.
 
-    # -----------------------------------------------------------
-    # Fügt Linien die an der Oberfläche liegen hinzu:
-    # -----------------------------------------------------------
-    for curve in stator_lam_surf_list[0].curve:
+    Notes:
+        - The wind contour lines are calculated based on the provided geometry
+          list and lamination inner and outer radii.
+    """
+    # TODO: Filterung der Konturlinien anpassen. Wicklungskontur(en) von der
+    # Innenkontur der Statorblechs abziehen. Die Interface-Linie zwischen
+    # Nutschlitz und Wicklung ist diejenige Linie, die nicht in der Wicklungs-
+    # UND Statorkontur vorkommt.
+    cont_line_list: list[Line | CircleArc] = []
+    if is_internal:
+        r_airgap = rext
+        r_lam = rint
+    else:
+        r_airgap = rint
+        r_lam = rext
+    # Filtering out the lines that do not lie on the surface facing the air gap:
+    for curve in lam_surf.curve:
         # if one point is on rInt (airgap) and none of the curve points
         # is on rExt (outer radius)
         if (
             math.isclose(
                 a=curve.startPoint.radius,
-                b=stator_rint,
+                b=r_airgap,
                 abs_tol=1e-6,
             )
             or math.isclose(
                 a=curve.endPoint.radius,
-                b=stator_rint,
+                b=r_airgap,
                 abs_tol=1e-6,
             )
         ) and (
             not math.isclose(
                 a=curve.endPoint.radius,
-                b=stator_rext,
+                b=r_lam,
                 abs_tol=1e-6,
             )
             and not math.isclose(
                 a=curve.startPoint.radius,
-                b=stator_rext,
+                b=r_lam,
                 abs_tol=1e-6,
             )
         ):
-            stator_cont_line_list.append(curve)
+            cont_line_list.append(curve)
 
     # extract the points on the interface between slot opening and winding surface
     slot_op_points = []  # list for interface points
-
-    for curve in stator_cont_line_list:
+    # is_internal = rint
+    for curve in cont_line_list:
         # TODO: Describe what this if-case is doing.
         if (
-            curve.startPoint.radius > stator_rint
-            or curve.startPoint.radius > stator_rext
+            curve.startPoint.radius > r_airgap
+            or curve.startPoint.radius > r_lam
         ) and math.isclose(
-            a=curve.startPoint.radius, b=stator_rint, abs_tol=1e-6
+            a=curve.startPoint.radius, b=r_airgap, abs_tol=1e-6
         ) is False:
             slot_op_points.append(curve.startPoint)
         elif (
-            curve.endPoint.radius > stator_rint
-            or curve.endPoint.radius > stator_rext
+            curve.endPoint.radius > r_airgap or curve.endPoint.radius > r_lam
         ) and math.isclose(
-            a=curve.endPoint.radius, b=stator_rint, abs_tol=1e-6
+            a=curve.endPoint.radius, b=r_airgap, abs_tol=1e-6
         ) is False:
             slot_op_points.append(curve.endPoint)
 
-    # ------------------------
     # For translating SlotW22:
-    # ------------------------
     # center_point = Point(name="centerPoint", x=0, y=0, z=0, meshLength=1)
     # stator_new_line = CircleArc(
     #     name="windNewCircleArc",
@@ -114,18 +126,16 @@ def calc_wind_contour(
     #     endPoint=stator_line_point_list[1],
     #     centerPoint=center_point,
     # )
-    assert (
-        len(slot_op_points) == 2
-    ), "Could not find exactly two points at the interface of slot and slot opening"
+    if len(slot_op_points) != 2:
+        raise RuntimeError(
+            "Could not find exactly two points at the interface of slot and "
+            "slot opening"
+        )
 
     # determine slot opening line type: Line or CircleArc
-    slot_surfs: list[SurfaceAPI] = []
-    for surf in geometry_list:
-        if "StCu" in surf.idExt:
-            slot_surfs.append(surf)
-
-    slot_op_curve = slot_surfs[0].curve[0]
-    for slot_surf in slot_surfs:
+    # slot_surf_list: list[SurfaceAPI] = []
+    slot_op_curve = slot_surf_list[0].curve[0]
+    for slot_surf in slot_surf_list:
         # FIXME: This assumes that it is an inner rotor
         # just find the most inner curve of all slot surfs
         for curve in slot_surf.curve:
@@ -149,8 +159,8 @@ def calc_wind_contour(
     else:
         raise RuntimeError("Could not determine slot opening curve type.")
 
-    stator_cont_line_list.append(stator_slot_opening_line)
-    print("windContourLineList:")
-    plot(stator_cont_line_list, linewidth=1, markersize=3, tag=True)
-    print("---")
-    return stator_cont_line_list
+    cont_line_list.append(stator_slot_opening_line)
+    # print("windContourLineList:")
+    # plot(stator_cont_line_list, linewidth=1, markersize=3, tag=True)
+    # print("---")
+    return cont_line_list

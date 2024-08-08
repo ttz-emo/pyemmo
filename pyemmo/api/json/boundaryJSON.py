@@ -18,6 +18,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """This module creates the boundary physical elements for models created via the json-api"""
+
+from __future__ import annotations
 from typing import Dict, List, Tuple, Union
 from numpy import pi
 

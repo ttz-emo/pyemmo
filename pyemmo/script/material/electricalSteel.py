@@ -18,8 +18,11 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """This module holds the electrical steel lamination Material-class definition"""
+from typing import Tuple, Union
+
 import numpy
-from typing import Tuple, Dict, Union
+
+from ... import rootLogger
 from .material import Material
 
 
@@ -53,9 +56,9 @@ class ElectricalSteel(Material):
             thermalCapacity,
         )
         self.sheetThickness = sheetThickness
-        self.lossParams = lossParams
         self.referenceFrequency = referenceFrequency
         self.referenceFluxDensity = referenceFluxDensity
+        self.lossParams = lossParams
 
     @property
     def sheetThickness(self) -> float:
@@ -83,55 +86,118 @@ class ElectricalSteel(Material):
             else:
                 raise (
                     ValueError(
-                        f"Value for material sheet thickness must be a positive number, but is '{newThickness}'"
+                        f"Value for material sheet thickness must be a "
+                        "positive number, but is '{newThickness}'"
                     )
                 )
         else:
             raise (
                 TypeError(
-                    f"Sheet thickness of material must be a numeric value but is '{type(newThickness)}':{newThickness}"
+                    f"Sheet thickness of material must be a numeric value but "
+                    "is '{type(newThickness)}':{newThickness}"
                 )
             )
 
     @property
     def lossParams(self) -> Tuple[float, float, float]:
         """
-        Iron loss parameters for electircal steel sheet material in W/kg.
-        These parameters will be used in the iron loss calculation routine. For more information about the calculation method
-        see `Lin u. a., „A Dynamic Core Loss Model for Soft Ferromagnetic and Power Ferrite Materials in Transient Finite
-        Element Analysis“ <https://ieeexplore.ieee.org/document/1284663>`_. Make sure to also define the :attr:`reference
-        frequency <pyemmo.script.material.electricalSteel.ElectricalSteel.referenceFrequency>` in Hz and the
+        Iron loss parameters for electircal steel sheet material in W/m³.
+        If the values are given in a range for W/kg (hysteresis value < 20 AND
+        eddy current value < 5). The values will be adapted by
+        :meth:`_adapt_loss_params <pyemmo.script.material.electricalSteel.ElectricalSteel._adapt_loss_params>`
+        method.
+
+        The loss parameters will be used in the iron loss calculation routine.
+        For more information about the calculation method see
+        :py:mod:`calc_core_loss <pyemmo.functions.calcIronLoss>` module.
+        Make sure to also define
+        :attr:`reference frequency <pyemmo.script.material.electricalSteel.ElectricalSteel.referenceFrequency>`
+        in Hz and the
         :attr:`reference flux density <pyemmo.script.material.electricalSteel.ElectricalSteel.referenceFluxDensity>`
+        in T.
 
         Returns:
-            Tuple[float,float,float]: Iron loss parameters for hysteresis, eddy current and excess losses
+            Tuple[float,float,float]: Iron loss parameters for hysteresis,
+            eddy current and excess losses
 
-                - hysteresis
-                - eddy current
-                - excess
+            - hysteresis
+            - eddy current
+            - excess
         """
         return self._lossParams
 
     @lossParams.setter
-    def lossParams(self, newLossParams: Tuple[float, float, float]) -> None:
-        """Setter of iron loss parameters in W/kg
+    def lossParams(
+        self, newLossParams: Union[Tuple[float, float, float], None]
+    ) -> None:
+        """Setter of iron loss parameters in W/m³.
 
         Args:
-            newLossParams (Tuple[float,float,float]): New iron loss parameters
-            (order in Tuple hysteresis, eddy current, excess)
+            newLossParams (Tuple[float,float,float] or None): New iron loss
+                parameters (order in Tuple hysteresis, eddy current, excess)
         """
-        assert (
-            len(newLossParams) == 3
-        ), "There must be exactly 3 loss parameters for hysteresis, eddy current and excess loss."
-        for lossparam in newLossParams:
-            assert isinstance(
-                lossparam, (float, int)
-            ), f"Given loss parameter has wrong type: {type(lossparam)}. Must be float or int."
-        self._lossParams = newLossParams
+        if newLossParams is None:
+            self._lossParams = None
+        else:
+            if len(newLossParams) != 3:
+                raise ValueError(
+                    "There must be exactly 3 loss parameters for "
+                    f"hysteresis, eddy current and excess loss. lossParams: {newLossParams}"
+                )
+            for lossparam in newLossParams:
+                if not isinstance(lossparam, (float, int)):
+                    raise TypeError(
+                        f"Given loss parameter has wrong type: {type(lossparam)}. "
+                        "Must be float or int."
+                    )
+            # test if loss parameters are in W/kg or W/m³ by checking the value
+            # range. Typically hysteresis loss value is between 1.0...5.0 W/kg;
+            # eddy current value is between 0.2...2.0 W/kg.
+            if newLossParams[0] < 20 and newLossParams[1] < 5:
+                rootLogger.warning(
+                    (
+                        "Looks like the loss parameters for material %s are "
+                        "given in W/kg (not W/m³). "
+                        "Trying to calculate correct values..."
+                    ),
+                    self.name,
+                )
+                newLossParams = self._adapt_loss_params(newLossParams)
+            self._lossParams = newLossParams
+
+    def _adapt_loss_params(
+        self, lossParams: Tuple[float, float, float]
+    ) -> Tuple[float, float, float]:
+        """"""
+        freq = self.referenceFrequency  # frequency in Hz
+        if not freq:
+            raise ValueError(
+                "Adaption of core loss parameters failed. "
+                "No reference frequency given!"
+            )
+        ind = self.referenceFluxDensity  # induction in T
+        if not ind:
+            raise ValueError(
+                "Adaption of core loss parameters failed."
+                "No reference induction given!"
+            )
+        # make sure density is given!
+        if not self.density:
+            raise ValueError(
+                f"Material {self.name} missing value for attribute density!"
+                " If values for loss parameter are given, "
+                "you also need to specify material density!"
+            )
+        dens = self.density  # density in kg/m³
+        lossParams[0] = lossParams[0] * dens / freq / (ind**2)
+        lossParams[1] = lossParams[1] * dens / ((freq * ind) ** 2)
+        lossParams[2] = lossParams[2] * dens / ((freq * ind) ** 1.5)
+        return lossParams
 
     @property
     def referenceFrequency(self) -> Union[float, int]:
-        """Reference frequency for given loss parameters in Hz. See :attr:`lossParams <pyemmo.script.material.electricalSteel.ElectricalSteel.lossParams>`
+        """Reference frequency for given loss parameters in Hz. See
+        :attr:`lossParams <pyemmo.script.material.electricalSteel.ElectricalSteel.lossParams>`
 
         Returns:
             Union[float, int]: Reference frequency in Hz
@@ -147,15 +213,19 @@ class ElectricalSteel(Material):
         Args:
             newLossParams (Tuple[float,float,float]): New reference frequency in Hz
         """
-        assert isinstance(
-            newReferenceFrequency, (float, int)
-        ), f"Given reference frequency for iron loss parameters has wrong type: {type(newReferenceFrequency)}. Must be float or int."
+        if not isinstance(newReferenceFrequency, (float, int)):
+            raise TypeError(
+                "Given reference frequency for iron loss parameters has "
+                f"wrong type: {type(newReferenceFrequency)}. "
+                "Must be float or int."
+            )
         self._referenceFrequency = newReferenceFrequency
 
     @property
     def referenceFluxDensity(self) -> Union[float, int]:
         """Reference flux density for given loss parameters in T. See
-        :attr:`lossParams <pyemmo.script.material.electricalSteel.ElectricalSteel.lossParams>` for more details.
+        :attr:`lossParams <pyemmo.script.material.electricalSteel.ElectricalSteel.lossParams>`
+        for more details.
 
         Returns:
             Union[float, int]: Reference flux density in T
@@ -169,11 +239,15 @@ class ElectricalSteel(Material):
         """Setter of reference flux density in T
 
         Args:
-            newReferenceFluxDensity (Tuple[float,float,float]): New reference flux density in T
+            newReferenceFluxDensity (Tuple[float,float,float]): New reference
+                flux density in T
         """
-        assert isinstance(
-            newReferenceFluxDensity, (float, int)
-        ), f"Given parameter for reference flux density has wrong type: {type(newReferenceFluxDensity)}. Must be float or int."
+        if not isinstance(newReferenceFluxDensity, (float, int)):
+            raise TypeError(
+                "Given parameter for reference flux density has "
+                f"wrong type: {type(newReferenceFluxDensity)}. "
+                "Must be float or int."
+            )
         self._referenceFluxDensity = newReferenceFluxDensity
 
     def print(self) -> None:

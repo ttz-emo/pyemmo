@@ -19,15 +19,17 @@
 #
 """This module is about the model generation via json api"""
 
-from math import radians
-from typing import Dict, List, Literal, Tuple, Union
+from __future__ import annotations
 
-from numpy import pi, sign, array
-from numpy.linalg import norm
+from math import radians
+from typing import Literal
+
+from numpy import pi, sign
 from swat_em import datamodel
 
 from ...script.geometry.airArea import AirArea
 from ...script.geometry.airGap import AirGap
+from ...script.geometry.bar import Bar
 from ...script.geometry.circleArc import CircleArc
 from ...script.geometry.line import Line
 from ...script.geometry.magnet import Magnet
@@ -37,13 +39,11 @@ from ...script.geometry.rotorLamination import RotorLamination
 from ...script.geometry.slot import Slot
 from ...script.geometry.spline import Spline
 from ...script.geometry.statorLamination import StatorLamination
-from ...script.geometry.bar import Bar
-from ...script.geometry.surface import Surface
 from ...script.geometry.transformable import Transformable
 from ...script.material.material import Material
-from ...definitions import DEFAULT_GEO_TOL
-from . import importJSON, globalCenterPoint
 from .. import logger
+from . import globalCenterPoint, importJSON
+from .get_coilspan import get_min_coilspan
 from .SurfaceJSON import SurfaceAPI
 
 # from .. import calc_phaseangle_starvoltageV2
@@ -51,11 +51,11 @@ from .SurfaceJSON import SurfaceAPI
 
 
 def createLine(
-    lineDict: Dict,
+    lineDict: dict,
     meshLen: float,
     startPoint: Point,
     endPoint: Point,
-) -> Union[Line, CircleArc, Spline]:
+) -> Line | CircleArc | Spline:
     """This function creates a pyemmo line object from a given line dict. See
     :func:`getSurfaceLineList() <pyemmo.api.modelJSON.getSurfaceLineList>` for more infos
     about the line dict contents.
@@ -123,9 +123,9 @@ def createLine(
 
 
 def getSurfaceLineList(
-    lineDictList: List[Union[Dict[str, float], Dict[str, str]]],
+    lineDictList: list[dict[str, float] | dict[str, str]],
     meshLen: float = None,
-) -> List[Line]:
+) -> list[Line]:
     """
     This function takes a list of dicts with surface-line-information (lineloop structure)
     and generates a list of pyemmo :class:`Line <pyemmo.script.geometry.line.Line>` objects
@@ -181,10 +181,11 @@ def getSurfaceLineList(
         )
     if meshLen is not None and not isinstance(meshLen, (int, float)):
         raise ValueError(
-            f"mesh size has wrong type: {type(meshLen)}. Should be float, int or None."
+            f"mesh size has wrong type: {type(meshLen)}. "
+            "Should be float, int or None."
         )
-    lineList: List[Line] = []
-    pointList: List[Point] = []
+    lineList: list[Line] = []
+    pointList: list[Point] = []
     for lineID, lineDict in enumerate(
         lineDictList
     ):  # for each line in lineDict
@@ -217,23 +218,26 @@ def getSurfaceLineList(
             # endpoint of penultimate (vorletzte) line must be first point
             # of this line (==last line in curve loop)
             startPoint = pointList[-1]
-            assert startPoint.coordinate == coordsP1, (
-                f"Start point ({startPoint.name}) of last line {lineDict['LineName']} "
-                "is NOT endpoint of previous line. Check line loop!"
-            )
+            if not startPoint.coordinate == coordsP1:
+                raise ValueError(
+                    f"Start point ({startPoint.name}) of last line {lineDict['LineName']} "
+                    "is NOT endpoint of previous line. Check line loop!"
+                )
             endPoint = pointList[0]
-            assert endPoint.coordinate == coordsP2, (
-                f"End point ({endPoint.name}) of last line ('{lineDict['LineName']}') "
-                "in line loop is NOT startpoint of first line. Check line loop!"
-            )
+            if not endPoint.coordinate == coordsP2:
+                raise ValueError(
+                    f"End point ({endPoint.name}) of last line ('{lineDict['LineName']}') "
+                    "in line loop is NOT startpoint of first line. Check line loop!"
+                )
         else:
             # ATTENTION: StartPoint of new line must be EndPoint of last line
             startPoint = pointList[-1]
             # make sure the coordinates are correct
-            assert startPoint.coordinate == coordsP1, (
-                f"End point ({startPoint.name}) of last line in line loop is NOT "
-                f"startpoint of this line ('{lineDict['LineName']}'). Check line loop!"
-            )
+            if not startPoint.coordinate == coordsP1:
+                raise ValueError(
+                    f"End point ({startPoint.name}) of last line in line loop is NOT "
+                    f"startpoint of this line ('{lineDict['LineName']}'). Check line loop!"
+                )
             endPoint = Point(
                 lineDict["EpName"],
                 coordsP2[0],
@@ -282,12 +286,13 @@ def createAPISurf(areaDict: dict) -> SurfaceAPI:
         )
     except Exception as exce:
         raise RuntimeError(
-            f"""Failed to generate API surface for '{areaDict["Name"]}' due to following error: {exce.args[0]}"""
+            f"""Failed to generate API surface for '{areaDict["Name"]}' """
+            f"due to following error: {exce.args[0]}"
         ) from exce
     return surf
 
 
-def importMachineGeometry(machineGeoList: list[dict]) -> Dict[str, SurfaceAPI]:
+def importMachineGeometry(machineGeoList: list[dict]) -> dict[str, SurfaceAPI]:
     """import one segment of the whole machine geometry from the geo.json file
 
     Args:
@@ -298,7 +303,7 @@ def importMachineGeometry(machineGeoList: list[dict]) -> Dict[str, SurfaceAPI]:
         Dict[str, SurfaceAPI]: Segment Surface dict with short IDs (IdExt) as keys and
         SurfaceAPI objects as values
     """
-    segmentSurfDict: Dict[str, SurfaceAPI] = {}
+    segmentSurfDict: dict[str, SurfaceAPI] = {}
     for area in machineGeoList:
         if isinstance(area, dict):
             # normal surface; no subtraction
@@ -320,13 +325,15 @@ def importMachineGeometry(machineGeoList: list[dict]) -> Dict[str, SurfaceAPI]:
     return segmentSurfDict
 
 
-def createSurfaceDict(surfList: List[SurfaceAPI]) -> Dict[str, SurfaceAPI]:
+def createSurfaceDict(surfList: list[SurfaceAPI]) -> dict[str, SurfaceAPI]:
     """creates a Dict of SurfaceAPI objects from a List of SurfaceAPI (see
     :func:`importMachineGeometry() <pyemmo.api.modelJSON.importMachineGeometry>`).
-    The dict-keys are the surface IDs (short names/abbriviations of the surface name).
+    The dict-keys are the surface IDs (short names/abbriviations of the surface
+    name).
 
     Args:
-        surfList: (List[SurfaceAPI]): List of surface dicts extended from the geometry json file
+        surfList: (List[SurfaceAPI]): List of surface dicts extended from the
+            geometry json file
 
     Returns:
         Dict[str, SurfaceAPI]: Dict with surface ID as key
@@ -342,10 +349,13 @@ def createSurfaceDict(surfList: List[SurfaceAPI]) -> Dict[str, SurfaceAPI]:
         )
         raise ValueError(msg)
 
-    surfaceDict: Dict[str, SurfaceAPI] = {}
+    surfaceDict: dict[str, SurfaceAPI] = {}
     for surf in surfList:
         if not isinstance(surf, SurfaceAPI):
-            msg = f"The object in the surface list was not type 'SurfaceAPI', but '{type(surf)}'."
+            msg = (
+                "The object in the surface list was not type 'SurfaceAPI',"
+                f" but '{type(surf)}'."
+            )
             raise ValueError(msg)
         surfID = surf.idExt  # key is area ID
         surfaceDict[surfID] = surf
@@ -387,27 +397,28 @@ def rotateDuplicate(geoObj: Transformable, angle: float) -> Transformable:
 
 
 def createMachineGeometryFromSegment(
-    segmentSurfDict: Dict[str, SurfaceAPI], symFactor: int
-) -> Dict[str, List[SurfaceAPI]]:
+    segmentSurfDict: dict[str, SurfaceAPI], symFactor: int
+) -> dict[str, list[SurfaceAPI]]:
     """
-    Generate (rotate and duplicate) all Surfaces of the machine from a segment (list of surfaces)
-    and return them as surface-list
+    Generate (rotate and duplicate) all Surfaces of the machine from a segment
+    (list of surfaces) and return them as surface-list
 
     Args:
-        segmentSurfDict (Dict[str, SurfaceAPI]): Segment Surface dict with short IDs (IdExt) as keys
-            and SurfaceAPI objects as values.
-        SymFactor (int): Symmetry factor to calculate the number of segments that should be
-            generated
+        segmentSurfDict (Dict[str, SurfaceAPI]): Segment Surface dict with
+            short IDs (IdExt) as keys and SurfaceAPI objects as values.
+        SymFactor (int): Symmetry factor to calculate the number of segments
+            that should be generated
 
     Returns:
-        Dict[str, List[SurfaceAPI]]: Dict of all surfaces (including the given ones by
-        segmentSurfList, but with different Name), with IdExt as keys and list of SurfaceAPI
-        as values.
+        Dict[str, List[SurfaceAPI]]: Dict of all surfaces (including the given
+        ones by segmentSurfList, but with different Name), with IdExt as keys
+        and list of SurfaceAPI as values.
 
     Raises:
-        ValueError: If number of segments on (2*Pi / symFactor) is not an integer.
+        ValueError: If number of segments on (2*Pi / symFactor) is not an
+            integer.
     """
-    surfDict: Dict[str, List[SurfaceAPI]] = {}  # init surface dict
+    surfDict: dict[str, list[SurfaceAPI]] = {}  # init surface dict
     for (
         surfIdExt,
         surf,
@@ -415,7 +426,10 @@ def createMachineGeometryFromSegment(
         nbrSegments = surf.NbrSegments / symFactor
         # make sure number of segments is an integer
         if not nbrSegments.is_integer():
-            mssg = f"Number of segments (Quantity/SymFactor) must be even, but is: {nbrSegments}"
+            mssg = (
+                "Number of segments (Quantity/SymFactor) must be even, "
+                f"but is: {nbrSegments}"
+            )
             raise ValueError(mssg)
         surfDict[surfIdExt] = []  # init list to append surfaces
         # rotate and duplicte the original surface segment nbrSegments times,
@@ -453,14 +467,15 @@ def createMachineGeometryFromSegment(
 
 def createPhysicalSurfaces(
     idExt: str,
-    surfList: List[SurfaceAPI],
+    surfList: list[SurfaceAPI],
     rotorMBRadius: float,
     extendedInfo: dict,
-) -> Tuple[List[PhysicalElement], Literal["Rotor", "Stator"]]:
-    """create a PhysicalElement (PhysicalSurface) from the given surface and determine the machine
-    side (rotor or stator). The type of PhysicalElement (Slot, Magnet, Airgap,...) is determined by
-    the surfaces external ID (IdExt). The machine side is determined via the given rotor
-    moving band radius.
+) -> tuple[list[PhysicalElement], Literal["Rotor", "Stator"]]:
+    """create a PhysicalElement (PhysicalSurface) from the given surface and
+    determine the machine side (rotor or stator). The type of PhysicalElement
+    (Slot, Magnet, Airgap,...) is determined by the surfaces external ID
+    (IdExt). The machine side is determined via the given rotor moving band
+    radius.
 
     Args:
         IdExt (str): Short ID of surface list.
@@ -472,11 +487,12 @@ def createPhysicalSurfaces(
     Returns:
         Tuple[List[PhysicalElement], Literal["Rotor", "Stator"]]:
 
-        - List[PhysicalElement]: generated List of PhysicalElements. E.g. in case of slots, there
-          will be a physical element for every slot. In the case of the rotor lamination, there will
-          only be one PhysicalElement.
-        - Literal["Rotor", "Stator"]]: machine side to correctly assign the pE to the Rotor or
-          Stator object.
+        - List[PhysicalElement]: generated List of PhysicalElements. E.g. in
+          case of slots, there will be a physical element for every slot. In
+          the case of the rotor lamination, there will only be one
+          PhysicalElement.
+        - Literal["Rotor", "Stator"]]: machine side to correctly assign the pE
+          to the Rotor or Stator object.
     """
     # determine if single point of surface is inside the Movingband radius,
     # because if one point is inside, all the others have to be too.
@@ -488,7 +504,7 @@ def createPhysicalSurfaces(
     )
 
     if "StCu" in idExt:  # if is stator slot
-        slots: List[Slot] = list()
+        slots: list[Slot] = list()
         for surf in surfList:
             slot = createSlot(
                 surf=surf, material=surf.material, extendedInfo=extendedInfo
@@ -544,7 +560,8 @@ def createPhysicalSurfaces(
         name=idExt, geometricalElement=surfList, material=surfList[0].material
     )
     physElem.setColor()  # set random color for all surfs
-    # FIXME: Is it really necessary to return a list here? Seems to allway be just a PE...
+    # FIXME: Is it really necessary to return a list here? Seems to allway be
+    # just a PE...
     return [physElem], machineSide
 
 
@@ -594,7 +611,8 @@ def phase2angle(phaseChar: Literal["u", "v", "w"]) -> float:
     * W = :math:`-\\frac{2\\pi}{3}`
 
     Args:
-        PhaseChar (str): char object for the phase name (phase ID). Should be "u", "v" or "w"
+        PhaseChar (str): char object for the phase name (phase ID).
+            Should be "u", "v" or "w".
 
     Raises:
         ValueError: PhaseChar should only by U,V or W
@@ -657,16 +675,18 @@ def phase2color(
     )
 
 
-def getSlotInfo(slotSurfName: str) -> Tuple[int, int]:
+def getSlotInfo(slotSurfName: str) -> tuple[int, int]:
     """Extract the slot side and the segement number from the slot surface name.
 
     Args:
-        slotSurfName (str): name of the slot surface. Must be "StCu<slotSide>_<segmentNumber>"
+        slotSurfName (str): name of the slot surface. Must be
+            "StCu<slotSide>_<segmentNumber>"
 
     Raises:
-        ValueError: If the identifier "StCu" is missing from the slot surface name.
-        ValueError: If the stings for slot side and segment number extracted from the name are not
-            pure decimal (are not only numbers).
+        ValueError: If the identifier "StCu" is missing from the slot surface
+            name.
+        ValueError: If the stings for slot side and segment number extracted
+            from the name are not pure decimal (are not only numbers).
         ValueError: If the values for slot side and segment number are not int.
 
     Returns:
@@ -722,9 +742,11 @@ def getSlotPhase(
             you have multiple slot side (>2) per lamination segment.)
 
     Returns:
-        Literal['p','n']: Winding direction (
-            'p' = positiv = +z-direction;
-            'n' = negative = -z-direction)
+        Literal['p','n']: Winding direction
+
+            -   'p' = positiv = +z-direction
+            -   'n' = negative = -z-direction
+
         Literal["u", "v", "w"]: Phase indicator
 
     Raises:
@@ -767,11 +789,12 @@ def createSlot(
     """create a Physical Element of type Slot.
 
     Args:
-        surf (SurfaceAPI): Slot geometric surface. Surface IdExt must be formatted like
-            "StCu<slotSide>_<segmentNumber>". E.g. The first slot side of the first
-            segment must be named "StCu0_0".
+        surf (SurfaceAPI): Slot geometric surface. Surface IdExt must be
+            formatted like "StCu<slotSide>_<segmentNumber>". E.g. The first
+            slot side of the first segment must be named "StCu0_0".
         material (Material): Slot Material.
-        extendedInfo (dict): Additional model information dict, with winding configuration.
+        extendedInfo (dict): Additional model information dict, with winding
+            configuration.
 
     Returns:
         Slot: Slot object generated from the above information.
@@ -789,11 +812,14 @@ def createSlot(
 
 
 def createWinding(extendedInfo: dict) -> datamodel:
-    """Create a `swat_em <https://swat-em.readthedocs.io/en/latest/#>`__ :class:`datamodel`
-    object for the stator winding by the information given in the extended info dict.
+    """Create a
+    `swat_em <https://swat-em.readthedocs.io/en/latest/#>`__ :class:`datamodel`
+    object for the stator winding by the information given in the extended
+    info dict.
 
     Args:
-        extendedInfo (dict): dict with extended machine and simulation information.
+        extendedInfo (dict): dict with extended machine and simulation
+            information.
 
     Returns:
         datamodel: swat_em.datamodel object of winding.
@@ -807,23 +833,24 @@ def createWinding(extendedInfo: dict) -> datamodel:
     # symFactor = importJSON.getSymFactor(extendedInfo)
     # format winding layout for swat_em
     windLayout = importJSON.getWindingList(extendedInfo)
+
     swatemWinding.set_phases(
-        S=windLayout, turns=(importJSON.getNbrOfTurns(extendedInfo))
+        S=windLayout,
+        turns=(importJSON.getNbrOfTurns(extendedInfo)),
+        w=get_min_coilspan(windLayout, nbrSlots),
     )
-    swatemWinding.analyse_wdg()  # analyse winding to make sure its valid and all parameters are set
-    # make sure that number of parallel paths does not exceed max. possible paths of winding:
+    swatemWinding.analyse_wdg()  # analyse winding to make sure its valid and
+    # all parameters are set
+    # make sure that number of parallel paths does not exceed max. possible
+    # paths of winding:
     if max(
         swatemWinding.get_parallel_connections()
     ) < importJSON.getNbrParalellPaths(extendedInfo):
         logger.warning(
-            "The given number of parallel windings paths (%i) exceeds possible paths of the winding layout (%i)!",
+            """The given number of parallel windings paths (%i) exceeds
+            possible paths of the winding layout (%i)!""",
             importJSON.getNbrParalellPaths(extendedInfo),
             max(swatemWinding.get_parallel_connections()),
         )
 
     return swatemWinding
-
-
-# ==================================================================================================
-# ======================================= END MODEL GENERATION =====================================
-# ==================================================================================================

@@ -17,21 +17,32 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""imports"""
+"""Module: pyemmo_material_conversion"""
+
+from __future__ import annotations
 from numpy import Inf
-from pyleecan.Classes.Material import Material as pyleecanMat
+from pyleecan.Classes.Material import Material as PyleecanMaterial
 from pyleecan.Classes.MatMagnetics import MatMagnetics
 from ...script.material.material import Material
 
 
-def build_pyemmo_material(pyleecan_material: pyleecanMat) -> Material:
-    """Translates a pyleecan-material into a pyemmo-material.
+def build_pyemmo_material(pyleecan_material: PyleecanMaterial) -> Material:
+    """Translates a pyleecan material into a pyemmo material.
+
+    This function translates a pyleecan material into a pyemmo material.
 
     Args:
-        pyleecanMaterial (pyleecanMat): Material in pyleecan format
+        pyleecan_material (PyleecanMaterial): The pyleecan material to be translated.
 
     Returns:
-        Material: Translated material in pyemmo format
+        Material: The translated pyemmo material.
+
+    Notes:
+        - Conductivity, relPermeability, remanence, tempCoefRem, BH, and density
+          are extracted from the pyleecan material to construct the pyemmo material.
+        - If any attribute is missing from the pyleecan material, it is set to None
+          in the pyemmo material.
+
     """
     # elec props
     try:
@@ -45,7 +56,6 @@ def build_pyemmo_material(pyleecan_material: pyleecanMat) -> Material:
     # mag props
     mag_properties: MatMagnetics = pyleecan_material.mag
     try:
-        # TODO: Abfangen, falls mur_lin und BH nicht gesetzt sind -> Fehler ausgeben. Falls BH gegeben ist, kein mur_lin benötigt.
         rel_permeability = mag_properties.mur_lin
     except AttributeError:
         rel_permeability = None
@@ -70,7 +80,11 @@ def build_pyemmo_material(pyleecan_material: pyleecanMat) -> Material:
         density = pyleecan_material.struct.rho
     except AttributeError:
         density = None
-
+    if bh is None and rel_permeability is None:
+        # pylint: disable=locally-disabled, line-too-long
+        raise ValueError(
+            f"No magnetic properties (mue_r and BH curve) defined in material '{pyleecan_material.name}'"
+        )
     pyemmo_material = Material(
         name=pyleecan_material.name,
         conductivity=conductivity,

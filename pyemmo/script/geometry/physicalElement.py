@@ -20,7 +20,7 @@
 """Module for class PhysicalElement"""
 
 from random import random
-from typing import List, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Union
 
 from .. import colorDict
 from ..material.material import Material
@@ -194,6 +194,7 @@ class PhysicalElement:
         Args:
             geometricalElement (Union[List[Surface], List[Line]]): Geometrical elements
         """
+        # FIXME: No type checking implemented!
         self._geometricalElement = geometricalElement
         # run element type funtion to ensure there are not lines AND surfaces at the same time
         self.geoElementType
@@ -281,7 +282,8 @@ class PhysicalElement:
         `gmsh colors <https://gitlab.onelab.info/gmsh/gmsh/blob/gmsh_4_11_0/src/common/Colors.h>`__.
 
         Args:
-            colorName (str, optional): `X11 color name <https://en.wikipedia.org/wiki/X11_color_names>`__
+            colorName (str, optional):
+                `X11 color name <https://en.wikipedia.org/wiki/X11_color_names>`__
                 as string. Defaults to None.
         """
         if not colorName:

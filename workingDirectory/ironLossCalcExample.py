@@ -70,6 +70,9 @@ def intAndPlot(viewTag, symFactor, axLen, time, filePath, plotName: str):
     gmsh.view.option.setNumber(
         intViewTag, "Axes", viewPos[viewTag % 4]
     )  # FIXME
+    gmsh.view.option.setNumber(
+        intViewTag, "Axes", viewPos[viewTag % 4]
+    )  # FIXME
 
     # 0: manual, 1: automatic, 2: top left, 3: top right, 4: bottom left, 5: bottom right,
     # 6: top, 7: bottom, 8: left, 9: right, 10: full, 11: top third, 12: in model coordinatess
@@ -379,6 +382,7 @@ def ironLossInteractive(
 
     ax12 = ax1.twinx()
     ax12.plot(time, Hirr[:, elemId, 0] / np.max(Hirr[:, elemId, 0]), "C1")
+    ax12.plot(time, Hirr[:, elemId, 0] / np.max(Hirr[:, elemId, 0]), "C1")
     ax12.yaxis.label.set_color("C1")
     ax12.tick_params(axis="y", colors="C1")
     ax12.set_ylabel(r"$H_{\mathrm{irr}}/H_{\mathrm{irr,max}}$")
@@ -394,6 +398,7 @@ def ironLossInteractive(
     ax2.grid(True)
 
     ax21 = ax2.twinx()
+    ax21.plot(time, Hirr[:, elemId, 1] / np.max(Hirr[:, elemId, 1]), "C1")
     ax21.plot(time, Hirr[:, elemId, 1] / np.max(Hirr[:, elemId, 1]), "C1")
     ax21.yaxis.label.set_color("C1")
     ax21.tick_params(axis="y", colors="C1")

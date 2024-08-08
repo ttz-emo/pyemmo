@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -20,7 +21,8 @@
 """
 Module: test_build_pyemmo_material
 
-This module provides functions for translating material properties from pyleecan format to pyemmo format.
+This module provides functions for translating material properties from
+pyleecan format to pyemmo format.
 
 Functions:
     - build_pyemmo_material(pyleecan_material: pyleecan.Classes.Material) -> Material:
@@ -56,6 +58,7 @@ def sample_pyleecan_material() -> pyleecanMat:
     Returns:
         pyleecanMat: Sample pyleecan material object.
     """
+    # pylint: disable=locally-disabled, redefined-outer-name
     sample_pyleecan_material = pyleecanMat(name="sample_pyleecan_material")
 
     sample_pyleecan_material.struct = MatStructural(
@@ -80,6 +83,7 @@ def sample_pyleecan_material() -> pyleecanMat:
     return sample_pyleecan_material
 
 
+# pylint: disable=locally-disabled, redefined-outer-name
 def test_build_pyemmo_material(sample_pyleecan_material: pyleecanMat) -> None:
     """
     Tests the build_pyemmo_material function with a sample pyleecan material.

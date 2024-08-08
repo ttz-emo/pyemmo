@@ -151,7 +151,8 @@ class Magnet(PhysicalElement):
         Args:
             angle (float): offset angle in rad
         """
-        assert isinstance(
-            angle, float
-        ), f"Magnetization is not type float but {type(angle)}"
+        if not isinstance(angle, float):
+            raise ValueError(
+                f"Given magnetization angle is not type float but {type(angle)}!"
+            )
         self._magnetisationVectorAngle = angle

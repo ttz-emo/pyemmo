@@ -17,10 +17,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+import logging
 import sys
 from os import mkdir
-from os.path import abspath, dirname, join, normpath, realpath, isdir
-import logging
+from os.path import abspath, dirname, isdir, join, normpath, realpath
+
 from matplotlib import font_manager
 
 ROOT_DIR = normpath(abspath(join(dirname(__file__), ".."))).replace("\\", "/")
@@ -29,8 +30,9 @@ ROOT_DIR = normpath(abspath(join(dirname(__file__), ".."))).replace("\\", "/")
 
 # Further import
 try:
-    from .functions.init_environment import get_config_dict
     from pyemmo import USER_DIR
+
+    from .functions.init_environment import get_config_dict
 except ImportError:
     # Add root dir to python path
     sys.path.insert(0, ROOT_DIR)
@@ -42,8 +44,10 @@ MAIN_DIR = dirname(realpath(__file__)).replace("\\", "/")  # main dir is pyemmo
 "api" as subpackages """
 
 RESULT_DIR = join(USER_DIR, "Results").replace("\\", "/")
-r"""Path: RESULT_DIR is "pyemmo" default result directory to store model files and simulation results.
-For Windows this is something like: 'C:\\Users\\Username\\AppData\\Roaming\\pyemmo\\Results' """
+r"""Path: RESULT_DIR is "pyemmo" default result directory to store model files
+and simulation results. For Windows this is something like:
+'C:\\Users\\Username\\AppData\\Roaming\\pyemmo\\Results' """
+
 if not isdir(RESULT_DIR):
     mkdir(RESULT_DIR)
 TEST_DIR = join(ROOT_DIR, "tests").replace("\\", "/")
@@ -54,6 +58,8 @@ CONF_PATH = join(USER_DIR, "main_config_dict.json").replace("\\", "/")
 # Get a "sans-serif" font as default (works for Linux and Windows)
 DEFAULT_FONT = font_manager.FontProperties(family=["sans-serif"]).get_name()
 DEFAULT_COLOR_MAP = "RdBu_r"
+LINE_COLOR = "b"  # blue
+POINT_COLOR = "k"  # black
 
 # Load the config file (create one if it doesn't exist)
 config_dict = get_config_dict()

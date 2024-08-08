@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied
+# Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -18,19 +19,21 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for geometry element Point"""
+import logging
 from math import atan2, cos, sin
-from random import random
 from typing import TYPE_CHECKING, Tuple, Union
 
 import matplotlib.pyplot as plt
 from numpy import array, array_equal, cross, pi, vdot
 from numpy.linalg import norm
+
+from ...definitions import DEFAULT_GEO_TOL, POINT_COLOR
 from .transformable import Transformable
-from ...definitions import DEFAULT_GEO_TOL
 
 if TYPE_CHECKING:
-    from .line import Line
     from matplotlib.figure import Figure
+
+    from .line import Line
 
 
 ###
@@ -147,9 +150,8 @@ class Point(Transformable):
         Args:
             name (str): New Point name
         """
-        assert isinstance(
-            name, (str)
-        ), f"Name must be string, not {type(name)}"
+        if not isinstance(name, str):
+            raise TypeError(f"Name must be string, not {type(name)}")
         self._name = name
 
     @property
@@ -168,10 +170,10 @@ class Point(Transformable):
         Args:
             coordinate (Tuple[float, float, float]): New point coordinates.
         """
-        assert len(coordinate) == 3, "Number of point cooridinates must be 3!"
-        assert all(
-            isinstance(val, (int, float)) for val in coordinate
-        ), "Point coordinate values must be int or float!"
+        if len(coordinate) != 3:
+            raise ValueError("Number of point cooridinates must be 3!")
+        if not all(isinstance(val, (int, float)) for val in coordinate):
+            raise ValueError("Point coordinate values must be int or float!")
         self._x = coordinate[0]
         self._y = coordinate[1]
         self._z = coordinate[2]
@@ -408,32 +410,30 @@ class Point(Transformable):
 
         return R_Point
 
-    # def addToScript(self, script: Script) -> Union["Point", None]:
-    #  """ Mit addToScript wird der Punkt zum Skriptobjekt übergeben und in gmsh-Syntax übersetzt.
-    #  Transformationen von Punkten sind nach dem Aufruf nicht mehr erlaubt, da die neuen
-    # Koordinaten der Punkte nicht mehr erfasst werden.
-    #  Diese Methode sollte stets nur in Kombination mit generateScript (Klassenmethode von Script)
-    # verwendet werden.
+    def addToScript(self, script: "Script") -> Union["Point", None]:
+        """
+        Mit addToScript wird der Punkt zum Skriptobjekt übergeben und in
+        gmsh-Syntax übersetzt. Transformationen von Punkten sind nach dem Aufruf
+        nicht mehr erlaubt, da die neuen Koordinaten der Punkte nicht mehr erfasst
+        werden. Diese Methode sollte stets nur in Kombination mit generateScript
+        (Klassenmethode von Script) verwendet werden.
 
-    #     Input:
-    #         script : Script
-    #     Output:
-    #         None
+            Input:
+                script : Script
+            Output:
+                None
 
-    #     Beispiel:
-    #         myScript = Script(...)
-    #         P1.addToScript(myScript)
+            Beispiel:
+                myScript = Script(...)
+                P1.addToScript(myScript)
 
-    #     Returns:
-    #         _type_: _description_
-    #     """
-    #     if not self.isDrawn():
-    #         self._todesmerker = True
-    #         ans = script._addPoint(self)
-    #     else:
-    #         print(f"Point '{self.name}' is allready in a script.")
-    #         ans = None
-    #     return ans
+            Returns:
+                _type_: _description_
+        """
+        if self.isDrawn():
+            logging.warn(f"Point '{self.name}' is allready in a script.")
+            return None
+        return script._addPoint(self)
 
     def getAngleToX(
         self,
@@ -510,7 +510,7 @@ class Point(Transformable):
         fig: "Figure" = None,
         marker="o",
         markersize=1.0,
-        color=[random() for i in range(3)],
+        color=POINT_COLOR,
         tag=False,
     ):
         """Point plot
@@ -519,7 +519,7 @@ class Point(Transformable):
             fig (pyplot.Figure, optional): Defaults to None.
             marker (str, optional): Defaults to "o".
             markersize (float, optional): Defaults to 1.0.
-            color (list, optional): Defaults to [random() for i in range(3)].
+            color (list, optional): Defaults to DEFAULT_POINT_COLOR.
             tag (bool): Flag to print point id and name like "P `P_ID` ("`P_Name`")"
         """
         coords = self.coordinate

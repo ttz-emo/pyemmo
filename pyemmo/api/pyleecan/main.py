@@ -18,33 +18,60 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Main module of pyleecan api"""
+
+from __future__ import annotations
+
 import os
-from typing import Union
-from pyleecan.Classes.Machine import Machine
-from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
+
+from pyleecan.Classes.Machine import Machine as PyleecanMachine
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
+from pyleecan.Classes.MachineSCIM import MachineSCIM
+from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 from pyleecan.Classes.MachineSyRM import MachineSyRM
 
 from ..json.json import main as json_api_main
-from .translate_machine import translate_machine
-from .create_pyleecan_simulation import create_simulation
 from .create_param_dict import create_param_dict
+from .create_pyleecan_simulation import create_simulation
+from .translate_machine import translate_machine
 
 
 def main(
-    pyleecan_machine: Machine,
+    pyleecan_machine: PyleecanMachine,
     model_dir: str,
-    gmsh: Union[str, os.PathLike] = "",
-    getdp: Union[str, os.PathLike] = "",
+    gmsh: str | os.PathLike = "",
+    getdp: str | os.PathLike = "",
+    use_gui: bool = True,
 ):
+    """Main of pyleecan api.
+
+    This uses the
+    :func:`~pyemmo.api.pyleecan.get_translated_machine.get_translated_machine`
+    function to create the geometry and simulation dicts for the
+    :mod:`PyEMMO JSON-API <pyemmo.api.json.json>` interface and directly build
+    the model by invoking the JSON-API.
+
+    Args:
+        pyleecan_machine (PyleecanMachine): Pyleecan machine object to translate
+        model_dir (str): Path to the directory where the model files should be
+            stored.
+        gmsh (Union[str ,os.PathLike], optional): Path to a Gmsh executable.
+            Defaults to "".
+            If none is given, the program tries to find a exe.
+        getdp (Union[str, os.PathLike], optional): Path to a Gmsh executable.
+            Defaults to "". If none is given, the program tries to find a exe.
+
+    Raises:
+        ValueError: If incompatible Pyleecan Machine type is given.
+            Currently only :class:`MachineSIPMSM`, :class:`MachineIPMSM`
+            and :class:`MachineSyRM` work.
+    """
     simulation = create_simulation(pyleecan_machine, i_d=0, i_q=0, speed=1000)
     # make sure machine type is translatable
     if isinstance(
-        pyleecan_machine, (MachineSIPMSM, MachineIPMSM, MachineSyRM)
+        pyleecan_machine,
+        (MachineSIPMSM, MachineIPMSM, MachineSyRM, MachineSCIM),
     ):
         (
-            allBands,
-            geometryList,
             movingband_r,
             magnetizationDict,
             geo_translation_dict,
@@ -55,7 +82,9 @@ def main(
     paramDict = create_param_dict(
         pyleecan_machine, simulation, movingband_r, magnetizationDict
     )
-    json_api_main(
+    paramDict["flag_openGUI"] = use_gui
+
+    script_obj = json_api_main(
         geo=geo_translation_dict,
         extInfo=paramDict,
         model=model_dir,
@@ -63,3 +92,4 @@ def main(
         getdp=getdp,
         # results=os.path.join(model_dir, "res")
     )
+    return script_obj

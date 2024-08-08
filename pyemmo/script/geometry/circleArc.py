@@ -19,17 +19,16 @@
 #
 """Module for CircleArc Geometry"""
 from math import atan2, cos, isclose, sin
-from random import random
 from typing import Literal, Tuple
 
 from matplotlib import pyplot as plt
 from matplotlib.patches import Arc
 from numpy import pi, rad2deg
 
-from ...definitions import DEFAULT_GEO_TOL
+from ...definitions import DEFAULT_GEO_TOL, LINE_COLOR, POINT_COLOR
+from ..geometry import defaultCenterPoint
 from .line import Line
 from .point import Point
-from ..geometry import defaultCenterPoint
 
 
 class CircleArc(Line):
@@ -368,7 +367,7 @@ class CircleArc(Line):
         marker=None,
         markersize=1,
         linewidth=0.5,
-        color=[random() for i in range(3)],
+        color=LINE_COLOR,
         tag=False,
     ):
         """Circle Arc plot
@@ -428,9 +427,27 @@ class CircleArc(Line):
             )
         # if marker not None: Plot points
         if marker:
-            centerPoint.plot(fig, marker, markersize, color=color, tag=tag)
-            self.startPoint.plot(fig, marker, markersize, color=color, tag=tag)
-            self.endPoint.plot(fig, marker, markersize, color=color, tag=tag)
+            centerPoint.plot(
+                fig,
+                marker,
+                markersize,
+                color=color if color != LINE_COLOR else POINT_COLOR,
+                tag=tag,
+            )
+            self.startPoint.plot(
+                fig,
+                marker,
+                markersize,
+                color=color if color != LINE_COLOR else POINT_COLOR,
+                tag=tag,
+            )
+            self.endPoint.plot(
+                fig,
+                marker,
+                markersize,
+                color=color if color != LINE_COLOR else POINT_COLOR,
+                tag=tag,
+            )
 
     def combine(
         self, addLine: "CircleArc", touchPoint: Point = None
@@ -498,3 +515,18 @@ class CircleArc(Line):
                 "failed. Could not find touchpoint."
             )
         )
+
+    def addToScript(self, script: "Script"):
+        """old function add to script
+
+        Args:
+            script (Script)
+        """
+        # Add points
+        for p in self.points:
+            p.addToScript(script)
+        self.center.addToScript(script)
+        # add arc
+        if not self._todesmerker:
+            self._todesmerker = True
+            script._addCurve(self)

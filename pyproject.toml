@@ -38,10 +38,67 @@ GIT = ['GitPython; python_version>="3.7"'] # requires python>=3.7 since 3.1.23!
 
 # find packages in source directory
 [tool.setuptools.packages.find]
-where = ["pyemmo"]
-# include = ["pkg*"]
+where = ["."]
+include = ["pyemmo*"]
 # exclude = ["additional*"]`
 namespaces = false
 
 [tool.black]
 line-length = 79
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+log_cli = 1
+log_cli_level = "INFO"
+# log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)"
+# log_cli_date_format = "%Y-%m-%d %H:%M:%S"
+
+[tool.bandit]
+skips = ["B311", "B404", "B603"]
+# B311: using random standard libary to create plot colors -> could be resolved
+# by predefining colors or just using balck or blue... TODO
+# B404: We need subprocess to start simulations
+# B603: subprocess mit "shell = False" - Dies minimiert das Risiko von
+# Shell-Injection-Angriffen und sollte bevorzugt verwendet werden (gegenüber
+# "shell = True").
+
+## tox config
+# Using legacy_tox_ini for now since there is no pure TOML parser in tox for
+# now. See https://tox.wiki/en/3.24.5/config.html#configuration-discovery for
+# details.
+
+# [tool.tox]
+# envlist = ["py37", "py38", "py39", "py310"]
+# [tool.tox.envlist]
+# envs = [
+#     "py38",
+#     "py39",
+#     "py310",
+# ] # "py311" not compatible with pyleecan yet
+# [tool.tox.testenv]
+# deps = ["pytest", "pytest_check", "hypothesis"]
+# commands = ["pytest tests"]
+# setenv = ["PATH = {env:PATH}{:}/."]
+[tool.tox]
+# py3.6 : Does not work somehow...
+# py3.7 : Pyleecan (>=1.5.1) does not work for 3.7 due to dependency conflicts
+#           with pyvista and SciDataTool. Pyvista max. version on 3.7 is 0.38.6
+#           SciDataTool (2.5.0) only works with Python >=3.8.
+# py3.10: Fails to install matplotlib 3.3.4 with build and setup.cfg due to
+#           freetype missing MS C++ compilers
+# py3.11: Not compatible with pyleecan yet due to PyQt5 (needed by pyleecan,
+#           but not available in Python 3.11).
+legacy_tox_ini = """
+[tox]
+envlist = py38, py39
+; skipsdist = true
+
+[testenv]
+deps =
+        pytest
+        pytest_check
+        hypothesis
+commands = pytest tests
+setenv =
+        PATH = {env:PATH}{:}/.
+"""

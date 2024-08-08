@@ -20,23 +20,24 @@
 """This module defines the functions to calculate
 the iron losses from getdp b-field simulation results."""
 
-from typing import List, Union, Dict, Tuple
+from __future__ import annotations
+
 import os
+
 import gmsh
 import numpy as np
 import numpy.typing as npt
 
 # from matplotlib import pyplot as plt
 from .import_results import importPos
-from ..script.material import ElectricalSteel
 
 
 def main(
-    b_filepath: Union[str, os.PathLike],
+    b_filepath: str | os.PathLike,
     loss_factor: dict[str, float],
     sym_factor: int,
     axial_length: float = 1.0,
-) -> Tuple[Dict[str, np.ndarray], List[float]]:
+) -> tuple[dict[str, np.ndarray], list[float]]:
     """The main of core loss calculation. This calls the time domain core loss
     calculation. For more info see :meth TODO
 
@@ -56,16 +57,26 @@ def main(
 
 
 def calc_time_domain_core_loss(
-    b_filepath: Union[str, os.PathLike],
+    b_filepath: str | os.PathLike,
     loss_factor: dict,
     sym_factor: int,
     axial_length: float = 1.0,
     save_fields: bool = True,
-) -> Tuple[Dict[str, np.ndarray], List[float]]:
-    """TODO: _summary_
+) -> tuple[dict[str, np.ndarray], list[float]]:
+    """This function implements a time domain method for calculating the steel
+    sheet core loss. For more information about the calculation method see
+    `Lin u. a., „A Dynamic Core Loss Model for Soft Ferromagnetic and Power
+    Ferrite Materials in Transient Finite Element Analysis“
+    <https://ieeexplore.ieee.org/document/1284663>`_.
+
+    The implementation is based on a magnetic flux density fea result of at
+    least one electrical period. The result file (`b_filepath`) must be in
+    `Gmsh readable (.pos) format
+    <https://gmsh.info/doc/texinfo/#MSH-file-format>`_ and only contain the
+    element values of the object (core surface) of intrest.
 
     Args:
-        bFilePath (os.PathLike): _description_
+        bFilePath (os.PathLike): _description_ TODO
         lossFactor (dict): _description_
         symFactor (int): _description_
         axialLength (float, optional): _description_. Defaults to 1.0.
@@ -152,9 +163,10 @@ def calc_time_domain_core_loss(
     eddy_loss = integrate_field(
         np.array(eddy_loss_field), time[1:], element_tags
     )
-    assert (
-        eddy_loss.size == nbr_timesteps
-    ), f"Integration should result in {nbr_timesteps} values!"
+    if eddy_loss.size != nbr_timesteps:
+        raise RuntimeError(
+            f"Integration should result in {nbr_timesteps} values!"
+        )
     # skip first value, because its 0:
     eddy_loss = eddy_loss[1:] * sym_factor * axial_length  # correct values
     core_loss["eddy"] = eddy_loss
@@ -192,9 +204,10 @@ def calc_time_domain_core_loss(
         exc_loss = integrate_field(
             np.array(exc_loss_field), time, element_tags
         )
-        assert (
-            exc_loss.size == nbr_timesteps
-        ), f"Integration should result in {nbr_timesteps} values!"
+        if exc_loss.size != nbr_timesteps:
+            raise RuntimeError(
+                f"Integration should result in {nbr_timesteps} values!"
+            )
         # skip first value, because its 0:
         exc_loss = exc_loss[1:] * sym_factor * axial_length  # correct values
         core_loss["exc"] = exc_loss
@@ -232,11 +245,11 @@ def calc_time_domain_core_loss(
 
 
 def calc_freq_domain_core_loss(
-    b_filepath: Union[str, os.PathLike],
+    b_filepath: str | os.PathLike,
     loss_factor: dict,
     sym_factor: int,
     axial_length: float = 1.0,
-) -> Tuple[Dict[str, np.ndarray], npt.NDArray[np.float64]]:
+) -> tuple[dict[str, np.ndarray], npt.NDArray[np.float64]]:
     core_loss = {}  # dict for loss results
     close_gmsh = False  # determine if gmsh should be closed at the end
     if not gmsh.isInitialized():
@@ -288,21 +301,14 @@ def calc_freq_domain_core_loss(
     # ------------------------- Calculate eddy current losses -------------------------
     eddy_loss_factor = loss_factor["eddy"]  # loss parameter
     # loss function for eddy current loss from paper:
-    eddy_loss_field = np.linalg.norm(
+    eddy_loss_field: np.ndarray = np.linalg.norm(
         eddy_loss_factor * (freqs**2) * (amp.transpose() ** 2), axis=0
     )
     eddy_loss = integrate_field(eddy_loss_field.transpose(), freqs, elem_tags)[
         1:
     ]
-    assert (
-        eddy_loss.size == nbr_freqs
-    ), f"Integration should result in {nbr_freqs} values!"
-    eddy_loss = integrate_field(eddy_loss_field.transpose(), freqs, elem_tags)[
-        1:
-    ]
-    assert (
-        eddy_loss.size == nbr_freqs
-    ), f"Integration should result in {nbr_freqs} values!"
+    if eddy_loss.size != nbr_freqs:
+        raise RuntimeError(f"Integration should result in {nbr_freqs} values!")
     # skip first value, because its 0
     eddy_loss = eddy_loss * sym_factor * axial_length  # correct values
     core_loss["eddy"] = eddy_loss
@@ -316,12 +322,10 @@ def calc_freq_domain_core_loss(
         exc_loss = integrate_field(
             exc_loss_field.transpose(), freqs, elem_tags
         )[1:]
-        exc_loss = integrate_field(
-            exc_loss_field.transpose(), freqs, elem_tags
-        )[1:]
-        assert (
-            exc_loss.size == nbr_freqs
-        ), f"Integration should result in {nbr_freqs} values!"
+        if exc_loss.size != nbr_freqs:
+            raise RuntimeError(
+                f"Integration should result in {nbr_freqs} values!"
+            )
         # skip first value, because its 0:
         exc_loss = exc_loss * sym_factor * axial_length  # correct values
         core_loss["exc"] = exc_loss
@@ -494,9 +498,9 @@ def calc_hyst_loss_diff_b(
 
 def integrate_field(
     field_data: npt.NDArray,
-    time: List[float],
+    time: list[float],
     elem_tags: npt.NDArray,
-    mesh_file: Union[str, os.PathLike] = "",
+    mesh_file: str | os.PathLike = "",
 ) -> npt.NDArray[np.float64]:
     close_gmsh = False
     if not gmsh.isInitialized():
@@ -541,9 +545,9 @@ def integrate_field(
 
 
 def write_simple(
-    filename: Union[str, os.PathLike],
-    time: List[float],
-    data: Union[np.ndarray, List],
+    filename: str | os.PathLike,
+    time: list[float],
+    data: np.ndarray | list,
 ) -> None:
     """_summary_
     TODO
@@ -554,9 +558,16 @@ def write_simple(
     """
     nbr_timesteps = len(time)
     if isinstance(data, np.ndarray):
-        assert np.any(np.equal(data.shape, nbr_timesteps))
+        if not np.any(np.equal(data.shape, nbr_timesteps)):
+            raise ValueError(
+                "No axis of the given data array does match the length of the time vector."
+            )
     elif isinstance(data, list):
-        assert len(data) == nbr_timesteps
+        if len(data) != nbr_timesteps:
+            raise ValueError(
+                "Length of the data vector does not match length of time vector "
+                f"{len(data)} != {nbr_timesteps}"
+            )
     else:
         raise TypeError(
             f"Data type was not numpy.ndarray or list, but {type(data)}."
@@ -566,22 +577,7 @@ def write_simple(
             resFile.write(f"{time[varStep]} {data[varStep]}\n")
 
 
-def adaptIronLossParams(
-    lossParams: Tuple[float, float, float], steelMat: ElectricalSteel
-) -> List[float]:
-    assert len(lossParams) == 3, "Number of loss parameters should be 3!"
-    assert isinstance(steelMat, ElectricalSteel), "Material should be steel"
-    freq = steelMat.referenceFrequency  # frequency in Hz
-    ind = steelMat.referenceFluxDensity  # induction in T
-    dens = steelMat.density  # density in kg/m³
-    dens = steelMat.density  # density in kg/m³
-    lossParams[0] = lossParams[0] * dens / freq / (ind**2)
-    lossParams[1] = lossParams[1] * dens / ((freq * ind) ** 2)
-    lossParams[2] = lossParams[2] * dens / ((freq * ind) ** 1.5)
-    # return lossParams
-
-
-def calcTimeDerivative(fieldFile: Union[str, os.PathLike]):
+def calcTimeDerivative(fieldFile: str | os.PathLike):
     """calculate time derivative and save to file
 
     Args:

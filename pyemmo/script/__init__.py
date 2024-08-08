@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied
+# Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -20,20 +21,21 @@
 """init of script module"""
 
 import json
-import warnings
+import logging
 from os.path import dirname, join
 from typing import Dict
+
 from ..version import __version__, sha
 
-colorDict = {}
+colorDict: Dict[str, str] = {}
 try:
     with open(
         join(dirname(__file__), "default_color_dict.json"),
         encoding="utf-8",
     ) as infile:
-        colorDict: Dict[str, str] = json.load(infile)
+        colorDict = json.load(infile)
 except Exception:
-    warnings.warn("Color Dict could not be imported...")
+    logging.warning("Color Dict could not be imported...")
 
 # Define domain names globally
 DOMAIN_PRIMARY = "primary"
@@ -54,7 +56,7 @@ DOMAIN_NON_LINEAR = "domainNL"
 DOMAIN_LINEAR = "domainL"
 
 # define default parameters in parameter dict
-default_param_dict = {"GEO": {}, "SYM": {}, "MAT": {}}
+default_param_dict: Dict[str, dict] = {"GEO": {}, "SYM": {}, "MAT": {}}
 """Default Script parameters dict, looks like:
     {\n
         "GEO": {\n

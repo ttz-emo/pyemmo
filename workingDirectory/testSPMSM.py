@@ -45,9 +45,10 @@ PBohrung = Point("mittelPunktBohrung", 0, 0, 0, 5e-3)
 # Material aus Datenbank laden
 steel_1010 = ElectricalSteel(
     sheetThickness=1e-3,
-    lossParams=(0.0, 0.0, 0.0),
+    lossParams=None,
     referenceFrequency=0,
     referenceFluxDensity=0,
+    density=1,
 )
 steel_1010.loadMatFromDataBase("Material_new.db", "steel_1010")
 ndFe35 = Material()
@@ -247,13 +248,13 @@ stator.plot()
 # %% Create Machine
 SPMSM.createMachineDomains()
 SPMSM.setFunctionMesh("linear", 8)
-SPMSM.plot()
+fig = SPMSM.plot()
 # SPMSM.createMachineDomains -> MachineAllType function
 # %%
 resDir = os.path.join(ROOT_DIR, r"Results\Baukasten")
 modelDir = path.abspath(path.join(resDir, "Test_SPMSM"))
 if not path.isdir(modelDir):
-    mkdir(modelDir)
+    os.makedirs(modelDir)
 else:
     # remove results folder
     pass
@@ -277,13 +278,17 @@ myScript = Script(
 )
 myScript.generateScript()
 
-os.system(
-    createCmdCommand(
-        onelabFile=myScript.proFilePath,
-        useGUI=False,
-        paramDict={"Flag_ClearResults": 1},
-    )
+cmd = createCmdCommand(
+    onelabFile=myScript.proFilePath,
+    gmshPath=r"C:\Software\onelab\gmsh.exe",
+    getdpPath=r"C:\Software\onelab\getdp.exe",
+    useGUI=False,
+    paramDict={"Flag_ClearResults": 1},
 )
+print(cmd)
+
+# %%
+os.system(cmd)
 plot_all_dat(myScript.resultsPath)
 print("I am done!")
 

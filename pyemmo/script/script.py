@@ -21,15 +21,16 @@
 
 # make all annotations strings, to avoid import errors in type checking case
 from __future__ import annotations
-import os
-import re
-import shutil
 
 # import warnings
 import logging
+import os
+import re
+import shutil
 from math import pi
 from os.path import abspath, join
-from typing import TYPE_CHECKING, Dict, List, Literal, Tuple, Union
+from typing import TYPE_CHECKING, Literal
+
 from numpy import rad2deg, where
 from pygetdp import Function as FunctionGetDP
 from pygetdp import Group as GroupGetDP
@@ -39,20 +40,21 @@ from pygetdp.postoperation import PostopItem
 from ..definitions import DEFAULT_GEO_TOL, MAIN_DIR
 from ..functions.cleanName import cleanName, isValidFilename
 
-# global domain dict to connect existing pyemmo Domains with domains for magstatdyn
+# global domain dict to connect existing pyemmo Domains with domains for
+# magstatdyn file
 from . import (
+    DOMAIN_AIRGAP,
+    DOMAIN_BAR,
+    DOMAIN_CONDUCTING,
+    DOMAIN_LAMINATION,
+    DOMAIN_LINEAR,
+    DOMAIN_NON_CONDUCTING,
+    DOMAIN_NON_LINEAR,
     boundaryDomainDict,
     default_param_dict,
     rotorDomainDict,
     statorDomainDict,
     versionStr,
-    DOMAIN_AIRGAP,
-    DOMAIN_LINEAR,
-    DOMAIN_NON_LINEAR,
-    DOMAIN_LAMINATION,
-    DOMAIN_BAR,
-    DOMAIN_CONDUCTING,
-    DOMAIN_NON_CONDUCTING,
 )
 from .geometry.domain import Domain
 from .geometry.line import Line
@@ -63,11 +65,11 @@ from .geometry.surface import Surface
 from .material.electricalSteel import ElectricalSteel
 
 if TYPE_CHECKING:
-    from .geometry.machineAllType import MachineAllType
-    from .material.material import Material
-    from .geometry.point import Point
     from .geometry.circleArc import CircleArc
+    from .geometry.machineAllType import MachineAllType
+    from .geometry.point import Point
     from .geometry.spline import Spline
+    from .material.material import Material
 
 
 class Script:
@@ -140,7 +142,7 @@ class Script:
                 }
             }
         """
-        ###Name des Skriptes
+        # Name des Skriptes
         if isValidFilename(name):
             self.name = name
         else:
@@ -152,12 +154,13 @@ class Script:
         self._simulationParameters = default_param_dict
         # update simulation parameters with user parameters
         for key, paramDict in simuParams.items():
-            self._simulationParameters[key] = (
-                default_param_dict[key] | paramDict
-            )
+            self._simulationParameters[key] = {
+                **default_param_dict[key],
+                **paramDict,
+            }
         ### directory to save the model files
         self.scriptPath = scriptPath
-        ### directory to save simulation results
+        # directory to save simulation results
         self.resultsPath = (
             abspath(resultsPath).replace("\\", "/")
             if resultsPath
@@ -165,27 +168,27 @@ class Script:
                 "\\", "/"
             )
         )
-        ###Punkte in Gmsh-Syntax
+        # point code (in gmsh syntax)
         self.pointCode: str = "\n// Points\n"
-        ###Alle erzeugten Punkte
+        # all points
         self.pointArray: list[Point] = []
-        ###Alle Linien in Gmsh-Syntax
+        # line code (gmsh syntax)
         self.curveCode: str = "\n// Lines and Curves\n"
-        ###Alle erzeugten Linien
+        # all generated lines
         self._curveList: list[Line | CircleArc | Spline] = []
-        ###Alle Flächen in Gmsh-Syntax
+        # all surfaces (gmsh syntax)
         self.areaCode: str = "\n// Surfaces\n"
-        ###Alle erzeugten Flächen
+        # all generated surfaces
         self.areaArray: list[Surface] = []
 
         self.colorCode: str = ""  # code for mesh colors
 
-        ###Alle erzeugenten Physicals in Gmsh-Syntax
+        # PhysicalElement code (gmsh syntax)
         self.physicalElementCode: str = "\n// Physical Elements\n"
-        ###Alle erzeugten Physicals
+        # all generatedPhysicals
         self.physicalElementArray: list[PhysicalElement] = []
 
-        ###Alle bereits erzeugten Materialien
+        # Alle bereits erzeugten Materialien
         self.group = GroupGetDP()
         self._materialDict: dict[str, list[list[int]]] = {
             "material": [],
@@ -195,15 +198,32 @@ class Script:
         self.functionMagnetisation = FunctionGetDP()
 
         self._postOperation: PostOperation = PostOperation()
-
+        # TODO: Add default Post Operation:
+        # PostOperation{
+        #     {
+        #         Name get_local_fields_post_sim; NameOfPostProcessing MagStaDyn_a_2D;
+        #         Operation {
+        #             Print[ js, OnElementsOf DomainS, File StrCat[ResDir,"js",ExtGmsh]] ;
+        #             Print[ b,  OnElementsOf Domain, File StrCat[ResDir,"b",ExtGmsh] ] ;
+        #             Print[ bn,  OnElementsOf Domain, File StrCat[ResDir,"bn",ExtGmsh]] ;
+        #             Print[ mu, OnElementsOf Domain, File StrCat[ResDir,"mu_r",ExtGmsh]] ;
+        #             Print[ az, OnElementsOf Domain, File StrCat[ResDir,"az",ExtGmsh] ] ;
+        #             // Echo[ Str["l=PostProcessing.NbViews-1;", "View[l].IntervalsType = 1;", "View[l].NbIso = 30;", "View[l].Light = 0;", "View[l].LineWidth = 2;"], File StrCat[ResDir,"tmp.geo"], LastTimeStepOnly] ;
+        #             If (Flag_Cir_RotorCage)
+        #             Print[
+        #                 j, OnElementsOf Rotor_Bars, File StrCat[ResDir, "j_RotorBars", ExtGmsh]
+        #             ];
+        #             EndIf
+        #     }
+        #     }
+        # }
         self.factory = factory  # gmsh geometry kernel
 
-        ### FOR DEBUGGING ###
+        # FOR DEBUGGING:
         self.nbrIdedentPoints: int = 0
         self.idedentPoints: list[Point] = []
         self.nbrIdedentLines: int = 0
         self.idedentLines: list[Line | CircleArc | Spline] = []
-        ### END FOR DEBUGGING ###
 
         # add machine domains
         self._machine = machine  # do not set machine via setter function!
@@ -322,8 +342,8 @@ class Script:
 
     @property
     def resultsPath(self) -> str:
-        """Getter of the attribute resPath
-        (path where the simulation results are stored)"""
+        """path to the folder where the simulation results are stored
+        (simulation results folder)"""
         return self._resPath
 
     @resultsPath.setter
@@ -764,14 +784,14 @@ class Script:
             if curveType == "Line":
                 code = (
                     f"{curveName} = {curveID};"
-                    f"Line({curveName}) = {{{startPointID}, {endPointID}}}; \n"
+                    f"Line({curveName}) = {{{startPointID}, {endPointID}}};\n"
                 )
             elif curveType == "CircleArc":
                 curve: CircleArc = curve
                 centerPointID = curve.center.id
                 code = (
                     f"{curveName} = {curveID};"
-                    f"Circle({curveName}) = {{{startPointID}, {centerPointID}, {endPointID}}}; \n"
+                    f"Circle({curveName}) = {{{startPointID}, {centerPointID}, {endPointID}}};\n"
                 )
                 ###
                 # # test add Transfinite curve mesh
@@ -1069,7 +1089,7 @@ class Script:
         )
         # Create single Bar regions
         if DOMAIN_BAR in rotorPhysicalsDict:
-            rotorPhysicalsDict[DOMAIN_BAR].sort(key=Slot.getRadialPosition)
+            rotorPhysicalsDict[DOMAIN_BAR].sort(key=Slot.get_radial_position)
             for i, region in enumerate(rotorPhysicalsDict[DOMAIN_BAR]):
                 domainList.append(Domain(f"Rotor_Bar_{i+1}", region))
         # add additional domains for every movinband part, to specify the
@@ -1422,6 +1442,11 @@ class Script:
         material = physicalElement.material
         if material not in matDict["material"]:
             matDict["material"].append(material)
+            # check that the material has eighter bh curve or permeability
+            if material.BH.size == 0 and not material.relPermeability:
+                raise RuntimeError(
+                    f"Material {material.name} has neither bh curve nor relative permability!"
+                )
             matDict["physicalElemID"].append([physicalElement.id])
         else:
             # otherwise find the index of the existing material
@@ -1495,9 +1520,21 @@ class Script:
                 physElemIDstr.append(str(physicalElementID))
             # add group for material
             matName = cleanName(mat.name)
-            self.group.add(id="group_" + matName, glist=physElemIDstr)
+            # FIXME: Group Add fails if mat name exists twice
+            # added workaround by adding _dup id
+            try:
+                self.group.add(id="group_" + matName, glist=physElemIDstr)
+            except ValueError as val_err:
+                if re.search(
+                    r"Identifier .* already in use.", val_err.args[0]
+                ):
+                    logging.warning(
+                        f"Material with name {matName} is defined multiple times, but with different properties. "
+                        "Trying to add it again with different identifier..."
+                    )
+                    matName = matName + "_dup"
+                    self.group.add(id="group_" + matName, glist=physElemIDstr)
             matFun = self.functionMaterial
-
             matFun.add_comment(f"New Material: {matName}\n", True)
             # add electrical conductivity
             conductivity = mat.conductivity
@@ -1521,9 +1558,12 @@ class Script:
                 bhArray = mat.BH
                 bString = "{"
                 hString = "{"
-                for bhValue in bhArray:
+                for i, bhValue in enumerate(bhArray):
                     bString += str(bhValue[0]) + ","
                     hString += str(bhValue[1]) + ","
+                    if (i % 9 == 0) and ((i - 1) != bhArray.shape[0]):
+                        bString += "\n"
+                        hString += "\n"
                 bString = bString[0 : len(bString) - 1] + "}"
                 hString = hString[0 : len(hString) - 1] + "}"
                 matFun.add_params({f"Mat_h_{matName}": hString})
@@ -1703,7 +1743,7 @@ class Script:
         self.group.add("DomainPlotMovingGeo", [plotID])
         geoCode += (
             f"statorBndLines[] = Boundary{{ Physical Surface{{ {statorIdStr} }}; }};\n"
-            + f"""Physical Line("DomainPlotMovingGeo",{plotID}) = {{rotorBndLines[], statorBndLines[]}}; \n"""
+            + f"""Physical Line("DomainPlotMovingGeo",{plotID}) = {{rotorBndLines[], statorBndLines[]}};\n"""
             # f"Hide {{ Line{{ Line '*' }}; }} \n"
             # + f"Hide {{ Point{{ Point '*' }}; }} \n"
             # + f"Show{{ Line {{rotorBndLines[], statorBndLines[]}}; }} \n"
@@ -1802,7 +1842,8 @@ class Script:
         .. code:: c
 
             // Mesh operations
-            Mesh.AlgorithmSwitchOnFailure = 0; // Do not switch mesh algorithm on failure, because this led to mesh errors in the past
+            Mesh.AlgorithmSwitchOnFailure = 0; // Do not switch mesh algorithm
+            //on failure, because this led to mesh errors in the past
             DefineConstant[
                 Flag_CompoundMesh = {
                     0, Name StrCat[INPUT_MESH, "Compound Mesh"], Choices {0,1},
@@ -2089,7 +2130,7 @@ class Script:
         # is the correct number of parameters
 
         # update machine parameters:
-        simuParamDict["GEO"] = simuParamDict["GEO"] | geometryParams
+        simuParamDict["GEO"] = {**simuParamDict["GEO"], **geometryParams}
 
         # 2. Set simulation parameters
         #   INIT_ROTOR_POS  -> Allready set in __init__
@@ -2148,11 +2189,12 @@ class Script:
                 machine.stator.winding.save_to_file(
                     os.path.join(self.resultsPath, f"winding_{self.name}.wdg")
                 )
-                machine.stator.winding.plot_MMK(
-                    filename=os.path.join(
-                        self.resultsPath, rf".\{self.name}_MMF.png"
-                    ),
-                )
+                # FIXME: Cannot use plot function with Pyleecan-SWATEM version
+                # machine.stator.winding.plot_MMK(
+                #     filename=os.path.join(
+                #         self.resultsPath, rf".\{self.name}_MMF.png"
+                #     ),
+                # )
 
             # Stator angle for I_U = 1 p.u., I_V = -1/2, I_W = -1/2 in rad elec
             systemOffset = float(angle[where(mmfOrder == nbrPolePairs)])
@@ -2203,7 +2245,7 @@ class Script:
         """Create the string code for the parameter file"""
         self._setParameters()  # set Parameters to write code
         paramDict = self.simParams
-        paramCode: str = "// MACHINE SPECIFIC VALUES \n"
+        paramCode: str = "// MACHINE SPECIFIC VALUES\n"
         for paramName, paramValue in paramDict["GEO"].items():
             paramCode += self._getParamCode(paramName, paramValue)
         paramCode += "// SIMULATION SPECIFIC VALUES\n"

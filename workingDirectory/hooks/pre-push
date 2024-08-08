@@ -1,0 +1,61 @@
+#!/bin/sh
+#!/usr/bin/env bash
+
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied
+# Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+
+## RUN BANDIT
+# to check for security issues
+# python -m bandit pyemmo -r -c pyproject.toml
+python -m bandit pyemmo -r -o ./Results/bandit_results.txt -f txt -c pyproject.toml
+exit_code=$?
+if [ $exit_code -ne 0 ]; then
+    echo "Bandit check for code vunerabilty failed with exit code $exit_code"
+    echo "See Results/bandit_results.txt for detailed info!"
+    exit $exit_code
+else
+    echo "Bandit check succeeded!"
+fi
+
+remote="$1"
+url="$2"
+# printf "Remote is:\t%s\n" $remote
+# printf "url is:\t\t%s\n" $url
+
+# branch=$(git rev-parse --symbolic --abbrev-ref $1) # should return REMOTE/BRANCH but does not work... Only returns REMOTE
+branch=$(git rev-parse --abbrev-ref HEAD) # get actual ACTIVE branch
+# echo Actual branch name is: $branch
+
+# echo actual file name is: $0
+# echo 3: "$3"
+
+# if [[ $url == *'git@gitlab.ttz-emo.thws.de'* ]]; then
+#     echo We are pushing to 'git@github.com:mxgnsr'
+# fi
+
+if [[ $branch == "master" ]]; then
+    echo "You are trying to push to the MASTER branch! Running tox..."
+    ## RUN TOX to check all python versions on master push
+    tox
+else
+    # run tests to verify push for this branch
+    D:/pyemmo/.pyemmo_venv/Scripts/python.exe -m pytest tests/api tests/functions tests/private tests/script
+fi
