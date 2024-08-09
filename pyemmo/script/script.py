@@ -1010,6 +1010,7 @@ class Script:
     def _addMachineDomains(self):
         domainList = self._createMachineDomains()
         for domain in domainList:
+            logging.debug("Adding domain %s", domain.name)
             self._addDomain(domain)
         return domainList
 
@@ -1351,9 +1352,6 @@ class Script:
             if physicalElement.material:
                 self._addMaterial(physicalElement)
             # add magnetization if specified
-            # FIXME: BUG Attribute errors inside addMag... functions are not
-            # catched!
-
             if isinstance(physicalElement, Magnet):
                 mag: Magnet = physicalElement
                 typeMag = mag.magType
