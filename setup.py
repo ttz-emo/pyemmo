@@ -36,7 +36,7 @@ except ImportError:  # Install setuptools if needed
 
     import setuptools
 
-from pyemmo.version import __version__
+# from pyemmo.version import __version__
 
 # /!\ Increase the number before a release
 # See https://www.python.org/dev/peps/pep-0440/
@@ -51,10 +51,14 @@ from pyemmo.version import __version__
 #  because we need to access the version number from pyemmo.script
 # with open("pyemmo/version.py", encoding="utf-8") as versionFile:
 # exec(versionFile.read()) # fixed per Issue: [B102:exec_used] in workingDirectory\Vu\bandit_log\bandit_log_20240809_105713.log line 360
+with open("pyemmo/version.py", encoding="utf-8") as versionFile:
+    file_content = versionFile.read()
+    version = [x for x in file_content.split("\n") if "__version__" in x][0].split("=")[1]
+    version = version.replace('"',"").replace(" ","")
 
 # from .pyemmo.version import __version__
 PYEMMO_VERSION = (
-    __version__  # # pylint: disable=locally-disabled, undefined-variable
+    version  # # pylint: disable=locally-disabled, undefined-variable
 )
 # PYEMMO_VERSION = version
 
