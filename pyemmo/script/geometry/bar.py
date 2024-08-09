@@ -47,7 +47,7 @@ class Bar(PhysicalElement):
         if isinstance(geometricalElement, Surface):
             geometricalElement = [geometricalElement]
         # make sure conductivity is defined for induced currents
-        if material.conductivity is not None:
+        if not material.conductivity:
             raise ValueError(
                 f"Material of Bar ({name}) must have electrical conductivity!"
             )
