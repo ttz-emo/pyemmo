@@ -62,10 +62,10 @@ test_cases = {}
 # Fix test cases for acutal machines to be testes from data folder:
 test_cases["api\\pyleecan"] = [
     ("test_id", "test_case"),
-    (0, "IPMSM_B"),  # TODO: mark as failing instead of skipping!
-    (1, "SPMSM_002"),
-    (2, "SPMSM_003"),
-    (3, "Toyota_Prius"),
+    (0, "IPMSM_B", False),  # TODO: mark as failing instead of skipping!
+    (1, "SPMSM_002", True),
+    (2, "SPMSM_003", True),
+    (3, "Toyota_Prius", True),
 ]
 
 

@@ -2,37 +2,6 @@
 requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
-# tox config
-# [tool.tox]
-# envlist = ["py37", "py38", "py39", "py310"]
-# [tool.tox.envlist]
-# envs = [
-#     "py37",
-#     "py38",
-#     "py39",
-#     "py310",
-# ] # "py311" not compatible with pyleecan yet
-# [tool.tox.testenv]
-# deps = ["pytest", "pytest_check", "hypothesis"]
-# commands = ["pytest tests\\script tests\\functions tests\\api"]
-# setenv = ["PATH = {env:PATH}{:}/."]
-[tool.tox]
-legacy_tox_ini = """
-[tox]
-envlist = py36, py37, py38, py39
-; envlist = py3913
-; skipsdist = true
-
-[testenv]
-deps =
-        pytest
-        pytest_check
-        hypothesis
-commands = pytest tests\\script tests\\functions tests\\api
-setenv =
-        PATH = {env:PATH}{:}/.
-"""
-
 [project]
 name = "pyemmo"
 authors = [
@@ -92,3 +61,44 @@ skips = ["B311", "B404", "B603"]
 # B603: subprocess mit "shell = False" - Dies minimiert das Risiko von
 # Shell-Injection-Angriffen und sollte bevorzugt verwendet werden (gegenüber
 # "shell = True").
+
+## tox config
+# Using legacy_tox_ini for now since there is no pure TOML parser in tox for
+# now. See https://tox.wiki/en/3.24.5/config.html#configuration-discovery for
+# details.
+
+# [tool.tox]
+# envlist = ["py37", "py38", "py39", "py310"]
+# [tool.tox.envlist]
+# envs = [
+#     "py38",
+#     "py39",
+#     "py310",
+# ] # "py311" not compatible with pyleecan yet
+# [tool.tox.testenv]
+# deps = ["pytest", "pytest_check", "hypothesis"]
+# commands = ["pytest tests"]
+# setenv = ["PATH = {env:PATH}{:}/."]
+[tool.tox]
+# py3.6 : Does not work somehow...
+# py3.7 : Pyleecan (>=1.5.1) does not work for 3.7 due to dependency conflicts
+#           with pyvista and SciDataTool. Pyvista max. version on 3.7 is 0.38.6
+#           SciDataTool (2.5.0) only works with Python >=3.8.
+# py3.10: Fails to install matplotlib 3.3.4 with build and setup.cfg due to
+#           freetype missing MS C++ compilers
+# py3.11: Not compatible with pyleecan yet due to PyQt5 (needed by pyleecan,
+#           but not available in Python 3.11).
+legacy_tox_ini = """
+[tox]
+envlist = py38, py39
+; skipsdist = true
+
+[testenv]
+deps =
+        pytest
+        pytest_check
+        hypothesis
+commands = pytest tests
+setenv =
+        PATH = {env:PATH}{:}/.
+"""

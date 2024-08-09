@@ -310,7 +310,9 @@ def createCmdCommand(
             else:
                 # add verbosity if given
                 if "verbosity level" in paramDict:
-                    getdp_command += f"-v {paramDict.pop('verbosity level')}"
+                    if gmsh_command:
+                        gmsh_command += f" -v {paramDict['verbosity level']} "
+                    getdp_command += f" -v {paramDict.pop('verbosity level')} "
                 for paramName, paramValue in paramDict.items():
                     if isinstance(paramValue, str):
                         getdp_command += (
