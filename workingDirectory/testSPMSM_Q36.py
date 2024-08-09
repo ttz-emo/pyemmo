@@ -19,24 +19,27 @@
 #
 """Test module for spmsm toolkit machine model"""
 
-# %%
-import os
-from os import mkdir, path
-
 # from pyemmo.functions.importResults import plotAllDat
 # from numpy import rad2deg, where
 import math
+
+# %%
+import os
+import subprocess
+from os import mkdir, path
+
 from swat_em import datamodel
+
+from pyemmo.definitions import ROOT_DIR
+from pyemmo.functions.runOnelab import createCmdCommand
+from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
 
 # from pyemmo.definitions import RESULT_DIR, MAIN_DIR
 from pyemmo.script.geometry.point import Point
 
 # from pyemmo.script.geometry.line import Line
-from pyemmo.script.material.electricalSteel import Material, ElectricalSteel
-from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
+from pyemmo.script.material.electricalSteel import ElectricalSteel, Material
 from pyemmo.script.script import Script
-from pyemmo.functions.runOnelab import createCmdCommand
-from pyemmo.definitions import ROOT_DIR
 
 # %%
 
@@ -277,27 +280,29 @@ myScript = Script(
 )
 myScript.generateScript()
 
-os.system(
+subprocess.run(
     createCmdCommand(
         onelabFile=myScript.proFilePath,
         useGUI=True,
         paramDict={"Flag_ClearResults": 1},
     )
 )
+# fixed per  Issue: [B605:start_process_with_a_shell] in workingDirectory\Vu\bandit_log\bandit_log_20240809_093824.log line 2817
+# os.system(
+#     createCmdCommand(
+#         onelabFile=myScript.proFilePath,
+#         useGUI=True,
+#         paramDict={"Flag_ClearResults": 1},
+#     )
+# )
 # plotAllDat(myScript.getResultsPath())
 print("I am done!")
 
 
+from SciDataTool import Data1D, DataTime
+
 # %%
-from pyemmo.functions.import_results import (
-    get_result_files,
-    read_timetable_dat,
-)
-from pyemmo.functions.import_results import (
-    get_result_files,
-    read_timetable_dat,
-)
-from SciDataTool import DataTime, Data1D
+from pyemmo.functions.import_results import get_result_files, read_timetable_dat
 
 resPath = (
     myScript.resultsPath
@@ -320,9 +325,9 @@ except FileNotFoundError:
 except Exception as exce:
     raise exce
 
-# %%
-from SciDataTool.Functions.Plot.plot_2D import plot_2D
 import matplotlib.pyplot as plt
+
+# %%
 
 plt.plot(resultsList[00].values, resultsList[00].axes[0].values)
 plt.show()

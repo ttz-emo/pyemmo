@@ -36,8 +36,11 @@ try:
 except ImportError:
     # Add root dir to python path
     sys.path.insert(0, ROOT_DIR)
-    exec("from pyemmo.functions.init_environment import get_config_dict")
-    exec("from pyemmo import PACKAGE_NAME, USER_DIR")
+    # fixed per Issue: [B102:exec_used] in workingDirectory\Vu\bandit_log\bandit_log_20240809_105713.log line 51 and 61
+    # exec("from pyemmo.functions.init_environment import get_config_dict")
+    # exec("from pyemmo import PACKAGE_NAME, USER_DIR")
+    from pyemmo import USER_DIR
+    from pyemmo.functions.init_environment import get_config_dict
 
 MAIN_DIR = dirname(realpath(__file__)).replace("\\", "/")  # main dir is pyemmo
 """Path: MAIN_DIR is "pyemmo" main package directory with "script", "functions" and

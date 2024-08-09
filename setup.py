@@ -27,14 +27,16 @@ because we want to access the version number in the script generation process"""
 try:
     import setuptools
 except ImportError:  # Install setuptools if needed
-    from os import system
+    import subprocess
     from sys import executable
 
     # run 'pip install setuptools'
-    system(f"{executable} -m pip install setuptools")
+    # system(f"{executable} -m pip install setuptools") #fixed per Issue: [B605:start_process_with_a_shell] in workingDirectory\Vu\bandit_log\bandit_log_20240809_093824.log
+    subprocess.run(f"{executable} -m pip install setuptools")
 
     import setuptools
 
+from pyemmo.version import __version__
 
 # /!\ Increase the number before a release
 # See https://www.python.org/dev/peps/pep-0440/
@@ -47,10 +49,14 @@ except ImportError:  # Install setuptools if needed
 
 # get version from version.py file in package,
 #  because we need to access the version number from pyemmo.script
-with open("pyemmo/version.py", encoding="utf-8") as versionFile:
-    exec(versionFile.read())
+# with open("pyemmo/version.py", encoding="utf-8") as versionFile:
+# exec(versionFile.read()) # fixed per Issue: [B102:exec_used] in workingDirectory\Vu\bandit_log\bandit_log_20240809_105713.log line 360
+
 # from .pyemmo.version import __version__
-PYEMMO_VERSION = __version__  # # pylint: disable=locally-disabled, undefined-variable
+PYEMMO_VERSION = (
+    __version__  # # pylint: disable=locally-disabled, undefined-variable
+)
+# PYEMMO_VERSION = version
 
 # with open("README.md", "r", encoding="utf-8") as fh:
 #     long_description = fh.read()

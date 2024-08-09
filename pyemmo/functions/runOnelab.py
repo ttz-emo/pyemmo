@@ -686,7 +686,10 @@ def main(onelabFile, use_gui, gmsh="", getdp="", paramDict={}) -> bytes:
         paramDict=paramDict,
     )
     comp_process = subprocess.run(
-        command, check=False, capture_output=True, shell=True
+        command,
+        check=False,
+        capture_output=True,
+        # shell=True
     )
     return comp_process.stderr
 

@@ -1,26 +1,24 @@
+# from numpy import rad2deg, where
 import os
-from os import path
+import subprocess
 from collections import defaultdict
+from os import path
+from os.path import abspath, dirname, join, normpath
+
+from mat_refs import magnetTypes, slotTypes
+from testSPMSM_base import SPMSM_test
 
 from pyemmo.functions.import_results import plot_all_dat
-
-# from numpy import rad2deg, where
-import math
-from swat_em import datamodel
+from pyemmo.functions.runOnelab import createCmdCommand
 
 # from pyemmo.definitions import RESULT_DIR, MAIN_DIR
 from pyemmo.script.geometry.point import Point
 
 # from pyemmo.script.geometry.line import Line
-from pyemmo.script.material.electricalSteel import Material, ElectricalSteel
+from pyemmo.script.material.electricalSteel import ElectricalSteel, Material
 from pyemmo.script.script import Script
-from pyemmo.functions.runOnelab import createCmdCommand
+
 # from pyemmo.definitions import ROOT_DIR
-
-from mat_refs import magnetTypes, slotTypes
-from testSPMSM_base import SPMSM_test
-
-from os.path import abspath, dirname, join, normpath, realpath, isdir
 
 
 """Preparation of test data"""
@@ -46,7 +44,12 @@ slotType = 1
 
 test_params = defaultdict(list)
 test_params["PBohrung"] = PBohrung
-test_params["mats"] = {"laminMat": steel_1010, "magMat": ndFe35, "wireMat": copper, "airMat": air}
+test_params["mats"] = {
+    "laminMat": steel_1010,
+    "magMat": ndFe35,
+    "wireMat": copper,
+    "airMat": air,
+}
 test_params["slotCount"] = 12
 test_params["poleCount"] = 8
 test_params["revols"] = 1000
@@ -59,9 +62,9 @@ test_params["simuParams"] = {
     # / (
     #     180 * 67 * 2
     # ),  # Ein Grad pro Step -> math.pi/180/(2*math.pi*67) = 1/(180*2*67)
-    #"analysisType": "timedomain",  #'timedomain', #'static'
+    # "analysisType": "timedomain",  #'timedomain', #'static'
     "startPosition": 0,
-    #"output": {"b": True, "az": True, "js": True},
+    # "output": {"b": True, "az": True, "js": True},
 }
 test_params["magnet"] = magnetTypes[magType]
 test_params["magnet"]["laminationParams"]["machineCentrePoint"] = PBohrung
@@ -121,7 +124,7 @@ cmd = createCmdCommand(
 )
 print(cmd)
 
-os.system(cmd)
+# os.system(cmd) #fixed per Issue: [B605:start_process_with_a_shell] in workingDirectory\Vu\bandit_log\bandit_log_20240809_093824.log
+subprocess.run(cmd)
 plot_all_dat(myScript.resultsPath)
 print("I am done!")
-
