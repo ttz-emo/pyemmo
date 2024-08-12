@@ -1,6 +1,6 @@
-import sqlite3
-import os
 import json
+import os
+import sqlite3
 
 from pyemmo.definitions import ROOT_DIR
 
@@ -38,9 +38,7 @@ def create_material_json(json_folder, mat_db, mode="sep"):
             mat_dict[row[0]]["BHCurve"] = {}
             cursor.execute("SELECT * FROM BH_CURVE WHERE ID = %d" % row[0])
             bh_data = cursor.fetchall()
-            cursor.execute(
-                "SELECT DISTINCT Temp from BH_CURVE WHERE ID = %d" % row[0]
-            )
+            cursor.execute("SELECT DISTINCT Temp from BH_CURVE WHERE ID = %d" % row[0])
             temp_list = cursor.fetchall()
             for temp in temp_list:
                 if temp[0] == "no information":
@@ -53,14 +51,10 @@ def create_material_json(json_folder, mat_db, mode="sep"):
                 # mat_dict[row[0]]["BHCurve"][temp_key] = {}
                 # mat_dict[row[0]]["BHCurve"][temp_key]["H"] = [row[1] for row in bh_data if row[3] == temp[0]]
                 # mat_dict[row[0]]["BHCurve"][temp_key]["B"] = [row[2] for row in bh_data if row[3] == temp[0]]
-            with open(
-                os.path.join(json_folder_path, f"{row[1]}.json"), "w"
-            ) as file:
+            with open(os.path.join(json_folder_path, f"{row[1]}.json"), "w") as file:
                 json.dump(mat_dict, file, indent="\t")
 
-        with open(
-            os.path.join(source_path, f"material_db_all.json"), "w"
-        ) as file:
+        with open(os.path.join(source_path, f"material_db_all.json"), "w") as file:
             json.dump(mat_dict, file, indent="\t")
     else:
         # create separate json for each material
@@ -80,9 +74,7 @@ def create_material_json(json_folder, mat_db, mode="sep"):
             mat_dict["BHCurve"] = {}
             cursor.execute("SELECT * FROM BH_CURVE WHERE ID = %d" % row[0])
             bh_data = cursor.fetchall()
-            cursor.execute(
-                "SELECT DISTINCT Temp from BH_CURVE WHERE ID = %d" % row[0]
-            )
+            cursor.execute("SELECT DISTINCT Temp from BH_CURVE WHERE ID = %d" % row[0])
             temp_list = cursor.fetchall()
             for temp in temp_list:
                 if temp[0] == "no information":
@@ -94,9 +86,7 @@ def create_material_json(json_folder, mat_db, mode="sep"):
                 ]
                 # mat_dict["BHCurve"][temp_key]["H"] = [row[1] for row in bh_data if row[3] == temp[0]]
                 # mat_dict["BHCurve"][temp_key]["B"] = [row[2] for row in bh_data if row[3] == temp[0]]
-            with open(
-                os.path.join(json_folder_path, f"{row[1]}.json"), "w"
-            ) as file:
+            with open(os.path.join(json_folder_path, f"{row[1]}.json"), "w") as file:
                 json.dump(mat_dict, file, indent="\t")
 
 
