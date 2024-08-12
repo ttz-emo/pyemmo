@@ -19,14 +19,14 @@
 #
 """Main module of pyleecan api"""
 
-import os
 import argparse
 import logging
+import os
 
 from pyleecan.Functions import load
 
 from ...definitions import RESULT_DIR
-from .. import logger, ch
+from .. import ch, logger
 from .main import main
 
 if __name__ == "__main__":

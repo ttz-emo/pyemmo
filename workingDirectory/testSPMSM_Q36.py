@@ -18,6 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Test module for spmsm toolkit machine model"""
+
 # %%
 import os
 from os import mkdir, path
@@ -44,9 +45,10 @@ PBohrung = Point("mittelPunktBohrung", 0, 0, 0, 5e-3)
 # Material aus Datenbank laden
 steel_1010 = ElectricalSteel(
     sheetThickness=1e-3,
-    lossParams=(0.0, 0.0, 0.0),
+    lossParams=None,
     referenceFrequency=0,
     referenceFluxDensity=0,
+    density=1,
 )
 steel_1010.loadMatFromDataBase("Material_new.db", "steel_1010")
 ndFe35 = Material()
@@ -291,9 +293,15 @@ from pyemmo.functions.import_results import (
     get_result_files,
     read_timetable_dat,
 )
+from pyemmo.functions.import_results import (
+    get_result_files,
+    read_timetable_dat,
+)
 from SciDataTool import DataTime, Data1D
 
-resPath = "C:/Users/ganser/AppData/Local/Programs/pyemmo/Results/Baukasten/Test_SPMSM/res_Test_SPMSM_Baukasten"
+resPath = (
+    myScript.resultsPath
+)  # 'C:/Users/ganser/AppData/Local/Programs/pyemmo/Results/Baukasten/Test_SPMSM/res_Test_SPMSM_Baukasten'
 
 resultsList: list[DataTime] = []
 try:
@@ -311,3 +319,11 @@ except FileNotFoundError:
     print("No results from GetDP...")
 except Exception as exce:
     raise exce
+
+# %%
+from SciDataTool.Functions.Plot.plot_2D import plot_2D
+import matplotlib.pyplot as plt
+
+plt.plot(resultsList[00].values, resultsList[00].axes[0].values)
+plt.show()
+print("ENDE")

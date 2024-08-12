@@ -55,6 +55,8 @@ print("SciDataTool version:" + SciDataTool.__version__)
 
 # Load the machine
 from os.path import join
+
+# pylint: disable=locally-disabled, no-name-in-module
 from pyleecan.Functions.load import load
 from pyleecan.definitions import DATA_DIR
 

@@ -18,15 +18,9 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for AirArea Physical Element"""
-from typing import List, Union
-from .physicalElement import (
-    PhysicalElement,
-    Material,
-    Surface,
-    Line,
-    CircleArc,
-    Spline,
-)
+from typing import List
+
+from .physicalElement import Material, PhysicalElement, Surface
 
 
 class AirArea(PhysicalElement):

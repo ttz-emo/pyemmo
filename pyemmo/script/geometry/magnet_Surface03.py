@@ -19,12 +19,11 @@
 #
 """Module for toolkit magnet Surface03"""
 import math
-from typing import Dict, Any
+from typing import Any, Dict
 
 from .. import colorDict
 from .line import Line
 from .magnet import Magnet
-from .physicalElement import PhysicalElement
 from .point import Point
 from .surface import Surface
 
@@ -82,9 +81,7 @@ class Magnet_Surface03(Magnet):
         magnetheight: float = self._machineDict["h_M"]
         magnetWidth: float = self._machineDict["w_Mag"]
 
-        globalCenter: Point = self._machineDict[
-            "machineCentrePoint"
-        ].duplicate()
+        globalCenter: Point = self._machineDict["machineCentrePoint"].duplicate()
         centerCoords = globalCenter.coordinate
 
         # Konstuktion der Punkte an der x-Achse

@@ -20,10 +20,10 @@
 """Module for class MovingBand"""
 from typing import List
 
-from .circleArc import CircleArc
 from ..material.material import Material
-from .physicalElement import PhysicalElement
 from ..script import DEFAULT_GEO_TOL
+from .circleArc import CircleArc
+from .physicalElement import PhysicalElement
 
 
 class MovingBand(PhysicalElement):

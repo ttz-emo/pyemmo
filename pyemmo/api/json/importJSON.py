@@ -21,19 +21,37 @@
 This module is about import functions for model information (geometry and simulation information)
 from json files
 """
+from __future__ import annotations
+
 import json
 import numbers
-from typing import Dict, List, Tuple, Union, Literal, Any
+from typing import Any, Literal
 
 from numpy import pi, zeros
 from numpy.linalg import norm
 
 from ...functions.cleanName import cleanName
-from ...script.material.material import Material
 from ...script.material.electricalSteel import ElectricalSteel
-from .. import air
+from ...script.material.material import Material
+from .. import air, logger
+
 
 # ================================ START EXTENDED INFO FUNCTIONS ===================================
+class InvalidSheetThicknessError(Exception):
+    """TODO.
+
+    Attributes:
+        input -- input that caused the error
+        message -- explanation of the error
+    """
+
+    def __init__(self, sheet_thickness, message="Invalid sheet thickness provided"):
+        self.input_value = sheet_thickness
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f"{self.message}: {self.input_value}"
 
 
 def importExtInfo(extInfoPath: str) -> dict:
@@ -83,7 +101,7 @@ def getCurrentAmpl(extendedInfo: dict) -> float:
     return norm([dCurrent, qCurrent])
 
 
-def getCurrentdq(extendedInfo: dict) -> Tuple[float]:
+def getCurrentdq(extendedInfo: dict) -> tuple[float]:
     """Return the values for d and q current from extended info as [id, iq]"""
     if "id" in extendedInfo.keys() and "iq" in extendedInfo.keys():
         return (extendedInfo["id"], extendedInfo["iq"])
@@ -136,9 +154,9 @@ def getNbrOfTurns(extendedInfo: dict) -> float:
     """
     ntpsKey = "Ntps"
     if ntpsKey in extendedInfo.keys():
-        if isinstance(
-            extendedInfo[ntpsKey], numbers.Number
-        ) and not isinstance(extendedInfo[ntpsKey], bool):
+        if isinstance(extendedInfo[ntpsKey], numbers.Number) and not isinstance(
+            extendedInfo[ntpsKey], bool
+        ):
             return float(extendedInfo[ntpsKey])
         msg = (
             "Number of turns per slot side variable (Ntps)"
@@ -223,12 +241,8 @@ def getNbrSlots(extendedInfo: dict) -> int:
         nbrSlots = extendedInfo[nppKey]
         if float(nbrSlots).is_integer():
             return int(nbrSlots)
-        raise ValueError(
-            f"number of slots ('{nppKey}') is not type int: {nbrSlots}"
-        )
-    raise KeyError(
-        f"number of slots ('{nppKey}') missing from extended info dict!"
-    )
+        raise ValueError(f"number of slots ('{nppKey}') is not type int: {nbrSlots}")
+    raise KeyError(f"number of slots ('{nppKey}') missing from extended info dict!")
 
 
 def getElecFreq(extendedInfo: dict) -> float:
@@ -238,7 +252,7 @@ def getElecFreq(extendedInfo: dict) -> float:
     return getRotFreq(extendedInfo, "Hz") * getNbrPolePairs(extendedInfo)
 
 
-def getAxialLength(extendedInfo: dict) -> Dict[str, float]:
+def getAxialLength(extendedInfo: dict) -> dict[str, float]:
     """get the axial length in meter of rotor and stator from the extended info dict"""
     if "axLen_S" in extendedInfo.keys() and "axLen_R" in extendedInfo.keys():
         return {
@@ -252,7 +266,7 @@ def getAxialLength(extendedInfo: dict) -> Dict[str, float]:
     raise KeyError(msg)
 
 
-def getMagTemperature(extendedInfo: dict) -> Union[float, None]:
+def getMagTemperature(extendedInfo: dict) -> float | None:
     """get the magnet temperature from the extended info dict. Key is "tempMag".
 
     Args:
@@ -268,7 +282,7 @@ def getMagTemperature(extendedInfo: dict) -> Union[float, None]:
     return None
 
 
-def getSimuParams(extendedInfo: dict) -> Dict[str, Dict[str, float]]:
+def getSimuParams(extendedInfo: dict) -> dict[str, dict[str, float]]:
     """
     Return the simulation parameter dictionary needed for script class. See class :class:`Script
     <pyemmo.script.script.Script>` for details about the simulation dict.
@@ -312,9 +326,7 @@ def getModelName(extendedInfo: dict) -> str:
     if mNKey in extendedInfo.keys():
         correctScriptName = cleanName(extendedInfo[mNKey])
         return correctScriptName
-    raise KeyError(
-        f"Name of model files ('{mNKey}') missing from extended info dict!"
-    )
+    raise KeyError(f"Name of model files ('{mNKey}') missing from extended info dict!")
 
 
 def getFlagOpenGui(extendedInfo: dict) -> bool:
@@ -332,9 +344,7 @@ def getFlagOpenGui(extendedInfo: dict) -> bool:
     fogKey = "flag_openGUI"
     if fogKey in extendedInfo.keys():
         return extendedInfo[fogKey]
-    raise KeyError(
-        f"Name of model files ('{fogKey}') missing from extended info dict!"
-    )
+    raise KeyError(f"Name of model files ('{fogKey}') missing from extended info dict!")
 
 
 def getMovingbandRadius(extendedInfo: dict) -> float:
@@ -412,7 +422,7 @@ def getMagAngle(extendedInfo: dict) -> dict:
 # ====================================== START MATERIAL FUNCTIONS ==================================
 
 
-def createMaterial(matDict: Dict[str, Dict[Literal["wert"], Any]]) -> Material:
+def createMaterial(matDict: dict[str, dict[Literal["wert"], Any]]) -> Material:
     """create a pyemmo material object based on matDict format
 
     Args:
@@ -425,24 +435,24 @@ def createMaterial(matDict: Dict[str, Dict[Literal["wert"], Any]]) -> Material:
     if isAir(name):
         return air
     if "elektromagnetik" in matDict.keys():
+        # TODO: Optimize code by introducing default mat dict and iterating
+        #  over its elements!
         magMatDict: dict = matDict["elektromagnetik"]
-        if "el_lw" in magMatDict.keys():
-            conductivity = magMatDict["el_lw"]["wert"]
-        else:
+        conductivity = magMatDict.get("el_lw", {}).get("wert")
+        if not isinstance(conductivity, (int, float)):
             conductivity = None
         # linear magnetic permerability
-        if "mue_r" in magMatDict.keys():
-            permeability = magMatDict["mue_r"]["wert"]
-        else:
+        permeability = magMatDict.get("mue_r", {}).get("wert")
+        if not isinstance(permeability, (int, float)):
             permeability = None
         # remanent flux density [T]
-        if "b_rem" in magMatDict.keys():
-            remanence = magMatDict["b_rem"]["wert"]
-            if "tk_rem_100" in magMatDict.keys():
-                remanenceTempCoef = magMatDict["tk_rem_100"]["wert"]
-        else:
+        remanence = magMatDict.get("b_rem", {}).get("wert")
+        if not isinstance(remanence, (int, float)):
             remanence = None
             remanenceTempCoef = None
+        else:
+            if "tk_rem_100" in magMatDict.keys():
+                remanenceTempCoef = magMatDict["tk_rem_100"]["wert"]
         # BH Curve
         bhCurve = None
         if "bh_kl" in magMatDict.keys():
@@ -472,19 +482,37 @@ def createMaterial(matDict: Dict[str, Dict[Literal["wert"], Any]]) -> Material:
                     "(neither relative permeability nor BH-Curve)"
                 )
                 raise AttributeError(msg)
+            elif permeability < 1:
+                # pylint: disable=locally-disabled,  line-too-long
+                logger.warning(
+                    "Permeability of material '%s' is smaller than 1! Resetting it to 1 for model.",
+                    name,
+                    exc_info=1,
+                )
+                permeability = 1.0
     else:
-        raise ValueError(
-            f"Material '{name}' missing 'elektromagnetik' section!"
-        )
+        raise ValueError(f"Material '{name}' missing 'elektromagnetik' section!")
 
-    if "dichte" in matDict.keys():
-        density = matDict["dichte"]["wert"]
-    else:
+    density = matDict.get("dichte", {}).get("wert")
+    if not isinstance(density, (int, float)):
         density = None
-
+    # check for sheet thickness
+    # if valid value (>0, <5e-3) for thickness is given -> create steel mat
     try:
         sheetThickness = matDict["d"]["wert"]
-        assert sheetThickness < 1
+        if not isinstance(sheetThickness, (int, float)):
+            raise InvalidSheetThicknessError(
+                sheetThickness,
+                f"Invalid sheet thickness type {type(sheetThickness)}",
+            )
+        if sheetThickness > 5e-3:
+            logger.warning(
+                """Sheet thickness of material %s is > 1: %f!
+                Creating standard material instead of electrical steel material!""",
+                name,
+                sheetThickness,
+            )
+            raise InvalidSheetThicknessError(sheetThickness)
         mat = createSteelMaterial(
             matDict,
             name,
@@ -494,7 +522,7 @@ def createMaterial(matDict: Dict[str, Dict[Literal["wert"], Any]]) -> Material:
             density,
             sheetThickness,
         )
-    except (KeyError, AssertionError, TypeError):
+    except (KeyError, InvalidSheetThicknessError):
         mat = Material(
             name=name,
             conductivity=conductivity,
@@ -569,9 +597,7 @@ def isAir(materialName: str):
         if not materialName:  # if materialName is empty
             return True
         raise TypeError("Imported material name is unempty list, not string!")
-    raise TypeError(
-        "Imported material name has type" + str(type(materialName))
-    )
+    raise TypeError("Imported material name has type" + str(type(materialName)))
 
 
 # ======================================= END MATERIAL FUNCTIONS ===================================
