@@ -40,8 +40,6 @@ def main(
     model_dir: str,
     gmsh: str | os.PathLike = "",
     getdp: str | os.PathLike = "",
-    gmsh: str | os.PathLike = "",
-    getdp: str | os.PathLike = "",
     use_gui: bool = True,
 ):
     """Main of pyleecan api.
