@@ -400,6 +400,7 @@ class Material:
         NOTE: this sets the curve for the default temperature only. Use set_BH() to set
         BH Curve for specific temperature
         """
+
         self.set_BH(newBH)
 
     def _set_BH_decorator(set_BH):
