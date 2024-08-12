@@ -251,14 +251,14 @@ class Material:
                 if self._BH[t].size:
                     h = [row[0] for row in self._BH[t]]
                     b = [row[1] for row in self._BH[t]]
-                    label = lambda: "default" if t == "default" else f"{t}°C"
-                    plt.plot(h, b, label=label())
+                    label = lambda : "default" if t == "default" else f"{t}°C"
+                    plt.plot(h, b, label=label(t))
         else:
             BH_vals = self.get_BH(temp)
             h = [row[0] for row in BH_vals]
             b = [row[1] for row in BH_vals]
             label = lambda: (
-                "default" if temp not in self._BH.keys() else f"{t}°C"
+                "default" if temp not in self._BH.keys() else f"{temp}°C"
             )
             plt.plot(h, b, label=label())
         plt.grid(visible=True, which="major", color="#666666", linestyle="-")
@@ -275,6 +275,7 @@ class Material:
         plt.xlabel("Field intensity H")
         plt.ylabel("Flux density B")
         plt.legend(loc="upper right")
+        plt.show(block=True)
 
     # def isLinear(self) -> bool:
     #     """check if the material is linear or has BH curve
@@ -376,7 +377,7 @@ class Material:
             numpy.ndarray: _description_
         """
         if not temperature:
-            if not self._BH["default"]:
+            if len(self._BH["default"]) < 1:
                 warnings.warn(
                     "BH-Curve is linear, or default curve has not been set.\n Please set default curve (syntax: obj.BH = <NDArray>) or use get_BH(temperature)",
                     UserWarning,
