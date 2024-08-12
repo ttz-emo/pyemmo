@@ -19,6 +19,7 @@
 #
 """MagnetParameter Beschreibung"""
 import math
+
 from ..material.material import Material
 
 ndFe35 = Material()

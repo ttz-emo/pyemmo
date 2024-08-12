@@ -19,14 +19,15 @@
 #
 """Init of pyemmo package. Overloads the function calc_phaseangle_starvoltageV2
 of site-package swat-em, because there is a mistake in the original implementation."""
+import datetime
+import logging
 import os
 import platform
 from os.path import isdir
 from typing import List, Literal
-import logging
-import datetime
-from swat_em import analyse
+
 import numpy as np
+from swat_em import analyse
 
 # import debugpy
 # debugpy.debug_this_thread()
@@ -90,10 +91,7 @@ def calcPhaseangleStarvoltageCorr(volVecList):
             # (=kmSum[0]*np.exp(1j*2*np.pi/3); mathematically positive), then
             # the phase order is inverted (uwv instead of uvw) and the rotation direction
             # is clockwise.
-            if (
-                np.abs(km_sum[2] - km_sum[0] * np.exp(1j * 2 * np.pi / 3))
-                < 1e-9
-            ):
+            if np.abs(km_sum[2] - km_sum[0] * np.exp(1j * 2 * np.pi / 3)) < 1e-9:
                 sequence.append(-1)  # math. negative
             else:
                 # otherwise its counter clockwise

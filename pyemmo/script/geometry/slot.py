@@ -18,14 +18,16 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for class Slot"""
+from math import degrees, isclose, pi
 from typing import List, Literal, Tuple, Union
+
+from numpy import mean
+
 from pyemmo.script.geometry.line import Line
 from pyemmo.script.geometry.surface import Surface
 from pyemmo.script.material.material import Material
+
 from .physicalElement import PhysicalElement
-from .. import colorDict
-from math import degrees, isclose, pi
-from numpy import mean
 
 
 ###
@@ -71,7 +73,8 @@ class Slot(PhysicalElement):
         if self.geometricalElement:  # if list is not empty
             if self.geoElementType == Line:
                 raise TypeError(
-                    f"Physical element type 'Slot' should only contain Surface  Elements but got type Line!"
+                    "Physical element type 'Slot' should only contain "
+                    "Surface Elements but got type Line!"
                 )
         # Material der Wicklung
         self.windDirection = windingDir  # set winding direction
@@ -98,9 +101,7 @@ class Slot(PhysicalElement):
         if windDir in (1, -1):
             self._windDirection = windDir
         else:
-            raise (
-                ValueError(f"Winding direction was not -1 or +1: {windDir}")
-            )
+            raise (ValueError(f"Winding direction was not -1 or +1: {windDir}"))
 
     @property
     def phase(self) -> float:
@@ -121,9 +122,7 @@ class Slot(PhysicalElement):
         if isinstance(phaseAngle, (int, float)):
             self._phase = phaseAngle
         else:
-            raise (
-                ValueError(f"Phase angle was not a valid number: {phaseAngle}")
-            )
+            raise (ValueError(f"Phase angle was not a valid number: {phaseAngle}"))
 
     @property
     def nbrTurns(self) -> int:
@@ -148,16 +147,10 @@ class Slot(PhysicalElement):
             if nbrTurnsInFace.is_integer():
                 self._nbrTurns = int(nbrTurnsInFace)
             else:
-                raise (
-                    ValueError(
-                        f"Number of turns is not type int: {nbrTurnsInFace}"
-                    )
-                )
+                raise (ValueError(f"Number of turns is not type int: {nbrTurnsInFace}"))
         else:
             raise (
-                ValueError(
-                    f"Number of turns in face is not a number: {nbrTurnsInFace}"
-                )
+                ValueError(f"Number of turns in face is not a number: {nbrTurnsInFace}")
             )
 
     def getPhase(self, phaseStr: str = None) -> Union[float, str]:
@@ -185,21 +178,33 @@ class Slot(PhysicalElement):
             phase = phaseStr[phaseIndex]
             return phase
 
-    def getRadialPosition(self) -> Tuple[float, float]:
+    def get_radial_position(self) -> Tuple[float, float]:
         """get the radial position of the slot.\n
+        This is useful when sorting the slots in radial direction
+
+        Returns:
+            float: Radius of the center of the slots surface(s) in m
+        """
+        radList: List[float] = []
+        for surf in self.geometricalElement:
+            centerPoint = surf.calcCOG()
+            radList.append(centerPoint.radius)
+        return mean(radList)
+
+    def get_circumferential_position(self) -> Tuple[float, float]:
+        """get the circumferential position of the slot.\n
         This is useful when sorting the slots in circumfederal direction
 
         Returns:
             float: Angle of the center of the slots surface(s) in radians
-            float: Radius of the center of the slots surface(s) in m
         """
-        radList: List[float] = list()
-        phiList: List[float] = list()
+        if not self.geometricalElement:
+            raise RuntimeError("No geometry to determine slot position.")
+        phiList: List[float] = []
         for surf in self.geometricalElement:
             centerPoint = surf.calcCOG()
             phiList.append(centerPoint.getAngleToX())
-            radList.append(centerPoint.radius)
-        return (mean(phiList), mean(radList))
+        return mean(phiList)
 
     def setColor(self, colorName: str = None):  # overwrite set color
         """Set mesh color for Slot

@@ -94,11 +94,11 @@ class TestScript(unittest.TestCase):
         # Test that the initial parameters are in the resulting param dict
         self.assertEqual(
             self.scriptObj.simParams["SYM"],
-            self.scriptObj.simParams["SYM"] | self.initParamDict["SYM"],
+            {**self.scriptObj.simParams["SYM"], **self.initParamDict["SYM"]},
         )
         self.assertEqual(
             self.scriptObj.simParams["MAT"],
-            self.scriptObj.simParams["MAT"] | self.initParamDict["MAT"],
+            {**self.scriptObj.simParams["MAT"], **self.initParamDict["MAT"]},
         )
 
 

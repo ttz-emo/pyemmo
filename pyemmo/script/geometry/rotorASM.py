@@ -20,6 +20,7 @@
 """Module for Class Rotor"""
 
 from typing import Dict, List
+
 from .physicalElement import PhysicalElement
 from .rotor import Rotor
 
@@ -65,9 +66,7 @@ class RotorASM(Rotor):
         if nbr_bars % 1 == 0.0:
             self._nbr_bars = nbr_bars
         else:
-            raise ValueError(
-                f"Number or rotor bars is not an integer: {nbr_bars}"
-            )
+            raise ValueError(f"Number or rotor bars is not an integer: {nbr_bars}")
 
     def sortPhysicals(self) -> Dict[str, List[PhysicalElement]]:
         """Create a dict with the physical elements sorted into different domains with

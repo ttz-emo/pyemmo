@@ -19,6 +19,7 @@
 #
 
 # %%
+import os
 from os import path
 import math
 import subprocess
@@ -37,9 +38,10 @@ PBohrung = Point("mittelPunktBohrung", 0, 0, 0, 5e-3)
 # Material aus Datenbank laden
 steel_1010 = ElectricalSteel(
     sheetThickness=1e-3,
-    lossParams=(0.0, 0.0, 0.0),
+    lossParams=None,
     referenceFrequency=0,
     referenceFluxDensity=0,
+    density=1,
 )
 steel_1010.loadMatFromDataBase("Material_new.db", "steel_1010")
 ndFe35 = Material()
@@ -144,6 +146,9 @@ pmsm1.createMachineDomains()
 modelDir = path.abspath(
     path.join(ROOT_DIR, "Results", "Baukasten", "Test_IPMSM")
 )
+if not path.isdir(modelDir):
+    os.makedirs(modelDir)
+
 testIPMSM_Script = Script(
     name="Test_IPMSM",
     scriptPath=modelDir,
