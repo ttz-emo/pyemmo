@@ -74,7 +74,7 @@ class Material:
             try:
                 # FIXME: Maybe check shapes before...
                 # if comparison results in ValueError, shapes could not be broadcasted
-                bhComp = np.array_equal(self.BH, __o.BH)
+                bhComp = self.BH == __o.BH
             except ValueError:
                 # comparison with empty array returns a ValueError
                 return False
