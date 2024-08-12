@@ -63,7 +63,6 @@ from . import LOGGER
 
 # from .testUtils import make_test_cases
 
-
 test_params = {
     "api\\pyleecan": {
         "id": -10,
@@ -145,8 +144,8 @@ def pyleecan_test_base(
         raise exce
 
     # Create result folder
+    curr_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
     if result_path == "":
-        curr_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
         resFolder = os.path.join(
             ROOT_DIR,
             test_params["result_folder"],
@@ -211,12 +210,16 @@ def pyleecan_test_base(
     with Popen(cmdCommand, stdout=PIPE, stderr=PIPE) as process:
         with process:
             error_message = log_subprocess_output(
-                process.stdout, process.stderr
+                process.stdout,
+                process.stderr,
+                os.path.join(
+                    sim_res_dir, f"simulation_log_{curr_datetime}.log"
+                ),
             )
         exitcode = process.wait()  # 0 means success
         if exitcode != 0:
             raise RuntimeError(
-                "Simulation for machine '%s' failed due to:\n\t%s"
+                "Simulation for machine '%s' failed due to:\n %s"
                 % (pyleecan_machine.name, error_message)
             )
     return pyemmo_script
@@ -260,8 +263,12 @@ def pyleecanPrepTuple(
     )
     if not os.path.isdir(result_path_all):
         os.makedirs(result_path_all)
-    log_file = open(os.path.join(result_path_all, f"simulation.log"), "w+")
-    log_file.write(f"Pyleecan API simulation log on {curr_datetime}\n")
+
+    file_handler = logging.FileHandler(
+        os.path.join(result_path_all, f"test_summary_{curr_datetime}.log")
+    )
+    LOGGER.addHandler(file_handler)
+    LOGGER.info(f"Pyleecan API simulation log on {curr_datetime}\n")
 
     for test_id, test_case, machine_works in test_cases[test_type][1:]:
         # curr_datetime, _ = updateConfig(test_type, test_id, test_case) #REDUNDANT since API level log already exists in each folder
@@ -292,33 +299,29 @@ def pyleecanPrepTuple(
             "comparison_base",
             test_case,
         )
-        if test_type == "api\\pyleecan" and machine_works:
+        # if test_type == "api\\pyleecan" and machine_works: # manual logic to exclude unsimulatable
+        if test_type == "api\\pyleecan":  # using pytest to skip tests
             try:
+                check_fail_flag = False
                 pyemmo_script: Script = pyleecan_test_base(
                     test_params[test_type],
                     result_path=result_path,
                     test_data_path=source_path,
                 )
-                log_file.write(f"Simulation successful for {test_case}.json\n")
+                LOGGER.info(f"Simulation successful for {test_case}.json\n")
 
             except RuntimeError as err:
                 LOGGER.warning(
-                    f"{err.__str__()}, cannot start tests for {test_case}"
+                    f"{err.__str__()}, tests for {test_case}.json will be skipped."
                 )
-                log_file.write(
-                    f"{err.__str__()}, cannot start tests for {test_case}.json\n"
-                )
+                check_fail_flag = True
 
             except Exception as exce:
                 LOGGER.warning(
                     f"test for {test_case} failed. exce.args[0]: "
                     + exce.args[0]
                 )
-                log_file.write(
-                    f"test for {test_case} failed. exce.args[0]: "
-                    + exce.args[0]
-                    + "\n"
-                )
+                check_fail_flag = True
             # simul_path = pyemmo_script.resultsPath
             simul_path = [
                 os.path.join(result_path, dir)
@@ -344,43 +347,38 @@ def pyleecanPrepTuple(
                 headers = "test_id, test_case, source_path, result_path, simul_path, simul_subfolder_path, base_result_path, base_simul_path, base_simul_subfolder_path"
                 param_tuples = param_tuples + [headers]
                 header_flg = False
-
-            param_tuples = param_tuples + [
-                pytest.param(
-                    test_id,
-                    test_case,
-                    source_path,
-                    result_path,
-                    simul_path,
-                    simul_subfolder_path,
-                    base_result_path,
-                    base_simul_path,
-                    base_simul_subfolder_path,
-                )
-            ]
-        elif not machine_works:
-            if header_flg:
-                headers = "test_id, test_case, source_path, result_path, simul_path, simul_subfolder_path, base_result_path, base_simul_path, base_simul_subfolder_path"
-                param_tuples = param_tuples + [headers]
-                header_flg = False
-            param_tuples = param_tuples + [
-                pytest.param(
-                    test_id,
-                    test_case,
-                    source_path,
-                    result_path,
-                    "",
-                    "",
-                    "",
-                    "",
-                    "",
-                    marks=pytest.mark.xfail(),
-                )
-            ]
+            if not check_fail_flag:
+                param_tuples = param_tuples + [
+                    pytest.param(
+                        test_id,
+                        test_case,
+                        source_path,
+                        result_path,
+                        simul_path,
+                        simul_subfolder_path,
+                        base_result_path,
+                        base_simul_path,
+                        base_simul_subfolder_path,
+                    )
+                ]
+            # elif not machine_works: # manually exclude tests
+            else:  # use pytest mark to skip test
+                param_tuples = param_tuples + [
+                    pytest.param(
+                        test_id,
+                        test_case,
+                        source_path,
+                        "",
+                        "",
+                        "",
+                        "",
+                        "",
+                        "",
+                        marks=pytest.mark.xfail(),
+                    )
+                ]
         else:
             continue
-
-    log_file.close()
 
     return param_tuples
 

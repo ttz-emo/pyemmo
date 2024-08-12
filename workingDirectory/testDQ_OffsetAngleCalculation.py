@@ -19,21 +19,23 @@
 #
 
 # %%
-import os
-from os import mkdir, path
+import subprocess
 from cmath import pi
+from os import mkdir, path
+
 from genericpath import isdir
-from numpy import rad2deg, where, gcd
-from swat_em import datamodel, analyse
-from pyemmo.functions.runOnelab import createCmdCommand
-from pyemmo.functions.import_results import plot_all_dat
-from pyemmo.script.script import Script
+from numpy import gcd, rad2deg, where
+from swat_em import analyse, datamodel
+
 from pyemmo.definitions import RESULT_DIR
+from pyemmo.functions.import_results import plot_all_dat
+from pyemmo.functions.runOnelab import createCmdCommand
+from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
 from pyemmo.script.geometry.point import Point
 
 # from pyemmo.script.geometry.line import Line
-from pyemmo.script.material.electricalSteel import Material, ElectricalSteel
-from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
+from pyemmo.script.material.electricalSteel import ElectricalSteel, Material
+from pyemmo.script.script import Script
 
 # %%
 
@@ -197,12 +199,20 @@ myScript = Script(
 )
 myScript.generateScript()
 
-os.system(
+subprocess.run(
     createCmdCommand(
         onelabFile=myScript.proFilePath,
         useGUI=True,
         paramDict={"Flag_ClearResults": 1},
     )
 )
+# fixed per Issue: [B605:start_process_with_a_shell] in workingDirectory\Vu\bandit_log\bandit_log_20240809_093824.log line 2596
+# os.system(
+#     createCmdCommand(
+#         onelabFile=myScript.proFilePath,
+#         useGUI=True,
+#         paramDict={"Flag_ClearResults": 1},
+#     )
+# )
 plot_all_dat(myScript.getResultsPath())
 # %%
