@@ -61,7 +61,7 @@ test_cases = {}
 
 # Fix test cases for acutal machines to be testes from data folder:
 test_cases["api\\pyleecan"] = [
-    ("test_id", "test_case"),
+    ("test_id", "test_case", "test_run_flag"),
     (0, "IPMSM_B", False),  # TODO: mark as failing instead of skipping!
     (1, "SPMSM_002", True),
     (2, "SPMSM_003", True),
@@ -140,10 +140,13 @@ class TestCasesIntegration:
         base_simul_subfolder_path,
     ):
         # ) = test_tuple
-        LOGGER.info(f"TEST CASE {test_id}: {test_case}")
-        LOGGER.info(
-            "Test point 1: Check that simulation result folders are properly generated:"
-        )
+        if result_path == "":
+            LOGGER.info(f"TEST CASE {test_id}: {test_case}: SKIPPED")
+        else:
+            LOGGER.info(f"TEST CASE {test_id}: {test_case}:")
+            LOGGER.info(
+                "Test point 1: Check that simulation result folders are properly generated:"
+            )
         with check("check simulation folder existence"):
             assert os.path.isdir(simul_path) and messagePrinter(
                 "SUCCESS: Simulation result folder exist"
@@ -153,6 +156,9 @@ class TestCasesIntegration:
                 "SUCCESS: Simulation result subfolder exists!"
             ), "ERROR: Simulation result subfolder does not exist"
 
+    @pytest.mark.dependency(
+        name="simul_data_gen", depends=["simul_folder_exist"]
+    )
     def test_gmsh_base_files(
         self,
         # test_tuple
