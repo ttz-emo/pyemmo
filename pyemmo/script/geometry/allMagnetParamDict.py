@@ -23,7 +23,7 @@ import math
 from ..material.material import Material
 
 ndFe35 = Material()
-ndFe35.loadMatFromDataBase("Material_new.db", "NdFe35")
+ndFe35.load("NdFe35")
 # Type magnet01_Surface
 mag_Type01 = {
     "h_M": 7e-3,

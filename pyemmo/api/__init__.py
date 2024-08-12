@@ -25,7 +25,7 @@ from ..script.material.material import Material
 
 try:
     air = Material()
-    air.loadMatFromDataBase("Material_new.db", "air")
+    air.load("air")
     air.name = "Air"
     air.density = 1.2041
 except FileNotFoundError:

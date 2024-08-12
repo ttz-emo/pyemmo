@@ -35,7 +35,6 @@ from numpy.typing import NDArray
 from pyemmo.definitions import ROOT_DIR
 
 from ... import rootLogger as logger
-from .materialManagement import getMaterial
 
 
 class Material:
@@ -98,42 +97,21 @@ class Material:
                 otherDict = __o.__dict__.copy()
                 del otherDict["_BH"]
                 return selfDict == otherDict
-            else:
-                return False
+            return False
         else:
             return False
 
-    def loadMatFromDataBase(self, dataBase: str, name: str) -> None:
-        """Load data for the material from a database by name.
-
-        You could load a material with the following code:
-
-        .. code:: python
-
-            ndFe35 = Material() # create a Material object
-            # load the data for this material
-            ndFe35.loadMatFromDataBase("Material_new.db", "NdFe35")
-
+    def load(self, materialName: str = ""):
+        """Function to load material from JSON database.
 
         Args:
-            dataBase (str): Name of the database (not path...).
-            name (str): Material name.
-        """
-        rawMat = getMaterial(dataBase, name)
-        self.name = rawMat["name"]
-        self.conductivity = rawMat["conductivity"]
-        self.relPermeability = rawMat["relPermeability"]
-        # remanence can be string "no information"...
-        if isinstance(rawMat["remanence"], str):
-            self.remanence = 0
-        else:
-            self.remanence = rawMat["remanence"]
-        self.linear = rawMat["linear"]
-        if not self.linear:
-            # if material is nonlinear load BH
-            self.BH = rawMat["BH"]
+            materialName (str, optional): Material name to load the Material from the
+                database, if its not given in the Material init before. Defaults to the
+                instance name (:func:`~material.Material.name`).
 
-    def load(self, materialName=""):
+        Raises:
+            RuntimeError: _description_
+        """
         if materialName == "":
             if self.name == "":
                 raise RuntimeError("Material name undefined, cannot load.")
@@ -344,7 +322,8 @@ class Material:
         """getter property of BH
         Returns:
             numpy.ndarray: _description_:
-        NOTE: This only returns BH curve for default temperature. Use get_BH() to get BH curve for specifc temperature instead!
+        NOTE: This only returns BH curve for default temperature. Use get_BH() to get BH
+        curve for specifc temperature instead!
         """
         return self.get_BH()
         # if self._BH.ndim < 3:
@@ -379,26 +358,28 @@ class Material:
         except KeyError:
             if self.linear:
                 warnings.warn(
-                    f"Tried to access the BH-curve for temperature {temperature}°C, but BH-Curve is linear!",
+                    f"Tried to access the BH-curve for temperature {temperature}°C, "
+                    "but BH-Curve is linear!",
                     UserWarning,
                 )
                 return np.empty(0)
-            elif len(self._BH.keys()) < 2:
+            if len(self._BH.keys()) < 2:
                 warnings.warn(
-                    f"Tried to access the BH-curve for temperature {temperature}°C, but there is only one BH-curve specified!",
+                    f"Tried to access the BH-curve for temperature {temperature}°C, "
+                    "but there is only one BH-curve specified!",
                     UserWarning,
                 )
                 return np.array(self._BH["default"])
-            else:
-                warnings.warn(
-                    f"No BH-curve registered for temperature {temperature}°C!",
-                    UserWarning,
-                )
-                return np.empty(0)
+            warnings.warn(
+                f"No BH-curve registered for temperature {temperature}°C!",
+                UserWarning,
+            )
+            return np.empty(0)
         # if self._BH.ndim < 3:
         #     # pylint: disable=locally-disabled,  line-too-long
         #     warnings.warn(
-        #         f"Tried to access the BH-curve for temperature {temperature}°C, but there is only one BH-curve specified!",
+        #         f"Tried to access the BH-curve for temperature {temperature}°C, but "
+        #         "there is only one BH-curve specified!",
         #         UserWarning,
         #     )
         #     return self._BH
@@ -415,7 +396,8 @@ class Material:
             [[B1, H1],[B2, H2],[B3, H3],...]
         Returns:
             None
-        NOTE: this sets the curve for the default temperature only. Use set_BH() to set BH Curve for specific temperature
+        NOTE: this sets the curve for the default temperature only. Use set_BH() to set
+        BH Curve for specific temperature
         """
         self.set_BH(newBH)
 
@@ -465,10 +447,9 @@ class Material:
 
         Args:
             BH (numpy.ndarray): BH curve (2D array) with shape (X,2) ->
-            [[B1, H1],[B2, H2],[B3, H3],...]
-            temperature (float): temperature of the curve. defaults to None (meaning default temperature)
-        Returns:
-            None
+                [[B1, H1],[B2, H2],[B3, H3],...].
+            temperature (float): temperature of the curve. defaults to None (meaning
+                default temperature).
         """
         if not hasattr(self, "_BH"):
             self._BH = {}
@@ -476,7 +457,7 @@ class Material:
             temp_key = "default"
         else:
             temp_key = temp
-        if not newBH:
+        if newBH is None:
             # if BH is None, set empty array
             self._BH[temp_key] = np.empty(0)
             if temp_key == "default":
