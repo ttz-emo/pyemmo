@@ -69,11 +69,13 @@ def findExe(exeName: str, verbosity: bool = True) -> str:
     """Search the local machine for the executalble given in exeName.
     There are several searching stages and the function returns the exe path if
     one stage gives a result:
+
         1. search with "which" command
         2. search the python path
         3. search the "User/appdate/local/programs" path
 
     TODO:
+
         Search "C:/Program Files" path
 
     Args:
