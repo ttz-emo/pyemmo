@@ -34,6 +34,7 @@ from numpy.typing import NDArray
 
 from pyemmo.definitions import ROOT_DIR
 
+from ... import rootLogger as logger
 from .materialManagement import getMaterial
 
 
@@ -74,7 +75,7 @@ class Material:
             try:
                 # FIXME: Maybe check shapes before...
                 # if comparison results in ValueError, shapes could not be broadcasted
-                bhComp = numpy.array_equal(self.BH, __o.BH)
+                bhComp = np.array_equal(self.BH, __o.BH)
             except ValueError:
                 # comparison with empty array returns a ValueError
                 return False
@@ -427,13 +428,9 @@ class Material:
             if isinstance(data, dict):
                 if len(data) < 1:
                     raise (ValueError("There is no BH data to add!"))
-                    return
-                else:
-                    for temp in data.keys():
-                        temp_key = lambda: (
-                            "default" if temp == "no information" else temp
-                        )
-                        set_BH(self, data[temp], temp_key())
+                for temp in data.keys():
+                    temp_key = lambda: ("default" if temp == "no information" else temp)
+                    set_BH(self, data[temp], temp_key())
             elif isinstance(data, str):
                 try:
                     file = pd.read_table(data)
