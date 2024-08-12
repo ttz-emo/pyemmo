@@ -19,7 +19,7 @@
 #
 """Module for abstract class Transformable"""
 # import abstrac base class (abc)
-from abc import ABC, abstractclassmethod, abstractproperty, abstractmethod
+from abc import ABC, abstractclassmethod, abstractmethod, abstractproperty
 
 
 class Transformable(ABC):

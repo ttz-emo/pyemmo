@@ -19,11 +19,11 @@
 #
 """Module for class Magnet_Slot01"""
 
+from .. import colorDict
+from .line import Line
 from .magnet import Magnet
 from .point import Point
-from .line import Line
 from .surface import Surface
-from .. import colorDict
 
 
 class MagnetSlot01(Magnet):

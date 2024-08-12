@@ -34,18 +34,19 @@ Functions:
 """
 
 from __future__ import annotations
-from math import pi
-from numpy import angle
 
-import pyleecan.Classes.Machine
+from math import pi
+
 import pyleecan.Classes.LamHole
 import pyleecan.Classes.LamSlotMag
 import pyleecan.Classes.LamSlotWind
+import pyleecan.Classes.Machine
 import pyleecan.Classes.Surface
+from numpy import angle
 
 from ..json.SurfaceJSON import SurfaceAPI
-from .build_pyemmo_material import build_pyemmo_material
 from .build_pyemmo_line_list import build_pyemmo_line_list
+from .build_pyemmo_material import build_pyemmo_material
 
 
 def translate_surface(

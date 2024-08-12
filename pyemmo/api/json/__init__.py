@@ -19,9 +19,9 @@
 #
 """init module of json api"""
 import logging
-from ...script.material.material import Material
-from ...script.geometry import defaultCenterPoint
 
+from ...script.geometry import defaultCenterPoint
+from ...script.material.material import Material
 
 globalCenterPoint = defaultCenterPoint
 # Movingband line Identification dicts

@@ -20,37 +20,37 @@
 """Module for Class Rotor"""
 
 import copy
-from typing import *
 import logging
-from matplotlib import pyplot as plt
 from math import pi
-from . import default_domain_dict
-from .magnet import Magnet
-from .movingBand import MovingBand
-from .surface import Surface
-from .line import Line, Point
-from .domain import Domain
-from .physicalElement import PhysicalElement
+from typing import *
+
+from matplotlib import pyplot as plt
+
+from ...definitions import DEFAULT_GEO_TOL
 from .. import (
-    DOMAIN_PRIMARY,
-    DOMAIN_SECONDARY,
-    DOMAIN_LIMIT,
-    DOMAIN_MOVINGBAND,
-    DOMAIN_MOVINGBAND_AUX,
+    DOMAIN,
     DOMAIN_AIRGAP,
-    DOMAIN_ROTOR,
-    DOMAIN_STRANDED,
-    DOMAIN_MAGNET,
-    DOMAIN_LAMINATION,
     DOMAIN_BAR,
     DOMAIN_CONDUCTING,
-    DOMAIN_NON_CONDUCTING,
-    DOMAIN,
-    DOMAIN_NON_LINEAR,
+    DOMAIN_LAMINATION,
+    DOMAIN_LIMIT,
     DOMAIN_LINEAR,
+    DOMAIN_MAGNET,
+    DOMAIN_MOVINGBAND,
+    DOMAIN_MOVINGBAND_AUX,
+    DOMAIN_NON_CONDUCTING,
+    DOMAIN_NON_LINEAR,
+    DOMAIN_PRIMARY,
+    DOMAIN_SECONDARY,
 )
 from ..material.electricalSteel import ElectricalSteel
-from ...definitions import DEFAULT_GEO_TOL
+from . import default_domain_dict
+from .domain import Domain
+from .line import Line, Point
+from .magnet import Magnet
+from .movingBand import MovingBand
+from .physicalElement import PhysicalElement
+from .surface import Surface
 
 
 class Rotor:
@@ -145,9 +145,7 @@ class Rotor:
         return self._physicalElements
 
     @physicalElements.setter
-    def physicalElements(
-        self, physicalElementsList: List[PhysicalElement]
-    ) -> None:
+    def physicalElements(self, physicalElementsList: List[PhysicalElement]) -> None:
         """Setter of PhysicalElements-List
 
         Args:
@@ -169,9 +167,7 @@ class Rotor:
             self._physicalElements = [physicalElementsList]
             self._createDomainForRotor()  # recreate domains for rotor with new elements
             return None
-        raise TypeError(
-            f"physicalElementList- type: {type(physicalElementsList)}."
-        )
+        raise TypeError(f"physicalElementList- type: {type(physicalElementsList)}.")
 
     def addPhysicalElements(self, physicalElementList: List[PhysicalElement]):
         """Append PhysicalElements to the rotor and recreate domains"""

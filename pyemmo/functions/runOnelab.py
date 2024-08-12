@@ -105,9 +105,7 @@ def findExe(exeName: str, verbosity: bool = True) -> str:
                     if fileList == f"{executableName}.exe":
                         exePath = join(path, fileList)
                         if verbosity:
-                            logging.debug(
-                                "Found %s in '%s'!", executableName, exePath
-                            )
+                            logging.debug("Found %s in '%s'!", executableName, exePath)
                         return exePath
         if not exePath:
             if verbosity:
@@ -168,9 +166,7 @@ def mergeAllGeoFiles(folderPath, gmshExe):
     for filename in allFiles:
         if ".geo" in filename:  # if its a geo file
             geoFilePath = join(folderPath, filename)
-            allCommands.append(
-                geoFilePath
-            )  # append the total filename to allCommands
+            allCommands.append(geoFilePath)  # append the total filename to allCommands
     subprocess.run(allCommands, shell=False)
     return None
 
@@ -231,9 +227,7 @@ def createCmdCommand(
         # first part of the cmd command: open the geo or pro-file
         if not gmshPath:
             gmshPath = findGmsh()
-        gmsh_command = (
-            f'{gmshPath} "{onelabFile}"'  # the command is: 'gmsh "FILE.xxx"'
-        )
+        gmsh_command = f'{gmshPath} "{onelabFile}"'  # the command is: 'gmsh "FILE.xxx"'
         if ext.lower() == ".geo":
             # if its a geo file
             if not useGUI:
@@ -250,9 +244,7 @@ def createCmdCommand(
                 if getdpPath:
                     # if command line and getdp specified
                     # run the simulation with specific getdp exe
-                    getdp_command += (
-                        f"{getdpPath} {onelabFile} -solve Analysis "
-                    )
+                    getdp_command += f"{getdpPath} {onelabFile} -solve Analysis "
                     # the command is: "getdp FILE.pro -solve Analysis"
                     if "msh" in paramDict:
                         if paramDict["msh"]:
@@ -315,13 +307,9 @@ def createCmdCommand(
                     getdp_command += f" -v {paramDict.pop('verbosity level')} "
                 for paramName, paramValue in paramDict.items():
                     if isinstance(paramValue, str):
-                        getdp_command += (
-                            f" -setstring {paramName} {paramValue}"
-                        )
+                        getdp_command += f" -setstring {paramName} {paramValue}"
                     elif isinstance(paramValue, (float, int)):
-                        getdp_command += (
-                            f" -setnumber {paramName} {paramValue}"
-                        )
+                        getdp_command += f" -setnumber {paramName} {paramValue}"
                     else:
                         raise (
                             TypeError(
@@ -331,9 +319,7 @@ def createCmdCommand(
                         )
 
     else:
-        raise FileNotFoundError(
-            f"Provided Onelab file was not found: {onelabFile}"
-        )
+        raise FileNotFoundError(f"Provided Onelab file was not found: {onelabFile}")
     if gmsh_command and getdp_command:
         return gmsh_command + " && " + getdp_command
     elif gmsh_command:
@@ -385,9 +371,7 @@ def createGMSHCommand(
     if isfile(gmshFile):
         (filePath, ext) = splitext(gmshFile)
         # first part of the cmd command: open the geo or pro-file
-        command = (
-            f'{gmshPath} "{gmshFile}"'  # the command is: 'gmsh "FILE.xxx"'
-        )
+        command = f'{gmshPath} "{gmshFile}"'  # the command is: 'gmsh "FILE.xxx"'
         if ext.lower() == ".geo":
             # if its a geo file
             if not useGUI:
@@ -414,9 +398,7 @@ def createGMSHCommand(
                 )
             )
     else:
-        raise FileNotFoundError(
-            f"Provided Onelab file was not found: {gmshFile}"
-        )
+        raise FileNotFoundError(f"Provided Onelab file was not found: {gmshFile}")
     return command
 
 
@@ -428,8 +410,7 @@ def runCalcforCurrent(param: dict):
             os.mkdir(RES_DIR)
         else:
             raise RuntimeError(
-                "Result directory does not exist and can not be created: "
-                + RES_DIR
+                "Result directory does not exist and can not be created: " + RES_DIR
             )
     # adding additional results path because its initally set in the parameter
     # geo file. But if the files are moved the results folder might not exist
@@ -438,9 +419,7 @@ def runCalcforCurrent(param: dict):
     pro_file = param["pro"]
     simulation_res_dir = os.path.join(RES_DIR, param["getdp"]["ResId"])
     # Remove previous results if flag activated
-    if "Flag_ClearResults" in param["getdp"] and os.path.isdir(
-        simulation_res_dir
-    ):
+    if "Flag_ClearResults" in param["getdp"] and os.path.isdir(simulation_res_dir):
         if param["getdp"]["Flag_ClearResults"]:
             logging.warning(
                 "Removing previous results from folder: %s",
@@ -468,9 +447,7 @@ def runCalcforCurrent(param: dict):
         )
 
         logging.debug("cmd command is: %s", cmdCommand)
-        logging.info(
-            "Running simulation for result-ID '%s'", param["getdp"]["ResId"]
-        )
+        logging.info("Running simulation for result-ID '%s'", param["getdp"]["ResId"])
 
         # calcInfo = subprocess.run(
         #     cmdCommand,
@@ -510,9 +487,7 @@ def runCalcforCurrent(param: dict):
         # raise RuntimeError(
         #     f"Result directory {simulation_res_dir} allready exists!"
         # )
-        logging.warning(
-            "Result directory %s allready exists!", simulation_res_dir
-        )
+        logging.warning("Result directory %s allready exists!", simulation_res_dir)
     ##########################################################################
     # EVALUATE RESULTS
     ##########################################################################
@@ -538,8 +513,8 @@ def runCalcforCurrent(param: dict):
         res_file = os.path.join(simulation_res_dir, f"I{index}.dat")
         if os.path.isfile(res_file):
             # get first char in machine side to index rotor and stator results
-            results_dict["time"], results_dict["current"][index] = (
-                read_timetable_dat(res_file)
+            results_dict["time"], results_dict["current"][index] = read_timetable_dat(
+                res_file
             )
         else:
             # Error because we need to import time here!
@@ -549,8 +524,8 @@ def runCalcforCurrent(param: dict):
     # optional import bar currents
     res_file = os.path.join(simulation_res_dir, "I_bars.dat")
     if isfile(res_file):
-        results_dict["time"], results_dict["current"]["bars"] = (
-            read_timetable_dat(res_file)
+        results_dict["time"], results_dict["current"]["bars"] = read_timetable_dat(
+            res_file
         )
 
     # 2. Torque Results
@@ -589,13 +564,11 @@ def runCalcforCurrent(param: dict):
     # 4. Induced voltage
     results_dict["inducedVoltage"] = {}
     for index in "ABC":
-        res_file = os.path.join(
-            simulation_res_dir, f"InducedVoltage{index}.dat"
-        )
+        res_file = os.path.join(simulation_res_dir, f"InducedVoltage{index}.dat")
         if os.path.isfile(res_file):
             # get first char in machine side to index rotor and stator results
-            _, results_dict["inducedVoltage"][index.lower()] = (
-                read_timetable_dat(res_file)
+            _, results_dict["inducedVoltage"][index.lower()] = read_timetable_dat(
+                res_file
             )
 
     # 5. Rotor position
@@ -607,9 +580,7 @@ def runCalcforCurrent(param: dict):
     # 6. Core loss
     # Check if file hystLoss_rotor.dat allready exists -> loss allready calculated
     core_loss_dict = {}
-    if not os.path.exists(
-        os.path.join(simulation_res_dir, "hystLoss_rotor.dat")
-    ):
+    if not os.path.exists(os.path.join(simulation_res_dir, "hystLoss_rotor.dat")):
         if "GetBIron" in post_operations:
             # calculate core loss
             totalLoss = 0
@@ -634,9 +605,7 @@ def runCalcforCurrent(param: dict):
                         simulation_res_dir,
                         str(loss_type) + f"Loss_{side}" + ".dat",
                     )
-                    calcIronLoss.write_simple(
-                        core_loss_res_file, time, loss_data
-                    )
+                    calcIronLoss.write_simple(core_loss_res_file, time, loss_data)
                     # with open(ironLossResFile, mode="w+", encoding="utf-8") as file:
                     #     lossDataJSON = json.dumps(ironLossDictList, indent=3)
                     #     file.write(lossDataJSON)
@@ -687,18 +656,14 @@ def main(onelabFile, use_gui, gmsh="", getdp="", paramDict={}) -> bytes:
         getdpPath=getdp,
         paramDict=paramDict,
     )
-    comp_process = subprocess.run(
-        command, check=False, capture_output=True, shell=True
-    )
+    comp_process = subprocess.run(command, check=False, capture_output=True, shell=True)
     return comp_process.stderr
 
 
 if __name__ == "__main__":
     # print("running main() of runOnelab.")
     # 1. Check that all argvs are valid!
-    parser = ArgumentParser(
-        description="Open the given Onelab file with gmsh."
-    )
+    parser = ArgumentParser(description="Open the given Onelab file with gmsh.")
 
     parser.add_argument(
         "onelabFile",

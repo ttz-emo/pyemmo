@@ -244,9 +244,7 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
     }.items():
         for quantity in ["b_radial", "b_tangent"]:
             sign = "-" if side == "rotor" else "+"
-            resFilePath = join(
-                "CAT_RESDIR", quantity + "_airgap_" + side + ".pos"
-            )
+            resFilePath = join("CAT_RESDIR", quantity + "_airgap_" + side + ".pos")
             # resFilePath = abspath(
             #     join(script.getResultsPath(), quantity + "_airgap_" + side + ".pos")
             # )
@@ -411,9 +409,7 @@ def main(
                 with open(geo, encoding="utf-8") as jsonFile:
                     machineGeoList = json.load(jsonFile)
                     # create dict with surface api (segment) objects from the surface list
-                    segmentSurfDict = modelJSON.importMachineGeometry(
-                        machineGeoList
-                    )
+                    segmentSurfDict = modelJSON.importMachineGeometry(machineGeoList)
             except FileNotFoundError as fnfe:
                 raise fnfe
             except Exception as exept:
@@ -433,9 +429,7 @@ def main(
             # import the extended information
             extendedInfo = importJSON.importExtInfo(extInfo)
         else:
-            raise (
-                FileNotFoundError(f"Given file path {extInfo} was not a file.")
-            )
+            raise (FileNotFoundError(f"Given file path {extInfo} was not a file."))
     elif isinstance(extInfo, dict):
         extendedInfo = extInfo
     else:
@@ -489,9 +483,7 @@ def _open_onelab(
     else:
         # if gmsh was given by the user, check that its valid
         if not isfile(gmsh):
-            raise FileNotFoundError(
-                f"Provided gmsh executable was not found: {gmsh}"
-            )
+            raise FileNotFoundError(f"Provided gmsh executable was not found: {gmsh}")
     proFile = apiScript.proFilePath  # path to .pro file
     command = runOnelab.createCmdCommand(
         onelabFile=proFile,
@@ -624,12 +616,8 @@ def _run_core_loss_calculation(resPath, apiScript: Script):
         calcIronLoss.write_simple(
             join(resPath, "Pv_eddy_S.dat"), time, ironLossS["eddy"]
         )
-        calcIronLoss.write_simple(
-            join(resPath, "Pv_exc_R.dat"), time, ironLossR["exc"]
-        )
-        calcIronLoss.write_simple(
-            join(resPath, "Pv_exc_S.dat"), time, ironLossS["exc"]
-        )
+        calcIronLoss.write_simple(join(resPath, "Pv_exc_R.dat"), time, ironLossR["exc"])
+        calcIronLoss.write_simple(join(resPath, "Pv_exc_S.dat"), time, ironLossS["exc"])
     else:
         logger.warning(
             "IRON LOSS CALCULATION: field file 'b_rotor.pos' or 'b_stator.pos'"
@@ -656,9 +644,7 @@ def is_single_transient(res_dir: str) -> bool:
     if dat_file_list:
         # for dat_file in dat_file_list:
         # get time and data values of first file
-        time, data = import_results.read_timetable_dat(
-            join(res_dir, dat_file_list[0])
-        )
+        time, data = import_results.read_timetable_dat(join(res_dir, dat_file_list[0]))
         if time.size > 1:
             # get number of simulations in that file
             nbrSim, _, _ = import_results.split_data(time, data)
