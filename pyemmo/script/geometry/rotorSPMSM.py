@@ -17,25 +17,27 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-from .physicalElement import PhysicalElement
-from .spline import Spline
+from __future__ import annotations
+
+import math
+
+from .airArea import AirArea
+from .airGap import AirGap
+from .circleArc import CircleArc
 from .domain import Domain
+from .limitLine import LimitLine
+from .line import Line
+from .magnet import Magnet
+from .movingBand import MovingBand
+from .physicalElement import PhysicalElement
+from .point import Point
+from .primaryLine import PrimaryLine
 from .rotor import Rotor
 from .rotorLamination import RotorLamination
 from .rotorLamination_Sheet01_Standard import RotorLamination_Sheet01_Standard
-from .magnet import Magnet
-from .line import Line
-from .circleArc import CircleArc
-from .point import Point
-from .surface import Surface
-from .airArea import AirArea
-from .airGap import AirGap
-from .movingBand import MovingBand
-from .limitLine import LimitLine
-from .primaryLine import PrimaryLine
 from .slaveLine import SlaveLine
-import math
-from typing import List, Union
+from .spline import Spline
+from .surface import Surface
 
 
 ###
@@ -70,9 +72,7 @@ class RotorSPMSM(Rotor):
         Raises:
             ValueError: _description_
         """
-        super().__init__(
-            physicalElementList=[], name="RotorSPMSM", axLen=axLen
-        )
+        super().__init__(physicalElementList=[], name="RotorSPMSM", axLen=axLen)
         self.laminationType = laminationType
         self.magnetType = magnetType
         ###Dictionary mit Blechparameter.
@@ -84,9 +84,7 @@ class RotorSPMSM(Rotor):
         if float(nbrGeoParts).is_integer():
             self.nbrGeoParts = int(nbrGeoParts)
         else:
-            raise ValueError(
-                f"Number of geometry parts is not int!: {nbrGeoParts}"
-            )
+            raise ValueError(f"Number of geometry parts is not int!: {nbrGeoParts}")
         self.symmetryFactor = symmetryFactor
 
     ###Mit addLaminationParameter werden alle Parameter in das Laminationdictionary abgespeichert.
@@ -106,9 +104,7 @@ class RotorSPMSM(Rotor):
                 "machineCentrePoint"
             ]
         else:
-            print(
-                "No definition of lamination. Use addLaminationParameter() first!"
-            )
+            print("No definition of lamination. Use addLaminationParameter() first!")
 
     ###Mit addAirGapParameter werden alle Parameter in das Airgapdictionary abgespeichert.
     def addAirGapParameter(self, airGapDict):
@@ -130,9 +126,7 @@ class RotorSPMSM(Rotor):
             #     from .rotorLamination_Sheet01_Standard import (
             #         RotorLamination_Sheet01_Standard,
             #     )
-            laminationPart = RotorLamination_Sheet01_Standard(
-                self.laminationDict
-            )
+            laminationPart = RotorLamination_Sheet01_Standard(self.laminationDict)
 
             if self.magnetType == "magnet01_surface":
                 from .magnet_Surface01 import Magnet_Surface01
@@ -161,7 +155,7 @@ class RotorSPMSM(Rotor):
                     self.magnetDict["magnetisationType"],
                 )
 
-            self._physicalElements: List[PhysicalElement] = [
+            self._physicalElements: list[PhysicalElement] = [
                 laminationPart,
                 magnetPart,
             ]
@@ -188,9 +182,7 @@ class RotorSPMSM(Rotor):
         allAngleParallel = [angleParallel1]
         alpha = self.angleGeoParts * 2
         for i in range(1, int(self.nbrGeoParts / 2)):
-            dockingPointM.rotateZ(
-                self.laminationDict["machineCentrePoint"], alpha
-            )
+            dockingPointM.rotateZ(self.laminationDict["machineCentrePoint"], alpha)
             coordDPM = dockingPointM.coordinate
             angle = math.atan2(coordDPM[1], coordDPM[0])
             allAngleParallel.append(angle)
@@ -259,11 +251,9 @@ class RotorSPMSM(Rotor):
         PCentre = self.laminationDict["machineCentrePoint"].duplicate()
         alpha = self.angleGeoParts
         pMagAir: Point = self._physicalElements[1].airDockingPoint[0]
-        pAir1: Point = (
-            pMagAir.duplicate()
-        )  # mmagnet center point on airgap side
+        pAir1: Point = pMagAir.duplicate()  # mmagnet center point on airgap side
         for line in self._physicalElements[1].airLinePart:
-            line: Union[Line, CircleArc, Spline]
+            line: Line | CircleArc | Spline
             if pMagAir in line.points:  # only set mesh on line near airgap
                 line.setMeshLength(
                     airGapLength
@@ -271,19 +261,13 @@ class RotorSPMSM(Rotor):
         pAir1.translate(
             airGapLength * math.cos(alpha), airGapLength * math.sin(alpha), 0
         )
-        pAir2 = (
-            pAir1.duplicate()
-        )  # p2 is airspace point on segemnt center near airgap
+        pAir2 = pAir1.duplicate()  # p2 is airspace point on segemnt center near airgap
         pAir2.rotateZ(PCentre, alpha)
 
         # createLine
         lAir1 = CircleArc("lAir1", pAir1, PCentre, pAir2)
-        lAir2 = Line(
-            "lAir2", pAir1, self._physicalElements[1].airDockingPoint[0]
-        )
-        lAir3 = Line(
-            "lAir3", pAir2, self._physicalElements[0].airDockingPoint2[0]
-        )
+        lAir2 = Line("lAir2", pAir1, self._physicalElements[1].airDockingPoint[0])
+        lAir3 = Line("lAir3", pAir2, self._physicalElements[0].airDockingPoint2[0])
         sAir1 = Surface(
             "sAir1",
             [lAir1, lAir2, lAir3]
@@ -307,16 +291,14 @@ class RotorSPMSM(Rotor):
         sAirGap1.setMeshLength(
             airGapLength
         )  # set mesh length of airgap surface to heigth of segment. Thats good practice for calculating the maxwell stress tensor torque
-        airGapPart = AirGap(
-            "airGapRotor", [sAirGap1], self._airGapDict["material"]
-        )
+        airGapPart = AirGap("airGapRotor", [sAirGap1], self._airGapDict["material"])
         self._physicalElements.append(airGapPart)
         return None
 
     ###createDuplicate() vervollständig die Geometrie zum gewünschten Teil- bzw. Vollmodell.
     def _createDuplicate(self):
         # duplicate Rotorsheet (to get one rotor segment)
-        rotorLam: Union[RotorLamination, RotorLamination_Sheet01_Standard] = (
+        rotorLam: RotorLamination | RotorLamination_Sheet01_Standard = (
             self._physicalElements[0]
         )
         rotorLamSurfList = rotorLam.geometricalElement
@@ -336,9 +318,7 @@ class RotorSPMSM(Rotor):
         for i in range(1, int(self.nbrGeoParts / 2)):
             for rotLamSurf in rotorLamSurfList:
                 sNew = rotLamSurf.duplicate()
-                sNew.rotateZ(
-                    self.laminationDict["machineCentrePoint"], i * alpha
-                )
+                sNew.rotateZ(self.laminationDict["machineCentrePoint"], i * alpha)
                 dupRotorLamSurfList.append(sNew)
         rotorLam.geometricalElement = (
             rotorLamSurfList + dupRotorLamSurfList
@@ -349,16 +329,12 @@ class RotorSPMSM(Rotor):
         magSurfList = magnet.geometricalElement
         surfaceMag2 = magSurfList[0].mirror(PCentre, hilfsLinie1, hilfsLinie2)
         magSurfList.append(surfaceMag2)
-        dupMagnetList: List[Magnet] = []
+        dupMagnetList: list[Magnet] = []
         for i in range(1, int(self.nbrGeoParts / 2)):
-            dupMagSurfList: List[Surface] = (
-                []
-            )  # clear previous magnet surf list
+            dupMagSurfList: list[Surface] = []  # clear previous magnet surf list
             for magSurf in magSurfList:
                 sNew2 = magSurf.duplicate()
-                sNew2.rotateZ(
-                    self.laminationDict["machineCentrePoint"], i * alpha
-                )
+                sNew2.rotateZ(self.laminationDict["machineCentrePoint"], i * alpha)
                 dupMagSurfList.append(sNew2)
             dupMag = Magnet(
                 name="magnet_SPMSM",
@@ -389,9 +365,7 @@ class RotorSPMSM(Rotor):
             # for number of segemnts duplicate and rotate the air surfaces to get all geo-elements
             for airSurf in airSurfList:
                 sNew = airSurf.duplicate()
-                sNew.rotateZ(
-                    self.laminationDict["machineCentrePoint"], i * alpha
-                )
+                sNew.rotateZ(self.laminationDict["machineCentrePoint"], i * alpha)
                 dupAirSegmentSurfList.append(sNew)
         airPhys.geometricalElement = airSurfList + dupAirSegmentSurfList
         # self._physicalElements.append(
@@ -406,17 +380,13 @@ class RotorSPMSM(Rotor):
         # duplicate AirGap
         airgapPhys: AirGap = self._physicalElements[3]
         airgapSurfList = airgapPhys.geometricalElement
-        surfaceAirGap2 = airgapSurfList[0].mirror(
-            PCentre, hilfsLinie1, hilfsLinie2
-        )
+        surfaceAirGap2 = airgapSurfList[0].mirror(PCentre, hilfsLinie1, hilfsLinie2)
         airgapSurfList.append(surfaceAirGap2)
         dupAirgapSurfList = []
         for i in range(1, int(self.nbrGeoParts / 2)):
             for airgapSurf in airgapSurfList:
                 sNew = airgapSurf.duplicate()
-                sNew.rotateZ(
-                    self.laminationDict["machineCentrePoint"], i * alpha
-                )
+                sNew.rotateZ(self.laminationDict["machineCentrePoint"], i * alpha)
                 dupAirgapSurfList.append(sNew)
         airgapPhys.geometricalElement = airgapSurfList + dupAirgapSurfList
 
@@ -448,11 +418,9 @@ class RotorSPMSM(Rotor):
 
         # create moving band lines
         airgap_surf1: Surface = self._physicalElements[3].geometricalElement[0]
-        mb_line_list: List[CircleArc] = []
+        mb_line_list: list[CircleArc] = []
         mbNegDirection = airgap_surf1.curve[1].duplicate()
-        mbNegDirection.rotateZ(
-            self.laminationDict["machineCentrePoint"], -angle
-        )
+        mbNegDirection.rotateZ(self.laminationDict["machineCentrePoint"], -angle)
         mb_line_list.append(mbNegDirection)
 
         for i in range(1, self.nbrGeoParts):
@@ -482,9 +450,7 @@ class RotorSPMSM(Rotor):
                     i * self.nbrGeoParts * angle,
                 )
                 mbRotor_aux.append(l_mb_aux)
-            mbAux = MovingBand(
-                "", mbRotor_aux, self._airGapDict["material"], True
-            )
+            mbAux = MovingBand("", mbRotor_aux, self._airGapDict["material"], True)
             mbAux.name = "mb_Aux_" + str(mbAux.id)
             allMBAux.append(mbAux)
         self._physicalElements = self._physicalElements + allMBAux
@@ -496,24 +462,12 @@ class RotorSPMSM(Rotor):
         pprimary2 = Point("pprimary2", self.laminationDict["r_R"], 0, 0, 1)
         lLamprimary = Line("lLamprimary", pprimary1, pprimary2)
 
-        lAir = (
-            self._physicalElements[2]
-            .geometricalElement[0]
-            .curve[2]
-            .duplicate()
-        )
+        lAir = self._physicalElements[2].geometricalElement[0].curve[2].duplicate()
         lAir.rotateZ(self.laminationDict["machineCentrePoint"], -angle * 2)
-        lAirGap = (
-            self._physicalElements[3]
-            .geometricalElement[0]
-            .curve[2]
-            .duplicate()
-        )
+        lAirGap = self._physicalElements[3].geometricalElement[0].curve[2].duplicate()
         lAirGap.rotateZ(self.laminationDict["machineCentrePoint"], -angle)
 
-        primaryLine1 = PrimaryLine(
-            "primary_RotorLine", [lLamprimary, lAir, lAirGap]
-        )
+        primaryLine1 = PrimaryLine("primary_RotorLine", [lLamprimary, lAir, lAirGap])
         self._physicalElements.append(primaryLine1)
 
         allslaveLine = primaryLine1.geometricalElement
@@ -560,22 +514,16 @@ class RotorSPMSM(Rotor):
         self._domainNL = Domain("DomainNL_Rotor", allPhy["domainNL"])
 
         ###rotorMoving beinhaltet alle Physical Elements, die während der Simulation rotiert werden müssen.
-        self._rotorMoving = Domain(
-            "DomainRotor_Moving", allPhy["rotor_moving"]
-        )
+        self._rotorMoving = Domain("DomainRotor_Moving", allPhy["rotor_moving"])
 
         ###primarykante vom Rotor.
-        self._domainPrimary = Domain(
-            "Domain_PrimaryRegion_Rotor", allPhy["primary"]
-        )
+        self._domainPrimary = Domain("Domain_PrimaryRegion_Rotor", allPhy["primary"])
 
         ###Slavekante vom Rotor.
         self._domainSlave = Domain("Domain_SlaveRegion_Rotor", allPhy["slave"])
 
         ###Innengrenze der elektrischen Maschine (Welle).
-        self._domainInnerLimit = Domain(
-            "Domain_InnerLimit_Rotor", allPhy["limit"]
-        )
+        self._domainInnerLimit = Domain("Domain_InnerLimit_Rotor", allPhy["limit"])
 
     # ###sortPhysicals ist eine Sortierfunktion, die die PhysicalElements den passenden Domainen zuweist.
     # def sortPhysicals(self):

@@ -19,20 +19,21 @@
 #
 """Module for Material-class"""
 
+
 # pylint: disable=line-too-long
 
-from typing import Union
-import warnings
-import numpy as np
-from numpy.typing import NDArray
-import os
 import json
-import pathlib
+import os
+import warnings
+from typing import Union
+
+import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
+from numpy.typing import NDArray
 
 from pyemmo.definitions import ROOT_DIR
-from .materialManagement import getMaterial
+
 from ... import rootLogger as logger
 
 
@@ -51,14 +52,11 @@ class Material:
         thermalConductivity: float = None,
         thermalCapacity: float = None,
     ):
-        # FIXME: Check input values for valid type
         self.name = name
         self.conductivity = conductivity
         self.relPermeability = relPermeability
         self.remanence = remanence
-        self._tempCoefRem = (
-            tempCoefRem  # coefficient for temperature dependency of remanent B
-        )
+        self.tempCoefRem = tempCoefRem
         if tempCoefRem and not remanence:
             warnings.warn(
                 "Temperature coefficient for Br is given without value for Br "
@@ -99,42 +97,21 @@ class Material:
                 otherDict = __o.__dict__.copy()
                 del otherDict["_BH"]
                 return selfDict == otherDict
-            else:
-                return False
+            return False
         else:
             return False
 
-    def loadMatFromDataBase(self, dataBase: str, name: str) -> None:
-        """Load data for the material from a database by name.
-
-        You could load a material with the following code:
-
-        .. code:: python
-
-            ndFe35 = Material() # create a Material object
-            # load the data for this material
-            ndFe35.loadMatFromDataBase("Material_new.db", "NdFe35")
-
+    def load(self, materialName: str = ""):
+        """Function to load material from JSON database.
 
         Args:
-            dataBase (str): Name of the database (not path...).
-            name (str): Material name.
-        """
-        rawMat = getMaterial(dataBase, name)
-        self.name = rawMat["name"]
-        self.conductivity = rawMat["conductivity"]
-        self.relPermeability = rawMat["relPermeability"]
-        # remanence can be string "no information"...
-        if isinstance(rawMat["remanence"], str):
-            self.remanence = 0
-        else:
-            self.remanence = rawMat["remanence"]
-        self.linear = rawMat["linear"]
-        if not self.linear:
-            # if material is nonlinear load BH
-            self.BH = rawMat["BH"]
+            materialName (str, optional): Material name to load the Material from the
+                database, if its not given in the Material init before. Defaults to the
+                instance name (:func:`~material.Material.name`).
 
-    def load(self, materialName=""):
+        Raises:
+            RuntimeError: _description_
+        """
         if materialName == "":
             if self.name == "":
                 raise RuntimeError("Material name undefined, cannot load.")
@@ -174,8 +151,7 @@ class Material:
             )
             mat_dict = {}
             mat_dict["ID"] = (
-                len([f for f in os.listdir(material_folder) if ".json" in f])
-                + 1
+                len([f for f in os.listdir(material_folder) if ".json" in f]) + 1
             )
             mat_dict["name"] = self.name
             mat_dict["conductivity"] = self.conductivity
@@ -188,13 +164,9 @@ class Material:
             mat_dict["BHCurve"] = {}
             if not self.linear:
                 for temp_key in self._BH.keys():
-                    mat_dict["BHCurve"][temp_key] = self.get_BH(
-                        temp_key
-                    ).tolist()
+                    mat_dict["BHCurve"][temp_key] = self.get_BH(temp_key).tolist()
 
-            with open(
-                os.path.join(material_folder, f"{self.name}.json"), "w"
-            ) as file:
+            with open(os.path.join(material_folder, f"{self.name}.json"), "w") as file:
                 json.dump(mat_dict, file, indent="\t")
 
     def delete(self):
@@ -206,9 +178,7 @@ class Material:
             # pathlib.Path.unlink(json_path)
             os.remove(json_path)
         except FileNotFoundError:
-            logger.warning(
-                f"{self.name}.json is already deleted or does not exist."
-            )
+            logger.warning(f"{self.name}.json is already deleted or does not exist.")
 
     # def addBHCurveFromFile(
     #     self, data, update_db: bool = False
@@ -251,15 +221,13 @@ class Material:
                 if self._BH[t].size:
                     h = [row[0] for row in self._BH[t]]
                     b = [row[1] for row in self._BH[t]]
-                    label = lambda : "default" if t == "default" else f"{t}°C"
+                    label = lambda: "default" if t == "default" else f"{t}°C"
                     plt.plot(h, b, label=label(t))
         else:
             BH_vals = self.get_BH(temp)
             h = [row[0] for row in BH_vals]
             b = [row[1] for row in BH_vals]
-            label = lambda: (
-                "default" if temp not in self._BH.keys() else f"{temp}°C"
-            )
+            label = lambda: ("default" if temp not in self._BH.keys() else f"{temp}°C")
             plt.plot(h, b, label=label())
         plt.grid(visible=True, which="major", color="#666666", linestyle="-")
         plt.minorticks_on()
@@ -315,8 +283,10 @@ class Material:
     def conductivity(self) -> Union[float, int, None]:
         """get electrical conductivity
 
+
         Returns:
-            Union[float, int, None]: electrical conductivity in S/m
+            Union[float, int, None]: electrical conductivity in S/m or None if
+            not conductive.
         """
         return self._conductivity
 
@@ -353,7 +323,8 @@ class Material:
         """getter property of BH
         Returns:
             numpy.ndarray: _description_:
-        NOTE: This only returns BH curve for default temperature. Use get_BH() to get BH curve for specifc temperature instead!
+        NOTE: This only returns BH curve for default temperature. Use get_BH() to get BH
+        curve for specifc temperature instead!
         """
         return self.get_BH()
         # if self._BH.ndim < 3:
@@ -388,26 +359,28 @@ class Material:
         except KeyError:
             if self.linear:
                 warnings.warn(
-                    f"Tried to access the BH-curve for temperature {temperature}°C, but BH-Curve is linear!",
+                    f"Tried to access the BH-curve for temperature {temperature}°C, "
+                    "but BH-Curve is linear!",
                     UserWarning,
                 )
                 return np.empty(0)
-            elif len(self._BH.keys()) < 2:
+            if len(self._BH.keys()) < 2:
                 warnings.warn(
-                    f"Tried to access the BH-curve for temperature {temperature}°C, but there is only one BH-curve specified!",
+                    f"Tried to access the BH-curve for temperature {temperature}°C, "
+                    "but there is only one BH-curve specified!",
                     UserWarning,
                 )
                 return np.array(self._BH["default"])
-            else:
-                warnings.warn(
-                    f"No BH-curve registered for temperature {temperature}°C!",
-                    UserWarning,
-                )
-                return np.empty(0)
+            warnings.warn(
+                f"No BH-curve registered for temperature {temperature}°C!",
+                UserWarning,
+            )
+            return np.empty(0)
         # if self._BH.ndim < 3:
         #     # pylint: disable=locally-disabled,  line-too-long
         #     warnings.warn(
-        #         f"Tried to access the BH-curve for temperature {temperature}°C, but there is only one BH-curve specified!",
+        #         f"Tried to access the BH-curve for temperature {temperature}°C, but "
+        #         "there is only one BH-curve specified!",
         #         UserWarning,
         #     )
         #     return self._BH
@@ -424,7 +397,8 @@ class Material:
             [[B1, H1],[B2, H2],[B3, H3],...]
         Returns:
             None
-        NOTE: this sets the curve for the default temperature only. Use set_BH() to set BH Curve for specific temperature
+        NOTE: this sets the curve for the default temperature only. Use set_BH() to set
+        BH Curve for specific temperature
         """
         self.set_BH(newBH)
 
@@ -437,13 +411,9 @@ class Material:
             if isinstance(data, dict):
                 if len(data) < 1:
                     raise (ValueError("There is no BH data to add!"))
-                    return
-                else:
-                    for temp in data.keys():
-                        temp_key = lambda: (
-                            "default" if temp == "no information" else temp
-                        )
-                        set_BH(self, data[temp], temp_key())
+                for temp in data.keys():
+                    temp_key = lambda: ("default" if temp == "no information" else temp)
+                    set_BH(self, data[temp], temp_key())
             elif isinstance(data, str):
                 try:
                     file = pd.read_table(data)
@@ -462,11 +432,7 @@ class Material:
                             temp_key = temp
                         set_BH(
                             self,
-                            [
-                                [row[0], row[1]]
-                                for row in allValue
-                                if row[2] == temp
-                            ],
+                            [[row[0], row[1]] for row in allValue if row[2] == temp],
                             temp_key,
                         )
                 except IndexError:
@@ -482,10 +448,9 @@ class Material:
 
         Args:
             BH (numpy.ndarray): BH curve (2D array) with shape (X,2) ->
-            [[B1, H1],[B2, H2],[B3, H3],...]
-            temperature (float): temperature of the curve. defaults to None (meaning default temperature)
-        Returns:
-            None
+                [[B1, H1],[B2, H2],[B3, H3],...].
+            temperature (float): temperature of the curve. defaults to None (meaning
+                default temperature).
         """
         if not hasattr(self, "_BH"):
             self._BH = {}
@@ -493,7 +458,7 @@ class Material:
             temp_key = "default"
         else:
             temp_key = temp
-        if not newBH:
+        if newBH is None:
             # if BH is None, set empty array
             self._BH[temp_key] = np.empty(0)
             if temp_key == "default":
@@ -561,14 +526,26 @@ class Material:
             raise ValueError("Material name must be type str.")
 
     @conductivity.setter
-    def conductivity(self, conductivity: Union[float, int]):
+    def conductivity(self, conductivity: Union[float, int, None]):
         """set the electrical conductivity of the material
 
         Args:
             conductivity (Union[float, int]): electrical conductivity in S/m
         """
-        if isinstance(conductivity, (int, float)) or conductivity is None:
-            self._conductivity = conductivity
+        if conductivity is None:
+            self._conductivity = None
+        elif isinstance(conductivity, (int, float)):
+            if conductivity > 0:
+                self._conductivity = conductivity
+            elif conductivity == 0:
+                # if zero than non-conductings
+                self._conductivity = None
+            else:
+                # negative conductivity...
+                raise ValueError(
+                    "Conductivy can not be negative!" f"Given value: {conductivity}"
+                )
+
         else:
             raise ValueError("Conductivity must be numeric.")
 
@@ -579,10 +556,7 @@ class Material:
         Args:
             relPermeability (Union[float, int]): relative permeability
         """
-        if (
-            isinstance(relPermeability, (int, float))
-            or relPermeability is None
-        ):
+        if isinstance(relPermeability, (int, float)) or relPermeability is None:
             self._relPermeability = relPermeability
         else:
             raise ValueError("Relative permeability must be numeric.")
@@ -598,6 +572,25 @@ class Material:
             self._remanence = remanence
         else:
             raise ValueError("Remanent flux density must be numeric.")
+
+    @tempCoefRem.setter
+    def tempCoefRem(self, new_temp_coef: float):
+        """setter for temperature coefficient of Br
+
+        Args:
+            new_temp_coef (float): temperature coefficient of Br
+
+        Raises:
+            ValueError: If given value is not numeric.
+        """
+        # ("br_" = f"{br20} * (1 + ({tempCoef} * (tempMag - 20)))", "Reference temperatur is 20°C",
+        if isinstance(new_temp_coef, (int, float)) or new_temp_coef is None:
+            self._tempCoefRem = new_temp_coef
+        else:
+            raise ValueError(
+                "Remanence flux density temperature coefficient must be numeric."
+                f"But is type {type(new_temp_coef)} of value: {new_temp_coef}"
+            )
 
     @property
     def density(self):
@@ -757,8 +750,6 @@ class Material:
         ]
         for row in table:
             if row[1] is None:
-                row[1] = (
-                    "None"  # set to string because formatting None not supported
-                )
+                row[1] = "None"  # set to string because formatting None not supported
             print(f"{row[0]: >30} {row[1]: <15}")
         print("\n")

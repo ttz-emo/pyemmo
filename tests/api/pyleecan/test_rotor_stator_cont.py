@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -17,26 +18,32 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-import os
+"""Module to test the rotor and stator contour function of the pyleecan api."""
+from os.path import abspath, join
 import math
 from typing import List
 import pytest
 from pyleecan.Classes.Machine import Machine
+
+# pylint: disable=locally-disabled, no-name-in-module
 from pyleecan.Functions.load import load
 from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 from pyleecan.Classes.MachineSyRM import MachineSyRM
 from pyemmo.api.json.modelJSON import SurfaceAPI
-from pyemmo.script.geometry.point import Point
-from pyemmo.definitions import TEST_DIR
+
+# from pyemmo.script.geometry.point import Point
+from pyemmo.api.json.modelJSON import createSurfaceDict
 from pyemmo.api.pyleecan.translate_surfs import translate_surface
 from pyemmo.api.pyleecan.get_rotor_stator_cont import (
     get_even_rotor_cont,
     get_spmsm_rotor_cont,
     get_winding_cont,
 )
+from tests.api.pyleecan import TEST_API_PYLCN_DATA_DIR
 
 
 def get_translated_machine(machine: Machine):
+    """Local functionto get api geometry list."""
     all_surfs_labels = []
     all_surfs_labels_split2 = []
     geometry_list: List[SurfaceAPI] = []
@@ -74,11 +81,13 @@ def get_translated_machine(machine: Machine):
     return geometry_list, machine.rotor.is_internal
 
 
-def get_cont(get_rotor_cont_function, machine_file):
+def contour_function(get_rotor_cont_function, machine_file):
+    """Function to test the the contour identification functions"""
     machine: Machine = load(
-        os.path.abspath(os.path.join(TEST_DIR, "data", machine_file))
+        abspath(join(TEST_API_PYLCN_DATA_DIR, machine_file))
     )
     geometry_list, is_internal = get_translated_machine(machine)
+
     result = get_rotor_cont_function(
         geometry_list=geometry_list,
         machine=machine,
@@ -119,7 +128,7 @@ def get_cont(get_rotor_cont_function, machine_file):
     # result[2] = l_point_rotor_cont
     elif isinstance(machine, MachineSyRM):
         assert len(geometry_list) == 6
-
+        # pylint: disable=locally-disabled, comparison-with-callable
         if get_rotor_cont_function == get_even_rotor_cont:
             assert len(result[0]) == 1
 
@@ -131,7 +140,7 @@ def get_cont(get_rotor_cont_function, machine_file):
 
             # asserts for l_point_rotor_cont
             assert math.isclose(
-                result[2].coordinate[0], 2.486033002269127e-18, abs_tol=1e-6
+                result[2].coordinate[0], 2.486033002269127e-18, abs_tol=1e-18
             )
             assert math.isclose(result[2].coordinate[1], 0.0406, abs_tol=1e-6)
             assert math.isclose(result[2].coordinate[2], 0, abs_tol=1e-6)
@@ -152,12 +161,41 @@ def get_cont(get_rotor_cont_function, machine_file):
             get_even_rotor_cont,
             "03_synrm_muster_Bachelor.json",
         ),
-        (
-            get_winding_cont,
-            "03_synrm_muster_Bachelor.json",
-        ),
+        # (
+        #     get_winding_cont,
+        #     "03_synrm_muster_Bachelor.json",
+        # ),
     ],
 )
 def test_main_functions(test_function):
+    """Main function to run different test by pytest parametrize"""
     get_rotor_cont_function, machine_file = test_function
-    get_cont(get_rotor_cont_function, machine_file)
+    contour_function(get_rotor_cont_function, machine_file)
+
+
+def test_winding_contour_function():
+    """test for function get_winding_cont() of pyleecan API."""
+    machine: Machine = load(
+        abspath(join(TEST_API_PYLCN_DATA_DIR, "03_synrm_muster_Bachelor.json"))
+    )
+    geometry_list, _ = get_translated_machine(machine)
+    geo_dict = createSurfaceDict(geometry_list)
+    contour_line_list = get_winding_cont(
+        lamination_surf=geo_dict["StNut"],
+        slot_surfs=[geo_dict["StCu0"]],
+        lamination=machine.stator,
+    )
+    # general asserts
+    assert contour_line_list is not None
+    assert len(contour_line_list) == 5
+    assert all(contour_line_list)  # no None objects
+
+
+# if __name__ == "__main__":
+#     test_main_functions(
+#         (
+#             get_winding_cont,
+#             "03_synrm_muster_Bachelor.json",
+#         )
+#     )
+# test_winding_contour_function()

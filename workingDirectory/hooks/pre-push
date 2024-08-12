@@ -1,0 +1,150 @@
+#!/bin/sh -xv
+#!/usr/bin/env bash
+
+#
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied
+# Sciences Wuerzburg-Schweinfurt.
+#
+# This file is part of PyEMMO
+# (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+
+# Color code
+# Reset
+Color_Off='\033[0m' # Text Reset
+# Regular Colors
+Red='\033[0;31m'    # Red
+Green='\033[0;32m'  # Green
+Yellow='\033[0;33m' # Yellow
+Blue='\033[0;34m'   # Blue
+
+
+# Funktion, die Python-virtuelle Umgebungen im aktuellen Verzeichnis sucht und eine zur Aktivierung anbietet
+activate_virtualenv() {
+    # Suchmuster nach Verzeichnissen, die auf virtuelle Umgebungen hinweisen könnten
+    local patterns=("*env*/bin/activate" "*env*/Scripts/activate")
+
+    # Liste der gefundenen virtuellen Umgebungen
+    local envs=()
+
+    for pattern in "${patterns[@]}"; do
+        envs+=( $(find . -type f -path "./$pattern") )
+    done
+
+    # Wenn keine virtualenv gefunden wurde
+    if [ ${#envs[@]} -eq 0 ]; then
+        echo "Keine virtuellen Umgebungen im aktuellen Verzeichnis gefunden."
+        return 1
+    fi
+
+    # Wenn nur eine virtualenv gefunden wurde
+    if [ ${#envs[@]} -eq 1 ]; then
+        source "${envs[0]}"
+        echo "Virtuelle Umgebung aktiviert: ${envs[0]}"
+        return 0
+    fi
+
+    # Mehrere virtualenv gefunden, Menü anzeigen
+    echo "Mehrere virtuelle Umgebungen gefunden. Nutze erste:"
+    source "${envs[0]}"
+    echo "Virtuelle Umgebung aktiviert: ${envs[0]}"
+    return 0
+    # select env in "${envs[@]}"; do
+    #     if [ -n "$env" ]; then
+    #         source "$env"
+    #         echo "Virtuelle Umgebung aktiviert: $env"
+    #         return 0
+    #     else
+    #         echo "Ungültige Auswahl."
+    #     fi
+    # done
+}
+
+echo -e "\n${Yellow}Running pre-push hook...${Color_Off}\n"
+
+# Function to check if `tox` is installed
+check_tox() {
+  activate_virtualenv
+  if ! command -v tox > /dev/null 2>&1; then
+    echo "${Yellow}Tox is not installed. Installing tox...${Color_Off}"
+    pip install tox
+    if [ $? -ne 0 ]; then
+      echo "${Red}Failed to install tox.${Color_Off}"
+      exit 1
+    else
+      echo "${Yellow}Tox installed successfully.${Color_Off}"
+    fi
+  else
+    echo "${Yellow}Tox is already installed.${Color_Off}"
+  fi
+}
+
+# Function to run tox
+run_tox() {
+  echo "Running tox..."
+  tox config
+  if [ $? -ne 0 ]; then
+    echo "${Red}Tox tests failed. Aborting push.${Color_Off}"
+    exit 1
+  else
+    echo "${Green}Tox tests passed. Proceeding with push.${Color_Off}"
+  fi
+}
+
+## RUN BANDIT
+## to check for security issues
+
+# python -m bandit pyemmo -r -o ./Results/bandit_results.txt -f txt -c pyproject.toml
+# exit_code=$?
+# if [ $exit_code -ne 0 ]; then
+#     echo "Bandit check for code vunerabilty failed with exit code $exit_code"
+#     echo "See Results/bandit_results.txt for detailed info!"
+#     exit $exit_code
+# else
+#     echo "Bandit check succeeded!"
+# fi
+
+# get remote name and url
+remote="$1"
+url="$2"
+# printf "Remote is:\t%s\n" $remote
+# printf "url is:\t\t%s\n" $url
+
+# branch=$(git rev-parse --symbolic --abbrev-ref $1) # should return REMOTE/BRANCH but does not work... Only returns REMOTE
+branch=$(git rev-parse --abbrev-ref HEAD) # get actual ACTIVE branch
+# echo Actual branch name is: $branch
+# echo actual file name is: $0
+
+# if [[ $url == *'git@gitlab.ttz-emo.thws.de'* ]]; then
+#     echo We are pushing to 'git@github.com:mxgnsr'
+# fi
+
+if [[ $branch == "master" ]]; then
+    echo -e "${Red}You are trying to push to the MASTER branch! Running tox...${Color_Off}"
+    ## RUN TOX to check all python versions on master push
+#     echo -e "\tActivating virtual environment..."
+#     # Working dir is pyemmo root
+#     .pyemmo_venv/Scripts/activate
+#     # python -c "import os; print('\t' + os.environ['_'])" # print interpreter details for debugging
+#     echo -e "\tRunning tox:"
+#     tox
+    check_tox
+    run_tox
+else
+    # run tests to verify push for this branch
+    activate_virtualenv
+    python -m pytest tests
+fi

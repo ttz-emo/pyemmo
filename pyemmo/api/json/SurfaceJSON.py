@@ -18,11 +18,12 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for json api surface class"""
-from typing import List, Union
+from __future__ import annotations
 
 from numpy import pi
-from ...script.geometry.line import Line
+
 from ...script.geometry.circleArc import CircleArc
+from ...script.geometry.line import Line
 from ...script.geometry.spline import Spline
 from ...script.geometry.surface import Surface
 from ...script.material.material import Material
@@ -70,7 +71,7 @@ class SurfaceAPI(Surface):
         self,
         name: str,
         idExt: str,
-        curves: List[Line],
+        curves: list[Line],
         material: Material,
         nbrSegments: int,
         angle: float,
@@ -92,10 +93,11 @@ class SurfaceAPI(Surface):
         self._idExt: str = idExt
         self._material: Material = material
         self._nbrSegments: int = nbrSegments
-        assert angle == 2 * pi / nbrSegments, (
-            f"Segment angle ({angle}) of surface {name} "
-            f"does not match 2*pi/nbrSegments ({2 * pi / nbrSegments})"
-        )
+        if not angle == 2 * pi / nbrSegments:
+            raise ValueError(
+                f"Segment angle ({angle}) of surface {name} "
+                f"does not match 2*pi/nbrSegments ({2 * pi / nbrSegments})"
+            )
         self._angle: float = angle
         self._meshSize: float = meshSize
 
@@ -173,7 +175,7 @@ class SurfaceAPI(Surface):
             raise TypeError(msg)
         self._meshSize = meshSize
 
-    def duplicate(self, name="") -> "SurfaceAPI":
+    def duplicate(self, name="") -> SurfaceAPI:
         """create a copy of the surface
 
         Args:
@@ -184,7 +186,7 @@ class SurfaceAPI(Surface):
             SurfaceAPI: Duplicate of SurfaceAPI object.
         """
         # duplicate curves for new surface
-        newCurves: List[Union[Line, CircleArc, Spline]] = []
+        newCurves: list[Line | CircleArc | Spline] = []
         for curve in self.curve:
             newCurves.append(curve.duplicate())
         # create duplicate surfcace object

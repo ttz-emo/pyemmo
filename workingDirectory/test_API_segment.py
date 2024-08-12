@@ -18,10 +18,10 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from os.path import abspath, dirname, isfile, join
+
 # %% Imports
 from sys import path
-from os.path import abspath, dirname, isdir, isfile, join, normpath, realpath
-from typing import List
 
 # Add Software_V2 to Path so pyemmo can be found
 # This must be done since this is a script (not really a module) and we cannot guarante where it will run from
@@ -36,14 +36,12 @@ except:
     print(f"Could not determine root. Setting it manually to '{rootname}'")
 print(f'rootname is "{rootname}"')
 path.append(rootname)
-# %%
-from pyemmo.definitions import RESULT_DIR, MAIN_DIR
-from pyemmo.script.script import Script
-from pyemmo.api.json import *
-from pyemmo.functions.runOnelab import findGmsh, createCmdCommand
 import subprocess
-from matplotlib import pyplot as plt
-import gmsh
+
+# %%
+from pyemmo.definitions import RESULT_DIR
+from pyemmo.functions.runOnelab import createCmdCommand, findGmsh
+from pyemmo.script.script import Script
 
 # %%
 # try to find gmsh in system path
@@ -131,7 +129,7 @@ command = createCmdCommand(
 )
 subprocess.run(
     command,
-    shell=True,
+    # shell=True,
 )
 
 # %%

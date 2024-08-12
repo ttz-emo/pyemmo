@@ -20,6 +20,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
 from pyemmo.script.material.material import Material
+from copy import copy, deepcopy
 
 # from pyemmo.definitions import RESULT_DIR, MAIN_DIR
 from pyemmo.script.material.electricalSteel import ElectricalSteel
@@ -103,15 +104,45 @@ h = [
     63625.0,
     143202.0,
 ]
+bh = np.array([b, h])
 steel = ElectricalSteel(
     name="steel_1010",
     conductivity=5e6,
     relPermeability=None,
-    BH=np.array([b, h]),
+    BH=bh.transpose(),
     sheetThickness=0.5e-3,
-    lossParams=(0, 0, 0),
+    lossParams=None,
     referenceFrequency=0,
     referenceFluxDensity=0,
+    density=1e3,
 )
 
 plt.plot(h, b, ".-")
+
+# %%
+# Check comparison
+air_copy = deepcopy(air)
+assert air_copy == air  # make sure test is ok.
+# make fail test
+air_copy.relPermeability = 10
+try:
+    assert air_copy == air  # this should fail now.
+    raise RuntimeError("Error: This Assertion should fail!")
+except AssertionError:
+    print("Assertion failed as expected.")
+except Exception as exce:
+    raise exce
+
+# %%
+# Check comparison steel
+steel_copy = deepcopy(steel)
+assert steel_copy == steel  # make sure test is ok.
+# make fail test
+steel_copy.BH[1, 1] = 80  # vorher 70
+try:
+    assert steel_copy == steel  # this should fail now.
+    raise RuntimeError("Error: This Assertion should fail!")
+except AssertionError:
+    print("Assertion failed as expected.")
+except Exception as exce:
+    raise exce

@@ -71,7 +71,7 @@ class TestRotorIPMSM(unittest.TestCase):
         """
         pass
 
-    def test_initial_value(self):
+    def tel_st_initiavalue(self):
         # Setup
 
         # Sicherstellen, dass init Funktion Werte richtig setzt

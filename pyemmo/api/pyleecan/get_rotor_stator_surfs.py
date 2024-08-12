@@ -17,24 +17,38 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-from ..json.SurfaceJSON import SurfaceAPI
+"""
+Rotor and Stator Surfaces Module
+
+This module provides functions to extract rotor and stator surfaces from the
+geometry of an electric machine.
+
+Functions:
+    -   ``get_rotor_surfs``: Extracts rotor surfaces from the machine geometry.
+    -   ``get_stator_surfs``: Extracts stator surfaces from the machine geometry.
+"""
+
+from __future__ import annotations
+
 from .. import logger
+from ..json.SurfaceJSON import SurfaceAPI
 
 
 def get_rotor_surfs(
     geometry_list: list[SurfaceAPI],
 ) -> tuple[list[SurfaceAPI], list[SurfaceAPI]]:
-    """Get the surfaces of the rotor.
+    """
+    Get the surfaces of the rotor.
 
     Args:
-        geometryList (list[SurfaceAPI]): list with all surfaces of the machine in pyemmo format
+        geometry_list (list[SurfaceAPI]): List with all surfaces of the machine
+            in PyEMMO format (= SurfaceAPI).
 
     Returns:
-        tuple[list[SurfaceAPI], list[SurfaceAPI]]: _description_
+        tuple[list[SurfaceAPI], list[SurfaceAPI]]: Tuple containing lists of
+        rotor lamination surfaces and rotor magnet surfaces.
     """
-    # =========================================
-    # Zuweisung der Surfaces zu den Kategorien:
-    # =========================================
+    # Assignment of surfaces to categories
     rotor_lam_surf_list = []
     rotor_mag_surf_list = []
 
@@ -47,7 +61,7 @@ def get_rotor_surfs(
                 rotor_mag_surf_list.append(surf)
                 logger.debug("rotorMagSurf:")
 
-            logger.debug("gefunden: %s", {surf.name})
+            logger.debug("found: %s", {surf.name})
 
     return rotor_lam_surf_list, rotor_mag_surf_list
 
@@ -55,17 +69,17 @@ def get_rotor_surfs(
 def get_stator_surfs(
     geometry_list: list[SurfaceAPI],
 ) -> list[SurfaceAPI]:
-    """Get the surface of the stator lamination.
+    """
+    Get the surface of the stator lamination.
 
     Args:
-        geometryList (list[SurfaceAPI]): list with all surfaces of the machine in pyemmo format
+        geometry_list (list[SurfaceAPI]): List with all surfaces of the machine
+            in PyEMMO format.
 
     Returns:
-        list[SurfaceAPI]: _description_
+        list[SurfaceAPI]: List of stator lamination surfaces.
     """
-    # =========================================
-    # Zuweisung der Surfaces zu den Kategorien:
-    # =========================================
+    # Assignment of surfaces to categories
     stator_lam_surf_list = []
     # statorWindSurfList = []
 
@@ -73,6 +87,6 @@ def get_stator_surfs(
         if surf.idExt == "StNut":
             stator_lam_surf_list.append(surf)
             logger.debug("statorLamSurf:")
-            logger.debug("gefunden: %s", {surf.name})
+            logger.debug("found: %s", {surf.name})
 
     return stator_lam_surf_list

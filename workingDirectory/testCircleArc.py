@@ -19,26 +19,21 @@
 #
 
 # %%
-from os.path import abspath, dirname, join
-from sys import path
+import os
+import logging
+import numpy as np
 from matplotlib import pyplot as plt
+from pyemmo.definitions import RESULT_DIR
+from pyemmo.script.script import Script
 from pyemmo.script.geometry.circleArc import CircleArc
 from pyemmo.script.geometry.point import Point
 
-# try:
-print(f"__file__ is {__file__}")
-rootname = abspath(join(dirname(__file__), ".."))
-# except:
-#     rootname = "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\Software_V2"
-# print(f"Could not determine root. Setting it manually to '{rootname}'")
-# print(f'rootname is "{rootname}"')
+logging.getLogger().setLevel(logging.DEBUG)
 
-path.append(rootname)
-
-C = Point("c", 1, 1, 0, 0.3)
-P1 = Point("p1", 2, 1, 0, 0.3)
-P2 = Point("p2", 0, 1, 0, 0.3)
-circArc = CircleArc("ca1", P1, C, P2)
+C = Point("center point", 0, 0, 0, 0.3)
+P1 = Point("point 1", 1, 0, 0, 0.3)
+P2 = Point("point 2", -1, 0, 0, 0.3)
+circArc = CircleArc("circle arc 1", P1, C, P2)
 fig, ax = plt.subplots(figsize=(5, 5))
 ax.set_aspect("equal")
 C.plot(fig)
@@ -48,4 +43,23 @@ print(circArc.getAnglesToX())
 print(f"Radius: {circArc.radius}.")
 print(f"Angle: {circArc.getAngle(inDeg=True)}.")
 circArc.plot(fig)
+
+# %%
+angle = np.deg2rad(190)
+P3 = Point("point 3", 1, 0, 0, 0.3)
+P4 = Point("point 4", np.cos(angle), np.sin(angle), 0, 0.3)
+circArc = CircleArc("circle arc 1", P3, C, P4)
+print(f"Radius: {circArc.radius}.")
+print(f"Angle: {circArc.getAngle(inDeg=True)}.")
+circArc.plot(fig)
+# %%
+
+test_arc_script = Script("TestCircleArc", RESULT_DIR, {})
+circArc.addToScript(test_arc_script)
+
+test_arc_script.writeGeo()
+import subprocess
+
+subprocess.run("gmsh " + test_arc_script.geoFilePath)
+
 # %%

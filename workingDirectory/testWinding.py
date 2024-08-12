@@ -18,16 +18,19 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import math
+import subprocess
+
 # %%
 from os import mkdir, path
+
 from genericpath import isdir
-import math
-from pyemmo.script.script import Script
+
 from pyemmo.definitions import RESULT_DIR
-from pyemmo.script.geometry.point import Point
-from pyemmo.script.geometry.line import Line
-from pyemmo.script.material.electricalSteel import Material, ElectricalSteel
 from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
+from pyemmo.script.geometry.point import Point
+from pyemmo.script.material.electricalSteel import ElectricalSteel, Material
+from pyemmo.script.script import Script
 
 # %%
 
@@ -36,9 +39,10 @@ PBohrung = Point("mittelPunktBohrung", 0, 0, 0, 5e-3)
 # Material aus Datenbank laden
 steel_1010 = ElectricalSteel(
     sheetThickness=1e-3,
-    lossParams=(0.0, 0.0, 0.0),
+    lossParams=None,
     referenceFrequency=0,
     referenceFluxDensity=0,
+    density=1,
 )
 steel_1010.loadMatFromDataBase("Material_new.db", "steel_1010")
 ndFe35 = Material()
@@ -102,7 +106,7 @@ rotor.addAirGapParameter({"width": l_airgap, "material": air})
 rotor.createRotor()
 rotor.plot()
 # %%
-from swat_em import datamodel, analyse
+from swat_em import datamodel
 
 # generate winding and add to stator
 myWinding = datamodel()
@@ -163,18 +167,26 @@ myScript = Script(
     machine=SPMSM,
 )
 myScript.generateScript()
-# %%
-from pyemmo.functions.runOnelab import createCmdCommand, findGmsh, findGetDP
-from pyemmo.functions.import_results import plot_all_dat
-import os
 
-os.system(
+
+# %%
+from pyemmo.functions.runOnelab import createCmdCommand
+
+subprocess.run(
     createCmdCommand(
         onelabFile=myScript.proFilePath,
         useGUI=True,
         paramDict={"Flag_ClearResults": 1},
     )
 )
+# fixed per Issue: [B605:start_process_with_a_shell] in workingDirectory\Vu\bandit_log\bandit_log_20240809_093824.log line 2833
+# os.system(
+#     createCmdCommand(
+#         onelabFile=myScript.proFilePath,
+#         useGUI=True,
+#         paramDict={"Flag_ClearResults": 1},
+#     )
+# )
 # plotAllDat(myScript.getResultsPath())
 print("I am done!")
 

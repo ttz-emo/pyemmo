@@ -18,11 +18,17 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module to return requirements of pyemmo via pipreqs"""
-from os.path import join
 import os
+import subprocess
+from os.path import join
 
-pyemmo_DIR = r"C:\Users\ganser\AppData\Local\Programs\pyemmo_git\pyemmo\pyemmo"
-os.system(f"pipreqs {pyemmo_DIR} --force")
+from pyemmo.definitions import ROOT_DIR
+
+# pyemmo_DIR = r"C:\Users\ganser\AppData\Local\Programs\pyemmo_git\pyemmo\pyemmo"
+pyemmo_DIR = os.path.join(ROOT_DIR, "pyemmo")
+
+# os.system(f"pipreqs {pyemmo_DIR} --force") #fixed per Issue: [B605:start_process_with_a_shell] in workingDirectory\Vu\bandit_log\bandit_log_20240809_093824.log line 2435
+subprocess.run(f"pipreqs {pyemmo_DIR} --force")
 
 try:
     with open(

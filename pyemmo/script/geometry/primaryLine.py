@@ -19,8 +19,9 @@
 #
 """Module for primary boundary Line"""
 from typing import List
+
+from .physicalElement import Material, PhysicalElement
 from .transformable import Transformable
-from .physicalElement import PhysicalElement, Material
 
 
 class PrimaryLine(PhysicalElement):

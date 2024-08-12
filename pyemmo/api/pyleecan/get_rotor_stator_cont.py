@@ -17,32 +17,54 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-from typing import Union
+"""Rotor and Stator Contour Calculation Module
 
-from pyleecan.Classes.Machine import Machine
-from pyleecan.Classes.MachineSCIM import MachineSCIM
+This module provides functions to calculate the rotor and stator contours of
+electric machines.
+
+Functions:
+    -   ``get_spmsm_rotor_cont``: Calculates the rotor contour for Surface
+        Permanent Magnet Synchronous Machine (SPMSM).
+    -   ``get_even_rotor_cont``: Calculates the rotor contour for Interior
+        Permanent Magnet Synchronous Machine (IPMSM) and Synchronous Reluctance
+        Machine (SynRM).
+    -   ``get_winding_cont``: Calculates the stator contour with winding.
+
+"""
+
+from __future__ import annotations
+
+from pyleecan.Classes.LamSlotWind import LamSlotWind
+from pyleecan.Classes.Machine import Machine as PyleecanMachine
 
 from ...script.geometry.circleArc import CircleArc
 from ...script.geometry.line import Line
 from ...script.geometry.point import Point
-from .get_rotor_stator_surfs import get_rotor_surfs
-from .calcs_rotor_spmsm_cont import calc_spmsm_rotor_cont
-from .calcs_even_rotor_cont import calc_even_rotor_cont
+from ..json.SurfaceJSON import SurfaceAPI
 from .calc_wind_cont import calc_wind_contour
+from .calcs_even_rotor_cont import calc_even_rotor_cont
+from .calcs_rotor_spmsm_cont import calc_spmsm_rotor_cont
+from .get_rotor_stator_surfs import get_rotor_surfs
 
 
 def get_spmsm_rotor_cont(
-    geometry_list: list, machine: Machine, is_internal_rotor: bool = True
-) -> tuple[list[Union[Line, CircleArc]], Point, Point]:
-    """Get a list of curves of the contour of the rotor with a surfacemagnet.
+    geometry_list: list,
+    machine: PyleecanMachine,
+    is_internal_rotor: bool = True,
+) -> tuple[list[Line | CircleArc], Point, Point]:
+    """
+    Get the list of curves of the contour of the rotor with a surface magnet.
 
     Args:
-        geometry_list (list): List with all surfaces of the machine (Pyemmo format)
-        machine (Machine): Pyleecan machine
-        is_internal_rotor (bool, optional): Internal or external Rotor. Defaults to True.
+        geometry_list (list): List of all surfaces of the machine (PyEMMO format).
+        machine (PyleecanMachine): Pyleecan Machine object.
+        is_internal_rotor (bool, optional): True if the rotor is internal,
+            False if not. Defaults to True.
 
     Returns:
-        tuple[list[Union[Line, CircleArc]], Point, Point]: _description_
+        tuple[list[Union[Line, CircleArc]], Point, Point]: List of rotor contour
+        lines, right point of the rotor contour, and left point of the rotor
+        contour.
     """
 
     rotor_lam_surf_list, rotor_mag_surf_list = get_rotor_surfs(
@@ -78,18 +100,24 @@ def get_spmsm_rotor_cont(
 
 
 def get_even_rotor_cont(
-    geometry_list: list, machine: Machine, is_internal_rotor: bool = True
-) -> tuple[list[Union[Line, CircleArc]], Point, Point]:
-    """Get a list of curves of the contour of the rotor.
-    machine types: IPMSM, SynRM
+    geometry_list: list,
+    machine: PyleecanMachine,
+    is_internal_rotor: bool = True,
+) -> tuple[list[Line | CircleArc], Point, Point]:
+    """
+    Get the list of curves of the contour of the rotor for Interior Permanent
+    Magnet Synchronous Machine (IPMSM) and Synchronous Reluctance Machine (SynRM).
 
     Args:
-        geometry_list (list): List with all surfaces of the machine (Pyemmo format)
-        machine (Machine): Pyleecan machine
-        is_internal_rotor (bool, optional): Internal or external Rotor. Defaults to True.
+        geometry_list (list): List of all surfaces of the machine (PyEMMO format).
+        machine (PyleecanMachine): Pyleecan Machine object.
+        is_internal_rotor (bool, optional): True if the rotor is internal,
+            False otherwise. Defaults to True.
 
     Returns:
-        list[Line, CircleArc]: _description_
+        tuple[list[Union[Line, CircleArc]], Point, Point]: List of rotor contour
+        lines, right point of the rotor contour, and left point of the rotor
+        contour.
     """
 
     rotor_lam_surf_list = []
@@ -121,34 +149,31 @@ def get_even_rotor_cont(
 
 
 def get_winding_cont(
-    geometry_list: list, machine: Machine, is_internal_rotor: bool
-) -> list[Union[Line, CircleArc]]:
-    """Get a list of curves of the contour of the lamination with a winding.
+    lamination_surf: SurfaceAPI,
+    slot_surfs: list[SurfaceAPI],
+    lamination: LamSlotWind,
+) -> list[Line | CircleArc]:
+    """
+    Get the list of curves of the contour of a LamSlotWind object.
 
     Args:
-        geometryList (list): _description_
-        machine (Machine): _description_
-        isInternalRotor (bool): _description_
+        geometry_list (list): List of all surfaces of the machine (pyEMMO format).
+        lamination (LamSlotWind): LamSlotWind Pyleecan object.
+        is_internal (bool): True if the lamination is internal, False otherwise.
 
     Returns:
-        list[Union[Line, CircleArc]]: _description_
+        list[Union[Line, CircleArc]]: List of stator contour lines.
     """
-    stator_rint = machine.stator.Rint
-    stator_rext = machine.stator.Rext
+    r_int = lamination.Rint
+    r_ext = lamination.Rext
 
-    if is_internal_rotor:
-        stator_cont_line_list = calc_wind_contour(
-            geometry_list=geometry_list,
-            stator_rint=stator_rint,
-            stator_rext=stator_rext,
-        )
-    elif isinstance(machine, MachineSCIM):
-        pass
-    else:
-        stator_cont_line_list = calc_wind_contour(
-            geometry_list=geometry_list,
-            stator_rint=stator_rext,
-            stator_rext=stator_rint,
-        )
+    # TODO: Add left and right contour points for airgap surface generation
 
-    return stator_cont_line_list
+    cont_line_list = calc_wind_contour(
+        lam_surf=lamination_surf,
+        slot_surf_list=slot_surfs,
+        rint=r_int,
+        rext=r_ext,
+        is_internal=lamination.is_internal,
+    )
+    return cont_line_list

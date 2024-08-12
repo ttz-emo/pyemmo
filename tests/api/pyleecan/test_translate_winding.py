@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -17,13 +18,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-import os
+"""Module to test winding translation"""
+from os.path import abspath, join
 import pytest
 from pyleecan.Classes.Machine import Machine
+
+# pylint: disable=locally-disabled, no-name-in-module
 from pyleecan.Functions.load import load
 
 from pyemmo.api.pyleecan.translate_winding import translate_winding
-from pyemmo.definitions import TEST_DIR
+from tests.api.pyleecan import TEST_API_PYLCN_DATA_DIR
 
 
 @pytest.mark.parametrize(
@@ -35,8 +39,9 @@ from pyemmo.definitions import TEST_DIR
     ],
 )
 def test_translate_winding(machine_sample):
+    """Function to test winding translation"""
     machine: Machine = load(
-        os.path.abspath(os.path.join(TEST_DIR, "data", machine_sample))
+        abspath(join(TEST_API_PYLCN_DATA_DIR, machine_sample))
     )
     _, wind_swat = translate_winding(machine)
 

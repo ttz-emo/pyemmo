@@ -28,7 +28,6 @@ from .magnet import Magnet
 from .point import Point
 from .surface import Surface
 
-
 ###
 # Ein Objekt der Klasse Magnet_Surface02:
 # \image html magnet_Surface02.png
@@ -114,10 +113,7 @@ class Magnet_Surface02(Magnet):
             coordCentre[2],
             1,
         )
-        xMag4 = (
-            math.sqrt(math.pow(r_Mag, 2) - math.pow(width_M / 2, 2))
-            + centreMagX
-        )
+        xMag4 = math.sqrt(math.pow(r_Mag, 2) - math.pow(width_M / 2, 2)) + centreMagX
         pMagnet4 = Point(
             "pMagnet4",
             xMag4 + coordCentre[0],

@@ -18,6 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 import math
+
 from .machineAllType import MachineAllType
 from .rotor import Rotor
 from .stator import Stator
@@ -40,12 +41,10 @@ class MachineASM(MachineAllType):
         self._simuParam = simuParam
 
         self._simuParam["analysisParameter"]["nbrPolesinModel"] = (
-            self._simuParam["analysisParameter"]["nbrPolesTotal"]
-            / self.symmetryFactor
+            self._simuParam["analysisParameter"]["nbrPolesTotal"] / self.symmetryFactor
         )
         self._simuParam["analysisParameter"]["nbrSlotinModel"] = (
-            self._simuParam["analysisParameter"]["nbrSlotTotal"]
-            / self.symmetryFactor
+            self._simuParam["analysisParameter"]["nbrSlotTotal"] / self.symmetryFactor
         )
 
     ###
@@ -96,9 +95,7 @@ class MachineASM(MachineAllType):
             / self.symmetryFactor
             / self._simuParam["analysisParameter"]["nbrPolesinModel"]
         )
-        nbrGeoParts = (
-            self._simuParam["analysisParameter"]["nbrPolesinModel"] * 2
-        )
+        nbrGeoParts = self._simuParam["analysisParameter"]["nbrPolesinModel"] * 2
         rotorSPMSM1 = RotorSPMSM(
             laminationType,
             magnetType,
@@ -158,9 +155,7 @@ class MachineASM(MachineAllType):
             / self.symmetryFactor
             / self._simuParam["analysisParameter"]["nbrSlotinModel"]
         )
-        nbrGeoParts = (
-            self._simuParam["analysisParameter"]["nbrSlotinModel"] * 2
-        )
+        nbrGeoParts = self._simuParam["analysisParameter"]["nbrSlotinModel"] * 2
         nbrSlotsTotal = (
             nbrGeoParts * self.symmetryFactor / 2
         )  # divided by 2 because one slot is formed by 2 geoParts

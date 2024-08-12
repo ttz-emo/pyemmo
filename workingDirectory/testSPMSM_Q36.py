@@ -18,24 +18,28 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Test module for spmsm toolkit machine model"""
-# %%
-import os
-from os import mkdir, path
 
 # from pyemmo.functions.importResults import plotAllDat
 # from numpy import rad2deg, where
 import math
+
+# %%
+import os
+import subprocess
+from os import mkdir, path
+
 from swat_em import datamodel
+
+from pyemmo.definitions import ROOT_DIR
+from pyemmo.functions.runOnelab import createCmdCommand
+from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
 
 # from pyemmo.definitions import RESULT_DIR, MAIN_DIR
 from pyemmo.script.geometry.point import Point
 
 # from pyemmo.script.geometry.line import Line
-from pyemmo.script.material.electricalSteel import Material, ElectricalSteel
-from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
+from pyemmo.script.material.electricalSteel import ElectricalSteel, Material
 from pyemmo.script.script import Script
-from pyemmo.functions.runOnelab import createCmdCommand
-from pyemmo.definitions import ROOT_DIR
 
 # %%
 
@@ -44,9 +48,10 @@ PBohrung = Point("mittelPunktBohrung", 0, 0, 0, 5e-3)
 # Material aus Datenbank laden
 steel_1010 = ElectricalSteel(
     sheetThickness=1e-3,
-    lossParams=(0.0, 0.0, 0.0),
+    lossParams=None,
     referenceFrequency=0,
     referenceFluxDensity=0,
+    density=1,
 )
 steel_1010.loadMatFromDataBase("Material_new.db", "steel_1010")
 ndFe35 = Material()
@@ -275,25 +280,33 @@ myScript = Script(
 )
 myScript.generateScript()
 
-os.system(
+subprocess.run(
     createCmdCommand(
         onelabFile=myScript.proFilePath,
         useGUI=True,
         paramDict={"Flag_ClearResults": 1},
     )
 )
+# fixed per  Issue: [B605:start_process_with_a_shell] in workingDirectory\Vu\bandit_log\bandit_log_20240809_093824.log line 2817
+# os.system(
+#     createCmdCommand(
+#         onelabFile=myScript.proFilePath,
+#         useGUI=True,
+#         paramDict={"Flag_ClearResults": 1},
+#     )
+# )
 # plotAllDat(myScript.getResultsPath())
 print("I am done!")
 
 
-# %%
-from pyemmo.functions.import_results import (
-    get_result_files,
-    read_timetable_dat,
-)
-from SciDataTool import DataTime, Data1D
+from SciDataTool import Data1D, DataTime
 
-resPath = "C:/Users/ganser/AppData/Local/Programs/pyemmo/Results/Baukasten/Test_SPMSM/res_Test_SPMSM_Baukasten"
+# %%
+from pyemmo.functions.import_results import get_result_files, read_timetable_dat
+
+resPath = (
+    myScript.resultsPath
+)  # 'C:/Users/ganser/AppData/Local/Programs/pyemmo/Results/Baukasten/Test_SPMSM/res_Test_SPMSM_Baukasten'
 
 resultsList: list[DataTime] = []
 try:
@@ -311,3 +324,11 @@ except FileNotFoundError:
     print("No results from GetDP...")
 except Exception as exce:
     raise exce
+
+import matplotlib.pyplot as plt
+
+# %%
+
+plt.plot(resultsList[00].values, resultsList[00].axes[0].values)
+plt.show()
+print("ENDE")

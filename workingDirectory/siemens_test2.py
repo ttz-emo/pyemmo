@@ -18,11 +18,10 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from os.path import abspath, dirname, isdir, join
+
 # %% Imports
 from sys import path
-from os import getcwd
-from os.path import abspath, dirname, isdir, isfile, join, normpath, realpath
-from typing import List
 
 # Add Software_V2 to Path so pyemmo can be found
 # This must be done since this is a script (not really a module) and we cannot guarante where it will run from
@@ -37,20 +36,22 @@ except:
     print(f"Could not determine root. Setting it manually to '{rootname}'")
 print(f'rootname is "{rootname}"')
 path.append(rootname)
-# %%
-from pyemmo.definitions import RESULT_DIR, MAIN_DIR
-from pyemmo.script.script import Script
-from pyemmo.script.geometry.primaryLine import PrimaryLine
-from pyemmo.script.geometry.slaveLine import SlaveLine
-from pyemmo.script.geometry.limitLine import LimitLine
-from pyemmo.script.geometry.rotor import Rotor
-from pyemmo.script.geometry.stator import Stator
-from pyemmo.script.geometry.machineAllType import MachineAllType
-from pyemmo.api.json import *
-from pyemmo.functions.runOnelab import findGmsh, mergeAllGeoFiles
 import subprocess
+
 from matplotlib import pyplot as plt
-import gmsh
+
+from pyemmo.api.json import *
+
+# %%
+from pyemmo.definitions import RESULT_DIR
+from pyemmo.functions.runOnelab import findGmsh
+from pyemmo.script.geometry.limitLine import LimitLine
+from pyemmo.script.geometry.machineAllType import MachineAllType
+from pyemmo.script.geometry.primaryLine import PrimaryLine
+from pyemmo.script.geometry.rotor import Rotor
+from pyemmo.script.geometry.slaveLine import SlaveLine
+from pyemmo.script.geometry.stator import Stator
+from pyemmo.script.script import Script
 
 # %%
 # try to find gmsh in system path
@@ -422,6 +423,6 @@ idedentPoints, idedentLines = testScript.generateScript()
 
 subprocess.run(
     [gmshExe, abspath(join(RESULT_DIR, testScript.getName() + ".pro"))],
-    shell=True,
+    # shell=True, # fixed per Issue: [B602:subprocess_popen_with_shell_equals_true] in workingDirectory\Vu\bandit_log\bandit_log_20240809_093824.log line 2545
 )
 # %%

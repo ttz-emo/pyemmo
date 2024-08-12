@@ -27,14 +27,16 @@ because we want to access the version number in the script generation process"""
 try:
     import setuptools
 except ImportError:  # Install setuptools if needed
-    from os import system
+    import subprocess
     from sys import executable
 
     # run 'pip install setuptools'
-    system(f"{executable} -m pip install setuptools")
+    # system(f"{executable} -m pip install setuptools") #fixed per Issue: [B605:start_process_with_a_shell] in workingDirectory\Vu\bandit_log\bandit_log_20240809_093824.log
+    subprocess.run(f"{executable} -m pip install setuptools")
 
     import setuptools
 
+# from pyemmo.version import __version__
 
 # /!\ Increase the number before a release
 # See https://www.python.org/dev/peps/pep-0440/
@@ -47,12 +49,18 @@ except ImportError:  # Install setuptools if needed
 
 # get version from version.py file in package,
 #  because we need to access the version number from pyemmo.script
+# with open("pyemmo/version.py", encoding="utf-8") as versionFile:
+# exec(versionFile.read()) # fixed per Issue: [B102:exec_used] in workingDirectory\Vu\bandit_log\bandit_log_20240809_105713.log line 360
 with open("pyemmo/version.py", encoding="utf-8") as versionFile:
-    exec(versionFile.read())
+    file_content = versionFile.read()
+    version = [x for x in file_content.split("\n") if "__version__" in x][0].split("=")[
+        1
+    ]
+    version = version.replace('"', "").replace(" ", "")
+
 # from .pyemmo.version import __version__
-PYEMMO_VERSION = (
-    __version__  # # pylint: disable=locally-disabled, undefined-variable
-)
+PYEMMO_VERSION = version  # # pylint: disable=locally-disabled, undefined-variable
+# PYEMMO_VERSION = version
 
 # with open("README.md", "r", encoding="utf-8") as fh:
 #     long_description = fh.read()
@@ -61,17 +69,15 @@ PYTHON_REQUIRES = ">= 3.6"
 
 # Pyleecan dependancies
 install_requires = [
-    "setuptools",
-    "matplotlib>=3.4.3",
-    "numpy>=1.23.1",
-    "pandas>=1.2.4",  # only for material import from database
-    "parse>=1.19.0",  # used for special .dat results import
-    "gmsh>=4.8.4",
+    "pyleecan>=1.5.1",
+    "swat_em>=0.6.3",
     "pygetdp>=1.0.0",
-    "swat-em>=0.6.3",
-    # "pyleecan>=1.5.1", # -> TODO: test, because dependencies in pyleecan are
-    # very restrictive.
-    # "scipy>=1.6.3", # only used for matlab .mat-file import
+    "gmsh>=4.10.3",
+    "matplotlib>=3.3.4",
+    "pandas>=1.2.4",
+    "numpy>=1.23.1",
+    "parse>=1.19.0",
+    "splines>=0.3.2",
 ]
 
 setuptools.setup(

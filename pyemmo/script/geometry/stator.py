@@ -17,18 +17,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-from typing import Dict, List, Union
+import logging
+from typing import Dict, List, Literal, Union
+
+import numpy as np
 from matplotlib import pyplot as plt
-from numpy import pi, sign
 from swat_em import datamodel
+
+from ..material.electricalSteel import ElectricalSteel
+from .airGap import AirGap
+from .domain import Domain
 from .line import Line
 from .movingBand import MovingBand
-from .airGap import AirGap
 from .physicalElement import PhysicalElement
 from .slot import Slot
-from .surface import Surface
-from .domain import Domain
-from ..material.electricalSteel import ElectricalSteel
+from .surface import Point, Surface
 
 # from ... import calc_phaseangle_starvoltageV2
 
@@ -147,9 +150,7 @@ class Stator:
         return self._physicalElements
 
     @physicalElements.setter
-    def physicalElements(
-        self, physicalElementsList: List[PhysicalElement]
-    ) -> None:
+    def physicalElements(self, physicalElementsList: List[PhysicalElement]) -> None:
         """Setter of PhysicalElement-List
 
         Args:
@@ -182,14 +183,13 @@ class Stator:
                     self._physicalElements.append(physicalElem)
             self._createDomainForStator()  # recreate domains for stator with new elements
         else:
-            raise ValueError(
-                f"Argument 'physicalElementList' was not type list!"
-            )
+            raise ValueError(f"Argument 'physicalElementList' was not type list!")
 
     @property
     def slots(self) -> List[Slot]:
         """getSlots returns a list of physical elements of type slot in stator.physicalElementList.
-        The List is sortet in circumferderal (mathematically positive) direction so the first slot in the list is the one closest to the x-axis
+        The List is sortet in circumferderal (mathematically positive) and radial direction so the
+        first slot in the list is the one closest to the x-axis
 
         Returns:
             List[Slot]: List of slots
@@ -199,7 +199,24 @@ class Stator:
         for physElem in physicalElements:
             if physElem.type == "Slot":
                 slotList.append(physElem)
-        slotList.sort(key=Slot.getRadialPosition)
+        # if self.winding.get_coilspan()<1:
+        #     # tooth coil winding -> radial position sort
+        slotList.sort(key=Slot.get_circumferential_position)
+        wind = self.winding
+        if wind.get_num_layers() == 2:
+            layout = np.array(wind.get_phases())
+            # check if first and second layer are not equal
+            if (
+                not np.array_equal(layout[0, 0, :], layout[0, 1, :])
+                and wind.get_coilspan() > 1
+            ):
+                # Distributed winding with differnet layers
+                for i in range(wind.get_num_slots()):
+                    # sort the two slot sides separately in upper and lowee slot
+                    slotsides = slotList[2 * i : 2 * i + 2]
+                    # reverse because outer slot has index 0 according to swat-em
+                    slotsides.sort(key=Slot.get_radial_position, reverse=True)
+                    slotList[2 * i : 2 * i + 2] = slotsides
         return slotList
 
     @property
@@ -234,6 +251,26 @@ class Stator:
                     f"Could not determine movingband radius, because there were no movingband objects in the rotor."
                 )
             )
+
+    @property
+    def outer_radius(self) -> float:
+        """Stator most outer radius determined from domain OuterLimit
+
+        Returns:
+            float: Most outer radius in meter.
+        """
+        if not self.physicalElements:
+            raise RuntimeError(
+                "Cannot determine outer radius since there are no physical elements in Stator."
+            )
+        outer_radius = 0.0
+        for phys in self._domainOuterLimit.physicals:
+            for geo in phys.geometricalElement:
+                if isinstance(geo, Line):
+                    for p in geo.points:
+                        if p.radius > outer_radius:
+                            outer_radius = p.radius
+        return outer_radius
 
     @property
     def winding(self) -> datamodel:
@@ -310,9 +347,9 @@ class Stator:
                 layer = 0  # there is only one layer
                 slotIDLayout = slotPos
             # Finally get winding direction and phase number (0,1,2 = u,v,w)
-            slot.windDirection = sign(layout[layer, slotIDLayout])
+            slot.windDirection = np.sign(layout[layer, slotIDLayout])
             # recalculate phase angle in rad
-            slot.phase = (abs(layout[layer, slotIDLayout]) - 1) * 2 * pi / 3
+            slot.phase = (abs(layout[layer, slotIDLayout]) - 1) * 2 * np.pi / 3
             slot.nbrTurns = self.winding.get_turns()
             slot.setColor()
 
@@ -422,9 +459,7 @@ class Stator:
                     if physicalElement not in phy_domainLam:
                         phy_domainLam.append(physicalElement)
 
-                phy_domain.append(
-                    physicalElement
-                )  # append Surface to main Domain
+                phy_domain.append(physicalElement)  # append Surface to main Domain
             elif geoType == Line:
                 # MB zuweisen
                 if physicalElement.type == "MovingBand":
@@ -482,6 +517,111 @@ class Stator:
         lim = 0.01 * self.movingBandRadius
         ax.set_xlim(left=-lim)
         ax.set_ylim(bottom=-lim)
+
+    def setFunctionMesh(
+        self,
+        basisMeshsize: float = None,
+        functionType: Literal["linear", "quad"] = None,
+        meshGainFactor: float = None,
+    ):
+        """add functional mesh size setting for stator if you don't want to
+        specify mesh sizes individually. Mesh size is set to increase from
+        airgap to stator outer radius. Maximal mesh size will be
+        basisMeshsize * meshGainFactor.
+        If basisMeshsize is not given, its set to
+        2 * Pi * Movingband_Radius / 360.
+
+        Args:
+            functionType (Literal[&quot;linear&quot;, &quot;quad&quot;]):
+                linear or quadratic function for mesh size.
+            meshGainFactor (float): Gain factor for mesh size from airgap to
+                outer machine limit.
+            basisMeshsize (float, optional): Basis mesh size to use near the
+                airgap (minimal mesh size).
+                Defaults to 2 * Pi * Movingband_Radius / 360.
+        """
+        logging.debug("Started automatic mesh generation on stator.")
+        # get max. outer radius:
+        r_out = self.outer_radius
+        if not basisMeshsize:
+            basisMeshsize = 2 * np.pi * self.movingBandRadius / 360
+            logging.debug(
+                "Setting basis mesh size to 2 * np.pi * self.movingBandRadius / 360 = %.3e",
+                basisMeshsize,
+            )
+        # set mesh gain factor to empirically developed default
+        if not meshGainFactor:
+            if r_out / basisMeshsize > 100:
+                meshGainFactor = r_out / basisMeshsize / 20
+                if not functionType:
+                    functionType = "linear"
+            else:
+                meshGainFactor = 20
+                if not functionType:
+                    functionType = "quad"
+            logging.debug(
+                "Setting mesh gain factor to = %.1f",
+                meshGainFactor,
+            )
+        if functionType == "linear":
+            self._set_linear_mesh(meshGainFactor, basisMeshsize)
+        else:
+            self._set_quad_mesh(meshGainFactor, basisMeshsize)
+
+    def _set_linear_mesh(self, meshGainFactor: float, basisMeshsize: float):
+        logging.debug("Setting linear mesh on stator.")
+        # calculate linear mesh size functions (ax+b)
+        a = (meshGainFactor - 1) / (self.outer_radius - self.movingBandRadius)
+        b = meshGainFactor - a * self.outer_radius
+
+        for physical in self.physicalElements:
+            for geo in physical.geometricalElement:
+                points: List[Point] = []
+                if isinstance(geo, Surface):
+                    for curve in geo.curve:
+                        points.extend(curve.points)
+                elif isinstance(geo, Line):
+                    points.extend(geo.points)
+                # All curves should belong to a surface...
+                # else:
+                #     points.extend(geo.getPoints())
+                for point in points:
+                    rP = point.radius
+                    # if rP < rMb: # == rotor is allways true
+                    # meshSizeFaktor = (a1*rP+b1)
+                    pMeshSize = (a * rP + b) * basisMeshsize
+                    point.meshLength = pMeshSize
+
+    def _set_quad_mesh(self, meshGainFactor: float, basisMeshsize: float):
+        """set mesh by parabolic function.
+
+        Args:
+            meshGainFactor (float): _description_
+            basisMeshsize (float): _description_
+        """
+        logging.debug("Setting quadratic mesh on stator.")
+        # calculate function coefficients for ax^2+bx+c
+        r_mb = self.movingBandRadius
+        c = meshGainFactor
+        b = -2 * c / r_mb
+        a = -b / 2 / r_mb
+        for physical in self.physicalElements:
+            for geo in physical.geometricalElement:
+                points: List[Point] = []
+                if isinstance(geo, Surface):
+                    for curve in geo.curve:
+                        points.extend(curve.points)
+                elif isinstance(geo, Line):
+                    points.extend(geo.points)
+                # All curves should belong to a surface...
+                # else:
+                #     points.extend(geo.getPoints())
+                for point in points:
+                    rP = point.radius
+                    # faktor = 4770*rP**2 - 430 * rP + 10 # poly 2 fit
+                    gain_factor = (a * rP**2 + b * rP + c) + 1
+                    gain_factor = 1 if gain_factor < 1 else gain_factor
+                    point.meshLength = gain_factor * basisMeshsize
 
     ###
     # Mit addToScript wird der Stator zum Skriptobjekt übergeben und in gmsh-Syntax übersetzt.

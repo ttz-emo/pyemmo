@@ -18,25 +18,27 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Test module for spmsm toolkit machine model"""
-# %%
-import os
-from os import mkdir, path
-
-from pyemmo.functions.import_results import plot_all_dat
-
 # from numpy import rad2deg, where
 import math
+
+# %%
+import os
+import subprocess
+from os import path
+
 from swat_em import datamodel
+
+from pyemmo.definitions import ROOT_DIR
+from pyemmo.functions.import_results import plot_all_dat
+from pyemmo.functions.runOnelab import createCmdCommand
+from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
 
 # from pyemmo.definitions import RESULT_DIR, MAIN_DIR
 from pyemmo.script.geometry.point import Point
 
 # from pyemmo.script.geometry.line import Line
-from pyemmo.script.material.electricalSteel import Material, ElectricalSteel
-from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
+from pyemmo.script.material.electricalSteel import ElectricalSteel, Material
 from pyemmo.script.script import Script
-from pyemmo.functions.runOnelab import createCmdCommand
-from pyemmo.definitions import ROOT_DIR
 
 # %%
 
@@ -45,9 +47,10 @@ PBohrung = Point("mittelPunktBohrung", 0, 0, 0, 5e-3)
 # Material aus Datenbank laden
 steel_1010 = ElectricalSteel(
     sheetThickness=1e-3,
-    lossParams=(0.0, 0.0, 0.0),
+    lossParams=None,
     referenceFrequency=0,
     referenceFluxDensity=0,
+    density=1,
 )
 steel_1010.loadMatFromDataBase("Material_new.db", "steel_1010")
 ndFe35 = Material()
@@ -281,13 +284,14 @@ cmd = createCmdCommand(
     onelabFile=myScript.proFilePath,
     gmshPath=r"C:\Software\onelab\gmsh.exe",
     getdpPath=r"C:\Software\onelab\getdp.exe",
-    useGUI=True,
+    useGUI=False,
     paramDict={"Flag_ClearResults": 1},
 )
 print(cmd)
 
 # %%
-os.system(cmd)
+# os.system(cmd) # fixed per Issue: [B605:start_process_with_a_shell] in workingDirectory\Vu\bandit_log\bandit_log_20240809_093824.log line 2807
+subprocess.run(cmd)
 plot_all_dat(myScript.resultsPath)
 print("I am done!")
 

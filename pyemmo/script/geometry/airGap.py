@@ -19,14 +19,12 @@
 #
 """Module for AirArea Physical Element"""
 from typing import List, Union
-from .physicalElement import (
-    PhysicalElement,
-    Material,
-    Surface,
-    Line,
-    CircleArc,
-    Spline,
-)
+
+from ..material import Material
+from .circleArc import CircleArc, Line
+from .physicalElement import PhysicalElement
+from .spline import Spline
+from .surface import Surface
 
 
 class AirGap(PhysicalElement):
