@@ -17,12 +17,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+from .. import colorDict
+from .circleArc import CircleArc
+from .line import Line
 from .magnet import Magnet
 from .point import Point
-from .line import Line
-from .circleArc import CircleArc
 from .surface import Surface
-from .. import colorDict
 
 
 ###
@@ -63,7 +63,7 @@ class Magnet_Surface01(Magnet):
         material (Material): Material of magnet.
         meshLength (float):
 
-    .. figure:: ../image_Doku/magnet_Surface01.png
+    .. figure:: ../images/magnet_Surface01.png
         :align: center
 
         Parameter description for Magnet_Surface01

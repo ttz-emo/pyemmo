@@ -20,18 +20,22 @@
 """Module for class MovingBand"""
 from typing import List
 
-from .circleArc import CircleArc
 from ..material.material import Material
-from .physicalElement import PhysicalElement
 from ..script import DEFAULT_GEO_TOL
+from .circleArc import CircleArc
+from .physicalElement import PhysicalElement
 
 
 class MovingBand(PhysicalElement):
-    """Eine Instanz der Klasse MovingBand beschreibt das Band im Luftspalt, die bei der Movingband-
+    """
+    Eine Instanz der Klasse MovingBand beschreibt das Band im Luftspalt, die bei der Movingband-
     Simulationsmethode für die Drehung des Netzes verwendet wird. Das Movingband muss auf der Rotor-
     Seite einen Vollkreis beschreiben, ist jedoch auf der Stator-Seite nicht nötig.
+
         \\image html mb_Rotor.png
+
         \\image html mb_Stator.png
+
     """
 
     ###

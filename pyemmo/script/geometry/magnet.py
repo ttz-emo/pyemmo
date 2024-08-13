@@ -32,7 +32,9 @@ class Magnet(PhysicalElement):
     """Eine Instanz der Klasse Magnet beschreibt Magnetteile der elektrischen Maschine im
     dreidimensionalen Raum. Als optische Identifikation der Nord- und Südpole dienen die Farben
     Rot (Nord) und Grün (Süd) des Netzes.
+
         \\image html magnet.png
+
     """
 
     def __init__(

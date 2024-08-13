@@ -39,7 +39,8 @@ extensions = [
     "sphinx.ext.coverage",
     "sphinx.ext.napoleon",
     "sphinx.ext.autosummary",
-    "sphinx.ext.autosectionlabel",
+    # "sphinx.ext.autosectionlabel", # fix warning of duplicate label.
+    "sphinx.ext.todo",  # enable todo directive
 ]
 
 templates_path = ["_templates"]

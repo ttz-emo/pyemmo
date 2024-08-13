@@ -17,19 +17,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+import logging
 from math import gcd
 from typing import List, Literal, Union
-import logging
+
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 
-from .physicalElement import PhysicalElement
-from .surface import Surface, Point, Line
+from ...script import default_param_dict
 from .domain import Domain
 from .movingBand import MovingBand
+from .physicalElement import PhysicalElement
 from .rotor import Rotor
 from .stator import Stator
-from ...script import default_param_dict
+from .surface import Line
 
 
 ###
@@ -50,6 +51,7 @@ class MachineAllType:
     ):
         """
         Constructor of class Machine
+
         Args:
             nbrPolePairs (int): Number of pole pairs of machine.
             rotor (Rotor): PyEMMO Rotor class object
@@ -58,6 +60,7 @@ class MachineAllType:
             symmetryFactor (Union[int, None]): Fixed given symmetry factor. If
                 None is given. The symmetry factor will be calculated by number
                 of slots and poles.
+
         """
         ###Name des Objektes.
         self.name = name if name else "machine"

@@ -20,41 +20,42 @@
 """Module for Class Rotor"""
 
 import copy
-from typing import *
 import logging
-from matplotlib import pyplot as plt
 from math import pi
-from . import default_domain_dict
-from .magnet import Magnet
-from .movingBand import MovingBand
-from .surface import Surface
-from .line import Line, Point
-from .domain import Domain
-from .physicalElement import PhysicalElement
+from typing import *
+
+from matplotlib import pyplot as plt
+
+from ...definitions import DEFAULT_GEO_TOL
 from .. import (
-    DOMAIN_PRIMARY,
-    DOMAIN_SECONDARY,
-    DOMAIN_LIMIT,
-    DOMAIN_MOVINGBAND,
-    DOMAIN_MOVINGBAND_AUX,
+    DOMAIN,
     DOMAIN_AIRGAP,
-    DOMAIN_ROTOR,
-    DOMAIN_STRANDED,
-    DOMAIN_MAGNET,
-    DOMAIN_LAMINATION,
     DOMAIN_BAR,
     DOMAIN_CONDUCTING,
-    DOMAIN_NON_CONDUCTING,
-    DOMAIN,
-    DOMAIN_NON_LINEAR,
+    DOMAIN_LAMINATION,
+    DOMAIN_LIMIT,
     DOMAIN_LINEAR,
+    DOMAIN_MAGNET,
+    DOMAIN_MOVINGBAND,
+    DOMAIN_MOVINGBAND_AUX,
+    DOMAIN_NON_CONDUCTING,
+    DOMAIN_NON_LINEAR,
+    DOMAIN_PRIMARY,
+    DOMAIN_SECONDARY,
 )
 from ..material.electricalSteel import ElectricalSteel
-from ...definitions import DEFAULT_GEO_TOL
+from . import default_domain_dict
+from .domain import Domain
+from .line import Line, Point
+from .magnet import Magnet
+from .movingBand import MovingBand
+from .physicalElement import PhysicalElement
+from .surface import Surface
 
 
 class Rotor:
-    """An instance of the Rotor class describes the rotor of an electrical
+    """
+    An instance of the Rotor class describes the rotor of an electrical
     machine in three-dimensional space. This class is used in conjunction with
     the class machineAllType. The user himself defines the type of machine by
     defining his physical elements. This class should only be used if the
@@ -62,6 +63,7 @@ class Rotor:
     use the construction kit, it makes sense to specify the machine first. You
     should therefore use specific classes for this, e.g. machineSPMSM (for
     surface magnets) and the associated class RotorSPMSM.
+
     """
 
     def __init__(
@@ -72,10 +74,11 @@ class Rotor:
     ):
         """
         Constructor of class Rotor
+
         Args:
             physicalElements (List[PhysicalElement]): List of PhysicalElement
                 objects defining geometry and materials.
-            name (str): Defaults to "".
+            name (str): Defaults to \"\".
             axLen (float): Active axial length of stator lamination in [m].
                 Defaults to 1.0
 
@@ -234,10 +237,13 @@ class Rotor:
 
     ###Sortierfunktion der PhysicalElements.
     def sortPhysicals(self) -> Dict[str, List[PhysicalElement]]:
-        """Create a dict with the physical elements sorted into different domains with
-        domain names as keys
+        """
+        Create a dict with the physical elements sorted into different domains with
+        domain names as keys.
+        The dict will look like
 
-            The dict will look like
+        .. code-block:: python
+
             {
                 "domainS": phy_domainS,
                 "domainM": phy_domainM,
@@ -258,6 +264,7 @@ class Rotor:
 
         Returns:
             Dict[str, List[PhysicalElement]]: Sorted Physicals Dict
+
         """
         domain_dict: Dict[str, List[PhysicalElement]] = copy.deepcopy(
             default_domain_dict
