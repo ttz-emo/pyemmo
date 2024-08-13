@@ -72,14 +72,15 @@ test_cases["api\\pyleecan"] = [
 # Fixture for cleaning up test data
 @pytest.fixture(scope="session", autouse=True)
 def cleanup(request):
+    """
+    fixture for cleaning up data after tests.
+    """
     from . import LOGGER
 
     def finisher():
         LOGGER.info("Doing teardown...")
         for t in test_types:
-            test_result_dir = os.path.join(
-                ROOT_DIR, test_params[t]["result_folder"], t
-            )
+            test_result_dir = os.path.join(ROOT_DIR, test_params[t]["result_folder"], t)
             timestamped_result_dirs = [
                 os.path.join(test_result_dir, dir)
                 for dir in os.listdir(test_result_dir)
@@ -115,15 +116,27 @@ class TestCasesIntegration:
     """
     Class containing test cases for Pyleecan API
     Prerequisites
-    - Pytest should be installed
-    - Pytest-progress should be installed (pip install pytest-progress)
-    - test data should be available locally
+
+        - Pytest should be installed
+        - Pytest-progress should be installed (pip install pytest-progress)
+        - test data should be available locally
 
     Test content:
-    1. Test Pyleecan API to create Pyleecan machine and generate simulations in Onelab
-    2. Check that GMSH and getDP files are generated
-    3. Check that simulation files are generated
-    4. Check dat files content are the same as base comparison
+
+        1. Test Pyleecan API to create Pyleecan machine and generate simulations in Onelab
+        2. Check that GMSH and getDP files are generated
+        3. Check that simulation files are generated
+        4. Check dat files content are the same as base comparison
+
+    How to run:
+
+        - Use pytest <integration_test_folder> on command line
+        - Use pytest <path_to_this_file> on command line
+
+    .. note::
+
+        The integration tests is currently limited to 4 machine models: ISPMS_B, SPMSM_002, SPMSM_003, Toyota_Prius.
+        Machines whose simulation fails will have their tests skipped.
     """
 
     @pytest.mark.dependency(name="simul_folder_exist")
@@ -139,6 +152,12 @@ class TestCasesIntegration:
         base_simul_path,
         base_simul_subfolder_path,
     ):
+        """ "
+        This test checks that simulation has been run successfully and corresponding result folders have been created.
+        It also serves as dependency point for other tests i.e. if this test fails
+            (meaning simulation failed), the other tests will be skipped.
+
+        """
         # ) = test_tuple
         if result_path == "":
             LOGGER.info(f"TEST CASE {test_id}: {test_case}: SKIPPED")
@@ -156,9 +175,7 @@ class TestCasesIntegration:
                 "SUCCESS: Simulation result subfolder exists!"
             ), "ERROR: Simulation result subfolder does not exist"
 
-    @pytest.mark.dependency(
-        name="simul_data_gen", depends=["simul_folder_exist"]
-    )
+    @pytest.mark.dependency(name="simul_data_gen", depends=["simul_folder_exist"])
     def test_gmsh_base_files(
         self,
         # test_tuple
@@ -172,7 +189,10 @@ class TestCasesIntegration:
         base_simul_path,
         base_simul_subfolder_path,
     ):
-
+        """
+        This test checks if the correct gmsh and getdp files have been generated correctly.
+        This will be skipped if test_api_simul_folder_exist fails.
+        """
         # (test_id, test_case, _, result_path, _, _, base_result_path, _, _) = (
         #     test_tuple
         # )
@@ -181,9 +201,7 @@ class TestCasesIntegration:
         LOGGER.info("Test point 2: check if GMSH base files are generated")
         self.check_file_counts(base_result_path, result_path)
 
-    @pytest.mark.dependency(
-        name="simul_data_gen", depends=["simul_folder_exist"]
-    )
+    @pytest.mark.dependency(name="simul_data_gen", depends=["simul_folder_exist"])
     def test_simul_data_gen(
         self,
         # test_tuple
@@ -197,6 +215,10 @@ class TestCasesIntegration:
         base_simul_path,
         base_simul_subfolder_path,
     ):
+        """
+        This test checks that the simulation result files have been generated correctly.
+        If test_api_simul_folder_exist fails, this will be skipped.
+        """
         # (
         #     test_id,
         #     test_case,
@@ -227,6 +249,11 @@ class TestCasesIntegration:
         base_simul_path,
         base_simul_subfolder_path,
     ):
+        """
+        This test checks that the data in the simulation result files is as expected,
+            using a pre-generated base data as comparison base.
+        If either test_api_simul_folder_exist or test_simul_data_gen fails, this test will be skipped.
+        """
         # (
         #     test_id,
         #     test_case,
@@ -249,12 +276,8 @@ class TestCasesIntegration:
                 f"Base simulation result subfolder for {test_case} does not exist, nothing to compare"
             )
         else:
-            dat_targets = glob.glob(
-                os.path.join(simul_subfolder_path, "*.dat")
-            )
-            dat_bases = glob.glob(
-                os.path.join(base_simul_subfolder_path, "*.dat")
-            )
+            dat_targets = glob.glob(os.path.join(simul_subfolder_path, "*.dat"))
+            dat_bases = glob.glob(os.path.join(base_simul_subfolder_path, "*.dat"))
             for target_file, base_file in zip(dat_targets, dat_bases):
                 target_dat = read_timetable_dat(target_file)
                 base_dat = read_timetable_dat(base_file)
@@ -302,11 +325,7 @@ class TestCasesIntegration:
         for file_type, count in base_count.items():
             if file_type not in exclusion_list:
                 result_count = len(
-                    glob.glob(
-                        os.path.join(
-                            ROOT_DIR, folder_to_count, f"*.{file_type}"
-                        )
-                    )
+                    glob.glob(os.path.join(ROOT_DIR, folder_to_count, f"*.{file_type}"))
                 )
                 with check:
                     assert result_count == count and messagePrinter(

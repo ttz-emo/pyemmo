@@ -93,16 +93,19 @@ def pyleecan_test_base(
     base data.
 
     Args:
-        test_params (dict): Contains parameter for running test
-        result_path (str): Path where result should be stored, default empty
+        - test_params (dict): Contains parameter for running test
+        - result_path (str): Path where result should be stored, default empty
             (so that timestamped folder can be generated)
-        test_data_path (str): Path where json data for testing can be found
+        - test_data_path (str): Path where json data for testing can be found
             Defaults to "", so that data path from test_params will be used.
-        test_type (str): type of test, default empty
-        test_id (int): test id, default 0
-        test_case (str): test case name, same as machine name, default empty
-        print_flag (int): default 0
-        debug_flag (int): default 0
+        - test_type (str): type of test, default empty
+        - test_id (int): test id, default 0
+        - test_case (str): test case name, same as machine name, default empty
+        - print_flag (int): default 0
+        - debug_flag (int): default 0
+
+    Returns:
+        None
     """
 
     # disable messages of matplotlib
@@ -133,10 +136,7 @@ def pyleecan_test_base(
     except Exception as exce:
         raise exce
     try:
-        if (
-            pyleecan_machine.stator.winding.conductor.cond_mat.name
-            == "Copper1"
-        ):
+        if pyleecan_machine.stator.winding.conductor.cond_mat.name == "Copper1":
             pyleecan_machine.stator.winding.conductor.cond_mat = CuMat
     except AttributeError:
         pass
@@ -212,9 +212,7 @@ def pyleecan_test_base(
             error_message = log_subprocess_output(
                 process.stdout,
                 process.stderr,
-                os.path.join(
-                    sim_res_dir, f"simulation_log_{curr_datetime}.log"
-                ),
+                os.path.join(sim_res_dir, f"simulation_log_{curr_datetime}.log"),
             )
         exitcode = process.wait()  # 0 means success
         if exitcode != 0:
@@ -234,8 +232,10 @@ def pyleecanPrepTuple(
     a tuple for use in test cases.
 
     Args:
-        test_cases (dict[list[tuple]]): list of test case names
+        :paramemter: test_cases (dict[list[tuple]]): list of test case names, and whether test should be performed
+            (in case manual exclusion of test case is desired)
         test_type (str): type of test performed
+
     Returns:
         list[tuple]: list of test data tuples with headers as first element.
         Headers (str) are:
@@ -318,16 +318,14 @@ def pyleecanPrepTuple(
 
             except Exception as exce:
                 LOGGER.warning(
-                    f"test for {test_case} failed. exce.args[0]: "
-                    + exce.args[0]
+                    f"test for {test_case} failed. exce.args[0]: " + exce.args[0]
                 )
                 check_fail_flag = True
             # simul_path = pyemmo_script.resultsPath
             simul_path = [
                 os.path.join(result_path, dir)
                 for dir in os.listdir(result_path)
-                if os.path.isdir(os.path.join(result_path, dir))
-                and "res_" in dir
+                if os.path.isdir(os.path.join(result_path, dir)) and "res_" in dir
             ][0]
             # simul_folder = simul_path.split("/")[-1]
             simul_folder = simul_path.split("\\")[-1]
@@ -381,15 +379,6 @@ def pyleecanPrepTuple(
             continue
 
     return param_tuples
-
-
-def write_error_to_log(log_file, test_case, error_class):
-    if hasattr(error_class, "message"):
-        log_file.write(
-            f"{type(error_class).__name__} in {test_case}: {error_class.message}\n"
-        )
-    else:
-        log_file.write(f"{type(error_class).__name__} in {test_case}\n")
 
 
 if __name__ == "__main__":
@@ -457,7 +446,5 @@ if __name__ == "__main__":
             )
             log_file.write(f"Successfully created base data for {test_case}\n")
         except Exception as exce:
-            log_file.write(
-                f"{type(exce).__name__} in {test_case}: {exce.__str__()}\n"
-            )
+            log_file.write(f"{type(exce).__name__} in {test_case}: {exce.__str__()}\n")
     log_file.close()
