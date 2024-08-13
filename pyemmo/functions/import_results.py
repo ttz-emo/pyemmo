@@ -332,8 +332,10 @@ def importPos(
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Import POS file via gmsh api.
 
-    TODO: Does not work for SP-formatted pos files.
-        -> Use function getListData()
+    .. todo::
+
+        Does not work for SP-formatted pos files.
+            -> Use function getListData()
 
     Args:
         pos_file (Union[str, PathLike]): _description_

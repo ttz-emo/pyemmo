@@ -38,7 +38,10 @@ from .. import air, logger
 
 # ================================ START EXTENDED INFO FUNCTIONS ===================================
 class InvalidSheetThicknessError(Exception):
-    """TODO.
+    """
+    .. todo::
+
+        write descriptions
 
     Attributes:
         input -- input that caused the error
@@ -399,11 +402,13 @@ def getMagAngle(extendedInfo: dict) -> dict:
     magnet surface IdExt as key. Identifier is 'magAngle'.
     The magAngle dict looks like:
 
-        {\n
-            "Mag1": 0.192,\n
-            "Mag2": 0.344,\n
-            ...\n
-        }\n
+    .. code-block:: python
+
+        {
+            "Mag1": 0.192,
+            "Mag2": 0.344,
+            ...
+        }
     """
     mbKey = "magAngle"
     if mbKey in extendedInfo.keys():
