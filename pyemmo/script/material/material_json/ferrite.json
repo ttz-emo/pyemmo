@@ -4,6 +4,6 @@
 	"conductivity": 0.01,
 	"relPermeability": 1000.0,
 	"remanence": "no information",
-	"linear": false,
+	"linear": true,
 	"BHCurve": {}
 }

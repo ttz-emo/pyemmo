@@ -5,16 +5,18 @@ import sqlite3
 from pyemmo.definitions import ROOT_DIR
 
 
-def create_material_json(json_folder, mat_db, mode="sep"):
+def create_material_json(json_folder: str, mat_dbPath: str, mode="sep"):
 
-    if mat_db.split(".")[-1] != "db":
+    # if mat_db.split(".")[-1] != "db":
+    if mat_dbPath.split(".")[-1] != "db":
         raise TypeError("Not correct file type, please provide db file type")
     source_path = os.path.join(ROOT_DIR, "pyemmo", "script", "material")
+    # source_path = mat_db
     json_folder_path = os.path.join(source_path, json_folder)
     if not os.path.isdir(json_folder_path):
         os.makedirs(json_folder_path)
 
-    mat_dbPath = os.path.join(source_path, mat_db)
+    # mat_dbPath = os.path.join(source_path, mat_db)
     connection = sqlite3.connect(mat_dbPath)
     cursor = connection.cursor()
     cursor.execute("SELECT * FROM Material;")
@@ -30,7 +32,7 @@ def create_material_json(json_folder, mat_db, mode="sep"):
             mat_dict[row[0]]["conductivity"] = row[2]
             mat_dict[row[0]]["relPermeability"] = row[3]
             mat_dict[row[0]]["remanence"] = row[4]
-            if row[5] == "linear":
+            if row[5].lower() == "linear":
                 mat_dict[row[0]]["linear"] = True
             else:
                 mat_dict[row[0]]["linear"] = False
@@ -41,7 +43,7 @@ def create_material_json(json_folder, mat_db, mode="sep"):
             cursor.execute("SELECT DISTINCT Temp from BH_CURVE WHERE ID = %d" % row[0])
             temp_list = cursor.fetchall()
             for temp in temp_list:
-                if temp[0] == "no information":
+                if temp[0].lower() == "no information":
                     temp_key = "default"
                 else:
                     temp_key = temp[0]
@@ -66,7 +68,7 @@ def create_material_json(json_folder, mat_db, mode="sep"):
             mat_dict["relPermeability"] = row[3]
             mat_dict["remanence"] = row[4]
             # mat_dict["BHCurve_type"] = row[5]
-            if row[5] == "linear":
+            if row[5].lower() == "linear":
                 mat_dict["linear"] = True
             else:
                 mat_dict["linear"] = False
@@ -77,7 +79,7 @@ def create_material_json(json_folder, mat_db, mode="sep"):
             cursor.execute("SELECT DISTINCT Temp from BH_CURVE WHERE ID = %d" % row[0])
             temp_list = cursor.fetchall()
             for temp in temp_list:
-                if temp[0] == "no information":
+                if temp[0].lower() == "no information":
                     temp_key = "default"
                 else:
                     temp_key = temp[0]
@@ -91,4 +93,6 @@ def create_material_json(json_folder, mat_db, mode="sep"):
 
 
 if __name__ == "__main__":
-    create_material_json("material_json", "Material_new.db")
+    db_path = os.path.join(ROOT_DIR, "workingDirectory/Vu/material_new.db")
+    # create_material_json("material_json", "Material_new.db")
+    create_material_json("material_json", db_path)
