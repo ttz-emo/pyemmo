@@ -20,23 +20,22 @@
 """Module: spmsm_rotor_contour_calculation"""
 
 from __future__ import annotations
-import math
+
 import copy
-from typing import Union, List
+import math
 
 from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 
-from ..json.SurfaceJSON import SurfaceAPI
-from ...script.geometry.point import Point
-from ...script.geometry.line import Line
 from ...script.geometry.circleArc import CircleArc
-from ...functions.plot import plot
+from ...script.geometry.line import Line
+from ...script.geometry.point import Point
 from .. import logger
+from ..json.SurfaceJSON import SurfaceAPI
 
 
 def get_lr_points(
     machine: MachineSIPMSM,
-    cont_line_list: List[Union[CircleArc, Line]],
+    cont_line_list: list[CircleArc | Line],
     is_internal: bool,
     radius: float,
 ):
@@ -49,30 +48,22 @@ def get_lr_points(
         for curve in cont_line_list:
             for point in curve.points:
                 angle_point = (
-                    math.atan2(point.coordinate[1], point.coordinate[0])
-                    / math.pi
-                    * 180
+                    math.atan2(point.coordinate[1], point.coordinate[0]) / math.pi * 180
                 )
                 if math.isclose(a=angle_point, b=0, abs_tol=1e-6):
                     angle_point = 180
                 if (
-                    math.isclose(
-                        a=angle_point, b=rotor_seg_angle, abs_tol=1e-6
-                    )
+                    math.isclose(a=angle_point, b=rotor_seg_angle, abs_tol=1e-6)
                     and (
                         (point.radius < machine.rotor.Rext)
                         or (
-                            math.isclose(
-                                point.radius, machine.rotor.Rext, abs_tol=1e-6
-                            )
+                            math.isclose(point.radius, machine.rotor.Rext, abs_tol=1e-6)
                         )
                     )
                     and (
                         point.radius > machine.rotor.Rint
                         or (
-                            math.isclose(
-                                point.radius, machine.rotor.Rint, abs_tol=1e-6
-                            )
+                            math.isclose(point.radius, machine.rotor.Rint, abs_tol=1e-6)
                         )
                     )
                 ):
@@ -107,7 +98,7 @@ def general_calc_spmsm_cont(
     rotor_mag_surf_list: list[SurfaceAPI],
     radius: float,
     is_internal_rotor: bool,
-) -> tuple[list[Union[Line, CircleArc]], Point, Point]:
+) -> tuple[list[Line | CircleArc], Point, Point]:
     """General calculations for creating the rotor contour: \n
     * Filtering the lines that lie on the air gap
     * Detecting the outer points of the rotor contour facing the air gap
@@ -133,9 +124,7 @@ def general_calc_spmsm_cont(
     for curve in rotor_lam_surf_list[0].curve:
         if not (
             math.isclose(curve.startPoint.radius, radius, abs_tol=1e-6)
-        ) and not math.isclose(
-            a=curve.endPoint.radius, b=radius, abs_tol=1e-6
-        ):
+        ) and not math.isclose(a=curve.endPoint.radius, b=radius, abs_tol=1e-6):
             rotor_cont_line_list.append(curve)
 
     # logger.debug("---")

@@ -452,9 +452,7 @@ class Surface(Transformable):
         allCurve.reverse()
         allNewCurve = []
         for aC in allCurve:
-            allNewCurve.append(
-                aC.mirror(planePoint, planeVector1, planeVector2)
-            )
+            allNewCurve.append(aC.mirror(planePoint, planeVector1, planeVector2))
 
         s = Surface(self._name, allNewCurve)
 

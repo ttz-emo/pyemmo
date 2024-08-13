@@ -19,6 +19,7 @@
 #
 """Function to get coil span from winding layout"""
 from typing import List
+
 import numpy as np
 
 
@@ -33,9 +34,7 @@ def get_min_coilspan(wind_layout: List[List[int]], nbrSlots: int) -> int:
         a = wind_array[0, :, 1:] + first_coil_side
     else:
         # otherwise 1-layer -> reshape layout to create numpy array
-        wind_array = np.array(
-            [wind_layout[0][0], wind_layout[1][0], wind_layout[1][0]]
-        )
+        wind_array = np.array([wind_layout[0][0], wind_layout[1][0], wind_layout[1][0]])
         # single layer
         first_coil_side = wind_array[0, 0]
         # get array with slot distance to first slot side

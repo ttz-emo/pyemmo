@@ -18,11 +18,12 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 from __future__ import annotations
-from .statorLamination import StatorLamination
+
 from .. import colorDict
-from .point import Point
-from .line import Line
 from .circleArc import CircleArc
+from .line import Line
+from .point import Point
+from .statorLamination import StatorLamination
 from .surface import Surface
 
 

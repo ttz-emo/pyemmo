@@ -18,12 +18,13 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 from __future__ import annotations
-from pyleecan.Classes.Machine import Machine as PyleecanMachine
-from pyleecan.Classes.Simulation import Simulation as PyleecanSimulation
-from pyleecan.Classes.Lamination import Lamination
+
 from pyleecan.Classes.LamHole import LamHole
+from pyleecan.Classes.Lamination import Lamination
 from pyleecan.Classes.LamSlotMag import LamSlotMag
+from pyleecan.Classes.Machine import Machine as PyleecanMachine
 from pyleecan.Classes.OPdq import OPdq
+from pyleecan.Classes.Simulation import Simulation as PyleecanSimulation
 
 from .. import logger
 from .translate_winding import translate_winding
@@ -91,9 +92,7 @@ def create_param_dict(
 
     lam_with_mag: Lamination = None
 
-    if (
-        pyleecan_simulation.machine.rotor.has_magnet()
-    ):  # Test, if rotor has magnet(s)
+    if pyleecan_simulation.machine.rotor.has_magnet():  # Test, if rotor has magnet(s)
         lam_with_mag = pyleecan_simulation.machine.rotor
 
     elif (
@@ -115,9 +114,7 @@ def create_param_dict(
                 # The magnetization Type for all magnets in the machine will be set
                 # in the same Type as the firt magnet in the list.
 
-                pyemmo_mag_type = lam_with_mag.hole[
-                    0
-                ].magnet_0.type_magnetization
+                pyemmo_mag_type = lam_with_mag.hole[0].magnet_0.type_magnetization
 
             else:  # If lamWithMag has only one magnet
                 pyemmo_mag_type = lam_with_mag.hole.magnet_0.type_magnetization
@@ -132,9 +129,7 @@ def create_param_dict(
                 # The magnetization Type for all magnets in the machine will be set
                 # in the same Type as the firt magnet in the list.
 
-                pyemmo_mag_type = lam_with_mag.slot[
-                    0
-                ].magnet_0.type_magnetization
+                pyemmo_mag_type = lam_with_mag.slot[0].magnet_0.type_magnetization
 
             else:  # If rotor has only one magnet
                 pyemmo_mag_type = lam_with_mag.magnet.type_magnetization

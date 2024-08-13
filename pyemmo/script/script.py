@@ -39,9 +39,6 @@ from pygetdp.postoperation import PostopItem
 
 from ..definitions import DEFAULT_GEO_TOL, MAIN_DIR
 from ..functions.cleanName import cleanName, isValidFilename
-
-# global domain dict to connect existing pyemmo Domains with domains for
-# magstatdyn file
 from . import (
     DOMAIN_AIRGAP,
     DOMAIN_BAR,
@@ -165,9 +162,7 @@ class Script:
         self.resultsPath = (
             abspath(resultsPath).replace("\\", "/")
             if resultsPath
-            else abspath(join(scriptPath, "res_" + self.name)).replace(
-                "\\", "/"
-            )
+            else abspath(join(scriptPath, "res_" + self.name)).replace("\\", "/")
         )
         # point code (in gmsh syntax)
         self.pointCode: str = "\n// Points\n"
@@ -401,9 +396,7 @@ class Script:
         """
         return self._curveList
 
-    def _setCurveList(
-        self, curveList: list[Line | CircleArc | Spline]
-    ) -> None:
+    def _setCurveList(self, curveList: list[Line | CircleArc | Spline]) -> None:
         """set the curve list of the script.
 
         Args:
@@ -499,9 +492,7 @@ class Script:
             self.idedentPoints.append(point)
             return identicalPoint
         # point was allready drawn
-        logging.debug(
-            f"Point '%s' has allready been added to the script.", point.name
-        )
+        logging.debug(f"Point '%s' has allready been added to the script.", point.name)
         return None
 
     def _testPoint(
@@ -676,9 +667,7 @@ class Script:
                 "p2": spline.endPoint,
                 "controlP": spline.controlPoints,
             }
-            if len(testPointDict["controlP"]) == len(
-                comparePointDict["controlP"]
-            ):
+            if len(testPointDict["controlP"]) == len(comparePointDict["controlP"]):
                 # only continue if control point list length is equal
                 if (
                     (
@@ -689,10 +678,7 @@ class Script:
                         testPointDict["p2"] == comparePointDict["p1"]
                         or testPointDict["p2"] == comparePointDict["p2"]
                     )
-                    and (
-                        testPointDict["controlP"]
-                        == comparePointDict["controlP"]
-                    )
+                    and (testPointDict["controlP"] == comparePointDict["controlP"])
                 ):
                     # if all start, end point and control point list are
                     # matching -> return identical spline
@@ -770,9 +756,7 @@ class Script:
                 newP = self._addPoint(controlPoint)
                 if newP is not None:
                     curve.removeControlPoint(controlPoint)
-                    curve.addControlPoint(
-                        newP, controlPointList.index(controlPoint)
-                    )
+                    curve.addControlPoint(newP, controlPointList.index(controlPoint))
 
         identicalCurve = self.testCurve(curve)
         if identicalCurve is None:
@@ -838,9 +822,7 @@ class Script:
             if testLine is not None:
                 surface.replaceCurve(line, testLine)
 
-    def _checkLoop(
-        self, surface: Surface
-    ) -> tuple[list[Line], list[Literal[-1, 1]]]:
+    def _checkLoop(self, surface: Surface) -> tuple[list[Line], list[Literal[-1, 1]]]:
         """
         Reorder the lines of a close curve loop (surface) to generate a valid
         Gmsh curve loop.
@@ -856,9 +838,7 @@ class Script:
         """
         oldLoop: list[Line] = surface.curve.copy()
         direction: list[int] = []
-        direction.append(
-            1
-        )  # append 1 for first line, cause it sets the direction
+        direction.append(1)  # append 1 for first line, cause it sets the direction
         newLoop: list[Line] = []
         # add first line to newLoop, because it doesnt need to be checked
         newLoop.append(oldLoop.pop(0))
@@ -943,9 +923,7 @@ class Script:
         if surface not in self.areaArray:
             self._addLineCode(surface)
             code: str = "\n"
-            toolIDCode: str = (
-                ", "  # string for tool surfaces that should be subtracted
-            )
+            toolIDCode: str = ", "  # string for tool surfaces that should be subtracted
             for toolSurf in surface.tools:  # if _cut list is not empty
                 toolSurfName = cleanName(toolSurf.name)
                 toolSurfID = toolSurf.id
@@ -959,7 +937,9 @@ class Script:
                         # adding Surface name for better identification
                         code += f"Surf_{toolSurfName} = {{{toolSurfID}}};\n"
                         # add Surface Code
-                        code += f"Plane Surface(Surf_{toolSurfName}) = {{{toolSurfID}}};\n"
+                        code += (
+                            f"Plane Surface(Surf_{toolSurfName}) = {{{toolSurfID}}};\n"
+                        )
                         self.areaArray.append(toolSurf)
                     # code = code + "};\n"
                 # add the surface ID to the lineloop-cut-id-list
@@ -977,9 +957,7 @@ class Script:
             # Plane Surface(Surf_SURFNAME) = {LOOPID, CUT_ID1, CUT_ID2,...};\n
             code += (
                 f"Plane Surface(Surf_{surfName}) = {{{surfID}"
-                + toolIDCode[
-                    :-2
-                ]  # ignore last two characters because they are ", "
+                + toolIDCode[:-2]  # ignore last two characters because they are ", "
                 + "};\n"
             )
 
@@ -1037,6 +1015,7 @@ class Script:
     def _addMachineDomains(self):
         domainList = self._createMachineDomains()
         for domain in domainList:
+            logging.debug("Adding domain %s", domain.name)
             self._addDomain(domain)
         return domainList
 
@@ -1076,9 +1055,7 @@ class Script:
                 )
                 if statorDomain in rotorPhysicalsDict.keys():
                     # boundary also exists in rotor
-                    bndDomain.addPhysicalElements(
-                        rotorPhysicalsDict[statorDomain]
-                    )
+                    bndDomain.addPhysicalElements(rotorPhysicalsDict[statorDomain])
                 domainList.append(bndDomain)
 
         # create rotor domains
@@ -1089,9 +1066,7 @@ class Script:
         rotorPhysicalsDict[DOMAIN_CONDUCTING].clear()
 
         # create Domains
-        domainList.extend(
-            self._createDomains(rotorPhysicalsDict, rotorDomainDict)
-        )
+        domainList.extend(self._createDomains(rotorPhysicalsDict, rotorDomainDict))
         # Create single Bar regions
         if DOMAIN_BAR in rotorPhysicalsDict:
             rotorPhysicalsDict[DOMAIN_BAR].sort(key=Slot.get_radial_position)
@@ -1121,14 +1096,10 @@ class Script:
         statorPhysicalsDict[DOMAIN_CONDUCTING].clear()
 
         # add stator domains to domain list
-        domainList.extend(
-            self._createDomains(statorPhysicalsDict, statorDomainDict)
-        )
+        domainList.extend(self._createDomains(statorPhysicalsDict, statorDomainDict))
 
         # create additional slot domains for excitations
-        domainList.extend(
-            self._createWindingDomains(statorPhysicalsDict).values()
-        )
+        domainList.extend(self._createWindingDomains(statorPhysicalsDict).values())
 
         # append domains to identify linear and non-linear surfaces
         nonLinearDomainID = DOMAIN_NON_LINEAR
@@ -1142,8 +1113,7 @@ class Script:
         linearDomainID = DOMAIN_LINEAR
         linearDomain = Domain(
             "DomainL",
-            rotorPhysicalsDict[linearDomainID]
-            + statorPhysicalsDict[linearDomainID],
+            rotorPhysicalsDict[linearDomainID] + statorPhysicalsDict[linearDomainID],
         )
         domainList.append(linearDomain)
 
@@ -1206,9 +1176,7 @@ class Script:
             if domainName in domainDict.keys():
                 if physicalsDict[domainName]:  # if there are physicalElements
                     domainList.append(
-                        Domain(
-                            domainDict[domainName], physicalsDict[domainName]
-                        )
+                        Domain(domainDict[domainName], physicalsDict[domainName])
                     )
                 else:
                     # FIXME: ADD MACHINE SIDE TO DOMAIN NAME
@@ -1248,9 +1216,7 @@ class Script:
                             )
                         else:
                             # add slot to existing domain
-                            slotDomainDict[slotDomainName].addPhysicalElements(
-                                [slot]
-                            )
+                            slotDomainDict[slotDomainName].addPhysicalElements([slot])
                     # else:
                     # FIXME: if physical element in domainS is not type Slot:
                     # should there be an Error or Warning?
@@ -1301,9 +1267,7 @@ class Script:
             poItem = userDefinedPO.items[postOperationNames.index(name)]
         else:
             # it that PostOperation is not existing, create it
-            poItem = userDefinedPO.add(
-                Name=name, NameOfPostProcessing="MagStaDyn_a_2D"
-            )
+            poItem = userDefinedPO.add(Name=name, NameOfPostProcessing="MagStaDyn_a_2D")
         poItem: PostopItem = poItem
         poItem.add().add(quantity=quantityName, **kwargs)
         if "File" in kwargs:
@@ -1317,9 +1281,7 @@ class Script:
     # -------------------------------------------------------------------------
     # -------------------------- END OF PRO FUNCTIONS -------------------------
     # -------------------------------------------------------------------------
-    def _createPhysicalElementCode(
-        self, physicalElement: PhysicalElement
-    ) -> str:
+    def _createPhysicalElementCode(self, physicalElement: PhysicalElement) -> str:
         """Create the code for a physical element (= domain for simulation) in
         the .geo file. E.g. for a Physical Surface the code would look like:
 
@@ -1398,9 +1360,6 @@ class Script:
             if physicalElement.material:
                 self._addMaterial(physicalElement)
             # add magnetization if specified
-            # FIXME: BUG Attribute errors inside addMag... functions are not
-            # catched!
-
             if isinstance(physicalElement, Magnet):
                 mag: Magnet = physicalElement
                 typeMag = mag.magType
@@ -1533,9 +1492,7 @@ class Script:
             try:
                 self.group.add(id="group_" + matName, glist=physElemIDstr)
             except ValueError as val_err:
-                if re.search(
-                    r"Identifier .* already in use.", val_err.args[0]
-                ):
+                if re.search(r"Identifier .* already in use.", val_err.args[0]):
                     logging.warning(
                         f"Material with name {matName} is defined multiple times, but with different properties. "
                         "Trying to add it again with different identifier..."
@@ -1557,9 +1514,7 @@ class Script:
                 mueR = mat.relPermeability
                 matFun.add_params({"muR_" + matName: (mueR if mueR else 0)})
                 # add nu
-                matFun.add_params(
-                    {"nu_" + matName: f"1/(muR_{matName} * mu0)"}
-                )
+                matFun.add_params({"nu_" + matName: f"1/(muR_{matName} * mu0)"})
                 matFun.add("nu", "nu_" + matName, "group_" + matName)
             else:
                 # if non linear
@@ -1576,17 +1531,11 @@ class Script:
                 hString = hString[0 : len(hString) - 1] + "}"
                 matFun.add_params({f"Mat_h_{matName}": hString})
                 matFun.add_params({f"Mat_b_{matName}": bString})
+                matFun.add_params({f"Mat_b2_{matName}": f"Mat_b_{matName}()^2"})
                 matFun.add_params(
-                    {f"Mat_b2_{matName}": f"Mat_b_{matName}()^2"}
+                    {f"Mat_nu_{matName}": f"Mat_h_{matName}()/Mat_b_{matName}()"}
                 )
-                matFun.add_params(
-                    {
-                        f"Mat_nu_{matName}": f"Mat_h_{matName}()/Mat_b_{matName}()"
-                    }
-                )
-                matFun.add_params(
-                    {f"Mat_nu_{matName}(0)": f"Mat_nu_{matName}(1)"}
-                )
+                matFun.add_params({f"Mat_nu_{matName}(0)": f"Mat_nu_{matName}(1)"})
                 matFun.add_params(
                     {
                         f"Mat_nu_b2_{matName}": f"ListAlt[Mat_b2_{matName}(),"
@@ -1614,8 +1563,7 @@ class Script:
                 )
                 matFun.add(
                     f"dhdb_NL_{matName}",
-                    f"2 * dnudb2_{matName}[$1#1] * "
-                    + matFun.SquDyadicProduct("#1"),
+                    f"2 * dnudb2_{matName}[$1#1] * " + matFun.SquDyadicProduct("#1"),
                 )
                 matFun.add("nu", f"nu_{matName}[$1]", f"group_{matName}")
                 matFun.add(
@@ -1818,9 +1766,7 @@ class Script:
                 meshCompCode = (
                     "Compound Surface{" + meshCompCode[0:-1]
                 )  # erase last comma
-                meshCompCode += (
-                    f"}}; // {regionName}\n"  # add closing and comment
-                )
+                meshCompCode += f"}}; // {regionName}\n"  # add closing and comment
                 return meshCompCode
             else:
                 return ""
@@ -1933,9 +1879,7 @@ class Script:
             primeLines = self.machine.primaryLines
             secondaryLines = self.machine.getSecondaryLines()
             if primeLines and secondaryLines:
-                meshModCode += (
-                    "// Add Periodic Mesh to model symmetry boundary-lines\n"
-                )
+                meshModCode += "// Add Periodic Mesh to model symmetry boundary-lines\n"
                 primeLineIDs = ""
                 for line in primeLines:
                     primeLineIDs += f"{line.id},"
@@ -1956,9 +1900,7 @@ class Script:
                 )
 
         # 4. add mesh size setting for movingband lines
-        movingbandPhysicals = (
-            rotor.movingBand
-        )  # get list of movingband physicals
+        movingbandPhysicals = rotor.movingBand  # get list of movingband physicals
         if movingbandPhysicals:
             # create line id string for mesh size setting
             mbLineIDs = ""
@@ -1976,18 +1918,14 @@ class Script:
                         mbLineIDs += f"{mbLine.id},"  # add the line id
             # get approx. the min mesh length of the rotor movingband
             # (only checking first line of first movingband physical)
-            mbMeshSize = (
-                movingbandPhysicals[0].geometricalElement[0].getMinMeshLength()
-            )
+            mbMeshSize = movingbandPhysicals[0].geometricalElement[0].getMinMeshLength()
             if mbLineIDs:
                 rRotorMB = rotor.movingBandRadius
                 nbrSeg0 = (2 * pi * rRotorMB / mbMeshSize) - (
                     2 * pi * rRotorMB / mbMeshSize
                 ) % 10  # calc number of movingband segments by steps of 10
                 # create parameter code for movingband segment setting
-                meshModCode += (
-                    "// Add mesh size setting for Movingband lines\n"
-                )
+                meshModCode += "// Add mesh size setting for Movingband lines\n"
                 meshModCode += (
                     "DefineConstant[\n"
                     + (
@@ -2035,7 +1973,9 @@ class Script:
                     + str(rStatorMB)
                     + "/NbrMbSegments;\n\n"
                 )  # set the mesh size for all movingband points
-            meshModCode += "Mesh.SurfaceFaces = 0; // don't show mesh faces (only edges)\n\n"
+            meshModCode += (
+                "Mesh.SurfaceFaces = 0; // don't show mesh faces (only edges)\n\n"
+            )
         return meshModCode
 
     def writeGeo(self, UD_MeshCode: str = "") -> None:
@@ -2072,9 +2012,7 @@ class Script:
         meshSettingsCode += (
             "Mesh.SurfaceEdges = 1;\nMesh.Light = 0;\nMesh.SurfaceFaces = 1;\n"
         )
-        meshSettingsCode += (
-            "Mesh.Algorithm = 6; // Frontal-Delaunay for 2D meshes\n\n"
-        )
+        meshSettingsCode += "Mesh.Algorithm = 6; // Frontal-Delaunay for 2D meshes\n\n"
         meshModCode = ""
         movingGeoCode = ""
         if self.machine:
@@ -2126,9 +2064,7 @@ class Script:
         """
         machine = self.machine
         if not machine:
-            raise RuntimeError(
-                "There was no machine specified. Add machine to script."
-            )
+            raise RuntimeError("There was no machine specified. Add machine to script.")
         simuParamDict = self.simParams
         # 1. Set geometrical parameters via "machine.getSimParams()"
         #   SYMMETRY_FACTOR, L_AX_R, L_AX_S, NBR_POLE_PAIRS, NBR_TURNS_IN_FACE
@@ -2232,9 +2168,7 @@ class Script:
                 dqOffset = 0
             else:
                 dqOffset = (
-                    -rad2deg(slotPitch / 2 * nbrPolePairs)
-                    + rad2deg(systemOffset)
-                    + 270
+                    -rad2deg(slotPitch / 2 * nbrPolePairs) + rad2deg(systemOffset) + 270
                 )
             simuParamDict["SYM"]["ParkAngOffset"] = dqOffset
 
@@ -2246,9 +2180,7 @@ class Script:
             paramCode = f"{paramName} = {paramValue}
         """
         if isinstance(paramValue, (str)):
-            paramCode = (
-                f'{paramName} = "{paramValue}";\n'  # add "" for string value
-            )
+            paramCode = f'{paramName} = "{paramValue}";\n'  # add "" for string value
         else:  # isinstance(paramValue,(int, float)):
             paramCode = f"{paramName} = {paramValue};\n"
         return paramCode
@@ -2284,9 +2216,7 @@ class Script:
         """
         # Write the code
         #   1. write parameter file
-        machineTempFile = abspath(
-            join(MAIN_DIR, "script", "machine_template.pro")
-        )
+        machineTempFile = abspath(join(MAIN_DIR, "script", "machine_template.pro"))
         # script file name
         paramFileName = self.name + "_param.geo"
         paramFilePath = abspath(join(self.scriptPath, paramFileName))
@@ -2318,9 +2248,7 @@ class Script:
         #       material groups
         self._printAllMaterial()
         #       replace the place holder "GROUP_CODE" with actual group code
-        machineFileCode = machineFileCode.replace(
-            "GROUP_CODE", self.group.code, 1
-        )
+        machineFileCode = machineFileCode.replace("GROUP_CODE", self.group.code, 1)
 
         #  3.3 function code
         machineFileCode = machineFileCode.replace(
@@ -2333,9 +2261,9 @@ class Script:
         # filename of the motor model template of getdp
         calculationFileName = "machine_magstadyn_a.pro"
         # filepath to the template calculation file for motor models
-        calcFileTempPath = join(
-            MAIN_DIR, "script", calculationFileName
-        ).replace("\\", "/")
+        calcFileTempPath = join(MAIN_DIR, "script", calculationFileName).replace(
+            "\\", "/"
+        )
         # read the template file
         with open(calcFileTempPath, encoding="utf-8") as templateCalcFile:
             calcCode = versionStr + templateCalcFile.read()
@@ -2360,10 +2288,14 @@ class Script:
             # add the code for the compute command including the postoperations
             # TODO: Add option for "-bin" case (user setting)
 
-            computeCommandCode = """DefineConstant[\n\tC_ = {"-solve Analysis -v 99 -v2 -pos"""  # -bin
+            computeCommandCode = (
+                """DefineConstant[\n\tC_ = {"-solve Analysis -v 99 -v2 -pos"""  # -bin
+            )
             for postOpName in self.postOperationNames:
                 computeCommandCode += " " + postOpName
-            computeCommandCode += """ ", Name "GetDP/9ComputeCommand", Visible Flag_Debug}\n];\n"""
+            computeCommandCode += (
+                """ ", Name "GetDP/9ComputeCommand", Visible Flag_Debug}\n];\n"""
+            )
 
             machineFileCode += computeCommandCode
 

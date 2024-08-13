@@ -17,14 +17,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+from math import pi
 from typing import Dict
-from math import pi, gcd
+
 import swat_em
 
-from ..script import default_param_dict
 from ... import logging
-from .machineAllType import MachineAllType
+from ..script import default_param_dict
 from .domain import Domain
+from .machineAllType import MachineAllType
 from .rotorIPMSM import RotorIPMSM
 from .statorSPMSM import StatorPMSM
 
@@ -85,10 +86,7 @@ class MachineIPMSM(MachineAllType):
         """
         try:
             sym_factor = super().symmetryFactor
-            if (
-                self._simuParam["analysisParameter"]["symmetryFactor"]
-                > sym_factor
-            ):
+            if self._simuParam["analysisParameter"]["symmetryFactor"] > sym_factor:
                 logging.error(
                     "Given symmetry factor doesn't match maximal sym: %i != %i",
                     self._simuParam["analysisParameter"]["symmetryFactor"],
@@ -155,9 +153,7 @@ class MachineIPMSM(MachineAllType):
         """
         return self._simuParam
 
-    def addRotorToMachine(
-        self, laminationType: str, magnetType: str, axLen: float = 1
-    ):
+    def addRotorToMachine(self, laminationType: str, magnetType: str, axLen: float = 1):
         nbrPoles = self.nbrPolePairs * 2
         symFactor = self.symmetryFactor
         angleGeoParts = 2 * pi / (nbrPoles) / 2  # half segment?
@@ -171,9 +167,7 @@ class MachineIPMSM(MachineAllType):
             magnetType=magnetType,
             angleGeoParts=angleGeoParts,  # angle of one segment
             nbrGeoParts=nbrGeoParts,
-            symmetryFactor=self._simuParam["analysisParameter"][
-                "symmetryFactor"
-            ],
+            symmetryFactor=self._simuParam["analysisParameter"]["symmetryFactor"],
             startPosition=startPosition,
             axLen=axLen,
         )
@@ -197,18 +191,14 @@ class MachineIPMSM(MachineAllType):
             / self._simuParam["analysisParameter"]["symmetryFactor"]
             / self._simuParam["analysisParameter"]["nbrSlotinModel"]
         )
-        nbrGeoParts = (
-            self._simuParam["analysisParameter"]["nbrSlotinModel"] * 2
-        )
+        nbrGeoParts = self._simuParam["analysisParameter"]["nbrSlotinModel"] * 2
         statorSPMSM1 = StatorPMSM(
             laminationType=laminationType,
             slotType=slotType,
             nbrSlots=self._simuParam["analysisParameter"]["nbrSlotTotal"],
             angleGeoParts=angleGeoParts,
             nbrGeoParts=nbrGeoParts,
-            symmetryFactor=self._simuParam["analysisParameter"][
-                "symmetryFactor"
-            ],
+            symmetryFactor=self._simuParam["analysisParameter"]["symmetryFactor"],
             startPosition=startPosition,
             axLen=axLen,
             winding=winding,
@@ -240,16 +230,13 @@ class MachineIPMSM(MachineAllType):
             )
             self._domainNL = Domain(
                 "DomainNL",
-                self.rotor._domainNL.physicals
-                + self.stator._domainNL.physicals,
+                self.rotor._domainNL.physicals + self.stator._domainNL.physicals,
             )
 
             self._rotorMoving = Domain(
                 "Rotor_Moving", self.rotor._rotorMoving.physicals
             )
-            self._mbBaux = Domain(
-                "Rotor_Bnd_MBaux", self.rotor._mbBaux.physicals
-            )
+            self._mbBaux = Domain("Rotor_Bnd_MBaux", self.rotor._mbBaux.physicals)
             self._domainAirGapRotor = Domain(
                 "Rotor_Airgap", self.rotor._domainAirGap.physicals
             )

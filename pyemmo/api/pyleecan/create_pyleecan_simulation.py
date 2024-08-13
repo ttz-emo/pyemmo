@@ -21,12 +21,13 @@
 simulation object to use in pyleecan-api."""
 
 from __future__ import annotations
-from pyleecan.Classes.Machine import Machine as PyleecanMachine
-from pyleecan.Classes.Simulation import Simulation as PyleecanSimulation
-from pyleecan.Classes.Simu1 import Simu1
-from pyleecan.Classes.InputCurrent import InputCurrent
-from pyleecan.Classes.OPdq import OPdq
+
 import numpy as np
+from pyleecan.Classes.InputCurrent import InputCurrent
+from pyleecan.Classes.Machine import Machine as PyleecanMachine
+from pyleecan.Classes.OPdq import OPdq
+from pyleecan.Classes.Simu1 import Simu1
+from pyleecan.Classes.Simulation import Simulation as PyleecanSimulation
 
 
 def create_simulation(
@@ -63,8 +64,6 @@ def create_simulation(
     simu.input.time = time
 
     # Angular discretization along the airgap circonference
-    angular_disc = np.linspace(
-        start=0, stop=2 * np.pi, num=2048, endpoint=False
-    )
+    angular_disc = np.linspace(start=0, stop=2 * np.pi, num=2048, endpoint=False)
     simu.input.angle = angular_disc
     return simu

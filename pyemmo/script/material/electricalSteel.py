@@ -205,9 +205,7 @@ class ElectricalSteel(Material):
         return self._referenceFrequency
 
     @referenceFrequency.setter
-    def referenceFrequency(
-        self, newReferenceFrequency: Union[int, float]
-    ) -> None:
+    def referenceFrequency(self, newReferenceFrequency: Union[int, float]) -> None:
         """Setter of reference frequency in Hz
 
         Args:
@@ -233,9 +231,7 @@ class ElectricalSteel(Material):
         return self._referenceFluxDensity
 
     @referenceFluxDensity.setter
-    def referenceFluxDensity(
-        self, newReferenceFluxDensity: Union[int, float]
-    ) -> None:
+    def referenceFluxDensity(self, newReferenceFluxDensity: Union[int, float]) -> None:
         """Setter of reference flux density in T
 
         Args:
@@ -265,8 +261,6 @@ class ElectricalSteel(Material):
         ]
         for row in table:
             if row[1] is None:
-                row[1] = (
-                    "None"  # set to string because formatting None not supported
-                )
+                row[1] = "None"  # set to string because formatting None not supported
             print(f"{row[0]: >25} {row[1]: <15}")
         print("\n")

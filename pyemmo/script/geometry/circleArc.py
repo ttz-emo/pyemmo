@@ -275,13 +275,9 @@ class CircleArc(Line):
             CA2 = CA1.mirror(P0, yAxis, zAxis)
 
         """
-        startPoint = self.startPoint.mirror(
-            planePoint, planeVector1, planeVector2
-        )
+        startPoint = self.startPoint.mirror(planePoint, planeVector1, planeVector2)
         endPoint = self.endPoint.mirror(planePoint, planeVector1, planeVector2)
-        centerPoint = self._center.mirror(
-            planePoint, planeVector1, planeVector2
-        )
+        centerPoint = self._center.mirror(planePoint, planeVector1, planeVector2)
         mirArc = CircleArc(self.name, endPoint, centerPoint, startPoint)
         if name == "":
             mirArc.name = "CA_" + str(abs(mirArc.id))
@@ -303,12 +299,8 @@ class CircleArc(Line):
         startPoint = self.startPoint
         endPoint = self.endPoint
         centerPoint = self.center
-        angleStart = startPoint.getAngleToX(
-            flag_deg=inDeg, CenterPoint=centerPoint
-        )
-        angleEnd = endPoint.getAngleToX(
-            flag_deg=inDeg, CenterPoint=centerPoint
-        )
+        angleStart = startPoint.getAngleToX(flag_deg=inDeg, CenterPoint=centerPoint)
+        angleEnd = endPoint.getAngleToX(flag_deg=inDeg, CenterPoint=centerPoint)
         return angleStart, angleEnd
 
     def getAngle(self, inDeg=False) -> float:
@@ -449,9 +441,7 @@ class CircleArc(Line):
                 tag=tag,
             )
 
-    def combine(
-        self, addLine: "CircleArc", touchPoint: Point = None
-    ) -> "CircleArc":
+    def combine(self, addLine: "CircleArc", touchPoint: Point = None) -> "CircleArc":
         """combine two arcs and return them as new CircleArc
 
         Args:
@@ -464,9 +454,7 @@ class CircleArc(Line):
         if self == addLine:
             return self
         # pylint: disable=locally-disabled, unidiomatic-typecheck
-        if not type(addLine) == type(
-            self
-        ):  # make sure the line types are equal
+        if not type(addLine) == type(self):  # make sure the line types are equal
             raise TypeError(
                 "Tried to combine lines, but the line types are different! "
                 f"{type(self)} != {type(addLine)}"

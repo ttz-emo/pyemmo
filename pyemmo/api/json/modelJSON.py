@@ -176,9 +176,7 @@ def getSurfaceLineList(
     .. - 'MpDesc'
     """
     if not isinstance(lineDictList, list):
-        raise ValueError(
-            f"line dict list has wrong type: {type(lineDictList)}"
-        )
+        raise ValueError(f"line dict list has wrong type: {type(lineDictList)}")
     if meshLen is not None and not isinstance(meshLen, (int, float)):
         raise ValueError(
             f"mesh size has wrong type: {type(meshLen)}. "
@@ -186,9 +184,7 @@ def getSurfaceLineList(
         )
     lineList: list[Line] = []
     pointList: list[Point] = []
-    for lineID, lineDict in enumerate(
-        lineDictList
-    ):  # for each line in lineDict
+    for lineID, lineDict in enumerate(lineDictList):  # for each line in lineDict
         # import line-point coordinates
         # start point
         coordsP1 = (lineDict["ApX"], lineDict["ApY"], lineDict["ApZ"])
@@ -273,9 +269,7 @@ def createAPISurf(areaDict: dict) -> SurfaceAPI:
     try:
         surf = SurfaceAPI(
             name=areaDict["Name"],
-            idExt=areaDict[
-                "IdExt"
-            ],  # get short area name ("IdExt") as dict key
+            idExt=areaDict["IdExt"],  # get short area name ("IdExt") as dict key
             curves=getSurfaceLineList(
                 lineDictList=areaDict["Lines"], meshLen=areaDict["Meshsize"]
             ),
@@ -632,9 +626,7 @@ def phase2angle(phaseChar: Literal["u", "v", "w"]) -> float:
         raise ValueError(
             f'Phase ID "{phaseChar}" is not uvw! Can not determine phase angle!'
         )
-    raise ValueError(
-        f'Phase ID "{phaseChar}"is not a single character!', phaseChar
-    )
+    raise ValueError(f'Phase ID "{phaseChar}"is not a single character!', phaseChar)
 
 
 def phase2color(
@@ -670,9 +662,7 @@ def phase2color(
             f'Phase ID "{phaseChar}" is not uvw! Can not determine phase angle!'
         )
 
-    raise ValueError(
-        f'Phase ID "{phaseChar}"is not a single character!', phaseChar
-    )
+    raise ValueError(f'Phase ID "{phaseChar}"is not a single character!', phaseChar)
 
 
 def getSlotInfo(slotSurfName: str) -> tuple[int, int]:
@@ -783,9 +773,7 @@ def getSlotPhase(
     raise RuntimeError("Could not determine phase index by slot number.")
 
 
-def createSlot(
-    surf: SurfaceAPI, material: Material, extendedInfo: dict
-) -> Slot:
+def createSlot(surf: SurfaceAPI, material: Material, extendedInfo: dict) -> Slot:
     """create a Physical Element of type Slot.
 
     Args:
@@ -843,9 +831,9 @@ def createWinding(extendedInfo: dict) -> datamodel:
     # all parameters are set
     # make sure that number of parallel paths does not exceed max. possible
     # paths of winding:
-    if max(
-        swatemWinding.get_parallel_connections()
-    ) < importJSON.getNbrParalellPaths(extendedInfo):
+    if max(swatemWinding.get_parallel_connections()) < importJSON.getNbrParalellPaths(
+        extendedInfo
+    ):
         logger.warning(
             """The given number of parallel windings paths (%i) exceeds
             possible paths of the winding layout (%i)!""",

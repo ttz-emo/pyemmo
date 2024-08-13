@@ -53,11 +53,11 @@ Example:
 """
 
 from __future__ import annotations
-from numpy import pi
 
-from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
-from pyleecan.Classes.MachineIPMSM import MachineIPMSM
+from numpy import pi
 from pyleecan.Classes.Machine import Machine
+from pyleecan.Classes.MachineIPMSM import MachineIPMSM
+from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 
 from ..json.SurfaceJSON import SurfaceAPI
 
@@ -157,9 +157,7 @@ def get_magnetization_dict(
         mag_angle_dict = machine.rotor.hole[0].comp_magnetization_dict()
         if len(mag_angle_dict) == 1:
             angle_point_ref = angle_point_ref_list[0]
-            magnetization_type = machine.rotor.hole[
-                0
-            ].magnet_0.type_magnetization
+            magnetization_type = machine.rotor.hole[0].magnet_0.type_magnetization
 
             if magnetization_type in (0, 1):  # radial & parallel
                 magnetization_angle = angle_point_ref

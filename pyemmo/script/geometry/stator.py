@@ -150,9 +150,7 @@ class Stator:
         return self._physicalElements
 
     @physicalElements.setter
-    def physicalElements(
-        self, physicalElementsList: List[PhysicalElement]
-    ) -> None:
+    def physicalElements(self, physicalElementsList: List[PhysicalElement]) -> None:
         """Setter of PhysicalElement-List
 
         Args:
@@ -185,9 +183,7 @@ class Stator:
                     self._physicalElements.append(physicalElem)
             self._createDomainForStator()  # recreate domains for stator with new elements
         else:
-            raise ValueError(
-                f"Argument 'physicalElementList' was not type list!"
-            )
+            raise ValueError(f"Argument 'physicalElementList' was not type list!")
 
     @property
     def slots(self) -> List[Slot]:
@@ -470,9 +466,7 @@ class Stator:
                     if physicalElement not in phy_domainLam:
                         phy_domainLam.append(physicalElement)
 
-                phy_domain.append(
-                    physicalElement
-                )  # append Surface to main Domain
+                phy_domain.append(physicalElement)  # append Surface to main Domain
             elif geoType == Line:
                 # MB zuweisen
                 if physicalElement.type == "MovingBand":

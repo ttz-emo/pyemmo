@@ -65,9 +65,7 @@ def read_timetable_dat(
     """
     # make sure dat file exists
     if not os.path.isfile(file_path):
-        raise FileNotFoundError(
-            f"Given results file '{file_path}' did not exist!"
-        )
+        raise FileNotFoundError(f"Given results file '{file_path}' did not exist!")
     # Try to import the data via numpy. Should work for most cases!
     # standard 'delemiter' is whitespace.
     data_array = np.loadtxt(file_path, dtype=float, comments="#")
@@ -110,9 +108,7 @@ def read_RegionValue_dat(
     """
     # make sure dat file exists
     if not os.path.isfile(file_path):
-        raise FileNotFoundError(
-            f"Given results file '{file_path}' did not exist!"
-        )
+        raise FileNotFoundError(f"Given results file '{file_path}' did not exist!")
     # import the data via numpy. Should work for most cases!
     # standard 'delemiter' is whitespace.
     data_array = np.loadtxt(file_path, dtype=float, comments="#")
@@ -223,9 +219,7 @@ def plot_timetable_dat(
             # FIXME: Make sure second axis is really data axis
             maxVal = np.max(sim_data[:, 0])
             minVal = np.min(sim_data[:, 0])
-        if not (
-            isclose(maxVal, 0, abs_tol=0.1) or isclose(minVal, 0, abs_tol=0.1)
-        ):
+        if not (isclose(maxVal, 0, abs_tol=0.1) or isclose(minVal, 0, abs_tol=0.1)):
             fig.axes[0].set_ylim(
                 bottom=minVal * (1.1 if minVal < 0 else 0.9),
                 top=maxVal * (1.1 if maxVal > 0 else 0.9),
@@ -269,9 +263,7 @@ def plot_all_dat(dir_path: PathLike) -> None:
 
 def importSP(
     posFilePath: str,
-) -> tuple[
-    str, list[float], list[tuple[float, float, float]], list[list[float]]
-]:
+) -> tuple[str, list[float], list[tuple[float, float, float]], list[list[float]]]:
     """Import values of POS files with the "Scalar Point" (SP) format
 
     Args:
@@ -375,9 +367,7 @@ def importPos(
         )
     # get number of time steps in SIMULATION (not all time steps have to be
     # saved)
-    nbr_steps = int(
-        gmsh.view.option.getNumber(tag=view_tags[-1], name="NbTimeStep")
-    )
+    nbr_steps = int(gmsh.view.option.getNumber(tag=view_tags[-1], name="NbTimeStep"))
     time = []  # init time vector
     # init data containers with first time step
     _, element_tags, cdata, ctime, nbr_components = gmsh.view.getModelData(
@@ -393,9 +383,7 @@ def importPos(
         if not cdata:
             gmsh.finalize()
             raise ValueError(f"No data found in {pos_file}!")
-        warnings.warn(
-            f"Import file '{pos_file}' did only contain last timestep!"
-        )
+        warnings.warn(f"Import file '{pos_file}' did only contain last timestep!")
         # Only last time step happens if PostProcessing is called at runtime
         # (in 'Resolution').
         # Return only that timestep
