@@ -31,6 +31,8 @@ from os import mkdir
 from os.path import isdir, isfile, join
 from typing import Dict, List, Tuple, Union
 
+import gmsh
+
 from ... import logFmt
 from ...functions import calcIronLoss, import_results, runOnelab
 from ...script.geometry.machineAllType import MachineAllType
@@ -74,6 +76,7 @@ def createMachine(
         rotorMBRadius=rotorMovingBandRadius,
     )
     # create the remaining machine surfaces
+    # TODO: Use gmsh-python api to rotate and duplicate the segments directly
     maschineSurfDict = modelJSON.createMachineGeometryFromSegment(
         segmentSurfDict, symFactor
     )

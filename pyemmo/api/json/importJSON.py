@@ -485,7 +485,7 @@ def createMaterial(matDict: Dict[str, Dict[Literal["wert"], Any]]) -> Material:
             f"Material '{name}' missing 'elektromagnetik' section!"
         )
 
-    density = magMatDict.get("dichte", {}).get("wert")
+    density = matDict.get("dichte", {}).get("wert")
     if not isinstance(density, (int, float)):
         density = None
 

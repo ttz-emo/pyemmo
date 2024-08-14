@@ -306,6 +306,7 @@ def importMachineGeometry(machineGeoList: list[dict]) -> Dict[str, SurfaceAPI]:
             apiSurf: SurfaceAPI = createAPISurf(area)
             segmentSurfDict[apiSurf.idExt] = apiSurf
         elif isinstance(area, list):
+            # TODO: add multi layer subtraction here!
             mainSurf = createAPISurf(area.pop(0))
             for toolArea in area:
                 toolSurf = createAPISurf(toolArea)
