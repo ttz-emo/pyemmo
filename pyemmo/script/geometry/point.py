@@ -57,9 +57,7 @@ class Point(Transformable):
     # Diese Variable wird für die automatische ID-Vergabe der Punkte verwendet!
     pointID = 0
 
-    def __init__(
-        self, name: str, x: float, y: float, z: float, meshLength: float
-    ):
+    def __init__(self, name: str, x: float, y: float, z: float, meshLength: float):
         """Konstruktor der Klasse Point.
 
         Args:
@@ -244,16 +242,12 @@ class Point(Transformable):
         if not self._todesmerker:
             # durch Verschiebung Rotation im Ursprung!
             rotPointCoords = rotationPoint.coordinate
-            self.translate(
-                -rotPointCoords[0], -rotPointCoords[1], -rotPointCoords[2]
-            )
+            self.translate(-rotPointCoords[0], -rotPointCoords[1], -rotPointCoords[2])
             oldx = self._x
             oldy = self._y
             self._x = cos(angle) * oldx - sin(angle) * oldy
             self._y = sin(angle) * oldx + cos(angle) * oldy
-            self.translate(
-                rotPointCoords[0], rotPointCoords[1], rotPointCoords[2]
-            )
+            self.translate(rotPointCoords[0], rotPointCoords[1], rotPointCoords[2])
 
     def rotateX(self, rotationPoint: "Point", angle: float):
         """Mit rotateX() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die X-Achse mit
@@ -266,16 +260,12 @@ class Point(Transformable):
         if not self._todesmerker:
             # durch Verschiebung Rotation im Ursprung!
             rotPointCoords = rotationPoint.coordinate
-            self.translate(
-                -rotPointCoords[0], -rotPointCoords[1], -rotPointCoords[2]
-            )
+            self.translate(-rotPointCoords[0], -rotPointCoords[1], -rotPointCoords[2])
             oldy = self._y
             oldz = self._z
             self._y = cos(angle) * oldy - sin(angle) * oldz
             self._z = sin(angle) * oldy + cos(angle) * oldz
-            self.translate(
-                rotPointCoords[0], rotPointCoords[1], rotPointCoords[2]
-            )
+            self.translate(rotPointCoords[0], rotPointCoords[1], rotPointCoords[2])
 
     def rotateY(self, rotationPoint: "Point", angle: float):
         """Mit rotateY() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die Y-Achse mit
@@ -289,16 +279,12 @@ class Point(Transformable):
         if not self._todesmerker:
             # durch Verschiebung Rotation im Ursprung!
             rotPointCoords = rotationPoint.coordinate
-            self.translate(
-                -rotPointCoords[0], -rotPointCoords[1], -rotPointCoords[2]
-            )
+            self.translate(-rotPointCoords[0], -rotPointCoords[1], -rotPointCoords[2])
             oldx = self._x
             oldz = self._z
             self._x = cos(angle) * oldx + sin(angle) * oldz
             self._z = -sin(angle) * oldx + cos(angle) * oldz
-            self.translate(
-                rotPointCoords[0], rotPointCoords[1], rotPointCoords[2]
-            )
+            self.translate(rotPointCoords[0], rotPointCoords[1], rotPointCoords[2])
 
     def duplicate(self, name="") -> "Point":
         """Mit duplicate() wird ein neuer Punkt mit gleichen Koordinaten erzeugt. Dieser Punkt hat
@@ -365,9 +351,7 @@ class Point(Transformable):
         pV1endPoint = array(planeVector1.endPoint.coordinate)
         pV2startPoint = array(planeVector2.startPoint.coordinate)
         pV2endPoint = array(planeVector2.endPoint.coordinate)
-        normalVec = cross(
-            pV1endPoint - pV1startPoint, pV2endPoint - pV2startPoint
-        )
+        normalVec = cross(pV1endPoint - pV1startPoint, pV2endPoint - pV2startPoint)
 
         if array_equal(normalVec, [0, 0, 0]):
             # Plane_Vector1 parallel zu Plane_Vector2
@@ -388,9 +372,7 @@ class Point(Transformable):
 
         # 4) projection of point on plane -> intersectionPoint
         selfVec = array(self.coordinate)
-        lambda1 = (Constant - (vdot(normalVec, selfVec))) / (
-            norm(pow(normalVec, 2), 1)
-        )
+        lambda1 = (Constant - (vdot(normalVec, selfVec))) / (norm(pow(normalVec, 2), 1))
         # determine intersection by putting lambda in equation of h
         intersectionPoint = selfVec + lambda1 * normalVec
 
@@ -462,9 +444,7 @@ class Point(Transformable):
             try:
                 cCoords = CenterPoint.coordinate
             except AttributeError:
-                ValueError(
-                    "CenterPoint was not class Point or array of coordinates"
-                )
+                ValueError("CenterPoint was not class Point or array of coordinates")
             except Exception as exce:
                 raise exce
         dupPoint = self.duplicate()

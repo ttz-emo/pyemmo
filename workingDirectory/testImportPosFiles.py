@@ -20,10 +20,10 @@
 
 # %%
 from os import path
+import math
 import gmsh
 import numpy as np
 from numpy.linalg import norm
-import math
 from matplotlib import pyplot as plt
 from pyemmo.functions.import_results import importPos
 

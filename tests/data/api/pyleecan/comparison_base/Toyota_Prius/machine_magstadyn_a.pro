@@ -1,4 +1,4 @@
-// This script was created with pyemmo (Version 1.3.1b1, git 86642f)
+// This script was created with pyemmo (Version 1.3.1b1, git 5fd2a8)
 
 // This script was created with pyemmo (Version 1.3.1b1)
 
@@ -798,7 +798,8 @@ Resolution {
       Evaluate[$PAng=Theta_Park_deg[]];
       If (Flag_Cir_RotorCage)
         For k In {1:nbrRotorBars}
-          Evaluate[$R_Bar~{k}=AxialLength_R / sigma_Kupfer_Leiter / SurfBar[]]; // l / sigma / A
+          // FIXME: check bar material copper/alu/?
+          Evaluate[$R_Bar~{k}=AxialLength_R / sigma_cu / SurfBar[]]; // l / sigma / A
           // Evaluate[R_Bar~{k}=AxialLength_R * sigma_Kupfer_Leiter / SurfBar[]]; // l / sigma / A
           Print[{k, $R_Bar~{k}}, Format "R Bar %.0f = %.3e"];
         EndFor

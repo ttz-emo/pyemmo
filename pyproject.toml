@@ -13,7 +13,7 @@ maintainers = [{ name = "Max Schuler", email = "max.schuler@thws.de" }]
 readme = "README.md"
 description = "PyEMMO is a interface for modeling electrical machines in the open-source FEA software Onelab"
 urls = { Repository = "https://gitlab.ttz-emo.thws.de/ag-em/pyemmo" }
-requires-python = ">=3.6"
+requires-python = ">=3.8, <3.10"
 license = { file = "LICENSE" }
 keywords = [
     "electrical machine",
@@ -38,13 +38,29 @@ GIT = ['GitPython; python_version>="3.7"'] # requires python>=3.7 since 3.1.23!
 
 # find packages in source directory
 [tool.setuptools.packages.find]
-where = ["pyemmo"]
-# include = ["pkg*"]
+where = ["."]
+include = ["pyemmo*"]
 # exclude = ["additional*"]`
 namespaces = false
 
+[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+line_length = 88
+split_on_trailing_comma = true
+
 [tool.black]
-line-length = 79
+line-length = 88
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+log_cli = 1
+log_cli_level = "INFO"
+# log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)"
+# log_cli_date_format = "%Y-%m-%d %H:%M:%S"
 
 [tool.bandit]
 skips = ["B311", "B404", "B603"]
@@ -54,3 +70,44 @@ skips = ["B311", "B404", "B603"]
 # B603: subprocess mit "shell = False" - Dies minimiert das Risiko von
 # Shell-Injection-Angriffen und sollte bevorzugt verwendet werden (gegenüber
 # "shell = True").
+
+## tox config
+# Using legacy_tox_ini for now since there is no pure TOML parser in tox for
+# now. See https://tox.wiki/en/3.24.5/config.html#configuration-discovery for
+# details.
+
+# [tool.tox]
+# envlist = ["py37", "py38", "py39", "py310"]
+# [tool.tox.envlist]
+# envs = [
+#     "py38",
+#     "py39",
+#     "py310",
+# ] # "py311" not compatible with pyleecan yet
+# [tool.tox.testenv]
+# deps = ["pytest", "pytest_check", "hypothesis"]
+# commands = ["pytest tests"]
+# setenv = ["PATH = {env:PATH}{:}/."]
+[tool.tox]
+# py3.6 : Does not work somehow...
+# py3.7 : Pyleecan (>=1.5.1) does not work for 3.7 due to dependency conflicts
+#           with pyvista and SciDataTool. Pyvista max. version on 3.7 is 0.38.6
+#           SciDataTool (2.5.0) only works with Python >=3.8.
+# py3.10: Fails to install matplotlib 3.3.4 with build and setup.cfg due to
+#           freetype missing MS C++ compilers
+# py3.11: Not compatible with pyleecan yet due to PyQt5 (needed by pyleecan,
+#           but not available in Python 3.11).
+legacy_tox_ini = """
+[tox]
+envlist = py38, py39
+; skipsdist = true
+
+[testenv]
+deps =
+        pytest
+        pytest_check
+        hypothesis
+commands = pytest tests
+setenv =
+        PATH = {env:PATH}{:}/.
+"""

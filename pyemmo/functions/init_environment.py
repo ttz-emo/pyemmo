@@ -23,6 +23,8 @@
 The code is copied from the Pyleecan project and adapted for the use with
 PyEMMO. See https://github.com/Eomys/pyleecan for the original code."""
 
+from __future__ import annotations
+
 import shutil
 from json import dump, load
 from os.path import isdir, isfile, join

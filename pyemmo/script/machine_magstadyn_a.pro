@@ -796,7 +796,8 @@ Resolution {
       Evaluate[$PAng=Theta_Park_deg[]];
       If (Flag_Cir_RotorCage)
         For k In {1:nbrRotorBars}
-          Evaluate[$R_Bar~{k}=AxialLength_R / sigma_Kupfer_Leiter / SurfBar[]]; // l / sigma / A
+          // FIXME: check bar material copper/alu/?
+          Evaluate[$R_Bar~{k}=AxialLength_R / sigma_cu / SurfBar[]]; // l / sigma / A
           // Evaluate[R_Bar~{k}=AxialLength_R * sigma_Kupfer_Leiter / SurfBar[]]; // l / sigma / A
           Print[{k, $R_Bar~{k}}, Format "R Bar %.0f = %.3e"];
         EndFor

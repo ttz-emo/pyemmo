@@ -19,6 +19,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module to export data to Ansys Maxwell"""
+from __future__ import annotations
+
 from os import path
 
 from ..definitions import RESULT_DIR
@@ -58,8 +60,8 @@ def exportTabMaxwell(data: list, identifier: list[str], filepath: str) -> None:
     Args:
         data (list): List of data vectors.
         identifier (list[str]): List of data identifier for Maxwell like
-            "H (A_per_meter)" or "B (tesla)".
-        filepath (str, optional): File path to write the results to. File
+            "Time (s)", "H (A_per_meter)" or "B (tesla)".
+        filepath (str): File path to write the results to. File
             extension must be ".tab"!
 
     Raises:

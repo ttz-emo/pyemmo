@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-from typing import List, Tuple, Union
+from __future__ import annotations
 
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
@@ -32,14 +32,14 @@ from ..script.geometry.surface import Surface
 
 
 def plot(
-    geoList: List[Union[Surface, Line, CircleArc, Spline, Point]],
+    geoList: list[Surface | Line | CircleArc | Spline | Point],
     fig: Figure = None,
     linewidth=0.5,
     color=None,
     marker=".",
     markersize=1,
     tag=False,
-) -> Tuple[Figure, Axes]:
+) -> tuple[Figure, Axes]:
     """
     2D Line plot of the surface
     """

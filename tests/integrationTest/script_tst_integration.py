@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler & Vu Nguyen, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -17,3 +18,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+"""TODO: Module docstring"""
+
+import subprocess
+from datetime import datetime
+import os
+
+"""
+Script to run pytest in powershell and save summary to date-marked log
+"""
+
+log_path = f".\\integrationTest\\logs"
+if not os.path.isdir(log_path):
+    os.makedirs(log_path)
+curr_date = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+subprocess.run(
+    f"powershell.exe (pytest test_api_integration.py -rA --show-capture=stdout --show-progress -vvv ^| tee ./logs/test_summary_{curr_date}.log)",
+    shell=True,
+)

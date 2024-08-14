@@ -18,7 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for json api surface class"""
-from typing import List, Union
+from __future__ import annotations
 
 from numpy import pi
 
@@ -71,7 +71,7 @@ class SurfaceAPI(Surface):
         self,
         name: str,
         idExt: str,
-        curves: List[Line],
+        curves: list[Line],
         material: Material,
         nbrSegments: int,
         angle: float,
@@ -175,7 +175,7 @@ class SurfaceAPI(Surface):
             raise TypeError(msg)
         self._meshSize = meshSize
 
-    def duplicate(self, name="") -> "SurfaceAPI":
+    def duplicate(self, name="") -> SurfaceAPI:
         """create a copy of the surface
 
         Args:
@@ -186,7 +186,7 @@ class SurfaceAPI(Surface):
             SurfaceAPI: Duplicate of SurfaceAPI object.
         """
         # duplicate curves for new surface
-        newCurves: List[Union[Line, CircleArc, Spline]] = []
+        newCurves: list[Line | CircleArc | Spline] = []
         for curve in self.curve:
             newCurves.append(curve.duplicate())
         # create duplicate surfcace object

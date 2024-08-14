@@ -19,8 +19,9 @@
 #
 import argparse
 import logging
+
 from ...definitions import RESULT_DIR
-from .. import logger, ch
+from .. import ch, logger
 from .json import main
 
 # 1. Check that all argvs are valid!

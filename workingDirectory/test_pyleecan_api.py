@@ -22,26 +22,10 @@
 import os
 import logging
 import json
-
-import numpy as np
-
 from pyleecan.Functions import load
-from pyleecan.Classes.Simulation import Simulation
-from pyleecan.Classes.Simu1 import Simu1
-from pyleecan.Classes.InputCurrent import InputCurrent
-from pyleecan.Classes.OPdq import OPdq
 from pyleecan.Classes.Machine import Machine
-from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
-from pyleecan.Classes.MachineIPMSM import MachineIPMSM
-from pyleecan.Classes.MachineSyRM import MachineSyRM
-from pyleecan.definitions import DATA_DIR, USER_DIR
 
-# from pyemmo.functions.plot import plot
-# from pyemmo.api.json.json import main
 from pyemmo.definitions import ROOT_DIR
-from pyemmo.api.pyleecan.get_translated_machine import get_translated_machine
-from pyemmo.api.pyleecan.create_pyleecan_simulation import create_simulation
-from pyemmo.api.pyleecan.create_param_dict import create_param_dict
 from pyemmo.api.pyleecan import main as pyleecanAPI
 
 # disable messages of matplotlib
@@ -55,7 +39,7 @@ logging.getLogger().setLevel(logging.INFO)
 # machine folder pyemmo
 machineFolder = os.path.join(ROOT_DIR, "workingDirectory/machineData")
 # machine folder pyleecan:
-machineFolder = os.path.join(DATA_DIR, "Machine")
+# machineFolder = os.path.join(DATA_DIR, "Machine")
 resFolder = os.path.join(ROOT_DIR, r"Results\pyleecanAPI")
 if not os.path.isdir(resFolder):
     os.makedirs(resFolder)
@@ -87,7 +71,8 @@ if os.path.isfile(pylcn_machine_testfile):
     )
     # get list IDs and print them
     for machineName in workingMachineDict.keys():
-        print(f"{machineList.index(machineName)}: " + machineName)
+        if machineName in machineList:
+            print(f"{machineList.index(machineName)}: " + machineName)
 
 # %%
 # Use machines:
@@ -103,6 +88,22 @@ pyleecan_machine: Machine = (
         os.path.abspath(os.path.join(machineFolder, fileName))
     )
 )
+# Workaround for wrong material
+CuMat = load.load(os.path.join(DATA_DIR, "Material", "Copper2.json"))
+try:
+    if pyleecan_machine.rotor.winding.conductor.cond_mat.name == "Copper1":
+        pyleecan_machine.rotor.winding.conductor.cond_mat = CuMat
+except AttributeError:
+    pass
+except Exception as exce:
+    raise exce
+try:
+    if pyleecan_machine.stator.winding.conductor.cond_mat.name == "Copper1":
+        pyleecan_machine.stator.winding.conductor.cond_mat = CuMat
+except AttributeError:
+    pass
+except Exception as exce:
+    raise exce
 pyleecanAPI.main(
     pyleecan_machine, model_dir=os.path.join(resFolder, pyleecan_machine.name)
 )

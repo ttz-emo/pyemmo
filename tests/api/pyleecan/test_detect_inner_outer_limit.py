@@ -30,7 +30,9 @@ from pyleecan.Functions.load import load
 
 from pyemmo.api.json.SurfaceJSON import SurfaceAPI
 from pyemmo.api.pyleecan.translate_surfs import translate_surface
-from pyemmo.api.pyleecan.detectInnerOuterLimit import detect_inner_outer_limit
+from pyemmo.api.pyleecan.detect_inner_outer_limit import (
+    detect_inner_outer_limit,
+)
 from tests.api.pyleecan import TEST_API_PYLCN_DATA_DIR
 
 
