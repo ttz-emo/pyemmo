@@ -10,6 +10,7 @@ from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 import numpy as np
 from pyemmo.functions.runOnelab import runCalcforCurrent
+from pyemmo.functions.import_maxwell import import_csv_data
 from pyemmo.functions.import_results import (
     read_timetable_dat,
     plot_all_dat,
@@ -18,6 +19,7 @@ from pyemmo.functions.import_results import (
 )
 from pyemmo.definitions import ROOT_DIR
 from definitions import MODEL_NAME, MODEL_DIR
+from typing import List, Mapping, Dict, Tuple
 
 
 class NumpyEncoder(json.JSONEncoder):
@@ -65,7 +67,7 @@ timestep = (
 winkelschritt = n / 60 * 360 * timestep  # Default: 0.703125
 nbr_timesteps = T_s * nbr_stator_periods / timestep
 
-flag_dynamic_resistance = True
+flag_dynamic_resistance = False
 thers = 100  # Thershold for bar resistance reset in A
 
 logging.info(
@@ -100,12 +102,12 @@ paramDict = {
         "Flag_PrintFields": 0,
         "Flag_Debug": 0,
         "Flag_ClearResults": 0,
-        "verbosity level": 1,
+        "verbosity level": 3,
         # "AxialLength_R": 1,
         # "AxialLength_S": 1,
         "NbrParallelPaths": 1,
-        "R_endring_segment": 16e-7 / 2,  # Initial value: 16e-7,
-        "L_endring_segment": 2e-9 / 2,
+        "R_endring_segment": 16e-7,  # Initial value: 16e-7,
+        "L_endring_segment": 2e-9,
         "Flag_Cir_RotorCage": 1,
         "Flag_Dynamic_RotorBarResistance": flag_dynamic_resistance,
         "thers_dyn_Bar": thers,
@@ -129,7 +131,7 @@ paramDict = {
     # "exc": 0,
     # "axLen": 0.2,
     # "sym": 4,
-    "info": "Only DC resistance + new, finer mesh setting for comparison with Maxwell.",
+    "info": "Laut CadFEM muss im Ansys Circuit der Symmetriefaktor bei den ESB Elementen berücksichtigt werden. Danach erhalten diese perfekte Ergebnisse im Vergleich zur EndConnection. Probieren wir einfach auch mal aus...",
     "datetime": time.ctime(),
     "PostOp": ["GetBOnRadius"],  # "GetBOnRadius" - "Get_LocalFields_Post"
 }
@@ -149,8 +151,26 @@ else:
             "Imported Results. Simulation took %s",
             str(results["sim_duration"]),
         )
+    else:
+        logging.warning(
+            "Missing 'sim_duration' from results dict! "
+            "Maybe simulation terminated. "
+            "Checking time values..."
+        )
+        exspected_end_time = timestep * nbr_timesteps
+        if np.isclose(results["time"][-1], exspected_end_time, atol=timestep):
+            logging.debug(
+                "End time is ok.\nExpected end time:%f\nActual end time:%f",
+                exspected_end_time,
+                results["time"][-1],
+            )
+        else:
+            logging.error(
+                "End time of simulation not matching!.\nExpected end time:%f\nActual end time:%f",
+                exspected_end_time,
+                results["time"][-1],
+            )
 
-# %%
 # %%
 out_dict = paramDict.copy()
 out_dict.update(results)
@@ -220,8 +240,9 @@ if os.path.isfile(resfile):
     ax.grid(True)
     ax.legend(handles=[line_u[0], line_i[0]])
     ax.set_title(f"Stab {nBar+1}")
-    if t[-1] > 2 * T_s:
+    if t[-1] > (nbr_stator_periods - 2) * T_s:
         ax.set_xlim(T_s * (nbr_stator_periods - 1), T_s * nbr_stator_periods)
+
     # %%
     # Plot: R = U/I (Stab)
     fig, ax = plt.subplots()
@@ -234,7 +255,7 @@ if os.path.isfile(resfile):
         label=f"Widerstand Stab {nBar}",
         color="b",
     )
-    i_last_period = int(t.size * (nbr_stator_periods - 2) / nbr_stator_periods)
+    i_last_period = int(t.size - nbr_steps_per_period)
     ax.set_xlim(t[i_last_period], t[-1])
     ax.set_xlabel("time in s")
     ax.set_ylabel("Resistance in $\\Omega$")
@@ -308,10 +329,9 @@ ax.plot(
     results["time"],
     results["torque"]["mean"],
     "-",
-    label="MST",
+    label=f"MST ({resId})",
 )
 # ax.set_ylabel("Spannung in V")
-ax.legend(loc=1)
 # ax.set_xlim(
 #     t[int(t.size * (nbr_stator_periods - 1) / nbr_stator_periods)], t[-1]
 # )
@@ -324,11 +344,7 @@ ax.minorticks_on()
 
 # %
 # PRINT DES MITTLEREN DREHOMMENTS
-M_mean_actual = np.mean(
-    results["torque"]["stator"][
-        int(nbr_timesteps * (nbr_stator_periods - 1) / nbr_stator_periods) :
-    ]
-)
+M_mean_actual = np.mean(results["torque"]["stator"][i_last_period:])
 print(
     f"Das mittlere Drehmoment der letzten Periode (ID: {resId}) sind {M_mean_actual:.2f} Nm"
 )
@@ -338,7 +354,7 @@ t_stat, M_stat = read_timetable_dat(
         ROOT_DIR,
         r"workingDirectory\test_asm",
         "res_Test_1PH8135_1_D0_W92_P14k4W_ohneRotNutSchlitz",
-        "blockedRotor_50Hz_80Periods_64Steps_R_stat",
+        "blockedRotor_50Hz_50A_80Periods_128Steps_R_stat",
         "Ts.dat",
     )
 )
@@ -347,10 +363,34 @@ print(
     f"""Das mittlere Drehmoment der letzten Periode (statisch, ID: \
 blockedRotor_50Hz_80Periods_64Steps_R_stat) sind {M_mean_stat:.2f} Nm"""
 )
+ax.plot(
+    t_stat,
+    M_stat,
+    "--",
+    label="MST (blockedRotor_50Hz_50A_80Periods_128Steps_R_stat)",
+)
+ax.legend(loc="upper right")
 
-# ax.plot(t_stat, M_stat, ".-", label="statischer Widerstand")
-# ax.legend()
-
+try:
+    headers, data = import_csv_data(
+        r"M:\AG_EM\11_Austausch\Max_Ganser\Vergleich_ASM_Maxwell_ONELAB\AP_fr_50Hz_Ieff_50A_n_0rpm\Maxwell_BlockedRotor_EndConnections_Fr50Hz_ISeff50A_EIP80\Torque Plot 1.csv"
+    )
+    data = np.array(data, dtype=float)
+    t_mxwl = data[:, 0]
+    torque_mxwl = data[:, 1]
+    ax.plot(
+        t_mxwl,
+        torque_mxwl,
+        label="Maxwell_BlockedRotor_EndConnections_Fr50Hz_ISeff50A_EIP80",
+        alpha=0.3,
+    )
+    ax.legend(loc="lower left")
+    timestamp = 1.58
+    ax.set_xlim([timestamp, timestamp + T_s])
+    lim = 60
+    ax.set_ylim([-lim, lim])
+except Exception:
+    logging.exception("Could not plot Maxwell Torque results...")
 # %%
 # %%
 # PLOT internal GetDP resistances
@@ -406,23 +446,24 @@ if os.path.isfile(resfile):
     ax.plot(t, R_bar, label=f"R_runtime (Circuit)", marker=".", ls="--")
     ax.legend()
 
-
-# %%
-# %%
-fig, ax = plt.subplots()
-ax: Axes = ax
-timestep = t[1] - t[0]
-amp = np.abs(np.fft.rfft(R_bar, axis=0))
-# to get correct amplitude regarding the specific frequencies, the amplitudes
-# must be corrected by 1/nbrFreqs and DC-part by 1/(2*nbrFreqs) because its value
-# is doubled since its part of the positive and negative side of the spectrum.
-# Since I defined the number of frequencies to be only for the one sided spectrum,
-# we have to double the value for amp[0] and use only nbrFreqs for amp[1:]
-freqs = np.fft.rfftfreq(nbr_timesteps, timestep)
-nbr_freqs = len(freqs)
-amp = np.concatenate(([amp[0] / nbr_freqs / 2], amp[1:] / (nbr_freqs)), axis=0)
-amp = np.concatenate(([amp[0] / nbr_freqs / 2], amp[1:] / (nbr_freqs)), axis=0)
-plt.stem(freqs, amp)
+    fig, ax = plt.subplots()
+    ax: Axes = ax
+    timestep = t[1] - t[0]
+    amp = np.abs(np.fft.rfft(R_bar, axis=0))
+    # to get correct amplitude regarding the specific frequencies, the amplitudes
+    # must be corrected by 1/nbrFreqs and DC-part by 1/(2*nbrFreqs) because its value
+    # is doubled since its part of the positive and negative side of the spectrum.
+    # Since I defined the number of frequencies to be only for the one sided spectrum,
+    # we have to double the value for amp[0] and use only nbrFreqs for amp[1:]
+    freqs = np.fft.rfftfreq(nbr_timesteps, timestep)
+    nbr_freqs = len(freqs)
+    amp = np.concatenate(
+        ([amp[0] / nbr_freqs / 2], amp[1:] / (nbr_freqs)), axis=0
+    )
+    amp = np.concatenate(
+        ([amp[0] / nbr_freqs / 2], amp[1:] / (nbr_freqs)), axis=0
+    )
+    plt.stem(freqs, amp)
 # %%
 # Export Data for Maxwell
 from pyemmo.functions.exportMaxwell import exportTabMaxwell
@@ -460,12 +501,8 @@ if not os.path.isfile(f_name_mxwl_export):
         filepath=f_name_mxwl_export,
     )
 
-
-# %%
-# %%
 logging.shutdown()
 
-# %%
 # %%
 # PLOT STABSTROM, -SPANNUNG UND -WIDERSTAND
 # Plot U_bar
@@ -493,14 +530,17 @@ axi.set_ylabel("Strom in A")
 axi.grid(alpha=0.5, color="g")
 
 # Plot R_bar (runtime)
-axr = ax.twinx()
-axr.set_yticks([])
 resfile = os.path.join(sim_res_dir, f"R_bar_runtime_1.dat")
-t, R_bar_rt = read_timetable_dat(resfile)
-line_r = axr.plot(t, R_bar_rt, label=f"Stabwiderstand", marker=".", color="r")
+if os.path.isfile(resfile):
+    axr = ax.twinx()
+    axr.set_yticks([])
+    t, R_bar_rt = read_timetable_dat(resfile)
+    line_r = axr.plot(
+        t, R_bar_rt, label=f"Stabwiderstand", marker=".", color="r"
+    )
 
 # Add single legend
-ax.legend(handles=[line_u[0], line_i[0], line_r[0]], loc=2)
+ax.legend(loc=2)
 
 
 # %%
@@ -621,11 +661,3 @@ ax.set_xlabel("time in s")
 ax.set_ylabel("current in A")
 
 # %%
-## Export notebook to html with resId
-os_out = os.system(
-    f"jupyter nbconvert --to html runSim_BlockedRotor.ipynb --output runSim_{resId} --output-dir {sim_res_dir}"
-)
-if os_out == 0:
-    logging.info(
-        "Exported simulation evaluation to '%s'", "runSim_" + resId + ".html"
-    )
