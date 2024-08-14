@@ -10,5 +10,8 @@ print(MODEL_DIR)
 model_dir = os.path.dirname(__file__)
 PARAM_FILE = os.path.join(model_dir, "simuInfo.json")
 api_main(
-    MODEL_JSON_FILE, PARAM_FILE, model=model_dir, results=os.path.join(model_dir, "res")
+    MODEL_JSON_FILE,
+    PARAM_FILE,
+    model=model_dir,
+    results=os.path.join(model_dir, "res"),
 )
