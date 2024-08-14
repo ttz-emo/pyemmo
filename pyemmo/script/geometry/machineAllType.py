@@ -17,19 +17,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-from cmath import pi
+import logging
 from math import gcd
 from typing import List, Literal, Union
+
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 
-from .physicalElement import PhysicalElement
-from .surface import Surface, Point, Line
+from ...script import default_param_dict
 from .domain import Domain
 from .movingBand import MovingBand
+from .physicalElement import PhysicalElement
 from .rotor import Rotor
 from .stator import Stator
-from ...script import default_param_dict
+from .surface import Line
 
 
 ###
@@ -130,32 +131,24 @@ class MachineAllType:
         )
 
         ###rotorMoving beinhaltet alle Physical Elements, die während der Simulation rotiert werden müssen (Rotor).
-        self._rotorMoving = Domain(
-            "Rotor_Moving", rotor._rotorMoving.physicals
-        )
+        self._rotorMoving = Domain("Rotor_Moving", rotor._rotorMoving.physicals)
         ###mbBaux beinhaltet alle Hilfslinien des MovingBands (Ergänzung zum Vollkreis), die wegen der Symmetrie ergänzt werden mussten. MovingBand auf der Rotorseite muss ein vollständiger Kreis beschreiben.
         self._mbBaux = Domain("Rotor_Bnd_MBaux", rotor._mbBaux.physicals)
         ###DomainAirGapRotor beinhaltet alle Physical Elements, die einen Luftspalt auf der Rotorseite (Luftspalt bis zum Moving Band) beschreiben.
-        self._domainAirGapRotor = Domain(
-            "Rotor_Airgap", rotor._domainAirGap.physicals
-        )
+        self._domainAirGapRotor = Domain("Rotor_Airgap", rotor._domainAirGap.physicals)
         ###DomainAirGapStator beinhaltet alle Physical Elements, die einen Luftspalt auf der Statorseite (Luftspalt ab dem Moving Band bis Statorinnenseite) beschreiben.
         self._domainAirGapStator = Domain(
             "Stator_Airgap", stator._domainAirGap.physicals
         )
 
         if (
-            len(
-                self.rotor._domainPrimary.physicals
-                + stator._domainPrimary.physicals
-            )
+            len(self.rotor._domainPrimary.physicals + stator._domainPrimary.physicals)
             > 0
         ):
             ###primarykante der elektrischen Maschine.
             self._domainPrimary = Domain(
                 "PrimaryRegion_Rotor",
-                rotor._domainPrimary.physicals
-                + stator._domainPrimary.physicals,
+                rotor._domainPrimary.physicals + stator._domainPrimary.physicals,
             )
             ###Slavekante der elektrischen Maschine.
             self._domainSlave = Domain(
@@ -197,9 +190,7 @@ class MachineAllType:
         if isinstance(nameVal, str):
             self._name = nameVal
         else:
-            raise TypeError(
-                f"Given name was not type str, but '{type(nameVal)}'"
-            )
+            raise TypeError(f"Given name was not type str, but '{type(nameVal)}'")
 
     @property
     def symmetryFactor(self) -> int:
@@ -219,9 +210,7 @@ class MachineAllType:
             # logger.debug("Symmetry factor winding: %s",{sym_winding})
             sym_factor = min(sym_winding, sym_machine)
             return sym_factor
-        raise RuntimeError(
-            "Tried to compute sym factor, but rotor/stator not defined!"
-        )
+        raise RuntimeError("Tried to compute sym factor, but rotor/stator not defined!")
 
     # @symmetryFactor.setter
     # def symmetryFactor(self, symFactor: int):
@@ -375,8 +364,8 @@ class MachineAllType:
 
     def setFunctionMesh(
         self,
-        functionType: Literal["linear", "quad"],
-        meshGainFactor: float,
+        functionType: Literal["linear", "quad"] = None,
+        meshGainFactor: float = None,
         basisMeshsize: float = None,
     ):
         """add functional mesh size setting for machine if you don't want to
@@ -395,65 +384,74 @@ class MachineAllType:
                 airgap (minimal mesh size).
                 Defaults to 2 * Pi * Rotor_Movingband_Radius / 360.
         """
-        rMb = self.rotor.movingBandRadius
-        # get max. stator radius:
-        rS = 0
-        for phys in self.stator._domainOuterLimit.physicals:
-            for geo in phys.geometricalElement:
-                if isinstance(geo, Line):
-                    for p in geo.points:
-                        if p.radius > rS:
-                            rS = p.radius
+        logging.debug("Using automatic mesh generation.")
         if not basisMeshsize:
-            #  FIXME: Here Movingband height should be considered! Basis mesh
-            # size should not be bigger than 2x MB height!
-            basisMeshsize = 2 * pi * rMb / 360
             # calc movingband hight
-            h_mb = abs(
-                self.rotor.movingBandRadius - self.stator.movingBandRadius
-            )
+            h_mb = abs(self.rotor.movingBandRadius - self.stator.movingBandRadius)
             basisMeshsize = h_mb
+            logging.debug(
+                "Setting basis mesh size to movingband hight = %.3e",
+                h_mb,
+            )
 
-        # calculate linear mesh size functions (ax+b)
-        if functionType == "linear":
-            a1 = (1 - meshGainFactor) / rMb
-            b1 = meshGainFactor
+        self.rotor.setFunctionMesh(
+            basisMeshsize=basisMeshsize,
+            meshGainFactor=meshGainFactor,
+            functionType=functionType,
+        )
+        self.stator.setFunctionMesh(
+            basisMeshsize=basisMeshsize,
+            meshGainFactor=meshGainFactor,
+            functionType=functionType,
+        )
+        # # get max. stator radius:
+        # rS = 0
+        # for phys in self.stator._domainOuterLimit.physicals:
+        #     for geo in phys.geometricalElement:
+        #         if isinstance(geo, Line):
+        #             for p in geo.points:
+        #                 if p.radius > rS:
+        #                     rS = p.radius
+        # # calculate linear mesh size functions (ax+b)
+        # if functionType == "linear":
+        #     a1 = (1 - meshGainFactor) / rMb
+        #     b1 = meshGainFactor
 
-            a2 = (meshGainFactor - 1) / (rS - rMb)
-            b2 = meshGainFactor - a2 * rS
-        elif functionType == "quad":
-            # calculate function coefficients for ax^2+bx+c
-            c = meshGainFactor
-            b = -2 * c / rMb
-            a = -b / 2 / rMb
-        else:
-            mssg = f"Unknown function specifier '{functionType}' for functional mesh."
-            raise ValueError(mssg)
-        for physical in self.physicalElements:
-            for geo in physical.geometricalElement:
-                points: List[Point] = []
-                if isinstance(geo, Surface):
-                    for curve in geo.curve:
-                        points.extend(curve.points)
-                elif isinstance(geo, Line):
-                    points.extend(geo.points)
-                # All curves should belong to a surface...
-                # else:
-                #     points.extend(geo.getPoints())
-                for point in points:
-                    rP = point.radius
-                    if functionType == "linear":
-                        if rP < rMb:
-                            # meshSizeFaktor = (a1*rP+b1)
-                            pMeshSize = (a1 * rP + b1) * basisMeshsize
-                        else:
-                            pMeshSize = (a2 * rP + b2) * basisMeshsize
-                    elif functionType == "quad":
-                        # faktor = 4770*rP**2 - 430 * rP + 10 # poly 2 fit
-                        faktor = (a * rP**2 + b * rP + c) + 1
-                        faktor = 1 if faktor < 1 else faktor
-                        pMeshSize = faktor * basisMeshsize
-                    point.meshLength = pMeshSize
+        #     a2 = (meshGainFactor - 1) / (rS - rMb)
+        #     b2 = meshGainFactor - a2 * rS
+        # elif functionType == "quad":
+        #     # calculate function coefficients for ax^2+bx+c
+        #     c = meshGainFactor
+        #     b = -2 * c / rMb
+        #     a = -b / 2 / rMb
+        # else:
+        #     mssg = f"Unknown function specifier '{functionType}' for functional mesh."
+        #     raise ValueError(mssg)
+        # for physical in self.physicalElements:
+        #     for geo in physical.geometricalElement:
+        #         points: List[Point] = []
+        #         if isinstance(geo, Surface):
+        #             for curve in geo.curve:
+        #                 points.extend(curve.points)
+        #         elif isinstance(geo, Line):
+        #             points.extend(geo.points)
+        #         # All curves should belong to a surface...
+        #         # else:
+        #         #     points.extend(geo.getPoints())
+        #         for point in points:
+        #             rP = point.radius
+        #             if functionType == "linear":
+        #                 if rP < rMb:
+        #                     # meshSizeFaktor = (a1*rP+b1)
+        #                     pMeshSize = (a1 * rP + b1) * basisMeshsize
+        #                 else:
+        #                     pMeshSize = (a2 * rP + b2) * basisMeshsize
+        #             elif functionType == "quad":
+        #                 # faktor = 4770*rP**2 - 430 * rP + 10 # poly 2 fit
+        #                 faktor = (a * rP**2 + b * rP + c) + 1
+        #                 faktor = 1 if faktor < 1 else faktor
+        #                 pMeshSize = faktor * basisMeshsize
+        #             point.meshLength = pMeshSize
 
     def plot(
         self,

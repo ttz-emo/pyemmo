@@ -4,7 +4,7 @@
 **__pycache__/
 **.*cache*/
 /dist
-/pyemmo.egg-info
+**/pyemmo.egg-info
 *.pos
 *.pre
 *.res
@@ -18,6 +18,9 @@ Area*.csv
 test*.pro
 test*.geo
 test*.json
+*.log
+test.ipynb
+.tox
 
 # Dont track doc build
 doc/_build/
@@ -35,6 +38,7 @@ tests/GETDP_TEST_PATH
 tests/GMSH_TEST_PATH
 # Exclude private tests
 tests/private
+
 # specific files to ignore
 tests/GMSH_TEST_PATH
 tests/GETDP_TEST_PATH

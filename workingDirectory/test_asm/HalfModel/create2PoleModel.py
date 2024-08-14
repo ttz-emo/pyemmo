@@ -1,8 +1,10 @@
 """Script to create ONELAB model of ASM: 1PH8135-1_D0_W92_P14k4W_ohneRotNutSchlitz"""
 
 import os
-from pyemmo.api.json.json import main as api_main
+
 from definitions import MODEL_DIR, MODEL_JSON_FILE
+
+from pyemmo.api.json.json import main as api_main
 
 print(MODEL_DIR)
 

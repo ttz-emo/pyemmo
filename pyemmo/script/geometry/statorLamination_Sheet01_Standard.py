@@ -17,11 +17,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-from .statorLamination import StatorLamination
+from __future__ import annotations
+
 from .. import colorDict
-from .point import Point
-from .line import Line
 from .circleArc import CircleArc
+from .line import Line
+from .point import Point
+from .statorLamination import StatorLamination
 from .surface import Surface
 
 

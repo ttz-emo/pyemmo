@@ -17,12 +17,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+from .. import colorDict
+from .circleArc import CircleArc
+from .line import Line
 from .magnet import Magnet
 from .point import Point
-from .line import Line
-from .circleArc import CircleArc
 from .surface import Surface
-from .. import colorDict
 
 
 ###

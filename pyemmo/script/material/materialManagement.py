@@ -19,13 +19,14 @@
 #
 """Dieses Modul dient als Schnittstelle zur Bearbeitung der Material-Datenbank.
 Zusätzlich kann die Software DB-Browser zur Visualisierung der Datenbank verwendet werden."""
-from genericpath import isfile
-import sqlite3
-import pathlib
 import os
-import pandas
-import matplotlib.pyplot as plt
+import pathlib
+import sqlite3
 from typing import Dict, Union
+
+import matplotlib.pyplot as plt
+import pandas
+from genericpath import isfile
 
 
 def addMaterial(
@@ -59,9 +60,7 @@ def addMaterial(
             addMaterial('Material.db', 'steel1010', 2000000, 0, 0, 'C:\\...\\Material_Raw\\steel1010.tab')
     """
     # Verbindung zur Datenbank herstellen
-    pathDataBase = os.path.join(
-        pathlib.Path(__file__).parent.absolute(), dataBase
-    )
+    pathDataBase = os.path.join(pathlib.Path(__file__).parent.absolute(), dataBase)
     connection = sqlite3.connect(pathDataBase)
     cursor = connection.cursor()
 
@@ -119,9 +118,7 @@ def addMaterial(
     # -> Bei linearen Materialien muss keine zusätzliche Information an die DB übergeben werden
     # -> Bei nicht linearen Materialien muss die BH-Kurve noch übergeben werden.
     if bh != None:
-        cursor.execute(
-            "select ID From Material WHERE Name = '%s'" % materialName
-        )
+        cursor.execute("select ID From Material WHERE Name = '%s'" % materialName)
         idMat = cursor.fetchone()[0]
         bhName = "BH_Curve"
         cursor.execute(
@@ -188,19 +185,13 @@ def addMaterial(
 #
 ###
 def plotBHCurve(dataBase, materialName):
-    pathDataBase = os.path.join(
-        pathlib.Path(__file__).parent.absolute(), dataBase
-    )
+    pathDataBase = os.path.join(pathlib.Path(__file__).parent.absolute(), dataBase)
     connection = sqlite3.connect(pathDataBase)
     cursor = connection.cursor()
-    cursor.execute(
-        "select linear From Material WHERE Name = '%s'" % materialName
-    )
+    cursor.execute("select linear From Material WHERE Name = '%s'" % materialName)
     lin = cursor.fetchone()[0]
     if lin == 0:
-        cursor.execute(
-            "select ID From Material WHERE Name = '%s'" % materialName
-        )
+        cursor.execute("select ID From Material WHERE Name = '%s'" % materialName)
         idMat = cursor.fetchone()[0]
         bhName = "BH_" + str(idMat) + "_" + materialName
         cursor.execute(f"select H From {bhName} WHERE ID = '{idMat}'")
@@ -216,9 +207,7 @@ def plotBHCurve(dataBase, materialName):
         plt.plot(h, b)
         plt.grid(b=True, which="major", color="#666666", linestyle="-")
         plt.minorticks_on()
-        plt.grid(
-            b=True, which="minor", color="#999999", linestyle="-", alpha=0.2
-        )
+        plt.grid(b=True, which="minor", color="#999999", linestyle="-", alpha=0.2)
         plt.xlim(h[0], h[len(h) - 1])
         plt.title("BH-Kennlinie")
         plt.xlabel("FeldstÃ¤rke H")
@@ -247,9 +236,7 @@ def plotBHCurve(dataBase, materialName):
 ###
 def addBHtoMaterial(dataBase, materialName, bh):
     # Verbindung zur Datenbank herstellen
-    pathDataBase = os.path.join(
-        pathlib.Path(__file__).parent.absolute(), dataBase
-    )
+    pathDataBase = os.path.join(pathlib.Path(__file__).parent.absolute(), dataBase)
     connection = sqlite3.connect(pathDataBase)
     cursor = connection.cursor()
 
@@ -257,8 +244,7 @@ def addBHtoMaterial(dataBase, materialName, bh):
     idMat = cursor.fetchone()[0]
     bhName = "BH_" + str(idMat) + "_" + materialName
     cursor.execute(
-        "CREATE TABLE IF NOT EXISTS %s(ID integer not null, H real, B real)"
-        % bhName
+        "CREATE TABLE IF NOT EXISTS %s(ID integer not null, H real, B real)" % bhName
     )
     cursor.execute("DELETE FROM %s" % bhName)
 
@@ -279,9 +265,7 @@ def addBHtoMaterial(dataBase, materialName, bh):
             H[i],
             B[i],
         )
-        cursor.execute(
-            "INSERT INTO %s(ID, H, B) VALUES(?,?,?);" % bhName, bhWert
-        )
+        cursor.execute("INSERT INTO %s(ID, H, B) VALUES(?,?,?);" % bhName, bhWert)
 
     cursor.execute(
         "UPDATE Material SET relPermeability = 0, remanence = 0, linear = 0 WHERE ID = %s"
@@ -310,9 +294,7 @@ def addBHtoMaterial(dataBase, materialName, bh):
 ###
 def deleteMaterial(dataBase, materialName):
     # Verbindung zur Datenbank herstellen
-    pathDataBase = os.path.join(
-        pathlib.Path(__file__).parent.absolute(), dataBase
-    )
+    pathDataBase = os.path.join(pathlib.Path(__file__).parent.absolute(), dataBase)
     connection = sqlite3.connect(pathDataBase)
     cursor = connection.cursor()
 
@@ -357,9 +339,7 @@ def deleteMaterial(dataBase, materialName):
 #       >>0
 #
 ###
-def getMaterial(
-    dataBase: str, materialName: str
-) -> Dict[str, Union[str, float, list]]:
+def getMaterial(dataBase: str, materialName: str) -> Dict[str, Union[str, float, list]]:
     """get Material from database by material name.
 
     Args:
@@ -377,15 +357,11 @@ def getMaterial(
             - linear (bool): linearity flag
 
     """
-    pathDataBase = os.path.join(
-        pathlib.Path(__file__).parent.absolute(), dataBase
-    )
+    pathDataBase = os.path.join(pathlib.Path(__file__).parent.absolute(), dataBase)
     if isfile(pathDataBase):
         connection = sqlite3.connect(pathDataBase)
         cursor = connection.cursor()
-        cursor.execute(
-            f"select Name From Material WHERE Name = '{materialName}'"
-        )
+        cursor.execute(f"select Name From Material WHERE Name = '{materialName}'")
         matName = cursor.fetchone()[0]
         cursor.execute(
             f"select conductivity From Material WHERE Name = '{materialName}'"
@@ -395,18 +371,12 @@ def getMaterial(
             f"select relPermeability From Material WHERE Name = '{materialName}'"
         )
         relPerm = cursor.fetchone()[0]
-        cursor.execute(
-            f"select remanence From Material WHERE Name = '{materialName}'"
-        )
+        cursor.execute(f"select remanence From Material WHERE Name = '{materialName}'")
         remanence = cursor.fetchone()[0]
-        cursor.execute(
-            f"select BHCurve From Material WHERE Name = '{materialName}'"
-        )
+        cursor.execute(f"select BHCurve From Material WHERE Name = '{materialName}'")
         lin = cursor.fetchone()[0]
         if lin == "NL":
-            cursor.execute(
-                f"select ID From Material WHERE Name = '{materialName}'"
-            )
+            cursor.execute(f"select ID From Material WHERE Name = '{materialName}'")
             idMat = cursor.fetchone()[0]
             cursor.execute(f"select H From BH_Curve WHERE ID = '{idMat}'")
             htuple = cursor.fetchall()
@@ -419,9 +389,7 @@ def getMaterial(
             bhArray = None
         connection.close()
     else:
-        raise FileNotFoundError(
-            f"Could not find database file {pathDataBase}!"
-        )
+        raise FileNotFoundError(f"Could not find database file {pathDataBase}!")
 
     if lin == "NL":
         flagLinear = False

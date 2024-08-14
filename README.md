@@ -17,8 +17,64 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 -->
-# Example README -> TODO!!!
 
-This is a simple example package. You can use
+<!-- This is a comment -->
+<!-- This is a simple example package. You can use
 [Github-flavored Markdown](https://guides.github.com/features/mastering-markdown/)
-to write your content.
+to write your content. -->
+
+<!-- ![PyEMMO project logo](./doc/images/PyEMMO_Logo.png) -->
+<img src="./doc/images/PyEMMO_Logo.png" width="200">
+
+# PyEMMO
+_**Py**thon **E**lectrical **M**achine **M**odelling in **O**NELAB_
+
+PyEMMO is a interface for modeling electrical machines in the open-source FEA software [Onelab](https://onelab.info/).
+The goal of the project is to automate model creation and the simulation workflow for electrical machines with ONELAB.
+<!-- That's why it name stands for **Py**thon **E**lectrical **M**achine **M**odelling in **O**NELAB -->
+
+
+## Installation
+
+Use the package manager [pip](https://pip.pypa.io/en/stable/) to install PyEMMO.
+
+```bash
+pip install pyemmo
+```
+
+You will need versions of [Gmsh](https://gmsh.info/) and [GetDP](https://getdp.info/) executables. While Gmsh can be directly installed from pip with the Gmsh Python-API, you will need to download GetDP individually.
+> [!WARNING]
+> Models created with PyEMMO fail with current GetDP version 3.6.0 due to mesh import error!
+> You can check your GetDP version wirh  ``getdp --version``
+
+## Usage
+
+The easiest way to start is by using the [Pyleecan](https://github.com/Eomys/pyleecan) project to create a electrical machine instance and feeding it into the PyEMMO-Pyleecan interface.
+- Have a look at the [Pyleecan tutorials](https://pyleecan.org/tutorials.html) on how to use Pyleecan. Especially the tutorial on ["How to define a machine"](https://pyleecan.org/01_tuto_Machine.html).
+- See the [Pyleecan API tutorial](tutorials/tutorial_pyleecan_api.py) for detailed instructions on how to create a ONELAB model from a Pyleecan machine object.
+
+
+## Contributing
+
+Pull requests are welcome. For major changes, please open an issue first
+to discuss what you would like to change.
+
+Please make sure to update tests as appropriate.
+
+### Setup
+
+After cloning the repository, run the following command to install Git hooks:
+
+```sh
+./workingDirectory/install-hooks.sh
+```
+
+Or if you are on Windows:
+
+```sh
+install-hooks.bat
+```
+
+## License
+
+[GPLv3](https://www.gnu.org/licenses/gpl-3.0.html)

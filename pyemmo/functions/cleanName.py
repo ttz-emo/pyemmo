@@ -37,9 +37,7 @@ def cleanName(instanceName: str) -> str:
         ValueError: instanceName must be string
     """
     if not isinstance(instanceName, str):
-        raise ValueError(
-            f"Object name was not a string!: {type(instanceName)}"
-        )
+        raise ValueError(f"Object name was not a string!: {type(instanceName)}")
     pattern = "^([a-zA-Z_][a-zA-Z0-9_]+)$"
     # if there were wrong characters in the name, try to remove them
     if re.match(pattern=pattern, string=instanceName):

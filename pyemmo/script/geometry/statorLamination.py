@@ -18,10 +18,12 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for class StatorLamination"""
-from typing import List
+from __future__ import annotations
+
 from pyemmo.script.material.material import Material
-from .surface import Surface
+
 from .physicalElement import PhysicalElement
+from .surface import Surface
 
 
 ###
@@ -35,7 +37,7 @@ class StatorLamination(PhysicalElement):
     def __init__(
         self,
         name: str,
-        geometricalElement: List[Surface],
+        geometricalElement: list[Surface],
         material: Material,
         phyID=None,
     ):

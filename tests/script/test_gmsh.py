@@ -22,14 +22,9 @@
 # import pytest
 import os
 import subprocess
-from pyemmo.functions.runOnelab import createGMSHCommand
 
-try:
-    from .. import GMSH_EXE, TEST_DATA_DIR
-except ImportError:
-    from tests import GMSH_EXE, TEST_DATA_DIR
-except Exception as exce:
-    raise exce
+from pyemmo.functions.runOnelab import createGMSHCommand
+from tests import GMSH_EXE, TEST_DATA_DIR
 
 
 def test_run_gmsh():
@@ -40,9 +35,7 @@ def test_run_gmsh():
     gmsh_command = createGMSHCommand(
         gmshFile=geo_file, useGUI=False, gmshPath=GMSH_EXE, logFileName=""
     )
-    out = subprocess.run(
-        gmsh_command, check=True, capture_output=True, text=True
-    )
+    out = subprocess.run(gmsh_command, check=True, capture_output=True, text=True)
     # TODO: Check that .db and .msh file are created and clean them up after
     # test run
 
