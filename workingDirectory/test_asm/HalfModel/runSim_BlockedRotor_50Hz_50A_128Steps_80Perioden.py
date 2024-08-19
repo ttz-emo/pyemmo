@@ -110,7 +110,7 @@ paramDict = {
         "thers_dyn_Bar": thers,
         "Flag_Calculate_VW": 0,
         #                     mesh_veryFine, fineMesh or coarseMesh
-        "msh": os.path.join(MODEL_DIR, "fine_mesh.msh"),
+        "msh": os.path.join(MODEL_DIR, "mesh_fine.msh"),
         # "Flag_SecondOrder": 0,
         "stop_criterion": 1e-8,
     },
@@ -128,7 +128,7 @@ paramDict = {
     # "exc": 0,
     # "axLen": 0.2,
     # "sym": 4,
-    "info": "Laut CadFEM muss im Ansys Circuit der Symmetriefaktor bei den ESB Elementen berücksichtigt werden. Im Viertelmodell brauchten wir die doppelten Werte für ONELAB. Die Vermutung ist, dass wir jetzt im Halbmodell die originalen Werte nehmen könnnen!",
+    "info": "Laut CadFEM muss im Ansys Circuit der Symmetriefaktor (=4) bei den ESB Elementen berücksichtigt werden. Im Viertelmodell brauchten wir die doppelten Werte für ONELAB. Die Vermutung ist, dass wir jetzt im Halbmodell die originalen Werte nehmen könnnen!",
     "datetime": time.ctime(),
     "PostOp": [],  # "GetBOnRadius" - "Get_LocalFields_Post"
 }
