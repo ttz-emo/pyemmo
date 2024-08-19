@@ -18,25 +18,27 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Function to get coil span from winding layout"""
+from typing import List
 
 import numpy as np
 
 
-def get_min_coilspan(wind_layout: np.ndarray) -> int:
+def get_min_coilspan(wind_layout: List[List[int]], nbrSlots: int) -> int:
     """Calculate the minimal coil span from a winding layout"""
-    wind_layout = np.array(wind_layout)
-    layers = wind_layout.shape[1]
-    nbrSlots = wind_layout.shape[2] * 3  # phases
-    if layers == 2:
+    if wind_layout[0][1]:
+        # if second slot side list is NOT empty -> 2 layer winding
+        wind_array = np.array(wind_layout, dtype=object)
         # double layer
-        first_coil_side = wind_layout[0, 0, 0]
+        first_coil_side = wind_array[0, 0, 0]
         # get array with slot distance to first slot side
-        a = wind_layout[0, :, 1:] + first_coil_side
+        a = wind_array[0, :, 1:] + first_coil_side
     else:
+        # otherwise 1-layer -> reshape layout to create numpy array
+        wind_array = np.array([wind_layout[0][0], wind_layout[1][0], wind_layout[1][0]])
         # single layer
-        first_coil_side = wind_layout[0, 0]
+        first_coil_side = wind_array[0, 0]
         # get array with slot distance to first slot side
-        a = wind_layout[0, 1:] + first_coil_side
+        a = wind_array[0, 1:] + first_coil_side
     is_positive_coil_side = first_coil_side > 0
     # filter oppvosit (positive/negative) winding directions
     a = -a[a < 0] if is_positive_coil_side else a[a > 0]

@@ -18,11 +18,14 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for class Slot_Form01"""
+from __future__ import annotations
+
 import math
-from .slot import Slot
-from .point import Point
-from .line import Line
+
 from .circleArc import CircleArc
+from .line import Line
+from .point import Point
+from .slot import Slot
 from .surface import Surface
 
 
@@ -62,9 +65,7 @@ class Slot_Form01(Slot):
         pS4.rotateZ(PCentre, angle_slotOP)
 
         pS5 = pS1.duplicate()
-        pS5.translate(
-            self.machineDict["h_Wedge"], self.machineDict["w_Wedge"] / 2, 0
-        )
+        pS5.translate(self.machineDict["h_Wedge"], self.machineDict["w_Wedge"] / 2, 0)
         pS6 = pS3.duplicate()
         pS6.translate(self.machineDict["h_Slot"], 0, 0)
         pS7 = pS6.duplicate()

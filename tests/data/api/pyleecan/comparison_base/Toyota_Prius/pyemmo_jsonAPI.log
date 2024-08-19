@@ -1,3 +1,28 @@
-DEBUG  : Found gmsh in 'H:\my_venv\Scripts\gmsh.BAT'!
-WARNING: Result directory H:/my-pyemmo\workingDirectory\Vu\for_testing\Toyota_Prius\res_Toyota_Prius\id_-10_iq_50_n_1000rpm allready exists!
-INFO   : Import results for result-ID 'id_-10_iq_50_n_1000rpm'
+INFO   : PyEMMO API started on 2024-08-06 16:48:09
+WARNING: Surface ID 'Geh' not found in machine surface list.
+WARNING: Surface ID 'Wel' not found in machine surface list.
+WARNING: Surface ID 'Hul' not found in machine surface list.
+DEBUG  : Winding layout: [[[1, 2, -7, -8, 13, 14, -19, -20, 25, 26, -31, -32, 37, 38, -43, -44], []], [[5, 6, -11, -12, 17, 18, -23, -24, 29, 30, -35, -36, 41, 42, -47, -48], []], [[-3, -4, 9, 10, -15, -16, 21, 22, -27, -28, 33, 34, -39, -40, 45, 46], []]]
+DEBUG  : segment number: 0 || slot side: 0 || phase: u || direction: p
+DEBUG  : segment number: 1 || slot side: 0 || phase: u || direction: p
+DEBUG  : segment number: 2 || slot side: 0 || phase: w || direction: n
+DEBUG  : segment number: 3 || slot side: 0 || phase: w || direction: n
+DEBUG  : segment number: 4 || slot side: 0 || phase: v || direction: p
+DEBUG  : segment number: 5 || slot side: 0 || phase: v || direction: p
+DEBUG  : Using automatic mesh generation.
+DEBUG  : Setting basis mesh size to movingband hight = 1.500e-04
+DEBUG  : Started automatic mesh generation on rotor.
+DEBUG  : Setting mesh gain factor to = 122.9
+DEBUG  : Setting linear mesh on rotor.
+DEBUG  : Started automatic mesh generation on stator.
+DEBUG  : Setting mesh gain factor to = 44.9
+DEBUG  : Setting linear mesh on stator.
+INFO   : Generating the Script object in JSON API.
+DEBUG  : There were no physical elements in domain 'domainBar'.
+DEBUG  : There were no physical elements in domain 'domainC'.
+DEBUG  : There were no physical elements in domain 'domainC'.
+WARNING: Creation of "Compound Mesh" for domain "rotor domainLam" failed, because "Pol" has only one surface.
+WARNING: Creation of "Compound Mesh" for domain "rotor airGap" failed, because "LuR2" has only one surface.
+DEBUG  : I found 560 identical points. There are 121 points in the model.
+DEBUG  : I found 145 identical lines. There are 144 lines in the model.
+DEBUG  : Stator north pole angle (elec): -104.8°

@@ -233,7 +233,6 @@ def test_get_result_files():
         [
             "AxialeLaenge_test.pos",
             "btan_test.pos",
-            "pos_res_file_az.pos",
             "SP_fomatted_res_file.pos",
         ],
     ), "Incorrect list of .pos files!"

@@ -18,6 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module to test iron loss calculation"""
+
 # %%
 import os
 from os import path

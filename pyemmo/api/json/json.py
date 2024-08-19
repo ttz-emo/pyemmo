@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied
+# Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -21,24 +22,27 @@
 
 # import debugpy
 # debugpy.debug_this_thread()
+from __future__ import annotations
+
+import datetime
+import json
+import logging
 import os
 import subprocess
 from os import mkdir
 from os.path import isdir, isfile, join
-from typing import Dict, List, Tuple, Union
-import logging
-import json
-import datetime
+
+import gmsh
+
 from ... import logFmt
-from ...functions import runOnelab, calcIronLoss, import_results
+from ...functions import calcIronLoss, import_results, runOnelab
 from ...script.geometry.machineAllType import MachineAllType
 from ...script.geometry.rotor import Rotor
 from ...script.geometry.stator import Stator
-from ...script.script import Script
 from ...script.material import ElectricalSteel
 from ...colors import Colors
 from .. import logger
-from . import boundaryJSON, importJSON, modelJSON, apiNameDict
+from . import apiNameDict, boundaryJSON, importJSON, modelJSON
 from .SurfaceJSON import SurfaceAPI
 
 import gmsh
@@ -51,8 +55,8 @@ gmsh.initialize()
 
 
 def createMachine(
-    segmentSurfDict: Dict[str, SurfaceAPI], extendedInfo: dict
-) -> Tuple[MachineAllType, Dict[str, List[SurfaceAPI]]]:
+    segmentSurfDict: dict[str, SurfaceAPI], extendedInfo: dict
+) -> tuple[MachineAllType, dict[str, list[SurfaceAPI]]]:
     """create a pyemmo Machine object from a list of surfaces forming one machine segment
     (imported from matlab).
 
@@ -76,6 +80,7 @@ def createMachine(
         rotorMBRadius=rotorMovingBandRadius,
     )
     # create the remaining machine surfaces
+    # TODO: Use gmsh-python api to rotate and duplicate the segments directly
     maschineSurfDict = modelJSON.createMachineGeometryFromSegment(
         segmentSurfDict, symFactor
     )
@@ -136,7 +141,7 @@ def createMachine(
     return machineSiemens, maschineSurfDict
 
 
-def createMeshSizeGUICode(machineSurfDict: Dict[str, List[SurfaceAPI]]):
+def createMeshSizeGUICode(machineSurfDict: dict[str, list[SurfaceAPI]]):
     """
     Create the gmsh fomatted code to set the mesh size of the machine surfaces via the GUI.
 
@@ -192,7 +197,7 @@ def createMeshSizeGUICode(machineSurfDict: Dict[str, List[SurfaceAPI]]):
         # if there were ids containing idExt
         if surfID_List:
             # create a List of all surfaces with idExt in it -> surfList
-            surfList: List[SurfaceAPI] = []
+            surfList: list[SurfaceAPI] = []
             for surfID in surfID_List:
                 surfList.extend(machineSurfDict[surfID])
             # get the mesh size
@@ -245,9 +250,7 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
     }.items():
         for quantity in ["b_radial", "b_tangent"]:
             sign = "-" if side == "rotor" else "+"
-            resFilePath = join(
-                "CAT_RESDIR", quantity + "_airgap_" + side + ".pos"
-            )
+            resFilePath = join("CAT_RESDIR", quantity + "_airgap_" + side + ".pos")
             # resFilePath = abspath(
             #     join(script.getResultsPath(), quantity + "_airgap_" + side + ".pos")
             # )
@@ -346,12 +349,12 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
 
 
 def main(
-    geo: Union[str, dict],
-    extInfo: Union[str, dict],
-    model: Union[str, os.PathLike],
-    gmsh: Union[str, os.PathLike] = "",
-    getdp: Union[str, os.PathLike] = "",
-    results: Union[str, os.PathLike] = "",
+    geo: str | dict,
+    extInfo: str | dict,
+    model: str | os.PathLike,
+    gmsh: str | os.PathLike = "",
+    getdp: str | os.PathLike = "",
+    results: str | os.PathLike = "",
 ):
     """The main function reads the JSON files (if given) and creates the .geo
     and .pro scripts for a onelab simulation.
@@ -412,9 +415,7 @@ def main(
                 with open(geo, encoding="utf-8") as jsonFile:
                     machineGeoList = json.load(jsonFile)
                     # create dict with surface api (segment) objects from the surface list
-                    segmentSurfDict = modelJSON.importMachineGeometry(
-                        machineGeoList
-                    )
+                    segmentSurfDict = modelJSON.importMachineGeometry(machineGeoList)
             except FileNotFoundError as fnfe:
                 raise fnfe
             except Exception as exept:
@@ -434,9 +435,7 @@ def main(
             # import the extended information
             extendedInfo = importJSON.importExtInfo(extInfo)
         else:
-            raise (
-                FileNotFoundError(f"Given file path {extInfo} was not a file.")
-            )
+            raise (FileNotFoundError(f"Given file path {extInfo} was not a file."))
     elif isinstance(extInfo, dict):
         extendedInfo = extInfo
     else:
@@ -471,7 +470,9 @@ def main(
     if importJSON.getFlagOpenGui(extendedInfo) is True:
         _open_onelab(apiScript, extendedInfo, gmsh, getdp)
 
+    logger.removeHandler(jsonLogFileHandler)
     jsonLogFileHandler.close()  # close log file handler!
+    return apiScript
 
 
 def _open_onelab(
@@ -488,9 +489,7 @@ def _open_onelab(
     else:
         # if gmsh was given by the user, check that its valid
         if not isfile(gmsh):
-            raise FileNotFoundError(
-                f"Provided gmsh executable was not found: {gmsh}"
-            )
+            raise FileNotFoundError(f"Provided gmsh executable was not found: {gmsh}")
     proFile = apiScript.proFilePath  # path to .pro file
     command = runOnelab.createCmdCommand(
         onelabFile=proFile,
@@ -504,6 +503,7 @@ def _open_onelab(
         capture_output=True,  # not importJSON.getFlagOpenGui(extendedInfo),
         text=True,
         check=False,
+        shell=False,
     )
     # print(f"StdOut:\n{calcInfo.stdout}")
     if calcInfo.stderr:
@@ -574,7 +574,9 @@ def _run_core_loss_calculation(resPath, apiScript: Script):
         # make sure at least one electrical period has been simulated
         # pylint: disable=locally-disabled,  line-too-long
         logger.warning(
-            "IRON LOSS CALCULATION: Simulated rotation (%.3f°) might be smaller than one electrical period! Iron loss calculation is only valid if at least one electrical period is simulated.",
+            "IRON LOSS CALCULATION: Simulated rotation (%.3f°) might be "
+            "smaller than one electrical period! Iron loss calculation is "
+            "only valid if at least one electrical period is simulated.",
             calcAngle,
         )
     rotorMat = machine.rotor._domainLam.physicals[0].material
@@ -620,15 +622,12 @@ def _run_core_loss_calculation(resPath, apiScript: Script):
         calcIronLoss.write_simple(
             join(resPath, "Pv_eddy_S.dat"), time, ironLossS["eddy"]
         )
-        calcIronLoss.write_simple(
-            join(resPath, "Pv_exc_R.dat"), time, ironLossR["exc"]
-        )
-        calcIronLoss.write_simple(
-            join(resPath, "Pv_exc_S.dat"), time, ironLossS["exc"]
-        )
+        calcIronLoss.write_simple(join(resPath, "Pv_exc_R.dat"), time, ironLossR["exc"])
+        calcIronLoss.write_simple(join(resPath, "Pv_exc_S.dat"), time, ironLossS["exc"])
     else:
         logger.warning(
-            "IRON LOSS CALCULATION: field file 'b_rotor.pos' or 'b_stator.pos' not found in '%s'",
+            "IRON LOSS CALCULATION: field file 'b_rotor.pos' or 'b_stator.pos'"
+            " not found in '%s'",
             resPath,
         )
 
@@ -651,9 +650,7 @@ def is_single_transient(res_dir: str) -> bool:
     if dat_file_list:
         # for dat_file in dat_file_list:
         # get time and data values of first file
-        time, data = import_results.read_timetable_dat(
-            join(res_dir, dat_file_list[0])
-        )
+        time, data = import_results.read_timetable_dat(join(res_dir, dat_file_list[0]))
         if time.size > 1:
             # get number of simulations in that file
             nbrSim, _, _ = import_results.split_data(time, data)

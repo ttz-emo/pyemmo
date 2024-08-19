@@ -19,17 +19,16 @@
 #
 """Module for CircleArc Geometry"""
 from math import atan2, cos, isclose, sin
-from random import random
 from typing import Literal, Tuple
 
 from matplotlib import pyplot as plt
 from matplotlib.patches import Arc
 from numpy import pi, rad2deg
 
-from ...definitions import DEFAULT_GEO_TOL
+from ...definitions import DEFAULT_GEO_TOL, LINE_COLOR, POINT_COLOR
+from ..geometry import defaultCenterPoint
 from .line import Line
 from .point import Point
-from ..geometry import defaultCenterPoint
 
 import gmsh
 
@@ -282,13 +281,9 @@ class CircleArc(Line):
             CA2 = CA1.mirror(P0, yAxis, zAxis)
 
         """
-        startPoint = self.startPoint.mirror(
-            planePoint, planeVector1, planeVector2
-        )
+        startPoint = self.startPoint.mirror(planePoint, planeVector1, planeVector2)
         endPoint = self.endPoint.mirror(planePoint, planeVector1, planeVector2)
-        centerPoint = self._center.mirror(
-            planePoint, planeVector1, planeVector2
-        )
+        centerPoint = self._center.mirror(planePoint, planeVector1, planeVector2)
         mirArc = CircleArc(self.name, endPoint, centerPoint, startPoint)
         if name == "":
             mirArc.name = "CA_" + str(abs(mirArc.id))
@@ -310,12 +305,8 @@ class CircleArc(Line):
         startPoint = self.startPoint
         endPoint = self.endPoint
         centerPoint = self.center
-        angleStart = startPoint.getAngleToX(
-            flag_deg=inDeg, CenterPoint=centerPoint
-        )
-        angleEnd = endPoint.getAngleToX(
-            flag_deg=inDeg, CenterPoint=centerPoint
-        )
+        angleStart = startPoint.getAngleToX(flag_deg=inDeg, CenterPoint=centerPoint)
+        angleEnd = endPoint.getAngleToX(flag_deg=inDeg, CenterPoint=centerPoint)
         return angleStart, angleEnd
 
     def getAngle(self, inDeg=False) -> float:
@@ -374,7 +365,7 @@ class CircleArc(Line):
         marker=None,
         markersize=1,
         linewidth=0.5,
-        color=[random() for i in range(3)],
+        color=LINE_COLOR,
         tag=False,
     ):
         """Circle Arc plot
@@ -434,13 +425,29 @@ class CircleArc(Line):
             )
         # if marker not None: Plot points
         if marker:
-            centerPoint.plot(fig, marker, markersize, color=color, tag=tag)
-            self.startPoint.plot(fig, marker, markersize, color=color, tag=tag)
-            self.endPoint.plot(fig, marker, markersize, color=color, tag=tag)
+            centerPoint.plot(
+                fig,
+                marker,
+                markersize,
+                color=color if color != LINE_COLOR else POINT_COLOR,
+                tag=tag,
+            )
+            self.startPoint.plot(
+                fig,
+                marker,
+                markersize,
+                color=color if color != LINE_COLOR else POINT_COLOR,
+                tag=tag,
+            )
+            self.endPoint.plot(
+                fig,
+                marker,
+                markersize,
+                color=color if color != LINE_COLOR else POINT_COLOR,
+                tag=tag,
+            )
 
-    def combine(
-        self, addLine: "CircleArc", touchPoint: Point = None
-    ) -> "CircleArc":
+    def combine(self, addLine: "CircleArc", touchPoint: Point = None) -> "CircleArc":
         """combine two arcs and return them as new CircleArc
 
         Args:
@@ -453,9 +460,7 @@ class CircleArc(Line):
         if self == addLine:
             return self
         # pylint: disable=locally-disabled, unidiomatic-typecheck
-        if not type(addLine) == type(
-            self
-        ):  # make sure the line types are equal
+        if not type(addLine) == type(self):  # make sure the line types are equal
             raise TypeError(
                 "Tried to combine lines, but the line types are different! "
                 f"{type(self)} != {type(addLine)}"
@@ -504,3 +509,18 @@ class CircleArc(Line):
                 "failed. Could not find touchpoint."
             )
         )
+
+    def addToScript(self, script: "Script"):
+        """old function add to script
+
+        Args:
+            script (Script)
+        """
+        # Add points
+        for p in self.points:
+            p.addToScript(script)
+        self.center.addToScript(script)
+        # add arc
+        if not self._todesmerker:
+            self._todesmerker = True
+            script._addCurve(self)

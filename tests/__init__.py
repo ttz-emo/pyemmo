@@ -17,20 +17,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-import platform
+import logging
 import os
+import platform
 import subprocess
-from os.path import join, dirname, abspath
+
 from pyemmo.definitions import TEST_DIR
 
 try:
-    import hypothesis
+    from hypothesis import configuration
 except ImportError:
     pass
 else:
-    from hypothesis import configuration
-
-    configuration.set_hypothesis_home_dir(join(TEST_DIR, ".hypothesis_venv"))
+    configuration.set_hypothesis_home_dir(
+        os.path.join(TEST_DIR, ".hypothesis_venv")
+    )
 
 TEST_DATA_DIR = os.path.join(TEST_DIR, "data")
 
@@ -40,7 +41,7 @@ TEST_DATA_DIR = os.path.join(TEST_DIR, "data")
 # if test_root not in sys.path:
 #     sys.path.append(test_root)
 
-save_path = join(TEST_DIR, "Results").replace("\\", "/")
+save_path = os.path.join(TEST_DIR, "Results").replace("\\", "/")
 """save_path is the path where the test resutls should be stored temporarily"""
 
 
@@ -49,40 +50,35 @@ GETDP_EXE = ""
 if platform.system() == "Windows":
     # Download and install the newest ONELAB installation for testing
     try:
-        subprocess.run(
-            ["powershell", f"{TEST_DIR}\\install_onelab.ps1"], check=True
+        p = subprocess.run(
+            ["powershell", f"{TEST_DIR}\\install_onelab.ps1"],
+            check=True,
+            capture_output=True,
         )
     except subprocess.CalledProcessError:
         # subprocess failed -> no determination of executables
-        pass
+        logging.warning(
+            "Failed to execute 'install_onelab.ps1' properly. "
+            "Could not determine ONELAB executables for testing!"
+        )
     else:
-        gmsh_exe_id = "GMSH_TEST_PATH"  # default file name from ps script
-        getdp_exe_id = "GETDP_TEST_PATH"  # default file name from ps script
-
-        exe_paths = []
-        for file in (gmsh_exe_id, getdp_exe_id):
-            # utf-16 encoding default for my powershell version
-            with open(os.path.join(TEST_DIR, file), encoding="utf-16") as f:
-                # read exe path but skip newline char
-                exe_paths.append(f.readline()[:-1])
-        # set Gmsh and GetDP paths
-        for path in exe_paths:
-            if "gmsh.exe" in path:
-                GMSH_EXE = path
-            elif "getdp.exe" in path:
-                GETDP_EXE = path
-            else:
-                pass
-# # Skipping environ var solution because vs-code needs to be restarted to
-# # actually get the environ changes...
-# if gmsh_exe_id in my_env:
-#     GMSH_EXE = my_env[gmsh_exe_id]
-#     print(f"Gmsh exe is {GMSH_EXE}")
-# else:
-#     raise FileNotFoundError(f"Could not find gmsh exe in environ: {my_env}")
-
-# if getdp_exe_id in my_env:
-#     GETDP_EXE = my_env[getdp_exe_id]
-#     print(f"getdp exe is {GETDP_EXE}")
-# else:
-#     raise FileNotFoundError(f"Could not find getdp exe in environ: {my_env}")
+        if not p.stderr:
+            output = [x for x in p.stdout.decode().split("\r\n") if len(x) > 1]
+            GMSH_EXE = os.path.abspath(output[-2])
+            GETDP_EXE = os.path.abspath(output[-1])
+            logging.info(
+                "Found Gmsh and GetDP executables for testing.\n%s\n%s",
+                GMSH_EXE,
+                GETDP_EXE,
+            )
+        else:
+            # additional check because ps does not return non-zero for typos...
+            logging.warning(
+                "Failed to execute 'install_onelab.ps1' properly. Error:\n%s",
+                p.stderr,
+            )
+else:
+    logging.warning(
+        "Determination of ONELAB executables for testing not implemented "
+        "for non-Windows distibution yet!"
+    )

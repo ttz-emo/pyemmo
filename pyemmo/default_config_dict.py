@@ -1,6 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO,
-# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied
+# Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -20,7 +20,7 @@
 #
 """Module for default config dict. Copied from Pyleecan project!"""
 # Default config_dict
-default_config_dict = {"MAIN": {}, "GUI": {}, "PLOT": {}}
+default_config_dict: dict = {"MAIN": {}, "GUI": {}, "PLOT": {}}
 
 default_config_dict["MAIN"]["MACHINE_DIR"] = ""
 default_config_dict["MAIN"]["MATLIB_DIR"] = ""

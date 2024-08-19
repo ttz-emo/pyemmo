@@ -21,14 +21,14 @@
 ###Noch nicht in die Doku. Funktioniert zunächst eingeschränkt für einzelne Linien wie beim Luis.
 # def loadFromStep(self, stepFiles, unit, meshLength):
 try:
-    from .point import Point
-    from .line import Line
     from .circleArc import CircleArc
+    from .line import Line
+    from .point import Point
     from .surface import Surface
 except ImportError:
-    from point import Point
-    from line import Line
     from circleArc import CircleArc
+    from line import Line
+    from point import Point
     from surface import Surface
 
 
@@ -153,19 +153,13 @@ def getRawCoordinate(textLineFromFile, idCurve):
 def createCurve(rawCoord, typeCurve, meshLength, unit):
     if typeCurve == "circleArc":
         coord = rawCoordToFloatCoord(rawCoord[2])
-        pC = Point(
-            "", coord[0] * unit, coord[1] * unit, coord[2] * unit, meshLength
-        )
+        pC = Point("", coord[0] * unit, coord[1] * unit, coord[2] * unit, meshLength)
         pC.name = "point_" + str(pC.id)
     coord = rawCoordToFloatCoord(rawCoord[0])
-    p1 = Point(
-        "", coord[0] * unit, coord[1] * unit, coord[2] * unit, meshLength
-    )
+    p1 = Point("", coord[0] * unit, coord[1] * unit, coord[2] * unit, meshLength)
     p1.name = "point_" + str(p1.id)
     coord = rawCoordToFloatCoord(rawCoord[1])
-    p2 = Point(
-        "", coord[0] * unit, coord[1] * unit, coord[2] * unit, meshLength
-    )
+    p2 = Point("", coord[0] * unit, coord[1] * unit, coord[2] * unit, meshLength)
     p2.name = "point_" + str(p2.id)
 
     if typeCurve == "circleArc":

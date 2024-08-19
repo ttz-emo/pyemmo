@@ -18,7 +18,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for Class Domain"""
-from typing import List, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Union
+
 from pyemmo.script.geometry.physicalElement import PhysicalElement
 
 if TYPE_CHECKING:
@@ -90,8 +91,7 @@ class Domain:
         """
         if isinstance(physicalElements, list):
             if all(
-                isinstance(physElem, PhysicalElement)
-                for physElem in physicalElements
+                isinstance(physElem, PhysicalElement) for physElem in physicalElements
             ):
                 self._physicals = physicalElements
                 return None
@@ -107,9 +107,7 @@ class Domain:
         if isinstance(physicalElementList, list):
             self.physicals.extend(physicalElementList)
         else:
-            raise ValueError(
-                "Argument 'physicalElementList' was not type list!"
-            )
+            raise ValueError("Argument 'physicalElementList' was not type list!")
 
     ###
     # Mit addToScript wird die Domain zum Skriptobjekt übergeben und in gmsh-Syntax übersetzt.

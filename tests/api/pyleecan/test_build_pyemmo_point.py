@@ -31,7 +31,7 @@ from pyemmo.script.geometry.point import Point
 from pyemmo.api.pyleecan.build_pyemmo_point import build_pyemmo_point
 
 
-@settings(max_examples=50, report_multiple_bugs=True, derandomize=True)
+@settings(max_examples=50, derandomize=True)
 @given(pyleecan_point=st.complex_numbers(allow_nan=False))
 def test_build_pyemmo_point(pyleecan_point: complex) -> None:
     """test function to build pyemmo point from pyleecan point (np.complex)"""

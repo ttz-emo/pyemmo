@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied
+# Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -18,10 +19,13 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module to export data to Ansys Maxwell"""
+from __future__ import annotations
+
 from os import path
+
+from ..definitions import RESULT_DIR
 from ..script.material.material import Material
 from . import cleanName
-from ..definitions import RESULT_DIR
 
 
 def exportBH2Maxwell(material: Material, filepath: str = None) -> None:
@@ -29,12 +33,17 @@ def exportBH2Maxwell(material: Material, filepath: str = None) -> None:
 
     Args:
         data (list): List of data vectors.
-        identifier (list[str]): List of data identifier for Maxwell like "H (A_per_meter)" or "B (tesla)".
-        filepath (str, optional): File path to write the results to. File extension must be ".tab"!
-            Defaults to PYEMMO_RESULTS_FOLDER/MATERIAL_NAME.tab .
+        identifier (list[str]): List of data identifier for Maxwell like
+            "H (A_per_meter)" or "B (tesla)".
+        filepath (str, optional): File path to write the results to. File
+            extension must be ".tab"! Defaults to
+            PYEMMO_RESULTS_FOLDER/MATERIAL_NAME_BH.tab .
     """
-    assert not material.linear
-    bh = material.getBH()
+    if material.linear:
+        raise ValueError(
+            f"Material {material.name} is linear! Can not export BH curve!"
+        )
+    bh = material.BH
     b = bh[:, 0]
     h = bh[:, 1]
     header = ["H (A_per_meter)", "B (tesla)"]
@@ -50,7 +59,7 @@ def exportTabMaxwell(data: list, identifier: list[str], filepath: str) -> None:
 
     Args:
         data (list): List of data vectors.
-        identifier (list[str]): List of data identifier for Maxwell like 
+        identifier (list[str]): List of data identifier for Maxwell like
             "Time (s)", "H (A_per_meter)" or "B (tesla)".
         filepath (str): File path to write the results to. File
             extension must be ".tab"!
@@ -73,15 +82,14 @@ def exportTabMaxwell(data: list, identifier: list[str], filepath: str) -> None:
             )
             exportTabMaxwell(data, ids, file)
     """
-    assert len(data) == len(
-        identifier
-    ), "data and identifier length are not matching!"
-    assert not path.isfile(
-        filepath
-    ), f"Given .tab file allready exists: {filepath}"
-    assert path.isdir(
-        path.dirname(filepath)
-    ), f"Folder of given file path does not exist: {filepath}"
+    if len(data) != len(identifier):
+        raise ValueError("data and identifier length are not matching!")
+    if path.isfile(filepath):
+        raise FileExistsError(f"Given .tab file allready exists: {filepath}")
+    if not path.isdir(path.dirname(filepath)):
+        raise FileNotFoundError(
+            f"Parent folder of given file path does not exist: {filepath}"
+        )
 
     # check file path format
     _, ext = path.splitext(filepath)
@@ -89,12 +97,14 @@ def exportTabMaxwell(data: list, identifier: list[str], filepath: str) -> None:
         raise ValueError("Wrong extension for bh curve export: " + ext)
 
     fileContent = ""
-    for id in identifier:
-        fileContent += '"' + id + '"\t'
+    for ident in identifier:
+        fileContent += '"' + ident + '"\t'
+    fileContent = fileContent[:-1]
     fileContent += "\n"
     for i in range(len(data[0])):
         for dataVector in data:
             fileContent += f"{dataVector[i]}\t"
+        fileContent = fileContent[:-1]
         fileContent += "\n"
 
     with open(filepath, encoding="utf-8", mode="w") as tabFile:

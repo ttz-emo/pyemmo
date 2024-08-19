@@ -22,8 +22,8 @@ from typing import List, Union
 from ..material.material import Material
 from .circleArc import CircleArc
 from .line import Line
-from .spline import Spline
 from .physicalElement import PhysicalElement
+from .spline import Spline
 
 
 ###

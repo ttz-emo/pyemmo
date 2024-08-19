@@ -1,6 +1,6 @@
-// This script was created with pyemmo (Version 1.3.1b1, git 86642f)
+// This script was created with pyemmo (Version 1.3.1b1, git 5fd2a8)
 
-// MACHINE SPECIFIC VALUES 
+// MACHINE SPECIFIC VALUES
 SYMMETRY_FACTOR = 1;
 L_AX_R = 0.1;
 L_AX_S = 0.1;
@@ -16,7 +16,7 @@ Id_eff = 0;
 Iq_eff = 0;
 FLAG_NL = 1;
 SPEED_RPM = 1000.0000000000001;
-PATH_RES = "H:/my-pyemmo/workingDirectory/Vu/for_testing/SPMSM_002/res_SPMSM_002";
+PATH_RES = "D:/pyemmo/tests/data/api/pyleecan/comparison_base/SPMSM_002/res_SPMSM_002";
 ParkAngOffset = 150.09999999999997;
 ANALYSIS_TYPE = 0;
 FLAG_CHANGE_ROT_DIR = 0;

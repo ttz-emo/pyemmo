@@ -20,12 +20,15 @@
 
 # %%
 from typing import List
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.axes import Axes
-from pyemmo.script.geometry.point import Point
-from pyemmo.script.geometry.line import Line
+
 from pyemmo.script.geometry.circleArc import CircleArc
+from pyemmo.script.geometry.line import Line
+from pyemmo.script.geometry.point import Point
+from pyemmo.script.geometry.spline import Spline
 from pyemmo.script.geometry.surface import Surface
 
 P1 = Point("P1", 0, 0, 0, 1)
@@ -45,7 +48,7 @@ L2 = Line("L2", P2, P3)
 L3 = Line("L3", P3, P4)
 L4 = Line("L4", P4, P1)
 S1 = Surface("S1", [L1, L3, L2, L4])
-S1.plot(tag=True)
+S1.plot(tag=True, markersize=6)
 # %%
 S1.rotateZ(P1, np.pi / 4)
 fig, ax = plt.subplots()
@@ -64,7 +67,7 @@ for i in range(4):
 plt.show()
 # %%
 
-curves: List[Line] = S1.getCurve()
+curves: List[Line] = S1.curve
 points: List[Point] = []
 for curve in curves:
     startPoint = curve.startPoint
@@ -81,11 +84,12 @@ S2 = Surface("S2", [L1, C1, L4])
 S2.plot(fig)
 
 # %%
+# TEST Center of gravity
 x = []
 y = []
 z = []
 for p in points:
-    coords = p.getCoordinate()
+    coords = p.coordinate
     print(coords)
     x.append(coords[0])
     y.append(coords[1])
@@ -95,4 +99,69 @@ print([np.mean(x), np.mean(y), np.mean(z)])
 plt.plot(x, y, "bo")
 plt.plot(np.mean(x), np.mean(y), color="green", marker="x", markersize=12)
 plt.show()
+# %%
+# TEST PATCH
+from matplotlib import patches
+
+fig, ax = plt.subplots()
+xy_point_list = []
+for point in S2.points:
+    xyz = point.coordinate
+    xy_point_list.append((xyz[0], xyz[1]))
+polygon = patches.Polygon(xy_point_list, facecolor="b", edgecolor="m")
+ax.add_patch(polygon)
+ax.axis("equal")
+S2.plot(fig)
+fig.show()
+
+# We can see that this leeds to an error because the arc segments need to be
+# discretized into several points...
+
+# %%
+# Dev Spline plot
+from splines import Bernstein
+
+control_points = np.array([[(0, 0), (1, 0), (1, 1), (2, 1)]])
+
+s = Bernstein(control_points)
+times = np.linspace(s.grid[0], s.grid[-1], 100)
+fig, ax = plt.subplots()
+for segment in control_points:
+    xy = np.transpose(segment)
+    ax.plot(*xy, "--")
+    ax.scatter(*xy, color="grey")
+xy_point_list = s.evaluate(times).T  # shape (2,100) -> (xy, index)
+# ax.add_patch(
+#     patches.Polygon(
+#         xy_point_list.T, edgecolor="m", fill=0, closed=False
+#     )
+# )
+ax.plot(
+    *xy_point_list, "--"
+)  # Equivalent to ax.plot(x_values, y_values, "--")
+ax.axis("equal")
+
+# %%
+# TEST SPLINE PLOT
+fig, ax = plt.subplots()
+colorList = ("blue", "red", "green")
+spline_type_list = ("Catmull-Rom Spline", "Bezierkurve", "Basis-Spline")
+for spline_type in (0, 1, 2):
+    points = S1.points
+    my_spline = Spline(
+        name=spline_type_list[spline_type],
+        startPoint=points.pop(0),
+        endPoint=points.pop(),
+        controlPoints=points,
+        SplineType=spline_type,
+    )
+    my_spline.plot(
+        fig=fig,
+        color=colorList[spline_type],
+        linewidth=1,
+        marker=".",
+        markersize=7,
+        tag=True,
+    )
+
 # %%
