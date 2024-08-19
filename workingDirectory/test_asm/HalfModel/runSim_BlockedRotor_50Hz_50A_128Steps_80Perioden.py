@@ -1,27 +1,26 @@
 # %%
 # %matplotlib widget
-import os
+import datetime
 import json
 import logging
+import os
 import time
-import datetime
+
+import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
-import numpy as np
-from pyemmo.functions.runOnelab import runCalcforCurrent
+
+from pyemmo.definitions import ROOT_DIR
 from pyemmo.functions.import_maxwell import import_csv_data
 from pyemmo.functions.import_results import (
-    read_timetable_dat,
-    plot_all_dat,
-    plot_timetable_dat,
     read_RegionValue_dat,
+    read_timetable_dat,
 )
-from pyemmo.definitions import ROOT_DIR
+from pyemmo.functions.runOnelab import runCalcforCurrent
 from workingDirectory.test_asm.HalfModel.definitions import (
-    MODEL_NAME,
     MODEL_DIR,
+    MODEL_NAME,
 )
-from typing import List, Mapping, Dict, Tuple
 
 
 class NumpyEncoder(json.JSONEncoder):
@@ -63,18 +62,14 @@ nbr_steps_per_period = 128
 # Zum Abgleich mit Maxwell
 Nbr_Sect = 2048  # Bandsegmentierung
 multi = 4  # Default=4 number of Segments per timestep
-timestep = (
-    (60 / (n * Nbr_Sect / multi)) if n > 0 else T_s / nbr_steps_per_period
-)
+timestep = (60 / (n * Nbr_Sect / multi)) if n > 0 else T_s / nbr_steps_per_period
 winkelschritt = n / 60 * 360 * timestep  # Default: 0.703125
 nbr_timesteps = T_s * nbr_stator_periods / timestep
 
 flag_dynamic_resistance = False
 thers = 100  # Thershold for bar resistance reset in A
 
-logging.info(
-    "Simulation should execute %i time steps.", int(nbr_timesteps) + 1
-)
+logging.info("Simulation should execute %i time steps.", int(nbr_timesteps) + 1)
 logging.debug("Timestep %e s.", timestep)
 logging.debug("One time step equals %f° mechanical degrees.", winkelschritt)
 logging.debug("Stop time of simulation: %.7e s", int(nbr_timesteps) * timestep)
@@ -115,7 +110,7 @@ paramDict = {
         "thers_dyn_Bar": thers,
         "Flag_Calculate_VW": 0,
         #                     mesh_veryFine, fineMesh or coarseMesh
-        "msh": os.path.join(MODEL_DIR, "mesh_veryFine.msh"),
+        "msh": os.path.join(MODEL_DIR, "mesh_fine.msh"),
         # "Flag_SecondOrder": 0,
         "stop_criterion": 1e-8,
     },
@@ -133,7 +128,7 @@ paramDict = {
     # "exc": 0,
     # "axLen": 0.2,
     # "sym": 4,
-    "info": "Laut CadFEM muss im Ansys Circuit der Symmetriefaktor bei den ESB Elementen berücksichtigt werden. Im Viertelmodell brauchten wir die doppelten Werte für ONELAB. Die Vermutung ist, dass wir jetzt im Halbmodell die originalen Werte nehmen könnnen!",
+    "info": "Laut CadFEM muss im Ansys Circuit der Symmetriefaktor (=4) bei den ESB Elementen berücksichtigt werden. Im Viertelmodell brauchten wir die doppelten Werte für ONELAB. Die Vermutung ist, dass wir jetzt im Halbmodell die originalen Werte nehmen könnnen!",
     "datetime": time.ctime(),
     "PostOp": [],  # "GetBOnRadius" - "Get_LocalFields_Post"
 }
@@ -143,9 +138,7 @@ stop = time.perf_counter()
 sim_duration = stop - start
 if sim_duration > nbr_timesteps:
     results["sim_duration"] = str(datetime.timedelta(seconds=sim_duration))
-    logging.info(
-        "Simulation took %s", str(datetime.timedelta(seconds=sim_duration))
-    )
+    logging.info("Simulation took %s", str(datetime.timedelta(seconds=sim_duration)))
 else:
     # Imported results
     if "sim_duration" in results:
@@ -187,9 +180,7 @@ if not os.path.isfile(json_res_path):
 # %%
 # %%
 # plot currents
-nbr_timesteps = len(
-    results["time"]
-)  # update number of timesteps with actual val
+nbr_timesteps = len(results["time"])  # update number of timesteps with actual val
 fig, ax = plt.subplots()
 ax.plot(results["time"], results["current"]["a"], label="u")
 ax.plot(results["time"], results["current"]["b"], label="v")
@@ -287,15 +278,9 @@ if os.path.isfile(resfile):
 fig, ax = plt.subplots()
 ax: Axes = ax
 # for phase in 'ABC':
-line_u = ax.plot(
-    results["time"][:-1], results["inducedVoltage"]["a"], label=f"U_ind,A"
-)
-line_u = ax.plot(
-    results["time"][:-1], results["inducedVoltage"]["b"], label=f"U_ind,B"
-)
-line_u = ax.plot(
-    results["time"][:-1], results["inducedVoltage"]["c"], label=f"U_ind,C"
-)
+line_u = ax.plot(results["time"][:-1], results["inducedVoltage"]["a"], label=f"U_ind,A")
+line_u = ax.plot(results["time"][:-1], results["inducedVoltage"]["b"], label=f"U_ind,B")
+line_u = ax.plot(results["time"][:-1], results["inducedVoltage"]["c"], label=f"U_ind,C")
 # line_u = ax.plot(t, U_iB, label=f"U_iB")
 # line_u = ax.plot(t, U_iC, label=f"U_iC")
 # ax.set_ylabel("Spannung in V")
@@ -438,9 +423,7 @@ if os.path.isfile(resfile):
     # plt.close()
     # plot_timetable_dat(resfile,dataLabel=f"R_{{bar,{nBar}}}")
 else:
-    logging.info(
-        "No bar resistance results in result directory %s", sim_res_dir
-    )
+    logging.info("No bar resistance results in result directory %s", sim_res_dir)
 ## ADD PLOT OF RUNTIME RESISTANCE
 resfile = os.path.join(sim_res_dir, "R_bar_runtime_1.dat")
 if os.path.isfile(resfile):
@@ -459,12 +442,8 @@ if os.path.isfile(resfile):
     # we have to double the value for amp[0] and use only nbrFreqs for amp[1:]
     freqs = np.fft.rfftfreq(nbr_timesteps, timestep)
     nbr_freqs = len(freqs)
-    amp = np.concatenate(
-        ([amp[0] / nbr_freqs / 2], amp[1:] / (nbr_freqs)), axis=0
-    )
-    amp = np.concatenate(
-        ([amp[0] / nbr_freqs / 2], amp[1:] / (nbr_freqs)), axis=0
-    )
+    amp = np.concatenate(([amp[0] / nbr_freqs / 2], amp[1:] / (nbr_freqs)), axis=0)
+    amp = np.concatenate(([amp[0] / nbr_freqs / 2], amp[1:] / (nbr_freqs)), axis=0)
     plt.stem(freqs, amp)
 # %%
 # Export Data for Maxwell
@@ -537,9 +516,7 @@ if os.path.isfile(resfile):
     axr = ax.twinx()
     axr.set_yticks([])
     t, R_bar_rt = read_timetable_dat(resfile)
-    line_r = axr.plot(
-        t, R_bar_rt, label=f"Stabwiderstand", marker=".", color="r"
-    )
+    line_r = axr.plot(t, R_bar_rt, label=f"Stabwiderstand", marker=".", color="r")
 
 # Add single legend
 ax.legend(loc=2)
