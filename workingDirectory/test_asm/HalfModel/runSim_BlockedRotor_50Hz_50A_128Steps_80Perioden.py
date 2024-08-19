@@ -178,6 +178,8 @@ if not os.path.isfile(json_res_path):
 
 
 # %%
+i_last_period = int(results["time"].size - nbr_steps_per_period)
+
 # %%
 # plot currents
 nbr_timesteps = len(results["time"])  # update number of timesteps with actual val
@@ -205,9 +207,7 @@ for nBar in range(nbr_bars):
     )
 axi.set_ylabel("Strom in A")
 if t[-1] > 2 * T_s:  # if specific amount of periods is calculated
-    axi.set_xlim(
-        t[int(t.size * ((nbr_stator_periods - 1) / nbr_stator_periods))], t[-1]
-    )
+    axi.set_xlim(t[i_last_period], t[-1])
 axi.legend()
 axi.grid(True)
 axi.set_title(f"Stabströme")
