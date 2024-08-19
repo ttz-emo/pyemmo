@@ -28,6 +28,8 @@ from .physicalElement import (
     Spline,
 )
 
+import gmsh
+
 
 class AirArea(PhysicalElement):
     """

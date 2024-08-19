@@ -22,6 +22,9 @@ from math import atan2, cos, sin
 from random import random
 from typing import TYPE_CHECKING, Tuple, Union
 
+import gmsh
+gmsh.initialize()
+
 import matplotlib.pyplot as plt
 from numpy import array, array_equal, cross, pi, vdot
 from numpy.linalg import norm
@@ -77,6 +80,8 @@ class Point(Transformable):
         ###Todesmerker wird nur gesetzt, wenn das Objekt im Skript erzeugt wurde
         # (Aufruf von addToScript())!
         self._todesmerker = False
+        
+        self._id = gmsh.model.occ.addPoint(x,y,z, meshLength)
 
     # def __eq__(self, x) -> bool:
     #     """Overload the "==" operator to compare if points are equal in a given tolerance"""

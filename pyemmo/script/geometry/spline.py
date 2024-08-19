@@ -20,6 +20,8 @@
 from random import random
 from typing import List, Literal
 
+import gmsh
+
 try:
     from .point import Point
     from .line import Line
@@ -72,6 +74,11 @@ class Spline(Line):
         self.controlPoints = controlPoints
         # 0: Catmull-Rom Spline, 1: Bezierkurve, 2: Basis-Spline
         self._splineType = SplineType
+        point_list = [startPoint.id] + controlPoints + [endPoint.id]
+        if SplineType == 0 or SplineType == 2:
+            self._id = gmsh.model.occ.addSpline(point_list)
+        else:
+            self._id = gmsh.model.occ.addBezier(point_list)
 
     @property
     def type(self) -> Literal["Spline"]:

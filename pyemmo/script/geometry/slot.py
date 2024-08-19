@@ -27,6 +27,8 @@ from .. import colorDict
 from math import degrees, isclose, pi
 from numpy import mean
 
+import gmsh
+
 
 ###
 # Eine Instanz der Klasse Slot beschreibt eine Nut einer elektrischen Maschine im dreidimensionalen Raum.
@@ -79,6 +81,10 @@ class Slot(PhysicalElement):
         self.phase = phase  # set phase angle
         self.nbrTurns = nbrTurns  # set number of winding turns
         self.setColor()  # set color
+
+        #Create physical objects with gmsh
+        # surface_tag_list = [elem.id for elem in geometricalElement]
+        # self._id = gmsh.model.addPhysicalGroup(2, surface_tag_list, name = name)
 
     @property
     def windDirection(self) -> Literal[-1, 1]:

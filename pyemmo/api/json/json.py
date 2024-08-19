@@ -36,9 +36,13 @@ from ...script.geometry.rotor import Rotor
 from ...script.geometry.stator import Stator
 from ...script.script import Script
 from ...script.material import ElectricalSteel
+from ...colors import Colors
 from .. import logger
 from . import boundaryJSON, importJSON, modelJSON, apiNameDict
 from .SurfaceJSON import SurfaceAPI
+
+import gmsh
+gmsh.initialize()
 
 # from swat_em import analyse
 # from .. import calcPhaseangleStarvoltageCorr
