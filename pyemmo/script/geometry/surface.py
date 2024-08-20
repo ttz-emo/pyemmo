@@ -22,12 +22,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import gmsh
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from numpy import mean
 
-import gmsh
-
+from ...definitions import LINE_COLOR
 from .circleArc import CircleArc
 from .line import Line
 from .point import Point
@@ -100,7 +100,7 @@ class Surface(Transformable):
         curve_loop = gmsh.model.occ.addCurveLoop(curve_tags)
         self._id = gmsh.model.occ.addPlaneSurface([curve_loop])
 
-    def __eq__(self, other: "Surface"):
+    def __eq__(self, other: Surface):
         # check type and number of points
         if isinstance(other, self.__class__) and (
             len(self.allPoints) == len(other.allPoints)
@@ -698,8 +698,10 @@ class Surface(Transformable):
         ToolSurface.setTool()  # set to the tool surface
         if not keepTool:
             ToolSurface.delete = True
-        
-        self._id = gmsh.model.occ.cut([(2,self._id)], [(2, ToolSurface.id)], removeTool=ToolSurface.delete)
+
+        self._id = gmsh.model.occ.cut(
+            [(2, self._id)], [(2, ToolSurface.id)], removeTool=ToolSurface.delete
+        )
 
     def setMeshLength(self, meshLength: float) -> None:
         """set the meshLength of all points of a surface.

@@ -18,8 +18,11 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 import unittest
-from pyemmo.script.geometry.rotorIPMSM import RotorIPMSM
+
+import gmsh
+
 from pyemmo.script.geometry.point import Point
+from pyemmo.script.geometry.rotorIPMSM import RotorIPMSM
 
 
 class TestRotorIPMSM(unittest.TestCase):
@@ -54,6 +57,7 @@ class TestRotorIPMSM(unittest.TestCase):
         Setup wird vor jeder Testmethode der Klasse TestRotorIPMSM ausgeführt
         """
         # RotorIPMSM Objekt für Tests erzeugen
+        gmsh.initialize()
         self.rotorObj = RotorIPMSM(
             laminationType="Lam1",
             magnetType="Mag1",
@@ -69,9 +73,9 @@ class TestRotorIPMSM(unittest.TestCase):
         Die Schreibweise "tearDown" muss beachtet werden!
         teardown wird nach jeder Testmethode der Klasse TestRotorIPMSM ausgeführt
         """
-        pass
+        gmsh.finalize()
 
-    def tel_st_initiavalue(self):
+    def test_initiavalue(self):
         # Setup
 
         # Sicherstellen, dass init Funktion Werte richtig setzt
@@ -88,9 +92,7 @@ class TestRotorIPMSM(unittest.TestCase):
             "r_We": 0.1,
             "r_R": 1.1,
             "meshLength": 0.01,
-            "machineCentrePoint": Point(
-                name="P_name", x=0, y=0, z=0, meshLength=0.1
-            ),
+            "machineCentrePoint": Point(name="P_name", x=0, y=0, z=0, meshLength=0.1),
         }
 
         # Run
