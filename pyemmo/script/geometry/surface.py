@@ -98,7 +98,7 @@ class Surface(Transformable):
 
         curve_tags = [curve.id for curve in curves]
         curve_loop = gmsh.model.occ.addCurveLoop(curve_tags)
-        self._id = gmsh.model.occ.addPlaneSurface([curve_loop])
+        self.id = gmsh.model.occ.addPlaneSurface([curve_loop])
 
     def __eq__(self, other: Surface):
         # check type and number of points
@@ -149,12 +149,8 @@ class Surface(Transformable):
         Args:
             newID (int): New ID of surface
         """
-        if newID < self.ID:
-            raise ValueError(
-                "New ID of surface is smaller than global ID count."
-                "New ID mus be existing!"
-            )
-        Surface.ID = newID
+        if not isinstance(newID, int):
+            raise ValueError("Surface ID must be int.")
         self._id = newID
 
     @property
