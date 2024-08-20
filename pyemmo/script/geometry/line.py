@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied
+# Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -19,15 +20,15 @@
 #
 """Module of geometry class Line"""
 
-from typing import TYPE_CHECKING, Literal, Tuple
+from typing import TYPE_CHECKING, Literal, Tuple, Union
 
+import gmsh
 import matplotlib.pyplot as plt
+import numpy as np
 from numpy import array
 from numpy.linalg import norm
 
-import gmsh
-
-from ...definitions import DEFAULT_GEO_TOL
+from ...definitions import DEFAULT_GEO_TOL, LINE_COLOR, POINT_COLOR
 from ..geometry import defaultCenterPoint
 from .point import Point
 from .transformable import Transformable
@@ -73,14 +74,14 @@ class Line(Transformable):
                     f"{startPoint.coordinate} - {endPoint.coordinate}."
                 )
             )
-        ###ID der Linie.
-        self.id = self._getNewID()
+        # set ID of line to gmsh ID
+        self.id = gmsh.model.occ.addLine(startPoint.id, endPoint.id)
+        gmsh.model.set_entity_name(1, self.id, name)  # set line name in gmsh
+
         ###Todesmerker wird nur gesetzt, wenn das Objekt im Skript erzeugt wurde
         # (Aufruf von addToScript())!
         self._todesmerker = False
         self._force: bool = force
-
-        self._id = gmsh.model.occ.addLine(startPoint.id, endPoint.id)
 
     def __eq__(self, other: "Line") -> bool:
         # check type:
@@ -132,13 +133,10 @@ class Line(Transformable):
         Args:
             newID (int): New ID of Line
         """
-        if newID < self.ID:
-            raise ValueError(
-                "New ID of line is smaller than global ID count."
-                "New ID mus be existing!"
-            )
-        Line.ID = newID
-        self._id = newID
+        if isinstance(newID, int):
+            self._id = newID
+        else:
+            raise TypeError("Line ID must be an integer!")
 
     @property
     def name(self) -> str:
@@ -224,6 +222,31 @@ class Line(Transformable):
             meshLength=(self.startPoint.meshLength + self.endPoint.meshLength) / 2,
         )
 
+    @property
+    def vector(self) -> np.ndarray:
+        """Get the vector between end and start point.
+
+        Returns:
+            np.ndarray: 3D-Vector (x,y,z)
+        """
+        return array(self.endPoint.coordinate) - array(self.startPoint.coordinate)
+
+    @property
+    def complex(self) -> complex:
+        """Get the complex value of the (2D) line vector.
+
+        Returns:
+            complex: Complex vector of line vector.
+
+        Raises:
+            RuntimeError: If z-component of self.vector is not 0.
+        """
+        if self.vector[2] != 0:
+            raise RuntimeError(
+                "Can not return complex representation of vector with z-component!"
+            )
+        return complex(self.vector[0], self.vector[1])
+
     def switchPoints(self) -> None:
         """switch start and end point of curve (revert direction)
 
@@ -250,6 +273,7 @@ class Line(Transformable):
         Args:
             dx, dy, dz (float): offset in meter
         """
+        gmsh.model.occ.translate((1, self.id), dx, dy, dz)
         if not self._todesmerker:
             self.startPoint.translate(dx, dy, dz)
             self.endPoint.translate(dx, dy, dz)
@@ -268,6 +292,8 @@ class Line(Transformable):
             L1 = Line('l1', P1, P2)\n
             L1.rotateZ(P0, pi)\n
         """
+        x, y, z = rotationPoint.coordinate
+        gmsh.model.occ.rotate([(1, self.id)], x, y, z, 0, 0, 1, angle=angle)
         if not self._todesmerker:
             self.startPoint.rotateZ(rotationPoint, angle)
             self.endPoint.rotateZ(rotationPoint, angle)
@@ -287,11 +313,13 @@ class Line(Transformable):
             L1.rotateY(P0, pi)\n
 
         """
+        x, y, z = rotationPoint.coordinate
+        gmsh.model.occ.rotate((1, self.id), x, y, z, 0, 1, 0, angle=angle)
         if not self._todesmerker:
             self.startPoint.rotateY(rotationPoint, angle)
             self.endPoint.rotateY(rotationPoint, angle)
 
-    def rotateX(self, rotationPoint, angle):
+    def rotateX(self, rotationPoint: Point, angle):
         """
         Mit rotateX() wird eine Gerade um einen Rotationspunkt (rotationPoint) und die
         X-Achse mit einem definierten Winkel rotiert.
@@ -306,6 +334,8 @@ class Line(Transformable):
             L1.rotateX(P0, pi)\n
 
         """
+        x, y, z = rotationPoint.coordinate
+        gmsh.model.occ.rotate((1, self.id), x, y, z, 1, 0, 0, angle=angle)
         if not self._todesmerker:
             self.startPoint.rotateX(rotationPoint, angle)
             self.endPoint.rotateX(rotationPoint, angle)
@@ -324,6 +354,12 @@ class Line(Transformable):
         newP1 = self.startPoint.duplicate()
         newP2 = self.endPoint.duplicate()
         dupLine = Line(name, newP1, newP2)
+
+        # dim_tag_list = gmsh.model.occ.copy([(1, self.id)])
+        # dupLine.id = dim_tag_list[0][1]
+        # we dont need to call copy here again because the gerneration of the dup_line
+        # allready creates a new line
+
         # set new line name
         if name == "":
             parentName = self.name
@@ -511,7 +547,7 @@ class Line(Transformable):
         pStart, pEnd = self.points
         return min(pStart.meshLength, pEnd.meshLength)
 
-    def combine(self, addLine: "Line", touchPoint: Point = None) -> "Line":
+    def combine(self, addLine: "Line", touchPoint: Union[Point, None] = None) -> "Line":
         """combine two lines and return them as new line
 
         Args:
@@ -533,36 +569,45 @@ class Line(Transformable):
                     if p.isEqual(addP):
                         touchPoint: Point = p
                         break
-        if touchPoint:
-            # get the two points excluding the docking point
-            newPoints = [
-                point
-                for point in self.points + addLine.points
-                if not point.isEqual(touchPoint)
-            ]
-            if len(newPoints) == 2:
-                # replace the combined line pattern in the old names if they contained
-                lName = self.name.replace("combinedLine_", "")
-                addName = addLine.name.replace("combinedLine_", "")
-                return Line(
-                    f"combinedLine_{lName}_{addName}",
-                    startPoint=newPoints[0],
-                    endPoint=newPoints[1],
-                )
-            else:
-                raise (
-                    RuntimeError(
-                        f"Combination of lines ({self.name} and {addLine.name}) failed."
-                        f"{len(newPoints)} points to create a new line; should be 2!"
-                    )
-                )
-        else:
+        if not touchPoint:
             raise (
                 RuntimeError(
                     f"Combination of lines ({self.name} and {addLine.name}) failed."
                     "Could not find touchpoint."
                 )
             )
+
+        if (np.angle(self.complex) != np.angle(addLine.complex)) and (
+            np.angle(self.complex) != np.angle(-addLine.complex)
+        ):
+            # angle of vectors are not matching in any direction...
+            raise RuntimeError("Lines do not have same direction.")
+
+        # get the two points excluding the docking point
+        newPoints = [
+            point
+            for point in self.points + addLine.points
+            if not point.isEqual(touchPoint)
+        ]
+        if len(newPoints) != 2:
+            raise (
+                RuntimeError(
+                    f"Combination of lines ({self.name} and {addLine.name}) failed."
+                    f"{len(newPoints)} points to create a new line; should be 2!"
+                )
+            )
+        # replace the combined line pattern in the old names if they contained
+        lName = self.name.replace("combinedLine_", "")
+        addName = addLine.name.replace("combinedLine_", "")
+        # TODO: We could remove test for touchPoint and line direction if fuse operation
+        # in gmsh results in multiple entities!S
+        # dim_tags, dim_tags_map = gmsh.model.occ.fuse([(1, self.id)], [(1, addLine.id)])
+        combined_line = Line(
+            f"combinedLine_{lName}_{addName}",
+            startPoint=newPoints[0],
+            endPoint=newPoints[1],
+        )
+        return combined_line
 
     def containsPoint(self, refPoint: Point, tol: float = DEFAULT_GEO_TOL) -> bool:
         """This function checks if start or end point coordinates are equal to the given reference
