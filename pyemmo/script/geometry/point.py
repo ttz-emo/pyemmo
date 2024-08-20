@@ -24,6 +24,7 @@ from math import atan2, cos, sin
 from typing import TYPE_CHECKING, Tuple, Union
 
 import gmsh
+
 gmsh.initialize()
 
 import matplotlib.pyplot as plt
@@ -68,21 +69,17 @@ class Point(Transformable):
             x (float): x-Coordinate
             y (float): y-Coordinate
             z (float): z-Coordinate
-            meshLength (float): Mesh length of point for Script.
+            meshLength (float): Mesh length of point in meter.
         """
-        ###Name des Punktes.
         self.name = name
-        ###x-Koordinate des Punktes.
         self.coordinate = (x, y, z)
-        ###Netzgröße vom Mesh.
-        self._meshLength = meshLength
-        ###ID des Punktes.
-        self.id = self._getNewID()
+        self.meshLength = meshLength
         ###Todesmerker wird nur gesetzt, wenn das Objekt im Skript erzeugt wurde
         # (Aufruf von addToScript())!
         self._todesmerker = False
-        
-        self._id = gmsh.model.occ.addPoint(x,y,z, meshLength)
+
+        self.id = gmsh.model.occ.addPoint(x, y, z, meshLength)
+        gmsh.model.set_entity_name(0, self.id, name)
 
     # def __eq__(self, x) -> bool:
     #     """Overload the "==" operator to compare if points are equal in a given tolerance"""
@@ -129,13 +126,8 @@ class Point(Transformable):
         Args:
             newID (int): New ID of point
         """
-        if newID < self.pointID:
-            raise ValueError(
-                "New ID of point is smaller than global ID count."
-                "New ID mus be existing!"
-            )
-        Point.pointID = newID
-        self._id = newID
+        if isinstance(newID, int):
+            self._id = newID
 
     @property
     def name(self) -> str:
@@ -197,6 +189,10 @@ class Point(Transformable):
         Args:
             meshLength (float): mesh length
         """
+        if not isinstance(meshLength, (int, float)):
+            raise ValueError(
+                "Mesh length must be int or float. (Mesh length of Point in meter)"
+            )
         self._meshLength = meshLength
 
     # ------ methods ------
