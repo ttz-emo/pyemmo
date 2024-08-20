@@ -274,9 +274,8 @@ class Line(Transformable):
             dx, dy, dz (float): offset in meter
         """
         gmsh.model.occ.translate((1, self.id), dx, dy, dz)
-        if not self._todesmerker:
-            self.startPoint.translate(dx, dy, dz)
-            self.endPoint.translate(dx, dy, dz)
+        self.startPoint.translate(dx, dy, dz, flag_gmsh=False)
+        self.endPoint.translate(dx, dy, dz, flag_gmsh=False)
 
     def rotateZ(self, rotationPoint=defaultCenterPoint, angle=0.0):
         """Mit rotateZ() wird eine Gerade um einen Rotationspunkt (rotationPoint) und die

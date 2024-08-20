@@ -213,7 +213,9 @@ class Point(Transformable):
         """isDrawn returns true if the point was added to a script"""
         return self._todesmerker
 
-    def translate(self, dx: float, dy: float, dz: float) -> bool:
+    def translate(
+        self, dx: float, dy: float, dz: float, flag_gmsh: bool = True
+    ) -> None:
         """Mit translate() kann ein Punkt linear verschoben werden. Die Inputvariablen dx, dy und dz
         beschreiben die Verschiebungsfaktoren in der x-, y- und z- Richtung.
 
@@ -221,16 +223,14 @@ class Point(Transformable):
             dx (float): x offset
             dy (float): y offset
             dz (float): z offset
-
-        Returns:
-            bool: True if translation was successful, otherwise False.
+            flag_gmsh (bool): Flag to control if the operation should be run in gmsh
+                aswell. Defaults to True.
         """
-        if not self._todesmerker:
-            self._x = self._x + dx
-            self._y = self._y + dy
-            self._z = self._z + dz
-            return True
-        return False  # translation failed
+        self._x = self._x + dx
+        self._y = self._y + dy
+        self._z = self._z + dz
+        if flag_gmsh:
+            gmsh.model.occ.translate([(0, self.id)], dx, dy, dz)
 
     def rotateZ(self, rotationPoint: "Point", angle: float):
         """Mit rotateZ() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die Z-Achse mit

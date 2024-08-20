@@ -84,8 +84,9 @@ class Surface(Transformable):
                     f"list ({type(curves)})."
                 )
             )
-        ###ID der Fläche.
-        self.id: int = self._getNewID()
+        curve_tags = [curve.id for curve in curves]
+        curve_loop = gmsh.model.occ.addCurveLoop(curve_tags)
+        self.id = gmsh.model.occ.addPlaneSurface([curve_loop])
         # Todesmerker wird nur gesetzt, wenn das Objekt im Skript erzeugt
         # wurde (Aufruf von addToScript())!
         self._todesmerker: bool = False
@@ -95,10 +96,6 @@ class Surface(Transformable):
         self._cut: list[Surface] = []
         self._isTool: bool = False
         self._delete: bool = False
-
-        curve_tags = [curve.id for curve in curves]
-        curve_loop = gmsh.model.occ.addCurveLoop(curve_tags)
-        self.id = gmsh.model.occ.addPlaneSurface([curve_loop])
 
     def __eq__(self, other: Surface):
         # check type and number of points
@@ -322,12 +319,9 @@ class Surface(Transformable):
             dy (float): y-offset in m
             dz (float): z-offset in m
         """
-        if self._todesmerker == True:
-            ...  # TODO: Add warning
-        else:
-            allP = self.allPoints
-            for p in allP:
-                p.translate(dx, dy, dz)
+        gmsh.model.occ.translate([(2, self.id)], dx, dy, dz)
+        for p in self.allPoints:
+            p.translate(dx, dy, dz, flag_gmsh=False)
 
     def rotateZ(self, rotationPoint: Point, angle: float):
         """Mit rotateZ() wird eine Fläche um einen Rotationspunkt
