@@ -37,15 +37,14 @@ import gmsh
 from ... import logFmt
 from ...functions import calcIronLoss, import_results, runOnelab
 from ...script.geometry.machineAllType import MachineAllType
+from ...script.geometry.physicalElement import PhysicalElement
 from ...script.geometry.rotor import Rotor
 from ...script.geometry.stator import Stator
 from ...script.material import ElectricalSteel
-from ...colors import Colors
 from .. import logger
-from . import apiNameDict, boundaryJSON, importJSON, modelJSON
+from . import apiNameDict, importJSON, modelJSON
 from .SurfaceJSON import SurfaceAPI
 
-import gmsh
 gmsh.initialize()
 
 # from swat_em import analyse
@@ -71,14 +70,17 @@ def createMachine(
         Tuple[MachineAllType, Dict[str, List[SurfaceAPI]]]: Resulting machine object and Machine
         surface dict with IdExt as keys and list of SurfaceAPI objects as items.
     """
-    # create boundaries
-    rotorMovingBandRadius = importJSON.getMovingbandRadius(extendedInfo)
     symFactor = importJSON.getSymFactor(extendedInfo)
-    statorPhysicals, rotorPhysicals = boundaryJSON.createBoundaries(
-        segmentSurfDict=segmentSurfDict,
-        symFactor=symFactor,
-        rotorMBRadius=rotorMovingBandRadius,
-    )
+    rotorMovingBandRadius = importJSON.getMovingbandRadius(extendedInfo)
+
+    # # create boundaries
+    # statorPhysicals, rotorPhysicals = boundaryJSON.createBoundaries(
+    #     segmentSurfDict=segmentSurfDict,
+    #     symFactor=symFactor,
+    #     rotorMBRadius=rotorMovingBandRadius,
+    # )
+    statorPhysicals: list[PhysicalElement] = []
+    rotorPhysicals: list[PhysicalElement] = []
     # create the remaining machine surfaces
     # TODO: Use gmsh-python api to rotate and duplicate the segments directly
     maschineSurfDict = modelJSON.createMachineGeometryFromSegment(
