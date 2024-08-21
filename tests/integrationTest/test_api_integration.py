@@ -77,9 +77,7 @@ def cleanup(request):
     def finisher():
         LOGGER.info("Doing teardown...")
         for t in test_types:
-            test_result_dir = os.path.join(
-                ROOT_DIR, test_params[t]["result_folder"], t
-            )
+            test_result_dir = os.path.join(ROOT_DIR, test_params[t]["result_folder"], t)
             timestamped_result_dirs = [
                 os.path.join(test_result_dir, dir)
                 for dir in os.listdir(test_result_dir)
@@ -175,9 +173,7 @@ class TestCasesIntegration:
         LOGGER.info("Test point 2: check if GMSH base files are generated")
         self.check_file_counts(base_result_path, result_path)
 
-    @pytest.mark.dependency(
-        name="simul_data_gen", depends=["simul_folder_exist"]
-    )
+    @pytest.mark.dependency(name="simul_data_gen", depends=["simul_folder_exist"])
     def test_simul_data_gen(
         self,
         # test_tuple
@@ -233,7 +229,7 @@ class TestCasesIntegration:
         #     base_simul_subfolder_path,
         # ) = test_tuple
         LOGGER.info(f"TEST CASE {test_id}: {test_case}")
-        LOGGER.info("Test point 5: check values in dat files")
+        LOGGER.info("Test point 4: check values in dat files")
         # with check("check base simulation subfolder existence"):
         #     assert os.path.isdir(base_simul_subfolder_path) and messagePrinter(
         #         "Base simulation result subfolder exists, continuing tests..."
@@ -243,12 +239,8 @@ class TestCasesIntegration:
                 f"Base simulation result subfolder for {test_case} does not exist, nothing to compare"
             )
         else:
-            dat_targets = glob.glob(
-                os.path.join(simul_subfolder_path, "*.dat")
-            )
-            dat_bases = glob.glob(
-                os.path.join(base_simul_subfolder_path, "*.dat")
-            )
+            dat_targets = glob.glob(os.path.join(simul_subfolder_path, "*.dat"))
+            dat_bases = glob.glob(os.path.join(base_simul_subfolder_path, "*.dat"))
             for target_file, base_file in zip(dat_targets, dat_bases):
                 target_dat = read_timetable_dat(target_file)
                 base_dat = read_timetable_dat(base_file)
@@ -296,11 +288,7 @@ class TestCasesIntegration:
         for file_type, count in base_count.items():
             if file_type not in exclusion_list:
                 result_count = len(
-                    glob.glob(
-                        os.path.join(
-                            ROOT_DIR, folder_to_count, f"*.{file_type}"
-                        )
-                    )
+                    glob.glob(os.path.join(ROOT_DIR, folder_to_count, f"*.{file_type}"))
                 )
                 with check:
                     assert result_count == count and messagePrinter(
