@@ -9,6 +9,7 @@ import time
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
+from matplotlib.lines import Line2D
 
 from pyemmo.definitions import ROOT_DIR
 from pyemmo.functions.import_maxwell import import_csv_data
@@ -45,12 +46,70 @@ if add_StreamHandler:
     root_logger.addHandler(c_handler)
 
 logger = logging.getLogger("matplotlib").setLevel(logging.WARNING)
+
+
+def import_mean_torque(res_dir: str) -> tuple[np.ndarray, np.ndarray]:
+    """import the mean of stator and rotor MST torque.
+
+    Args:
+        res_dir (str): Result directory with Ts.dat and Tr.dat
+
+    Returns:
+        (np.ndarray, np.ndarray): Time and mean torque vector
+    """
+    resfile = os.path.join(
+        res_dir,
+        "Ts.dat",
+    )
+    _, torque_s = read_timetable_dat(resfile)
+    resfile = os.path.join(
+        res_dir,
+        "Tr.dat",
+    )
+    t, torque_r = read_timetable_dat(resfile)
+    torque_mean = np.mean([torque_s, torque_r], axis=0)
+    return t, torque_mean
+
+
+def autoscale_y(ax: Axes, margin=0.1):
+    """This function rescales the y-axis based on the data that is visible given the
+    current xlim of the axis.
+
+    Args:
+        ax (Axes): a matplotlib axes object-
+        margin (float, optional): the fraction of the total height of the y-data to pad
+            the upper and lower ylims. Defaults to 0.1.
+    """
+
+    def get_bottom_top(line: Line2D):
+        xd = line.get_xdata()
+        yd = line.get_ydata()
+        lo, hi = ax.get_xlim()
+        y_displayed = yd[((xd > lo) & (xd < hi))]
+        h = np.max(y_displayed) - np.min(y_displayed)
+        bot = np.min(y_displayed) - margin * h
+        top = np.max(y_displayed) + margin * h
+        return bot, top
+
+    lines = ax.get_lines()
+    bot, top = np.inf, -np.inf
+
+    for line in lines:
+        new_bot, new_top = get_bottom_top(line)
+        if new_bot < bot:
+            bot = new_bot
+        if new_top > top:
+            top = new_top
+
+    ax.set_ylim(bot, top)
+
+
 # %%
 
 logging.debug(f"Start simulation at {time.ctime()}")
 start = time.perf_counter()
 
-nbr_bars = 9
+nbr_bars = 18
 
 f_r = 50
 I_eff = 50
@@ -58,7 +117,7 @@ n = 0
 f_s = f_r + 2 * n / 60
 T_s = 1 / f_s
 nbr_stator_periods = 80
-nbr_steps_per_period = 128
+nbr_steps_per_period = 64
 # Zum Abgleich mit Maxwell
 Nbr_Sect = 2048  # Bandsegmentierung
 multi = 4  # Default=4 number of Segments per timestep
@@ -103,8 +162,8 @@ paramDict = {
         # "AxialLength_R": 1,
         # "AxialLength_S": 1,
         "NbrParallelPaths": 1,
-        "R_endring_segment": 16e-7,  # Initial value: 16e-7,
-        "L_endring_segment": 2e-9,
+        "R_endring_segment": 16e-7 / 2,  # Initial value: 16e-7,
+        "L_endring_segment": 2e-9 / 2,
         "Flag_Cir_RotorCage": 1,
         "Flag_Dynamic_RotorBarResistance": flag_dynamic_resistance,
         "thers_dyn_Bar": thers,
@@ -178,7 +237,7 @@ if not os.path.isfile(json_res_path):
 
 
 # %%
-i_last_period = int(results["time"].size - nbr_steps_per_period)
+i_last_period = int(results["time"].size - nbr_steps_per_period - 1)
 
 # %%
 # plot currents
@@ -194,32 +253,33 @@ ax.minorticks_on()
 # %%
 # %%
 # PLOT STABSTRÖME
-t, I_bars = (results["time"], results["current"]["bars"])
+t_U_bars, I_bars = (results["time"], results["current"]["bars"])
 fig, axi = plt.subplots()
 axi: Axes = axi
 for nBar in range(nbr_bars):
     line_i = axi.plot(
-        results["time"],
+        t_U_bars,
         I_bars[:, nBar],
         label=f"Bar {nBar+1}",
         marker=".",
         markersize=3,
     )
 axi.set_ylabel("Strom in A")
-if t[-1] > 2 * T_s:  # if specific amount of periods is calculated
-    axi.set_xlim(t[i_last_period], t[-1])
+# if t[-1] > 2 * T_s:  # if specific amount of periods is calculated
+# axi.set_xlim(t[i_last_period], t[-1])
 axi.legend()
 axi.grid(True)
-axi.set_title(f"Stabströme")
+axi.set_title("Stabströme")
 # %%
 # Stabspannung vs Stabstrom
 resfile = os.path.join(sim_res_dir, "U_bars.dat")
 if os.path.isfile(resfile):
-    t, U_bars = read_timetable_dat(resfile)
+    t_U_bars, U_bars = read_timetable_dat(resfile)
+    _, I_bars = read_timetable_dat(os.path.join(sim_res_dir, "I_bars.dat"))
     fig, ax = plt.subplots()
     ax: Axes = ax
     nBar = 0
-    line_u = ax.plot(t, U_bars[:, nBar], label="Spannung", color="b")
+    line_u = ax.plot(t_U_bars, U_bars[:, nBar], label="Spannung", color="b")
     ax.set_ylabel("Spannung in V")
 
     axi: Axes = ax.twinx()
@@ -233,29 +293,20 @@ if os.path.isfile(resfile):
     ax.grid(True)
     ax.legend(handles=[line_u[0], line_i[0]])
     ax.set_title(f"Stab {nBar+1}")
-    if t[-1] > (nbr_stator_periods - 2) * T_s:
-        ax.set_xlim(T_s * (nbr_stator_periods - 1), T_s * nbr_stator_periods)
+    ax.set_xlim([t_U_bars[i_last_period], t_U_bars[-1]])
+    autoscale_y(ax)
 
-    # %%
+    # %
     # Plot: R = U/I (Stab)
     fig, ax = plt.subplots()
     ax: Axes = ax
     r_bar = np.mean(U_bars[1:, nBar] / I_bars[1:, nBar])
-    UdR = U_bars[:, nBar] / I_bars[:, nBar]
-    line_u = ax.plot(
-        t,
-        UdR,
-        label=f"Widerstand Stab {nBar}",
-        color="b",
-    )
-    i_last_period = int(t.size - nbr_steps_per_period)
-    ax.set_xlim(t[i_last_period], t[-1])
+    UdR = U_bars[1:, nBar] / I_bars[1:, nBar]
+    ax.plot(t_U_bars[1:], UdR, label=f"Widerstand Stab {nBar}", color="b")
+    ax.set_xlim(t_U_bars[i_last_period], t_U_bars[-1])
     ax.set_xlabel("time in s")
     ax.set_ylabel("Resistance in $\\Omega$")
-    ax.set_ylim(
-        np.min(UdR[i_last_period:-1]),
-        np.max(UdR[i_last_period:-1]),
-    )
+    autoscale_y(ax)
     ax.grid(True)
     ax.legend()
 
@@ -263,11 +314,12 @@ if os.path.isfile(resfile):
     fig, ax = plt.subplots()
     ax: Axes = ax
     for nBar in range(nbr_bars):
-        line_u = ax.plot(t, U_bars[:, nBar], label=f"Stab {nBar}")
+        ax.plot(t_U_bars, U_bars[:, nBar], label=f"Stab {nBar+1}")
     ax.set_xlabel("time in s")
     ax.set_ylabel("Spannung in V")
-    # ax.set_xlim(14.75,15)
-    ax.legend()
+    ax.set_xlim(t_U_bars[i_last_period], t_U_bars[i_last_period + nbr_steps_per_period])
+    # place legend on the right hand side of the plot:
+    ax.legend(bbox_to_anchor=(1.05, 1.0), loc="upper left", ncol=1, borderaxespad=0)
     # ax.set_ylim(-1e-5,1e-5)
     ax.grid(True)
 
@@ -285,7 +337,7 @@ line_u = ax.plot(results["time"][:-1], results["inducedVoltage"]["c"], label=f"U
 # line_u = ax.plot(t, U_iC, label=f"U_iC")
 # ax.set_ylabel("Spannung in V")
 ax.legend(loc=1)
-t = results["time"]
+t_U_bars = results["time"]
 # ax.set_xlim(t[int(t.size * (nbr_stator_periods - 2) / nbr_stator_periods)], t[-1])
 ax.grid(True)
 
@@ -307,57 +359,38 @@ if os.path.isfile(os.path.join(sim_res_dir, "Ts_vw.dat")):
     ax.plot(t_t, torque_vw, "x-", label="VW")
     ax.legend()
 
-# mean torque
-results["torque"]["mean"] = np.mean(
-    [results["torque"]["stator"], results["torque"]["rotor"]], axis=0
-)
-
-ax.plot(
-    results["time"],
-    results["torque"]["mean"],
-    "-",
-    label=f"MST ({resId})",
-)
-# ax.set_ylabel("Spannung in V")
-# ax.set_xlim(
-#     t[int(t.size * (nbr_stator_periods - 1) / nbr_stator_periods)], t[-1]
-# )
-# ax.set_ylim([-25,60]) # medium zoom
-# ax.set_ylim([210, 235])  # high zoom
-ax.set_title("Drehmoment")
-ax.grid(True, "major", linestyle="-")
-ax.grid(True, "minor", linestyle="--")
-ax.minorticks_on()
+ax.plot(results["time"], results["torque"], "-", label=f"Half Model (MST, {resId})")
 
 # %
 # PRINT DES MITTLEREN DREHOMMENTS
-M_mean_actual = np.mean(results["torque"]["stator"][i_last_period:])
+M_mean_actual = np.mean(results["torque"][i_last_period:])
 print(
     f"Das mittlere Drehmoment der letzten Periode (ID: {resId}) sind {M_mean_actual:.2f} Nm"
 )
-# read data from static resistance calculation
-t_stat, M_stat = read_timetable_dat(
+
+# read data from static resistance calculation (quarter model)
+# Quater model result ID:
+QM_res_ID = "blockedRotor_50Hz_50A_80Periods_128Steps_R_stat"
+t_stat, M_stat = import_mean_torque(
     os.path.join(
         ROOT_DIR,
         r"workingDirectory\test_asm",
         "res_Test_1PH8135_1_D0_W92_P14k4W_ohneRotNutSchlitz",
-        "blockedRotor_50Hz_50A_80Periods_128Steps_R_stat",
-        "Ts.dat",
+        QM_res_ID,
     )
 )
 M_mean_stat = np.mean(M_stat[int(t_stat.size * 79 / 80) :])
 print(
-    f"""Das mittlere Drehmoment der letzten Periode (statisch, ID: \
-blockedRotor_50Hz_80Periods_64Steps_R_stat) sind {M_mean_stat:.2f} Nm"""
+    "Das mittlere Drehmoment der letzten Periode "
+    f"(statisch, ID: {QM_res_ID}) sind {M_mean_stat:.2f} Nm"
 )
 ax.plot(
     t_stat,
     M_stat,
     "--",
-    label="MST (blockedRotor_50Hz_50A_80Periods_128Steps_R_stat)",
+    label=f"Quater Model (MST, {QM_res_ID})",
 )
-ax.legend(loc="upper right")
-
+# Plot Maxwell results for comparison:
 try:
     headers, data = import_csv_data(
         r"M:\AG_EM\11_Austausch\Max_Ganser\Vergleich_ASM_Maxwell_ONELAB\AP_fr_50Hz_Ieff_50A_n_0rpm\Maxwell_BlockedRotor_EndConnections_Fr50Hz_ISeff50A_EIP80\Torque Plot 1.csv"
@@ -369,15 +402,32 @@ try:
         t_mxwl,
         torque_mxwl,
         label="Maxwell_BlockedRotor_EndConnections_Fr50Hz_ISeff50A_EIP80",
-        alpha=0.3,
+        alpha=0.5,
     )
-    ax.legend(loc="lower left")
-    timestamp = 1.58
-    ax.set_xlim([timestamp, timestamp + T_s])
-    lim = 60
-    ax.set_ylim([-lim, lim])
+    torque_mxwl_mean = np.mean(torque_mxwl[int(t_mxwl.size * 79 / 80) :])
+    print(
+        "Das mittlere Drehmoment der letzten Periode "
+        "(Maxwell, ID: Maxwell_BlockedRotor_EndConnections_Fr50Hz_ISeff50A_EIP80) "
+        f"sind {torque_mxwl_mean:.2f} Nm"
+    )
 except Exception:
     logging.exception("Could not plot Maxwell Torque results...")
+
+# Adjust plot appearance:
+ax.set_ylabel("Drehmoment in NM")
+ax.grid(True, "major", linestyle="-")
+ax.grid(True, "minor", linestyle="--")
+ax.minorticks_on()
+ax.set_xlim([t_U_bars[i_last_period], t_U_bars[-1]])
+autoscale_y(ax, 0.05)
+ax.legend(
+    bbox_to_anchor=(0.0, 1.02, 1.0, 0.102),
+    loc="lower left",
+    ncol=1,
+    mode="expand",
+    borderaxespad=0.0,
+    fontsize=8,
+)
 # %%
 # %%
 # PLOT internal GetDP resistances
@@ -396,13 +446,18 @@ if os.path.isfile(resfile):
     # Plot Bar 1 only:
     resfile = os.path.join(sim_res_dir, "R_bar_1.dat")
     if os.path.isfile(resfile):
-        t, R_bar = read_timetable_dat(resfile)
-        ax.plot(t, R_bar, label="R (berechnet)", marker=".")
+        t_U_bars, R_bar = read_timetable_dat(resfile)
+        ax.plot(t_U_bars, R_bar, label="R (berechnet)", marker=".")
     # Plot DC resistance line:
-    ax.plot([t[0], t[-1]], [R_bar_dc, R_bar_dc], label="R (DC)", marker=None)
+    ax.plot(
+        [t_U_bars[0], t_U_bars[-1]],
+        [R_bar_dc, R_bar_dc],
+        label="R (DC)",
+        marker=None,
+    )
     ax.set_ylim(bottom=0, top=100 * R_bar_dc)
     # ax.set_xlim(0, T_s)
-    if t[-1] >= nbr_stator_periods * T_s:
+    if t_U_bars[-1] >= nbr_stator_periods * T_s:
         ax.set_xlim(T_s * (nbr_stator_periods - 1), T_s * nbr_stator_periods)
     ax.legend()
 
@@ -427,13 +482,13 @@ else:
 ## ADD PLOT OF RUNTIME RESISTANCE
 resfile = os.path.join(sim_res_dir, "R_bar_runtime_1.dat")
 if os.path.isfile(resfile):
-    t, R_bar = read_timetable_dat(resfile)
-    ax.plot(t, R_bar, label=f"R_runtime (Circuit)", marker=".", ls="--")
+    t_U_bars, R_bar = read_timetable_dat(resfile)
+    ax.plot(t_U_bars, R_bar, label=f"R_runtime (Circuit)", marker=".", ls="--")
     ax.legend()
 
     fig, ax = plt.subplots()
     ax: Axes = ax
-    timestep = t[1] - t[0]
+    timestep = t_U_bars[1] - t_U_bars[0]
     amp = np.abs(np.fft.rfft(R_bar, axis=0))
     # to get correct amplitude regarding the specific frequencies, the amplitudes
     # must be corrected by 1/nbrFreqs and DC-part by 1/(2*nbrFreqs) because its value
@@ -471,18 +526,14 @@ if not os.path.isfile(f_name_mxwl_export):
 # Export Torque
 f_name_mxwl_export = os.path.join(mxwl_export_dir, "torque.tab")
 if not os.path.isfile(f_name_mxwl_export):
-    if any(np.equal(results["torque"]["mean"].shape, 1)):
+    if any(np.equal(results["torque"].shape, 1)):
         # reshape so single values are not in an own array
-        results["torque"]["mean"] = results["torque"]["mean"].reshape(
-            results["torque"]["mean"].size
-        )
+        results["torque"] = results["torque"].reshape(results["torque"].size)
     exportTabMaxwell(
-        [out_dict["time"], results["torque"]["mean"]],
+        [out_dict["time"], results["torque"]],
         identifier=["Time (s)", "Torque_Onelab (Nm)"],
         filepath=f_name_mxwl_export,
     )
-
-logging.shutdown()
 
 # %%
 # PLOT STABSTROM, -SPANNUNG UND -WIDERSTAND
@@ -490,9 +541,7 @@ logging.shutdown()
 fig, ax = plt.subplots()
 ax: Axes = ax
 nBar = 0
-line_u = ax.plot(
-    results["time"], U_bars[:, nBar], label="Spannung", color="b", marker="."
-)
+ax.plot(results["time"], U_bars[:, nBar], label="Spannung", color="b", marker=".")
 ax.set_ylabel("Spannung in V")
 ax.grid(alpha=0.5, color="b")
 ax.set_title(f"Stab {nBar+1}")
@@ -515,49 +564,32 @@ resfile = os.path.join(sim_res_dir, f"R_bar_runtime_1.dat")
 if os.path.isfile(resfile):
     axr = ax.twinx()
     axr.set_yticks([])
-    t, R_bar_rt = read_timetable_dat(resfile)
-    line_r = axr.plot(t, R_bar_rt, label=f"Stabwiderstand", marker=".", color="r")
+    t_R_bar_rt, R_bar_rt = read_timetable_dat(resfile)
+    axr.plot(t_R_bar_rt, R_bar_rt, label=f"Stabwiderstand", marker=".", color="r")
 
 # Add single legend
-ax.legend(loc=2)
+ax.legend(loc="best")
 
 
 # %%
 # %%
 # Compare torque
-def import_mean_torque(res_dir: str):
-    resfile = os.path.join(
-        res_dir,
-        "Ts.dat",
-    )
-    _, torque_s = read_timetable_dat(resfile)
-    resfile = os.path.join(
-        res_dir,
-        "Tr.dat",
-    )
-    t, torque_r = read_timetable_dat(resfile)
-    torque_mean = np.mean([torque_s, torque_r], axis=0)
-    return t, torque_mean
-
 
 fig, ax = plt.subplots()
 ax: Axes = ax
 nBar = 0
 
-ax.grid(alpha=0.5)
-ax.set_xlim(T_s * (nbr_stator_periods - 1), T_s * nbr_stator_periods)
-
 line_i = ax.plot(
     results["time"],
-    results["torque"]["mean"],
+    results["torque"],
     marker=".",
     markersize=4,
     mfc=(1, 1, 1),
-    label="Reset Previous Value",
+    label=resId,
 )
 
 ## Plot Torque when resetting to DC Resistance
-t, torque_mean = import_mean_torque(
+t_t_reset_DC, torque_reset_DC = import_mean_torque(
     os.path.join(
         ROOT_DIR,
         r"workingDirectory\test_asm",
@@ -566,8 +598,8 @@ t, torque_mean = import_mean_torque(
     )
 )
 line_i = ax.plot(
-    t,
-    torque_mean,
+    t_t_reset_DC,
+    torque_reset_DC,
     marker=".",
     markersize=4,
     markevery=1,
@@ -576,7 +608,7 @@ line_i = ax.plot(
     alpha=1,
 )
 ## Plot Torque without resetting of resistance
-t, torque_mean = import_mean_torque(
+t_t_no_reset, torque_no_reset = import_mean_torque(
     os.path.join(
         ROOT_DIR,
         r"workingDirectory\test_asm",
@@ -585,8 +617,8 @@ t, torque_mean = import_mean_torque(
     )
 )
 line_i = ax.plot(
-    t,
-    torque_mean,
+    t_t_no_reset,
+    torque_no_reset,
     marker=".",
     markersize=4,
     markevery=1,
@@ -597,10 +629,12 @@ line_i = ax.plot(
 ax.legend()
 ax.set_xlabel("time in s")
 ax.set_ylabel("torque in Nm")
-ax.set_ylim(-40, 40)
-print(f"Mean Reset DC = {np.mean(torque_mean[int(t.size * 79 / 80) :])}")
+ax.grid(alpha=0.5)
+ax.set_xlim(t_U_bars[i_last_period], t_U_bars[i_last_period + nbr_steps_per_period])
+autoscale_y(ax)
+print(f"Mean Reset DC = {np.mean(torque_reset_DC[int(t_U_bars.size * 79 / 80) :])}")
 print(
-    f"""Mean Reset Previous = {np.mean(results["torque"]["mean"][int(results["time"].size * 79 / 80) :])}"""
+    f"""Mean {resId} = {np.mean(results["torque"][int(results["time"].size * 79 / 80) :])}"""
 )
 
 # %%
@@ -609,16 +643,11 @@ print(
 fig, ax = plt.subplots()
 ax: Axes = ax
 nBar = 0
-
-ax.grid(alpha=0.5)
-ax.set_title(f"Bar {nBar+1}")
-ax.set_xlim(T_s * (nbr_stator_periods - 1), T_s * nbr_stator_periods)
-
 line_i = ax.plot(
     results["time"],
     results["current"]["bars"][:, nBar],
     marker=".",
-    label="Reset Previous Value",
+    label=resId,
 )
 
 resfile = os.path.join(
@@ -628,15 +657,20 @@ resfile = os.path.join(
     "blockedRotor_50Hz_80Periods_128Steps_R_dyn_thers_100A",
     "I_bar_1.dat",
 )
-t, I_bar_dyn1 = read_timetable_dat(resfile)
+t_dyn, I_bar_dyn1 = read_timetable_dat(resfile)
 line_i = ax.plot(
-    t,
+    t_dyn,
     I_bar_dyn1,
     marker="",
     label="Reset DC",
 )
 ax.legend()
+ax.grid(alpha=0.5)
+ax.set_title(f"Bar {nBar+1}")
+ax.set_xlim(t_U_bars[i_last_period], t_U_bars[i_last_period + nbr_steps_per_period])
+autoscale_y(ax)
 ax.set_xlabel("time in s")
 ax.set_ylabel("current in A")
 
 # %%
+logging.shutdown()
