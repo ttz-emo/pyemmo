@@ -72,34 +72,25 @@ class Material:
         if isinstance(__o, self.__class__):
             # check BH is equal:
             try:
-                # FIXME: Maybe check shapes before...
-                # if comparison results in ValueError, shapes could not be broadcasted
-                bhComp = self.BH == __o.BH
+                if self.BH.shape == __o.BH.shape:
+                    # if comparison results in ValueError, shapes could not be broadcasted
+                    bh_comp = np.all(self.BH == __o.BH)
+                else:
+                    return False  # wrong BH shape
             except ValueError:
                 # comparison with empty array returns a ValueError
                 return False
             except Exception as exce:
                 raise exce
-            if not isinstance(bhComp, bool):
-                # comparison with not empty array returns ndarray with dtype:bool
-                if isinstance(bhComp, np.ndarray):
-                    if bhComp.dtype == bool:
-                        bhComp = bhComp.all()
-                else:
-                    raise (
-                        ValueError(
-                            f"Comparison of BH curve resulted in unknown type '{type(bhComp)}'"
-                        )
-                    )
-            if bhComp:
+            if bh_comp:
+                # matching BH arrays -> check rest of attributes by dict without BH
                 selfDict = self.__dict__.copy()
                 del selfDict["_BH"]
                 otherDict = __o.__dict__.copy()
                 del otherDict["_BH"]
                 return selfDict == otherDict
-            return False
-        else:
-            return False
+            return False  # BH comparison was False
+        return False  # Wrong compare instance type!
 
     def load(self, materialName: str = ""):
         """Function to load material from JSON database.
@@ -217,7 +208,7 @@ class Material:
             warnings.warn("Material is linear, there is no curve")
             return
         if temp == None:
-            for t in self._BH.keys():
+            for t in self.BH.keys():
                 if self._BH[t].size:
                     h = [row[0] for row in self._BH[t]]
                     b = [row[1] for row in self._BH[t]]
@@ -349,33 +340,38 @@ class Material:
         """
         if not temperature:
             if len(self._BH["default"]) < 1:
-                warnings.warn(
-                    "BH-Curve is linear, or default curve has not been set.\n Please set default curve (syntax: obj.BH = <NDArray>) or use get_BH(temperature)",
-                    UserWarning,
+                logger.info(
+                    "BH-Curve is linear, or default curve has not been set. "
+                    "Please set default curve (syntax: obj.BH = <NDArray>) "
+                    "or use get_BH(temperature)",
                 )
             return np.array(self._BH["default"])
         try:
             return np.array(self._BH[temperature])
         except KeyError:
             if self.linear:
-                warnings.warn(
-                    f"Tried to access the BH-curve for temperature {temperature}°C, "
-                    "but BH-Curve is linear!",
-                    UserWarning,
+                logger.warning(
+                    (
+                        "Tried to access the BH-curve for temperature %.2f°C, "
+                        "but BH-Curve is linear!"
+                    ),
+                    temperature,
                 )
                 return np.empty(0)
             if len(self._BH.keys()) < 2:
-                warnings.warn(
-                    f"Tried to access the BH-curve for temperature {temperature}°C, "
-                    "but there is only one BH-curve specified!",
-                    UserWarning,
+                logger.warning(
+                    (
+                        "Tried to access the BH-curve for temperature %.2f°C, "
+                        "but there is only one BH-curve specified!"
+                    ),
+                    temperature,
                 )
                 return np.array(self._BH["default"])
-            warnings.warn(
-                f"No BH-curve registered for temperature {temperature}°C!",
-                UserWarning,
+            logger.warning(
+                "No BH-curve registered for temperature %.2f°C!", temperature
             )
             return np.empty(0)
+
         # if self._BH.ndim < 3:
         #     # pylint: disable=locally-disabled,  line-too-long
         #     warnings.warn(
