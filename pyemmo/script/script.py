@@ -2097,7 +2097,7 @@ class Script:
                     if isinstance(physicalElement, Magnet):
                         hasMagnets = True
         simuParamDict["SYM"]["FLAG_NL"] = flagCalcNL
-        if not hasMagnets:
+        if not hasMagnets and simuParamDict["SYM"]["CALC_MAGNET_LOSSES"] == 1:
             # if there where no magnet physical elements, set flag to false
             # even if its set to true...
             logging.warning(
