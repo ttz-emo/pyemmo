@@ -60,8 +60,6 @@ class Line(Transformable):
         endPoint: Point,
         force: bool = False,
     ):
-        ###Name der Linie.
-        self.name = name
         if not startPoint.isEqual(endPoint):
             ###Startpunkt des Kreisbogens.
             self.startPoint = startPoint
@@ -76,7 +74,8 @@ class Line(Transformable):
             )
         # set ID of line to gmsh ID
         self.id = gmsh.model.occ.addLine(startPoint.id, endPoint.id)
-        gmsh.model.set_entity_name(1, self.id, name)  # set line name in gmsh
+        ###Name der Linie.
+        self.name = name
 
         ###Todesmerker wird nur gesetzt, wenn das Objekt im Skript erzeugt wurde
         # (Aufruf von addToScript())!
@@ -154,6 +153,7 @@ class Line(Transformable):
         Args:
             name (str): New line name
         """
+        gmsh.model.set_entity_name(1, self.id, name)
         self._name = name
 
     @property
