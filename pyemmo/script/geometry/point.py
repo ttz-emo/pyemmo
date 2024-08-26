@@ -232,7 +232,7 @@ class Point(Transformable):
         if flag_gmsh:
             gmsh.model.occ.translate([(0, self.id)], dx, dy, dz)
 
-    def rotateZ(self, rotationPoint: "Point", angle: float):
+    def rotateZ(self, rotationPoint: "Point", angle: float, flag_gmsh: bool = True):
         """Mit rotateZ() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die Z-Achse mit
         einem definierten Winkel rotiert.
 
@@ -240,15 +240,29 @@ class Point(Transformable):
             rotationPoint (Point): Centerpoint of rotation.
             angle (float): Rotational angle.
         """
+        x, y, z = rotationPoint.coordinate
+        if flag_gmsh:
+            gmsh.model.occ.rotate([(0, self.id)], x, y, z, 0, 0, 1, angle)
+            # TODO: Update function by using gmsh values instead of calculating it by
+            # ourself...
+            # x, y, z = gmsh.model.get_value(0, self.id)
+
         if not self._todesmerker:
             # durch Verschiebung Rotation im Ursprung!
             rotPointCoords = rotationPoint.coordinate
-            self.translate(-rotPointCoords[0], -rotPointCoords[1], -rotPointCoords[2])
+            self.translate(
+                -rotPointCoords[0],
+                -rotPointCoords[1],
+                -rotPointCoords[2],
+                flag_gmsh=False,
+            )
             oldx = self._x
             oldy = self._y
             self._x = cos(angle) * oldx - sin(angle) * oldy
             self._y = sin(angle) * oldx + cos(angle) * oldy
-            self.translate(rotPointCoords[0], rotPointCoords[1], rotPointCoords[2])
+            self.translate(
+                rotPointCoords[0], rotPointCoords[1], rotPointCoords[2], flag_gmsh=False
+            )
 
     def rotateX(self, rotationPoint: "Point", angle: float):
         """Mit rotateX() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die X-Achse mit
@@ -448,12 +462,15 @@ class Point(Transformable):
                 ValueError("CenterPoint was not class Point or array of coordinates")
             except Exception as exce:
                 raise exce
-        dupPoint = self.duplicate()
-        # translate the point so that the rotation center is at origin
-        if dupPoint.translate(-cCoords[0], -cCoords[1], -cCoords[2]):
-            x, y, _ = dupPoint.coordinate
-        else:
-            raise AttributeError("Translation failed")
+        x, y, _ = self.coordinate
+        x = x - cCoords[0]
+        y = y - cCoords[1]
+        # dupPoint = self.duplicate()
+        # # translate the point so that the rotation center is at origin
+        # if dupPoint.translate(-cCoords[0], -cCoords[1], -cCoords[2]):
+        #     x, y, _ = dupPoint.coordinate
+        # else:
+        #     raise AttributeError("Translation failed")
         if flag_deg:
             angle = atan2(y, x) * (180 / pi)
             # conversion from -180~180 to 0~360

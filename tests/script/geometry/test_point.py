@@ -1,4 +1,5 @@
 import gmsh
+import numpy as np
 import pytest
 
 from pyemmo.script.geometry.point import Point
@@ -24,6 +25,34 @@ class TestLine:
         assert point.coordinate == (x, y, z)
         assert point.id == 1
         assert gmsh.model.get_entity_name(dim=0, tag=1) == name
+
+    @pytest.mark.parametrize(
+        "point, expected_angle",
+        [
+            (Point("test", 0, 0, 0, 1), 0.0),
+            (Point("test", 1, 1, 0, 1), np.radians(45)),
+            (Point("test", -1, 1, 0, 1), np.radians(135)),
+            (Point("test", -1, 0, 0, 1), np.radians(180)),
+            (Point("test", 0, -1, 0, 1), np.radians(270)),
+        ],
+    )
+    def test_get_angle_to_x(self, point: Point, expected_angle):
+        angle_to_x = point.getAngleToX()
+        assert angle_to_x == expected_angle
+
+    @pytest.mark.parametrize(
+        "point, expected_angle",
+        [
+            (Point("test", 0, 0, 0, 1), 0.0),
+            (Point("test", 1, 1, 0, 1), 45),
+            (Point("test", -1, 1, 0, 1), 135),
+            (Point("test", -1, 0, 0, 1), 180),
+            (Point("test", 0, -1, 0, 1), 270),
+        ],
+    )
+    def test_get_angle_to_x_deg(self, point: Point, expected_angle):
+        angle_to_x = point.getAngleToX(flag_deg=True)
+        assert angle_to_x == expected_angle
 
     # TODO: Add test for Point methods:
     #   Point.calcDist
