@@ -21,30 +21,28 @@
 
 from __future__ import annotations
 
+import logging
 from math import radians
 from typing import Literal
 
+import gmsh
 from numpy import pi, sign
 from swat_em import datamodel
-
-import gmsh
 
 from ...script.geometry.airArea import AirArea
 from ...script.geometry.airGap import AirGap
 from ...script.geometry.bar import Bar
-from ...script.geometry.circleArc import CircleArc
-from ...script.geometry.line import Line
+from ...script.geometry.circleArc import CircleArc, Line
 from ...script.geometry.magnet import Magnet
 from ...script.geometry.physicalElement import PhysicalElement
-from ...script.geometry.point import Point
 from ...script.geometry.rotorLamination import RotorLamination
 from ...script.geometry.slot import Slot
 from ...script.geometry.spline import Spline
 from ...script.geometry.statorLamination import StatorLamination
-from ...script.geometry.transformable import Transformable
+from ...script.geometry.surface import Point
 from ...script.material.material import Material
 from .. import logger
-from . import globalCenterPoint, importJSON
+from . import importJSON
 from .get_coilspan import get_min_coilspan
 from .SurfaceJSON import SurfaceAPI
 
@@ -359,45 +357,6 @@ def createSurfaceDict(surfList: list[SurfaceAPI]) -> dict[str, SurfaceAPI]:
     return surfaceDict
 
 
-# def createNewPointName(orgPointName: str, addPointName: str) -> str:
-#     orgNameParts = orgPointName.split("_")
-#     newName = orgNameParts.pop(0)  # add first part without underscore
-#     for orgPart in orgNameParts:
-#         newName += f"_{orgPart}"
-#     addNameParts = addPointName.split("_")
-#     for addPart in addNameParts:
-#         if isinstance(addPart, str):
-#             if addPart not in orgPointName:
-#                 newName += f"_{addPart}"
-#     return newName
-
-
-def rotateDuplicate(geoObj: Transformable, angle: float) -> Transformable:
-    """
-    Create a copy of the give geometrical entity and rotate it by :attr:`angle`
-
-    Args:
-        geoObj (Transformable): Geometrical entity (Point, Line or Surface object)
-        angle (float): Rotation angle in rad.
-
-    Returns:
-        Transformable: Copied and rotated geo object.
-    """
-    if angle != 0:  # if the rotation angle is not zero
-        duplicatedGeoObj: Transformable = geoObj.duplicate()  # duplicate obj
-        duplicatedGeoObj.rotateZ(globalCenterPoint, angle)  # rotate obj
-        # if type(GeoObj) == Surface:
-        #     replaceIdenticalLines(GeoObj, DuplicatedGeoObj)
-
-        dupe_obj_id = gmsh.model.occ.copy([(2, geoObj.id)])
-        (global_x, global_y, global_z) = globalCenterPoint.coordinate
-        gmsh.model.occ.rotate(dupe_obj_id, global_x, global_y, global_z, 0, 0, 1, angle)
-
-        return duplicatedGeoObj
-    # if the angle is zero: give back duplicate of the old surface
-    return geoObj.duplicate()
-
-
 def createMachineGeometryFromSegment(
     segmentSurfDict: dict[str, SurfaceAPI], symFactor: int
 ) -> dict[str, list[SurfaceAPI]]:
@@ -412,59 +371,43 @@ def createMachineGeometryFromSegment(
             that should be generated
 
     Returns:
-        Dict[str, List[SurfaceAPI]]: Dict of all surfaces (including the given
-        ones by segmentSurfList, but with different Name), with IdExt as keys
-        and list of SurfaceAPI as values.
+        Dict[str, List[SurfaceAPI]]: Dict of all surfaces (including the
+        ones from segmentSurfList, but with different Name and tool surfaces), with
+        IdExt as keys and list of SurfaceAPI as values.
 
     Raises:
         ValueError: If number of segments on (2*Pi / symFactor) is not an
             integer.
     """
-    surfDict: dict[str, list[SurfaceAPI]] = {}  # init surface dict
-    for (
-        surfIdExt,
-        surf,
-    ) in segmentSurfDict.items():  # iterate through machine surface segments
+    surf_dict: dict[str, list[SurfaceAPI]] = {}  # init surface dict
+    # iterate through machine surface segments:
+    for surf_id, surf in segmentSurfDict.items():
         nbrSegments = surf.NbrSegments / symFactor
         # make sure number of segments is an integer
         if not nbrSegments.is_integer():
-            mssg = (
-                "Number of segments (Quantity/SymFactor) must be even, "
-                f"but is: {nbrSegments}"
-            )
-            raise ValueError(mssg)
-        surfDict[surfIdExt] = []  # init list to append surfaces
-        # rotate and duplicte the original surface segment nbrSegments times,
-        # considering cutted surfaces (tools)
-        for segmentNbr in range(0, int(nbrSegments)):
-            # rotate and duplicate parent surface
-            dupSurf: SurfaceAPI = rotateDuplicate(
-                geoObj=surf,
-                angle=segmentNbr * surf.angle,
-            )
-            # set IdExt to SurfaceID + SegmentNbr
-            newIdExt = surfIdExt + "_" + str(segmentNbr)
-            dupSurf.setIdExt(newIdExt)
-            # for each surface that should be subtracted from the parent surface
-            for tool in surf.tools:
-                tool: SurfaceAPI = tool
-                toolIdExt = tool.idExt
-                if toolIdExt not in surfDict:
-                    surfDict[toolIdExt] = []
-                # Rotate and duplicate tool surface
-                dupToolSurf: SurfaceAPI = rotateDuplicate(
-                    geoObj=tool,
-                    angle=segmentNbr * surf.angle,
-                )
-                # set name to SurfaceID + Segment number
-                newToolID = toolIdExt + "_" + str(segmentNbr)
-                dupToolSurf.setIdExt(newToolID)
-                # cut the duplicated surface from the duplicated parent surface
-                dupSurf.cutOut(dupToolSurf)
-                # add the tool surf to the surf dict (to create physical elements later)
-                surfDict[toolIdExt].append(dupToolSurf)
-            surfDict[surfIdExt].append(dupSurf)
-    return surfDict
+            raise ValueError(f"Number of segments must be even, but is: {nbrSegments}")
+        surf_dict[surf_id] = []  # init list to append surfaces
+        # rotate and duplicte the original surface segment nbrSegments times
+        for segment_nbr in range(0, int(nbrSegments)):
+            # rotate_duplicate also considers the tools automatically
+            surf_dict[surf_id].append(surf.rotateDuplicate(segment_nbr))
+
+            ### update surf dict with tool surfaces
+            tools = surf.tools
+            while tools:
+                new_tools = []  # init new tools
+                for tool in tools:
+                    if tool.idExt in surf_dict:
+                        surf_dict[tool.idExt].append(tool)
+                    else:
+                        surf_dict[tool.idExt] = [tool]
+                    # add tool tools to new tools if not empty
+                    new_tools.extend(tool.tools)  # extent tools
+                tools = new_tools
+    if logging.getLogger().level <= logging.DEBUG:
+        gmsh.model.occ.synchronize()
+        gmsh.fltk.run()
+    return surf_dict
 
 
 def createPhysicalSurfaces(
@@ -724,7 +667,7 @@ def getSlotInfo(slotSurfName: str) -> tuple[int, int]:
 
 def getSlotPhase(
     windingLayout: list[list[int]], segmentNbr: int, slotSide: int
-) -> Tuple[Literal["p", "n"], Literal["u", "v", "w"]]:
+) -> tuple[Literal["p", "n"], Literal["u", "v", "w"]]:
     """Gets the name (u, v, w) of the Phase with it's direction (+, -)
 
     Args:
