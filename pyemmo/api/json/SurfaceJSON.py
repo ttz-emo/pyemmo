@@ -27,8 +27,7 @@ from ...script.geometry.line import Line
 from ...script.geometry.spline import Spline
 from ...script.geometry.surface import Surface
 from ...script.material.material import Material
-
-import gmsh
+from . import globalCenterPoint
 
 
 class SurfaceAPI(Surface):
@@ -78,6 +77,7 @@ class SurfaceAPI(Surface):
         nbrSegments: int,
         angle: float,
         meshSize: float,
+        segment_nbr: int = 0,
     ):
         """init of surface for API. This type of surface is special,
         because it allways forms a machine segment or a part of a segment.
@@ -90,8 +90,10 @@ class SurfaceAPI(Surface):
             nbrSegments (int): number of segments in the full machine.
             angle (float): angle of the segment. Should be 2*Pi/nbrSegments.
             meshSize (float): mesh size of the surface.
+            segment_nbr (int): actual segment number of surface in model
         """
         super().__init__(name=name, curves=curves)
+        # FIXME: Update by using setters to check init values!!
         self._idExt: str = idExt
         self._material: Material = material
         self._nbrSegments: int = nbrSegments
@@ -103,8 +105,15 @@ class SurfaceAPI(Surface):
         self._angle: float = angle
         self._meshSize: float = meshSize
 
+        self._segment_number = segment_nbr  # default segment number is 0
+
         # curve_loop = gmsh.model.occ.addCurveLoop(curves)
         # self._id = gmsh.model.occ.addPlaneSurface(curve_loop)
+
+    @property
+    def tools(self) -> list[SurfaceAPI]:
+        """Subtraction surfaces"""
+        return super().tools
 
     @property
     def idExt(self) -> str:
@@ -180,7 +189,12 @@ class SurfaceAPI(Surface):
             raise TypeError(msg)
         self._meshSize = meshSize
 
-    def duplicate(self, name="") -> SurfaceAPI:
+    @property
+    def segment_nbr(self) -> int:
+        """Actual segement number of SurfaceAPI object"""
+        return self._segment_number
+
+    def duplicate(self, name="", segment=0) -> SurfaceAPI:
         """create a copy of the surface
 
         Args:
@@ -195,7 +209,7 @@ class SurfaceAPI(Surface):
         for curve in self.curve:
             newCurves.append(curve.duplicate())
         # create duplicate surfcace object
-        duplicatSurf = SurfaceAPI(
+        dup_surf = SurfaceAPI(
             name=name,
             idExt=self.idExt,
             curves=newCurves,
@@ -203,51 +217,59 @@ class SurfaceAPI(Surface):
             nbrSegments=self.NbrSegments,
             angle=self.angle,
             meshSize=self.meshSize,
+            segment_nbr=segment,
         )
+        for tool in self.tools:
+            new_tool = tool.duplicate(segment=segment)
+            dup_surf.cutOut(new_tool)
         # add "_dup" str to new surface name, if it was not duplicted before
         if name == "":
             parentName = self.name
             if "_dup" not in parentName:
-                duplicatSurf.name = f"{parentName}_dup"
+                dup_surf.name = f"{parentName}_dup"
             else:
-                duplicatSurf.name = f"{parentName}_{duplicatSurf.id}"
-        duplicatSurf.setMeshColor(self.getMeshColor())
-        return duplicatSurf
+                dup_surf.name = f"{parentName}_{dup_surf.id}"
+        dup_surf.setMeshColor(self.getMeshColor())
+        return dup_surf
 
-    # def rotateDuplicate(self, symFactor: int) -> List["SurfaceAPI"]:
-    #     """
-    #     Create a duplicate of the API surface and rotate to the symmetry given by symFactor
+    def rotateDuplicate(self, segment: int) -> SurfaceAPI:
+        """
+        Create a copy of the give surface and its tools surfaces + rotate it by
+        :attr:`angle`.
+        This also sets the property :attr:`segment_nbr` to the given segment value.
 
-    #     Args:
-    #         symFactor (int): ...
+        Args:
+            segment (float): Segment number.
 
-    #     Returns:
-    #         List[SurfaceAPI]: ...
+        Returns:
+            SurfaceAPI: Copied and rotated SurfaceAPI object.
+        """
+        if (segment % 1) != 0 or segment >= self.NbrSegments:
+            raise ValueError("Segment number must be valid integer!")
 
-    #     Raises:
-    #         Nothing
-    #     """
-    #     nbrTurns = self.getnbrSegments() / symFactor
-    #     if not nbrTurns.is_integer():
-    #         raise (
-    #             ValueError(
-    #                 f"Trying to perform a uneven number of rotate-duplicate operations:{nbrTurns}"
-    #             )
-    #         )
+        rot_angle = self.angle * segment
 
-    #     if Angle != 0:  # if the rotation angle is not zero
-    #         DuplicatedGeoObj = GeoObj.duplicate()  # duplicate obj
-    #         CenterPoint = Point(
-    #             "TmpCenterPoint", 0, 0, 0, 1
-    #         )  # Center point for rotation
-    #         DuplicatedGeoObj.rotateZ(CenterPoint, Angle)  # rotate obj
-    #         # if type(GeoObj) == Surface:
-    #         #     replaceIdenticalLines(GeoObj, DuplicatedGeoObj)
-    #         return DuplicatedGeoObj
-    #     else:  # if the angle is zero: give back duplicate of the old surface
-    #         return GeoObj.duplicate()
+        if rot_angle != 0:  # if the rotation angle is not zero
+            dup_surf: SurfaceAPI = self.duplicate(
+                name=f"{self.name} (Seg.: {segment})", segment=segment
+            )
+            dup_surf.rotateZ(globalCenterPoint, rot_angle)
+            tools = dup_surf.tools  # init tools array
+            while tools:
+                new_tools = []  # init new tools
+                for tool in dup_surf.tools:
+                    # rotate tools
+                    tool.rotateZ(globalCenterPoint, rot_angle)
+                    tool.name = f"{tool.name} (Seg.: {segment})"
+                    if tool.tools:
+                        # if tool has tools
+                        new_tools.extend(tool.tools)  # extend new tools
+                tools = new_tools  # update tools array
 
+            return dup_surf
+        # if the angle is zero: give back the old surface
+        return self
 
-# ==================================================================================================
-# ========================================= END API SURFACE ========================================
-# ==================================================================================================
+    # ==================================================================================================
+    # ========================================= END API SURFACE ========================================
+    # ==================================================================================================
