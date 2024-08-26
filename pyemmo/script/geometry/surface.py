@@ -72,8 +72,6 @@ class Surface(Transformable):
             curves (List[Union[Line, CircleArc, Spline]]): Line loop defining the
              surface boundary line (must be closed!)
         """
-        ###Name des Objektes.
-        self.name: str = name
         ###Kurven die eine Fläche umschließen.
         if isinstance(curves, list) and curves:
             self._curves = curves
@@ -87,6 +85,8 @@ class Surface(Transformable):
         curve_tags = [curve.id for curve in curves]
         curve_loop = gmsh.model.occ.addCurveLoop(curve_tags)
         self.id = gmsh.model.occ.addPlaneSurface([curve_loop])
+        ###Name des Objektes.
+        self.name: str = name  # set name after id was set to also set name in gmsh
         # Todesmerker wird nur gesetzt, wenn das Objekt im Skript erzeugt
         # wurde (Aufruf von addToScript())!
         self._todesmerker: bool = False
@@ -166,6 +166,7 @@ class Surface(Transformable):
         Args:
             name (str): New surface name
         """
+        gmsh.model.set_entity_name(2, self.id, name)
         self._name = name
 
     @property
@@ -340,10 +341,12 @@ class Surface(Transformable):
         if self._todesmerker == True:
             ...  # TODO: Add warning
         else:
+            x, y, z = rotationPoint.coordinate
+            gmsh.model.occ.rotate([(2, self.id)], x, y, z, 0, 0, 1, angle)
             allP = self.allPoints
 
             for p in allP:
-                p.rotateZ(rotationPoint, angle)
+                p.rotateZ(rotationPoint, angle, False)
 
     def rotateX(self, rotationPoint: Point, angle: float):
         """Mit rotateX() wird eine Fläche um einen Rotationspunkt
@@ -688,10 +691,24 @@ class Surface(Transformable):
         ToolSurface.setTool()  # set to the tool surface
         if not keepTool:
             ToolSurface.delete = True
+        cut_dim_tags: list[tuple(int, int)] = [(2, ToolSurface.id)]
+        # cut out tools of tools aswell!
+        tools = ToolSurface.tools
+        while tools:
+            # while tools array is not empty
+            new_tools = []
+            for tool in tools:
+                # add tool surface to cut out
+                cut_dim_tags.append((2, tool.id))
+                if tool.tools:
+                    # if tool itself has tools
+                    new_tools.extend(tool.tools)  # update new_tools list
+            tools = new_tools  # reset tools
 
-        self._id = gmsh.model.occ.cut(
-            [(2, self._id)], [(2, ToolSurface.id)], removeTool=ToolSurface.delete
+        out_dim_tags, out_dim_tags_map = gmsh.model.occ.cut(
+            [(2, self._id)], cut_dim_tags, removeTool=ToolSurface.delete
         )
+        self.id = out_dim_tags[0][1]  # CHECK
 
     def setMeshLength(self, meshLength: float) -> None:
         """set the meshLength of all points of a surface.
