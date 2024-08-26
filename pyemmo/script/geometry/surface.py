@@ -343,10 +343,11 @@ class Surface(Transformable):
         else:
             x, y, z = rotationPoint.coordinate
             gmsh.model.occ.rotate([(2, self.id)], x, y, z, 0, 0, 1, angle)
-            allP = self.allPoints
 
-            for p in allP:
-                p.rotateZ(rotationPoint, angle, False)
+            # FIXME: Update rotation for pyemmo internal instances because the lines are
+            # not correctly rotated this way...
+            for p in self.allPoints:
+                p.rotateZ(rotationPoint, angle, flag_gmsh=False)
 
     def rotateX(self, rotationPoint: Point, angle: float):
         """Mit rotateX() wird eine Fläche um einen Rotationspunkt
