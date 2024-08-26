@@ -21,6 +21,7 @@
 from math import atan2, cos, isclose, sin
 from typing import Literal, Tuple
 
+import gmsh
 from matplotlib import pyplot as plt
 from matplotlib.patches import Arc
 from numpy import pi, rad2deg
@@ -29,8 +30,6 @@ from ...definitions import DEFAULT_GEO_TOL, LINE_COLOR, POINT_COLOR
 from ..geometry import defaultCenterPoint
 from .line import Line
 from .point import Point
-
-import gmsh
 
 
 class CircleArc(Line):
@@ -71,33 +70,29 @@ class CircleArc(Line):
         Raises:
             ValueError: If start and endpoint are equal.
         """
-        try:
-            super().__init__(name, startPoint, endPoint, force)
-        except ValueError as exce:
-            raise (
-                ValueError(
-                    "If you really want to draw a full circle"
-                    " consider using 4 circle arcs."
-                )
-            ) from exce
-        except Exception as exc:
-            raise exc
-
+        if not startPoint.isEqual(endPoint):
+            self.startPoint = startPoint
+            self.endPoint = endPoint
+        else:
+            raise ValueError(
+                "If you really want to draw a full circle  consider using 4 circle arcs."
+            )
         self.center: Point = centerPoint
+
+        self._id = gmsh.model.occ.addCircleArc(
+            startPoint.id, centerPoint.id, endPoint.id
+        )
+        # Name der Linie.
+        self.name = name
+
         # make sure that start and end point have the same distance (radius)
         # to the center point:
-        self.radius  # raises error if not
+        _ = self.radius  # raises error if not
 
-        ###Id des Kreisbogens.
-        self.id = self._getNewID()
-        ###Todesmerker wird nur gesetzt, wenn das Objekt im Skript erzeugt wurde
+        # Todesmerker wird nur gesetzt, wenn das Objekt im Skript erzeugt wurde
         # (Aufruf von addToScript())!
         self._todesmerker = False
-        self._force = force
-
-        self._id = gmsh.model.occ.addCircleArc(startPoint.id, centerPoint.id, endPoint.id)
-
-        
+        self._force: bool = force
 
     def __eq__(self, other: "CircleArc") -> bool:
         # check type:
