@@ -50,7 +50,7 @@ def cleanName(instanceName: str) -> str:
         # removeChars = ""
         # for char in removeChars:
         #     newName = newName.replace(char, "")
-        underscoreChars = r"\/*- .:+<>,;#'`?%&$§"
+        underscoreChars = r"\/*- .:+<>,;#'`?%&$§()"
         for char in underscoreChars:
             newName = newName.replace(char, "_")
         # if there are still wrong chars, raise error
