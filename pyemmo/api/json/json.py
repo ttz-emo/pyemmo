@@ -87,6 +87,11 @@ def createMachine(
     maschineSurfDict = modelJSON.createMachineGeometryFromSegment(
         segmentSurfDict, symFactor
     )
+    gmsh.model.occ.remove_all_duplicates()
+    gmsh.model.occ.synchronize()
+
+    # TODO: ADD BOUNDARY LINES IDENTIFICATION + ADD TO PHYSICALS
+
     # Log winding layout for debugging *before* createSlot() is called.
     logger.debug(f"Winding layout: {importJSON.getWindingList(extendedInfo)}")
     # create physical elements from the surfaces
@@ -98,6 +103,7 @@ def createMachine(
             for surf in surfList:
                 surf.delete = True
         else:
+            logging.debug("Creating physical for %s", idExt)
             physSurfList, machineSide = modelJSON.createPhysicalSurfaces(
                 idExt=idExt,
                 surfList=surfList,
@@ -112,7 +118,9 @@ def createMachine(
                 raise ValueError(
                     f"MachineSide was whether rotor or stator: {machineSide}",
                 )
-
+    if logging.getLogger().level <= logging.DEBUG:
+        gmsh.model.occ.synchronize()
+        # gmsh.fltk.run()
     # create the rotor
     axLen = importJSON.getAxialLength(extendedInfo)
     rotorAPI = Rotor(
