@@ -41,6 +41,7 @@ from ...script.geometry.physicalElement import PhysicalElement
 from ...script.geometry.rotor import Rotor
 from ...script.geometry.stator import Stator
 from ...script.material import ElectricalSteel
+from ...script.script import Script
 from .. import logger
 from . import apiNameDict, importJSON, modelJSON
 from .SurfaceJSON import SurfaceAPI
@@ -467,7 +468,7 @@ def main(
     addPostOperations(apiScript, extendedInfo)
     meshSizeSetCode = createMeshSizeGUICode(machineSurfDict)
     # generate geo and pro files:
-    apiScript.generateScript(UD_MeshCode=meshSizeSetCode)
+    apiScript.generateScript(mode=2, UD_MeshCode=meshSizeSetCode)
 
     if importJSON.getFlagOpenGui(extendedInfo) is True:
         _open_onelab(apiScript, extendedInfo, gmsh, getdp)
