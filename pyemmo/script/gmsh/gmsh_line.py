@@ -18,6 +18,55 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+"""
+Module for defining and manipulating geometric lines in 3D space, specifically for use
+with Gmsh.
+
+This module includes the `GmshLine` class, which represents a line segment in 3D space.
+The class allows for the definition of a line with a unique tag, start and end points,
+a name, and a type.
+
+Classes:
+    - GmshLine: Represents a line segment in 3D space with attributes for identifying
+      the line, specifying its start and end points (as `GmshPoint` objects), and
+      assigning a name and type to the line.
+
+Usage:
+    - Instantiate `GmshLine` with a unique tag, start and end points, and optionally
+      a name and type.
+    - Access and modify the line's properties through getter and setter methods.
+    - Utilize the string representation for debugging and logging purposes.
+
+Example:
+
+.. python:
+
+    from module_name import GmshLine, GmshPoint
+    import numpy as np
+
+    # Create GmshPoint instances
+    start = GmshPoint(tag=1, coords=np.array([0.0, 0.0, 0.0]))
+    end = GmshPoint(tag=2, coords=np.array([1.0, 1.0, 1.0]))
+
+    # Define a line using GmshLine
+    line = GmshLine(
+        tag=1,
+        start_point=start,
+        end_point=end,
+        name="Diagonal",
+        type="Line"
+    )
+
+    # Print line details
+    print(line)
+
+Author:
+    Max Schuler
+
+Note:
+    This docstring was created by ChatGPT.
+"""
+
 import gmsh
 
 from ..geometry.line import Line

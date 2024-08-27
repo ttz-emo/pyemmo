@@ -47,6 +47,9 @@ Usage:
 
 Author:
     Max Schuler
+
+Note:
+    This docstring was created by ChatGPT.
 """
 
 
