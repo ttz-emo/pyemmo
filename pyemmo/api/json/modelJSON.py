@@ -393,7 +393,7 @@ def createMachineGeometryFromSegment(
             surf_dict[surf_id].append(surf.rotateDuplicate(segment_nbr))
 
             ### update surf dict with tool surfaces
-            tools = surf.tools
+            tools = surf_dict[surf_id][-1].tools
             while tools:
                 new_tools = []  # init new tools
                 for tool in tools:
@@ -485,8 +485,6 @@ def createPhysicalSurfaces(
         bars = [Bar(surf.idExt, surf, surf.material) for surf in surfList]
         return bars, machineSide
 
-    # elif "Pol" in surfName or "RoNut" in surfName: # Rotor lamination
-    #     pass
     if any(identifier in idExt for identifier in ("Pol", "RoNut")):
         lam = RotorLamination(
             name=idExt,
@@ -505,8 +503,6 @@ def createPhysicalSurfaces(
         name=idExt, geometricalElement=surfList, material=surfList[0].material
     )
     physElem.setColor()  # set random color for all surfs
-    # FIXME: Is it really necessary to return a list here? Seems to allway be
-    # just a PE...
     return [physElem], machineSide
 
 
@@ -526,25 +522,19 @@ def createMagnet(surf: SurfaceAPI, mat: Material, extInfo: dict) -> Magnet:
     Returns:
         Magnet: The Magnet object generated from the above information.
     """
-    # get magnet-IdExt and segment number
-    idExtSplit = surf.idExt.split("_")
-    magIdExt = idExtSplit[0]
-    if idExtSplit[1].isdecimal():
-        segmentNbr = int(idExtSplit[1])
-    else:
-        raise ValueError("Could not determine segment number from idExt.")
+
     # identify magnetization direction
     # first segment (segmentNbr=0) must be north pole for dq-Offset calculation
-    magDir = 1 if (segmentNbr + 1) % 2 else -1  # 1: north/outwards
+    magDir = 1 if (surf.segment_nbr + 1) % 2 else -1  # 1: north/outwards
     # get magentization angle from magAngle dict by idExt
-    magAngle = importJSON.getMagAngle(extInfo)[magIdExt]
+    magAngle = importJSON.getMagAngle(extInfo)[surf.idExt]
     return Magnet(
         name=surf.idExt,
         geoElements=[surf],
         material=mat,
         magDirection=magDir,
         magType=importJSON.getMagDir(extInfo),
-        magVectorAngle=magAngle + radians(360 / surf.NbrSegments) * segmentNbr,
+        magVectorAngle=magAngle + radians(360 / surf.NbrSegments) * surf.segment_nbr,
     )
 
 
@@ -616,29 +606,25 @@ def phase2color(
     raise ValueError(f'Phase ID "{phaseChar}"is not a single character!', phaseChar)
 
 
-def getSlotInfo(slotSurfName: str) -> tuple[int, int]:
-    """Extract the slot side and the segement number from the slot surface name.
+def getSlotInfo(slotSurfName: str) -> int:
+    """Extract the slot side from the slot surface name.
 
     Args:
         slotSurfName (str): name of the slot surface. Must be
-            "StCu<slotSide>_<segmentNumber>"
+            "StCu<slotSide>"
 
     Raises:
         ValueError: If the identifier "StCu" is missing from the slot surface
             name.
         ValueError: If the stings for slot side and segment number extracted
             from the name are not pure decimal (are not only numbers).
-        ValueError: If the values for slot side and segment number are not int.
 
     Returns:
-        Tuple[int, int]:
-
-        - slot side (0 or 1)
-        - segment number as integer.
+        int: slot side
     """
     if "StCu" in slotSurfName:
-        # split up the surface name to get Slot side (0 odr 1) and segmentNbr (n)
-        [slotSide, segmentNbr] = slotSurfName.lstrip("StCu").split("_")
+        # split up the surface name to get Slot side (0 odr 1)
+        slotSide = slotSurfName.lstrip("StCu")
         # if both strings are numbers
         if slotSide:  # if slotSide not empty
             if slotSide.isdecimal():  # string is int
@@ -650,19 +636,8 @@ def getSlotInfo(slotSurfName: str) -> tuple[int, int]:
         else:
             # Slot side is empty -> there is one layer side
             slotSide = 0  # 0 to index first/only winding layer
-        if segmentNbr:
-            if segmentNbr.isdecimal():
-                segmentNbr = int(segmentNbr)
-            else:
-                msg = f"Segment number was not decimal. Slot name: '{slotSurfName}'"
-                raise ValueError(msg)
-        else:
-            raise RuntimeError(
-                f"Could not determine segment number from '{slotSurfName}'."
-            )
-        return slotSide, segmentNbr
-    msg = f'Slot identifier "StCu" was not in surface name: {slotSurfName}'
-    raise ValueError(msg)
+        return slotSide
+    raise ValueError(f'Slot identifier "StCu" was not in surface name: {slotSurfName}')
 
 
 def getSlotPhase(
@@ -739,10 +714,10 @@ def createSlot(surf: SurfaceAPI, material: Material, extendedInfo: dict) -> Slot
         Slot: Slot object generated from the above information.
     """
 
-    slotSide, segmentNbr = getSlotInfo(surf.idExt)
+    slotSide = getSlotInfo(surf.idExt)
     windingLayout = importJSON.getWindingList(extendedInfo)
     # slotSide is set 0 or 1 where the naming of slotSide is 1 or 2
-    cDir, phase = getSlotPhase(windingLayout, segmentNbr, slotSide)
+    cDir, phase = getSlotPhase(windingLayout, surf.segment_nbr, slotSide)
     slotName = surf.idExt + "_" + phase.upper() + cDir
     # create slot without winding information, because winding is set by stator
     slot = Slot(name=slotName, geometricalElement=[surf], material=material)
