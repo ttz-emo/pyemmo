@@ -333,7 +333,6 @@ class Surface(Transformable):
             S1 = ('S1', [L1, L2, L3, L4])
             S1.rotateZ(P0, pi)
 
-
         Args:
             rotationPoint (Point): Center point for rotation.
             angle (float): rotation angle in rad.
@@ -343,9 +342,6 @@ class Surface(Transformable):
         else:
             x, y, z = rotationPoint.coordinate
             gmsh.model.occ.rotate([(2, self.id)], x, y, z, 0, 0, 1, angle)
-
-            # FIXME: Update rotation for pyemmo internal instances because the lines are
-            # not correctly rotated this way...
             for p in self.allPoints:
                 p.rotateZ(rotationPoint, angle, flag_gmsh=False)
 
