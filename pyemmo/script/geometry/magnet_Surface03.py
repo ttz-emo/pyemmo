@@ -121,7 +121,7 @@ class Magnet_Surface03(Magnet):
 
         # Bei jedem Baukasten muss diese Definition identisch sein
         ###Fläche des halben Magneten in einer Liste.
-        self.geometricalElement = [surfaceMagnet]
+        self.geo_list = [surfaceMagnet]
         ###Schnittkante des halben Magneten.
         # \image html innerLinePart03.png
         self._innerLinePart = [lMagnet1]
@@ -135,7 +135,7 @@ class Magnet_Surface03(Magnet):
         # \image html laminationDockingPoint03.png
         self._laminationDockingPoint = [pMagnet2]
 
-        for surf in self.geometricalElement:
+        for surf in self.geo_list:
             if self.magDir() == 1:
                 surf.setMeshColor(colorDict["Red"])
             elif self.magDir() == -1:

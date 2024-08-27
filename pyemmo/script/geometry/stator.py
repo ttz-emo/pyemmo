@@ -265,7 +265,7 @@ class Stator:
             )
         outer_radius = 0.0
         for phys in self._domainOuterLimit.physicals:
-            for geo in phys.geometricalElement:
+            for geo in phys.geo_list:
                 if isinstance(geo, Line):
                     for p in geo.points:
                         if p.radius > outer_radius:
@@ -507,7 +507,7 @@ class Stator:
             ax.set_aspect("equal")
             # ax.set_aspect("equal", adjustable="box")
         for phys in self.physicalElements:
-            for geoElem in phys.geometricalElement:
+            for geoElem in phys.geo_list:
                 geoElem.plot(
                     fig=fig,
                     linewidth=linewidth,
@@ -575,7 +575,7 @@ class Stator:
         b = meshGainFactor - a * self.outer_radius
 
         for physical in self.physicalElements:
-            for geo in physical.geometricalElement:
+            for geo in physical.geo_list:
                 points: List[Point] = []
                 if isinstance(geo, Surface):
                     for curve in geo.curve:
@@ -606,7 +606,7 @@ class Stator:
         b = -2 * c / r_mb
         a = -b / 2 / r_mb
         for physical in self.physicalElements:
-            for geo in physical.geometricalElement:
+            for geo in physical.geo_list:
                 points: List[Point] = []
                 if isinstance(geo, Surface):
                     for curve in geo.curve:

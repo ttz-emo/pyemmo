@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of
+# Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -42,7 +43,7 @@ class PhysicalElement:
     dreidimensionalen Raum.\n
     Input:
         name : string
-        geometricalElement : [Line] oder [Surface]
+        geo_list : [Line] oder [Surface]
         material : Material
 
     Beispiel:
@@ -65,21 +66,21 @@ class PhysicalElement:
     def __init__(
         self,
         name: str,
-        geometricalElement: List[Union[Surface, Line, CircleArc, Spline]],
+        geo_list: List[Union[Surface, Line, CircleArc, Spline]],
         material: Material = None,
-        phyID: int | None = None,
+        phyID: Union[int, None] = None,
     ):
         # the physical element type can be used to identify physical elements
         self.physicalElementType = "PhysicalElement"
 
-        id_list = [elem.id for elem in geometricalElement]
+        id_list = [elem.id for elem in geo_list]
         if phyID is None:
             # pylint: disable=locally-disabled, invalid-name
             self.id = gmsh.model.addPhysicalGroup(2, id_list, name=name)
         else:
             self.id = gmsh.model.addPhysicalGroup(2, id_list, tag=phyID, name=name)
         self.name = name
-        self.geometricalElement = geometricalElement
+        self.geo_list = geo_list
         self.material = material
 
     # ----- properties -----
@@ -170,23 +171,23 @@ class PhysicalElement:
         self._id = newID
 
     @property
-    def geometricalElement(self) -> Union[List[Surface], List[Line]]:
+    def geo_list(self) -> Union[List[Surface], List[Line]]:
         """Geometrical enities of physical element.
 
         Returns:
             Union[List[Surface], List[Line]]: Geometrical Entities.
         """
-        return self._geometricalElement
+        return self._geo_list
 
-    @geometricalElement.setter
-    def geometricalElement(self, geometricalElement: Union[List[Surface], List[Line]]):
+    @geo_list.setter
+    def geo_list(self, geo_list: Union[List[Surface], List[Line]]):
         """Geometrical elements
 
         Args:
-            geometricalElement (Union[List[Surface], List[Line]]): Geometrical elements
+            geo_list (Union[List[Surface], List[Line]]): Geometrical elements
         """
         # FIXME: No type checking implemented!
-        self._geometricalElement = geometricalElement
+        self._geo_list = geo_list
         # run element type funtion to ensure there are not lines AND surfaces at the same time
         self.geoElementType
 
@@ -202,13 +203,13 @@ class PhysicalElement:
         Returns:
             Union[Line, Surface, None]: Type of geometric elements in geo list.
         """
-        if len(self.geometricalElement) == 0:
+        if len(self.geo_list) == 0:
             # if list is empty return None
             return None
         # Otherwise determine geometry type:
         isSurface = False
         isLine = False
-        for GeoElement in self.geometricalElement:
+        for GeoElement in self.geo_list:
             if isinstance(GeoElement, Surface):
                 isSurface = True
             elif isinstance(GeoElement, (Line, CircleArc, Spline)):
@@ -283,7 +284,7 @@ class PhysicalElement:
             # colorName = colorName.replace("Light", "") # FIXME: This leads to an error in case of
             # "LightGoldenrodYellow"... Maybe skip that color in the color-dict or implement better
             # algorithm to catch light colors
-        for geoElem in self.geometricalElement:
+        for geoElem in self.geo_list:
             if isinstance(geoElem, Surface):
                 geoElem.setMeshColor(colorName)
                 r, g, b, a = Colors[colorName]

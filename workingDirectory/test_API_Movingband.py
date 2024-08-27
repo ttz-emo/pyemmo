@@ -18,14 +18,12 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-# %% Imports and stuff
-from setPath import pathRes
-import pyemmo as emmo
-from pyemmo.api.json import *
 from os.path import abspath, join
 
+# %% Imports and stuff
+from setPath import pathRes
 
-import subprocess
+import pyemmo as emmo
 
 # %%
 pyemmoPath = r"C:\Users\ganser\AppData\Local\Programs\pyemmo_git\Software_V2"
@@ -36,9 +34,7 @@ Path2CSV = join(
     abspath(join(rootname, "..")), r"Siemens\Looplines_TTZMitLuftspalt\areaCSV"
 )
 
-dataFrameDict = getMachineDFDict(
-    csvFilePath=Path2CSV
-)  # get maschine dataframe
+dataFrameDict = getMachineDFDict(csvFilePath=Path2CSV)  # get maschine dataframe
 extendInfo = getDataFrameFromCSV(join(Path2CSV, "duplicationInformation.csv"))
 MaschineSurfList = createMachineGeometryFromSegment(
     dataFrameDict, extendInfo.symmetriefaktor[0]
@@ -93,7 +89,7 @@ for surface in MaschineSurfList:
 # #%%
 # MB_inner = pyd.MovingBand(
 #     name="mbRotor_i",
-#     geometricalElement=mbLinesRotor,
+#     geo_list=mbLinesRotor,
 #     material=None,
 #     auxiliary=False
 # )
@@ -126,7 +122,7 @@ for surface in MaschineSurfList:
 #         MB_AuxList.append(
 #             pyd.MovingBand(
 #                 name=("mbRotor_Aux_" + str(i)),
-#                 geometricalElement=mbAuxLines.copy(), # copy list because is cleared for next iteration
+#                 geo_list=mbAuxLines.copy(), # copy list because is cleared for next iteration
 #                 material=air,
 #                 auxiliary=True
 #             )

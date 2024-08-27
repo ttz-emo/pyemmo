@@ -302,7 +302,7 @@ def createMBAux(
             MovingBand(
                 name=(physicalsDict["Rotor_MB_Line"] + f"_{str(i+1)}"),
                 # copy list because is cleared for next iteration:
-                geometricalElement=mbAuxLines.copy(),
+                geo_list=mbAuxLines.copy(),
                 material=material,
                 auxiliary=True,
             )
@@ -353,13 +353,13 @@ def createMB(
 
     movingBandStator: MovingBand = MovingBand(
         name="mbStator",
-        geometricalElement=mbLinesStator,
+        geo_list=mbLinesStator,
         material=material,
         auxiliary=False,
     )
     movingBandRotorInner: MovingBand = MovingBand(
         name=physicalsDict["Rotor_MB_Line"] + "_1",
-        geometricalElement=mbLinesRotor,
+        geo_list=mbLinesRotor,
         material=material,
         auxiliary=False,
     )
@@ -537,8 +537,8 @@ def createBoundaries(
     # fig, ax = plt.subplots()
     # plot(primarylinesRotor + primaryLinesStator, fig=fig, color="b")
     # plot(slavelinesRotor + slaveLinesStator, fig=fig, color="r")
-    # plot(movingBandStator.geometricalElement, fig=fig)
-    # plot(movingBandRotorInner.geometricalElement, fig=fig)
+    # plot(movingBandStator.geo_list, fig=fig)
+    # plot(movingBandRotorInner.geo_list, fig=fig)
     # plot(geoElemList(movingBandRotorAuxList), fig=fig, color=[0.4940, 0.1840, 0.5560])
     # plot((innerLimitLines), fig=fig, color=[0.4660, 0.6740, 0.1880])
     # plot((outerLimitLines), fig=fig, color=[0.4660, 0.6740, 0.1880])
@@ -556,7 +556,7 @@ def geoElemList(physElemList: list[PhysicalElement]) -> list[Transformable]:
     geoList = []
     if isinstance(physElemList, list):
         for phys in physElemList:
-            geoList.extend(phys.geometricalElement)
+            geoList.extend(phys.geo_list)
         return geoList
     if isinstance(physElemList, PhysicalElement):
         return physElemList

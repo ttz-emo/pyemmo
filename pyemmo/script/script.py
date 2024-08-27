@@ -1302,7 +1302,7 @@ class Script:
                 + elementType
                 + f'("{physicalElement.name}", {physicalElement.id}) = {{'
             )
-            for geo in physicalElement.geometricalElement:
+            for geo in physicalElement.geo_list:
                 if elementType == "Surface":
                     self._addSurface(geo)
                     code += f"{geo.id},"
@@ -1338,7 +1338,7 @@ class Script:
                 Script.
 
         """
-        if physicalElement.geometricalElement:
+        if physicalElement.geo_list:
             # if the geo list is not empty
             # remember there can be domains without geometrical elements,
             # like the "MovingBand_PhysicalNb" domain
@@ -1723,8 +1723,8 @@ class Script:
             for physical in physList:
                 if physical.material == physList[0].material:
                     if physical.geoElementType is Surface:
-                        if len(physical.geometricalElement) > 1:
-                            for geoElem in physical.geometricalElement:
+                        if len(physical.geo_list) > 1:
+                            for geoElem in physical.geo_list:
                                 meshCompCode += str(geoElem.id) + ","
                         else:
                             logging.warning(
@@ -1903,14 +1903,14 @@ class Script:
                 ):
                     # if the mobingband object is type movingband and its
                     # geo-elements are lines
-                    for mbLine in physicalMovingband.geometricalElement:
+                    for mbLine in physicalMovingband.geo_list:
                         # mbLine.setMeshLength()
                         # BUG, FIXME: Only add movingband line if the
                         # arc has realy been added to the script!
                         mbLineIDs += f"{mbLine.id},"  # add the line id
             # get approx. the min mesh length of the rotor movingband
             # (only checking first line of first movingband physical)
-            mbMeshSize = movingbandPhysicals[0].geometricalElement[0].getMinMeshLength()
+            mbMeshSize = movingbandPhysicals[0].geo_list[0].getMinMeshLength()
             if mbLineIDs:
                 rRotorMB = rotor.movingBandRadius
                 nbrSeg0 = (2 * pi * rRotorMB / mbMeshSize) - (
@@ -1953,7 +1953,7 @@ class Script:
                 ):
                     # if the mobingband object is type movingband and its
                     # geo-elements are lines
-                    for mbLine in physicalMovingband.geometricalElement:
+                    for mbLine in physicalMovingband.geo_list:
                         # mbLine.setMeshLength()
                         mbLineIDs += f"{mbLine.id},"  # add the line id
             if mbLineIDs:

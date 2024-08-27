@@ -231,9 +231,9 @@ class StatorPMSM(Stator):
             elif statorSheet1.betweenLinePart[0].endPoint.isEqual(statorAirDockPoint):
                 lElem["LaminationLine"].endPoint = slot1.laminationDockingPoint[0]
 
-        curveOfStatorSheet1 = statorSheet1.geometricalElement[0].curve
+        curveOfStatorSheet1 = statorSheet1.geo_list[0].curve
         curveOfStatorSheet1 = curveOfStatorSheet1 + slot1.laminationDockingLine
-        statorSheet1.geometricalElement[0].curve = curveOfStatorSheet1
+        statorSheet1.geo_list[0].curve = curveOfStatorSheet1
 
     def _addAirSpace(self):
         """Mit addAirSpace() wird der Luftraum auf der Statorseite bis zum Movingband erzeugt und Materialeigenschaften definiert."""
@@ -264,7 +264,7 @@ class StatorPMSM(Stator):
     ###createDuplicate() vervollständig die Geometrie zum gewünschten Teil- bzw. Vollmodell.
     def _createDuplicate(self):
         # duplicate
-        allGeo = self.physicalRaw[0].geometricalElement
+        allGeo = self.physicalRaw[0].geo_list
         centerPoint: Point = self.laminationDict["machineCentrePoint"].duplicate()
         pH1 = self.physicalRaw[0].betweenLinePart[0].startPoint
         hilfsLinie1 = Line("L_hilf1", centerPoint, pH1)
@@ -296,7 +296,7 @@ class StatorPMSM(Stator):
         self._physicalElements.append(wholeLamination)
 
         # duplicate Slot
-        slotSurfs: list[Surface] = [self.physicalRaw[1].geometricalElement[1]]
+        slotSurfs: list[Surface] = [self.physicalRaw[1].geo_list[1]]
         surfaceSlot2 = slotSurfs[0].mirror(centerPoint, hilfsLinie1, hilfsLinie2)
         slotSurfs.insert(0, surfaceSlot2)
         slot1 = Slot("", [surfaceSlot2], self.slotDict["material"])
@@ -316,7 +316,7 @@ class StatorPMSM(Stator):
         self.physicalElements = self._physicalElements + allSlot
 
         # duplicate SlotOP
-        allGeo3 = [self.physicalRaw[1].geometricalElement[0]]
+        allGeo3 = [self.physicalRaw[1].geo_list[0]]
         surfaceAir2 = allGeo3[0].mirror(centerPoint, hilfsLinie1, hilfsLinie2)
         allGeo3.append(surfaceAir2)
         listGeo3 = []
@@ -338,7 +338,7 @@ class StatorPMSM(Stator):
         self._physicalElements.append(wholeAir)
 
         # duplicate AirGap
-        allGeo4 = self.physicalRaw[2].geometricalElement
+        allGeo4 = self.physicalRaw[2].geo_list
         surfaceAirGap2 = allGeo4[0].mirror(centerPoint, hilfsLinie1, hilfsLinie2)
         allGeo4.append(surfaceAirGap2)
         listGeo4 = []
@@ -370,7 +370,7 @@ class StatorPMSM(Stator):
             )
         ]
         mbStator: list[CircleArc] = [
-            self.physicalRaw[2].geometricalElement[0].curve[0].duplicate()
+            self.physicalRaw[2].geo_list[0].curve[0].duplicate()
         ]
         mbStator[0].rotateZ(machineCenterPoint, -1 * angle)
 
@@ -392,13 +392,13 @@ class StatorPMSM(Stator):
         pprimary1 = Point("pprimary1", self.laminationDict["r_S_i"], 0, 0, 1)
         pprimary2 = Point("pprimary2", self.laminationDict["r_S_a"], 0, 0, 1)
         lLamprimary = Line("lLamprimary", pprimary1, pprimary2)
-        lAir = self.physicalRaw[2].geometricalElement[0].curve[1].duplicate()
+        lAir = self.physicalRaw[2].geo_list[0].curve[1].duplicate()
         lAir.rotateZ(machineCenterPoint, -1 * angle)
 
         primaryLine1 = PrimaryLine("primary_StatorLine", [lLamprimary, lAir])
         self._physicalElements.append(primaryLine1)
 
-        allslaveLine = primaryLine1.geometricalElement
+        allslaveLine = primaryLine1.geo_list
         slaveLineArray = []
         for l in allslaveLine:
             l1 = l.duplicate()

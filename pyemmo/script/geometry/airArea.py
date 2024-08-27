@@ -22,8 +22,6 @@ from typing import List
 
 from .physicalElement import Material, PhysicalElement, Surface
 
-import gmsh
-
 
 class AirArea(PhysicalElement):
     """
@@ -44,20 +42,20 @@ class AirArea(PhysicalElement):
     #       ID : Integer
     #       name : String
     #       material : Material
-    #       geometricalElement : [Surface]
+    #       geo_list : [Surface]
     #
     ###
     def __init__(
         self,
         name: str,
-        geometricalElement: List[Surface],
+        geo_list: List[Surface],
         material: Material = None,
     ):
         """AirArea is any area defined with material air except from the Airgap surface
 
         Args:
             - name (str): Domain name
-            - geometricalElement (List[Union[Surface, Line, CircleArc, Spline]):
+            - geo_list (List[Union[Surface, Line, CircleArc, Spline]):
             List of geometry objects
             - material (Material, optional): Material of AirArea. Should be "air". Defaults to None.
         """
@@ -65,7 +63,7 @@ class AirArea(PhysicalElement):
             self,
             name=name,
             material=material,
-            geometricalElement=geometricalElement,
+            geo_list=geo_list,
         )
         # the physical element type can be used to identify physical elements
         self.physicalElementType = "AirArea"

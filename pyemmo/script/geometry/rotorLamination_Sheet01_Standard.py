@@ -58,7 +58,7 @@ class RotorLamination_Sheet01_Standard(RotorLamination):
         super().__init__(
             name="RotorLamination_Sheet01_Standard",
             material=machineDict["material"],
-            geometricalElement=[],
+            geo_list=[],
         )
         ###Alle Parameter zur Beschreibung des Rotorblechs.
         self._machineDict = machineDict
@@ -113,7 +113,7 @@ class RotorLamination_Sheet01_Standard(RotorLamination):
 
         # Bei jedem Baukausten müssen diese Attribute vorkommen
         ###Fläche des Bleches (halber Pol) in einer Liste.
-        self._geometricalElement = [surfaceRotor]
+        self._geo_list = [surfaceRotor]
         ###Außenkante des Bleches.
         # \image html outerLinePart.png
         self._outerLinePart = [lRotorAussen]

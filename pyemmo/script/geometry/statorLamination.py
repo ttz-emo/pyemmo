@@ -37,7 +37,7 @@ class StatorLamination(PhysicalElement):
     def __init__(
         self,
         name: str,
-        geometricalElement: list[Surface],
+        geo_list: list[Surface],
         material: Material,
         phyID=None,
     ):
@@ -46,13 +46,13 @@ class StatorLamination(PhysicalElement):
         Args:
             name (str): Lamination name.
             machineDict (dict): Machine parameter dict.
-            geometricalElement (list[Surface]): List of surface elements that form the lamination.
+            geo_list (list[Surface]): List of surface elements that form the lamination.
             material (Material): Lamination material.
 
         """
         super().__init__(
             name=name,
-            geometricalElement=geometricalElement,
+            geo_list=geo_list,
             material=material,
             phyID=phyID,
         )

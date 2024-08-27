@@ -61,7 +61,7 @@ class StatorLamination_Sheet01_Standard(StatorLamination):
         self.machineDict = machineDict
         super().__init__(
             name="StatorLamination_Sheet01_Standard",
-            geometricalElement=list(),
+            geo_list=list(),
             material=None,
         )
         ###Name des Statorblechs
@@ -114,7 +114,7 @@ class StatorLamination_Sheet01_Standard(StatorLamination):
 
         # Bei jedem Baukausten müssen diese Attribute vorkommen
         ###Fläche des Bleches (halbe Nut bzw. Zahn) in einer Liste.
-        self._geometricalElement = [surfaceStator]
+        self._geo_list = [surfaceStator]
         ###Material des Bleches.
         self._material = self.machineDict["material"]
         ###Innenkante des Bleches.

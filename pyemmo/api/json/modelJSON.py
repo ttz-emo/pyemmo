@@ -471,13 +471,13 @@ def createPhysicalSurfaces(
         if "1" in idExt:
             airArea = AirArea(
                 name=idExt,
-                geometricalElement=surfList,
+                geo_list=surfList,
                 material=surfList[0].material,
             )
             return [airArea], machineSide
         airGap = AirGap(
             name=idExt,
-            geometricalElement=surfList,
+            geo_list=surfList,
             material=surfList[0].material,
         )
         return [airGap], machineSide
@@ -488,19 +488,19 @@ def createPhysicalSurfaces(
     if any(identifier in idExt for identifier in ("Pol", "RoNut")):
         lam = RotorLamination(
             name=idExt,
-            geometricalElement=surfList,
+            geo_list=surfList,
             material=surfList[0].material,
         )
         return [lam], machineSide
     if "StNut" in idExt:
         lam = StatorLamination(
             name=idExt,
-            geometricalElement=surfList,
+            geo_list=surfList,
             material=surfList[0].material,
         )
         return [lam], machineSide
     physElem = PhysicalElement(
-        name=idExt, geometricalElement=surfList, material=surfList[0].material
+        name=idExt, geo_list=surfList, material=surfList[0].material
     )
     physElem.setColor()  # set random color for all surfs
     return [physElem], machineSide
@@ -720,7 +720,7 @@ def createSlot(surf: SurfaceAPI, material: Material, extendedInfo: dict) -> Slot
     cDir, phase = getSlotPhase(windingLayout, surf.segment_nbr, slotSide)
     slotName = surf.idExt + "_" + phase.upper() + cDir
     # create slot without winding information, because winding is set by stator
-    slot = Slot(name=slotName, geometricalElement=[surf], material=material)
+    slot = Slot(name=slotName, geo_list=[surf], material=material)
     surf.setMeshColor(phase2color(phase))
     return slot
 

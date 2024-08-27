@@ -41,14 +41,14 @@ class AirGap(PhysicalElement):
     def __init__(
         self,
         name: str,
-        geometricalElement: List[Union[Surface, Line, CircleArc, Spline]],
+        geo_list: List[Union[Surface, Line, CircleArc, Spline]],
         material: Material = None,
     ):
         """AirGap
 
         Args:
             name (str): Physical Element Name
-            geometricalElement (List[Union[Surface, Line, CircleArc, Spline]]):
+            geo_list (List[Union[Surface, Line, CircleArc, Spline]]):
             List of geo elements
             material (Material, optional): Material of airgap. Defaults to None.
         """
@@ -56,7 +56,7 @@ class AirGap(PhysicalElement):
             self,
             name=name,
             material=material,
-            geometricalElement=geometricalElement,
+            geo_list=geo_list,
         )
         # the physical element type can be used to identify physical elements
         self.physicalElementType = "AirGap"

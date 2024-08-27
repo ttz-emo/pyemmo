@@ -131,13 +131,13 @@ class MagnetSlot01(Magnet):
         )
 
         # Bei jedem Baukasten muss diese Definition identisch sein
-        self._geometricalElement = [surfaceMagnet]
+        self._geo_list = [surfaceMagnet]
         self._innerLinePart = [lMagnet4]
         self._airLinePart = []
         self._lamLinePart = [lMagnet1, lMagnet2, lMagnet3]
         self._laminationDockingPoint = [pMagnet1, pMagnet2, pMagnet3, pMagnet4]
 
-        for s in self._geometricalElement:
+        for s in self._geo_list:
             if self.magDir == 1:
                 s.meshColor = colorDict["Red"]
             elif self.magDir == -1:

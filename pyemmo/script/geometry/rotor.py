@@ -424,9 +424,9 @@ class Rotor:
             # no inner limit
             return 0.0
         else:
-            r_in = inner_limits[0].geometricalElement[0].points[0].radius
+            r_in = inner_limits[0].geo_list[0].points[0].radius
             for phys in inner_limits:
-                for geo in phys.geometricalElement:
+                for geo in phys.geo_list:
                     if isinstance(geo, Line):
                         for p in geo.points:
                             if p.radius < r_in:
@@ -467,7 +467,7 @@ class Rotor:
             axis.set_aspect("equal", adjustable="box")
         kwargs["fig"] = fig
         for phys in self.physicalElements:
-            for geoElem in phys.geometricalElement:
+            for geoElem in phys.geo_list:
                 geoElem.plot(**kwargs)
         if symFactor:
             radius = self.movingBandRadius
@@ -537,7 +537,7 @@ class Rotor:
         # b2 = meshGainFactor - a2 * self.movingBandRadius
 
         for physical in self.physicalElements:
-            for geo in physical.geometricalElement:
+            for geo in physical.geo_list:
                 points: List[Point] = []
                 if isinstance(geo, Surface):
                     for curve in geo.curve:
@@ -567,7 +567,7 @@ class Rotor:
         b = -2 * a * r_mb
         c = (r_mb**2 * (meshGainFactor - 1)) / f1
         for physical in self.physicalElements:
-            for geo in physical.geometricalElement:
+            for geo in physical.geo_list:
                 points: List[Point] = []
                 if isinstance(geo, Surface):
                     for curve in geo.curve:

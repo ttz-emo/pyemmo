@@ -323,7 +323,7 @@ class MachineAllType:
         primeLines: List[Line] = list()
         for physicalPrimeLine in physicalPrimeLines:
             if physicalPrimeLine.geoElementType == Line:
-                primeLines.extend(physicalPrimeLine.geometricalElement)
+                primeLines.extend(physicalPrimeLine.geo_list)
             else:
                 raise (
                     TypeError(
@@ -344,7 +344,7 @@ class MachineAllType:
         secondaryLines: List[Line] = list()
         for physicalSecLine in physicalSecLines:
             if physicalSecLine.geoElementType == Line:
-                secondaryLines.extend(physicalSecLine.geometricalElement)
+                secondaryLines.extend(physicalSecLine.geo_list)
             else:
                 raise (
                     TypeError(
@@ -407,7 +407,7 @@ class MachineAllType:
         # # get max. stator radius:
         # rS = 0
         # for phys in self.stator._domainOuterLimit.physicals:
-        #     for geo in phys.geometricalElement:
+        #     for geo in phys.geo_list:
         #         if isinstance(geo, Line):
         #             for p in geo.points:
         #                 if p.radius > rS:
@@ -428,7 +428,7 @@ class MachineAllType:
         #     mssg = f"Unknown function specifier '{functionType}' for functional mesh."
         #     raise ValueError(mssg)
         # for physical in self.physicalElements:
-        #     for geo in physical.geometricalElement:
+        #     for geo in physical.geo_list:
         #         points: List[Point] = []
         #         if isinstance(geo, Surface):
         #             for curve in geo.curve:
@@ -474,7 +474,7 @@ class MachineAllType:
                 if not plot_mb:
                     if isinstance(phys, MovingBand):
                         break
-                for geoElem in phys.geometricalElement:
+                for geoElem in phys.geo_list:
                     geoElem.plot(
                         fig=fig,
                         linewidth=linewidth,
