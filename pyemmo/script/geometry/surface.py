@@ -84,6 +84,10 @@ class Surface(Transformable):
             )
         curve_tags = [curve.id for curve in curves]
         curve_loop = gmsh.model.occ.addCurveLoop(curve_tags)
+        # TODO: addCurveLoop() can create new line objects in gmsh to share touch points
+        #       e.g. when duplicating a surface object all the lines are individuals
+        #       (not sharing interface points). Then addCurveLoop() will generate new
+        #       lines and the original line IDs will be lost...
         self.id = gmsh.model.occ.addPlaneSurface([curve_loop])
         ###Name des Objektes.
         self.name: str = name  # set name after id was set to also set name in gmsh
