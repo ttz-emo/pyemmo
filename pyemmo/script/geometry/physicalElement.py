@@ -22,16 +22,15 @@
 from random import random
 from typing import TYPE_CHECKING, List, Union
 
+import gmsh
+
+from ...colors import Colors
 from .. import colorDict
 from ..material.material import Material
 from .circleArc import CircleArc
 from .line import Line
 from .spline import Spline
 from .surface import Surface
-
-from ...colors import Colors
-
-import gmsh
 
 if TYPE_CHECKING:
     from ..script import Script
@@ -68,22 +67,20 @@ class PhysicalElement:
         name: str,
         geometricalElement: List[Union[Surface, Line, CircleArc, Spline]],
         material: Material = None,
-        phyID: int = None,
+        phyID: int | None = None,
     ):
         # the physical element type can be used to identify physical elements
         self.physicalElementType = "PhysicalElement"
+
+        id_list = [elem.id for elem in geometricalElement]
+        if phyID is None:
+            # pylint: disable=locally-disabled, invalid-name
+            self.id = gmsh.model.addPhysicalGroup(2, id_list, name=name)
+        else:
+            self.id = gmsh.model.addPhysicalGroup(2, id_list, tag=phyID, name=name)
         self.name = name
         self.geometricalElement = geometricalElement
         self.material = material
-
-        if phyID is None:
-            # pylint: disable=locally-disabled, invalid-name
-            self.id = self._getNewID()
-        else:
-            self.id = phyID
-
-        surface_tag_list = [elem.id for elem in geometricalElement]
-        self._id = gmsh.model.addPhysicalGroup(2, surface_tag_list, name = name)
 
     # ----- properties -----
 
@@ -161,22 +158,15 @@ class PhysicalElement:
     @id.setter
     def id(self, newID: int):
         """setter of PhysicalElement ID
-        The values for pe IDs start at 1000. The choosen value MUST be bigger that the actual
-        max. value (=``PhysicalElement.Physical_ID``).
-        After the value is set once manually, max. value (``PhysicalElement.Physical_ID``) is
-        updated and all future IDs will be bigger than the manually set value.
 
         Args:
             newID (int): new physical element ID.
+
+        Raises:
+            TypeError: If new id not is integer.
         """
         if not isinstance(newID, int):
             raise TypeError(f"PhysicalElement ID must be positive integer! {newID}")
-        if 1000 < newID < PhysicalElement.physicalID:
-            raise ValueError(
-                "New ID of PhysicalElement is smaller than global ID count."
-                "Given newID must be existing!"
-            )
-        PhysicalElement.physicalID = newID  # set global ID to not overcount newID
         self._id = newID
 
     @property
@@ -297,4 +287,4 @@ class PhysicalElement:
             if isinstance(geoElem, Surface):
                 geoElem.setMeshColor(colorName)
                 r, g, b, a = Colors[colorName]
-                gmsh.model.setColor([(2,geoElem.id)], r, g, b, a)
+                gmsh.model.setColor([(2, geoElem.id)], r, g, b, a)
