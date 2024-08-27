@@ -26,7 +26,6 @@ from numpy import pi
 # from matplotlib import pyplot as plt
 # from ..functions.plot import plot
 from ...script.geometry import physicalsDict
-from ...script.geometry.limitLine import LimitLine
 from ...script.geometry.line import Line
 from ...script.geometry.movingBand import MovingBand
 from ...script.geometry.physicalElement import PhysicalElement
@@ -37,13 +36,9 @@ from ...script.material.material import Material
 from .. import air
 from .. import logger as apiLogger
 from . import (
-    InnerLimitLineDict,
-    OuterLimitLineDict,
     RotorMBLineDict,
     StatorMBLineDict,
-    globalCenterPoint,
 )
-from .modelJSON import rotateDuplicate
 from .SurfaceJSON import SurfaceAPI
 
 
@@ -408,60 +403,174 @@ def getLimitLines(
     return None
 
 
-def createBoundaries(
-    segmentSurfDict: dict[str, SurfaceAPI],
-    symFactor: int,
-    rotorMBRadius: float,
-) -> tuple[list[PhysicalElement], list[PhysicalElement]]:
-    """finds or creates all essential boundary lines and adds them to corresponding
-    PhysicalElements (LimitLine, MovingBand, PrimaryLine, SecondaryLine,...).
+from typing import Literal
+
+
+def get_rotor_stator_dim_tags(
+    surf_dict: dict[str, list[SurfaceAPI]], rotor_mb_radius: float
+) -> tuple[list[tuple[Literal[2], int]], list[tuple[Literal[2], int]]]:
+    """
+    Classifies Gmsh surfaces into rotor and stator based on their radius.
+
+    This function sorts surfaces into rotor or stator categories by comparing their
+    radius to the specified movingband (=airgap) radius.
+    Surfaces with a radius greater than the boundary are categorized as stator;
+    others are categorized as rotor.
 
     Args:
-        segmentSurfDict (Dict[str, SurfaceAPI]): Segment Surface dict with short IDs (IdExt)
-            as keys and SurfaceAPI objects as values
-        symFactor (int): Symmetry factor
-        rotorMBRadius (float): Rotor movingband radius to differ between rotor and
-            stator boundaries.
+        surf_dict (dict[str, list[SurfaceAPI]]): Dictionary of surface lists.
+        rotor_mb_radius (float): Radius used to distinguish between rotor and stator
+            surfaces.
 
     Returns:
-        Tuple[List[PhysicalElement], List[PhysicalElement]]: List of stator and
-        rotor boundary lines (statorBoundaries, rotorBoundaries)
+        tuple[list[tuple[Literal[2], int]], list[tuple[Literal[2], int]]]: Two lists of tuples:
+            - Rotor gmsh surface tags.
+            - Stator gmsh surface tags.
+
+    Example:
+
+    .. python:
+
+        surf_dict = ... # SurfaceAPI dict
+        rotor_mb_radius = 0.6
+        rotor_tags, stator_tags = get_rotor_stator_dim_tags(surf_dict, rotor_mb_radius)
+    """
+    stator_dim_tags: list[tuple[Literal[2], int]] = []
+    rotor_dim_tags: list[tuple[Literal[2], int]] = []
+    for _, surflist in surf_dict.items():
+        dim_tags = [(2, surf.id) for surf in surflist]
+        if surflist[0].points[0].radius > rotor_mb_radius:
+            stator_dim_tags.extend(dim_tags)
+        else:
+            rotor_dim_tags.extend(dim_tags)
+    return rotor_dim_tags, stator_dim_tags
+
+
+import gmsh
+import numpy as np
+
+from ...definitions import DEFAULT_GEO_TOL
+from ...script.gmsh.gmsh_line import GmshLine
+from ...script.gmsh.gmsh_point import GmshPoint
+
+
+def get_boundary_line_list(
+    surf_dim_tags: list[tuple[Literal[2], int]]
+) -> list[GmshLine]:
+    """
+    Retrieves and constructs a list of boundary lines for a given set of surface
+    dimension tags.
+
+    This function uses Gmsh to find the boundary lines of the specified surfaces. Each
+    boundary line is represented as a `GmshLine` object, which includes the line's tag
+    and the start and end points as `GmshPoint` objects.
+
+    Args:
+        surf_dim_tags (list[tuple[Literal[2], int]]): A list of tuples where each tuple
+            represents a surface in Gmsh, consisting of the dimension (2 for surfaces)
+            and the surface tag.
+
+    Returns:
+        list[GmshLine]: A list of `GmshLine` objects representing the boundary lines of
+        the provided surfaces.
 
     Raises:
-        AttributeError: If no surface for the outer limit lines could be found.
-        AttributeError: If no surface for the inner limit lines could be found.
-    """
-    # Create lists for Stator and Rotor boundaries
-    rotorPhysicals: list[PhysicalElement] = []
-    statorPhysicals: list[PhysicalElement] = []
+        AssertionError: If a dimension other than 1 (for lines) is encountered in the
+            boundary retrieval process.
 
-    # 1: primary-Slave
+    Example:
+
+    .. python:
+
+        surf_dim_tags = [(2, 1)]  # Example surface tag
+        boundary_lines = get_boundary_line_dict(surf_dim_tags)
+        for line in boundary_lines:
+            print(line)
+    """
+    boundary_dim_tags = gmsh.model.get_boundary(surf_dim_tags)
+    # create a boundary line dict:
+    bnd_line_list: list[GmshLine] = []
+    for dim, l_tag in boundary_dim_tags:
+        assert dim == 1
+        # line_type = gmsh.model.get_type(1, l_tag)  # get curve type: 'Line' or 'Circle'
+        point_tags = gmsh.model.get_boundary(dimTags=[(1, l_tag)])
+        bnd_line_list.append(
+            GmshLine(
+                l_tag,
+                GmshPoint(
+                    point_tags[0][1], gmsh.model.get_value(0, point_tags[0][1], [])
+                ),
+                GmshPoint(
+                    point_tags[1][1], gmsh.model.get_value(0, point_tags[1][1], [])
+                ),
+            )
+        )
+    return bnd_line_list
+
+
+def get_primary_lines(bnd_line_list: list[GmshLine]):
+    primary_lines: list[GmshLine] = []
+    for i, gmsh_line in enumerate(bnd_line_list):
+        if np.isclose(gmsh_line.start_point.y, 0, atol=DEFAULT_GEO_TOL) and np.isclose(
+            gmsh_line.end_point.y, 0, atol=DEFAULT_GEO_TOL
+        ):
+            primary_lines.append(bnd_line_list.pop(i))
+    return primary_lines
+
+
+def get_secondary_lines(bnd_line_list: list[GmshLine]):
+    secondary_lines: list[GmshLine] = []
+    for i, gmsh_line in enumerate(bnd_line_list):
+        if np.isclose(gmsh_line.start_point.x, 0, atol=DEFAULT_GEO_TOL) and np.isclose(
+            gmsh_line.end_point.x, 0, atol=DEFAULT_GEO_TOL
+        ):
+            secondary_lines.append(bnd_line_list.pop(i))
+    return secondary_lines
+
+
+def get_boundaries(
+    surf_dict: dict[str, list[SurfaceAPI]], symFactor: int, rotor_mb_radius: float
+) -> tuple[list[PhysicalElement], list[PhysicalElement]]:
+    """TODO"""
+    # Create lists for Stator and Rotor boundaries
+    rotor_boundary: list[PhysicalElement] = []
+    stator_boundary: list[PhysicalElement] = []
+
+    # get dim_tag_list of rotor and stator surfaces:
+    rotor_dim_tags, stator_dim_tags = get_rotor_stator_dim_tags(
+        surf_dict, rotor_mb_radius
+    )
+    # get boundary dim tags for rotor:
+    rotor_bnd_line_list = get_boundary_line_list(rotor_dim_tags)
+    stator_bnd_line_list = get_boundary_line_list(stator_dim_tags)
+
+    # 1. Get primary and secondary lines
     if symFactor > 1:
-        [primaryLinesStator, primarylinesRotor] = getPrimaryLines(
-            segmentSurfDict=segmentSurfDict, rotorAirgapRadius=rotorMBRadius
+        rotor_boundary.append(
+            PrimaryLine("Primary Line Rotor", get_primary_lines(rotor_bnd_line_list))
         )
-        [slaveLinesStator, slavelinesRotor] = createSecondaryLines(
-            statorPrimaryLines=primaryLinesStator,
-            rotorPrimaryLines=primarylinesRotor,
-            symFactor=symFactor,
+        rotor_boundary.append(
+            SlaveLine("Secondary Line Rotor", get_secondary_lines(rotor_bnd_line_list))
         )
-        # primarylines
-        rotorPhysicals.append(PrimaryLine("primaryLineR", primarylinesRotor))
-        statorPhysicals.append(PrimaryLine("primaryLineS", primaryLinesStator))
-        # Slavelines
-        rotorPhysicals.append(SlaveLine("slaveLineR", slavelinesRotor))
-        statorPhysicals.append(SlaveLine("slaveLineS", slaveLinesStator))
+        stator_boundary.append(
+            PrimaryLine("Primary Line Stator", get_primary_lines(stator_bnd_line_list))
+        )
+        stator_boundary.append(
+            SlaveLine(
+                "Secondary Line Stator", get_secondary_lines(stator_bnd_line_list)
+            )
+        )
 
     # 2: Movingband
     ## Handling Airgap material for Movingband
     # machineSurfDict = createSurfaceDict(segmentSurfDict)
     try:
-        if "StLu" in segmentSurfDict.keys():
-            movingBandMaterial: Material = segmentSurfDict["StLu"].material
-        elif "StLu1" in segmentSurfDict.keys():
-            movingBandMaterial: Material = segmentSurfDict["StLu1"].material
+        if "StLu" in surf_dict.keys():
+            movingBandMaterial: Material = surf_dict["StLu"].material
+        elif "StLu1" in surf_dict.keys():
+            movingBandMaterial: Material = surf_dict["StLu1"].material
         else:
-            movingBandMaterial: Material = segmentSurfDict["StLu2"].material
+            movingBandMaterial: Material = surf_dict["StLu2"].material
     except KeyError:
         apiLogger.warning(
             """Stator-Airgap Surface-ID was not "StLu","StLu1" or "StLu2". """
@@ -475,80 +584,80 @@ def createBoundaries(
         movingBandRotorInner,
         movingBandRotorAuxList,
     ] = createMB(
-        segmentSurfDict=segmentSurfDict,
+        segmentSurfDict=surf_dict,
         symFactor=symFactor,
         material=movingBandMaterial,
     )
 
-    rotorPhysicals.append(movingBandRotorInner)  # rotor side of inner Movingband
+    rotor_boundary.append(movingBandRotorInner)  # rotor side of inner Movingband
     if movingBandRotorAuxList:  # MB_Rotor_a is not None if sym>1
         for movingBandAux in movingBandRotorAuxList:
-            rotorPhysicals.append(movingBandAux)  # outer movingband if sym>1
-    statorPhysicals.append(movingBandStator)  # stator side of inner movingband
+            rotor_boundary.append(movingBandAux)  # outer movingband if sym>1
+    stator_boundary.append(movingBandStator)  # stator side of inner movingband
 
-    # 3: Outer-Limit
-    outerLimitLines = getLimitLines(
-        limitLineDict=OuterLimitLineDict,
-        machineSurfList=segmentSurfDict,
-        symFactor=symFactor,
-    )
-    if outerLimitLines is not None:
-        statorPhysicals.append(LimitLine("outerLimit", outerLimitLines))
-    else:
-        msg = (
-            "Could not find outer limit lines for boundary. "
-            f"Make sure at least one of the surfaces {OuterLimitLineDict.keys()} exist!"
-        )
-        raise AttributeError(msg)
-    # 4: Inner-Limit
-    innerLimitLines = getLimitLines(
-        limitLineDict=InnerLimitLineDict,
-        machineSurfList=segmentSurfDict,
-        symFactor=symFactor,
-    )
-    if innerLimitLines is not None:
-        rotorPhysicals.append(LimitLine("innerLimit", innerLimitLines))
-    else:
-        # checkout if most inner surface has center point
-        noInnerLimit = False
-        # Extract valid inner limit keys from innerLimitLineDict:
-        innerLimitSurfaceKeys = []
-        for key in InnerLimitLineDict:
-            if key in segmentSurfDict:
-                innerLimitSurfaceKeys.append(key)
-        # check if any of those surfaces contains the center point:
-        for innerLimitIdExt in innerLimitSurfaceKeys:
-            for point in segmentSurfDict[innerLimitIdExt].allPoints:
-                if point.isEqual(globalCenterPoint):
-                    noInnerLimit = True  # no inner limit line
-                    break  # break inner point loop
-            if noInnerLimit is True:
-                # if the center point was found, break the outer loop too.
-                break
-        if not noInnerLimit:
-            msg = (
-                "Could not find inner limit lines for boundary. "
-                "And most inner Surface ('Wel') did not contain center point. "
-                f'Make sure at least one of the surfaces "{InnerLimitLineDict.keys()}" exist!'
-            )
-            raise AttributeError(msg)
-    # # Plot
-    # TODO: Add verbosity and plot this when debugging.
-    # fig, ax = plt.subplots()
-    # plot(primarylinesRotor + primaryLinesStator, fig=fig, color="b")
-    # plot(slavelinesRotor + slaveLinesStator, fig=fig, color="r")
-    # plot(movingBandStator.geo_list, fig=fig)
-    # plot(movingBandRotorInner.geo_list, fig=fig)
-    # plot(geoElemList(movingBandRotorAuxList), fig=fig, color=[0.4940, 0.1840, 0.5560])
-    # plot((innerLimitLines), fig=fig, color=[0.4660, 0.6740, 0.1880])
-    # plot((outerLimitLines), fig=fig, color=[0.4660, 0.6740, 0.1880])
-    # ax.set_aspect("equal")
-    # ax.xaxis.set_ticklabels([])
-    # ax.yaxis.set_ticklabels([])
-    # ax.grid(True)
-    # fig.show()
+    # # 3: Outer-Limit
+    # outerLimitLines = getLimitLines(
+    #     limitLineDict=OuterLimitLineDict,
+    #     machineSurfList=segmentSurfDict,
+    #     symFactor=symFactor,
+    # )
+    # if outerLimitLines is not None:
+    #     stator_boundary.append(LimitLine("outerLimit", outerLimitLines))
+    # else:
+    #     msg = (
+    #         "Could not find outer limit lines for boundary. "
+    #         f"Make sure at least one of the surfaces {OuterLimitLineDict.keys()} exist!"
+    #     )
+    #     raise AttributeError(msg)
+    # # 4: Inner-Limit
+    # innerLimitLines = getLimitLines(
+    #     limitLineDict=InnerLimitLineDict,
+    #     machineSurfList=segmentSurfDict,
+    #     symFactor=symFactor,
+    # )
+    # if innerLimitLines is not None:
+    #     rotor_boundary.append(LimitLine("innerLimit", innerLimitLines))
+    # else:
+    #     # checkout if most inner surface has center point
+    #     noInnerLimit = False
+    #     # Extract valid inner limit keys from innerLimitLineDict:
+    #     innerLimitSurfaceKeys = []
+    #     for key in InnerLimitLineDict:
+    #         if key in segmentSurfDict:
+    #             innerLimitSurfaceKeys.append(key)
+    #     # check if any of those surfaces contains the center point:
+    #     for innerLimitIdExt in innerLimitSurfaceKeys:
+    #         for point in segmentSurfDict[innerLimitIdExt].allPoints:
+    #             if point.isEqual(globalCenterPoint):
+    #                 noInnerLimit = True  # no inner limit line
+    #                 break  # break inner point loop
+    #         if noInnerLimit is True:
+    #             # if the center point was found, break the outer loop too.
+    #             break
+    #     if not noInnerLimit:
+    #         msg = (
+    #             "Could not find inner limit lines for boundary. "
+    #             "And most inner Surface ('Wel') did not contain center point. "
+    #             f'Make sure at least one of the surfaces "{InnerLimitLineDict.keys()}" exist!'
+    #         )
+    #         raise AttributeError(msg)
+    # # # Plot
+    # # TODO: Add verbosity and plot this when debugging.
+    # # fig, ax = plt.subplots()
+    # # plot(primarylinesRotor + primaryLinesStator, fig=fig, color="b")
+    # # plot(slavelinesRotor + slaveLinesStator, fig=fig, color="r")
+    # # plot(movingBandStator.geo_list, fig=fig)
+    # # plot(movingBandRotorInner.geo_list, fig=fig)
+    # # plot(geoElemList(movingBandRotorAuxList), fig=fig, color=[0.4940, 0.1840, 0.5560])
+    # # plot((innerLimitLines), fig=fig, color=[0.4660, 0.6740, 0.1880])
+    # # plot((outerLimitLines), fig=fig, color=[0.4660, 0.6740, 0.1880])
+    # # ax.set_aspect("equal")
+    # # ax.xaxis.set_ticklabels([])
+    # # ax.yaxis.set_ticklabels([])
+    # # ax.grid(True)
+    # # fig.show()
 
-    return statorPhysicals, rotorPhysicals
+    return rotor_boundary, stator_boundary
 
 
 def geoElemList(physElemList: list[PhysicalElement]) -> list[Transformable]:

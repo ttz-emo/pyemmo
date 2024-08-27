@@ -37,13 +37,14 @@ import gmsh
 from ... import logFmt
 from ...functions import calcIronLoss, import_results, runOnelab
 from ...script.geometry.machineAllType import MachineAllType
-from ...script.geometry.physicalElement import PhysicalElement
 from ...script.geometry.rotor import Rotor
 from ...script.geometry.stator import Stator
 from ...script.material import ElectricalSteel
 from ...script.script import Script
 from .. import logger
-from . import apiNameDict, importJSON, modelJSON
+from . import apiNameDict
+from . import boundaryJSON as boundary
+from . import importJSON, modelJSON
 from .SurfaceJSON import SurfaceAPI
 
 gmsh.initialize()
@@ -73,17 +74,7 @@ def createMachine(
     """
     symFactor = importJSON.getSymFactor(extendedInfo)
     rotorMovingBandRadius = importJSON.getMovingbandRadius(extendedInfo)
-
-    # # create boundaries
-    # statorPhysicals, rotorPhysicals = boundaryJSON.createBoundaries(
-    #     segmentSurfDict=segmentSurfDict,
-    #     symFactor=symFactor,
-    #     rotorMBRadius=rotorMovingBandRadius,
-    # )
-    statorPhysicals: list[PhysicalElement] = []
-    rotorPhysicals: list[PhysicalElement] = []
     # create the remaining machine surfaces
-    # TODO: Use gmsh-python api to rotate and duplicate the segments directly
     maschineSurfDict = modelJSON.createMachineGeometryFromSegment(
         segmentSurfDict, symFactor
     )
@@ -91,6 +82,9 @@ def createMachine(
     gmsh.model.occ.synchronize()
 
     # TODO: ADD BOUNDARY LINES IDENTIFICATION + ADD TO PHYSICALS
+    rotorPhysicals, statorPhysicals = boundary.get_boundaries(
+        maschineSurfDict, symFactor, rotorMovingBandRadius
+    )
 
     # Log winding layout for debugging *before* createSlot() is called.
     logger.debug(f"Winding layout: {importJSON.getWindingList(extendedInfo)}")

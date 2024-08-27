@@ -414,7 +414,7 @@ def createMachineGeometryFromSegment(
                 tools = new_tools
     if logging.getLogger().level <= logging.DEBUG:
         gmsh.model.occ.synchronize()
-        gmsh.fltk.run()
+        # gmsh.fltk.run()
     return surf_dict
 
 
