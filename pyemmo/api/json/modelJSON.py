@@ -388,6 +388,14 @@ def createMachineGeometryFromSegment(
             raise ValueError(f"Number of segments must be even, but is: {nbrSegments}")
         surf_dict[surf_id] = []  # init list to append surfaces
         # rotate and duplicte the original surface segment nbrSegments times
+        if logging.getLogger().level <= logging.DEBUG:
+            gmsh.model.occ.synchronize()
+            nbr_lines = len(gmsh.model.get_entities(dim=1))
+            nbr_surfs = len(gmsh.model.get_entities(dim=2))
+            logging.debug(f"{nbr_lines = :3}")
+            logging.debug(f"{nbr_surfs = :3}")
+            # gmsh.fltk.run()
+        logging.debug("Rotating and duplicating %s %i times", surf.name, nbrSegments)
         for segment_nbr in range(0, int(nbrSegments)):
             # rotate_duplicate also considers the tools automatically
             surf_dict[surf_id].append(surf.rotateDuplicate(segment_nbr))
@@ -718,7 +726,7 @@ def createSlot(surf: SurfaceAPI, material: Material, extendedInfo: dict) -> Slot
     windingLayout = importJSON.getWindingList(extendedInfo)
     # slotSide is set 0 or 1 where the naming of slotSide is 1 or 2
     cDir, phase = getSlotPhase(windingLayout, surf.segment_nbr, slotSide)
-    slotName = surf.idExt + "_" + phase.upper() + cDir
+    slotName = f"{surf.idExt}_{phase.upper()}{cDir}{surf.segment_nbr}"
     # create slot without winding information, because winding is set by stator
     slot = Slot(name=slotName, geo_list=[surf], material=material)
     surf.setMeshColor(phase2color(phase))
