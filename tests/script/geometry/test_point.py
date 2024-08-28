@@ -7,7 +7,7 @@ from pyemmo.script.geometry.point import Point
 init_cases = [("Point 1", 0, 1, 0, 1), ("Point 2", 1, 0, 0, 1)]
 
 
-class TestLine:
+class TestPoint:
 
     # @pytest.mark.parametrize("name, sp, ep", init_cases)
     def setup_method(self):
@@ -23,8 +23,20 @@ class TestLine:
         point = Point(name, x, y, z, ml)
         assert point.name == name
         assert point.coordinate == (x, y, z)
+        assert point.x == x
+        assert point.y == y
+        assert point.z == z
         assert point.id == 1
         assert gmsh.model.get_entity_name(dim=0, tag=1) == name
+
+    @pytest.mark.parametrize(
+        "new_x", [0, 1, -1, pytest.param("a", marks=pytest.mark.xfail)]
+    )
+    def test_reset_x(self, new_x):
+        point = Point("test point", 0, 0, 0, 1)
+        point.x = new_x
+        assert point.coordinate[0] == new_x
+        assert point.x == new_x
 
     @pytest.mark.parametrize(
         "point, expected_angle",

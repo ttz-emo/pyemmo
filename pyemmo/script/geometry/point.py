@@ -150,13 +150,79 @@ class Point(Transformable):
         self._name = name
 
     @property
+    def x(self) -> float:
+        """
+        Getter for the x coordinate.
+
+        Returns:
+            float: x coordinate of the point.
+        """
+        return self._x
+
+    @x.setter
+    def x(self, new_x: float):
+        """
+        Setter for the x coordinate.
+
+        Args:
+            new_x (float): New x coordinate value to set.
+        """
+        if not isinstance(new_x, (int, float)):
+            raise ValueError("Point coordinate values must be int or float!")
+        self._x = new_x
+
+    @property
+    def y(self) -> float:
+        """
+        Getter for the y coordinate.
+
+        Returns:
+            float: y coordinate of the point.
+        """
+        return self._y
+
+    @y.setter
+    def y(self, new_y: float):
+        """
+        Setter for the y coordinate.
+
+        Args:
+            new_y (float): New y coordinate value to set.
+        """
+        if not isinstance(new_y, (int, float)):
+            raise ValueError("Point coordinate values must be int or float!")
+        self._y = new_y
+
+    @property
+    def z(self) -> float:
+        """
+        Getter for the z coordinate.
+
+        Returns:
+            float: z coordinate of the point.
+        """
+        return self._z
+
+    @z.setter
+    def z(self, new_z: float):
+        """
+        Setter for the z coordinate.
+
+        Args:
+            new_z (float): New z coordinate value to set.
+        """
+        if not isinstance(new_z, (int, float)):
+            raise ValueError("Point coordinate values must be int or float!")
+        self._z = new_z
+
+    @property
     def coordinate(self) -> Tuple[float, float, float]:
         """Die Methode getCoordinate() gibt die x- y- und z-Koordinaten eines Punktes zurück.
 
         Returns:
             Tuple[float, float, float]: x,y and z-coordinates
         """
-        return (self._x, self._y, self._z)
+        return (self.x, self.y, self.z)
 
     @coordinate.setter
     def coordinate(self, coordinate: Tuple[float, float, float]):
@@ -167,11 +233,9 @@ class Point(Transformable):
         """
         if len(coordinate) != 3:
             raise ValueError("Number of point cooridinates must be 3!")
-        if not all(isinstance(val, (int, float)) for val in coordinate):
-            raise ValueError("Point coordinate values must be int or float!")
-        self._x = coordinate[0]
-        self._y = coordinate[1]
-        self._z = coordinate[2]
+        self.x = coordinate[0]
+        self.y = coordinate[1]
+        self.z = coordinate[2]
 
     @property
     def meshLength(self) -> float:

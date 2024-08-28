@@ -52,11 +52,13 @@ Note:
     This docstring was created by ChatGPT.
 """
 
-
+import gmsh
 import numpy as np
 
+from ..geometry.point import Point
 
-class GmshPoint:
+
+class GmshPoint(Point):
     """
     Represents a point in 3D space with a unique identifier (tag) in the context of
     Gmsh.
@@ -81,18 +83,24 @@ class GmshPoint:
             Returns a string representation of the GmshPoint object.
     """
 
-    def __init__(self, tag: int, coords: np.ndarray):
+    def __init__(self, tag: int, coords: np.ndarray = np.empty(0)):
         """
         Constructor for GmshPoint class.
 
         Args:
             tag (int): Tag of the point.
-            coords (np.ndarray): Coordinates of the point as a NumPy array with shape (3,).
+            coords (np.ndarray, optional): Coordinates of the point as a NumPy array
+                with shape (3,) or empty. When empty, try to find the point with its tag
+                in Gmsh and get the coordinates from there.
         """
         self.tag = tag
-        self.x = coords[0]
-        self.y = coords[1]
-        self.z = coords[2]
+        if coords.size == 0:
+            # try to get coords from gmsh:
+            coords = gmsh.model.get_value(0, tag, [])  # This raises an Exception if
+            # point does not exist!
+        if coords.size != 3:
+            raise ValueError(f"Wrong GmshPoint coordinates {coords=}!")
+        self.coordinate = coords
 
     @property
     def tag(self) -> int:
@@ -113,66 +121,6 @@ class GmshPoint:
             new_tag (int): New tag value to set.
         """
         self._tag = new_tag
-
-    @property
-    def x(self) -> float:
-        """
-        Getter for the x coordinate.
-
-        Returns:
-            float: x coordinate of the point.
-        """
-        return self._x
-
-    @x.setter
-    def x(self, new_x: float):
-        """
-        Setter for the x coordinate.
-
-        Args:
-            new_x (float): New x coordinate value to set.
-        """
-        self._x = new_x
-
-    @property
-    def y(self) -> float:
-        """
-        Getter for the y coordinate.
-
-        Returns:
-            float: y coordinate of the point.
-        """
-        return self._y
-
-    @y.setter
-    def y(self, new_y: float):
-        """
-        Setter for the y coordinate.
-
-        Args:
-            new_y (float): New y coordinate value to set.
-        """
-        self._y = new_y
-
-    @property
-    def z(self) -> float:
-        """
-        Getter for the z coordinate.
-
-        Returns:
-            float: z coordinate of the point.
-        """
-        return self._z
-
-    @z.setter
-    def z(self, new_z: float):
-        """
-        Setter for the z coordinate.
-
-        Args:
-            new_z (float): New z coordinate value to set.
-        """
-        self._z = new_z
 
     def __str__(self) -> str:
         """
