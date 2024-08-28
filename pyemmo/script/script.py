@@ -538,12 +538,12 @@ class Script:
             if savedCurve.type == "Line":
                 existingLines.append(savedCurve)
         # getting points of tested line
-        testPointDict = {"p1": line2Test.startPoint, "p2": line2Test.endPoint}
+        testPointDict = {"p1": line2Test.start_point, "p2": line2Test.end_point}
         # compare all points to the two test points
         for existingLine in existingLines:
             compareP = {
-                "p1": existingLine.startPoint,
-                "p2": existingLine.endPoint,
+                "p1": existingLine.start_point,
+                "p2": existingLine.end_point,
             }
             #!!! Testing for absolute identical points (name, id, ...)
             if (
@@ -592,14 +592,14 @@ class Script:
             if savedCurve.type == "CircleArc":
                 existingArcs.append(savedCurve)
         testPointDict = {
-            "p1": curve.startPoint,
-            "p2": curve.endPoint,
+            "p1": curve.start_point,
+            "p2": curve.end_point,
             "c": curve.center,
         }
         for arc in existingArcs:
             comparePointDict = {
-                "p1": arc.startPoint,
-                "p2": arc.endPoint,
+                "p1": arc.start_point,
+                "p2": arc.end_point,
                 "c": arc.center,
             }
             if (
@@ -651,16 +651,16 @@ class Script:
                 existingSplines.append(savedCurve)
 
         testPointDict = {
-            "p1": curve.startPoint,
-            "p2": curve.endPoint,
-            "controlP": curve.controlPoints,
+            "p1": curve.start_point,
+            "p2": curve.end_point,
+            "controlP": curve.control_points,
         }
 
         for spline in existingSplines:
             comparePointDict = {
-                "p1": spline.startPoint,
-                "p2": spline.endPoint,
-                "controlP": spline.controlPoints,
+                "p1": spline.start_point,
+                "p2": spline.end_point,
+                "controlP": spline.control_points,
             }
             if len(testPointDict["controlP"]) == len(comparePointDict["controlP"]):
                 # only continue if control point list length is equal
@@ -729,24 +729,24 @@ class Script:
                 the function returns None.
         """
         # Punkte prüfen und erzeugen
-        startPoint = curve.startPoint
-        endPoint = curve.endPoint
+        startPoint = curve.start_point
+        endPoint = curve.end_point
         # Try to add the points
         addP1 = self._addPoint(startPoint)
         addP2 = self._addPoint(endPoint)
 
         # If one or both points are allready existing: set them in curve
         if addP1:
-            curve.startPoint = addP1
+            curve.start_point = addP1
         if addP2:
-            curve.endPoint = addP2
+            curve.end_point = addP2
         if curve.type == "CircleArc":
             centerPoint = curve.center
             addC = self._addPoint(centerPoint)
             if addC is not None:
                 curve.center = addC
         elif curve.type == "Spline":
-            controlPointList = curve.controlPoints.copy()
+            controlPointList = curve.control_points.copy()
             for controlPoint in controlPointList:
                 newP = self._addPoint(controlPoint)
                 if newP is not None:
@@ -763,8 +763,8 @@ class Script:
             curveName = cleanName(curve.name)
             curveID = curve.id
             curveType = curve.type
-            startPointID = curve.startPoint.id
-            endPointID = curve.endPoint.id
+            startPointID = curve.start_point.id
+            endPointID = curve.end_point.id
             if curveType == "Line":
                 code = (
                     f"{curveName} = {curveID};"
@@ -786,19 +786,19 @@ class Script:
                 # code += f"Transfinite Curve {{{curve.id}}} = {nbrMeshPoints};"
                 ###
             elif curveType == "Spline":
-                if curve.splineType == 0:
+                if curve.spline_type == 0:
                     splineType = "Spline"
-                elif curve.splineType == 1:
+                elif curve.spline_type == 1:
                     splineType = "Bezier"
-                elif curve.splineType == 2:
+                elif curve.spline_type == 2:
                     splineType = "BSpline"
 
                 code = (
                     f"{curveName} = {curveID}; \n"
                     f"{splineType}({curveName}) = {{{startPointID}, "
                 )
-                controlPoints = curve.controlPoints
-                for controlPoint in controlPoints:
+                control_points = curve.control_points
+                for controlPoint in control_points:
                     code += f"{controlPoint.id}, "
                 code += f"{endPointID}}};\n"
 
@@ -845,20 +845,20 @@ class Script:
             # remove it from oldLoop
             for curveIndex, curve in enumerate(oldLoop):
                 if direction[-1] == 1:
-                    if curve.startPoint.isEqual(newLoop[-1].endPoint):
+                    if curve.start_point.isEqual(newLoop[-1].end_point):
                         direction.append(1)
                         newLoop.append(oldLoop.pop(curveIndex))
                         break
-                    if curve.endPoint.isEqual(newLoop[-1].endPoint):
+                    if curve.end_point.isEqual(newLoop[-1].end_point):
                         direction.append(-1)
                         newLoop.append(oldLoop.pop(curveIndex))
                         break
                 else:
-                    if curve.startPoint.isEqual(newLoop[-1].startPoint):
+                    if curve.start_point.isEqual(newLoop[-1].start_point):
                         direction.append(1)
                         newLoop.append(oldLoop.pop(curveIndex))
                         break
-                    if curve.endPoint.isEqual(newLoop[-1].startPoint):
+                    if curve.end_point.isEqual(newLoop[-1].start_point):
                         direction.append(-1)
                         newLoop.append(oldLoop.pop(curveIndex))
                         break

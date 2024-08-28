@@ -362,10 +362,10 @@ class Point(Transformable):
         # 6. Spiegelpunkt bestimmen -> S + PS
 
         # 1) Normal vector on plane given by V1 and V2
-        pV1startPoint = array(planeVector1.startPoint.coordinate)
-        pV1endPoint = array(planeVector1.endPoint.coordinate)
-        pV2startPoint = array(planeVector2.startPoint.coordinate)
-        pV2endPoint = array(planeVector2.endPoint.coordinate)
+        pV1startPoint = array(planeVector1.start_point.coordinate)
+        pV1endPoint = array(planeVector1.end_point.coordinate)
+        pV2startPoint = array(planeVector2.start_point.coordinate)
+        pV2endPoint = array(planeVector2.end_point.coordinate)
         normalVec = cross(pV1endPoint - pV1startPoint, pV2endPoint - pV2startPoint)
 
         if array_equal(normalVec, [0, 0, 0]):

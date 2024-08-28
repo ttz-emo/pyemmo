@@ -71,8 +71,8 @@ class CircleArc(Line):
             ValueError: If start and endpoint are equal.
         """
         if not startPoint.isEqual(endPoint):
-            self.startPoint = startPoint
-            self.endPoint = endPoint
+            self.start_point = startPoint
+            self.end_point = endPoint
         else:
             raise ValueError(
                 "If you really want to draw a full circle  consider using 4 circle arcs."
@@ -149,8 +149,8 @@ class CircleArc(Line):
         """
         if not self._todesmerker:
             # if line was not created in script
-            self.startPoint.translate(dx, dy, dz)
-            self.endPoint.translate(dx, dy, dz)
+            self.start_point.translate(dx, dy, dz)
+            self.end_point.translate(dx, dy, dz)
             self._center.translate(dx, dy, dz)
 
     def rotateX(self, rotationPoint: Point, angle: float):
@@ -167,8 +167,8 @@ class CircleArc(Line):
             CA1.rotateX(P0, pi)\n
         """
         if not self._todesmerker:
-            self.startPoint.rotateX(rotationPoint, angle)
-            self.endPoint.rotateX(rotationPoint, angle)
+            self.start_point.rotateX(rotationPoint, angle)
+            self.end_point.rotateX(rotationPoint, angle)
             self._center.rotateX(rotationPoint, angle)
 
     def rotateY(self, rotationPoint: Point, angle: float) -> None:
@@ -186,8 +186,8 @@ class CircleArc(Line):
 
         """
         if not self._todesmerker:
-            self.startPoint.rotateY(rotationPoint, angle)
-            self.endPoint.rotateY(rotationPoint, angle)
+            self.start_point.rotateY(rotationPoint, angle)
+            self.end_point.rotateY(rotationPoint, angle)
             self._center.rotateY(rotationPoint, angle)
 
     ##
@@ -208,8 +208,8 @@ class CircleArc(Line):
             CA1.rotateZ(P0, pi)
         """
         if not self._todesmerker:
-            self.startPoint.rotateZ(rotationPoint, angle)
-            self.endPoint.rotateZ(rotationPoint, angle)
+            self.start_point.rotateZ(rotationPoint, angle)
+            self.end_point.rotateZ(rotationPoint, angle)
             self._center.rotateZ(rotationPoint, angle)
 
     def duplicate(self, name="") -> "CircleArc":
@@ -226,9 +226,9 @@ class CircleArc(Line):
             CA1 = Point('ca1', P1, C, P2)\n
             CA2 = CA1.duplicate()\n
         """
-        startPoint = self.startPoint.duplicate()
+        startPoint = self.start_point.duplicate()
         centerPoint = self._center.duplicate()
-        endPoint = self.endPoint.duplicate()
+        endPoint = self.end_point.duplicate()
         dupCircleArc = CircleArc(name, startPoint, centerPoint, endPoint)
         parentName = self.name
         if name == "":
@@ -276,8 +276,8 @@ class CircleArc(Line):
             CA2 = CA1.mirror(P0, yAxis, zAxis)
 
         """
-        startPoint = self.startPoint.mirror(planePoint, planeVector1, planeVector2)
-        endPoint = self.endPoint.mirror(planePoint, planeVector1, planeVector2)
+        startPoint = self.start_point.mirror(planePoint, planeVector1, planeVector2)
+        endPoint = self.end_point.mirror(planePoint, planeVector1, planeVector2)
         centerPoint = self._center.mirror(planePoint, planeVector1, planeVector2)
         mirArc = CircleArc(self.name, endPoint, centerPoint, startPoint)
         if name == "":
@@ -297,8 +297,8 @@ class CircleArc(Line):
         Returns:
             Tuple(float, float): angle of start and end point to the horizontal axis
         """
-        startPoint = self.startPoint
-        endPoint = self.endPoint
+        startPoint = self.start_point
+        endPoint = self.end_point
         centerPoint = self.center
         angleStart = startPoint.getAngleToX(flag_deg=inDeg, CenterPoint=centerPoint)
         angleEnd = endPoint.getAngleToX(flag_deg=inDeg, CenterPoint=centerPoint)
@@ -336,8 +336,8 @@ class CircleArc(Line):
             distance to the center point
         """
         center = self.center
-        startPoint = self.startPoint
-        endPoint = self.endPoint
+        startPoint = self.start_point
+        endPoint = self.end_point
         if isclose(
             center.calcDist(startPoint.coordinate),
             center.calcDist(endPoint.coordinate),
@@ -408,7 +408,7 @@ class CircleArc(Line):
         axes.add_patch(arc)
         if tag:
             # add tag to arc
-            tagPoint = self.startPoint.duplicate()
+            tagPoint = self.start_point.duplicate()
             tagPoint.rotateZ(centerPoint, (theta2 - theta1) / 2)
             tagCo = tagPoint.coordinate
             axes.annotate(
@@ -427,14 +427,14 @@ class CircleArc(Line):
                 color=color if color != LINE_COLOR else POINT_COLOR,
                 tag=tag,
             )
-            self.startPoint.plot(
+            self.start_point.plot(
                 fig,
                 marker,
                 markersize,
                 color=color if color != LINE_COLOR else POINT_COLOR,
                 tag=tag,
             )
-            self.endPoint.plot(
+            self.end_point.plot(
                 fig,
                 marker,
                 markersize,

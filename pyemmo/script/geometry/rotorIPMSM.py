@@ -179,14 +179,14 @@ class RotorIPMSM(Rotor):
                 OldLamCenterL.name + "_1"
             )  # untere Linie muss dupliziert werden wegen Reihenfolge der Linien in der LineList der Fläche
             LamCenterL_top = OldLamCenterL
-            LamCenterL_top.endPoint = MagCenterLList[
+            LamCenterL_top.end_point = MagCenterLList[
                 0
-            ].startPoint  # P1 in  MagCenterL ist immer Punkt nahe Rotoroberfläche!!!
+            ].start_point  # P1 in  MagCenterL ist immer Punkt nahe Rotoroberfläche!!!
             # P2 in LamCenterL ist immer Punkt nach der Welle
 
-            LamCenterL_bottom.startPoint = MagCenterLList[
+            LamCenterL_bottom.start_point = MagCenterLList[
                 0
-            ].endPoint  # P2 in MagCenterL ist immer Punkt nahe Welle!
+            ].end_point  # P2 in MagCenterL ist immer Punkt nahe Welle!
             # P1 in LamCenterL ist immer Punkt nach der Rotoroberfläche
 
             ## Neue Linien und Magnetlinien zu RotorlinienListe hinzufügen:
@@ -244,7 +244,7 @@ class RotorIPMSM(Rotor):
         ## duplicate Rotorsheet ##
         allGeo = self._physicalRaw[0].geo_list
         PCentre = self._laminationDict["machineCentrePoint"].duplicate()
-        pH1 = self._physicalRaw[0].betweenLinePart[0].startPoint.duplicate()
+        pH1 = self._physicalRaw[0].betweenLinePart[0].start_point.duplicate()
         hilfsLinie1 = Line("L_hilf1", PCentre, pH1)
         ez = Point("p_Z", PCentre._x, PCentre._y, PCentre._z + 1, 1)
         hilfsLinie2 = Line("L_hilf2", PCentre, ez)

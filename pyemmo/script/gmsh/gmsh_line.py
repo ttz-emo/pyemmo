@@ -183,26 +183,6 @@ class GmshLine(Line):
         self._end_point = new_end_point
 
     @property
-    def name(self) -> str:
-        """
-        Getter for the name property.
-
-        Returns:
-            str: The name of the line.
-        """
-        return self._name
-
-    @name.setter
-    def name(self, new_name: str):
-        """
-        Setter for the name property.
-
-        Args:
-            new_name (str): The new name of the line.
-        """
-        self._name = new_name
-
-    @property
     def type(self) -> str:
         """
         Getter for the type property.

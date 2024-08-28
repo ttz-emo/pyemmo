@@ -198,24 +198,24 @@ class RotorSPMSM(Rotor):
 
         for i1 in range(0, len(Magnet1._innerLinePart)):
             magL1 = {"MagnetLine": Magnet1.innerLinePart[i1]}
-            p1 = Magnet1.innerLinePart[i1].startPoint
-            p2 = Magnet1.innerLinePart[i1].endPoint
+            p1 = Magnet1.innerLinePart[i1].start_point
+            p2 = Magnet1.innerLinePart[i1].end_point
             magL1["p1"] = p1
             magL1["p2"] = p2
             allMagL.append(magL1)
 
         for i2 in range(0, len(RotorSheet1._outerLinePart)):
             lamL1 = {"LaminationLine": RotorSheet1.outerLinePart[i2]}
-            p1 = RotorSheet1.outerLinePart[i2].startPoint
-            p2 = RotorSheet1.outerLinePart[i2].endPoint
+            p1 = RotorSheet1.outerLinePart[i2].start_point
+            p2 = RotorSheet1.outerLinePart[i2].end_point
             lamL1["p1"] = p1
             lamL1["p2"] = p2
             allLamL.append(lamL1)
 
         for i3 in range(0, len(RotorSheet1._betweenLinePart)):
             lamL1 = {"LaminationLine": RotorSheet1.betweenLinePart[i2]}
-            p1 = RotorSheet1.betweenLinePart[i2].startPoint
-            p2 = RotorSheet1.betweenLinePart[i2].endPoint
+            p1 = RotorSheet1.betweenLinePart[i2].start_point
+            p2 = RotorSheet1.betweenLinePart[i2].end_point
             lamL1["p1"] = p1
             lamL1["p2"] = p2
             allLamL2.append(lamL1)
@@ -231,15 +231,15 @@ class RotorSPMSM(Rotor):
         testP = RotorSheet1.airDockingPoint1[0]
         for lElem in allLamL:
             if lElem["p1"].coordinate == testP.coordinate:
-                lElem["LaminationLine"].startPoint = changePointM
+                lElem["LaminationLine"].start_point = changePointM
             elif lElem["p2"].coordinate == testP.coordinate:
-                lElem["LaminationLine"].endPoint = changePointM
+                lElem["LaminationLine"].end_point = changePointM
 
         for lElem in allLamL2:
             if lElem["p1"].coordinate == testP.coordinate:
-                lElem["LaminationLine"].startPoint = dockingPointM
+                lElem["LaminationLine"].start_point = dockingPointM
             elif lElem["p2"].coordinate == testP.coordinate:
-                lElem["LaminationLine"].endPoint = dockingPointM
+                lElem["LaminationLine"].end_point = dockingPointM
 
         curveOfRotorSheet1 = RotorSheet1.geo_list[0].curve
         curveOfRotorSheet1.append(Magnet1.innerLinePart[0])
@@ -305,7 +305,7 @@ class RotorSPMSM(Rotor):
         PCentre = self.laminationDict["machineCentrePoint"].duplicate()
         pH1 = rotorLam.betweenLinePart[
             0
-        ].startPoint  # betweenLinePart not defined in parent-class RotorLamination
+        ].start_point  # betweenLinePart not defined in parent-class RotorLamination
         hilfsLinie1 = Line("L_hilf1", PCentre, pH1)
         ez = Point("p_Z", PCentre._x, PCentre._y, PCentre._z + 1, 1)
         hilfsLinie2 = Line("L_hilf2", PCentre, ez)

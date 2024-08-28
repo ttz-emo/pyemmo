@@ -67,9 +67,9 @@ def getPrimaryLines(
     for area in segmentSurfDict.values():  # for every surface
         for line in area.curve:  # for each line
             # get the coordinates of the startpoint
-            startPoint = line.startPoint.coordinate[:]
+            startPoint = line.start_point.coordinate[:]
             # get the coords of the endpoint
-            endPoint = line.endPoint.coordinate[:]
+            endPoint = line.end_point.coordinate[:]
             # if the y-values are smaller than the maximal Distanz from y=0
             # (Pinball radius) which means they are on the x-axis AND their
             # x-coordinate is positive (positive side of x-axis) -> it's a
@@ -515,16 +515,20 @@ def get_primary_lines(bnd_line_list: list[GmshLine]):
             gmsh_line.end_point.y, 0, atol=DEFAULT_GEO_TOL
         ):
             primary_lines.append(bnd_line_list.pop(i))
+    if not primary_lines:
+        raise RuntimeError("Could not determine primary lines.")
     return primary_lines
 
 
-def get_secondary_lines(bnd_line_list: list[GmshLine]):
+def get_secondary_lines(bnd_line_list: list[GmshLine], sym_factor: int):
     secondary_lines: list[GmshLine] = []
     for i, gmsh_line in enumerate(bnd_line_list):
         if np.isclose(gmsh_line.start_point.x, 0, atol=DEFAULT_GEO_TOL) and np.isclose(
             gmsh_line.end_point.x, 0, atol=DEFAULT_GEO_TOL
         ):
             secondary_lines.append(bnd_line_list.pop(i))
+    if not secondary_lines:
+        raise RuntimeError("Could not determine primary lines.")
     return secondary_lines
 
 

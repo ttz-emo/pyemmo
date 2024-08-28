@@ -73,23 +73,23 @@ def calc_wind_contour(
         # is on rExt (outer radius)
         if (
             math.isclose(
-                a=curve.startPoint.radius,
+                a=curve.start_point.radius,
                 b=r_airgap,
                 abs_tol=1e-6,
             )
             or math.isclose(
-                a=curve.endPoint.radius,
+                a=curve.end_point.radius,
                 b=r_airgap,
                 abs_tol=1e-6,
             )
         ) and (
             not math.isclose(
-                a=curve.endPoint.radius,
+                a=curve.end_point.radius,
                 b=r_lam,
                 abs_tol=1e-6,
             )
             and not math.isclose(
-                a=curve.startPoint.radius,
+                a=curve.start_point.radius,
                 b=r_lam,
                 abs_tol=1e-6,
             )
@@ -102,15 +102,15 @@ def calc_wind_contour(
     for curve in cont_line_list:
         # TODO: Describe what this if-case is doing.
         if (
-            curve.startPoint.radius > r_airgap or curve.startPoint.radius > r_lam
+            curve.start_point.radius > r_airgap or curve.start_point.radius > r_lam
         ) and math.isclose(
-            a=curve.startPoint.radius, b=r_airgap, abs_tol=1e-6
+            a=curve.start_point.radius, b=r_airgap, abs_tol=1e-6
         ) is False:
-            slot_op_points.append(curve.startPoint)
+            slot_op_points.append(curve.start_point)
         elif (
-            curve.endPoint.radius > r_airgap or curve.endPoint.radius > r_lam
-        ) and math.isclose(a=curve.endPoint.radius, b=r_airgap, abs_tol=1e-6) is False:
-            slot_op_points.append(curve.endPoint)
+            curve.end_point.radius > r_airgap or curve.end_point.radius > r_lam
+        ) and math.isclose(a=curve.end_point.radius, b=r_airgap, abs_tol=1e-6) is False:
+            slot_op_points.append(curve.end_point)
 
     # For translating SlotW22:
     # center_point = Point(name="centerPoint", x=0, y=0, z=0, meshLength=1)
@@ -133,15 +133,15 @@ def calc_wind_contour(
         # FIXME: This assumes that it is an inner rotor
         # just find the most inner curve of all slot surfs
         for curve in slot_surf.curve:
-            if curve.middlePoint.radius < slot_op_curve.middlePoint.radius:
+            if curve.middle_point.radius < slot_op_curve.middle_point.radius:
                 slot_op_curve = curve
 
     # we need to check for exact type here!F
     if type(slot_op_curve) == Line:
         stator_slot_opening_line = Line(
             name="interface line slot opening - slot",
-            startPoint=slot_op_points[0],
-            endPoint=slot_op_points[1],
+            start_point=slot_op_points[0],
+            end_point=slot_op_points[1],
         )
     elif type(slot_op_curve) == CircleArc:
         stator_slot_opening_line = CircleArc(

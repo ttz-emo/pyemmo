@@ -109,10 +109,10 @@ def createLine(
         )
         line = Spline(
             name=lineName,
-            startPoint=startPoint,
-            endPoint=endPoint,
-            controlPoints=[controlPoint],
-            SplineType=1,
+            start_point=startPoint,
+            end_point=endPoint,
+            control_points=[controlPoint],
+            spline_type=1,
         )
     # else invalid linetype
     else:
@@ -452,7 +452,7 @@ def createPhysicalSurfaces(
     # FIXME: This assumes all machine are inner rotor!
     machineSide = (
         "Rotor"
-        if surfList[0].curve[0].startPoint.calcDist() <= rotorMBRadius
+        if surfList[0].curve[0].start_point.calcDist() <= rotorMBRadius
         else "Stator"
     )
 

@@ -70,8 +70,8 @@ plt.show()
 curves: List[Line] = S1.curve
 points: List[Point] = []
 for curve in curves:
-    startPoint = curve.startPoint
-    endPoint = curve.endPoint
+    startPoint = curve.start_point
+    endPoint = curve.end_point
     # startCoords=startPoint.getCoordinate()
     # endCoords = endPoint.getCoordinate()
     # plt.plot([startCoords[0], endCoords[0]], [startCoords[1],endCoords[1]])
@@ -136,9 +136,7 @@ xy_point_list = s.evaluate(times).T  # shape (2,100) -> (xy, index)
 #         xy_point_list.T, edgecolor="m", fill=0, closed=False
 #     )
 # )
-ax.plot(
-    *xy_point_list, "--"
-)  # Equivalent to ax.plot(x_values, y_values, "--")
+ax.plot(*xy_point_list, "--")  # Equivalent to ax.plot(x_values, y_values, "--")
 ax.axis("equal")
 
 # %%
@@ -150,10 +148,10 @@ for spline_type in (0, 1, 2):
     points = S1.points
     my_spline = Spline(
         name=spline_type_list[spline_type],
-        startPoint=points.pop(0),
-        endPoint=points.pop(),
-        controlPoints=points,
-        SplineType=spline_type,
+        start_point=points.pop(0),
+        end_point=points.pop(),
+        control_points=points,
+        spline_type=spline_type,
     )
     my_spline.plot(
         fig=fig,

@@ -24,11 +24,11 @@ class TestLine:
         ep = self.points[1]
         line = Line("Test init line", sp, ep)
         assert line.name == "Test init line"
-        assert line.startPoint == sp
-        assert line.endPoint == ep
+        assert line.start_point == sp
+        assert line.end_point == ep
         assert line.id == 1
-        assert line.startPoint.id == 1
-        assert line.endPoint.id == 2
+        assert line.start_point.id == 1
+        assert line.end_point.id == 2
         # gmsh.model.occ.synchronize()
         # gmsh.fltk.run()
 
@@ -41,11 +41,11 @@ class TestLine:
         assert dup_line.name == "Original_dup"
         assert line.arePointsEqual(dup_line)
         assert line.id == 1
-        assert line.startPoint.id == 3
-        assert line.endPoint.id == 4
+        assert line.start_point.id == 3
+        assert line.end_point.id == 4
         assert dup_line.id == 2
-        assert dup_line.startPoint.id == 9
-        assert dup_line.endPoint.id == 10
+        assert dup_line.start_point.id == 9
+        assert dup_line.end_point.id == 10
 
     def test_combine(self):
         """Test the combine function and the gmsh representation"""
@@ -55,8 +55,8 @@ class TestLine:
         combined_line = line_1.combine(line_2)
         assert combined_line.id == 3
         assert combined_line.name == f"combinedLine_{line_1.name}_{line_2.name}"
-        assert combined_line.startPoint.isEqual(self.points[0])
-        assert combined_line.endPoint.isEqual(self.points[4])
+        assert combined_line.start_point.isEqual(self.points[0])
+        assert combined_line.end_point.isEqual(self.points[4])
 
     # TODO: Add tests for the following methods:
     #   Line.complex

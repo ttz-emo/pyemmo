@@ -113,15 +113,15 @@ def build_bands_rotor(
     rotor_air_gap1_curves.append(
         Line(
             name="lowerLine1",
-            startPoint=r_point_rotor_cont,
-            endPoint=point_m11,
+            start_point=r_point_rotor_cont,
+            end_point=point_m11,
         )
     )
     rotor_air_gap1_curves.append(
         Line(
             name="upperLine1",
-            startPoint=l_point_rotor_cont,
-            endPoint=point_m12,
+            start_point=l_point_rotor_cont,
+            end_point=point_m12,
         )
     )
 
@@ -197,10 +197,10 @@ def build_bands_rotor(
     rotor_air_gap2_curves.append(rotor_circle1)
     rotor_air_gap2_curves.extend(rotor_mb_arcs)
     rotor_air_gap2_curves.append(
-        Line(name="lowerLine2", startPoint=point_m11, endPoint=point_m21)
+        Line(name="lowerLine2", start_point=point_m11, end_point=point_m21)
     )
     rotor_air_gap2_curves.append(
-        Line(name="upperLine2", startPoint=point_m12, endPoint=point_m22)
+        Line(name="upperLine2", start_point=point_m12, end_point=point_m22)
     )
 
     # Assginment of rotorBand2 as surface:
@@ -290,13 +290,13 @@ def build_bands_stator(
     )
 
     lower_line4 = Line(
-        name="lowerLine4", startPoint=lowest_y_point_stator, endPoint=point_m41
+        name="lowerLine4", start_point=lowest_y_point_stator, end_point=point_m41
     )
 
     upper_line4 = Line(
         name="upperLine4",
-        startPoint=biggest_y_point_stator,
-        endPoint=point_m42,
+        start_point=biggest_y_point_stator,
+        end_point=point_m42,
     )
 
     # Adding curves to list:
@@ -349,9 +349,9 @@ def build_bands_stator(
         centerPoint=center_point,
     )
 
-    lower_line3 = Line(name="lowerLine3", startPoint=point_m31, endPoint=point_m41)
+    lower_line3 = Line(name="lowerLine3", start_point=point_m31, end_point=point_m41)
 
-    upper_line3 = Line(name="upperLine3", startPoint=point_m32, endPoint=point_m42)
+    upper_line3 = Line(name="upperLine3", start_point=point_m32, end_point=point_m42)
 
     # Adding curves to list 'curvesStLu2':
     curves_stlu2 = []

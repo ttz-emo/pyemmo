@@ -256,8 +256,8 @@ class Surface(Transformable):
         if LineLoop:
             PointList: list[Point] = []
             for line in LineLoop:
-                startPoint = line.startPoint
-                endPoint = line.endPoint
+                startPoint = line.start_point
+                endPoint = line.end_point
                 if startPoint not in PointList:
                     PointList.append(startPoint)
                 if endPoint not in PointList:
@@ -290,11 +290,11 @@ class Surface(Transformable):
                 if CenterPoint not in PointList:
                     PointList.append(CenterPoint)
             elif line.type == "Spline":
-                for controlPoint in line.controlPoints:
+                for controlPoint in line.control_points:
                     if controlPoint not in PointList:
                         PointList.append(controlPoint)
-            startPoint = line.startPoint
-            endPoint = line.endPoint
+            startPoint = line.start_point
+            endPoint = line.end_point
             if startPoint not in PointList:
                 PointList.append(startPoint)
             if endPoint not in PointList:
@@ -648,11 +648,11 @@ class Surface(Transformable):
             # if that line was found get direction, append it to newLoop and remove it from oldLoop
             for i2 in range(0, len(oldLoop)):
                 # if direction == 1:
-                if oldLoop[i2].startPoint.isEqual(newLoop[-1].endPoint):
+                if oldLoop[i2].start_point.isEqual(newLoop[-1].end_point):
                     # direction = True # direction is equal
                     newLoop.append(oldLoop.pop(i2))
                     break
-                elif oldLoop[i2].endPoint.isEqual(newLoop[-1].endPoint):
+                elif oldLoop[i2].end_point.isEqual(newLoop[-1].end_point):
                     # direction = False # direction is inverted
                     oldLoop[i2].switchPoints()
                     newLoop.append(oldLoop.pop(i2))
@@ -662,11 +662,11 @@ class Surface(Transformable):
             mssg = f"Lineloop of surface '{self.name}' was not closed!"
             raise (RuntimeError(mssg))
             # else:
-            #     if oldLoop[i2].startPoint.isEqual(newLoop[-1].startPoint):
+            #     if oldLoop[i2].start_point.isEqual(newLoop[-1].start_point):
             #         direction = True # direction is equal
             #         newLoop.append(oldLoop.pop(i2))
             #         break
-            #     elif oldLoop[i2].endPoint.isEqual(newLoop[-1].startPoint):
+            #     elif oldLoop[i2].end_point.isEqual(newLoop[-1].start_point):
             #         direction = False # direction is inverted
             #         oldLoop[i2].switchPoints()
             #         newLoop.append(oldLoop.pop(i2))

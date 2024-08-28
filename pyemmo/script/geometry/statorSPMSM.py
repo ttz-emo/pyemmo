@@ -188,48 +188,48 @@ class StatorPMSM(Stator):
 
         for inLineSlot in slot1.innerLinePart:
             sl_OP = {"SlotInnerLine": inLineSlot}
-            p1 = inLineSlot.startPoint
-            p2 = inLineSlot.endPoint
+            p1 = inLineSlot.start_point
+            p2 = inLineSlot.end_point
             sl_OP["p1"] = p1
             sl_OP["p2"] = p2
             allSlotOP.append(sl_OP)
 
         for inLineLam in statorSheet1.innerLinePart:
             lamL1 = {"LaminationLine": inLineLam}
-            p1 = inLineLam.startPoint
-            p2 = inLineLam.endPoint
+            p1 = inLineLam.start_point
+            p2 = inLineLam.end_point
             lamL1["p1"] = p1
             lamL1["p2"] = p2
             allLamL.append(lamL1)
 
         for interLamLine in statorSheet1.betweenLinePart:
             lamL1 = {"LaminationLine": interLamLine}
-            p1 = interLamLine.startPoint
-            p2 = interLamLine.endPoint
+            p1 = interLamLine.start_point
+            p2 = interLamLine.end_point
             lamL1["p1"] = p1
             lamL1["p2"] = p2
             allLamL2.append(lamL1)
 
         dockingPointSlotOpening = slot1.airDockingPoint[0]
         # prüfen welcher Punkt in allMagL der DockingPoint ist! -> Momentan allMagL darf nur ein Element besitzen -> Ansonsten hier eine For-Schleife einrichten.
-        if slot1.innerLinePart[0].startPoint.isEqual(dockingPointSlotOpening):
-            changePointSOP = slot1.innerLinePart[0].endPoint
-        elif slot1.innerLinePart[0].endPoint.isEqual(dockingPointSlotOpening):
-            changePointSOP = slot1.innerLinePart[0].startPoint
+        if slot1.innerLinePart[0].start_point.isEqual(dockingPointSlotOpening):
+            changePointSOP = slot1.innerLinePart[0].end_point
+        elif slot1.innerLinePart[0].end_point.isEqual(dockingPointSlotOpening):
+            changePointSOP = slot1.innerLinePart[0].start_point
 
         # Punkt von Lamination holen, der verändert werden muss. Punkt wandert zu Ende des Magneten.
         statorAirDockPoint = statorSheet1.airDockingPoint1[0]
         for lElem in allLamL:
             if lElem["p1"].coordinate == statorAirDockPoint.coordinate:
-                lElem["LaminationLine"].startPoint = changePointSOP
+                lElem["LaminationLine"].start_point = changePointSOP
             elif lElem["p2"].coordinate == statorAirDockPoint.coordinate:
-                lElem["LaminationLine"].endPoint = changePointSOP
+                lElem["LaminationLine"].end_point = changePointSOP
 
         for lElem in allLamL2:
-            if statorSheet1.betweenLinePart[0].startPoint.isEqual(statorAirDockPoint):
-                lElem["LaminationLine"].startPoint = slot1.laminationDockingPoint[0]
-            elif statorSheet1.betweenLinePart[0].endPoint.isEqual(statorAirDockPoint):
-                lElem["LaminationLine"].endPoint = slot1.laminationDockingPoint[0]
+            if statorSheet1.betweenLinePart[0].start_point.isEqual(statorAirDockPoint):
+                lElem["LaminationLine"].start_point = slot1.laminationDockingPoint[0]
+            elif statorSheet1.betweenLinePart[0].end_point.isEqual(statorAirDockPoint):
+                lElem["LaminationLine"].end_point = slot1.laminationDockingPoint[0]
 
         curveOfStatorSheet1 = statorSheet1.geo_list[0].curve
         curveOfStatorSheet1 = curveOfStatorSheet1 + slot1.laminationDockingLine
@@ -266,7 +266,7 @@ class StatorPMSM(Stator):
         # duplicate
         allGeo = self.physicalRaw[0].geo_list
         centerPoint: Point = self.laminationDict["machineCentrePoint"].duplicate()
-        pH1 = self.physicalRaw[0].betweenLinePart[0].startPoint
+        pH1 = self.physicalRaw[0].betweenLinePart[0].start_point
         hilfsLinie1 = Line("L_hilf1", centerPoint, pH1)
         ez = Point(
             "p_Z",

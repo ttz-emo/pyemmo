@@ -63,8 +63,8 @@ def calc_even_rotor_cont(
     # rotor lamination:
     for curve in rotor_lam_surf_list[0].curve:
         if not (
-            math.isclose(a=curve.startPoint.radius, b=radius, abs_tol=1e-6)
-        ) and not math.isclose(a=curve.endPoint.radius, b=radius, abs_tol=1e-6):
+            math.isclose(a=curve.start_point.radius, b=radius, abs_tol=1e-6)
+        ) and not math.isclose(a=curve.end_point.radius, b=radius, abs_tol=1e-6):
             rotor_cont_line_list.append(curve)
     # print("---")
     # print("Plot Überprüfung des Löschens der Seitenlinien.")
