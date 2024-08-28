@@ -101,6 +101,7 @@ class GmshPoint(Point):
         if coords.size != 3:
             raise ValueError(f"Wrong GmshPoint coordinates {coords=}!")
         self.coordinate = coords
+        self._meshLength = gmsh.model.mesh.get_sizes([(0, tag)])[0]
 
     @property
     def tag(self) -> int:
@@ -120,11 +121,12 @@ class GmshPoint(Point):
         Args:
             new_tag (int): New tag value to set.
         """
-        if not (0, new_tag) in gmsh.model.get_entities(0):
+        if (0, new_tag) not in gmsh.model.get_entities(0):
             raise RuntimeError(
                 "Given point tag is not in gmsh model! "
                 "Did you forget to call gmsh.model.occ.synchronize()?"
             )
+        self._id = new_tag
         self._tag = new_tag
 
     def __str__(self) -> str:

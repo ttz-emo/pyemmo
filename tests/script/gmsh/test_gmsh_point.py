@@ -5,7 +5,7 @@ import pytest
 from pyemmo.script.geometry.point import Point
 from pyemmo.script.gmsh.gmsh_point import GmshPoint
 
-init_cases = [("Point 1", 0, 1, 0, 1), ("Point 2", 1, 0, 0, 1)]
+init_cases = [("Point 1", 0, 1, 0, 1), ("Point 2", 1, 0, 0, 1e-3)]
 
 
 class TestGmshPoint:
@@ -25,8 +25,10 @@ class TestGmshPoint:
         gmsh.model.occ.synchronize()
         gmsh_point = GmshPoint(point.id)
         assert gmsh_point.tag == point.id
+        assert gmsh_point.id == point.id
         assert gmsh_point.coordinate == (x, y, z)
         assert gmsh_point.coordinate == point.coordinate
+        assert gmsh_point.meshLength == ml
         assert (
             str(gmsh_point)
             == f"GmshPoint(tag={gmsh_point.tag}, coords=({float(x)}, {float(y)}, {float(z)}))"
