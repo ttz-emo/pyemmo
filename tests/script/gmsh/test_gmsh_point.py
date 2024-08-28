@@ -3,16 +3,17 @@ import numpy as np
 import pytest
 
 from pyemmo.script.geometry.point import Point
+from pyemmo.script.gmsh.gmsh_point import GmshPoint
 
 init_cases = [("Point 1", 0, 1, 0, 1), ("Point 2", 1, 0, 0, 1)]
 
 
-class TestPoint:
+class TestGmshPoint:
 
     # @pytest.mark.parametrize("name, sp, ep", init_cases)
     def setup_method(self):
         gmsh.initialize()
-        gmsh.model.add("test PyEMMO Point class")
+        gmsh.model.add("test PyEMMO GmshPoint class")
         # self.line = Line(name=name, startPoint=sp, endPoint=ep)
 
     def teardown_method(self):
@@ -21,13 +22,20 @@ class TestPoint:
     @pytest.mark.parametrize("name, x,  y, z, ml", init_cases)
     def test_init(self, name, x, y, z, ml):
         point = Point(name, x, y, z, ml)
-        assert point.name == name
-        assert point.coordinate == (x, y, z)
-        assert point.x == x
-        assert point.y == y
-        assert point.z == z
-        assert point.id == 1
-        assert gmsh.model.get_entity_name(dim=0, tag=1) == name
+        gmsh.model.occ.synchronize()
+        gmsh_point = GmshPoint(point.id)
+        assert gmsh_point.tag == point.id
+        assert gmsh_point.coordinate == (x, y, z)
+        assert gmsh_point.coordinate == point.coordinate
+        assert (
+            str(gmsh_point)
+            == f"GmshPoint(tag={gmsh_point.tag}, coords=({float(x)}, {float(y)}, {float(z)}))"
+        )
+
+    @pytest.mark.xfail(reason="gmsh.model.occ.synchronize() not called", strict=True)
+    def test_init_fail(self, name, x, y, z, ml):
+        point = Point(name, x, y, z, ml)
+        gmsh_point = GmshPoint(point.id)
 
     @pytest.mark.parametrize(
         "new_x", [0, 1, -1, pytest.param("a", marks=pytest.mark.xfail)]

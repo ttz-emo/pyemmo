@@ -120,6 +120,11 @@ class GmshPoint(Point):
         Args:
             new_tag (int): New tag value to set.
         """
+        if not (0, new_tag) in gmsh.model.get_entities(0):
+            raise RuntimeError(
+                "Given point tag is not in gmsh model! "
+                "Did you forget to call gmsh.model.occ.synchronize()?"
+            )
         self._tag = new_tag
 
     def __str__(self) -> str:
