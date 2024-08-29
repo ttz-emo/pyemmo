@@ -42,89 +42,6 @@ from . import (
 from .SurfaceJSON import SurfaceAPI
 
 
-def getPrimaryLines(
-    segmentSurfDict: dict[str, SurfaceAPI],
-    rotorAirgapRadius: float,
-    pinballRadius: float = 1e-6,
-) -> tuple[list[Line], list[Line]]:
-    """Extract the primary lines for the Link boundary condition.
-        Since the geometry is allways constructed from the horizontal x-axis the lines must lie
-        on that axis with a tolerance given by pinballRadius.
-
-    Args:
-        segmentSurfDict (Dict[str, SurfaceAPI]): Segment Surface dict with short IDs (IdExt) as
-            keys and SurfaceAPI objects as values
-        RotorAirgapRadius (float): Radius of the outer rotor airgap line (rotor movingband line)
-            to determine whether a line is on the rotor or stator side.
-        pinballRadius (float, optional): Distance in m that a primary line point can differ from
-            the x-axis. Defaults to 1e-6.
-
-    Returns:
-        Tuple[List[Line],List[Line]]: List of stator and rotor primary lines (StatorList,RotorList).
-    """
-    rotorMLList: list[Line] = []  # Rotor primarylines
-    statorMLList: list[Line] = []  # Stator primarylines
-    for area in segmentSurfDict.values():  # for every surface
-        for line in area.curve:  # for each line
-            # get the coordinates of the startpoint
-            startPoint = line.start_point.coordinate[:]
-            # get the coords of the endpoint
-            endPoint = line.end_point.coordinate[:]
-            # if the y-values are smaller than the maximal Distanz from y=0
-            # (Pinball radius) which means they are on the x-axis AND their
-            # x-coordinate is positive (positive side of x-axis) -> it's a
-            # primary line
-            if (
-                abs(startPoint[1]) < pinballRadius
-                and abs(endPoint[1]) < pinballRadius
-                and (startPoint[0] > 0 and endPoint[0] > 0)
-            ):
-                # if x-values are smaller than airgap radius, line is on rotor
-                # FIXME: this is only true for inner rotor machines
-                if (
-                    abs(startPoint[0]) <= rotorAirgapRadius
-                    or abs(endPoint[0]) <= rotorAirgapRadius
-                ):
-                    # it is a rotor primary line
-                    rotorMLList.append(line.duplicate())
-                else:  # otherwise its on the stator side
-                    # it is a stator primary line
-                    statorMLList.append(line.duplicate())
-    return statorMLList, rotorMLList
-
-
-def createSecondaryLines(
-    statorPrimaryLines: list[Line],
-    rotorPrimaryLines: list[Line],
-    symFactor: int,
-) -> tuple[list[Line], list[Line]]:
-    """duplicate the stator and rotor primary lines to get the secondary lines. For primary lines
-    see function "getPrimaryLines".
-    Lines are created by duplicating the primary lines and rotating them by 2*pi/symFactor.
-
-    Args:
-        statorPrimaryLines (List[Line]): List of primary lines on the stator side.
-        rotorPrimaryLines (List[Line]): List of the primary lines on the rotor side.
-
-    Returns:
-        Tuple[List[Line], List[Line]]: List of stator and rotor secondary lines
-        (StatorList, RotorList).
-    """
-    rotorSLList: list[Line] = list()  # Rotor slavelines
-    statorSLList: list[Line] = list()  # Stator slavelines
-    for primaryLine in statorPrimaryLines:
-        slaveLine = primaryLine.duplicate()  # duplicate
-        # and rotate primaryline to get slaveline
-        slaveLine.rotateZ(angle=2 * pi / symFactor)
-        statorSLList.append(slaveLine)
-    for primaryLine in rotorPrimaryLines:
-        slaveLine = primaryLine.duplicate()  # duplicate
-        # and rotate primaryline to get slaveline
-        slaveLine.rotateZ(angle=2 * pi / symFactor)
-        rotorSLList.append(slaveLine)
-    return statorSLList, rotorSLList
-
-
 def findLine(lineName: str, lineIDList) -> bool:
     """
     findLine is a recursive function that checks if a list of IDs is in lineName.
@@ -231,6 +148,9 @@ def getBoundaryLines(
                 dupLines.append(rotateDuplicate(line, i * angle))
         return lineList + dupLines
     return None
+
+
+############################## START MOVINGBAND CREATION ##############################
 
 
 def createMBLines(
@@ -366,6 +286,9 @@ def createMB(
     return movingBandStator, movingBandRotorInner, movingBandRotorAux
 
 
+############################### END MOVINGBAND CREATION ###############################
+
+
 def getLimitLines(
     limitLineDict: dict[str, list[str]],
     machineSurfList: list[SurfaceAPI],
@@ -449,7 +372,6 @@ def get_rotor_stator_dim_tags(
 import gmsh
 import numpy as np
 
-from ...definitions import DEFAULT_GEO_TOL
 from ...script.gmsh.gmsh_line import GmshLine
 from ...script.gmsh.gmsh_point import GmshPoint
 
@@ -508,27 +430,93 @@ def get_boundary_line_list(
     return bnd_line_list
 
 
-def get_primary_lines(bnd_line_list: list[GmshLine]):
-    primary_lines: list[GmshLine] = []
-    for i, gmsh_line in enumerate(bnd_line_list):
-        if np.isclose(gmsh_line.start_point.y, 0, atol=DEFAULT_GEO_TOL) and np.isclose(
-            gmsh_line.end_point.y, 0, atol=DEFAULT_GEO_TOL
+def is_line_straight(line: Line) -> bool:
+    """Check if line is straigt"""
+    if type(line) in (Line, GmshLine):
+        return True
+    return False
+
+
+def filter_lines_at_angle(line_list: list[Line], angle: float) -> list[Line]:
+    """Filter all lines from a list of lines that are on a specific ``angle`` to the
+    x-axis in the xy-plane.
+
+    Args:
+        line_list (list[Line]): List of (boundary) lines.
+        angle (float): Angle of axis in xy-plane to filter.
+
+    Returns:
+        list[Line]: List of lines that are on the specified axis.
+    """
+    straight_lines = filter(is_line_straight, line_list)
+    lines_at_angle: list[Line] = []
+    for line in straight_lines:
+        # we need to check start and end point angle here because there could be a line
+        # on the boundary that has the same vector-angle, but is no secondary line!
+        if type(line) in (Line, GmshLine) and all(
+            np.isclose(
+                [
+                    line.start_point.getAngleToX(),
+                    line.end_point.getAngleToX(),
+                ],
+                [angle, angle],
+                atol=1e-6,
+            )
         ):
-            primary_lines.append(bnd_line_list.pop(i))
+            lines_at_angle.append(line)
+    return lines_at_angle
+
+
+def get_primary_lines(bnd_line_list: list[GmshLine]) -> list[GmshLine]:
+    """Get a list of primary lines from the list of boundary lines by filtering the
+    lines that are on the x-axis (at angle 0.0°).
+    The primary lines are removed from the list of boundary lines since the cannot be
+    any other boundary.
+
+    Args:
+        bnd_line_list (list[GmshLine]): List of boundary lines.
+
+    Raises:
+        RuntimeError: If no primary lines could be found.
+
+    Returns:
+        list[GmshLine]: List of primary lines.
+    """
+    primary_lines: list[GmshLine] = filter_lines_at_angle(bnd_line_list, 0.0)
     if not primary_lines:
         raise RuntimeError("Could not determine primary lines.")
+    # remove used lines
+    for gmsh_line in primary_lines:
+        bnd_line_list.remove(gmsh_line)
     return primary_lines
 
 
-def get_secondary_lines(bnd_line_list: list[GmshLine], sym_factor: int):
-    secondary_lines: list[GmshLine] = []
-    for i, gmsh_line in enumerate(bnd_line_list):
-        if np.isclose(gmsh_line.start_point.x, 0, atol=DEFAULT_GEO_TOL) and np.isclose(
-            gmsh_line.end_point.x, 0, atol=DEFAULT_GEO_TOL
-        ):
-            secondary_lines.append(bnd_line_list.pop(i))
+def get_secondary_lines(
+    bnd_line_list: list[GmshLine], sym_factor: int
+) -> list[GmshLine]:
+    """Get the secondary lines from a list of boundary lines by checking if they are on
+    the axis given by: angle = 2 * pi / symmetry
+    Function removes the identified lines from the list of boundary lines, since they
+    cannot be any other boundary anymore!
+
+    Args:
+        bnd_line_list (list[GmshLine]): List of boundary lines.
+        sym_factor (int): Symmetry factor.
+
+    Raises:
+        RuntimeError: If no secondary lines could be found.
+
+    Returns:
+        list[GmshLine]: List of secondary lines.
+    """
+    secondary_lines: list[GmshLine] = filter_lines_at_angle(
+        bnd_line_list, angle=2 * np.pi / sym_factor
+    )
     if not secondary_lines:
-        raise RuntimeError("Could not determine primary lines.")
+        raise RuntimeError("Could not determine secondary lines.")
+    # remove used lines
+    for gmsh_line in secondary_lines:
+        bnd_line_list.remove(gmsh_line)
     return secondary_lines
 
 
@@ -554,17 +542,20 @@ def get_boundaries(
             PrimaryLine("Primary Line Rotor", get_primary_lines(rotor_bnd_line_list))
         )
         rotor_boundary.append(
-            SlaveLine("Secondary Line Rotor", get_secondary_lines(rotor_bnd_line_list))
+            SlaveLine(
+                "Secondary Line Rotor",
+                get_secondary_lines(rotor_bnd_line_list, symFactor),
+            )
         )
         stator_boundary.append(
             PrimaryLine("Primary Line Stator", get_primary_lines(stator_bnd_line_list))
         )
         stator_boundary.append(
             SlaveLine(
-                "Secondary Line Stator", get_secondary_lines(stator_bnd_line_list)
+                "Secondary Line Stator",
+                get_secondary_lines(stator_bnd_line_list, symFactor),
             )
         )
-
     # 2: Movingband
     ## Handling Airgap material for Movingband
     # machineSurfDict = createSurfaceDict(segmentSurfDict)
@@ -664,7 +655,9 @@ def get_boundaries(
     return rotor_boundary, stator_boundary
 
 
-def geoElemList(physElemList: list[PhysicalElement]) -> list[Transformable]:
+def geoElemList(
+    physElemList: list[PhysicalElement] | PhysicalElement,
+) -> list[Transformable]:
     """Create a list of geometrical elements (type Transformable) from a list of PhysicalElements"""
     geoList = []
     if isinstance(physElemList, list):
