@@ -73,6 +73,7 @@ class PhysicalElement:
         # the physical element type can be used to identify physical elements
         self.physicalElementType = "PhysicalElement"
 
+        self.name = name
         self.geo_list = geo_list  # set geo list to determine geo_type
 
         geo_type = 1 if self.geoElementType == Line else 2  # geo_type is Line or Surf
@@ -83,7 +84,6 @@ class PhysicalElement:
             self.id = gmsh.model.addPhysicalGroup(
                 geo_type, tag_list, tag=phyID, name=name
             )
-        self.name = name
         self.material = material
 
     # ----- properties -----
