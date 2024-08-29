@@ -36,6 +36,8 @@ from .transformable import Transformable
 if TYPE_CHECKING:
     from matplotlib.figure import Figure
 
+    from ..script import Script
+
 
 class Line(Transformable):
     """
