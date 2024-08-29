@@ -79,7 +79,8 @@ class Point(Transformable):
         self._todesmerker = False
 
         self.id = gmsh.model.occ.addPoint(x, y, z, meshLength)
-        gmsh.model.set_entity_name(0, self.id, name)
+        gmsh.model.set_entity_name(0, self.id, name)  # This cannot be placed in name
+        # setter because point is created afterwards in gmsh...
 
     # def __eq__(self, x) -> bool:
     #     """Overload the "==" operator to compare if points are equal in a given tolerance"""
@@ -510,11 +511,11 @@ class Point(Transformable):
         Args:
             flag_deg (bool, optional): return the angle in degrees. Defaults to False.
             CenterPoint (Tuple or Point, optional): Center point of the rotational axis.
-            Defaults to (0,0,0).
+                Defaults to (0,0,0).
 
         Returns:
             float: angle to the horizontal axis of the center point (in 'radians' if
-            flag_deg is not True)
+                flag_deg is not True)
         """
         if isinstance(CenterPoint, tuple):
             if len(CenterPoint) == 3:
