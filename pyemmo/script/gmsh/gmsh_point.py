@@ -94,6 +94,7 @@ class GmshPoint(Point):
                 in Gmsh and get the coordinates from there.
         """
         self.tag = tag
+        self.name = gmsh.model.get_entity_name(0, tag)
         if coords.size == 0:
             # try to get coords from gmsh:
             coords = gmsh.model.get_value(0, tag, [])  # This raises an Exception if
