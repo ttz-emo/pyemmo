@@ -24,16 +24,16 @@ with Gmsh.
 
 This module includes the `GmshLine` class, which represents a line segment in 3D space.
 The class allows for the definition of a line with a unique tag, start and end points,
-a name, and a type.
+a name.
 
 Classes:
     - GmshLine: Represents a line segment in 3D space with attributes for identifying
       the line, specifying its start and end points (as `GmshPoint` objects), and
-      assigning a name and type to the line.
+      assigning a name.
 
 Usage:
     - Instantiate `GmshLine` with a unique tag, start and end points, and optionally
-      a name and type.
+      a name.
     - Access and modify the line's properties through getter and setter methods.
     - Utilize the string representation for debugging and logging purposes.
 
@@ -54,7 +54,6 @@ Example:
         start_point=start,
         end_point=end,
         name="Diagonal",
-        type="Line"
     )
 
     # Print line details
@@ -67,6 +66,8 @@ Note:
     This docstring was created by ChatGPT.
 """
 
+from typing import Union
+
 import gmsh
 
 from ..geometry.line import Line
@@ -75,23 +76,34 @@ from .gmsh_point import GmshPoint
 
 class GmshLine(Line):
     """
-    Represents a line in 3D space defined by a start and end point, with a unique
-    identifier (tag), a name, and a type. The start and end points are instances of
-    GmshPoint.
+    Represents a Gmsh line in 3D space defined by a start and end point, with a unique
+    identifier (tag), a name. The start and end points are instances of
+    GmshPoint. If they are not given the instance tries to find and create the points
+    throught the gmsh api by calling:
+
+    ..python:
+
+        point_tags = gmsh.model.get_boundary(dimTags=[(1, tag)])
+        start_point = GmshPoint(
+            point_tags[0][1], gmsh.model.get_value(0, point_tags[0][1], [])
+        )
+        end_point = (
+            point_tags[1][1],
+            gmsh.model.get_value(0, point_tags[1][1], []),
+        )
 
     Attributes:
         tag (int): The unique identifier for the line.
         start_point (GmshPoint): The starting point of the line.
         end_point (GmshPoint): The ending point of the line.
         name (str): The name of the line.
-        type (str): The type of the line (e.g., "Line", "Circle").
     """
 
     def __init__(
         self,
         tag: int,
-        start_point: GmshPoint,
-        end_point: GmshPoint,
+        start_point: Union[GmshPoint, None] = None,
+        end_point: Union[GmshPoint, None] = None,
         name: str = "",
     ):
         """
@@ -99,18 +111,25 @@ class GmshLine(Line):
 
         Args:
             tag (int): The unique identifier for the line.
-            start_point (GmshPoint): The starting point of the line.
-            end_point (GmshPoint): The ending point of the line.
+            start_point (GmshPoint, optional): The starting point of the line.
+            end_point (GmshPoint, optional): The ending point of the line.
             name (str, optional): The name of the line. Defaults to an empty string.
-            line_type (str, optional): The type of the line. Defaults to "straight".
         """
         self.tag = tag
+        if not start_point and not end_point:
+            point_tags = gmsh.model.get_boundary(dimTags=[(1, tag)])
+            start_point = GmshPoint(
+                point_tags[0][1], gmsh.model.get_value(0, point_tags[0][1], [])
+            )
+            end_point = GmshPoint(
+                point_tags[1][1],
+                gmsh.model.get_value(0, point_tags[1][1], []),
+            )
         self.start_point = start_point
         self.end_point = end_point
         if not name:
             name = gmsh.model.get_entity_name(1, tag)
         self.name = name
-        self.type = gmsh.model.get_type(1, tag)
 
     @property
     def tag(self) -> int:
@@ -160,6 +179,7 @@ class GmshLine(Line):
         Args:
             new_start_point (GmshPoint): The new starting point to set.
         """
+        assert isinstance(new_start_point, GmshPoint)
         self._start_point = new_start_point
 
     @property
@@ -182,26 +202,6 @@ class GmshLine(Line):
         """
         self._end_point = new_end_point
 
-    @property
-    def type(self) -> str:
-        """
-        Getter for the type property.
-
-        Returns:
-            str: The type of the line.
-        """
-        return self._type
-
-    @type.setter
-    def type(self, new_type: str):
-        """
-        Setter for the type property.
-
-        Args:
-            new_type (str): The new type of the line.
-        """
-        self._type = new_type
-
     def __str__(self) -> str:
         """
         Returns a string representation of the GmshLine.
@@ -211,6 +211,6 @@ class GmshLine(Line):
         """
         return (
             f"GmshLine(tag={self.tag}, name={self.name}, type={self.type}, "
-            f"start_point=({self.start_point.x}, {self.start_point.y}, {self.start_point.z}), "
-            f"end_point=({self.end_point.x}, {self.end_point.y}, {self.end_point.z}))"
+            f"start_point=({self.start_point.x:.1e}, {self.start_point.y:.1e}, {self.start_point.z:.1e}), "
+            f"end_point=({self.end_point.x:.1e}, {self.end_point.y:.1e}, {self.end_point.z:.1e}))"
         )
