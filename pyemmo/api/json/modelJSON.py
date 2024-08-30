@@ -412,6 +412,7 @@ def createMachineGeometryFromSegment(
                     # add tool tools to new tools if not empty
                     new_tools.extend(tool.tools)  # extent tools
                 tools = new_tools
+    # TODO: Add airgap creation if no airgap in given geometry
     if logging.getLogger().level <= logging.DEBUG:
         gmsh.model.occ.synchronize()
         # gmsh.fltk.run()
