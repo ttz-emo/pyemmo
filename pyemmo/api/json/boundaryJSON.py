@@ -29,15 +29,15 @@ import gmsh
 import numpy as np
 
 from ...script.geometry import physicalsDict
+from ...script.geometry.circleArc import CircleArc
 from ...script.geometry.line import Line
 from ...script.geometry.movingBand import MovingBand
 from ...script.geometry.physicalElement import PhysicalElement
 from ...script.geometry.primaryLine import PrimaryLine
 from ...script.geometry.slaveLine import SlaveLine
 from ...script.geometry.transformable import Transformable
-from ...script.gmsh.gmsh_arc import CircleArc
+from ...script.gmsh.gmsh_arc import GmshArc
 from ...script.gmsh.gmsh_line import GmshLine
-from ...script.gmsh.gmsh_point import GmshPoint
 from ...script.material.material import Material
 from .. import air
 from .. import logger as apiLogger
@@ -88,7 +88,7 @@ def get_min_radius(dim_tags: list[tuple[Literal[0, 1, 2], int]]) -> float:
     return min_radius
 
 
-def filter_lines_on_radius(line_list: list[GmshLine], radius: float) -> list[GmshLine]:
+def filter_curves_on_radius(line_list: list[GmshLine], radius: float) -> list[GmshLine]:
     """Filter all lines from a list of lines that are TODO
 
     Args:
@@ -99,7 +99,7 @@ def filter_lines_on_radius(line_list: list[GmshLine], radius: float) -> list[Gms
         list[Line]: List of lines that are on the specified radius.
     """
     curved_lines = filter(lambda line: isinstance(line, CircleArc), line_list)
-    lines_on_radius: list[Line] = []
+    lines_on_radius: list[CircleArc] = []
     for line in curved_lines:
         # we need to check start and end point angle here because there could be a line
         # on the boundary that has the same vector-angle, but is no secondary line!
@@ -133,13 +133,15 @@ def filter_lines_at_angle(line_list: list[Line], angle: float) -> list[Line]:
     for line in straight_lines:
         # we need to check start and end point angle here because there could be a line
         # on the boundary that has the same vector-angle, but is no secondary line!
-        if np.isclose(
-            [
-                line.start_point.getAngleToX(),
-                line.end_point.getAngleToX(),
-            ],
-            [angle, angle],
-            atol=1e-6,
+        if all(
+            np.isclose(
+                [
+                    line.start_point.getAngleToX(),
+                    line.end_point.getAngleToX(),
+                ],
+                [angle, angle],
+                atol=1e-6,
+            )
         ):
             lines_at_angle.append(line)
     return lines_at_angle
@@ -294,7 +296,9 @@ def createMBLines(
     return mbLines
 
 
-def createMBAux(mb_lines_rotor: list, symFaktor: int, material=air) -> list[MovingBand]:
+def createMBAux(
+    mb_lines_rotor: list[GmshArc], symFaktor: int, material=air
+) -> list[MovingBand]:
     """
     createMBAux creates the outer Movingband lines of the rotor and add them to
     pyemmo-Movingband objects depended on symmetry
@@ -314,16 +318,12 @@ def createMBAux(mb_lines_rotor: list, symFaktor: int, material=air) -> list[Movi
     # of lines as the inner movingband
     for i in range(1, symFaktor):  # for every symmetry part
         mb_lines_aux: list[Line] = []  # re-init mb_lines_list
-        # get dim tags of existing (inner) Movingband lines
-        mb_line_dim_tags = [(1, line.tag) for line in mb_lines_rotor]
-        # copy in gmsh (easier)
-        new_dim_tags = gmsh.model.occ.copy(mb_line_dim_tags)
-        # create GmshLine objects, rotate them and add them to line list:
-        for dim, tag in new_dim_tags:
-            assert dim == 1  # should be line
-            mb_line = GmshLine(tag)
+        # create duplicate curves, rotate them and add them to line list:
+        for arc in mb_lines_rotor:
+            mb_line = arc.duplicate()
             mb_line.rotateZ(angle=i * sym_angle)
             mb_lines_aux.append(mb_line)
+        gmsh.model.occ.synchronize()  # need to sync before adding Physical
         mb_aux_list.append(
             MovingBand(
                 name=(physicalsDict["Rotor_MB_Line"] + f"_{str(i+1)}"),
@@ -357,7 +357,7 @@ def createMB(
     # get dim tags list of stator boundary lines (GmshLine):
     bnd_line_dim_tags = [(1, line.tag) for line in stator_bnd_lines]
     # filter stator movingband lines:
-    mb_lines_stator = filter_lines_on_radius(
+    mb_lines_stator = filter_curves_on_radius(
         stator_bnd_lines, get_min_radius(bnd_line_dim_tags)
     )
     if not mb_lines_stator:
@@ -371,7 +371,7 @@ def createMB(
     bnd_line_dim_tags = [(1, line.tag) for line in rotor_bnd_lines]
     # filter ROTOR movingband lines.
     # Must be the most outer (max. radius) lines in the boundary list:
-    mb_lines_rotor = filter_lines_on_radius(
+    mb_lines_rotor = filter_curves_on_radius(
         rotor_bnd_lines, get_max_radius(bnd_line_dim_tags)
     )
     if not mb_lines_rotor:
@@ -516,22 +516,17 @@ def get_boundary_line_list(
     """
     boundary_dim_tags = gmsh.model.get_boundary(surf_dim_tags)
     # create a boundary line dict:
-    bnd_line_list: list[GmshLine] = []
+    bnd_line_list: list[GmshLine, GmshArc] = []
     for dim, l_tag in boundary_dim_tags:
         assert dim == 1
         # line_type = gmsh.model.get_type(1, l_tag)  # get curve type: 'Line' or 'Circle'
-        point_tags = gmsh.model.get_boundary(dimTags=[(1, l_tag)])
-        bnd_line_list.append(
-            GmshLine(
-                l_tag,
-                GmshPoint(
-                    point_tags[0][1], gmsh.model.get_value(0, point_tags[0][1], [])
-                ),
-                GmshPoint(
-                    point_tags[1][1], gmsh.model.get_value(0, point_tags[1][1], [])
-                ),
-            )
-        )
+        line_type = gmsh.model.get_type(1, l_tag)
+        if line_type == "Line":
+            bnd_line_list.append(GmshLine(l_tag))
+        elif line_type == "Circle":
+            bnd_line_list.append(GmshArc(l_tag))
+        else:
+            raise RuntimeError(f"Can not handle Gmsh line type '{line_type}'")
     return bnd_line_list
 
 
