@@ -21,10 +21,13 @@
 
 from __future__ import annotations
 
-from numpy import pi
+from typing import Literal
 
 # from matplotlib import pyplot as plt
 # from ..functions.plot import plot
+import gmsh
+import numpy as np
+
 from ...script.geometry import physicalsDict
 from ...script.geometry.line import Line
 from ...script.geometry.movingBand import MovingBand
@@ -32,6 +35,9 @@ from ...script.geometry.physicalElement import PhysicalElement
 from ...script.geometry.primaryLine import PrimaryLine
 from ...script.geometry.slaveLine import SlaveLine
 from ...script.geometry.transformable import Transformable
+from ...script.gmsh.gmsh_arc import CircleArc
+from ...script.gmsh.gmsh_line import GmshLine
+from ...script.gmsh.gmsh_point import GmshPoint
 from ...script.material.material import Material
 from .. import air
 from .. import logger as apiLogger
@@ -40,6 +46,106 @@ from . import (
     StatorMBLineDict,
 )
 from .SurfaceJSON import SurfaceAPI
+
+
+################################## MISC FUNCTIONS ######################################
+def get_max_radius(dim_tags: list[tuple[Literal[0, 1, 2], int]]) -> float:
+    """Get the maximal radius of a list of surface dim-tags.
+
+    Args:
+        surf_dim_tags (list[int]): List of surface dim tags, like ``(2, tag)``
+
+    Returns:
+        float: Maximal radius of bounding points.
+    """
+    max_radius = 0
+    point_dim_tags = gmsh.model.get_boundary(dim_tags, recursive=True)
+    for p_dim, p_tag in point_dim_tags:
+        coords = gmsh.model.get_value(0, p_tag, [])
+        radius = np.linalg.norm(coords)
+        if radius > max_radius:
+            max_radius = radius
+    return max_radius
+
+
+def get_min_radius(dim_tags: list[tuple[Literal[0, 1, 2], int]]) -> float:
+    """Get the minimal radius of a list of surface dim-tags.
+
+    Args:
+        dim_tags (list[int]): List of dim tags, like ``(dim, tag)``
+
+    Returns:
+        float: Minimal radius of bounding points.
+    """
+    point_dim_tags = gmsh.model.get_boundary(dim_tags, recursive=True)
+    min_radius = 1e18
+    for p_dim, p_tag in point_dim_tags:
+        assert p_dim == 0
+        coords = gmsh.model.get_value(0, p_tag, [])
+        radius = np.linalg.norm(coords)
+        if radius < min_radius:
+            min_radius = radius
+    return min_radius
+
+
+def filter_lines_on_radius(line_list: list[GmshLine], radius: float) -> list[GmshLine]:
+    """Filter all lines from a list of lines that are TODO
+
+    Args:
+        line_list (list[Line]): List of (boundary) lines.
+        radius (float): TODO.
+
+    Returns:
+        list[Line]: List of lines that are on the specified radius.
+    """
+    curved_lines = filter(lambda line: isinstance(line, CircleArc), line_list)
+    lines_on_radius: list[Line] = []
+    for line in curved_lines:
+        # we need to check start and end point angle here because there could be a line
+        # on the boundary that has the same vector-angle, but is no secondary line!
+        if all(
+            np.isclose(
+                [
+                    line.start_point.radius,
+                    line.end_point.radius,
+                ],
+                [radius, radius],
+                atol=1e-6,
+            )
+        ):
+            lines_on_radius.append(line)
+    return lines_on_radius
+
+
+def filter_lines_at_angle(line_list: list[Line], angle: float) -> list[Line]:
+    """Filter all lines from a list of lines that are on a specific ``angle`` to the
+    x-axis in the xy-plane.
+
+    Args:
+        line_list (list[Line]): List of (boundary) lines.
+        angle (float): Angle of axis in xy-plane to filter.
+
+    Returns:
+        list[Line]: List of lines that are on the specified axis.
+    """
+    straight_lines = filter(lambda line: type(line) in (Line, GmshLine), line_list)
+    lines_at_angle: list[Line] = []
+    for line in straight_lines:
+        # we need to check start and end point angle here because there could be a line
+        # on the boundary that has the same vector-angle, but is no secondary line!
+        if np.isclose(
+            [
+                line.start_point.getAngleToX(),
+                line.end_point.getAngleToX(),
+            ],
+            [angle, angle],
+            atol=1e-6,
+        ):
+            lines_at_angle.append(line)
+    return lines_at_angle
+
+
+################################ END MISC FUNCTIONS ####################################
 
 
 def findLine(lineName: str, lineIDList) -> bool:
@@ -139,13 +245,14 @@ def getBoundaryLines(
     """
     lineList, boundarySurface = findLines(segmentSurfDict, surfID, lineIDList)
     if lineList:  # if there are lines in linelist
-        dupLines = []
+        dupLines: list[Line] = []
         angle = boundarySurface.angle
         # number of segments in symmetry:
         nbrSegments = boundarySurface.NbrSegments / symFactor
         for line in lineList:
             for i in range(1, int(nbrSegments)):
-                dupLines.append(rotateDuplicate(line, i * angle))
+                dupLines.append(line.duplicate())
+                dupLines[-1].rotateZ(angle=i * angle)
         return lineList + dupLines
     return None
 
@@ -187,59 +294,58 @@ def createMBLines(
     return mbLines
 
 
-def createMBAux(
-    symFaktor: int, rotorMovingBandInnerLines: list, material=air
-) -> list[MovingBand]:
+def createMBAux(mb_lines_rotor: list, symFaktor: int, material=air) -> list[MovingBand]:
     """
     createMBAux creates the outer Movingband lines of the rotor and add them to
     pyemmo-Movingband objects depended on symmetry
 
     Args:
+        mb_lines_rotor (List[Line]): Inner moving band lines to duplicate.
         symFaktor (int): Symmetry factor.
-        rotorMovingBandInnerLines (List[Line]): Inner moving band lines to duplicate.
         material (Material): Moving band material. Defaults to ''Air''.
 
     Returns:
         List[MovingBand]: Auxilliary moving band list.
     """
-    movingBandAuxList: list[MovingBand] = []
-    mbAuxLines: list[Line] = []
-    symAngle = 2 * pi / symFaktor
+    mb_aux_list: list[MovingBand] = []
+    sym_angle = 2 * np.pi / symFaktor
     # here order of for-loops had to be changed because for example for symFaktor=4
     # we need 3 auxiliary movingband (mb) objects, each containing the same number
     # of lines as the inner movingband
     for i in range(1, symFaktor):  # for every symmetry part
-        for line in rotorMovingBandInnerLines:  # for every inner line
-            mbAuxLine = rotateDuplicate(line, i * symAngle)
-            mbAuxLines.append(mbAuxLine)
-        # physical element name must be Rotor_Bnd_MB_2, ..._3, ...
-        movingBandAuxList.append(
+        mb_lines_aux: list[Line] = []  # re-init mb_lines_list
+        # get dim tags of existing (inner) Movingband lines
+        mb_line_dim_tags = [(1, line.tag) for line in mb_lines_rotor]
+        # copy in gmsh (easier)
+        new_dim_tags = gmsh.model.occ.copy(mb_line_dim_tags)
+        # create GmshLine objects, rotate them and add them to line list:
+        for dim, tag in new_dim_tags:
+            assert dim == 1  # should be line
+            mb_line = GmshLine(tag)
+            mb_line.rotateZ(angle=i * sym_angle)
+            mb_lines_aux.append(mb_line)
+        mb_aux_list.append(
             MovingBand(
                 name=(physicalsDict["Rotor_MB_Line"] + f"_{str(i+1)}"),
-                # copy list because is cleared for next iteration:
-                geo_list=mbAuxLines.copy(),
+                geo_list=mb_lines_aux.copy(),
                 material=material,
                 auxiliary=True,
             )
         )
-        # clear so the old lines are no longer in the list for the next moving band part
-        mbAuxLines.clear()
-    return movingBandAuxList
+    return mb_aux_list
 
 
 def createMB(
-    segmentSurfDict: dict[str, SurfaceAPI],
+    rotor_bnd_lines: list[GmshLine],
+    stator_bnd_lines: list[GmshLine],
     symFactor: int,
     material: Material = air,
 ) -> tuple[MovingBand, MovingBand, list[MovingBand] | None]:
     """
-    createMB generates all pyemmo Movingband objects needed for a simulation.
+    createMB generates all PyEMMO Movingband objects needed for a simulation.
 
     Args:
-        segmentSurfDict (Dict[str, SurfaceAPI]): Segment Surface dict with short IDs (IdExt)
-            as keys and SurfaceAPI objects as values
-        symFactor (int): symmetry factor
-        material (Material): Movingband material. Defaults to "air".
+        TODO
 
     Returns:
         tuple:
@@ -248,42 +354,51 @@ def createMB(
         - MB_Rotor_Aux (List(MovingBand) or None): Outer (auxillary) part of the movingband
           or None if symFactor=1
     """
-    mbLinesStator = createMBLines(StatorMBLineDict, segmentSurfDict, symFactor)
-    if mbLinesStator is None:
-        mssg = (
-            "Could not find stator movingband lines."
-            f"Make sure the geometry contains the surface(s): {StatorMBLineDict.keys()}"
-            f"with lines {[mbPointNames for _, mbPointNames in StatorMBLineDict.items()]}"
+    # get dim tags list of stator boundary lines (GmshLine):
+    bnd_line_dim_tags = [(1, line.tag) for line in stator_bnd_lines]
+    # filter stator movingband lines:
+    mb_lines_stator = filter_lines_on_radius(
+        stator_bnd_lines, get_min_radius(bnd_line_dim_tags)
+    )
+    if not mb_lines_stator:
+        raise RuntimeError(
+            "Could not find stator movingband lines. Make sure the geometry contains"
+            f" the surface(s): {StatorMBLineDict.keys()} with lines "
+            f"{[mbPointNames for _, mbPointNames in StatorMBLineDict.items()]}"
         )
-        raise RuntimeError(mssg)
-
-    mbLinesRotor = createMBLines(RotorMBLineDict, segmentSurfDict, symFactor)
-    if mbLinesRotor is None:
-        mssg = (
-            f"Could not find rotor movingband lines."
-            f"Make sure the geometry contains the surface(s): {RotorMBLineDict.keys()} with lines"
+    # Get rotor movingband lines:
+    # get dim tags list of ROTOR boundary lines (GmshLine):
+    bnd_line_dim_tags = [(1, line.tag) for line in rotor_bnd_lines]
+    # filter ROTOR movingband lines.
+    # Must be the most outer (max. radius) lines in the boundary list:
+    mb_lines_rotor = filter_lines_on_radius(
+        rotor_bnd_lines, get_max_radius(bnd_line_dim_tags)
+    )
+    if not mb_lines_rotor:
+        raise RuntimeError(
+            "Could not find rotor movingband lines. Make sure the geometry contains"
+            f" the surface(s): {RotorMBLineDict.keys()} with lines "
             f"{[mbPointNames for _, mbPointNames in RotorMBLineDict.items()]}"
         )
-        raise RuntimeError(mssg)
 
-    movingBandStator: MovingBand = MovingBand(
-        name="mbStator",
-        geo_list=mbLinesStator,
+    mb_stator: MovingBand = MovingBand(
+        name="Stator Movingband",
+        geo_list=mb_lines_stator,
         material=material,
         auxiliary=False,
     )
-    movingBandRotorInner: MovingBand = MovingBand(
+    mb_rotor_inner: MovingBand = MovingBand(
         name=physicalsDict["Rotor_MB_Line"] + "_1",
-        geo_list=mbLinesRotor,
+        geo_list=mb_lines_rotor,
         material=material,
         auxiliary=False,
     )
     # Outer Movingband-lines
     if symFactor > 1:
-        movingBandRotorAux = createMBAux(symFactor, mbLinesRotor, material)
+        mb_rotor_ax = createMBAux(mb_lines_rotor, symFactor, material)
     else:
-        movingBandRotorAux = None
-    return movingBandStator, movingBandRotorInner, movingBandRotorAux
+        mb_rotor_ax = None
+    return mb_stator, mb_rotor_inner, mb_rotor_ax
 
 
 ############################### END MOVINGBAND CREATION ###############################
@@ -326,9 +441,6 @@ def getLimitLines(
     return None
 
 
-from typing import Literal
-
-
 def get_rotor_stator_dim_tags(
     surf_dict: dict[str, list[SurfaceAPI]], rotor_mb_radius: float
 ) -> tuple[list[tuple[Literal[2], int]], list[tuple[Literal[2], int]]]:
@@ -369,23 +481,16 @@ def get_rotor_stator_dim_tags(
     return rotor_dim_tags, stator_dim_tags
 
 
-import gmsh
-import numpy as np
-
-from ...script.gmsh.gmsh_line import GmshLine
-from ...script.gmsh.gmsh_point import GmshPoint
-
-
 def get_boundary_line_list(
     surf_dim_tags: list[tuple[Literal[2], int]]
 ) -> list[GmshLine]:
     """
-    Retrieves and constructs a list of boundary lines for a given set of surface
-    dimension tags.
+    Retrieves and constructs a list of boundary lines (Type ``GmshLine`` for a given set
+    of surface dimension tags.
 
-    This function uses Gmsh to find the boundary lines of the specified surfaces. Each
-    boundary line is represented as a `GmshLine` object, which includes the line's tag
-    and the start and end points as `GmshPoint` objects.
+    This function uses Gmsh to find the combined boundary lines of the specified
+    surfaces. Each boundary line is represented as a `GmshLine` object, which includes
+    the line's tag and the start and end points as `GmshPoint` objects.
 
     Args:
         surf_dim_tags (list[tuple[Literal[2], int]]): A list of tuples where each tuple
@@ -428,43 +533,6 @@ def get_boundary_line_list(
             )
         )
     return bnd_line_list
-
-
-def is_line_straight(line: Line) -> bool:
-    """Check if line is straigt"""
-    if type(line) in (Line, GmshLine):
-        return True
-    return False
-
-
-def filter_lines_at_angle(line_list: list[Line], angle: float) -> list[Line]:
-    """Filter all lines from a list of lines that are on a specific ``angle`` to the
-    x-axis in the xy-plane.
-
-    Args:
-        line_list (list[Line]): List of (boundary) lines.
-        angle (float): Angle of axis in xy-plane to filter.
-
-    Returns:
-        list[Line]: List of lines that are on the specified axis.
-    """
-    straight_lines = filter(is_line_straight, line_list)
-    lines_at_angle: list[Line] = []
-    for line in straight_lines:
-        # we need to check start and end point angle here because there could be a line
-        # on the boundary that has the same vector-angle, but is no secondary line!
-        if type(line) in (Line, GmshLine) and all(
-            np.isclose(
-                [
-                    line.start_point.getAngleToX(),
-                    line.end_point.getAngleToX(),
-                ],
-                [angle, angle],
-                atol=1e-6,
-            )
-        ):
-            lines_at_angle.append(line)
-    return lines_at_angle
 
 
 def get_primary_lines(bnd_line_list: list[GmshLine]) -> list[GmshLine]:
@@ -561,11 +629,11 @@ def get_boundaries(
     # machineSurfDict = createSurfaceDict(segmentSurfDict)
     try:
         if "StLu" in surf_dict.keys():
-            movingBandMaterial: Material = surf_dict["StLu"].material
+            movingBandMaterial: Material = surf_dict["StLu"][0].material
         elif "StLu1" in surf_dict.keys():
-            movingBandMaterial: Material = surf_dict["StLu1"].material
+            movingBandMaterial: Material = surf_dict["StLu1"][0].material
         else:
-            movingBandMaterial: Material = surf_dict["StLu2"].material
+            movingBandMaterial: Material = surf_dict["StLu2"][0].material
     except KeyError:
         apiLogger.warning(
             """Stator-Airgap Surface-ID was not "StLu","StLu1" or "StLu2". """
@@ -579,7 +647,8 @@ def get_boundaries(
         movingBandRotorInner,
         movingBandRotorAuxList,
     ] = createMB(
-        segmentSurfDict=surf_dict,
+        rotor_bnd_lines=rotor_bnd_line_list,
+        stator_bnd_lines=stator_bnd_line_list,
         symFactor=symFactor,
         material=movingBandMaterial,
     )
