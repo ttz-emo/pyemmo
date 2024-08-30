@@ -207,10 +207,11 @@ class CircleArc(Line):
             CA1 = Line('ca1', P1, C, P2)
             CA1.rotateZ(P0, pi)
         """
-        if not self._todesmerker:
-            self.start_point.rotateZ(rotationPoint, angle)
-            self.end_point.rotateZ(rotationPoint, angle)
-            self._center.rotateZ(rotationPoint, angle)
+        self.start_point.rotateZ(rotationPoint, angle)
+        self.end_point.rotateZ(rotationPoint, angle)
+        self._center.rotateZ(rotationPoint, angle)
+        x, y, z = rotationPoint.coordinate
+        gmsh.model.occ.rotate([(1, self.id)], x, y, z, 0, 0, 1, angle=angle)
 
     def duplicate(self, name="") -> "CircleArc":
         """Mit duplicate() wird einer Kreisbogen mit gleichen Eigenschaften zum
@@ -326,7 +327,7 @@ class CircleArc(Line):
     @property
     def radius(self) -> float:
         """Return the distance between the center point and the start point (P1) of the
-        CircleArc (= radius)
+        CircleArc (= radius).
 
         Returns:
             float: radius of the circle arc
