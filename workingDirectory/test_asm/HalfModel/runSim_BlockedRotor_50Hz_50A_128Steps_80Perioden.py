@@ -105,9 +105,7 @@ def autoscale_y(ax: Axes, margin=0.1):
 
 
 # %%
-
 logging.debug(f"Start simulation at {time.ctime()}")
-start = time.perf_counter()
 
 nbr_bars = 18
 
@@ -116,8 +114,8 @@ I_eff = 50
 n = 0
 f_s = f_r + 2 * n / 60
 T_s = 1 / f_s
-nbr_stator_periods = 80
-nbr_steps_per_period = 64
+nbr_stator_periods = 10
+nbr_steps_per_period = 128
 # Zum Abgleich mit Maxwell
 Nbr_Sect = 2048  # Bandsegmentierung
 multi = 4  # Default=4 number of Segments per timestep
@@ -135,7 +133,7 @@ logging.debug("Stop time of simulation: %.7e s", int(nbr_timesteps) * timestep)
 
 # %%
 # %%
-resId = f"blockedRotor_{f_r}Hz_{I_eff}A_{nbr_stator_periods}Periods_{nbr_steps_per_period}Steps"
+resId = f"SYM=1_blockedRotor_{f_r}Hz_{I_eff}A_{nbr_stator_periods}Periods_{nbr_steps_per_period}Steps"
 if flag_dynamic_resistance:
     resId += "_R_dyn2"
     if thers:
@@ -187,11 +185,12 @@ paramDict = {
     # "exc": 0,
     # "axLen": 0.2,
     # "sym": 4,
-    "info": "Laut CadFEM muss im Ansys Circuit der Symmetriefaktor (=4) bei den ESB Elementen berücksichtigt werden. Im Viertelmodell brauchten wir die doppelten Werte für ONELAB. Die Vermutung ist, dass wir jetzt im Halbmodell die originalen Werte nehmen könnnen!",
+    "info": "Im Verlauf des Halbmodells sind in der Stab-Spannung nicht direkt erklärbare, periodische Schwingungen zu erkennen. Diese Simulation ändert die Schrittweite auf 128 Schritte pro Periode für 10 Perioden, um diesen Einfluss auszuschließen.",
     "datetime": time.ctime(),
-    "PostOp": [],  # "GetBOnRadius" - "Get_LocalFields_Post"
+    "PostOp": ["GetBOnRadius"],  # "GetBOnRadius" - "Get_LocalFields_Post"
 }
 sim_res_dir = os.path.join(paramDict["res"], resId)
+start = time.perf_counter()
 results = runCalcforCurrent(paramDict)
 stop = time.perf_counter()
 sim_duration = stop - start
@@ -208,8 +207,7 @@ else:
     else:
         logging.warning(
             "Missing 'sim_duration' from results dict! "
-            "Maybe simulation terminated. "
-            "Checking time values..."
+            "Maybe simulation terminated. Checking time values..."
         )
         exspected_end_time = timestep * nbr_timesteps
         if np.isclose(results["time"][-1], exspected_end_time, atol=timestep):
@@ -248,28 +246,44 @@ ax.plot(results["time"], results["current"]["b"], label="v")
 ax.plot(results["time"], results["current"]["c"], label="w")
 ax.legend()
 ax.grid(True)
-ax.minorticks_on()
+ax.set_xlim(results["time"][i_last_period], results["time"][-1])
+ax.set_ylabel("Stator current in A")
 
 # %%
 # %%
 # PLOT STABSTRÖME
-t_U_bars, I_bars = (results["time"], results["current"]["bars"])
-fig, axi = plt.subplots()
-axi: Axes = axi
+t_I_bars, I_bars = (results["time"], results["current"]["bars"])
+fig, ax = plt.subplots(2, 1)
+axi: Axes = ax[0]
 for nBar in range(nbr_bars):
     line_i = axi.plot(
-        t_U_bars,
+        t_I_bars,
         I_bars[:, nBar],
         label=f"Bar {nBar+1}",
-        marker=".",
+        marker=None,
         markersize=3,
     )
 axi.set_ylabel("Strom in A")
 # if t[-1] > 2 * T_s:  # if specific amount of periods is calculated
-# axi.set_xlim(t[i_last_period], t[-1])
-axi.legend()
+# axi.set_xlim(t_U_bars[int(nbr_timesteps/1.1)], t_U_bars[-1])
+axi.set_xlim(0, t_I_bars[nbr_steps_per_period * 2])
+axi.legend(bbox_to_anchor=(1.05, 1.0), loc="upper left", ncol=1, borderaxespad=0)
 axi.grid(True)
 axi.set_title("Stabströme")
+
+ax_zoomed: Axes = ax[1]
+for nBar in range(nbr_bars):
+    line_i = ax_zoomed.plot(
+        t_I_bars[i_last_period:-1],
+        I_bars[i_last_period:-1, nBar],
+        label=f"Bar {nBar+1}",
+        marker=".",
+        markersize=3,
+    )
+ax_zoomed.set_ylabel("Strom in A")
+ax_zoomed.grid(True)
+# ax_zoomed.set_title("Stabströme")
+
 # %%
 # Stabspannung vs Stabstrom
 resfile = os.path.join(sim_res_dir, "U_bars.dat")
@@ -337,7 +351,7 @@ line_u = ax.plot(results["time"][:-1], results["inducedVoltage"]["c"], label=f"U
 # line_u = ax.plot(t, U_iC, label=f"U_iC")
 # ax.set_ylabel("Spannung in V")
 ax.legend(loc=1)
-t_U_bars = results["time"]
+t = results["time"]
 # ax.set_xlim(t[int(t.size * (nbr_stator_periods - 2) / nbr_stator_periods)], t[-1])
 ax.grid(True)
 
@@ -418,7 +432,7 @@ ax.set_ylabel("Drehmoment in NM")
 ax.grid(True, "major", linestyle="-")
 ax.grid(True, "minor", linestyle="--")
 ax.minorticks_on()
-ax.set_xlim([t_U_bars[i_last_period], t_U_bars[-1]])
+ax.set_xlim([t[i_last_period], t[-1]])
 autoscale_y(ax, 0.05)
 ax.legend(
     bbox_to_anchor=(0.0, 1.02, 1.0, 0.102),
@@ -446,18 +460,18 @@ if os.path.isfile(resfile):
     # Plot Bar 1 only:
     resfile = os.path.join(sim_res_dir, "R_bar_1.dat")
     if os.path.isfile(resfile):
-        t_U_bars, R_bar = read_timetable_dat(resfile)
-        ax.plot(t_U_bars, R_bar, label="R (berechnet)", marker=".")
+        t_R_bars, R_bar = read_timetable_dat(resfile)
+        ax.plot(t_R_bars, R_bar, label="R (berechnet)", marker=".")
     # Plot DC resistance line:
     ax.plot(
-        [t_U_bars[0], t_U_bars[-1]],
+        [t_R_bars[0], t_R_bars[-1]],
         [R_bar_dc, R_bar_dc],
         label="R (DC)",
         marker=None,
     )
     ax.set_ylim(bottom=0, top=100 * R_bar_dc)
     # ax.set_xlim(0, T_s)
-    if t_U_bars[-1] >= nbr_stator_periods * T_s:
+    if t_R_bars[-1] >= nbr_stator_periods * T_s:
         ax.set_xlim(T_s * (nbr_stator_periods - 1), T_s * nbr_stator_periods)
     ax.legend()
 
@@ -482,13 +496,13 @@ else:
 ## ADD PLOT OF RUNTIME RESISTANCE
 resfile = os.path.join(sim_res_dir, "R_bar_runtime_1.dat")
 if os.path.isfile(resfile):
-    t_U_bars, R_bar = read_timetable_dat(resfile)
-    ax.plot(t_U_bars, R_bar, label=f"R_runtime (Circuit)", marker=".", ls="--")
+    t_Rrt_bars, R_bar = read_timetable_dat(resfile)
+    ax.plot(t_Rrt_bars, R_bar, label=f"R_runtime (Circuit)", marker=".", ls="--")
     ax.legend()
 
     fig, ax = plt.subplots()
     ax: Axes = ax
-    timestep = t_U_bars[1] - t_U_bars[0]
+    timestep = t_Rrt_bars[1] - t_Rrt_bars[0]
     amp = np.abs(np.fft.rfft(R_bar, axis=0))
     # to get correct amplitude regarding the specific frequencies, the amplitudes
     # must be corrected by 1/nbrFreqs and DC-part by 1/(2*nbrFreqs) because its value
@@ -630,9 +644,9 @@ ax.legend()
 ax.set_xlabel("time in s")
 ax.set_ylabel("torque in Nm")
 ax.grid(alpha=0.5)
-ax.set_xlim(t_U_bars[i_last_period], t_U_bars[i_last_period + nbr_steps_per_period])
+ax.set_xlim(t[i_last_period], t[i_last_period + nbr_steps_per_period])
 autoscale_y(ax)
-print(f"Mean Reset DC = {np.mean(torque_reset_DC[int(t_U_bars.size * 79 / 80) :])}")
+print(f"Mean Reset DC = {np.mean(torque_reset_DC[int(t_t_reset_DC.size * 79 / 80) :])}")
 print(
     f"""Mean {resId} = {np.mean(results["torque"][int(results["time"].size * 79 / 80) :])}"""
 )
@@ -667,7 +681,7 @@ line_i = ax.plot(
 ax.legend()
 ax.grid(alpha=0.5)
 ax.set_title(f"Bar {nBar+1}")
-ax.set_xlim(t_U_bars[i_last_period], t_U_bars[i_last_period + nbr_steps_per_period])
+ax.set_xlim(t[i_last_period], t[i_last_period + nbr_steps_per_period])
 autoscale_y(ax)
 ax.set_xlabel("time in s")
 ax.set_ylabel("current in A")
