@@ -114,7 +114,7 @@ I_eff = 50
 n = 0
 f_s = f_r + 2 * n / 60
 T_s = 1 / f_s
-nbr_stator_periods = 10
+nbr_stator_periods = 3
 nbr_steps_per_period = 128
 # Zum Abgleich mit Maxwell
 Nbr_Sect = 2048  # Bandsegmentierung
@@ -170,6 +170,7 @@ paramDict = {
         "msh": os.path.join(MODEL_DIR, "mesh_fine.msh"),
         # "Flag_SecondOrder": 0,
         "stop_criterion": 1e-8,
+        "pA_deg": 90,
     },
     "ResId": resId,
     "pro": os.path.join(MODEL_DIR, MODEL_NAME + ".pro"),
@@ -185,7 +186,7 @@ paramDict = {
     # "exc": 0,
     # "axLen": 0.2,
     # "sym": 4,
-    "info": "Im Verlauf des Halbmodells sind in der Stab-Spannung nicht direkt erklärbare, periodische Schwingungen zu erkennen. Diese Simulation ändert die Schrittweite auf 128 Schritte pro Periode für 10 Perioden, um diesen Einfluss auszuschließen.",
+    "info": "Änderung der Schrittweite brachte keine Verbesserung der Simulationsergebnisse. Nächste Simulation mit Phasenverschiebung im Statorstromsystem. nbr_stator_periods reduziert auf 3 Perioden, da Spannungsverhalten bereits ab der 3. Periode erkennbar.",
     "datetime": time.ctime(),
     "PostOp": ["GetBOnRadius"],  # "GetBOnRadius" - "Get_LocalFields_Post"
 }
