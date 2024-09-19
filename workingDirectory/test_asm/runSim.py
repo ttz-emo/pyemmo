@@ -70,7 +70,11 @@ logging.debug("Stop time of simulation: %.7e s", int(nbr_timesteps) * timestep)
 
 # %%
 # Add time stamp to simulation
-resId = f"{I_eff}A_{n}rpm_{f_r}Hz_{nbr_stator_periods}Periods"
+
+resId = (
+    time.strftime("%Y%m%d_%H%M", time.localtime())
+    + f"_{I_eff}A_{n}rpm_{f_r}Hz_{nbr_stator_periods}Periods"
+)
 if flag_dynamic_resistance:
     resId += "_R_dyn2"
     if thers:
