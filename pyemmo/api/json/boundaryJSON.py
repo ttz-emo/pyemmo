@@ -657,30 +657,30 @@ def get_boundaries(
             rotor_boundary.append(movingBandAux)  # outer movingband if sym>1
     stator_boundary.append(movingBandStator)  # stator side of inner movingband
 
-    # 3: Outer-Limit
     # remove movingband lines from remaining boundary -> only limit left
     for stator_mb_curve in movingBandStator.geo_list:
         stator_bnd_line_list.remove(stator_mb_curve)
+    for rotor_mb_curve in movingBandRotorInner.geo_list:
+        rotor_bnd_line_list.remove(rotor_bnd_line_list)
 
-    if len(stator_bnd_line_list) != 0:
-        if is_inner_rotor:
-            # if rotor inside -> stator = outer limit
+    # 3: Outer-Limit
+    if is_inner_rotor:
+        # if rotor inside -> stator = outer limit
+        if len(stator_bnd_line_list) != 0:
             stator_boundary.append(LimitLine("outerLimit", stator_bnd_line_list))
         else:
-            raise RuntimeError("Outer rotor topology not implemented yet!")  # FIXME
-            # # stator is inside -> inner limit
-            # stator_boundary.append(LimitLine("innerLimit", stator_bnd_line_list))
+            raise RuntimeError("Could not identify outer limit lines for boundary...")
     else:
-        raise RuntimeError("Could not identify outer limit lines for boundary...")
+        # outer rotor -> rotor = outer limit
+        if len(rotor_bnd_line_list) != 0:
+            # TODO: Test that this actually works!
+            rotor_boundary.append(LimitLine("outerLimit", rotor_bnd_line_list))
+        else:
+            raise RuntimeError("Could not identify outer limit lines for boundary...")
 
     # # 4: Inner-Limit
-    # innerLimitLines = getLimitLines(
-    #     limitLineDict=InnerLimitLineDict,
-    #     machineSurfList=segmentSurfDict,
-    #     symFactor=symFactor,
-    # )
-    # if innerLimitLines is not None:
-    #     rotor_boundary.append(LimitLine("innerLimit", innerLimitLines))
+    # if len(inner_limit_lines) != 0:
+    #     rotor_boundary.append(LimitLine("innerLimit", inner_limit_lines))
     # else:
     #     # checkout if most inner surface has center point
     #     noInnerLimit = False
