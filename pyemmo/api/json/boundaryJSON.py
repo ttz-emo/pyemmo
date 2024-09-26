@@ -42,10 +42,7 @@ from ...script.gmsh.gmsh_line import GmshLine
 from ...script.material.material import Material
 from .. import air
 from .. import logger as apiLogger
-from . import (
-    RotorMBLineDict,
-    StatorMBLineDict,
-)
+from . import RotorMBLineDict, StatorMBLineDict, globalCenterPoint
 from .SurfaceJSON import SurfaceAPI
 
 
@@ -661,13 +658,14 @@ def get_boundaries(
     for stator_mb_curve in movingBandStator.geo_list:
         stator_bnd_line_list.remove(stator_mb_curve)
     for rotor_mb_curve in movingBandRotorInner.geo_list:
-        rotor_bnd_line_list.remove(rotor_bnd_line_list)
+        rotor_bnd_line_list.remove(rotor_mb_curve)
 
     # 3: Outer-Limit
     if is_inner_rotor:
         # if rotor inside -> stator = outer limit
         if len(stator_bnd_line_list) != 0:
             stator_boundary.append(LimitLine("outerLimit", stator_bnd_line_list))
+            inner_limit_lines = rotor_bnd_line_list
         else:
             raise RuntimeError("Could not identify outer limit lines for boundary...")
     else:
@@ -675,37 +673,36 @@ def get_boundaries(
         if len(rotor_bnd_line_list) != 0:
             # TODO: Test that this actually works!
             rotor_boundary.append(LimitLine("outerLimit", rotor_bnd_line_list))
+            inner_limit_lines = stator_bnd_line_list
         else:
             raise RuntimeError("Could not identify outer limit lines for boundary...")
 
-    # # 4: Inner-Limit
-    # if len(inner_limit_lines) != 0:
-    #     rotor_boundary.append(LimitLine("innerLimit", inner_limit_lines))
-    # else:
-    #     # checkout if most inner surface has center point
-    #     noInnerLimit = False
-    #     # Extract valid inner limit keys from innerLimitLineDict:
-    #     innerLimitSurfaceKeys = []
-    #     for key in InnerLimitLineDict:
-    #         if key in segmentSurfDict:
-    #             innerLimitSurfaceKeys.append(key)
-    #     # check if any of those surfaces contains the center point:
-    #     for innerLimitIdExt in innerLimitSurfaceKeys:
-    #         for point in segmentSurfDict[innerLimitIdExt].allPoints:
-    #             if point.isEqual(globalCenterPoint):
-    #                 noInnerLimit = True  # no inner limit line
-    #                 break  # break inner point loop
-    #         if noInnerLimit is True:
-    #             # if the center point was found, break the outer loop too.
-    #             break
-    #     if not noInnerLimit:
-    #         msg = (
-    #             "Could not find inner limit lines for boundary. "
-    #             "And most inner Surface ('Wel') did not contain center point. "
-    #             f'Make sure at least one of the surfaces "{InnerLimitLineDict.keys()}" exist!'
-    #         )
-    #         raise AttributeError(msg)
-    # # # Plot
+    # 4: Inner-Limit
+    if len(inner_limit_lines) != 0:
+        # remaining lines of rotor or stator are inner limit lines
+        rotor_boundary.append(LimitLine("innerLimit", inner_limit_lines))
+    else:
+        # No inner limit lines left, which means the center point is the inner limit.
+        # To make sure: checkout if primary/secondary lines contain the center point
+        found_center = False
+        rotor_primary: PrimaryLine = rotor_boundary[0]
+        assert (
+            type(rotor_primary) == PrimaryLine and "rotor" in rotor_primary.name.lower()
+        )
+        for line in rotor_primary.geo_list:
+            line: Line | CircleArc = line
+            for point in line.points:
+                if point.isEqual(globalCenterPoint):
+                    found_center = True
+                    break  # break inner point loop
+            if found_center:
+                # if the center point was found, break the outer loop too
+                break
+        if not found_center:
+            raise RuntimeError(
+                "Cound not identify inner limit lines AND "
+                "primary lines did not contain center point!"
+            )
     # # TODO: Add verbosity and plot this when debugging.
     # # fig, ax = plt.subplots()
     # # plot(primarylinesRotor + primaryLinesStator, fig=fig, color="b")
