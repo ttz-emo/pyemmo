@@ -81,7 +81,6 @@ def createMachine(
     gmsh.model.occ.remove_all_duplicates()
     gmsh.model.occ.synchronize()
 
-    # TODO: ADD BOUNDARY LINES IDENTIFICATION + ADD TO PHYSICALS
     rotorPhysicals, statorPhysicals = boundary.get_boundaries(
         maschineSurfDict, symFactor, rotorMovingBandRadius
     )
