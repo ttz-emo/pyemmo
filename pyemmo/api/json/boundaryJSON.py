@@ -30,6 +30,7 @@ import numpy as np
 
 from ...script.geometry import physicalsDict
 from ...script.geometry.circleArc import CircleArc
+from ...script.geometry.limitLine import LimitLine
 from ...script.geometry.line import Line
 from ...script.geometry.movingBand import MovingBand
 from ...script.geometry.physicalElement import PhysicalElement
@@ -587,6 +588,8 @@ def get_boundaries(
     surf_dict: dict[str, list[SurfaceAPI]], symFactor: int, rotor_mb_radius: float
 ) -> tuple[list[PhysicalElement], list[PhysicalElement]]:
     """TODO"""
+    is_inner_rotor = True  # FIXME: Adapt for outer rotor
+
     # Create lists for Stator and Rotor boundaries
     rotor_boundary: list[PhysicalElement] = []
     stator_boundary: list[PhysicalElement] = []
@@ -654,20 +657,22 @@ def get_boundaries(
             rotor_boundary.append(movingBandAux)  # outer movingband if sym>1
     stator_boundary.append(movingBandStator)  # stator side of inner movingband
 
-    # # 3: Outer-Limit
-    # outerLimitLines = getLimitLines(
-    #     limitLineDict=OuterLimitLineDict,
-    #     machineSurfList=segmentSurfDict,
-    #     symFactor=symFactor,
-    # )
-    # if outerLimitLines is not None:
-    #     stator_boundary.append(LimitLine("outerLimit", outerLimitLines))
-    # else:
-    #     msg = (
-    #         "Could not find outer limit lines for boundary. "
-    #         f"Make sure at least one of the surfaces {OuterLimitLineDict.keys()} exist!"
-    #     )
-    #     raise AttributeError(msg)
+    # 3: Outer-Limit
+    # remove movingband lines from remaining boundary -> only limit left
+    for stator_mb_curve in movingBandStator.geo_list:
+        stator_bnd_line_list.remove(stator_mb_curve)
+
+    if len(stator_bnd_line_list) != 0:
+        if is_inner_rotor:
+            # if rotor inside -> stator = outer limit
+            stator_boundary.append(LimitLine("outerLimit", stator_bnd_line_list))
+        else:
+            raise RuntimeError("Outer rotor topology not implemented yet!")  # FIXME
+            # # stator is inside -> inner limit
+            # stator_boundary.append(LimitLine("innerLimit", stator_bnd_line_list))
+    else:
+        raise RuntimeError("Could not identify outer limit lines for boundary...")
+
     # # 4: Inner-Limit
     # innerLimitLines = getLimitLines(
     #     limitLineDict=InnerLimitLineDict,
