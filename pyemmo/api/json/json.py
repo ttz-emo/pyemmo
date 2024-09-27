@@ -94,7 +94,9 @@ def createMachine(
             # if the inner surface is air, overlapping the rotor, set the delete-flag to not create
             # the inner housing surface
             for surf in surfList:
-                surf.delete = True
+                surf.delete = (
+                    True  # -> TODO: Make sure delete also removes the gmsh instance
+                )
         else:
             logging.debug("Creating physical for %s", idExt)
             physSurfList, machineSide = modelJSON.createPhysicalSurfaces(
@@ -469,7 +471,7 @@ def main(
     addPostOperations(apiScript, extendedInfo)
     meshSizeSetCode = createMeshSizeGUICode(machineSurfDict)
     # generate geo and pro files:
-    apiScript.generateScript(mode=2, UD_MeshCode=meshSizeSetCode)
+    apiScript.generateScript(UD_MeshCode=meshSizeSetCode)
 
     if importJSON.getFlagOpenGui(extendedInfo) is True:
         _open_onelab(apiScript, extendedInfo, gmsh, getdp)

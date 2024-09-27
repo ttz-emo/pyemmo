@@ -31,7 +31,8 @@ from math import pi
 from os.path import abspath, join
 from typing import TYPE_CHECKING, Literal
 
-from numpy import rad2deg, where
+import gmsh
+from numpy import array, cos, rad2deg, sin, where
 from pygetdp import Function as FunctionGetDP
 from pygetdp import Group as GroupGetDP
 from pygetdp import PostOperation
@@ -1338,18 +1339,21 @@ class Script:
                 Script.
 
         """
-        if physicalElement.geo_list:
-            # if the geo list is not empty
-            # remember there can be domains without geometrical elements,
-            # like the "MovingBand_PhysicalNb" domain
-            code = self._createPhysicalElementCode(physicalElement)
-            self.physicalElementCode += code
+        # if physicalElement.geo_list:
+        #     # if the geo list is not empty
+        #     # remember there can be domains without geometrical elements,
+        #     # like the "MovingBand_PhysicalNb" domain
+        #     code = self._createPhysicalElementCode(physicalElement)
+        #     self.physicalElementCode += code
 
         if physicalElement not in self.physicalElementArray:
             # add physical element to array
             self.physicalElementArray.append(physicalElement)
             # add material if existing
-            if physicalElement.material:
+            if (
+                physicalElement.material
+            ):  # TODO: Verify if this is really needed because
+                # physical element should allways have material
                 self._addMaterial(physicalElement)
             # add magnetization if specified
             if isinstance(physicalElement, Magnet):
@@ -1873,18 +1877,34 @@ class Script:
             if primeLines and secondaryLines:
                 meshModCode += "// Add Periodic Mesh to model symmetry boundary-lines\n"
                 primeLineIDs = ""
+                primary_tags = []
                 for line in primeLines:
+                    primary_tags.append(line.id)
                     primeLineIDs += f"{line.id},"
                 # set primary lines without last comma
                 meshModCode += f"primaryLines = {{{primeLineIDs[0:-1]}}};\n"
                 secondIDs = ""
+                secondary_tags = []
                 for line in secondaryLines:
+                    secondary_tags.append(line.id)
                     secondIDs += f"{line.id},"
                 # set primary lines without last comma
                 meshModCode += f"secondaryLines = {{{secondIDs[0:-1]}}};\n"
                 # The following assumes, that the prime lines are located on
                 # the x-axis. Rotation from prime to secondary occure in math.
                 # positive direction!
+                phi = 2 * pi / symFactor
+                transformation_matrix = array(
+                    [
+                        [cos(phi), -sin(phi), 0, 0],
+                        [sin(phi), cos(phi), 0, 0],
+                        [0, 0, 1, 0],
+                        [0, 0, 0, 1],
+                    ]
+                )
+                gmsh.model.mesh.setPeriodic(
+                    1, secondary_tags, primary_tags, transformation_matrix.flatten()
+                )
                 meshModCode += (
                     r"Periodic Curve{secondaryLines[]} = {primaryLines[]} "
                     r"Rotate {{0,0,1}, {0,0,0}, "
@@ -1979,9 +1999,6 @@ class Script:
             otherwise Movingsband-Mesh could be overwritten. Must be conformal
             with the gmsh syntax!
         """
-        geoFilePath = os.path.join(self.scriptPath, self.name + ".geo")
-        # add all the geo Code
-        self._createPointCode()
         # add the code for the mesh settings and mesh modification
         meshSettingsCode = 'INPUT_MESH = "Input/03Mesh/";\n'
         meshSettingsCode += (
@@ -2008,33 +2025,39 @@ class Script:
         meshModCode = ""
         movingGeoCode = ""
         if self.machine:
+            # TODO: Check that the geometry in PyEMMO is still up to date with gmsh.
+            #       Probably the ID of surfaces changed due to boolean operations
             # add the code for mesh modifications
             meshModCode = self._createMeshModCode()
             # add the code for plotting the moving boundary in post processing
             movingGeoCode = self._createMovingGeoCode()
 
-        with open(geoFilePath, "w", encoding="utf-8") as geoScript:
+        # write out all the geometry and physicals code to .geo_unrolled file
+        geo_unrolled_path = self.geoFilePath + "_unrolled"
+        gmsh.write(geo_unrolled_path)
+        # read in the file content
+        with open(geo_unrolled_path, "r+") as fd:
+            geo_code = fd.readlines()
+            # contents.insert(0, new_string)  # new_string should end in a newline
+            fd.seek(0)  # readlines consumes the iterator, so we need to start over
+            # fd.writelines(contents)  # No need to truncate as we are increasing
+        os.remove(geo_unrolled_path)
+
+        with open(self.geoFilePath, "w", encoding="utf-8") as geoScript:
             geoScript.write(versionStr)  # write the pyemmo version number
-            # set the geometry kernel
-            if self.factory == "OpenCASCADE":
-                geoScript.write('SetFactory("OpenCASCADE");\n')
             # create Expert Mode Flag
             geoScript.write(
                 """DefineConstant[\n Flag_ExpertMode = {1,"""
                 + """Name '01View/Expert Mode', Choices {0, 1}}\n];\n\n"""
             )
             geoScript.write(meshSettingsCode)  # write code for mesh variables
-            geoScript.write(self.pointCode)
-            geoScript.write(self.curveCode)
-            geoScript.write(self.areaCode)
+            geoScript.writelines(geo_code)
             geoScript.write(
                 "\n// Color code\n"
                 + """If (!Flag_individualColoring)\n"""
                 + self.colorCode
                 + """EndIf\n"""
             )
-            # geoScript.write(self._colorCode)
-            geoScript.write(self.physicalElementCode)
             geoScript.write(UD_MeshCode)
             geoScript.write(meshModCode)
             geoScript.write(movingGeoCode)
