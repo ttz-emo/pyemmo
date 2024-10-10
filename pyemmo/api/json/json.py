@@ -115,7 +115,7 @@ def createMachine(
                 )
     if logging.getLogger().level <= logging.DEBUG:
         gmsh.model.occ.synchronize()
-        # gmsh.fltk.run()
+        gmsh.fltk.run()
     # create the rotor
     axLen = importJSON.getAxialLength(extendedInfo)
     rotorAPI = Rotor(
