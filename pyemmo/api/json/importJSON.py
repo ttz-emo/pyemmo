@@ -511,8 +511,10 @@ def createMaterial(matDict: dict[str, dict[Literal["wert"], Any]]) -> Material:
                 f"Invalid sheet thickness type {type(sheetThickness)}",
             )
         if sheetThickness > 5e-3:
+            # add warning to log and raise InvalidSheetThicknessError (which is catched
+            # by try-except statment) to create standard material
             logger.warning(
-                """Sheet thickness of material %s is > 1: %f!
+                """Sheet thickness of material %s is greater 5mm: %f meter!
                 Creating standard material instead of electrical steel material!""",
                 name,
                 sheetThickness,
