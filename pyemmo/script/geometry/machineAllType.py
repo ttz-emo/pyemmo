@@ -33,13 +33,6 @@ from .stator import Stator
 from .surface import Line
 
 
-###
-# Eine Instanz der Klasse MachineAllType beschreibt eine elektrische Maschine im dreidimensionalen Raum.
-# Um welchen Type Maschine es sich handelt, definiert der Nutzer selbst, durch die Definition seiner Physical Elements.
-# Ist z. B. ein Objekt der Klasse Magnet (Unterklasse von PhysicalElement) vorhanden, werden die Domaine in rotor.py und stator.py automatisch für eine PMSM vorbereitet.
-# Für die Verwendung des Baukastens, ist die Spezifizierung der Maschine sinnvoll.
-# Hierfür sollte man deshalb bspw. die Klasse machineSPMSM (für Oberflächenmagnete) benutzen.
-###
 class MachineAllType:
     def __init__(
         self,
@@ -112,11 +105,14 @@ class MachineAllType:
             "DomainC",
             rotor._domainC.physicals + stator._domainC.physicals,
         )
-        ###mbRotor beinhaltet alle Physical Elements, die eine Moving Band auf der Rotorseite beschreiben.
+        ###mbRotor beinhaltet alle Physical Elements, die eine Moving Band auf der
+        # Rotorseite beschreiben.
         self._mbRotor = Domain("MB_Rotor", rotor._mb.physicals)
-        ###mbStator beinhaltet alle Physical Elements, die eine Moving Band auf der Statorseite beschreiben.
+        ###mbStator beinhaltet alle Physical Elements, die eine Moving Band auf der
+        # Statorseite beschreiben.
         self._mbStator = Domain("MB_Stator", stator._mb.physicals)
-        ###domain beinhaltet alle Physical Elements, die die elektrische Maschine beschreiben.
+        ###domain beinhaltet alle Physical Elements, die die elektrische Maschine
+        # beschreiben.
         self._domain = Domain(
             "Domain",
             rotor._domain.physicals + stator._domain.physicals,
@@ -126,19 +122,26 @@ class MachineAllType:
             "DomainL",
             rotor._domainL.physicals + stator._domainL.physicals,
         )
-        ###domainNL beinhaltet alle Physical Elements, die ein nicht lineares Material besitzen.
+        ###domainNL beinhaltet alle Physical Elements, die ein nicht lineares Material
+        # besitzen.
         self._domainNL = Domain(
             "DomainNL",
             rotor._domainNL.physicals + stator._domainNL.physicals,
         )
 
-        ###rotorMoving beinhaltet alle Physical Elements, die während der Simulation rotiert werden müssen (Rotor).
+        ###rotorMoving beinhaltet alle Physical Elements, die während der Simulation
+        # rotiert werden müssen (Rotor).
         self._rotorMoving = Domain("Rotor_Moving", rotor._rotorMoving.physicals)
-        ###mbBaux beinhaltet alle Hilfslinien des MovingBands (Ergänzung zum Vollkreis), die wegen der Symmetrie ergänzt werden mussten. MovingBand auf der Rotorseite muss ein vollständiger Kreis beschreiben.
+        ###mbBaux beinhaltet alle Hilfslinien des MovingBands (Ergänzung zum Vollkreis),
+        # die wegen der Symmetrie ergänzt werden mussten. MovingBand auf der Rotorseite
+        # muss ein vollständiger Kreis beschreiben.
         self._mbBaux = Domain("Rotor_Bnd_MBaux", rotor._mbBaux.physicals)
-        ###DomainAirGapRotor beinhaltet alle Physical Elements, die einen Luftspalt auf der Rotorseite (Luftspalt bis zum Moving Band) beschreiben.
+        ###DomainAirGapRotor beinhaltet alle Physical Elements, die einen Luftspalt auf
+        # der Rotorseite (Luftspalt bis zum Moving Band) beschreiben.
         self._domainAirGapRotor = Domain("Rotor_Airgap", rotor._domainAirGap.physicals)
-        ###DomainAirGapStator beinhaltet alle Physical Elements, die einen Luftspalt auf der Statorseite (Luftspalt ab dem Moving Band bis Statorinnenseite) beschreiben.
+        ###DomainAirGapStator beinhaltet alle Physical Elements, die einen Luftspalt auf
+        # der Statorseite (Luftspalt ab dem Moving Band bis Statorinnenseite)
+        # beschreiben.
         self._domainAirGapStator = Domain(
             "Stator_Airgap", stator._domainAirGap.physicals
         )
@@ -457,7 +460,7 @@ class MachineAllType:
 
     def plot(
         self,
-        fig=None,
+        fig: Union[Figure, None] = None,
         linewidth=0.5,
         marker=".",
         markersize=1,
@@ -467,9 +470,11 @@ class MachineAllType:
         2D Line plot of the surface
         """
         if fig is None:
-            fig, ax = plt.subplots()
-            fig.set_dpi(300)
+            fig, ax = plt.subplots(dpi=100)
             ax.set_aspect("equal", adjustable="box")
+        else:
+            ax = fig.axes
+        # plot all physicals
         domains = self.domains
         for domain in domains:
             for phys in domain.physicals:
@@ -484,4 +489,27 @@ class MachineAllType:
                         markersize=markersize,
                         color=[0, 0, 0],
                     )
+        # # Set axes limits
+        if self.symmetryFactor > 1 and not plot_mb:
+            ## offset y axis
+            # calc most upper point:
+            #   TODO: Find a universal solution for the bounding box... Maybe with a
+            #   new matplotlib version its easier to get the bbox of only lines or so.
+
+            #   We need extra case for symmetry 2 and 3 because there then the most
+            #   upper point is the outer radius
+            # if self.symmetryFactor <=3:
+            #     y_max = self.stator.outer_radius
+            # else:
+            #     # calc max. y point by angle and radius
+            #     y_max = ...
+
+            # y_bounds = fig.axes[0].get_ybound()
+            # y_offset = self.stator.outer_radius / 10
+            ax.set_ylim(
+                bottom=-self.stator.outer_radius / 20,
+                top=self.stator.outer_radius * 1.05,
+            )
+            if self.symmetryFactor > 2:
+                ax.set_xlim(left=0)
         return fig
