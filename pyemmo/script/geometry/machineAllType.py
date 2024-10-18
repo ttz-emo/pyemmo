@@ -330,6 +330,7 @@ class MachineAllType:
                         f"Physical Element (Primary Line) must only contain Line objects!"
                     )
                 )
+        primeLines.sort(key=_get_line_middle_raidus)
         return primeLines
 
     def getSecondaryLines(self) -> List[Line]:
@@ -351,6 +352,8 @@ class MachineAllType:
                         f"Physical Element (Primary Line) must only contain Line objects!"
                     )
                 )
+        secondaryLines.sort(key=_get_line_middle_raidus)
+
         return secondaryLines
 
     @property
@@ -483,3 +486,15 @@ class MachineAllType:
                         color=[0, 0, 0],
                     )
         return fig
+
+
+def _get_line_middle_raidus(line: Line) -> float:
+    """Get the radius of the middlepoint of a Line object
+
+    Args:
+        line (Line): Line object
+
+    Returns:
+        float: Radius of ``Line.middle_point``
+    """
+    return line.middle_point.radius
