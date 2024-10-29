@@ -79,7 +79,7 @@ class CircleArc(Line):
             )
         self.center: Point = centerPoint
 
-        self._id = gmsh.model.occ.addCircleArc(
+        self.id = gmsh.model.occ.addCircleArc(
             startPoint.id, centerPoint.id, endPoint.id
         )
         # Name der Linie.
