@@ -258,7 +258,21 @@ class Point(Transformable):
             raise ValueError(
                 "Mesh length must be int or float. (Mesh length of Point in meter)"
             )
-        self._meshLength = meshLength
+        try:
+            # check if getter raises attribute error -> setter was not called before
+            self.meshLength
+            # if no error is raised then try to reset the mesh size in gmsh
+            try:
+                gmsh.model.occ.mesh.set_size([(0, self.id)], meshLength)
+                # successfully changed mesh size in gmsh -> adapt internal property
+                self._meshLength = meshLength
+            except Exception as exce:
+                logging.warning("Could not set gmsh point mesh size.", exc_info=exce)
+        except AttributeError:
+            # first call of setter (from init) -> set initial mesh length
+            self._meshLength = meshLength
+        except Exception as exce:
+            raise exce
 
     # ------ methods ------
 
