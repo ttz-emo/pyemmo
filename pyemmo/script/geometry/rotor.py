@@ -24,6 +24,7 @@ import logging
 from math import pi
 from typing import *
 
+import gmsh
 from matplotlib import pyplot as plt
 
 from ...definitions import DEFAULT_GEO_TOL
@@ -526,6 +527,7 @@ class Rotor:
             self._set_linear_mesh(meshGainFactor, basisMeshsize)
         else:
             self._set_quad_mesh(meshGainFactor, basisMeshsize)
+        gmsh.model.occ.synchronize()
 
     def _set_linear_mesh(self, meshGainFactor: float, basisMeshsize: float):
         # calculate linear mesh size functions (ax+b)

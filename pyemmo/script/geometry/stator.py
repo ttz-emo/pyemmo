@@ -20,6 +20,7 @@
 import logging
 from typing import Dict, List, Literal, Union
 
+import gmsh
 import numpy as np
 from matplotlib import pyplot as plt
 from swat_em import datamodel
@@ -567,6 +568,7 @@ class Stator:
             self._set_linear_mesh(meshGainFactor, basisMeshsize)
         else:
             self._set_quad_mesh(meshGainFactor, basisMeshsize)
+        gmsh.model.occ.synchronize()
 
     def _set_linear_mesh(self, meshGainFactor: float, basisMeshsize: float):
         logging.debug("Setting linear mesh on stator.")
