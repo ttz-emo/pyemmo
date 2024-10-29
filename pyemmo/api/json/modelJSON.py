@@ -317,9 +317,9 @@ def importMachineGeometry(machineGeoList: list[dict]) -> dict[str, SurfaceAPI]:
                 f"Type is '{type(area)}'. Value is {area}"
             )
             raise ValueError(msg)
-    if logging.getLogger().level <= logging.DEBUG:
-        gmsh.model.occ.synchronize()
-        gmsh.fltk.run()
+    # if logging.getLogger().level <= logging.DEBUG:
+    #     gmsh.model.occ.synchronize()
+    #     gmsh.fltk.run()
     return segmentSurfDict
 
 
@@ -416,9 +416,9 @@ def createMachineGeometryFromSegment(
                     new_tools.extend(tool.tools)  # extent tools
                 tools = new_tools
     # TODO: Add airgap creation if no airgap in given geometry
-    if logging.getLogger().level <= logging.DEBUG:
-        gmsh.model.occ.synchronize()
-        gmsh.fltk.run()
+    # if logging.getLogger().level <= logging.DEBUG:
+    #     gmsh.model.occ.synchronize()
+    #     gmsh.fltk.run()
     return surf_dict
 
 
