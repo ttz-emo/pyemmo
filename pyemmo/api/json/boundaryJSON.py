@@ -21,6 +21,7 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Literal
 
 # from matplotlib import pyplot as plt
@@ -28,12 +29,14 @@ from typing import Literal
 import gmsh
 import numpy as np
 
+from ...definitions import DEFAULT_GEO_TOL
 from ...script.geometry import physicalsDict
 from ...script.geometry.circleArc import CircleArc
 from ...script.geometry.limitLine import LimitLine
 from ...script.geometry.line import Line
 from ...script.geometry.movingBand import MovingBand
 from ...script.geometry.physicalElement import PhysicalElement
+from ...script.geometry.point import Point
 from ...script.geometry.primaryLine import PrimaryLine
 from ...script.geometry.slaveLine import SlaveLine
 from ...script.geometry.transformable import Transformable
@@ -134,8 +137,8 @@ def filter_lines_at_angle(line_list: list[Line], angle: float) -> list[Line]:
         if all(
             np.isclose(
                 [
-                    line.start_point.getAngleToX(),
-                    line.end_point.getAngleToX(),
+                    line.start_point.getAngleToX() % (2 * np.pi),
+                    line.end_point.getAngleToX() % (2 * np.pi),
                 ],
                 [angle, angle],
                 atol=1e-6,
@@ -299,7 +302,7 @@ def createMBAux(
 ) -> list[MovingBand]:
     """
     createMBAux creates the outer Movingband lines of the rotor and add them to
-    pyemmo-Movingband objects depended on symmetry
+    pyemmo-Movingband objects depended on symmetry.
 
     Args:
         mb_lines_rotor (List[Line]): Inner moving band lines to duplicate.
@@ -314,17 +317,103 @@ def createMBAux(
     # here order of for-loops had to be changed because for example for symFaktor=4
     # we need 3 auxiliary movingband (mb) objects, each containing the same number
     # of lines as the inner movingband
-    for i in range(1, symFaktor):  # for every symmetry part
-        mb_lines_aux: list[Line] = []  # re-init mb_lines_list
-        # create duplicate curves, rotate them and add them to line list:
-        for arc in mb_lines_rotor:
-            mb_line = arc.duplicate()
-            mb_line.rotateZ(angle=i * sym_angle)
-            mb_lines_aux.append(mb_line)
+    nbr_mb_curves = len(mb_lines_rotor)
+    mb_radius = mb_lines_rotor[0].radius
+    mb_center_point = mb_lines_rotor[0].center
+    # find outer points of movingband
+    p_on_x_axis = None
+    p_on_sym_axis = None
+    for curve in mb_lines_rotor:
+        for p in curve.points:
+            if np.isclose(p.getAngleToX(), 0, atol=DEFAULT_GEO_TOL):
+                p_on_x_axis = p
+            elif np.isclose(p.getAngleToX(), sym_angle, atol=DEFAULT_GEO_TOL):
+                p_on_sym_axis = p
+        if p_on_x_axis is not None and p_on_sym_axis is not None:
+            break
+    # TODO: This needs to be tested for different configurations!
+    if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+        from ...functions.plot import plot
+
+        fig, _ = plot(mb_lines_rotor, tag=True)
+    for i_band in range(1, symFaktor):  # for every symmetry part
+        mb_lines_aux: list[GmshArc] = []  # re-init mb_lines_list
+        # # create duplicate curves, rotate them and add them to line list:
+        # for arc in mb_lines_rotor:
+        #     mb_line = arc.duplicate()
+        #     mb_line.rotateZ(angle=i * sym_angle)
+        #     mb_line = GmshArc(
+        #         start_point=mb_line.start_point,
+        #         center_point=mb_line.start_point,
+        #         end_point=mb_line.end_point,
+        #         name=mb_line.name,
+        #     )
+        #     mb_lines_aux.append(mb_line)
+
+        # create curves individually since the duplicated instances cannot be
+        # automatically removed by gmsh... This is only possible for instances of the
+        # highest gemetrical order which is surfaces at this point!
+        for i_curve in range(1, nbr_mb_curves + 1):
+            p_end_angle = sym_angle * i_band + sym_angle / nbr_mb_curves * (i_curve)
+            if i_band == 1 and i_curve == 1:
+                # first curve of first band -> use interface point
+                p_start = p_on_sym_axis
+                p_end = Point(
+                    name=f"Movingband point {i_band+1}.{i_curve}",
+                    x=np.cos(p_end_angle) * mb_radius,
+                    y=np.sin(p_end_angle) * mb_radius,
+                    z=0,
+                    meshLength=1,
+                )
+                # p_end = GmshPoint(p_end.id)
+            elif i_band == symFaktor - 1 and i_curve == nbr_mb_curves:
+                # final curve of last band -> use other interface point:
+
+                # p_start_angle = sym_angle * i_band + sym_angle / nbr_mb_curves * (
+                #     i_curve - 1
+                # )
+                # p_start = Point(
+                #     name=f"Movingband point {i_band+1}.{i_curve}",
+                #     x=np.cos(p_start_angle) * mb_radius,
+                #     y=np.sin(p_start_angle) * mb_radius,
+                #     z=0,
+                #     meshLength=1,
+                # )
+                # p_start = GmshPoint(p_start.id)
+
+                p_start = mb_lines_aux[-1].end_point  # start point is end point of last
+                # curve
+                p_end = p_on_x_axis
+            else:
+                if not mb_lines_aux:
+                    # mb lines are empty (e.g. second third mb curve when sym = 4)
+                    # use last point of last curve in previous MovingBand object
+                    p_start = mb_aux_list[-1].geo_list[-1].end_point
+                else:
+                    p_start = mb_lines_aux[-1].end_point
+                p_end = Point(
+                    name=f"Movingband point {i_band+1}.{i_curve}",
+                    x=np.cos(p_end_angle) * mb_radius,
+                    y=np.sin(p_end_angle) * mb_radius,
+                    z=0,
+                    meshLength=1,
+                )
+                # p_end = GmshPoint(p_end.id)
+            band_arc = CircleArc(
+                name=f"rotor auxiliary movingband {i_band+1}.{i_curve}",
+                startPoint=p_start,
+                centerPoint=mb_center_point,
+                endPoint=p_end,
+            )
+            # mb_lines_aux.append(GmshArc(tag=band_arc.id))
+            mb_lines_aux.append(band_arc)
+            if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+                plot(mb_lines_aux, fig=fig, tag=True)
+
         gmsh.model.occ.synchronize()  # need to sync before adding Physical
         mb_aux_list.append(
             MovingBand(
-                name=(physicalsDict["Rotor_MB_Line"] + f"_{str(i+1)}"),
+                name=(physicalsDict["Rotor_MB_Line"] + f"_{str(i_band+1)}"),
                 geo_list=mb_lines_aux.copy(),
                 material=material,
                 auxiliary=True,
@@ -396,6 +485,12 @@ def createMB(
         mb_rotor_ax = createMBAux(mb_lines_rotor, symFactor, material)
     else:
         mb_rotor_ax = None
+    # This was unnecessary since remove_all_duplicates() just removes instances
+    # belonging to highest order instances (= surfaces in our case)...
+    # gmsh.model.occ.remove_all_duplicates()  # call to remove duplicate points of moving band interfaces
+    # if logging.getLogger().level <= logging.DEBUG:
+    #     gmsh.model.occ.synchronize()
+    #     gmsh.fltk.run()
     return mb_stator, mb_rotor_inner, mb_rotor_ax
 
 
