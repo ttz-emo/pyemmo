@@ -159,16 +159,6 @@ class GmshArc(CircleArc):
         """
         return self._tag
 
-    @property
-    def id(self) -> int:
-        """
-        Getter for the tag property but with name 'id' to be compatible with PyEMMO.
-
-        Returns:
-            int: The unique identifier for the line.
-        """
-        return self._tag
-
     @tag.setter
     def tag(self, new_tag: int):
         """
@@ -179,6 +169,38 @@ class GmshArc(CircleArc):
         """
 
         self._tag = new_tag
+
+    @property
+    def id(self) -> int:
+        """
+        Getter for the tag property but with name 'id' to be compatible with PyEMMO.
+
+        Returns:
+            int: The unique identifier for the line.
+        """
+        return self._tag
+
+    @id.setter
+    def id(self, newID: int) -> None:
+        """setter of GmshArc ID
+
+        Args:
+            newID (int): New ID of Arc
+        """
+        if isinstance(newID, int):
+            self._tag = newID
+        else:
+            raise TypeError("Line ID must be an integer!")
+
+    # @name.setter
+    # def name(self, name: str):
+    #     """Set name of line .
+
+    #     Args:
+    #         name (str): New line name
+    #     """
+    #     gmsh.model.set_entity_name(1, self._id, name)
+    #     self._name = name
 
     @property
     def start_point(self) -> GmshPoint:
