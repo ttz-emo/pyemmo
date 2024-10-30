@@ -32,7 +32,7 @@ import subprocess
 from os import mkdir
 from os.path import isdir, isfile, join
 
-import gmsh
+import gmsh as gmsh_api
 
 from ... import logFmt
 from ...functions import calcIronLoss, import_results, runOnelab
@@ -47,7 +47,8 @@ from . import boundaryJSON as boundary
 from . import importJSON, modelJSON
 from .SurfaceJSON import SurfaceAPI
 
-gmsh.initialize()
+if not gmsh_api.is_initialized():
+    gmsh_api.initialize()
 
 # from swat_em import analyse
 # from .. import calcPhaseangleStarvoltageCorr
@@ -78,8 +79,8 @@ def createMachine(
     maschineSurfDict = modelJSON.createMachineGeometryFromSegment(
         segmentSurfDict, symFactor
     )
-    gmsh.model.occ.remove_all_duplicates()
-    gmsh.model.occ.synchronize()
+    gmsh_api.model.occ.remove_all_duplicates()
+    gmsh_api.model.occ.synchronize()
 
     rotorPhysicals, statorPhysicals = boundary.get_boundaries(
         maschineSurfDict, symFactor, rotorMovingBandRadius
@@ -114,8 +115,8 @@ def createMachine(
                     f"MachineSide was whether rotor or stator: {machineSide}",
                 )
     if logging.getLogger().level <= logging.DEBUG:
-        gmsh.model.occ.synchronize()
-        # gmsh.fltk.run()
+        gmsh_api.model.occ.synchronize()
+        # gmsh_api.fltk.run()
     # create the rotor
     axLen = importJSON.getAxialLength(extendedInfo)
     rotorAPI = Rotor(
@@ -144,6 +145,8 @@ def createMachine(
         nbrPolePairs=nbrPolePair,
         symmetryFactor=symFactor,
     )
+    # TODO: Add algorithm to remove all unused gmsh instances (aka ones that do not
+    # belong to any Physical Line or Surface)
     return machineSiemens, maschineSurfDict
 
 
@@ -355,7 +358,7 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
 
 
 def main(
-    geo: str | dict,
+    geo: str | dict[str, SurfaceAPI],
     extInfo: str | dict,
     model: str | os.PathLike,
     gmsh: str | os.PathLike = "",
@@ -413,28 +416,6 @@ def main(
         datetime.datetime.now().strftime("%H:%M:%S"),
     )
 
-    # get geometry
-    if isinstance(geo, str):
-        if isfile(geo):
-            # import the segment surface list from the json file
-            try:
-                with open(geo, encoding="utf-8") as jsonFile:
-                    machineGeoList = json.load(jsonFile)
-                    # create dict with surface api (segment) objects from the surface list
-                    segmentSurfDict = modelJSON.importMachineGeometry(machineGeoList)
-            except FileNotFoundError as fnfe:
-                raise fnfe
-            except Exception as exept:
-                raise exept
-        else:
-            raise (FileNotFoundError(f"Given file path {geo} was not a file."))
-    elif isinstance(geo, dict):
-        segmentSurfDict = geo
-    else:
-        raise TypeError(
-            f"Geometry file has to be type 'File' or 'dict', not {type(geo)}"
-        )
-
     # addition information
     if isinstance(extInfo, str):
         if isfile(extInfo):
@@ -447,6 +428,45 @@ def main(
     else:
         raise TypeError(
             f"Model information file has to be type 'File' or 'dict', not {type(extInfo)}"
+        )
+
+    # get geometry
+    if isinstance(geo, str):
+        if isfile(geo):
+            # add new gmsh model in case api is called multiple times:
+            gmsh_api.model.add(extendedInfo["modelName"])
+            # import the segment surface list from the json file:
+            try:
+                with open(geo, encoding="utf-8") as jsonFile:
+                    machineGeoList = json.load(jsonFile)
+                    # create dict with surface api (segment) objects from the surface list
+                    segmentSurfDict = modelJSON.importMachineGeometry(machineGeoList)
+            except FileNotFoundError as fnfe:
+                raise fnfe
+            except Exception as exept:
+                raise exept
+        else:
+            raise (FileNotFoundError(f"Given file path {geo} was not a file."))
+    elif isinstance(geo, dict):
+        # Make sure all given surfaces have the correct type:
+        if not all([type(surf) == SurfaceAPI for surf in geo.values()]):
+            raise ValueError(
+                "Invalid geometry dict provided! "
+                "Make sure that the geometry values are of type SurfaceAPI!"
+            )
+        # Assert that the given surfaces are created in the current gmsh model
+        gmsh_api.model.occ.synchronize()
+        surf_dim_tags = gmsh_api.model.get_entities(2)
+        surf_tags = [dim_tag[1] for dim_tag in surf_dim_tags]
+        for surf in geo.values():
+            if surf.id not in surf_tags:
+                raise RuntimeError(
+                    f"Segment surface {surf.name} with ID {surf.id} not in current gmsh model!"
+                )
+        segmentSurfDict = geo
+    else:
+        raise TypeError(
+            f"Geometry file has to be type 'File' or 'dict', not {type(geo)}"
         )
 
     # generate the machine geometry
