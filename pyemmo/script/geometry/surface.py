@@ -113,6 +113,18 @@ class Surface(Transformable):
             return True
         return False
 
+    def __str__(self) -> str:
+        msg = f"Surface of type: {type(self)}\n"
+        msg += f"ID: {self.id}\n"
+        msg += f"Name: {self.name}\n"
+        msg += f"Loop contains {len(self.curve)} curves:\n"
+        for curve in self.curve:
+            msg += (
+                f"  Curve L{curve.id}: P{curve.start_point.id} -> P{curve.end_point.id}"
+            )
+            msg += "\n"
+        return msg
+
     # Wird eine Fläche erzeugt, bekommt sie automatisch eine eindeutige ID
     # zugewiesen. Mit getNewID() wird eine neue ID erzeugt.
     @classmethod
