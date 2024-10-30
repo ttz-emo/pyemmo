@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import os
 
+import gmsh as gmsh_api
 from pyleecan.Classes.Machine import Machine as PyleecanMachine
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
 from pyleecan.Classes.MachineSCIM import MachineSCIM
@@ -71,6 +72,8 @@ def main(
         pyleecan_machine,
         (MachineSIPMSM, MachineIPMSM, MachineSyRM, MachineSCIM),
     ):
+        # create new gmsh model in case api is called multiple times:
+        gmsh_api.model.add(pyleecan_machine.name)
         (
             movingband_r,
             magnetizationDict,
