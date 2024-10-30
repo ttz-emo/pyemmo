@@ -45,18 +45,70 @@ Author:
 Note:
     This docstring was created by OpenAI GPT-4o.
 """
-from typing import Literal
+from typing import Literal, Union
 
 import gmsh
 import numpy as np
 
 from ..geometry.circleArc import CircleArc
 from ..geometry.line import Line
+from ..geometry.physicalElement import PhysicalElement
+from ..geometry.surface import Surface
+from . import DimTag
 from .gmsh_line import GmshLine
 
-
 ################################## MISC FUNCTIONS ######################################
-def get_point_tags(dim_tags: list[tuple[Literal[0, 1, 2], int]]) -> list[float]:
+
+# TODO: add tests for misc functions!!
+
+
+def get_dim_tags(geo_list: list[Union[Line, Surface, PhysicalElement]]) -> list[DimTag]:
+    """
+    Extracts dimension tag value pairs from a list of geometric elements.
+
+    This function processes a list of elements which may include lines, surfaces,
+    or physical elements, and generates a corresponding list of Gmsh dimension tags.
+    Each dimension tag is represented as a tuple containing a dimension identifier
+    (1 for lines, 2 for surfaces) and its Gmsh entity ID.
+
+    If an element is a `PhysicalElement`, the function recursively processes its
+    associated ``geo_list`` property to extract dimension tags for its constituent
+    elements.
+
+    Args:
+        geo_list (list[Union[Line, Surface, PhysicalElement]]): A list of geometric
+            elements which may include `Line`, `Surface`, or `PhysicalElement` instances.
+
+    Returns:
+        list[DimTag]: A list of dimension tags in the form of tuples, where each tuple
+        consists of a dimension identifier and an entity ID.
+
+    Raises:
+        RuntimeError: If an element in the geo_list is neither a `Surface` nor a `Line`.
+
+    Example:
+
+    ..code::
+
+        >>> elements = [Line(id=1), Surface(id=2), PhysicalElement(geo_list=[Line(id=3)])]
+        >>> dim_tags = get_dim_tags(elements)
+        >>> print(dim_tags)
+        [(1, 1), (2, 2), (1, 3)]
+    """
+    dim_tags: list[tuple[Literal[1, 2], int]] = []
+    for element in geo_list:
+        if isinstance(element, PhysicalElement):
+            dim_tags.extend(get_dim_tags(element.geo_list))
+        elif isinstance(element, Surface):
+            dim_tags.append((2, element.id))
+        elif isinstance(element, Line):
+            dim_tags.append((1, element.id))
+        else:
+            raise RuntimeError("Geometry not Surface or Line!")
+    return dim_tags
+
+
+def get_point_tags(dim_tags: list[DimTag]) -> list[DimTag]:
     """Extract list of _unique_ point tags from a given list of dim tags.
 
     This uses:
@@ -78,7 +130,7 @@ def get_point_tags(dim_tags: list[tuple[Literal[0, 1, 2], int]]) -> list[float]:
     for dim_tag in dim_tags:
         if dim_tag[0] == 2:
             # case surface
-            p_dim_tags = gmsh.model.get_boundary(dim_tag, recursive=True)
+            p_dim_tags = gmsh.model.get_boundary([dim_tag], recursive=True)
             p_tags.extend([dt[1] for dt in p_dim_tags])
         elif dim_tag[0] == 1:
             # case curve
