@@ -819,26 +819,28 @@ def get_boundaries(
         rotor_boundary.append(LimitLine("innerLimit", inner_limit_lines))
     else:
         # No inner limit lines left, which means the center point is the inner limit.
-        # To make sure: checkout if primary/secondary lines contain the center point
-        found_center = False
-        rotor_primary: PrimaryLine = rotor_boundary[0]
-        assert (
-            type(rotor_primary) == PrimaryLine and "rotor" in rotor_primary.name.lower()
-        )
-        for line in rotor_primary.geo_list:
-            line: Line | CircleArc = line
-            for point in line.points:
-                if point.isEqual(globalCenterPoint):
-                    found_center = True
-                    break  # break inner point loop
-            if found_center:
-                # if the center point was found, break the outer loop too
-                break
-        if not found_center:
-            raise RuntimeError(
-                "Cound not identify inner limit lines AND "
-                "primary lines did not contain center point!"
+        if symFactor > 1:
+            # To make sure: checkout if primary/secondary lines contain the center point
+            found_center = False
+            rotor_primary: PrimaryLine = rotor_boundary[0]
+            assert (
+                type(rotor_primary) == PrimaryLine
+                and "rotor" in rotor_primary.name.lower()
             )
+            for line in rotor_primary.geo_list:
+                line: Line | CircleArc = line
+                for point in line.points:
+                    if point.isEqual(globalCenterPoint):
+                        found_center = True
+                        break  # break inner point loop
+                if found_center:
+                    # if the center point was found, break the outer loop too
+                    break
+            if not found_center:
+                raise RuntimeError(
+                    "Cound not identify inner limit lines AND "
+                    "primary lines did not contain center point!"
+                )
     # # TODO: Add verbosity and plot this when debugging.
     # # fig, ax = plt.subplots()
     # # plot(primarylinesRotor + primaryLinesStator, fig=fig, color="b")
