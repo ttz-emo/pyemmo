@@ -112,7 +112,7 @@ def createLine(
             start_point=startPoint,
             end_point=endPoint,
             control_points=[controlPoint],
-            spline_type=1,
+            spline_type=1,  # FIXME: Set spline type depended on 'lineType' key!
         )
     # else invalid linetype
     else:
