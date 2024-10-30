@@ -28,6 +28,7 @@ from matplotlib.figure import Figure
 from numpy import mean
 
 from ...definitions import LINE_COLOR
+from ..gmsh import DimTag
 from .circleArc import CircleArc
 from .line import Line
 from .point import Point
@@ -702,7 +703,7 @@ class Surface(Transformable):
         ToolSurface.setTool()  # set to the tool surface
         if not keepTool:
             ToolSurface.delete = True
-        cut_dim_tags: list[tuple(int, int)] = [(2, ToolSurface.id)]
+        cut_dim_tags: list[DimTag] = [(2, ToolSurface.id)]
         # cut out tools of tools aswell!
         tools = ToolSurface.tools
         while tools:

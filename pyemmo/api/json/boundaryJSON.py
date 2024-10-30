@@ -22,7 +22,6 @@
 from __future__ import annotations
 
 import logging
-from typing import Literal
 
 # from matplotlib import pyplot as plt
 # from ..functions.plot import plot
@@ -40,14 +39,15 @@ from ...script.geometry.point import Point
 from ...script.geometry.primaryLine import PrimaryLine
 from ...script.geometry.slaveLine import SlaveLine
 from ...script.geometry.transformable import Transformable
-from ...script.gmsh import (
+from ...script.gmsh import SurfDimTag
+from ...script.gmsh.gmsh_arc import GmshArc
+from ...script.gmsh.gmsh_line import GmshLine
+from ...script.gmsh.utils import (
     filter_curves_on_radius,
     filter_lines_at_angle,
     get_max_radius,
     get_min_radius,
 )
-from ...script.gmsh.gmsh_arc import GmshArc
-from ...script.gmsh.gmsh_line import GmshLine
 from ...script.material.material import Material
 from .. import air
 from .. import logger as apiLogger
@@ -443,7 +443,7 @@ def getLimitLines(
 
 def get_rotor_stator_dim_tags(
     surf_dict: dict[str, list[SurfaceAPI]], rotor_mb_radius: float
-) -> tuple[list[tuple[Literal[2], int]], list[tuple[Literal[2], int]]]:
+) -> tuple[list[SurfDimTag], list[SurfDimTag]]:
     """
     Classifies Gmsh surfaces into rotor and stator based on their radius.
 
@@ -458,7 +458,7 @@ def get_rotor_stator_dim_tags(
             surfaces.
 
     Returns:
-        tuple[list[tuple[Literal[2], int]], list[tuple[Literal[2], int]]]: Two lists of tuples:
+        tuple[list[SurfDimTag], list[SurfDimTag]]: Two lists of tuples:
             - Rotor gmsh surface tags.
             - Stator gmsh surface tags.
 
@@ -470,8 +470,8 @@ def get_rotor_stator_dim_tags(
         rotor_mb_radius = 0.6
         rotor_tags, stator_tags = get_rotor_stator_dim_tags(surf_dict, rotor_mb_radius)
     """
-    stator_dim_tags: list[tuple[Literal[2], int]] = []
-    rotor_dim_tags: list[tuple[Literal[2], int]] = []
+    stator_dim_tags: list[SurfDimTag] = []
+    rotor_dim_tags: list[SurfDimTag] = []
     for _, surflist in surf_dict.items():
         dim_tags = [(2, surf.id) for surf in surflist]
         if surflist[0].points[0].radius > rotor_mb_radius:
@@ -481,9 +481,7 @@ def get_rotor_stator_dim_tags(
     return rotor_dim_tags, stator_dim_tags
 
 
-def get_boundary_line_list(
-    surf_dim_tags: list[tuple[Literal[2], int]]
-) -> list[GmshLine]:
+def get_boundary_line_list(surf_dim_tags: list[SurfDimTag]) -> list[GmshLine]:
     """
     Retrieves and constructs a list of boundary lines (Type ``GmshLine`` for a given set
     of surface dimension tags.
@@ -493,7 +491,7 @@ def get_boundary_line_list(
     the line's tag and the start and end points as `GmshPoint` objects.
 
     Args:
-        surf_dim_tags (list[tuple[Literal[2], int]]): A list of tuples where each tuple
+        surf_dim_tags (list[SurfDimTag]): A list of tuples where each tuple
             represents a surface in Gmsh, consisting of the dimension (2 for surfaces)
             and the surface tag.
 
