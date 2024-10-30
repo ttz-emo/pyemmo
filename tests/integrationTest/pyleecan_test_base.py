@@ -134,10 +134,7 @@ def pyleecan_test_base(
     except Exception as exce:
         raise exce
     try:
-        if (
-            pyleecan_machine.stator.winding.conductor.cond_mat.name
-            == "Copper1"
-        ):
+        if pyleecan_machine.stator.winding.conductor.cond_mat.name == "Copper1":
             pyleecan_machine.stator.winding.conductor.cond_mat = CuMat
     except AttributeError:
         pass
@@ -210,9 +207,7 @@ def pyleecan_test_base(
     # with Popen(cmdCommand, stdout=PIPE, stderr=STDOUT) as process:
     with Popen(cmdCommand, stdout=PIPE, stderr=PIPE) as process:
         with process:
-            error_message = log_subprocess_output(
-                process.stdout, process.stderr
-            )
+            error_message = log_subprocess_output(process.stdout, process.stderr)
         exitcode = process.wait()  # 0 means success
         if exitcode != 0:
             raise RuntimeError(
@@ -298,33 +293,29 @@ def pyleecanPrepTuple(
                     test_params[test_type],
                     result_path=result_path,
                     test_data_path=source_path,
+                    test_case=test_case,
+                    test_id=test_id,
                 )
                 log_file.write(f"Simulation successful for {test_case}.json\n")
 
             except RuntimeError as err:
-                LOGGER.warning(
-                    f"{err.__str__()}, cannot start tests for {test_case}"
-                )
+                LOGGER.warning(f"{err.__str__()}, cannot start tests for {test_case}")
                 log_file.write(
                     f"{err.__str__()}, cannot start tests for {test_case}.json\n"
                 )
 
             except Exception as exce:
                 LOGGER.warning(
-                    f"test for {test_case} failed. exce.args[0]: "
-                    + exce.args[0]
+                    f"test for {test_case} failed. exce.args[0]: " + exce.args[0]
                 )
                 log_file.write(
-                    f"test for {test_case} failed. exce.args[0]: "
-                    + exce.args[0]
-                    + "\n"
+                    f"test for {test_case} failed. exce.args[0]: " + exce.args[0] + "\n"
                 )
             # simul_path = pyemmo_script.resultsPath
             simul_path = [
                 os.path.join(result_path, dir)
                 for dir in os.listdir(result_path)
-                if os.path.isdir(os.path.join(result_path, dir))
-                and "res_" in dir
+                if os.path.isdir(os.path.join(result_path, dir)) and "res_" in dir
             ][0]
             # simul_folder = simul_path.split("/")[-1]
             simul_folder = simul_path.split("\\")[-1]
@@ -459,7 +450,5 @@ if __name__ == "__main__":
             )
             log_file.write(f"Successfully created base data for {test_case}\n")
         except Exception as exce:
-            log_file.write(
-                f"{type(exce).__name__} in {test_case}: {exce.__str__()}\n"
-            )
+            log_file.write(f"{type(exce).__name__} in {test_case}: {exce.__str__()}\n")
     log_file.close()
