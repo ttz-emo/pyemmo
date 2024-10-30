@@ -380,9 +380,12 @@ def createMBAux(
                 #     meshLength=1,
                 # )
                 # p_start = GmshPoint(p_start.id)
-
-                p_start = mb_lines_aux[-1].end_point  # start point is end point of last
-                # curve
+                if not mb_lines_aux:
+                    # mb lines are empty -> there is only one MB curve per segment
+                    p_start = mb_aux_list[-1].geo_list[-1].end_point
+                else:
+                    p_start = mb_lines_aux[-1].end_point  # start point is end point of
+                    # last curve
                 p_end = p_on_x_axis
             else:
                 if not mb_lines_aux:
@@ -612,6 +615,7 @@ def get_boundary_line_list(
     bnd_line_list: list[GmshLine, GmshArc] = []
     for dim, l_tag in boundary_dim_tags:
         assert dim == 1
+        l_tag = abs(l_tag)
         # line_type = gmsh.model.get_type(1, l_tag)  # get curve type: 'Line' or 'Circle'
         line_type = gmsh.model.get_type(1, l_tag)
         if line_type == "Line":
