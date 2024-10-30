@@ -77,7 +77,9 @@ class Spline(Line):
         self.control_points = control_points
         # 0: Catmull-Rom Spline, 1: Bezierkurve, 2: Basis-Spline
         self._spline_type = spline_type
-        point_list = [start_point.id] + control_points + [end_point.id]
+        point_list = (
+            [start_point.id] + [cp.id for cp in control_points] + [end_point.id]
+        )
         if spline_type in (0, 2):
             self._id = gmsh.model.occ.addSpline(point_list)
         else:
