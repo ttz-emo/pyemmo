@@ -144,7 +144,17 @@ class GmshArc(CircleArc):
             gmsh.model.get_value(0, point_tags[1][1], []),
         )
         center_tag, center_coords = get_center(tag)
-        self.center = GmshPoint(center_tag, center_coords)
+        if center_tag is None:
+            # center point not existant yet!
+            self.center = Point(
+                f"Center of CircleArc {self.tag}",
+                center_coords[0],
+                center_coords[1],
+                center_coords[2],
+                1,
+            )
+        else:
+            self.center = GmshPoint(center_tag, center_coords)
         if not name:
             name = gmsh.model.get_entity_name(1, tag)
         self.name = name
