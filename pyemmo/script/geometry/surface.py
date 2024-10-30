@@ -82,20 +82,18 @@ class Surface(Transformable):
                     f"list ({type(curves)})."
                 )
             )
-        curve_tags = [curve.id for curve in curves]
-        curve_loop = gmsh.model.occ.addCurveLoop(curve_tags)
+        self.sortCurves()  # sort the curves (direction can be neglected with occ)
+        curve_loop = gmsh.model.occ.addCurveLoop([curve.id for curve in self.curve])
         # TODO: addCurveLoop() can create new line objects in gmsh to share touch points
         #       e.g. when duplicating a surface object all the lines are individuals
         #       (not sharing interface points). Then addCurveLoop() will generate new
         #       lines and the original line IDs will be lost...
         self.id = gmsh.model.occ.addPlaneSurface([curve_loop])
-        ###Name des Objektes.
         self.name: str = name  # set name after id was set to also set name in gmsh
         # Todesmerker wird nur gesetzt, wenn das Objekt im Skript erzeugt
         # wurde (Aufruf von addToScript())!
         self._todesmerker: bool = False
-        ###Farbe vom Netz.
-        self._color = ""
+        self._color = ""  # mesh color
         # init because _cut(=tools) is only accessed by method ``cutOut``
         self._cut: list[Surface] = []
         self._isTool: bool = False
