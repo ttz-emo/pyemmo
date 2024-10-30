@@ -35,6 +35,7 @@ Functions:
 
 from __future__ import annotations
 
+import logging
 import math
 
 from pyleecan.Classes.Machine import Machine as PyleecanMachine
@@ -254,6 +255,9 @@ def build_bands_stator(
     # Stator outer band:
     # ------------------
     biggest_previous_y_stator = 0
+    biggest_y_point_stator: Point | None = None
+    lowest_y_point_stator: Point | None = None
+
     for curve in stator_cont_line_list:
         for point in curve.points:
             if point.coordinate[1] > biggest_previous_y_stator:
@@ -306,6 +310,10 @@ def build_bands_stator(
     curves_stlu1.append(lower_line4)
     curves_stlu1.append(upper_line4)
 
+    if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+        from ...functions.plot import plot
+
+        fig, ax = plot(curves_stlu1, linewidth=1, markersize=3, tag=True)
     # Assginment of statorAirGap1 as surface:
     stator_air_gap1 = SurfaceAPI(
         name="statorAirGap1",
@@ -316,10 +324,8 @@ def build_bands_stator(
         angle=angle_stator,
         meshSize=1.0,
     )
-
-    # plot(curves_stlu1, linewidth=1, markersize=3, tag=True)
-    # stator_air_gap1.plot()
-    # print("---")
+    if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+        stator_air_gap1.plot(fig=fig)
 
     # ------------------
     # Stator inner band:
@@ -370,6 +376,8 @@ def build_bands_stator(
         angle=angle_stator,
         meshSize=1.0,
     )
+    if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+        stator_air_gap2.plot(fig=fig)
 
     return stator_air_gap1, stator_air_gap2
 
@@ -495,16 +503,6 @@ def get_translated_machine(
             band_radius_list=band_radius_list,
         )
     )
-
-    # OLD CODE:
-    # geo_translation_dict = {}
-    # for surf in geometry_list:
-    #     if surf.idExt not in geo_translation_dict:
-    #         geo_translation_dict[surf.idExt] = surf
-    #     else:
-    #         raise RuntimeError(
-    #             f"Surface ID '{surf.idExt}' already in geometry dict!"
-    #         )
 
     # Try to reuse function from json api:
     geo_translation_dict = createSurfaceDict(geometry_list)
