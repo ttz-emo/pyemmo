@@ -25,6 +25,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 from swat_em import datamodel
 
+from ..gmsh.gmsh_point import GmshPoint
+from ..gmsh.utils import get_dim_tags, get_point_tags
 from ..material.electricalSteel import ElectricalSteel
 from .airGap import AirGap
 from .domain import Domain
@@ -32,7 +34,7 @@ from .line import Line
 from .movingBand import MovingBand
 from .physicalElement import PhysicalElement
 from .slot import Slot
-from .surface import Point, Surface
+from .surface import Surface
 
 # from ... import calc_phaseangle_starvoltageV2
 
@@ -570,29 +572,26 @@ class Stator:
             self._set_quad_mesh(meshGainFactor, basisMeshsize)
         gmsh.model.occ.synchronize()
 
+    def _get_points(self) -> list[GmshPoint]:
+        """Get a list of currently available gmsh points from gmsh model belonging to a
+        stator physical element geometry.
+
+        Returns:
+            list[GmshPoint]: List of points belonging to stator physicals
+        """
+        phys_dim_tags = get_dim_tags(self.physicalElements)
+        p_tags = get_point_tags(phys_dim_tags)
+        return [GmshPoint(tag=p_tag) for p_tag in p_tags]
+
     def _set_linear_mesh(self, meshGainFactor: float, basisMeshsize: float):
         logging.debug("Setting linear mesh on stator.")
         # calculate linear mesh size functions (ax+b)
         a = (meshGainFactor - 1) / (self.outer_radius - self.movingBandRadius)
         b = meshGainFactor - a * self.outer_radius
-
-        for physical in self.physicalElements:
-            for geo in physical.geo_list:
-                points: List[Point] = []
-                if isinstance(geo, Surface):
-                    for curve in geo.curve:
-                        points.extend(curve.points)
-                elif isinstance(geo, Line):
-                    points.extend(geo.points)
-                # All curves should belong to a surface...
-                # else:
-                #     points.extend(geo.getPoints())
-                for point in points:
-                    rP = point.radius
-                    # if rP < rMb: # == rotor is allways true
-                    # meshSizeFaktor = (a1*rP+b1)
-                    pMeshSize = (a * rP + b) * basisMeshsize
-                    point.meshLength = pMeshSize
+        for point in self._get_points():
+            rP = point.radius
+            pMeshSize = (a * rP + b) * basisMeshsize
+            point.meshLength = pMeshSize
 
     def _set_quad_mesh(self, meshGainFactor: float, basisMeshsize: float):
         """set mesh by parabolic function.
@@ -607,23 +606,12 @@ class Stator:
         c = meshGainFactor
         b = -2 * c / r_mb
         a = -b / 2 / r_mb
-        for physical in self.physicalElements:
-            for geo in physical.geo_list:
-                points: List[Point] = []
-                if isinstance(geo, Surface):
-                    for curve in geo.curve:
-                        points.extend(curve.points)
-                elif isinstance(geo, Line):
-                    points.extend(geo.points)
-                # All curves should belong to a surface...
-                # else:
-                #     points.extend(geo.getPoints())
-                for point in points:
-                    rP = point.radius
-                    # faktor = 4770*rP**2 - 430 * rP + 10 # poly 2 fit
-                    gain_factor = (a * rP**2 + b * rP + c) + 1
-                    gain_factor = 1 if gain_factor < 1 else gain_factor
-                    point.meshLength = gain_factor * basisMeshsize
+        for point in self._get_points():
+            rP = point.radius
+            # faktor = 4770*rP**2 - 430 * rP + 10 # poly 2 fit
+            gain_factor = (a * rP**2 + b * rP + c) + 1
+            gain_factor = 1 if gain_factor < 1 else gain_factor
+            point.meshLength = gain_factor * basisMeshsize
 
     ###
     # Mit addToScript wird der Stator zum Skriptobjekt übergeben und in gmsh-Syntax übersetzt.
