@@ -1930,7 +1930,10 @@ class Script:
                         mbLineIDs += f"{mbLine.id},"  # add the line id
             # get approx. the min mesh length of the rotor movingband
             # (only checking first line of first movingband physical)
-            mbMeshSize = movingbandPhysicals[0].geo_list[0].getMinMeshLength()
+            _, p_tags = gmsh.model.getAdjacencies(
+                1, movingbandPhysicals[0].geo_list[0].id
+            )
+            mbMeshSize = min(gmsh.model.mesh.getSizes([(0, tag) for tag in p_tags]))
             if mbLineIDs:
                 rRotorMB = rotor.movingBandRadius
                 nbrSeg0 = (2 * pi * rRotorMB / mbMeshSize) - (
