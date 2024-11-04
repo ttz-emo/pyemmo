@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied
+# Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -11,7 +12,7 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
@@ -32,20 +33,20 @@ Note:
     Pyleecan machine object, and formatting it according to the SWAT-EM
     conventions.
 
-    TODO: Perhaps return only the data model object and call the `get_phases()`
-    function directly in `createParamDict`.
+    TODO: Perhaps return only the data model object and call the
+    ``get_phases()`` function directly in ``createParamDict``.
 """
 
 from __future__ import annotations
 
-import swat_em as swatem
+import swat_em
 from pyleecan.Classes.Machine import Machine
 
 
 def translate_winding(
     machine: Machine,
 ) -> tuple[
-    swatem.datamodel,
+    swat_em.datamodel,
     list[
         (
             list[list[int] | list[int]]
@@ -63,16 +64,18 @@ def translate_winding(
     Returns:
         tuple: A tuple containing the following elements:
 
-            - swatem.datamodel: The datamodel object representing the winding.
+            - ``swat-em.datamodel``: The datamodel object representing the winding.
             - list: A list containing information about the winding in a list of
               lists representing the winding layout for each phase. Each inner
               list contains:
-                    - List of integers: Positive integers representing active slots.
-                    - List of integers: Negative integers representing inactive slots.
+
+                * List of integers: Positive integers representing active slots.
+
+                * List of integers: Negative integers representing inactive slots.
     """
     # TODO: It might be possible to only return the data model object and
     # then call the 'get_phases()' function directly in 'createParamDict'.
-    winding = swatem.datamodel()
+    winding = swat_em.datamodel()
 
     winding.genwdg(
         Q=machine.stator.slot.Zs,

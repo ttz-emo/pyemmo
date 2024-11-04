@@ -244,13 +244,15 @@ class Spline(Line):
         """Mit duplicate() wird eine Spline mit gleichen Eigenschaften zur Originalen
         erzeugt. Diese Spline hat jedoch eine unterschiedliche ID.
                 Beispiel:
-                SP1 = Spline('sp1', P1, P2, [P3, P4, P5])
-                SP2 = SP1.duplicate()
+                    SP1 = Spline('sp1', P1, P2, [P3, P4, P5])
+                    SP2 = SP1.duplicate()
+
         Args:
-            name (str, optional): Name of new spline. Defaults to "".
+            name (str, optional): Name of new spline. Defaults to \"\".
 
         Returns:
             Spline: Duplicate of the current Spline
+
         """
         newP1 = self.start_point.duplicate()
         newP2 = self.end_point.duplicate()

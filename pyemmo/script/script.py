@@ -123,7 +123,8 @@ class Script:
 
         DEFAULT SimuParam Dict:
 
-        .. code:: python
+        .. code-block:: python
+
             {
                 "SYM": {
                     "INIT_ROTOR_POS": 0.0,
@@ -369,16 +370,20 @@ class Script:
 
     @property
     def materialDict(self) -> dict[str, list[list[int]]]:
-        """Retrun the material dict of the script
+        """Return the material dict of the script
 
         Returns:
             Dict[str, List]: material dictionary having the structure:
-                {
-                    "material": [ListOfMaterials],
-                    "physicalElemID":  [[physicalIDs],[physicalIDs],...]
-                }
+                .. code-block:: python
+
+                    {
+                        "material": [ListOfMaterials],
+                        "physicalElemID":  [[physicalIDs],[physicalIDs],...]
+                    }
+
                 Every material in the material list has a list of physical
                 element IDs in the physicalElemID-List(=List of lists)
+
         """
         return self._materialDict
 
@@ -1220,17 +1225,20 @@ class Script:
         return None
 
     def addPostOperation(self, quantityName: str, name: str, **kwargs) -> None:
-        """Add a new PostOperation (Print) statement
+        r"""Add a new PostOperation (Print) statement
 
         Args:
             - quantityName (str): Name of the PostProcessing quantity (eg. a,
                 az, b, bn, hn, b_tangent, b_radial, br, mu, j, js, jz, Vmag,
                 I_n, ir, p_Lam, P_Lam, Inertia,...)
+
             - name (str, optional): Name of the PostOperation.
 
-            - **kwargs: kwargs are used to complete the Print statment, so eg.
+            - \*\*kwargs: kwargs are used to complete the Print statment, so eg.
                 to print Br on the whole Domain the function call would look
                 like:
+                .. code-block:: python
+
                     myScript.addPostOperation("b_radial", "User Defined
                     PostOperation", OnElementsOf="Domain",
                     File="Path/To/resFile.pos", LastTimeStepOnly="",)
@@ -2115,7 +2123,7 @@ class Script:
                     if isinstance(physicalElement, Magnet):
                         hasMagnets = True
         simuParamDict["SYM"]["FLAG_NL"] = flagCalcNL
-        if not hasMagnets:
+        if not hasMagnets and simuParamDict["SYM"]["CALC_MAGNET_LOSSES"] == 1:
             # if there where no magnet physical elements, set flag to false
             # even if its set to true...
             logging.warning(
@@ -2191,8 +2199,12 @@ class Script:
             simuParamDict["SYM"]["ParkAngOffset"] = dqOffset
 
     def _getParamCode(self, paramName: str, paramValue) -> str:
-        """Get a line of parameter code:
-        "paramCode = f"{paramName} = {paramValue};\n" """
+        """
+        Get a line of parameter code:
+        .. code-block:: python
+
+            paramCode = f"{paramName} = {paramValue}
+        """
         if isinstance(paramValue, (str)):
             paramCode = f'{paramName} = "{paramValue}";\n'  # add "" for string value
         else:  # isinstance(paramValue,(int, float)):

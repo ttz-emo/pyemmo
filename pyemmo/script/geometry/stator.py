@@ -322,13 +322,16 @@ class Stator:
             )
 
     def _setWindingParamInSlots(self):
-        """This function sets the winding parameters in the ``Slot`` objects from the
+        """
+        This function sets the winding parameters in the ``Slot`` objects from the
         SWAT-EM winding layout in ``Stator.winding``.
         By determining the slot sequence and slot side the winding parameters can be
         set:
+
             - Winding direction: + or -
             - Winding phase: u, v or w
             - Number of winding turns
+
         """
         # get_layers returns right/upper and left/lower slot side as
         # list of phases (1,2 or 3) and winding direction (+ or -)
@@ -389,20 +392,24 @@ class Stator:
     def sortPhysicals(self) -> Dict[str, List[PhysicalElement]]:
         """Create a dict with the physical elements sorted into different domains with domain names as keys
             The dict will look like
-        {
-            "domainS": phy_domainS,
-            "domainLam": phy_domainLam,
-            "domainC": phy_domainC,
-            "domainCC": phy_domainCC,
-            "mb_all": mb_all,
-            "domain": phy_domain,
-            "domainNL": phy_domainNL,
-            "domainL": phy_domainL,
-            "airGap": phy_airgap,
-            "primary": phy_primaryLine,
-            "slave": phy_slaveLine,
-            "limit": limit_Line,
-        }
+
+            .. code-block:: python
+
+                {
+                    "domainS": phy_domainS,
+                    "domainLam": phy_domainLam,
+                    "domainC": phy_domainC,
+                    "domainCC": phy_domainCC,
+                    "mb_all": mb_all,
+                    "domain": phy_domain,
+                    "domainNL": phy_domainNL,
+                    "domainL": phy_domainL,
+                    "airGap": phy_airgap,
+                    "primary": phy_primaryLine,
+                    "slave": phy_slaveLine,
+                    "limit": limit_Line,
+                }
+
         Raises:
             Exception: If material of a surface is unknown or None. Surface physical element must have material.
 

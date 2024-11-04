@@ -33,7 +33,7 @@ from pyleecan.Classes.MachineSyRM import MachineSyRM
 from ..json.json import main as json_api_main
 from .create_param_dict import create_param_dict
 from .create_pyleecan_simulation import create_simulation
-from .get_translated_machine import get_translated_machine
+from .translate_machine import translate_machine
 
 
 def main(
@@ -78,7 +78,7 @@ def main(
             movingband_r,
             magnetizationDict,
             geo_translation_dict,
-        ) = get_translated_machine(pyleecan_machine)
+        ) = translate_machine(pyleecan_machine)
     else:
         raise ValueError("Machine type is not translatable!")
 

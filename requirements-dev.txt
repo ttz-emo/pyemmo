@@ -8,7 +8,10 @@ swat_em>=0.6.3
 # git+https://gitlab.com/CedMrnl/swat-em.git
 hypothesis>=6.98.17
 gmsh>=4.10.3
+
 Sphinx>=7.2.6 # for doc
+sphinx-rtd-theme
+
 GitPython
 pytest-check # for integration tests
 pytest-dependency

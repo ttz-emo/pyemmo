@@ -1,7 +1,7 @@
 JSON-API
-===========
+========
 
-This section is about the PyEMMO API (Application Programming Interface).
+This section is about the PyEMMO JSON API.
 It's working with two `JSON <https://de.wikipedia.org/wiki/JavaScript_Object_Notation>`_ formatted files, giving the geometry and the additional machine information.
 You can call the API via the command line using the following command:
 
@@ -23,13 +23,13 @@ You can call :bash:`python -m pyemmo.api.json -h` to get the following informati
 .. code-block:: text
 
    usage: json.py [-h] [--gmsh GMSH] [--getdp GETDP] [--mod MOD] [--res RES] geo extInfo
-   
+
    Process Motor-JSON files to generate a Onelab Simulation.
-   
+
    positional arguments:
       geo            path to the JSON geometry file ('geometry.json')
       extInfo        path to the extended info JSON file ('extendedInfo.json')
-   
+
    optional arguments:
       -h, --help     show this help message and exit
       --gmsh GMSH    path to the Gmsh executable
@@ -37,10 +37,10 @@ You can call :bash:`python -m pyemmo.api.json -h` to get the following informati
       --mod MOD      path where the model files should be stored
       --res RES      path where the simulation results should be stored
 
-The arguments `gmsh`, `getdp`, `mod` and `res` are optional. If you don't specify the paths for Gmsh or GetDP, the program will try to find them in the system path. 
-The default path for the model result files (`mod` path) is a new folder in the user directory created at install time. 
-For Windows this will be something like :file:`C:/Users/USER_NAME/AppData/Roaming/pyemmo/Results`. 
-By default the results directory for the simulation results will be stored in the same folder as the onelab simulation files created by PyEMMO. The folder name defaults to :file:`/res_MODEL_NAME`. 
+The arguments `gmsh`, `getdp`, `mod` and `res` are optional. If you don't specify the paths for Gmsh or GetDP, the program will try to find them in the system path.
+The default path for the model result files (`mod` path) is a new folder in the user directory created at install time.
+For Windows this will be something like :file:`C:/Users/USER_NAME/AppData/Roaming/pyemmo/Results`.
+By default the results directory for the simulation results will be stored in the same folder as the onelab simulation files created by PyEMMO. The folder name defaults to :file:`/res_MODEL_NAME`.
 
 .. _table-label:
 

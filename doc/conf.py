@@ -1,6 +1,7 @@
 # pylint: skip-file -> Do not scan this file with pylint
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences
+# Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -28,7 +29,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "PyEMMO"
-copyright = "2022, TTZ-EMO AG-EM"
+copyright = "2024, Technologietransferzentrum Elektromobilität TTZ-EMO"
 author = "TTZ-EMO AG-EM"
 
 # -- General configuration ---------------------------------------------------
@@ -39,7 +40,8 @@ extensions = [
     "sphinx.ext.coverage",
     "sphinx.ext.napoleon",
     "sphinx.ext.autosummary",
-    "sphinx.ext.autosectionlabel",
+    # "sphinx.ext.autosectionlabel", # fix warning of duplicate label.
+    "sphinx.ext.todo",  # enable todo directive
 ]
 
 templates_path = ["_templates"]
@@ -70,6 +72,7 @@ napoleon_use_rtype = True
 
 html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
+html_logo = "_static/PyEMMO_Logo_2_small.png"
 
 ## default theme options
 html_theme_options = {

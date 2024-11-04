@@ -28,10 +28,13 @@ from .surface import Surface
 
 
 class AirGap(PhysicalElement):
-    """Eine Instanz der AirGap ist ein Teil des Luftspalts einer elektrischen Maschine im
+    """
+    Eine Instanz der AirGap ist ein Teil des Luftspalts einer elektrischen Maschine im
     dreidimensionalen Raum. Diese Klasse beschreibt sowohl den Luftraum auf der Rotor sowie auf
     der Stator-Seite.
+
         \\image html class_airGap.png
+
     Beim Verwenden vom Baukasten muss der Luftspalt vom Nutzer nicht manuell definiert werden.
     Die Ergänzung vom Luftraum muss bei der Erstellung vom Rotor bzw. Stator automatisch erfolgen
     (siehe RotorSPMSM.py).

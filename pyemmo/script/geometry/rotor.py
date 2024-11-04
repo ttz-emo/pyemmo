@@ -57,7 +57,8 @@ from .surface import Surface
 
 
 class Rotor:
-    """An instance of the Rotor class describes the rotor of an electrical
+    """
+    An instance of the Rotor class describes the rotor of an electrical
     machine in three-dimensional space. This class is used in conjunction with
     the class machineAllType. The user himself defines the type of machine by
     defining his physical elements. This class should only be used if the
@@ -65,6 +66,7 @@ class Rotor:
     use the construction kit, it makes sense to specify the machine first. You
     should therefore use specific classes for this, e.g. machineSPMSM (for
     surface magnets) and the associated class RotorSPMSM.
+
     """
 
     def __init__(
@@ -75,10 +77,11 @@ class Rotor:
     ):
         """
         Constructor of class Rotor
+
         Args:
             physicalElements (List[PhysicalElement]): List of PhysicalElement
                 objects defining geometry and materials.
-            name (str): Defaults to "".
+            name (str): Defaults to \"\".
             axLen (float): Active axial length of stator lamination in [m].
                 Defaults to 1.0
 
@@ -233,10 +236,13 @@ class Rotor:
 
     ###Sortierfunktion der PhysicalElements.
     def sortPhysicals(self) -> Dict[str, List[PhysicalElement]]:
-        """Create a dict with the physical elements sorted into different domains with
-        domain names as keys
+        """
+        Create a dict with the physical elements sorted into different domains with
+        domain names as keys.
+        The dict will look like
 
-            The dict will look like
+        .. code-block:: python
+
             {
                 "domainS": phy_domainS,
                 "domainM": phy_domainM,
@@ -257,6 +263,7 @@ class Rotor:
 
         Returns:
             Dict[str, List[PhysicalElement]]: Sorted Physicals Dict
+
         """
         domain_dict: Dict[str, List[PhysicalElement]] = copy.deepcopy(
             default_domain_dict

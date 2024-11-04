@@ -19,7 +19,7 @@
 #
 """Module for abstract class Transformable"""
 # import abstrac base class (abc)
-from abc import ABC, abstractclassmethod, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
 
 
 class Transformable(ABC):
@@ -33,26 +33,31 @@ class Transformable(ABC):
 
     ###Mit getNewID() wird eine neue eindeutige ID für jede Transformable erzeugt.
     @classmethod
-    @abstractclassmethod
+    # @abstractclassmethod
     def _getNewID(cls):
         pass
 
     # pylint: disable=locally-disabled, invalid-name
     @property
-    @abstractproperty
+    @abstractmethod
+    # @abstractproperty
     def id(self) -> int:
         """Property id of geo classes"""
+        # pass
 
     @id.setter
     @abstractmethod
     def id(self, newID) -> None:
         """Setter for ID"""
+        pass
 
     ###Gibt den Namen einer Transformable zurück.
     @property
-    @abstractproperty
+    @abstractmethod
+    # @abstractproperty
     def name(self):
         """Entity name"""
+        # pass
 
     ###Überschreibt den aktuellen Namen mit einem neuen Namen.
     @name.setter
