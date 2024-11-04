@@ -446,10 +446,10 @@ def main(
             except Exception as exept:
                 raise exept
         else:
-            raise (FileNotFoundError(f"Given file path {geo} was not a file."))
+            raise FileNotFoundError(f"Given file path {geo} was not a file.")
     elif isinstance(geo, dict):
         # Make sure all given surfaces have the correct type:
-        if not all([type(surf) == SurfaceAPI for surf in geo.values()]):
+        if not all(type(surf) == SurfaceAPI for surf in geo.values()):
             raise ValueError(
                 "Invalid geometry dict provided! "
                 "Make sure that the geometry values are of type SurfaceAPI!"
