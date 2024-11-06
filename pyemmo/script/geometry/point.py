@@ -20,7 +20,7 @@
 #
 """Module for geometry element Point"""
 import logging
-from math import atan2, cos, sin
+from math import atan2, cos, degrees, sin
 from typing import TYPE_CHECKING, Tuple, Union
 
 import gmsh
@@ -550,11 +550,14 @@ class Point(Transformable):
         #     x, y, _ = dupPoint.coordinate
         # else:
         #     raise AttributeError("Translation failed")
+        angle = atan2(y, x)
+        # fix bug when angle is close to 0 but numerically not.
+        if abs(angle) < DEFAULT_GEO_TOL:
+            angle = 0.0
         if flag_deg:
-            angle = atan2(y, x) * (180 / pi)
+            angle = degrees(angle)
             # conversion from -180~180 to 0~360
             return angle if angle >= 0 else angle + 360
-        angle = atan2(y, x)
         # conversion from -pi~pi to 0~2*pi
         return angle if angle >= 0 else angle + 2 * pi
 
