@@ -2033,6 +2033,9 @@ class Script:
             "Mesh.SurfaceEdges = 1;\nMesh.Light = 0;\nMesh.SurfaceFaces = 1;\n"
         )
         meshSettingsCode += "Mesh.Algorithm = 6; // Frontal-Delaunay for 2D meshes\n\n"
+        # # Set mesh algorithm in Gmsh:
+        # for surf_tag in [dimTag[1] for dimTag in gmsh.model.get_entities(2)]:
+        #     gmsh.model.mesh.set_algorithm(2,surf_tag,6) # Frontal-Delaunay for 2D
         meshModCode = ""
         movingGeoCode = ""
         if self.machine:
