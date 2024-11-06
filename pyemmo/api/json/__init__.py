@@ -81,30 +81,29 @@ InnerLimitLineDict = {
     "RoNut": ["SZ", "SN"],
 }
 
+# Predefine IdExt of special surface api objects for identification
+ROTOR_MAG_IDEXT = "mag"
+ROTOR_BAR_IDEXT = "rotor bar"
+ROTOR_LAM_IDEXT = "rotor lamination"
+ROTOR_AIRGAP_IDEXT = "rotor airgap"
+STATOR_SLOT_IDEXT = "stator slot"
+STATOR_LAM_IDEXT = "stator lamination"
+STATOR_AIRGAP_IDEXT = "stator airgap"
+
 # order defines user defined mesh setting order.
 apiNameDict = {
     # rotor
-    "Wel": "Welle",
-    "Hul": "Huelse",
-    "Lpl": "Loch (Polluecke)",
-    "Mag": "Magnet",
-    "RoCu": "Rotor-Nut",
-    "RoNuS": "Rotor-Nutschlitz",
-    "RoNuL": "Rotor-Nutschlitzluft",
-    "Pol": "Rotorblech",
-    "RoNut": "Rotorblech",
-    "LuR": "Rotorluftspalt",  # case 3 airgap segments
-    "LuR1": "Rotorluftspalt 1",
-    "RoLu1": "Rotorluftspalt 1",
-    "LuR2": "Rotorluftspalt 2",
-    "RoLu2": "Rotorluftspalt 2",
+    "shaft": "Shaft",
+    "hole": "Holes",
+    ROTOR_MAG_IDEXT: "Magnet",
+    ROTOR_BAR_IDEXT: "Rotor Slot",
+    ROTOR_LAM_IDEXT: "Rotor Lamination",
+    ROTOR_AIRGAP_IDEXT: "Rotor Airgap",  # case 3 airgap segments
+    "rotor air": "Rotor Air",
     # stator
-    "Geh": "Gehaeuse",
-    "StCu": "Stator-Nut",
-    "StNuS": "Stator-Nutschlitz",
-    "StNuL": "Stator-Nutschlitzluft",
-    "StNut": "Statorblech",
-    "StLu": "Statorluftspalt",  # case 3 airgap segments
-    "StLu1": "Statorluftspalt 1",  # case 5 airgap segments
-    "StLu2": "Statorluftspalt 2",
+    "housing": "Housing",
+    STATOR_SLOT_IDEXT: "Stator Slot",
+    STATOR_LAM_IDEXT: "Stator Lamination",
+    STATOR_AIRGAP_IDEXT: "Stator Airgap",  # case 3 airgap segments
+    "stator air": "Stator Air",  # case 5 airgap segments
 }

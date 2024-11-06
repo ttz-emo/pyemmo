@@ -51,7 +51,7 @@ from ...script.gmsh.utils import (
 from ...script.material.material import Material
 from .. import air
 from .. import logger as apiLogger
-from . import RotorMBLineDict, StatorMBLineDict, globalCenterPoint
+from . import STATOR_AIRGAP_IDEXT, globalCenterPoint
 from .SurfaceJSON import SurfaceAPI
 
 
@@ -235,6 +235,7 @@ def createMBAux(
                 p_on_sym_axis = p
         if p_on_x_axis is not None and p_on_sym_axis is not None:
             break
+
     # TODO: This needs to be tested for different configurations!
     if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
         from ...functions.plot import plot
@@ -355,11 +356,7 @@ def createMB(
         stator_bnd_lines, get_min_radius(bnd_line_dim_tags)
     )
     if not mb_lines_stator:
-        raise RuntimeError(
-            "Could not find stator movingband lines. Make sure the geometry contains"
-            f" the surface(s): {StatorMBLineDict.keys()} with lines "
-            f"{[mbPointNames for _, mbPointNames in StatorMBLineDict.items()]}"
-        )
+        raise RuntimeError("Could not find stator movingband lines")
     # Get rotor movingband lines:
     # get dim tags list of ROTOR boundary lines (GmshLine):
     bnd_line_dim_tags = [(1, line.tag) for line in rotor_bnd_lines]
@@ -369,11 +366,7 @@ def createMB(
         rotor_bnd_lines, get_max_radius(bnd_line_dim_tags)
     )
     if not mb_lines_rotor:
-        raise RuntimeError(
-            "Could not find rotor movingband lines. Make sure the geometry contains"
-            f" the surface(s): {RotorMBLineDict.keys()} with lines "
-            f"{[mbPointNames for _, mbPointNames in RotorMBLineDict.items()]}"
-        )
+        raise RuntimeError("Could not find rotor movingband lines")
 
     mb_stator: MovingBand = MovingBand(
         name="Stator Movingband",
@@ -623,17 +616,13 @@ def get_boundaries(
     # 2: Movingband
     ## Handling Airgap material for Movingband
     # machineSurfDict = createSurfaceDict(segmentSurfDict)
+
     try:
-        if "StLu" in surf_dict.keys():
-            movingBandMaterial: Material = surf_dict["StLu"][0].material
-        elif "StLu1" in surf_dict.keys():
-            movingBandMaterial: Material = surf_dict["StLu1"][0].material
-        else:
-            movingBandMaterial: Material = surf_dict["StLu2"][0].material
+        movingBandMaterial: Material = surf_dict[STATOR_AIRGAP_IDEXT][0].material
     except KeyError:
         apiLogger.warning(
-            """Stator-Airgap Surface-ID was not "StLu","StLu1" or "StLu2". """
-            "Can't determine Airgap material! Using air instead."
+            "Stator-Airgap Surface-ID was not '%s'. Can't determine Airgap material! Using air instead.",
+            STATOR_AIRGAP_IDEXT,
         )
         movingBandMaterial = air
     except Exception as exept:

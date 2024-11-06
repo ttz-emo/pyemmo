@@ -198,6 +198,7 @@ def createMeshSizeGUICode(machineSurfDict: dict[str, list[SurfaceAPI]]):
     mscSetSize = ""
     # First get all IDs containing idExt into idList (e.g. there could be "LplR" and "LplL"
     # for idExt = "Lpl")
+    # FIXME: Rework this since the default IDs will change in the future!
     for idExt, apiSurfName in apiNameDict.items():
         surfID_List = []
         for surfID in machineSurfDict.keys():

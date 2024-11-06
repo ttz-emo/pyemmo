@@ -29,7 +29,6 @@ import gmsh
 from numpy import pi, sign
 from swat_em import datamodel
 
-from ...script.geometry.airArea import AirArea
 from ...script.geometry.airGap import AirGap
 from ...script.geometry.bar import Bar
 from ...script.geometry.circleArc import CircleArc, Line
@@ -42,7 +41,16 @@ from ...script.geometry.statorLamination import StatorLamination
 from ...script.geometry.surface import Point
 from ...script.material.material import Material
 from .. import logger
-from . import importJSON
+from . import (
+    ROTOR_AIRGAP_IDEXT,
+    ROTOR_BAR_IDEXT,
+    ROTOR_LAM_IDEXT,
+    ROTOR_MAG_IDEXT,
+    STATOR_AIRGAP_IDEXT,
+    STATOR_LAM_IDEXT,
+    STATOR_SLOT_IDEXT,
+    importJSON,
+)
 from .get_coilspan import get_min_coilspan
 from .SurfaceJSON import SurfaceAPI
 
@@ -388,7 +396,9 @@ def createMachineGeometryFromSegment(
         nbrSegments = surf.NbrSegments / symFactor
         # make sure number of segments is an integer
         if not nbrSegments.is_integer():
-            raise ValueError(f"Number of segments must be even, but is: {nbrSegments}")
+            raise ValueError(
+                f"Number of segments of surface '{surf_id}' must be even, but is: {nbrSegments}"
+            )
         surf_dict[surf_id] = []  # init list to append surfaces
         # rotate and duplicte the original surface segment nbrSegments times
         if logging.getLogger().level <= logging.DEBUG:
@@ -460,7 +470,7 @@ def createPhysicalSurfaces(
         else "Stator"
     )
 
-    if "StCu" in idExt:  # if is stator slot
+    if STATOR_SLOT_IDEXT in idExt:  # if is stator slot
         slots: list[Slot] = list()
         for surf in surfList:
             slot = createSlot(
@@ -468,7 +478,7 @@ def createPhysicalSurfaces(
             )
             slots.append(slot)
         return slots, machineSide
-    if "Mag" in idExt:  # if is magnet
+    if ROTOR_MAG_IDEXT in idExt:  # if is magnet
         magList = list()
         for surf in surfList:
             # create magnet object
@@ -479,32 +489,32 @@ def createPhysicalSurfaces(
             )
             magList.append(mag)
         return magList, machineSide
-    if "Lu" in idExt:
-        if "1" in idExt:
-            airArea = AirArea(
-                name=idExt,
-                geo_list=surfList,
-                material=surfList[0].material,
-            )
-            return [airArea], machineSide
+    if idExt in (ROTOR_AIRGAP_IDEXT, STATOR_AIRGAP_IDEXT):
+        # if "1" in idExt:
+        #     airArea = AirArea(
+        #         name=idExt,
+        #         geo_list=surfList,
+        #         material=surfList[0].material,
+        #     )
+        #     return [airArea], machineSide
         airGap = AirGap(
             name=idExt,
             geo_list=surfList,
             material=surfList[0].material,
         )
         return [airGap], machineSide
-    if idExt == "RoCu":  # For ASM-Cage
+    if idExt == ROTOR_BAR_IDEXT:  # For ASM-Cage
         bars = [Bar(surf.idExt, surf, surf.material) for surf in surfList]
         return bars, machineSide
 
-    if any(identifier in idExt for identifier in ("Pol", "RoNut")):
+    if ROTOR_LAM_IDEXT in idExt:
         lam = RotorLamination(
             name=idExt,
             geo_list=surfList,
             material=surfList[0].material,
         )
         return [lam], machineSide
-    if "StNut" in idExt:
+    if STATOR_LAM_IDEXT in idExt:
         lam = StatorLamination(
             name=idExt,
             geo_list=surfList,
@@ -623,10 +633,10 @@ def getSlotInfo(slotSurfName: str) -> int:
 
     Args:
         slotSurfName (str): name of the slot surface. Must be
-            "StCu<slotSide>"
+            "stator slot<slotSide>"
 
     Raises:
-        ValueError: If the identifier "StCu" is missing from the slot surface
+        ValueError: If the identifier "stator slot" is missing from the slot surface
             name.
         ValueError: If the stings for slot side and segment number extracted
             from the name are not pure decimal (are not only numbers).
@@ -634,9 +644,9 @@ def getSlotInfo(slotSurfName: str) -> int:
     Returns:
         int: slot side
     """
-    if "StCu" in slotSurfName:
+    if STATOR_SLOT_IDEXT in slotSurfName:
         # split up the surface name to get Slot side (0 odr 1)
-        slotSide = slotSurfName.lstrip("StCu")
+        slotSide = slotSurfName.lstrip(STATOR_SLOT_IDEXT)
         # if both strings are numbers
         if slotSide:  # if slotSide not empty
             if slotSide.isdecimal():  # string is int
@@ -649,7 +659,9 @@ def getSlotInfo(slotSurfName: str) -> int:
             # Slot side is empty -> there is one layer side
             slotSide = 0  # 0 to index first/only winding layer
         return slotSide
-    raise ValueError(f'Slot identifier "StCu" was not in surface name: {slotSurfName}')
+    raise ValueError(
+        f'Slot identifier "stator slot" was not in surface name: {slotSurfName}'
+    )
 
 
 def getSlotPhase(
@@ -716,8 +728,8 @@ def createSlot(surf: SurfaceAPI, material: Material, extendedInfo: dict) -> Slot
 
     Args:
         surf (SurfaceAPI): Slot geometric surface. Surface IdExt must be
-            formatted like "StCu<slotSide>_<segmentNumber>". E.g. The first
-            slot side of the first segment must be named "StCu0_0".
+            formatted like "stator slot<slotSide>_<segmentNumber>". E.g. The first
+            slot side of the first segment must be named "stator slot0_0".
         material (Material): Slot Material.
         extendedInfo (dict): Additional model information dict, with winding
             configuration.
