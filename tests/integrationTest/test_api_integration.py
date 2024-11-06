@@ -242,17 +242,32 @@ class TestCasesIntegration:
             dat_targets = glob.glob(os.path.join(simul_subfolder_path, "*.dat"))
             dat_bases = glob.glob(os.path.join(base_simul_subfolder_path, "*.dat"))
             for target_file, base_file in zip(dat_targets, dat_bases):
+                # target_time, target_dat = read_timetable_dat(target_file)
+                # time_base, base_dat = read_timetable_dat(base_file)
                 target_dat = read_timetable_dat(target_file)
                 base_dat = read_timetable_dat(base_file)
                 check_flag = True
                 with check:
                     for i in range(len(base_dat[0])):
                         diff = abs(target_dat[1][i] - base_dat[1][i])
-                        assert (
-                            diff < 0.01
-                        ), f"Mismatch! Base data: {base_dat}; Target data:{target_dat}"
-                        if diff >= 0.01:
-                            check_flag = False
+                        _, filename = os.path.split(target_file)
+                        if abs(target_dat[1][i]) < 1e-6 and abs(base_dat[1][i]) < 1e-6:
+                            # compare abs. difference
+                            assert diff < 0.01, (
+                                f"Mismatch for file {filename}; "
+                                f"Base data: {base_dat}; Target data:{target_dat}; "
+                                f"Difference - abs.:{diff}"
+                            )
+                        else:
+                            # compare relative difference
+                            rel_diff = diff / abs(base_dat[1][i])
+                            assert rel_diff < 0.01, (
+                                f"Mismatch for file {filename}; "
+                                f"Base data: {base_dat}; Target data:{target_dat}; "
+                                f"Difference - abs.:{diff} - rel.:{rel_diff}"
+                            )
+                        # if base_dat[1][i] >= 0.01:
+                        #     check_flag = False
 
                     assert check_flag and messagePrinter(
                         f"SUCCESS: all data in {target_file} ok."
