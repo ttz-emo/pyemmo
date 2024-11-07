@@ -194,6 +194,7 @@ class PhysicalElement:
         # run element type funtion to ensure there are not lines AND surfaces at the same time
         self.geoElementType
 
+    # FIXME: TODO Rename geoElementType -> geo_type like in init!
     @property
     def geoElementType(self) -> Union[Line, Surface, None]:
         """get type of geometry elements.

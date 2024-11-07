@@ -77,6 +77,7 @@ def importExtInfo(extInfoPath: str) -> dict:
     return extInfo
 
 
+# FIXME: Rename this to get_mag_TYPE!
 def getMagDir(extendedInfo: dict) -> str:
     """Retrun the magnetization direction (parallel, radial, ...) from the extendedInfo dict"""
     magDirKey = "magType"
