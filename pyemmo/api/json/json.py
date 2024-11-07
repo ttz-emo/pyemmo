@@ -95,9 +95,8 @@ def createMachine(
             # if the inner surface is air, overlapping the rotor, set the delete-flag to not create
             # the inner housing surface
             for surf in surfList:
-                surf.delete = (
-                    True  # -> TODO: Make sure delete also removes the gmsh instance
-                )
+                # -> TODO: Make sure delete also removes the gmsh instance
+                surf.delete = True
         else:
             logging.debug("Creating physical for %s", idExt)
             physSurfList, machineSide = modelJSON.createPhysicalSurfaces(
@@ -116,7 +115,7 @@ def createMachine(
                 )
     if logging.getLogger().level <= logging.DEBUG:
         gmsh_api.model.occ.synchronize()
-        # gmsh_api.fltk.run()
+        gmsh_api.fltk.run()
     # create the rotor
     axLen = importJSON.getAxialLength(extendedInfo)
     rotorAPI = Rotor(
