@@ -30,7 +30,10 @@ Functions:
 
 from __future__ import annotations
 
+import re
+
 from .. import logger
+from ..json import ROTOR_LAM_IDEXT, ROTOR_MAG_IDEXT
 from ..json.SurfaceJSON import SurfaceAPI
 
 
@@ -53,14 +56,18 @@ def get_rotor_surfs(
     rotor_mag_surf_list = []
 
     for surf in geometry_list:
-        if surf.idExt in ("Pol", "Mag", "Mag0", "Mag1", "Mag2"):
-            if surf.idExt == "Pol":
+        # FIXME:
+        pattern = rf"\b({ROTOR_LAM_IDEXT}|{ROTOR_MAG_IDEXT}|{ROTOR_MAG_IDEXT}\d+)\b"
+        re.findall(pattern, surf.idExt)
+        if re.findall(pattern, surf.idExt):
+            if surf.idExt == ROTOR_LAM_IDEXT:
                 rotor_lam_surf_list.append(surf)
                 logger.debug("rotorLamSurf:")
-            elif surf.idExt in ("Mag", "Mag0", "Mag1", "Mag2"):
+            elif ROTOR_MAG_IDEXT in surf.idExt:
                 rotor_mag_surf_list.append(surf)
                 logger.debug("rotorMagSurf:")
-
+            else:
+                raise RuntimeError()
             logger.debug("found: %s", {surf.name})
 
     return rotor_lam_surf_list, rotor_mag_surf_list

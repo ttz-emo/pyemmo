@@ -62,15 +62,16 @@ from __future__ import annotations
 from pyleecan.Classes.LamHole import LamHole
 from pyleecan.Classes.LamSlotMag import LamSlotMag
 from pyleecan.Classes.LamSquirrelCage import LamSquirrelCage
-from pyleecan.Classes.Machine import Machine as PyleecanMachine
 from pyleecan.Classes.SurfLine import SurfLine
 
 from ...script.geometry.circleArc import CircleArc
 from ...script.geometry.line import Line
 from ...script.geometry.point import Point
 from .. import logger
+from ..json import ROTOR_BAR_IDEXT, ROTOR_LAM_IDEXT, STATOR_LAM_IDEXT, STATOR_SLOT_IDEXT
 from ..json.modelJSON import createSurfaceDict
 from ..json.SurfaceJSON import SurfaceAPI
+from . import PyleecanMachine
 from .calcs_rotor_spmsm_cont import get_lr_points
 from .detect_inner_outer_limit import detect_inner_outer_limit
 from .get_magnetization_dict import get_magnetization_dict
@@ -128,6 +129,7 @@ def create_geo_dict(
     angle_point_ref_list = []
 
     logger.debug("Geometry translation started")
+    logger.debug("Identifying geometries by surface label:")
 
     for i, surf in enumerate(all_surfaces):
         save_space_temp = []
@@ -139,8 +141,11 @@ def create_geo_dict(
             save_space_temp.extend(split1.split("-"))
         all_surfs_labels_split2.append(save_space_temp)
 
-        logger.debug("Geometry translation of %s started:", all_surfs_labels[i])
-
+        logger.debug(
+            "Geometry translation: %s -> %s",
+            all_surfs_labels[i],
+            " - ".join(all_surfs_labels_split2[i]),
+        )
         # translating the surface
         pyemmo_surf, angle_point_ref_list = translate_surface(
             name_split_list=all_surfs_labels_split2[i],
@@ -174,11 +179,14 @@ def create_geo_dict(
     logger.debug("Generating rotor and stator contour")
     # create dict with idExt as keys and surface items:
     geo_dict = createSurfaceDict(geometry_list)
+    # FIXME: This part is unstable since there could be Holes on the stator too! For now
+    # this works because the name "Loch" specifically specifies its a rotor hole. But
+    # thats very hard to keep track of and understand! So it should be improved!
     if isinstance(machine.rotor, LamHole):
         # CutOuts in rotorLamination if IPMSM or SynRM:
         for surf_to_cutout in geometry_list:
             if surf_to_cutout.name in ("Loch", "Magnet"):
-                geometry_list[0].cutOut(surf_to_cutout)
+                geo_dict[ROTOR_LAM_IDEXT].cutOut(surf_to_cutout)
         (
             rotor_contour_line_list,
             r_point_rotor_cont,
@@ -199,8 +207,8 @@ def create_geo_dict(
             is_internal_rotor=is_internal_rotor,
         )
     elif isinstance(machine.rotor, LamSquirrelCage):
-        lam_surf = geo_dict["Pol"]
-        slot_surf = geo_dict["RoCu"]
+        lam_surf = geo_dict[ROTOR_LAM_IDEXT]
+        slot_surf = geo_dict[ROTOR_BAR_IDEXT]
         rotor_contour_line_list = get_winding_cont(
             lamination_surf=lam_surf,
             slot_surfs=[slot_surf],
@@ -217,10 +225,10 @@ def create_geo_dict(
         raise TypeError(
             f"Unable to generate contours of rotor lamination type {type(machine.rotor)}!"
         )
-    lam_surf = geo_dict["StNut"]
-    slot_surfs = [geo_dict["StCu0"]]
-    if "StCu1" in geo_dict:
-        slot_surfs.append(geo_dict["StCu1"])
+    lam_surf = geo_dict[STATOR_LAM_IDEXT]
+    slot_surfs = [geo_dict[STATOR_SLOT_IDEXT + "0"]]
+    if (STATOR_SLOT_IDEXT + "1") in geo_dict:
+        slot_surfs.append(geo_dict[STATOR_SLOT_IDEXT + "1"])
     stator_contour_line_list = get_winding_cont(
         lamination_surf=lam_surf,
         slot_surfs=slot_surfs,

@@ -35,12 +35,13 @@ Functions:
 from __future__ import annotations
 
 from pyleecan.Classes.LamSlotWind import LamSlotWind
-from pyleecan.Classes.Machine import Machine as PyleecanMachine
 
 from ...script.geometry.circleArc import CircleArc
 from ...script.geometry.line import Line
 from ...script.geometry.point import Point
+from ..json import ROTOR_LAM_IDEXT
 from ..json.SurfaceJSON import SurfaceAPI
+from . import PyleecanMachine
 from .calc_wind_cont import calc_wind_contour
 from .calcs_even_rotor_cont import calc_even_rotor_cont
 from .calcs_rotor_spmsm_cont import calc_spmsm_rotor_cont
@@ -121,9 +122,8 @@ def get_even_rotor_cont(
     """
 
     rotor_lam_surf_list = []
-
     for surf in geometry_list:
-        if surf.idExt == "Pol":
+        if surf.idExt == ROTOR_LAM_IDEXT:
             rotor_lam_surf_list.append(surf)
 
     if is_internal_rotor:

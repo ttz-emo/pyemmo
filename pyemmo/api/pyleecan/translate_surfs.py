@@ -44,14 +44,22 @@ import pyleecan.Classes.Machine
 import pyleecan.Classes.Surface
 from numpy import angle
 
+from ..json import (
+    ROTOR_BAR_IDEXT,
+    ROTOR_LAM_IDEXT,
+    ROTOR_MAG_IDEXT,
+    STATOR_LAM_IDEXT,
+    STATOR_SLOT_IDEXT,
+)
 from ..json.SurfaceJSON import SurfaceAPI
+from . import POLE_HOLE_IDEXT, PyleecanMachine
 from .build_pyemmo_line_list import build_pyemmo_line_list
 from .build_pyemmo_material import build_pyemmo_material
 
 
 def translate_surface(
     name_split_list: list[str],  # list with the splitted names
-    machine: pyleecan.Classes.Machine.Machine,  # Import of motor
+    machine: PyleecanMachine,
     surface: pyleecan.Classes.Surface.Surface,
     angle_point_ref_list: list,
 ) -> tuple[SurfaceAPI, list]:
@@ -75,11 +83,11 @@ def translate_surface(
     if name_split_list[0] == "Rotor":
         if name_split_list[2] == "Lamination":
             pyleecan_mat = machine.rotor.mat_type
-            id_ext = "Pol"  # "RoNut" "Rotorblech"
-            name = "Rotorblech"
+            id_ext = ROTOR_LAM_IDEXT  # "RoNut" "Rotorblech"
+            name = "Rotor Lamination"
 
         elif name_split_list[2] in ("Magnet", "Hole", "HoleMag"):
-            id_ext = "Mag"
+            id_ext = ROTOR_MAG_IDEXT
             name = "Magnet"
             angle_point_ref_list.append(angle(surface.point_ref))
 
@@ -93,8 +101,9 @@ def translate_surface(
                 pyleecan_mat = machine.rotor.hole[0].magnet_0.mat_type
 
         elif name_split_list[2] in ("HoleVoid", "Ventilation"):
-            id_ext = "Lpl"  # "Loch (Pollueke)"
-            name = "Loch"
+            # TODO: Could we here directly set the index for the specific hole?
+            id_ext = POLE_HOLE_IDEXT  # "Loch (Pollueke)"
+            name = "Loch"  # important to keep name for correct cut out!
 
             if name_split_list[2] == "HoleVoid":
                 pyleecan_mat = machine.rotor.hole[0].mat_void
@@ -104,7 +113,7 @@ def translate_surface(
         elif name_split_list[2] == "Bar":
             # Rotor Bar for SCIM
             pyleecan_mat = machine.rotor.winding.conductor.cond_mat
-            id_ext = "RoCu"  # "RoNut" "Rotorblech"
+            id_ext = ROTOR_BAR_IDEXT  # "RoNut" "Rotorblech"
             name = "Rotor Bar"
         else:
             raise ValueError(
@@ -117,12 +126,12 @@ def translate_surface(
     elif name_split_list[0] == "Stator":
         if name_split_list[2] == "Lamination":
             pyleecan_mat = machine.stator.mat_type
-            id_ext = "StNut"  # "Statorblech"
-            name = "Statorblech"
+            id_ext = STATOR_LAM_IDEXT  # "Statorblech"
+            name = "Stator Lamination"
 
         elif name_split_list[2] == "Winding":
             pyleecan_mat = machine.stator.winding.conductor.cond_mat
-            name = "Stator-Nut"
+            name = "Stator Slot"
             z = machine.stator.slot.Zs
             p = machine.stator.winding.p
             m = machine.stator.winding.qs
@@ -130,24 +139,24 @@ def translate_surface(
             if name_split_list[3] == "R0":
                 if q == 0.5:
                     if name_split_list[4] == "T0":
-                        id_ext = "StCu0"  # "Stator-Nut"
+                        id_ext = STATOR_SLOT_IDEXT + "0"
                     else:
-                        id_ext = "StCu1"  # "Stator-Nut"
+                        id_ext = STATOR_SLOT_IDEXT + "1"
                 else:
-                    id_ext = "StCu0"  # "Stator-Nut"
+                    id_ext = STATOR_SLOT_IDEXT + "0"
             elif name_split_list[3] == "R1":
                 # BUG, FIXME: 'T0' kann für q=0.5 Wicklung mit Ober- und
                 # Schicht vorkommen. Dann ist für R0 und R1 beides mal 'T0'
                 # Das führt dazu, dass beide StCu0 benannt werden und nur eins
                 # der beiden Segmente erzeugt wird!
                 if q == 0.5 and name_split_list[4] == "T0":
-                    id_ext = "StCu1"  # "Stator-Nut"
+                    id_ext = STATOR_SLOT_IDEXT + "1"
                 elif q == 0.5 and name_split_list[4] == "T1":
                     # TODO: Außen liegende und linke Nuthälfte... Geht das? Mehr als
                     # zwei Wicklungen pro Nut?
-                    id_ext = "StCu1"  # "Stator-Nut"
+                    id_ext = STATOR_SLOT_IDEXT + "1"
                 else:
-                    id_ext = "StCu1"  # "Stator-Nut"
+                    id_ext = STATOR_SLOT_IDEXT + "1"
             else:
                 raise ValueError(
                     f"Radial Index of '{name_split_list.join('_')}' was not R0 or R1, but '{name_split_list[3]}'"

@@ -38,7 +38,6 @@ from __future__ import annotations
 import logging
 import math
 
-from pyleecan.Classes.Machine import Machine as PyleecanMachine
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
 from pyleecan.Classes.MachineSCIM import MachineSCIM
 from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
@@ -48,8 +47,10 @@ from ...script.geometry.circleArc import CircleArc
 from ...script.geometry.line import Line
 from ...script.geometry.point import Point
 from .. import air
+from ..json import ROTOR_AIRGAP_IDEXT, STATOR_AIRGAP_IDEXT
 from ..json.modelJSON import createSurfaceDict
 from ..json.SurfaceJSON import SurfaceAPI
+from . import PyleecanMachine
 from .create_geo_dict import create_geo_dict
 from .get_coords_for_point import get_x_for_point, get_y_for_point
 
@@ -127,15 +128,18 @@ def build_bands_rotor(
     )
 
     # Assginment of rotorBand1 as surface:
+    # band closing the rotor contour and providing smooth interface for second airgap.
     rotor_air_gap1 = SurfaceAPI(
-        name="rotorAirGap1",
-        idExt="LuR1",
+        name="rotor air - airgap 1",
+        idExt="rotor air",
         curves=rotor_air_gap1_curves,
         material=air,
         nbrSegments=nbr_rotor_seg,
         angle=angle_rotor,
         meshSize=1.0,
     )
+    assert rotor_air_gap1.idExt != ROTOR_AIRGAP_IDEXT
+
     # plot(rotor_air_gap1_curves, linewidth=1, markersize=3, tag=True)
 
     # ------------------------------------
@@ -206,8 +210,8 @@ def build_bands_rotor(
 
     # Assginment of rotorBand2 as surface:
     rotor_air_gap2 = SurfaceAPI(
-        name="rotorAirGap2",
-        idExt="LuR2",
+        name="rotor airgap 2",
+        idExt=ROTOR_AIRGAP_IDEXT,
         curves=rotor_air_gap2_curves,
         material=air,
         nbrSegments=nbr_rotor_seg,
@@ -316,14 +320,15 @@ def build_bands_stator(
         fig, ax = plot(curves_stlu1, linewidth=1, markersize=3, tag=True)
     # Assginment of statorAirGap1 as surface:
     stator_air_gap1 = SurfaceAPI(
-        name="statorAirGap1",
-        idExt="StLu1",
+        name="stator air - airgap 1",
+        idExt="stator air",
         curves=curves_stlu1,
         material=air,
         nbrSegments=nbr_stator_seg,
         angle=angle_stator,
         meshSize=1.0,
     )
+    assert stator_air_gap1.idExt != STATOR_AIRGAP_IDEXT
     if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
         stator_air_gap1.plot(fig=fig)
 
@@ -368,8 +373,8 @@ def build_bands_stator(
 
     # Assginment of statorBand3 as surface:
     stator_air_gap2 = SurfaceAPI(
-        name="statorAirGap2",
-        idExt="StLu2",
+        name="stator airgap 2",
+        idExt=STATOR_AIRGAP_IDEXT,
         curves=curves_stlu2,
         material=air,
         nbrSegments=nbr_stator_seg,

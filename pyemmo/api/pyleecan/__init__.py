@@ -17,3 +17,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+
+from typing import Union
+
+from pyleecan.Classes.MachineDFIM import MachineDFIM  # induction machine
+from pyleecan.Classes.MachineIPMSM import MachineIPMSM
+from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
+from pyleecan.Classes.MachineSyRM import MachineSyRM
+from pyleecan.Classes.MachineWRSM import MachineWRSM
+
+# from pyleecan.Classes.MachineLSPM import MachineLSPM
+
+PyleecanMachine = Union[
+    MachineDFIM, MachineSIPMSM, MachineIPMSM, MachineWRSM, MachineSyRM
+]
+
+POLE_HOLE_IDEXT = "Pole Hole"
