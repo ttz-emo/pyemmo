@@ -115,7 +115,8 @@ def createMachine(
                 )
     if logging.getLogger().level <= logging.DEBUG:
         gmsh_api.model.occ.synchronize()
-        gmsh_api.fltk.run()
+        if extendedInfo["flag_openGUI"]:  # only open GUI if specified
+            gmsh_api.fltk.run()
     # create the rotor
     axLen = importJSON.getAxialLength(extendedInfo)
     rotorAPI = Rotor(

@@ -63,6 +63,7 @@ from . import LOGGER
 
 # from .testUtils import make_test_cases
 
+curr_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
 
 test_params = {
     "api\\pyleecan": {
@@ -243,7 +244,7 @@ def pyleecanPrepTuple(
 
     """
     # rootLogger.setLevel(logging.DEBUG)
-    curr_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
+    # curr_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     header_flg = True
     param_tuples = []
