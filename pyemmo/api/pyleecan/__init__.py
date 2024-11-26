@@ -20,16 +20,19 @@
 
 from typing import Union
 
-from pyleecan.Classes.MachineDFIM import MachineDFIM  # induction machine
-from pyleecan.Classes.MachineIPMSM import MachineIPMSM
-from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
-from pyleecan.Classes.MachineSyRM import MachineSyRM
-from pyleecan.Classes.MachineWRSM import MachineWRSM
+from ... import use_pyleecan
 
-# from pyleecan.Classes.MachineLSPM import MachineLSPM
+if use_pyleecan:
+    from pyleecan.Classes.MachineDFIM import MachineDFIM  # induction machine
+    from pyleecan.Classes.MachineIPMSM import MachineIPMSM
+    from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
+    from pyleecan.Classes.MachineSyRM import MachineSyRM
+    from pyleecan.Classes.MachineWRSM import MachineWRSM
 
-PyleecanMachine = Union[
-    MachineDFIM, MachineSIPMSM, MachineIPMSM, MachineWRSM, MachineSyRM
-]
+    # from pyleecan.Classes.MachineLSPM import MachineLSPM
+
+    PyleecanMachine = Union[
+        MachineDFIM, MachineSIPMSM, MachineIPMSM, MachineWRSM, MachineSyRM
+    ]
 
 POLE_HOLE_IDEXT = "Pole Hole"

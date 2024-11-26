@@ -60,6 +60,18 @@ logging.info(
     datetime.datetime.now().strftime("%H:%M:%S"),
 )
 
+# check if pyleecan is available
+try_pyleecan = True  # set this to False to never use pyleecan
+use_pyleecan = False
+if try_pyleecan:
+    try:
+        import pyleecan
+
+        use_pyleecan = True
+    except:
+        use_pyleecan = False
+        pass
+
 
 def calcPhaseangleStarvoltageCorr(volVecList):
     """

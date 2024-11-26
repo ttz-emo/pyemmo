@@ -24,16 +24,24 @@ from __future__ import annotations
 import os
 
 import gmsh as gmsh_api
-from pyleecan.Classes.MachineIPMSM import MachineIPMSM
-from pyleecan.Classes.MachineSCIM import MachineSCIM
-from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
-from pyleecan.Classes.MachineSyRM import MachineSyRM
 
+from ... import use_pyleecan
 from ..json.json import main as json_api_main
-from . import PyleecanMachine
-from .create_param_dict import create_param_dict
-from .create_pyleecan_simulation import create_simulation
-from .translate_machine import translate_machine
+
+if use_pyleecan:
+    from pyleecan.Classes.MachineIPMSM import MachineIPMSM
+    from pyleecan.Classes.MachineSCIM import MachineSCIM
+    from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
+    from pyleecan.Classes.MachineSyRM import MachineSyRM
+
+    from . import PyleecanMachine
+    from .create_param_dict import create_param_dict
+    from .create_pyleecan_simulation import create_simulation
+    from .translate_machine import translate_machine
+else:
+    raise ModuleNotFoundError(
+        "Pyleecan is not available! Please install pyleecan first."
+    )
 
 
 def main(
