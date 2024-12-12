@@ -68,9 +68,10 @@ if try_pyleecan:
         import pyleecan
 
         use_pyleecan = True
-    except:
+    except ImportError:
         use_pyleecan = False
-        pass
+    except Exception as exce:
+        raise exce
 
 
 def calcPhaseangleStarvoltageCorr(volVecList):
