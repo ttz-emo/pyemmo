@@ -509,6 +509,7 @@ def runCalcforCurrent(param: dict):
             pass
         except Exception as exce:
             raise exce
+    results_dict["res"] = simulation_res_dir  # add full results path to output dict
     # 1. Phase currents
     results_dict["current"] = {}
     for index in "abc":
