@@ -75,7 +75,7 @@ class Surface(Transformable):
         """
         ###Kurven die eine Fläche umschließen.
         if isinstance(curves, list) and curves:
-            self._curves = curves
+            self._curve = curves
         else:
             raise (
                 ValueError(
@@ -192,7 +192,7 @@ class Surface(Transformable):
             List[Union[Line, CircleArc, Spline]]: List of lines that form the
             surface.
         """
-        return self._curves
+        return self._curve
 
     # TODO: Rename "curve"
     @curve.setter
@@ -202,7 +202,7 @@ class Surface(Transformable):
         Args:
             curves (list[Line]): Line loop with surface boundary lines.
         """
-        self._curves = curves
+        self._curve = curves
 
     # @property
     # def meshColor(self) -> str:
@@ -458,7 +458,7 @@ class Surface(Transformable):
             Surface: Mirrored surface.
         """
         allCurve = []
-        for aC in self._curves:
+        for aC in self._curve:
             allCurve.append(aC)
         allCurve.reverse()
         allNewCurve = []
@@ -695,7 +695,7 @@ class Surface(Transformable):
         """
         for i, curve in enumerate(self.curve):
             if curve == oldCurve:
-                self._curves[i] = newCurve
+                self._curve[i] = newCurve
 
     def cutOut(self, ToolSurface: Surface, keepTool: bool = True) -> None:
         """Cut out a Tool Surface from the Parent surface by Boolean Difference"""
