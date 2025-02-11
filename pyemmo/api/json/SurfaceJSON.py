@@ -30,7 +30,7 @@ from ...script.geometry.surface import Surface
 from ...script.gmsh import DimTag
 from ...script.gmsh.gmsh_surface import GmshSurface
 from ...script.material.material import Material
-from . import globalCenterPoint
+from . import globalCenterPoint as gcp
 
 
 class SurfaceAPI(Surface):
@@ -256,13 +256,13 @@ class SurfaceAPI(Surface):
             dup_surf: SurfaceAPI = self.duplicate(
                 name=f"{self.name} (Seg.: {segment})", segment=segment
             )
-            dup_surf.rotateZ(globalCenterPoint, rot_angle)
+            dup_surf.rotateZ(gcp, rot_angle)
             tools = dup_surf.tools  # init tools array
             while tools:
                 new_tools = []  # init new tools
                 for tool in dup_surf.tools:
                     # rotate tools
-                    tool.rotateZ(globalCenterPoint, rot_angle)
+                    tool.rotateZ(gcp, rot_angle)
                     tool.name = f"{tool.name} (Seg.: {segment})"
                     if tool.tools:
                         # if tool has tools
@@ -339,14 +339,7 @@ class SurfaceAPI(Surface):
                     # surface
                     # rotate it, cut it out and add it to the tools list
                     gmsh.model.occ.rotate(
-                        [dimtag],
-                        globalCenterPoint.x,
-                        globalCenterPoint.y,
-                        globalCenterPoint.z,
-                        0,
-                        0,
-                        1,
-                        self.angle,
+                        [dimtag], gcp.x, gcp.y, gcp.z, 0, 0, 1, self.angle
                     )
                     # There is no way to initialize SurfaceAPI with a GmshSurface object
                     # directly so we need to create a GmshSurface first and extract the
