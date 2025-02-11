@@ -324,7 +324,11 @@ class SurfaceAPI(Surface):
         ]:
             # same as first test but tool surface was copied with new tag
             self.id = out_dim_tags[0][1]  # set id to new surface tag
-            ToolSurface.id = out_dim_tags[1][1]  # set id of tool surfacee to new tag
+            gmsh.model.setEntityName(2, self.id, self.name)  # update name of surface
+
+            gmsh.model.occ.remove([(2, ToolSurface.id)])  # remove old tool surface
+            ToolSurface.id = out_dim_tags[1][1]  # set id of tool surface to new tag
+            gmsh.model.setEntityName(2, ToolSurface.id, ToolSurface.name)  # update name
             return None
         if len(out_dim_tags) > (len(cut_dim_tags) + 1):
             # extra surface(s) was/were created -> shift new surface by self.angle and
