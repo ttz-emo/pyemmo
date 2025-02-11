@@ -103,6 +103,7 @@ class GmshPoint(Point):
             raise ValueError(f"Wrong GmshPoint coordinates {coords=}!")
         self.coordinate = coords
         self._meshLength = gmsh.model.mesh.get_sizes([(0, tag)])[0]
+        self._todesmerker = False
 
     @property
     def tag(self) -> int:
