@@ -26,6 +26,7 @@ from math import radians
 from typing import Literal
 
 import gmsh
+import numpy as np
 from numpy import pi, sign
 from swat_em import datamodel
 
@@ -294,7 +295,9 @@ def createAPISurf(areaDict: dict) -> SurfaceAPI:
     return surf
 
 
-def importMachineGeometry(machineGeoList: list[dict]) -> dict[str, SurfaceAPI]:
+def importMachineGeometry(
+    machineGeoList: list[dict | list[dict]],
+) -> dict[str, SurfaceAPI]:
     """import one segment of the whole machine geometry from the geo.json file
 
     Args:
@@ -312,12 +315,51 @@ def importMachineGeometry(machineGeoList: list[dict]) -> dict[str, SurfaceAPI]:
             apiSurf: SurfaceAPI = createAPISurf(area)
             segmentSurfDict[apiSurf.idExt] = apiSurf
         elif isinstance(area, list):
+            area: list[dict] = area
             # TODO: add multi layer subtraction here!
-            mainSurf = createAPISurf(area.pop(0))
-            for toolArea in area:
-                toolSurf = createAPISurf(toolArea)
-                mainSurf.cutOut(toolSurf)
-            segmentSurfDict[mainSurf.idExt] = mainSurf
+            main_surf = createAPISurf(area.pop(0))
+            # The tools can have a different symmtery than the main surface. To account
+            # for that, we need to determine number of segements of the main surface
+            # that need to be duplicated for the tools to be cut out:
+            sym_factor = main_surf.NbrSegments  # init sym factor
+            # calculate symmetry factor for all tools:
+            for nbr_segments in [tool_area["Quantity"] for tool_area in area]:
+                sym_factor = np.gcd(sym_factor, nbr_segments)
+            # calc number of segments to fullfill symmetry:
+            nbr_main_segments = main_surf.NbrSegments / sym_factor
+            assert nbr_main_segments % 1 == 0
+            new_angle = 2 * pi / sym_factor
+            new_quantity = nbr_main_segments
+            # rotate and duplicate main surface and previous cut out tools:
+            for i in range(1, int(nbr_main_segments)):
+                dup_main_surf = main_surf.rotateDuplicate(i)
+                # fuse main surface:
+                out_dim_tags, out_dim_tags_map = gmsh.model.occ.fuse(
+                    [(2, main_surf.id)], [(2, dup_main_surf.id)]
+                )
+                # update surface ids:
+                main_surf.id = out_dim_tags[0][1]
+            # update nbr segements and angle of main surface
+            main_surf.NbrSegments = new_quantity
+            main_surf.angle = new_angle
+            if logging.getLogger().level <= logging.DEBUG:
+                gmsh.model.occ.synchronize()
+                gmsh.fltk.run()
+            for surf in area:
+                tool_area = createAPISurf(surf)
+                for segment in range(0, int(tool_area.NbrSegments / sym_factor)):
+                    dup_tool_surf = tool_area.rotateDuplicate(segment)
+                    main_surf.cutOut(dup_tool_surf)
+                if logging.getLogger().level <= logging.DEBUG:
+                    gmsh.model.occ.synchronize()
+                    gmsh.fltk.run()
+
+            # correct values for angle and nbrSegments in main and tools:
+            for surf in main_surf.tools:
+                surf.angle = new_angle
+                surf.NbrSegments = new_quantity
+
+            segmentSurfDict[main_surf.idExt] = main_surf
         else:
             msg = (
                 "The type of an element in the area list imported from the"
