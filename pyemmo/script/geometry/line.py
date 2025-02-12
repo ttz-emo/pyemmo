@@ -36,8 +36,6 @@ from .transformable import Transformable
 if TYPE_CHECKING:
     from matplotlib.figure import Figure
 
-    from ..script import Script
-
 
 class Line(Transformable):
     """
@@ -65,7 +63,6 @@ class Line(Transformable):
         name: str,
         start_point: Point,
         end_point: Point,
-        force: bool = False,
     ):
         if not start_point.isEqual(end_point):
             ###Startpunkt des Kreisbogens.
@@ -83,11 +80,6 @@ class Line(Transformable):
         self.id = gmsh.model.occ.addLine(start_point.id, end_point.id)
         ###Name der Linie.
         self.name = name
-
-        ###Todesmerker wird nur gesetzt, wenn das Objekt im Skript erzeugt wurde
-        # (Aufruf von addToScript())!
-        self._todesmerker = False
-        self._force: bool = force
 
     def __eq__(self, other: "Line") -> bool:
         # check type:
@@ -108,15 +100,6 @@ class Line(Transformable):
         """
         Line.ID = Line.ID + 1
         return Line.ID
-
-    @property
-    def force(self) -> bool:
-        """return false flag
-
-        Returns:
-            bool: Flag to determine if line generation in Script should be forced
-        """
-        return self._force
 
     # pylint: disable=locally-disabled, invalid-name
     @property
@@ -301,9 +284,8 @@ class Line(Transformable):
         """
         x, y, z = rotationPoint.coordinate
         gmsh.model.occ.rotate([(1, self.id)], x, y, z, 0, 0, 1, angle=angle)
-        if not self._todesmerker:
-            self.start_point.rotateZ(rotationPoint, angle)
-            self.end_point.rotateZ(rotationPoint, angle)
+        self.start_point.rotateZ(rotationPoint, angle)
+        self.end_point.rotateZ(rotationPoint, angle)
 
     def rotateY(self, rotationPoint: Point, angle: float):
         """
@@ -322,9 +304,8 @@ class Line(Transformable):
         """
         x, y, z = rotationPoint.coordinate
         gmsh.model.occ.rotate((1, self.id), x, y, z, 0, 1, 0, angle=angle)
-        if not self._todesmerker:
-            self.start_point.rotateY(rotationPoint, angle)
-            self.end_point.rotateY(rotationPoint, angle)
+        self.start_point.rotateY(rotationPoint, angle)
+        self.end_point.rotateY(rotationPoint, angle)
 
     def rotateX(self, rotationPoint: Point, angle):
         """
@@ -343,9 +324,8 @@ class Line(Transformable):
         """
         x, y, z = rotationPoint.coordinate
         gmsh.model.occ.rotate((1, self.id), x, y, z, 1, 0, 0, angle=angle)
-        if not self._todesmerker:
-            self.start_point.rotateX(rotationPoint, angle)
-            self.end_point.rotateX(rotationPoint, angle)
+        self.start_point.rotateX(rotationPoint, angle)
+        self.end_point.rotateX(rotationPoint, angle)
 
     def duplicate(self, name=""):
         """Mit duplicate() wird eine Kurve mit gleichen Eigenschaften zum Originalen
@@ -409,48 +389,6 @@ class Line(Transformable):
         else:
             mirLine.name = name
         return mirLine
-
-    ###
-    # Mit addToScript wird die Gerade zum Skriptobjekt übergeben und in gmsh-Syntax übersetzt.
-    # Transformationen von Geraden sind nach dem Aufruf nicht mehr erlaubt, da die neuen
-    # Koordinaten der Punkte nicht mehr erfasst werden.
-    # Diese Methode sollte stets nur in Kombination mit generateScript (Klassenmethode
-    # von Script) verwendet werden.
-    #
-    #   Input:
-    #
-    #       script : Script
-    #
-    #   Output:
-    #
-    #       None
-    #
-    #   Beispiel:
-    #
-    #       myScript = Script(...)
-    #       L1.addToScript(myScript)
-    #
-    ###
-    def addToScript(self, script: "Script"):
-        """With addToScript, the line is passed to the script object and translated into
-        gmsh syntax. Transformations of lines are no longer permitted after the call, as
-        the new coordinates of the points are no longer recorded. This method should
-        only ever be used in combination with generateScript (class method of Script).
-
-        Args:
-            script (Script)
-
-        Example:
-
-        ..python:
-
-            myScript = Script(...)
-            L1.addToScript(myScript)
-        """
-        for p in self.points:
-            script._addPoint(p)
-        self._todesmerker = True
-        script._addCurve(self)
 
     def getPointDist(self) -> float:
         """calculate the distance between start and end point"""

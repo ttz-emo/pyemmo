@@ -486,7 +486,6 @@ class Script:
             if not identicalPoint:
                 # add point to pointArray
                 self.pointArray.append(point)
-                point._todesmerker = True
                 return None  # -> Punkt wird mit _printPoint() regulär erzeugt
             # return identicalPoint -> identischer Punkt gefunden
             self.nbrIdedentPoints += 1
@@ -559,20 +558,10 @@ class Script:
                 testPointDict["p2"] == compareP["p1"]
                 or testPointDict["p2"] == compareP["p2"]
             ):
-                # Return identical Line, if one was found, exept for if the
-                # line is forced:
-                if line2Test.force:
-                    # append the line even if it allready exists due to "force"
-                    return None
-                # return the in script existing curve
+                # Return identical Line, if one was found
                 ### For debugging ###
                 self.nbrIdedentLines += 1
-                # print(
-                #     f"Found similar Line '{testArray[i].name}'"
-                #     + f"to tested line '{curvename}' in testCurve"
-                # )
                 self.idedentLines.append(line2Test)
-                ######
                 return existingLine
         # If no identical line was found, return None to add the line to the
         # curve list.
@@ -619,15 +608,9 @@ class Script:
                 )
                 and (testPointDict["c"] == comparePointDict["c"])
             ):
-                if curve.force:
-                    # if flag 'force' is set add the curve anyway
-                    return None
                 ### For debugging ###
                 self.nbrIdedentLines += 1
-                # print(
-                #     f"Found similar CircleArc '{testArray[i].name}'"
-                #     + f" to tested line {curve.name}' in testCurve"
-                # )
+
                 self.idedentLines.append(curve)
                 ######
                 # return identical CircleArc
@@ -809,7 +792,6 @@ class Script:
                 code += f"{endPointID}}};\n"
 
             self.curveCode += code
-            curve._todesmerker = True
             return None
         return identicalCurve
 
@@ -982,20 +964,14 @@ class Script:
         # reset all lists and code strings
         # points
         self.pointCode: str = ""
-        for point in self.pointArray:
-            point._todesmerker = False
         self.pointArray: list[Point] = []
 
         # lines
         self.curveCode: str = ""
-        for curve in self.curveList:
-            curve._todesmerker = False
         self._setCurveList([])
 
         # surfaces
         self.areaCode: str = ""
-        for area in self.areaArray:
-            area._todesmerker = False
         self.areaArray: list[Surface] = []
 
         # physical surfaces
@@ -1324,7 +1300,6 @@ class Script:
                     else:
                         # add the id of the new line (= geo)
                         code += f"{geo.id},"
-                geo._todesmerker = True
             # replace the last unnecessary "," with "};\n"
             code = code.rstrip(",") + "};\n"
             return code

@@ -183,13 +183,10 @@ class Spline(Line):
             dy (float): y offset
             dz (float): z offset
         """
-        if self._todesmerker == True:
-            return None
-        else:
-            self.start_point.translate(dx, dy, dz)
-            self.end_point.translate(dx, dy, dz)
-            for p in self.control_points:
-                p.translate(dx, dy, dz)
+        self.start_point.translate(dx, dy, dz)
+        self.end_point.translate(dx, dy, dz)
+        for p in self.control_points:
+            p.translate(dx, dy, dz)
 
     def rotateX(self, rotationPoint: Point, angle):
         """Mit rotateX() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die
@@ -199,13 +196,10 @@ class Spline(Line):
             rotationPoint (Point): Centerpoint of rotation.
             angle (float): Rotational angle in radians.
         """
-        if self._todesmerker == True:
-            return None
-        else:
-            self.start_point.rotateX(rotationPoint, angle)
-            self.end_point.rotateX(rotationPoint, angle)
-            for p in self._control_points:
-                p.rotateX(rotationPoint, angle)
+        self.start_point.rotateX(rotationPoint, angle)
+        self.end_point.rotateX(rotationPoint, angle)
+        for p in self._control_points:
+            p.rotateX(rotationPoint, angle)
 
     def rotateY(self, rotationPoint, angle):
         """Mit rotateY() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die
@@ -216,13 +210,10 @@ class Spline(Line):
             angle (float): Rotational angle in radians.
 
         """
-        if self._todesmerker == True:
-            return None
-        else:
-            self.start_point.rotateY(rotationPoint, angle)
-            self.end_point.rotateY(rotationPoint, angle)
-            for p in self._control_points:
-                p.rotateY(rotationPoint, angle)
+        self.start_point.rotateY(rotationPoint, angle)
+        self.end_point.rotateY(rotationPoint, angle)
+        for p in self._control_points:
+            p.rotateY(rotationPoint, angle)
 
     def rotateZ(self, rotationPoint, angle):
         """Mit rotateZ() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die
@@ -232,13 +223,10 @@ class Spline(Line):
             rotationPoint (Point): Centerpoint of rotation.
             angle (float): Rotational angle.
         """
-        if self._todesmerker == True:
-            return None
-        else:
-            self.start_point.rotateZ(rotationPoint, angle)
-            self.end_point.rotateZ(rotationPoint, angle)
-            for p in self._control_points:
-                p.rotateZ(rotationPoint, angle)
+        self.start_point.rotateZ(rotationPoint, angle)
+        self.end_point.rotateZ(rotationPoint, angle)
+        for p in self._control_points:
+            p.rotateZ(rotationPoint, angle)
 
     def duplicate(self, name="") -> "Spline":
         """Mit duplicate() wird eine Spline mit gleichen Eigenschaften zur Originalen

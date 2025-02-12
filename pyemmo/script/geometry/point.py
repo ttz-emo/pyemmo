@@ -78,9 +78,6 @@ class Point(Transformable):
         self.name = name
         self.coordinate = (x, y, z)
         self.meshLength = meshLength
-        ###Todesmerker wird nur gesetzt, wenn das Objekt im Skript erzeugt wurde
-        # (Aufruf von addToScript())!
-        self._todesmerker = False
 
         # set point id
         if tag != -1:
@@ -280,10 +277,6 @@ class Point(Transformable):
             return True
         return False
 
-    def isDrawn(self):
-        """isDrawn returns true if the point was added to a script"""
-        return self._todesmerker
-
     def translate(self, dx: float, dy: float, dz: float) -> None:
         """Mit translate() kann ein Punkt linear verschoben werden. Die Inputvariablen dx, dy und dz
         beschreiben die Verschiebungsfaktoren in der x-, y- und z- Richtung.
@@ -307,15 +300,14 @@ class Point(Transformable):
             rotationPoint (Point): Centerpoint of rotation.
             angle (float): Rotational angle in radians.
         """
-        if not self._todesmerker:
-            # durch Verschiebung Rotation im Ursprung!
-            x, y, z = rotationPoint.coordinate
-            self.translate(-x, -y, 0)
-            oldx = self._x
-            oldy = self._y
-            self._x = cos(angle) * oldx - sin(angle) * oldy
-            self._y = sin(angle) * oldx + cos(angle) * oldy
-            self.translate(x, y, 0)
+        # durch Verschiebung Rotation im Ursprung!
+        x, y, z = rotationPoint.coordinate
+        self.translate(-x, -y, 0)
+        oldx = self._x
+        oldy = self._y
+        self._x = cos(angle) * oldx - sin(angle) * oldy
+        self._y = sin(angle) * oldx + cos(angle) * oldy
+        self.translate(x, y, 0)
 
     def rotateX(self, rotationPoint: "Point", angle: float):
         """Mit rotateX() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die X-Achse mit
@@ -325,15 +317,14 @@ class Point(Transformable):
             rotationPoint (Point): Centerpoint of rotation.
             angle (float): Rotational angle in radians.
         """
-        if not self._todesmerker:
-            # durch Verschiebung Rotation im Ursprung!
-            rotPointCoords = rotationPoint.coordinate
-            self.translate(-rotPointCoords[0], -rotPointCoords[1], -rotPointCoords[2])
-            oldy = self._y
-            oldz = self._z
-            self._y = cos(angle) * oldy - sin(angle) * oldz
-            self._z = sin(angle) * oldy + cos(angle) * oldz
-            self.translate(rotPointCoords[0], rotPointCoords[1], rotPointCoords[2])
+        # durch Verschiebung Rotation im Ursprung!
+        rotPointCoords = rotationPoint.coordinate
+        self.translate(-rotPointCoords[0], -rotPointCoords[1], -rotPointCoords[2])
+        oldy = self._y
+        oldz = self._z
+        self._y = cos(angle) * oldy - sin(angle) * oldz
+        self._z = sin(angle) * oldy + cos(angle) * oldz
+        self.translate(rotPointCoords[0], rotPointCoords[1], rotPointCoords[2])
 
     def rotateY(self, rotationPoint: "Point", angle: float):
         """Mit rotateY() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die Y-Achse mit
@@ -344,15 +335,14 @@ class Point(Transformable):
             angle (float): Rotational angle in radians.
 
         """
-        if not self._todesmerker:
-            # durch Verschiebung Rotation im Ursprung!
-            rotPointCoords = rotationPoint.coordinate
-            self.translate(-rotPointCoords[0], -rotPointCoords[1], -rotPointCoords[2])
-            oldx = self._x
-            oldz = self._z
-            self._x = cos(angle) * oldx + sin(angle) * oldz
-            self._z = -sin(angle) * oldx + cos(angle) * oldz
-            self.translate(rotPointCoords[0], rotPointCoords[1], rotPointCoords[2])
+        # durch Verschiebung Rotation im Ursprung!
+        rotPointCoords = rotationPoint.coordinate
+        self.translate(-rotPointCoords[0], -rotPointCoords[1], -rotPointCoords[2])
+        oldx = self._x
+        oldz = self._z
+        self._x = cos(angle) * oldx + sin(angle) * oldz
+        self._z = -sin(angle) * oldx + cos(angle) * oldz
+        self.translate(rotPointCoords[0], rotPointCoords[1], rotPointCoords[2])
 
     def duplicate(self, name="") -> "Point":
         """Mit duplicate() wird ein neuer Punkt mit gleichen Koordinaten erzeugt. Dieser Punkt hat

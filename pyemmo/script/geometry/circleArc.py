@@ -55,7 +55,6 @@ class CircleArc(Line):
         startPoint: Point,
         centerPoint: Point,
         endPoint: Point,
-        force: bool = False,
     ):
         """CircleArc
 
@@ -64,8 +63,6 @@ class CircleArc(Line):
             - p1 (Point): Start point of arc.
             - c (Point): Center point of arc.
             - p2 (Point): End point of arc.
-            - force (bool, optional): Flag to force generation of arc in script.
-            Defaults to False.
 
         Raises:
             ValueError: If start and endpoint are equal.
@@ -84,15 +81,9 @@ class CircleArc(Line):
         )
         # Name der Linie.
         self.name = name
-
         # make sure that start and end point have the same distance (radius)
         # to the center point:
         _ = self.radius  # raises error if not
-
-        # Todesmerker wird nur gesetzt, wenn das Objekt im Skript erzeugt wurde
-        # (Aufruf von addToScript())!
-        self._todesmerker = False
-        self._force: bool = force
 
     def __eq__(self, other: "CircleArc") -> bool:
         # check type:
@@ -147,11 +138,9 @@ class CircleArc(Line):
           CA1 = ('ca1', P1, C, P2)\n
           CA1.translate(0, 1, 0)\n
         """
-        if not self._todesmerker:
-            # if line was not created in script
-            self.start_point.translate(dx, dy, dz)
-            self.end_point.translate(dx, dy, dz)
-            self._center.translate(dx, dy, dz)
+        self.start_point.translate(dx, dy, dz)
+        self.end_point.translate(dx, dy, dz)
+        self._center.translate(dx, dy, dz)
 
     def rotateX(self, rotationPoint: Point, angle: float):
         """Mit rotateX() wird ein Kreisbogen um einen Rotationspunkt
@@ -166,10 +155,9 @@ class CircleArc(Line):
             CA1 = Line('ca1', P1, C, P2)\n
             CA1.rotateX(P0, pi)\n
         """
-        if not self._todesmerker:
-            self.start_point.rotateX(rotationPoint, angle)
-            self.end_point.rotateX(rotationPoint, angle)
-            self._center.rotateX(rotationPoint, angle)
+        self.start_point.rotateX(rotationPoint, angle)
+        self.end_point.rotateX(rotationPoint, angle)
+        self._center.rotateX(rotationPoint, angle)
 
     def rotateY(self, rotationPoint: Point, angle: float) -> None:
         """Mit rotateY() wird ein Kreisbogen um einen Rotationspunkt
@@ -185,10 +173,9 @@ class CircleArc(Line):
             CA1.rotateY(P0, pi)\n
 
         """
-        if not self._todesmerker:
-            self.start_point.rotateY(rotationPoint, angle)
-            self.end_point.rotateY(rotationPoint, angle)
-            self._center.rotateY(rotationPoint, angle)
+        self.start_point.rotateY(rotationPoint, angle)
+        self.end_point.rotateY(rotationPoint, angle)
+        self._center.rotateY(rotationPoint, angle)
 
     ##
     ###
@@ -505,18 +492,3 @@ class CircleArc(Line):
                 "failed. Could not find touchpoint."
             )
         )
-
-    def addToScript(self, script: "Script"):
-        """old function add to script
-
-        Args:
-            script (Script)
-        """
-        # Add points
-        for p in self.points:
-            p.addToScript(script)
-        self.center.addToScript(script)
-        # add arc
-        if not self._todesmerker:
-            self._todesmerker = True
-            script._addCurve(self)

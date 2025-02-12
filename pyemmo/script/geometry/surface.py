@@ -36,7 +36,7 @@ from .spline import Spline
 from .transformable import Transformable
 
 if TYPE_CHECKING:
-    from ..script import Script
+    pass
 
 
 class Surface(Transformable):
@@ -91,9 +91,6 @@ class Surface(Transformable):
         #       lines and the original line IDs will be lost...
         self.id = gmsh.model.occ.addPlaneSurface([curve_loop])
         self.name: str = name  # set name after id was set to also set name in gmsh
-        # Todesmerker wird nur gesetzt, wenn das Objekt im Skript erzeugt
-        # wurde (Aufruf von addToScript())!
-        self._todesmerker: bool = False
         self._color = ""  # mesh color
         # init because _cut(=tools) is only accessed by method ``cutOut``
         self._cut: list[Surface] = []
@@ -352,13 +349,10 @@ class Surface(Transformable):
             rotationPoint (Point): Center point for rotation.
             angle (float): rotation angle in rad.
         """
-        if self._todesmerker == True:
-            ...  # TODO: Add warning
-        else:
-            x, y, z = rotationPoint.coordinate
-            gmsh.model.occ.rotate([(2, self.id)], x, y, z, 0, 0, 1, angle)
-            for p in self.allPoints:
-                p.rotateZ(rotationPoint, angle, flag_gmsh=False)
+        x, y, z = rotationPoint.coordinate
+        gmsh.model.occ.rotate([(2, self.id)], x, y, z, 0, 0, 1, angle)
+        for p in self.allPoints:
+            p.rotateZ(rotationPoint, angle, flag_gmsh=False)
 
     def rotateX(self, rotationPoint: Point, angle: float):
         """Mit rotateX() wird eine Fläche um einen Rotationspunkt
@@ -374,13 +368,10 @@ class Surface(Transformable):
             rotationPoint (Point): Center point for rotation.
             angle (float): rotation angle in rad.
         """
-        if self._todesmerker == True:
-            ...  # TODO: Add warning
-        else:
-            allP = self.allPoints
+        allP = self.allPoints
 
-            for p in allP:
-                p.rotateX(rotationPoint, angle)
+        for p in allP:
+            p.rotateX(rotationPoint, angle)
 
     def rotateY(self, rotationPoint: Point, angle: float):
         """Mit rotateY() wird eine Fläche um einen Rotationspunkt
@@ -396,12 +387,9 @@ class Surface(Transformable):
             rotationPoint (Point): Center point for rotation.
             angle (float): rotation angle in rad.
         """
-        if self._todesmerker == True:
-            ...  # TODO: Add warning
-        else:
-            allP = self.allPoints
-            for p in allP:
-                p.rotateY(rotationPoint, angle)
+        allP = self.allPoints
+        for p in allP:
+            p.rotateY(rotationPoint, angle)
 
     def duplicate(self, name="") -> Surface:
         """Mit duplicate() wird eine neue Fläche mit gleichen Eigenschaften zur
@@ -594,38 +582,6 @@ class Surface(Transformable):
                 newLoop.append(curve)
         self.curve = newLoop
         return None
-
-    def addToScript(self, script: Script):
-        """Mit addToScript wird die Fläche zum Skriptobjekt übergeben und in
-        gmsh-Syntax übersetzt.
-        Transformationen von Flächen sind nach dem Aufruf nicht mehr erlaubt,
-        da die neuen Koordinaten
-        der Punkte nicht mehr erfasst werden. Diese Methode sollte stets nur
-        in Kombination mit generateScript() (Klassenmethode von Script)
-        verwendet werden.
-
-        Beispiel:
-
-            myScript = Script(...)
-            S1.addToScript(myScript)
-
-        Args:
-            script (Script): Script object.
-        """
-        # if addToScript was not allready done
-        if not self._todesmerker:
-            self._todesmerker = True
-            script._addSurface(self)
-        else:
-            ...
-
-    def isDrawn(self) -> bool:
-        """
-        Get the "todesmerker" status. todesmerker is set when the surface was
-        drawn.
-        The function returns true if the surface is allready in the script
-        """
-        return self._todesmerker
 
     def setTool(self) -> None:
         """set the surface as subtraction surface"""
