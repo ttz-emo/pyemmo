@@ -328,7 +328,7 @@ def importMachineGeometry(
             # calc number of segments to fullfill symmetry:
             nbr_main_segments = main_surf.nbrSegments / sym_factor
             assert nbr_main_segments % 1 == 0
-            new_quantity = nbr_main_segments
+            new_quantity = sym_factor
             # rotate and duplicate main surface and previous cut out tools:
             for i in range(1, int(nbr_main_segments)):
                 dup_main_surf = main_surf.rotateDuplicate(i)
