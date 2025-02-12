@@ -2,10 +2,12 @@ import gmsh
 import numpy as np
 import pytest
 
-from pyemmo.script.geometry.point import Point
 from pyemmo.script.gmsh.gmsh_point import GmshPoint
 
-init_cases = [("Point 1", 0, 1, 0, 1), ("Point 2", 1, 0, 0, 1e-3)]
+init_cases = [
+    ("Point 1", np.array([0, 1, 0]), 1),
+    ("Point 2", np.array([1, 0, 0]), 1e-3),
+]
 
 
 class TestGmshPoint:
@@ -19,67 +21,147 @@ class TestGmshPoint:
     def teardown_method(self):
         gmsh.finalize()
 
-    @pytest.mark.parametrize("name, x,  y, z, ml", init_cases)
-    def test_init(self, name, x, y, z, ml):
-        point = Point(name, x, y, z, ml)
+    @pytest.mark.parametrize("name, coords, ml", init_cases)
+    def test_init_coords3D(self, name, coords, ml):
+        point = GmshPoint(name=name, coords=coords, meshLength=ml)
         gmsh.model.occ.synchronize()
-        gmsh_point = GmshPoint(point.id)
-        assert gmsh_point.tag == point.id
-        assert gmsh_point.id == point.id
-        assert gmsh_point.coordinate == (x, y, z)
-        assert gmsh_point.coordinate == point.coordinate
-        assert gmsh_point.meshLength == ml
+        assert point.coordinate == (coords[0], coords[1], coords[2])
+        assert point.meshLength == ml
         assert (
-            str(gmsh_point)
-            == f"GmshPoint(tag={gmsh_point.tag}, coords=({float(x)}, {float(y)}, {float(z)}))"
+            str(point)
+            == f"GmshPoint(tag={point.id}, coords=({float(coords[0])}, {float(coords[1])}, {float(coords[2])}))"
         )
 
-    @pytest.mark.xfail(reason="gmsh.model.occ.synchronize() not called", strict=True)
-    def test_init_fail(self, name, x, y, z, ml):
-        point = Point(name, x, y, z, ml)
-        gmsh_point = GmshPoint(point.id)
+    @pytest.mark.parametrize("name, coords, ml", init_cases)
+    def test_init_coords2D(self, name, coords, ml):
+        point = GmshPoint(name=name, coords=coords[0:2], meshLength=ml)
+        gmsh.model.occ.synchronize()
+        assert point.coordinate == (coords[0], coords[1], coords[2])
+        assert point.meshLength == ml
+        assert (
+            str(point)
+            == f"GmshPoint(tag={point.id}, coords=({float(coords[0])}, {float(coords[1])}, {float(coords[2])}))"
+        )
+
+    @pytest.mark.parametrize("name, coords, ml", init_cases)
+    def test_init_id(self, name, coords, ml):
+        point_tag = gmsh.model.occ.addPoint(coords[0], coords[1], coords[2], ml)
+        gmsh.model.setEntityName(0, point_tag, name)
+        gmsh.model.occ.synchronize()
+        point = GmshPoint(point_tag)
+        assert point.id == point_tag
+        assert point.coordinate == (coords[0], coords[1], coords[2])
+        assert point.meshLength == ml
+        assert point.name == name
 
     @pytest.mark.parametrize(
-        "new_x", [0, 1, -1, pytest.param("a", marks=pytest.mark.xfail)]
+        "tag, name, coords, ml",
+        [
+            pytest.param(
+                1,
+                "test",
+                np.array([0, 0]),
+                1,
+                marks=pytest.mark.xfail(reason="tag and coords given"),
+            ),
+            pytest.param(
+                -1,
+                "test",
+                np.array([0, 0]),
+                "a",
+                marks=pytest.mark.xfail(reason="mesh length not number"),
+            ),
+            pytest.param(
+                -1,
+                "test",
+                np.array([0, 0]),
+                0,
+                marks=pytest.mark.xfail(reason="mesh length zero"),
+            ),
+            pytest.param(
+                1,
+                "test",
+                np.array([]),
+                1,
+                marks=pytest.mark.xfail(reason="point does not exist"),
+            ),
+        ],
+    )
+    def test_init_fail(self, tag, name, coords, ml):
+        GmshPoint(tag, name, coords, ml)
+
+    def test_set_id(self):
+        point = GmshPoint(-1, "test", np.array([0, 0, 0]), 1)
+        point.id = 10
+        assert point.id == 10
+
+    def test_set_name(self):
+        point = GmshPoint(-1, "test", np.array([0, 0, 0]), 1)
+        point.name = "different name"
+        assert point.name == "different name"
+
+    def test_set_mesh_length(self):
+        point = GmshPoint(-1, "test", np.array([0, 0, 0]), 1)
+        point.meshLength = 0.1
+        assert point.meshLength == 0.1
+
+    @pytest.mark.parametrize(
+        "new_coords",
+        [
+            pytest.param(
+                np.array([0, 1, 0]),
+                marks=pytest.mark.xfail(reason="coords is read-only"),
+            )
+        ],
+    )
+    def test_reset_coords(self, new_coords):
+        point = GmshPoint(-1, "test point", (0, 0, 0), 1)
+        point.coordinate = new_coords  # this raises attribute error
+
+    @pytest.mark.parametrize(
+        "new_x", [pytest.param(1, marks=pytest.mark.xfail(reason="x is read-only"))]
     )
     def test_reset_x(self, new_x):
-        point = Point("test point", 0, 0, 0, 1)
+        point = GmshPoint(-1, "test point", (0, 0, 0), 1)
         point.x = new_x
         assert point.coordinate[0] == new_x
         assert point.x == new_x
 
     @pytest.mark.parametrize(
-        "point, expected_angle",
+        "coords, expected_angle",
         [
-            (Point("test", 0, 0, 0, 1), 0.0),
-            (Point("test", 1, 1, 0, 1), np.radians(45)),
-            (Point("test", -1, 1, 0, 1), np.radians(135)),
-            (Point("test", -1, 0, 0, 1), np.radians(180)),
-            (Point("test", 0, -1, 0, 1), np.radians(270)),
+            (np.array([0, 0, 0]), 0.0),
+            (np.array([1, 1, 0]), np.radians(45)),
+            (np.array([-1, 1, 0]), np.radians(135)),
+            (np.array([-1, 0, 0]), np.radians(180)),
+            (np.array([0, -1, 0]), np.radians(270)),
         ],
     )
-    def test_get_angle_to_x(self, point: Point, expected_angle):
+    def test_get_angle_to_x(self, coords: np.ndarray, expected_angle):
+        point = GmshPoint(-1, "test", coords, 1)
         angle_to_x = point.getAngleToX()
         assert angle_to_x == expected_angle
 
     @pytest.mark.parametrize(
-        "point, expected_angle",
+        "coords, expected_angle",
         [
-            (Point("test", 0, 0, 0, 1), 0.0),
-            (Point("test", 1, 1, 0, 1), 45),
-            (Point("test", -1, 1, 0, 1), 135),
-            (Point("test", -1, 0, 0, 1), 180),
-            (Point("test", 0, -1, 0, 1), 270),
+            (np.array([0, 0, 0]), 0.0),
+            (np.array([1, 1, 0]), 45),
+            (np.array([-1, 1, 0]), 135),
+            (np.array([-1, 0, 0]), 180),
+            (np.array([0, -1, 0]), 270),
         ],
     )
-    def test_get_angle_to_x_deg(self, point: Point, expected_angle):
+    def test_get_angle_to_x_deg(self, coords: np.ndarray, expected_angle):
+        point = GmshPoint(-1, "test", coords, 1)
         angle_to_x = point.getAngleToX(flag_deg=True)
         assert angle_to_x == expected_angle
 
     # TODO: Add test for Point methods:
+    #   Point.translate
+    #   Point.rotate
     #   Point.calcDist
     #   Point.coordinate
     #   Point.duplicate
-    #   Point.getAngleToX
     #   Point.isEqual
     #   Point.radius

@@ -27,7 +27,7 @@ University of Applied Sciences Würzburg-Schweinfurt.
 Author:
     Max Schuler
 """
-from typing import Literal, Tuple
+from typing import Literal, Tuple, Union
 
 DimTag = Tuple[Literal[0, 1, 2], int]
 SurfDimTag = Tuple[Literal[2], int]

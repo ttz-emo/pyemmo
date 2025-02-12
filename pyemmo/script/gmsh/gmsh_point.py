@@ -52,10 +52,13 @@ Note:
     This docstring was created by ChatGPT.
 """
 
+from typing import Tuple
+
 import gmsh
 import numpy as np
 
 from ..geometry.point import Point
+from . import DimTag
 
 
 class GmshPoint(Point):
@@ -83,7 +86,13 @@ class GmshPoint(Point):
             Returns a string representation of the GmshPoint object.
     """
 
-    def __init__(self, tag: int, coords: np.ndarray = np.empty(0)):
+    def __init__(
+        self,
+        tag: int = -1,
+        name="",
+        coords: np.ndarray = np.empty(0),
+        meshLength: float = 0.0,
+    ):
         """
         Constructor for GmshPoint class.
 
@@ -93,43 +102,136 @@ class GmshPoint(Point):
                 with shape (3,) or empty. When empty, try to find the point with its tag
                 in Gmsh and get the coordinates from there.
         """
-        self.tag = tag
-        self.name = gmsh.model.get_entity_name(0, tag)
-        if coords.size == 0:
-            # try to get coords from gmsh:
-            coords = gmsh.model.get_value(0, tag, [])  # This raises an Exception if
-            # point does not exist!
-        if coords.size != 3:
-            raise ValueError(f"Wrong GmshPoint coordinates {coords=}!")
-        self.coordinate = coords
-        self._meshLength = gmsh.model.mesh.get_sizes([(0, tag)])[0]
-        self._todesmerker = False
+        if tag == -1:
+            # init with coords
+            assert isinstance(meshLength, (int, float)), "meshLength must be a number!"
+            assert meshLength > 0, "meshLength must not be zero!"
+            if coords.size == 2:
+                # 2D point
+                self._id = gmsh.model.occ.addPoint(
+                    coords[0], coords[1], 0.0, meshLength
+                )
+            elif coords.size == 3:
+                # 3D point
+                self._id = gmsh.model.occ.addPoint(
+                    coords[0], coords[1], coords[2], meshLength
+                )
+            else:
+                raise ValueError(f"Wrong GmshPoint coordinates {coords=}!")
+            self.name = name
+            self._meshLength = meshLength
+        else:
+            # init with tag
+            # if coordinates AND tag are given, raise an error
+            if coords.size != 0:
+                raise ValueError("You can't init GmshPoint with tag AND coordinates!")
+            # make sure the point with given tag exists in gmsh:
+            gmsh.model.occ.synchronize()
+            if (0, tag) not in gmsh.model.get_entities(0):
+                raise ValueError(f"Point with given {tag=} does not exist!")
+            self._id = tag  # set tag
+            # get name from gmsh:
+            self._name = gmsh.model.get_entity_name(0, tag)
+            # get mesh length from gmsh:
+            self._meshLength = gmsh.model.mesh.getSizes([(0, tag)])[0]
+            # coordinates will be directly accessed from gmsh at runtime
 
-    @property
-    def tag(self) -> int:
+    # overwrite point id property setter
+    @Point.id.setter
+    def id(self, new_id: int):
         """
-        Getter for the tag property.
-
-        Returns:
-            int: Tag of the point.
-        """
-        return self._tag
-
-    @tag.setter
-    def tag(self, new_tag: int):
-        """
-        Setter for the tag property.
+        Setter for the id property.
 
         Args:
-            new_tag (int): New tag value to set.
+            new_id (int): New id value to set.
         """
-        if (0, new_tag) not in gmsh.model.get_entities(0):
-            raise RuntimeError(
-                "Given point tag is not in gmsh model! "
-                "Did you forget to call gmsh.model.occ.synchronize()?"
-            )
-        self._id = new_tag
-        self._tag = new_tag
+        # check that given tag does not exist in gmsh model
+        if (0, new_id) in gmsh.model.get_entities(0):
+            raise RuntimeError("Given point tag allready exists in gmsh model!")
+        gmsh.model.occ.synchronize()
+        gmsh.model.set_tag(0, self.id, new_id)  # set new tag
+        self._id = new_id  # update id
+
+    @Point.name.setter
+    def name(self, name: str):
+        """
+        Setter for the name property.
+
+        Args:
+            name (str): New name for the point.
+        """
+        gmsh.model.occ.synchronize()
+        gmsh.model.setEntityName(0, self.id, name)
+        self._name = name  # call setter of Point
+
+    @Point.meshLength.setter
+    def meshLength(self, meshLength: float):
+        """Set mesh length of point.
+
+        Args:
+            meshLength (float): mesh length
+        """
+        gmsh.model.occ.mesh.set_size([(0, self.id)], meshLength)
+        self._meshLength = meshLength
+
+    @Point.coordinate.getter
+    def coordinate(self) -> Tuple[float, float, float]:
+        """
+        Getter for the coordinate property.
+
+        Returns:
+            Tuple[float, float, float]: Tuple containing the x, y, and z coordinates of
+                the point.
+        """
+        gmsh.model.occ.synchronize()
+        coords = gmsh.model.get_value(0, self.id, [])
+        return (coords[0], coords[1], coords[2])
+
+    @coordinate.setter
+    def coordinate(self, coords: Tuple[float, float, float]):
+        raise AttributeError("You can't set coordinates of a GmshPoint!")
+
+    @Point.x.getter
+    def x(self) -> float:
+        """
+        Getter for the x coordinate.
+
+        Returns:
+            float: x coordinate of the point.
+        """
+        return self.coordinate[0]
+
+    @x.setter
+    def x(self, new_x: float):
+        raise AttributeError("You can't set the coordinates of a GmshPoint!")
+
+    @Point.y.getter
+    def y(self) -> float:
+        """
+        Getter for the y coordinate.
+
+        Returns:
+            float: y coordinate of the point.
+        """
+        return self.coordinate[1]
+
+    @y.setter
+    def y(self, new_y: float):
+        raise AttributeError("You can't set the coordinates of a GmshPoint!")
+
+    @Point.z.getter
+    def z(self) -> float:
+        """
+        Getter for the z coordinate.
+
+        Returns:
+            float: z coordinate of the point.
+        """
+        return self.coordinate[2]
+
+    @z.setter
+    def z(self, new_z: float):
+        raise AttributeError("You can't set the coordinates of a GmshPoint!")
 
     def __str__(self) -> str:
         """
@@ -138,4 +240,73 @@ class GmshPoint(Point):
         Returns:
             str: String containing the tag and coordinates of the point.
         """
-        return f"GmshPoint(tag={self.tag}, coords=({self.x}, {self.y}, {self.z}))"
+        return f"GmshPoint(tag={self.id}, coords=({self.x}, {self.y}, {self.z}))"
+
+    def translate(self, dx: float = 0.0, dy: float = 0.0, dz: float = 0.0):
+        """Translate the point by the given displacements.
+
+        Args:
+            dx (float): Displacement in the x-direction. Defaults to 0.0.
+            dy (float): Displacement in the y-direction. Defaults to 0.0.
+            dz (float): Displacement in the z-direction. Defaults to 0.0.
+        """
+        gmsh.model.occ.translate([(0, self.id)], dx, dy, dz)
+
+    def rotateZ(self, rotationPoint: "Point", angle: float):
+        """Rotate the point around a rotation point and the Z-axis by a given angle.
+
+        Args:
+            rotationPoint (Point): Rotation point.
+            angle (float): Rotation angle in radians.
+        """
+        x, y, z = rotationPoint.coordinate  # get rotation point coordinates
+        # rotate point in gmsh
+        gmsh.model.occ.rotate([(0, self.id)], x, y, z, 0, 0, 1, angle)
+
+    def rotateX(self, rotationPoint: "Point", angle: float):
+        """Mit rotateX() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die X-Achse mit
+        einem definierten Winkel rotiert.
+
+        Args:
+            rotationPoint (Point): Centerpoint of rotation.
+            angle (float): Rotational angle in radians.
+        """
+        raise NotImplementedError("rotateX is not implemented for GmshPoint!")
+
+    def rotateY(self, rotationPoint: "Point", angle: float):
+        """Mit rotateY() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die Y-Achse mit
+        einem definierten Winkel rotiert.
+
+        Args:
+            rotationPoint (Point): Centerpoint of rotation.
+            angle (float): Rotational angle in radians.
+
+        """
+        raise NotImplementedError("rotateX is not implemented for GmshPoint!")
+
+    def duplicate(self, name="") -> "GmshPoint":
+        dimTags: list[DimTag] = gmsh.model.occ.copy([(0, self.id)])
+        assert len(dimTags) == 1, "Error while duplicating point!"
+        dupPoint = GmshPoint(tag=dimTags[0][1])
+        if name == "":
+            parentName = self.name
+            if "_dup" not in parentName:
+                # if Point was not duplicated before
+                dupPoint.name = parentName + "_dup"
+            else:
+                # otherwise set point name to P_"newPointID"
+                dupPoint.name = parentName
+        else:
+            dupPoint.name = name
+        return dupPoint
+
+    def mirror(
+        self,
+        planePoint: "Point",
+        planeVector1: "Line",
+        planeVector2: "Line",
+        name: str = None,
+    ) -> "Point":
+        """TODO"""
+        raise NotImplementedError("mirror is not implemented for GmshPoint!")
+        # gmsh.model.occ.mirror(...)

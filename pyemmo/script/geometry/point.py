@@ -61,7 +61,9 @@ class Point(Transformable):
     # Diese Variable wird für die automatische ID-Vergabe der Punkte verwendet!
     pointID = 0
 
-    def __init__(self, name: str, x: float, y: float, z: float, meshLength: float):
+    def __init__(
+        self, name: str, x: float, y: float, z: float, meshLength: float, tag: int = -1
+    ):
         """Konstruktor der Klasse Point.
 
         Args:
@@ -70,6 +72,8 @@ class Point(Transformable):
             y (float): y-Coordinate
             z (float): z-Coordinate
             meshLength (float): Mesh length of point in meter.
+            tag (int, optional): ID of point. Defaults to unique point ID (internal
+                class variable).
         """
         self.name = name
         self.coordinate = (x, y, z)
@@ -78,9 +82,11 @@ class Point(Transformable):
         # (Aufruf von addToScript())!
         self._todesmerker = False
 
-        self.id = gmsh.model.occ.addPoint(x, y, z, meshLength)
-        gmsh.model.set_entity_name(0, self.id, name)  # This cannot be placed in name
-        # setter because point is created afterwards in gmsh...
+        # set point id
+        if tag != -1:
+            self.id = self._getNewID()  # no id given
+        else:
+            self.id = tag  # id given
 
     # def __eq__(self, x) -> bool:
     #     """Overload the "==" operator to compare if points are equal in a given tolerance"""
@@ -258,21 +264,7 @@ class Point(Transformable):
             raise ValueError(
                 "Mesh length must be int or float. (Mesh length of Point in meter)"
             )
-        try:
-            # check if getter raises attribute error -> setter was not called before
-            self.meshLength
-            # if no error is raised then try to reset the mesh size in gmsh
-            try:
-                gmsh.model.occ.mesh.set_size([(0, self.id)], meshLength)
-                # successfully changed mesh size in gmsh -> adapt internal property
-                self._meshLength = meshLength
-            except Exception as exce:
-                logging.warning("Could not set gmsh point mesh size.", exc_info=exce)
-        except AttributeError:
-            # first call of setter (from init) -> set initial mesh length
-            self._meshLength = meshLength
-        except Exception as exce:
-            raise exce
+        self._meshLength = meshLength
 
     # ------ methods ------
 
@@ -292,9 +284,7 @@ class Point(Transformable):
         """isDrawn returns true if the point was added to a script"""
         return self._todesmerker
 
-    def translate(
-        self, dx: float, dy: float, dz: float, flag_gmsh: bool = True
-    ) -> None:
+    def translate(self, dx: float, dy: float, dz: float) -> None:
         """Mit translate() kann ein Punkt linear verschoben werden. Die Inputvariablen dx, dy und dz
         beschreiben die Verschiebungsfaktoren in der x-, y- und z- Richtung.
 
@@ -308,40 +298,24 @@ class Point(Transformable):
         self._x = self._x + dx
         self._y = self._y + dy
         self._z = self._z + dz
-        if flag_gmsh:
-            gmsh.model.occ.translate([(0, self.id)], dx, dy, dz)
 
-    def rotateZ(self, rotationPoint: "Point", angle: float, flag_gmsh: bool = True):
+    def rotateZ(self, rotationPoint: "Point", angle: float):
         """Mit rotateZ() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die Z-Achse mit
         einem definierten Winkel rotiert.
 
         Args:
             rotationPoint (Point): Centerpoint of rotation.
-            angle (float): Rotational angle.
+            angle (float): Rotational angle in radians.
         """
-        x, y, z = rotationPoint.coordinate
-        if flag_gmsh:
-            gmsh.model.occ.rotate([(0, self.id)], x, y, z, 0, 0, 1, angle)
-            # TODO: Update function by using gmsh values instead of calculating it by
-            # ourself...
-            # x, y, z = gmsh.model.get_value(0, self.id)
-
         if not self._todesmerker:
             # durch Verschiebung Rotation im Ursprung!
-            rotPointCoords = rotationPoint.coordinate
-            self.translate(
-                -rotPointCoords[0],
-                -rotPointCoords[1],
-                -rotPointCoords[2],
-                flag_gmsh=False,
-            )
+            x, y, z = rotationPoint.coordinate
+            self.translate(-x, -y, 0)
             oldx = self._x
             oldy = self._y
             self._x = cos(angle) * oldx - sin(angle) * oldy
             self._y = sin(angle) * oldx + cos(angle) * oldy
-            self.translate(
-                rotPointCoords[0], rotPointCoords[1], rotPointCoords[2], flag_gmsh=False
-            )
+            self.translate(x, y, 0)
 
     def rotateX(self, rotationPoint: "Point", angle: float):
         """Mit rotateX() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die X-Achse mit
