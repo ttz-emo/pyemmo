@@ -175,13 +175,13 @@ class SurfaceAPI(Surface):
         Args:
             nbrSegments (int): number of segments to form a whole circle.
         """
-        if not isinstance(nbrSegments, int):
+        if nbrSegments % 1 != 0:
             msg = (
                 f"Given number of segments for API surface '{self.name}'"
                 f"was not an integer but type '{type(nbrSegments)}'!"
             )
             raise TypeError(msg)
-        self._nbrSegments = nbrSegments
+        self._nbrSegments = int(nbrSegments)
         self._angle = 2 * pi / nbrSegments
 
     @property
@@ -334,6 +334,7 @@ class SurfaceAPI(Surface):
             # tool surface did not change and parent surface is fromed by
             # new surface + tool
             self.id = out_dim_tags[0][1]  # set id to new surface tag
+            gmsh.model.setEntityName(2, self.id, self.name)  # update name of surface
             return None
         if out_dim_tags_map[0] == out_dim_tags and out_dim_tags_map[1] == [
             out_dim_tags[1]
