@@ -40,6 +40,7 @@ from ...script.geometry.slot import Slot
 from ...script.geometry.spline import Spline
 from ...script.geometry.statorLamination import StatorLamination
 from ...script.geometry.surface import Point
+from ...script.gmsh.gmsh_surface import GmshSurface
 from ...script.material.material import Material
 from .. import logger
 from . import (
@@ -341,21 +342,25 @@ def importMachineGeometry(
             # update nbr segements (angle updates automatically) of main surface
             main_surf.nbrSegments = new_quantity
 
-            if logging.getLogger().level <= logging.DEBUG:
-                gmsh.model.occ.synchronize()
-                gmsh.fltk.run()
+            # if logging.getLogger().level <= logging.DEBUG:
+            #     gmsh.model.occ.synchronize()
+            #     gmsh.fltk.run()
             for surf in area:
                 tool_area = createAPISurf(surf)
                 for segment in range(0, int(tool_area.nbrSegments / sym_factor)):
                     dup_tool_surf = tool_area.rotateDuplicate(segment)
                     main_surf.cutOut(dup_tool_surf)
-                if logging.getLogger().level <= logging.DEBUG:
-                    gmsh.model.occ.synchronize()
-                    gmsh.fltk.run()
+                    # if logging.getLogger().level <= logging.DEBUG:
+                    #     gmsh.model.occ.synchronize()
+                    #     gmsh.fltk.run()
 
             # correct values for nbrSegments in tools (angle updates automatically):
             for surf in main_surf.tools:
                 surf.nbrSegments = new_quantity
+            # update curve of main surface
+            gmsh.model.occ.synchronize()
+            gmsh_main_surf = GmshSurface(tag=main_surf.id)
+            main_surf.curve = gmsh_main_surf.curve
 
             segmentSurfDict[main_surf.idExt] = main_surf
         else:

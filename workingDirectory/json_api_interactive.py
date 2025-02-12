@@ -28,10 +28,11 @@ from pyemmo.api.json import json
 
 root = tk.Tk()
 root.withdraw()
-model_folder = filedialog.askdirectory()
-# model_folder = (
-#     "D:\pyemmo\Results\matlab\TTZ_1FW3208_Test_Fraz_var_1_2024-12-04_09-31-22"
-# )
+model_folder = (
+    r"D:\pyemmo\Results\matlab\TTZ_1FW6190-xxx10-2Jxx_Mod_var_1_2025-02-11_16-24-49"
+)
+if not model_folder:
+    model_folder = filedialog.askdirectory()
 
 if os.path.isdir(model_folder):
     # resDir = os.path.dirname(model_folder)
