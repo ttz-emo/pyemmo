@@ -160,7 +160,7 @@ class SurfaceAPI(Surface):
         return self._angle
 
     @property
-    def NbrSegments(self) -> int:
+    def nbrSegments(self) -> int:
         """get the nbrSegments of segments of a API surface to form a whole circle (2*Pi)
 
         Returns:
@@ -217,7 +217,7 @@ class SurfaceAPI(Surface):
             idExt=self.idExt,
             curves=newCurves,
             material=self.material,
-            nbrSegments=self.NbrSegments,
+            nbrSegments=self.nbrSegments,
             angle=self.angle,
             meshSize=self.meshSize,
             segment_nbr=segment,
@@ -247,7 +247,7 @@ class SurfaceAPI(Surface):
         Returns:
             SurfaceAPI: Copied and rotated SurfaceAPI object.
         """
-        if (segment % 1) != 0 or segment >= self.NbrSegments:
+        if (segment % 1) != 0 or segment >= self.nbrSegments:
             raise ValueError("Segment number must be valid integer!")
 
         rot_angle = self.angle * segment
@@ -360,7 +360,7 @@ class SurfaceAPI(Surface):
                         idExt=ToolSurface.idExt,
                         curves=gmsh_surf.curve,
                         material=ToolSurface.material,
-                        nbrSegments=ToolSurface.NbrSegments,
+                        nbrSegments=ToolSurface.nbrSegments,
                         angle=ToolSurface.angle,
                         meshSize=ToolSurface.meshSize,
                     )
@@ -379,7 +379,7 @@ class SurfaceAPI(Surface):
                         idExt=ToolSurface.idExt,
                         curves=gmsh_surf.curve,
                         material=ToolSurface.material,
-                        nbrSegments=ToolSurface.NbrSegments,
+                        nbrSegments=ToolSurface.nbrSegments,
                         angle=ToolSurface.angle,
                         meshSize=ToolSurface.meshSize,
                     )
