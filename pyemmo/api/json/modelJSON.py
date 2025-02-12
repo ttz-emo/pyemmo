@@ -328,7 +328,6 @@ def importMachineGeometry(
             # calc number of segments to fullfill symmetry:
             nbr_main_segments = main_surf.nbrSegments / sym_factor
             assert nbr_main_segments % 1 == 0
-            new_angle = 2 * pi / sym_factor
             new_quantity = nbr_main_segments
             # rotate and duplicate main surface and previous cut out tools:
             for i in range(1, int(nbr_main_segments)):
@@ -339,9 +338,9 @@ def importMachineGeometry(
                 )
                 # update surface ids:
                 main_surf.id = out_dim_tags[0][1]
-            # update nbr segements and angle of main surface
+            # update nbr segements (angle updates automatically) of main surface
             main_surf.nbrSegments = new_quantity
-            main_surf.angle = new_angle
+
             if logging.getLogger().level <= logging.DEBUG:
                 gmsh.model.occ.synchronize()
                 gmsh.fltk.run()
@@ -354,9 +353,8 @@ def importMachineGeometry(
                     gmsh.model.occ.synchronize()
                     gmsh.fltk.run()
 
-            # correct values for angle and nbrSegments in main and tools:
+            # correct values for nbrSegments in tools (angle updates automatically):
             for surf in main_surf.tools:
-                surf.angle = new_angle
                 surf.nbrSegments = new_quantity
 
             segmentSurfDict[main_surf.idExt] = main_surf

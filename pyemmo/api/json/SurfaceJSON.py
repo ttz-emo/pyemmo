@@ -168,6 +168,22 @@ class SurfaceAPI(Surface):
         """
         return self._nbrSegments
 
+    @nbrSegments.setter
+    def nbrSegments(self, nbrSegments: int) -> None:
+        """set the nbrSegments of segments of a API surface to form a whole circle (2*Pi)
+
+        Args:
+            nbrSegments (int): number of segments to form a whole circle.
+        """
+        if not isinstance(nbrSegments, int):
+            msg = (
+                f"Given number of segments for API surface '{self.name}'"
+                f"was not an integer but type '{type(nbrSegments)}'!"
+            )
+            raise TypeError(msg)
+        self._nbrSegments = nbrSegments
+        self._angle = 2 * pi / nbrSegments
+
     @property
     def meshSize(self) -> float:
         """get the mesh size of the points of the surface
