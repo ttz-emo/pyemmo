@@ -18,6 +18,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+"""
+TODO: Update gmsh_line test due to changes in the GmshLine class.
+
+    Returns:
+        _type_: _description_
+"""
 import logging
 
 import gmsh

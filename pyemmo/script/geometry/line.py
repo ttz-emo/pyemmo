@@ -22,7 +22,6 @@
 
 from typing import TYPE_CHECKING, Literal, Tuple, Union
 
-import gmsh
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy import array
@@ -76,8 +75,8 @@ class Line(Transformable):
                     f"{start_point.coordinate} - {end_point.coordinate}."
                 )
             )
-        # set ID of line to gmsh ID
-        self.id = gmsh.model.occ.addLine(start_point.id, end_point.id)
+        # set ID of line
+        self.id = self._getNewID()
         ###Name der Linie.
         self.name = name
 
@@ -139,7 +138,6 @@ class Line(Transformable):
         Args:
             name (str): New line name
         """
-        gmsh.model.set_entity_name(1, self.id, name)
         self._name = name
 
     @property
@@ -264,7 +262,6 @@ class Line(Transformable):
         Args:
             dx, dy, dz (float): offset in meter
         """
-        gmsh.model.occ.translate((1, self.id), dx, dy, dz)
         self.start_point.translate(dx, dy, dz, flag_gmsh=False)
         self.end_point.translate(dx, dy, dz, flag_gmsh=False)
 
@@ -283,7 +280,6 @@ class Line(Transformable):
             L1.rotateZ(P0, pi)\n
         """
         x, y, z = rotationPoint.coordinate
-        gmsh.model.occ.rotate([(1, self.id)], x, y, z, 0, 0, 1, angle=angle)
         self.start_point.rotateZ(rotationPoint, angle)
         self.end_point.rotateZ(rotationPoint, angle)
 
@@ -303,7 +299,6 @@ class Line(Transformable):
 
         """
         x, y, z = rotationPoint.coordinate
-        gmsh.model.occ.rotate((1, self.id), x, y, z, 0, 1, 0, angle=angle)
         self.start_point.rotateY(rotationPoint, angle)
         self.end_point.rotateY(rotationPoint, angle)
 
@@ -323,7 +318,6 @@ class Line(Transformable):
 
         """
         x, y, z = rotationPoint.coordinate
-        gmsh.model.occ.rotate((1, self.id), x, y, z, 1, 0, 0, angle=angle)
         self.start_point.rotateX(rotationPoint, angle)
         self.end_point.rotateX(rotationPoint, angle)
 
@@ -341,12 +335,6 @@ class Line(Transformable):
         newP1 = self.start_point.duplicate()
         newP2 = self.end_point.duplicate()
         dupLine = Line(name, newP1, newP2)
-
-        # dim_tag_list = gmsh.model.occ.copy([(1, self.id)])
-        # dupLine.id = dim_tag_list[0][1]
-        # we dont need to call copy here again because the gerneration of the dup_line
-        # allready creates a new line
-
         # set new line name
         if name == "":
             parentName = self.name
@@ -554,9 +542,6 @@ class Line(Transformable):
         # replace the combined line pattern in the old names if they contained
         lName = self.name.replace("combinedLine_", "")
         addName = addLine.name.replace("combinedLine_", "")
-        # TODO: We could remove test for touchPoint and line direction if fuse operation
-        # in gmsh results in multiple entities!S
-        # dim_tags, dim_tags_map = gmsh.model.occ.fuse([(1, self.id)], [(1, addLine.id)])
         combined_line = Line(
             f"combinedLine_{lName}_{addName}",
             start_point=newPoints[0],

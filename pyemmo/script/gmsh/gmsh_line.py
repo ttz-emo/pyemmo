@@ -70,6 +70,7 @@ from typing import Union
 
 import gmsh
 
+from ..geometry import defaultCenterPoint
 from ..geometry.line import Line
 from .gmsh_point import GmshPoint
 
@@ -101,7 +102,7 @@ class GmshLine(Line):
 
     def __init__(
         self,
-        tag: int,
+        tag: int = -1,
         start_point: Union[GmshPoint, None] = None,
         end_point: Union[GmshPoint, None] = None,
         name: str = "",
@@ -115,8 +116,18 @@ class GmshLine(Line):
             end_point (GmshPoint, optional): The ending point of the line.
             name (str, optional): The name of the line. Defaults to an empty string.
         """
-        self.tag = tag
-        if not start_point and not end_point:
+        if tag == -1:
+            # init with start and end point
+            self._id = gmsh.model.occ.addLine(start_point.id, end_point.id)
+            self.name = name
+        else:
+            # init with tag
+            gmsh.model.occ.synchronize()
+            if (1, tag) not in gmsh.model.getEntities(1):
+                raise ValueError(f"Curve with {tag=} does not exist in the model.")
+            if gmsh.model.getType(1, tag) != "Line":
+                raise ValueError(f"Curve with {tag=} is not of type Line.")
+            # get boundary points:
             point_tags = gmsh.model.get_boundary(dimTags=[(1, tag)])
             start_point = GmshPoint(
                 point_tags[0][1], gmsh.model.get_value(0, point_tags[0][1], [])
@@ -125,41 +136,51 @@ class GmshLine(Line):
                 point_tags[1][1],
                 gmsh.model.get_value(0, point_tags[1][1], []),
             )
-        self.start_point = start_point
-        self.end_point = end_point
-        if not name:
-            name = gmsh.model.get_entity_name(1, tag)
-        self.name = name
+            # if no name given try to get it from gmsh
+            if not name:
+                name = gmsh.model.get_entity_name(1, tag)
+            else:
+                self.name = name
+        self._start_point = start_point
+        self._end_point = end_point
 
-    @property
-    def tag(self) -> int:
-        """
-        Getter for the tag property.
-
-        Returns:
-            int: The unique identifier for the line.
-        """
-        return self._tag
-
-    @property
-    def id(self) -> int:
-        """
-        Getter for the tag property but with name 'id' to be compatible with PyEMMO.
-
-        Returns:
-            int: The unique identifier for the line.
-        """
-        return self._tag
-
-    @tag.setter
-    def tag(self, new_tag: int):
+    @Line.id.setter
+    def id(self, new_id: int):
         """
         Setter for the tag property.
 
         Args:
             new_tag (int): The new tag value to set.
         """
-        self._tag = new_tag
+        gmsh.model.occ.synchronize()
+        # check that given tag does not exist in gmsh model
+        if (1, new_id) in gmsh.model.get_entities(1):
+            raise RuntimeError(f"Given line tag={new_id} allready exists in gmsh!")
+        gmsh.model.set_tag(1, self.id, new_id)  # set new tag
+        self._id = new_id  # update id
+
+    @Line.name.getter
+    def name(self) -> str:
+        """
+        Getter for the name property.
+
+        Returns:
+            str: The name of the line.
+        """
+        gmsh.model.occ.synchronize()
+        return gmsh.model.getEntityName(1, self.id)
+
+    @name.setter
+    def name(self, new_name: str):
+        """
+        Setter for the name property.
+
+        Args:
+            new_name (str): The new name to set.
+        """
+        gmsh.model.occ.synchronize()
+        gmsh.model.setEntityName(1, self.id, new_name)
+        self._name = new_name
 
     @property
     def start_point(self) -> GmshPoint:
@@ -169,7 +190,8 @@ class GmshLine(Line):
         Returns:
             GmshPoint: The starting point of the line.
         """
-        return self._start_point
+        tag = gmsh.model.getBoundary(dimTags=[(1, self.id)])[0][1]
+        return GmshPoint(tag=tag)
 
     @start_point.setter
     def start_point(self, new_start_point: GmshPoint):
@@ -179,8 +201,7 @@ class GmshLine(Line):
         Args:
             new_start_point (GmshPoint): The new starting point to set.
         """
-        assert isinstance(new_start_point, GmshPoint)
-        self._start_point = new_start_point
+        raise AttributeError("Cannot set start_point of GmshLine!")
 
     @property
     def end_point(self) -> GmshPoint:
@@ -190,7 +211,8 @@ class GmshLine(Line):
         Returns:
             GmshPoint: The ending point of the line.
         """
-        return self._end_point
+        tag = gmsh.model.getBoundary(dimTags=[(1, self.id)])[1][1]
+        return GmshPoint(tag=tag)
 
     @end_point.setter
     def end_point(self, new_end_point: GmshPoint):
@@ -200,17 +222,135 @@ class GmshLine(Line):
         Args:
             new_end_point (GmshPoint): The new ending point to set.
         """
-        self._end_point = new_end_point
+        raise AttributeError("Cannot set end_point of GmshLine!")
 
     def __str__(self) -> str:
         """
         Returns a string representation of the GmshLine.
 
         Returns:
-            str: A string containing the tag, name, type, and the start and end points of the line.
+            str: A string containing the tag, name, type, and the start and end points
+            of the line.
         """
         return (
-            f"GmshLine(tag={self.tag}, name={self.name}, type={self.type}, "
+            f"GmshLine(tag={self.id}, name={self.name}, type={self.type}, "
             f"start_point=({self.start_point.x:.1e}, {self.start_point.y:.1e}, {self.start_point.z:.1e}), "
             f"end_point=({self.end_point.x:.1e}, {self.end_point.y:.1e}, {self.end_point.z:.1e}))"
         )
+
+    def switchPoints(self):
+        raise AttributeError("Cannot switch points of GmshLine!")
+
+    def translate(self, dx: float, dy: float, dz: float):
+        """Translates the line in 3D space.
+
+        Args:
+            dx (float): x-coordinate translation in m.
+            dy (float): y-coordinate translation in m.
+            dz (float): z-coordinate translation in m.
+        """
+        gmsh.model.occ.translate([(1, self.id)], dx, dy, dz)
+
+    def rotateZ(self, rotationPoint=defaultCenterPoint, angle=0.0):
+        """Mit rotateZ() wird eine Gerade um einen Rotationspunkt (rotationPoint) und die
+        Z-Achse mit einem definierten Winkel rotiert.
+
+        Args:
+            - rotationPoint (Point, optional): Rotation center point.
+            Defaults to Point("tmpCenterPoint", 0, 0, 0, 1).
+            - angle (float, optional): Rotation angle in rad. Defaults to 0.0.
+
+        Beispiel:
+            from math import pi\n
+            L1 = Line(-1, 'l1', P1, P2)\n
+            L1.rotateZ(P0, pi)\n
+        """
+        x, y, z = rotationPoint.coordinate
+        gmsh.model.occ.rotate([(1, self.id)], x, y, z, 0, 0, 1, angle=angle)
+
+    def rotateY(self, rotationPoint: Point, angle: float):
+        """
+        Mit rotateY() wird eine Gerade um einen Rotationspunkt (rotationPoint) und die
+        Y-Achse mit einem definierten Winkel rotiert.
+
+        Args:
+           - rotationPoint (Point): rotation center point
+           - angle (float): rotation angle in rad
+
+        Beispiel:
+            from math import pi\n
+            L1 = Line('l1', P1, P2)\n
+            L1.rotateY(P0, pi)\n
+
+        """
+        x, y, z = rotationPoint.coordinate
+        gmsh.model.occ.rotate((1, self.id), x, y, z, 0, 1, 0, angle=angle)
+
+    def rotateX(self, rotationPoint: Point, angle):
+        """
+        Mit rotateX() wird eine Gerade um einen Rotationspunkt (rotationPoint) und die
+        X-Achse mit einem definierten Winkel rotiert.
+
+        Args:
+           - rotationPoint (Point): rotation center point
+           - angle (float): rotation angle in rad
+
+        Beispiel:
+            from math import pi\n
+            L1 = Line('l1', P1, P2)\n
+            L1.rotateX(P0, pi)\n
+
+        """
+        x, y, z = rotationPoint.coordinate
+        gmsh.model.occ.rotate((1, self.id), x, y, z, 1, 0, 0, angle=angle)
+
+    def duplicate(self, name="") -> "GmshLine":
+        """Create a copy of the line.
+
+                Args:
+            name (str, optional): Name of duplicte. Defaults to "".
+
+        Returns:
+
+            GmshLine: A copy of the line.
+
+        Example:
+            from pyemmo.script.gmsh.gmsh_line import GmshLine\n
+            L1 = GmshLine(-1, 'L1', P1, P2)\n
+            L2 = L1.duplicate("new name")\n
+        """
+
+        dim_tags = gmsh.model.occ.copy([(1, self.id)])
+        assert len(dim_tags) == 1, "Error while duplicating line!"
+        new_line = GmshLine(tag=dim_tags[0][1])
+        # set new line name
+        if name == "":
+            parentName = self.name
+            if "_dup" not in parentName:
+                new_line.name = f"{parentName}_dup"
+            else:
+                new_line.name = parentName
+        return new_line
+
+    def combine(self, line: "GmshLine") -> "GmshLine":
+        """Combine two lines to one.
+
+        Args:
+            line (GmshLine): Line to combine with.
+            name (str, optional): Name of new line. Defaults to "".
+
+        Returns:
+            GmshLine: Combined line.
+
+        Example:
+            from pyemmo.script.gmsh.gmsh_line import GmshLine\n
+            L1 = GmshLine(-1, 'L1', P1, P2)\n
+            L2 = GmshLine(-1, 'L2', P2, P3)\n
+            L3 = L1.combine(L2, "L3")\n
+        """
+        out_dim_tags, out_dim_tags_map = gmsh.model.occ.fuse(
+            [(1, self.id)], [(1, line.id)]
+        )
+        assert len(out_dim_tags) == 1, "Error while combining lines!"
+        new_line = GmshLine(tag=out_dim_tags[0][1])
+        return new_line
