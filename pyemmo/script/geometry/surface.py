@@ -85,6 +85,7 @@ class Surface(Transformable):
             )
         self.sortCurves()  # sort the curves (direction can be neglected with occ)
         curve_loop = gmsh.model.occ.addCurveLoop([curve.id for curve in self.curve])
+        # TODO: Move this part of the code to the GmshSurface class!
         # TODO: addCurveLoop() can create new line objects in gmsh to share touch points
         #       e.g. when duplicating a surface object all the lines are individuals
         #       (not sharing interface points). Then addCurveLoop() will generate new

@@ -27,8 +27,6 @@ from typing import Union
 import gmsh
 import numpy as np
 
-from ..geometry.circleArc import CircleArc
-from ..geometry.line import Line
 from ..geometry.point import Point
 from ..geometry.surface import Surface
 from .gmsh_arc import GmshArc
@@ -43,14 +41,19 @@ class GmshSurface(Surface):
     def __init__(
         self,
         tag: int = -1,
-        curves: list[Union[Line, CircleArc]] = [],
+        curves: list[Union[GmshLine, GmshArc]] = [],
         name: str = "",
     ):
         """ """
         if tag >= 0 and curves == []:
             self._init_with_tag(tag, name)
-        elif tag < 0 and all(filter(lambda l: isinstance(l, Line), curves)):
-            # no tag given, but all three points are of type Point
+        elif tag < 0 and all(
+            filter(lambda l: isinstance(l, [GmshLine, GmshArc]), curves)
+        ):
+            # no tag given, but all curves are type Line
+            # FIXME: addCurveLoop() can create new line objects in gmsh to share touch points
+            curve_loop = gmsh.model.occ.addCurveLoop([curve.id for curve in self.curve])
+            self.id = gmsh.model.occ.addPlaneSurface([curve_loop])
             super().__init__(name, curves=curves)
             self.tag = self.id
         else:
@@ -130,6 +133,7 @@ class GmshSurface(Surface):
             newID (int): New ID of Arc
         """
         if isinstance(newID, int):
+            gmsh.model.set_tag(2, self.tag, newID)
             self._tag = newID
         else:
             raise TypeError("Line ID must be an integer!")
