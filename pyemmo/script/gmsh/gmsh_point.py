@@ -145,10 +145,10 @@ class GmshPoint(Point):
         Args:
             new_id (int): New id value to set.
         """
+        gmsh.model.occ.synchronize()
         # check that given tag does not exist in gmsh model
         if (0, new_id) in gmsh.model.get_entities(0):
             raise RuntimeError("Given point tag allready exists in gmsh model!")
-        gmsh.model.occ.synchronize()
         gmsh.model.set_tag(0, self.id, new_id)  # set new tag
         self._id = new_id  # update id
 
@@ -164,17 +164,30 @@ class GmshPoint(Point):
         gmsh.model.setEntityName(0, self.id, name)
         self._name = name  # call setter of Point
 
-    @Point.meshLength.setter
+    @property
+    def meshLength(self) -> float:
+        """Get mesh length of point.
+
+        Returns:
+            float: mesh length in meter
+        """
+        gmsh.model.occ.synchronize()
+        return gmsh.model.mesh.getSizes([(0, self.id)])[0]
+
+    @meshLength.setter
     def meshLength(self, meshLength: float):
         """Set mesh length of point.
 
         Args:
             meshLength (float): mesh length
         """
-        gmsh.model.occ.mesh.set_size([(0, self.id)], meshLength)
+        # FIXME: This operation is only valid for a occ point until we call sync().
+        # Otherwise sync() resets the mesh size to its initial value...
+        raise RuntimeError("Mesh length setting of a OCC point currently not working!")
+        gmsh.model.mesh.setSize([(0, self.id)], meshLength)
         self._meshLength = meshLength
 
-    @Point.coordinate.getter
+    @property
     def coordinate(self) -> Tuple[float, float, float]:
         """
         Getter for the coordinate property.
@@ -191,7 +204,7 @@ class GmshPoint(Point):
     def coordinate(self, coords: Tuple[float, float, float]):
         raise AttributeError("You can't set coordinates of a GmshPoint!")
 
-    @Point.x.getter
+    @property
     def x(self) -> float:
         """
         Getter for the x coordinate.
@@ -205,7 +218,7 @@ class GmshPoint(Point):
     def x(self, new_x: float):
         raise AttributeError("You can't set the coordinates of a GmshPoint!")
 
-    @Point.y.getter
+    @property
     def y(self) -> float:
         """
         Getter for the y coordinate.
@@ -219,7 +232,7 @@ class GmshPoint(Point):
     def y(self, new_y: float):
         raise AttributeError("You can't set the coordinates of a GmshPoint!")
 
-    @Point.z.getter
+    @property
     def z(self) -> float:
         """
         Getter for the z coordinate.
@@ -287,18 +300,18 @@ class GmshPoint(Point):
     def duplicate(self, name="") -> "GmshPoint":
         dimTags: list[DimTag] = gmsh.model.occ.copy([(0, self.id)])
         assert len(dimTags) == 1, "Error while duplicating point!"
-        dupPoint = GmshPoint(tag=dimTags[0][1])
+        new_point = GmshPoint(tag=dimTags[0][1])
         if name == "":
             parentName = self.name
             if "_dup" not in parentName:
                 # if Point was not duplicated before
-                dupPoint.name = parentName + "_dup"
+                new_point.name = parentName + "_dup"
             else:
                 # otherwise set point name to P_"newPointID"
-                dupPoint.name = parentName
+                new_point.name = parentName
         else:
-            dupPoint.name = name
-        return dupPoint
+            new_point.name = name
+        return new_point
 
     def mirror(
         self,
