@@ -282,7 +282,11 @@ def getMagTemperature(extendedInfo: dict) -> float | None:
         if "tempMag" is missing from the dict.
     """
     if "tempMag" in extendedInfo.keys():
-        return float(extendedInfo["tempMag"])
+        if isinstance(extendedInfo["tempMag"], numbers.Number):
+            return float(extendedInfo["tempMag"])
+        raise ValueError(
+            f"Magnet temperature ('tempMag') is not type float: {extendedInfo['tempMag']}"
+        )
     return None
 
 
