@@ -51,7 +51,7 @@ Author:
 Note:
     This docstring was created by ChatGPT.
 """
-
+import numbers
 from typing import Tuple
 
 import gmsh
@@ -181,11 +181,13 @@ class GmshPoint(Point):
         Args:
             meshLength (float): mesh length
         """
-        # FIXME: This operation is only valid for a occ point until we call sync().
+        # TODO: In a simple test script this worked for a OCC Point. But in the api
+        # this operation seems to be only valid for a occ point until we call sync().
         # Otherwise sync() resets the mesh size to its initial value...
-        raise RuntimeError("Mesh length setting of a OCC point currently not working!")
-        gmsh.model.mesh.setSize([(0, self.id)], meshLength)
-        self._meshLength = meshLength
+        if isinstance(meshLength, numbers.Number):
+            gmsh.model.occ.mesh.setSize([(0, self.id)], meshLength)
+            self._meshLength = meshLength
+        raise ValueError("meshLength must be a number!")
 
     @property
     def coordinate(self) -> Tuple[float, float, float]:
