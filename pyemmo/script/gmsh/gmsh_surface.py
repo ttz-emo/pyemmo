@@ -63,6 +63,7 @@ class GmshSurface(Surface):
 
     def _init_with_tag(self, tag: int, name: str):
         self.tag = tag
+        gmsh.model.occ.synchronize()
         assert (
             gmsh.model.get_type(2, tag) == "Plane"
         ), "Given surface tag for GmshSurface does not yeald to Gmsh Surface instance!"
@@ -86,7 +87,8 @@ class GmshSurface(Surface):
         line_tags = np.abs(np.array(gmsh.model.get_boundary(dimTags=[(2, tag)]))[:, 1])
         curves: list[Union[GmshLine, GmshArc]] = []
         for ltag in line_tags:
-            if gmsh.model.getType(1, ltag) == "Line":
+            # TODO Add support for 'TrimmedCurve' curve type
+            if gmsh.model.getType(1, ltag) in ("Line", "TrimmedCurve"):
                 curves.append(GmshLine(tag=ltag))
             elif gmsh.model.getType(1, ltag) == "Circle":
                 curves.append(GmshArc(tag=ltag))

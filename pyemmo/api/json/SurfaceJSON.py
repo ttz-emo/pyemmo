@@ -21,6 +21,7 @@
 from __future__ import annotations
 
 import gmsh
+import numpy as np
 from numpy import pi
 
 from ...script.geometry.circleArc import CircleArc
@@ -100,7 +101,7 @@ class SurfaceAPI(Surface):
         self._idExt: str = idExt
         self._material: Material = material
         self._nbrSegments: int = nbrSegments
-        if not angle == 2 * pi / nbrSegments:
+        if not np.isclose(angle, 2 * pi / nbrSegments, atol=np.deg2rad(0.1)):
             raise ValueError(
                 f"Segment angle ({angle}) of surface {name} "
                 f"does not match 2*pi/nbrSegments ({2 * pi / nbrSegments})"
@@ -181,7 +182,8 @@ class SurfaceAPI(Surface):
                 f"was not an integer but type '{type(nbrSegments)}'!"
             )
             raise TypeError(msg)
-        self._nbrSegments = int(nbrSegments)
+        self._nbrSegments = nbrSegments
+        # set private angle property because no separate setter for angle
         self._angle = 2 * pi / nbrSegments
 
     @property
@@ -327,25 +329,35 @@ class SurfaceAPI(Surface):
         out_dim_tags, out_dim_tags_map = gmsh.model.occ.fragment(
             [(2, self._id)], cut_dim_tags, removeTool=ToolSurface.delete
         )
-        if (
-            out_dim_tags_map[1] == cut_dim_tags
-            and out_dim_tags_map[0] == out_dim_tags + cut_dim_tags
-        ):
-            # tool surface did not change and parent surface is fromed by
-            # new surface + tool
-            self.id = out_dim_tags[0][1]  # set id to new surface tag
-            gmsh.model.setEntityName(2, self.id, self.name)  # update name of surface
-            return None
-        if out_dim_tags_map[0] == out_dim_tags and out_dim_tags_map[1] == [
-            out_dim_tags[1]
-        ]:
-            # same as first test but tool surface was copied with new tag
-            self.id = out_dim_tags[0][1]  # set id to new surface tag
-            gmsh.model.setEntityName(2, self.id, self.name)  # update name of surface
-
-            gmsh.model.occ.remove([(2, ToolSurface.id)])  # remove old tool surface
-            ToolSurface.id = out_dim_tags[1][1]  # set id of tool surface to new tag
-            gmsh.model.setEntityName(2, ToolSurface.id, ToolSurface.name)  # update name
+        if len(out_dim_tags) == 1:
+            # single output surface -> new surface should be the parent surface - tool
+            if out_dim_tags_map[0] == out_dim_tags + cut_dim_tags:
+                # old parent surface is new surface + tool
+                # update id of parent surface to new surface id
+                self.id = out_dim_tags[0][1]
+                gmsh.model.setEntityName(
+                    2, self.id, self.name
+                )  # update name of surface
+                return None
+            else:
+                raise RuntimeError("Unhandled fragment output!")
+        if len(out_dim_tags) == 2:
+            # the number of surfaces did not change (still one object and one tool)
+            # check if one of the surface ids changed:
+            if out_dim_tags[0][1] != self.id:
+                # the parent surface id changed -> set new id
+                old_id = self.id  # get old id
+                self.id = out_dim_tags[0][1]  # set id to new surface tag
+                gmsh.model.setEntityName(
+                    2, self.id, self.name
+                )  # update name of surface
+                gmsh.model.occ.remove([(2, old_id)])  # remove old surface
+            if out_dim_tags[1][1] != ToolSurface.id:
+                # the tool surface id changed -> set new id
+                old_id = ToolSurface.id  # get old id
+                ToolSurface.id = out_dim_tags[1][1]
+                gmsh.model.setEntityName(2, ToolSurface.id, ToolSurface.name)
+                gmsh.model.occ.remove([(2, old_id)])  # remove old tool surface
             return None
         if len(out_dim_tags) > (len(cut_dim_tags) + 1):
             # extra surface(s) was/were created -> shift new surface by self.angle and
@@ -407,7 +419,7 @@ class SurfaceAPI(Surface):
             gmsh.model.occ.remove([(2, ToolSurface.id)])
         else:
             raise ValueError(
-                "Number of output surfaces is less than number of input surfaces!"
+                "Unexpected number of output surfaces after cutting out tool surface!"
             )
 
     # TODO: Update plot function to also plot tool surfaces

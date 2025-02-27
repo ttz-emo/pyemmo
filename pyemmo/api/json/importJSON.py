@@ -282,7 +282,11 @@ def getMagTemperature(extendedInfo: dict) -> float | None:
         if "tempMag" is missing from the dict.
     """
     if "tempMag" in extendedInfo.keys():
-        return float(extendedInfo["tempMag"])
+        if isinstance(extendedInfo["tempMag"], numbers.Number):
+            return float(extendedInfo["tempMag"])
+        raise ValueError(
+            f"Magnet temperature ('tempMag') is not type float: {extendedInfo['tempMag']}"
+        )
     return None
 
 
@@ -459,6 +463,9 @@ def createMaterial(matDict: dict[str, dict[Literal["wert"], Any]]) -> Material:
         else:
             if "tk_rem_100" in magMatDict.keys():
                 remanenceTempCoef = magMatDict["tk_rem_100"]["wert"]
+                if not isinstance(remanenceTempCoef, (int, float)):
+                    # if not valid value for temperature coefficient of remanence
+                    remanenceTempCoef = None  # set to None
         # BH Curve
         bhCurve = None
         if "bh_kl" in magMatDict.keys():

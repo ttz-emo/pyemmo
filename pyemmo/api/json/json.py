@@ -469,6 +469,10 @@ def main(
         raise TypeError(
             f"Geometry file has to be type 'File' or 'dict', not {type(geo)}"
         )
+    if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+        # update gmsh fltk GUI config
+        gmsh_api.option.setNumber("Geometry.Surfaces", 1)  # show surface indications
+        gmsh_api.option.setNumber("Geometry.Light", 0)  # show surface indications
 
     # generate the machine geometry
     machine, machineSurfDict = createMachine(segmentSurfDict, extendedInfo)

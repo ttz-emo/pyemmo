@@ -342,17 +342,18 @@ def importMachineGeometry(
             # update nbr segements (angle updates automatically) of main surface
             main_surf.nbrSegments = new_quantity
 
-            # if logging.getLogger().level <= logging.DEBUG:
-            #     gmsh.model.occ.synchronize()
-            #     gmsh.fltk.run()
+            if logging.getLogger().level <= logging.DEBUG and nbr_main_segments != 1.0:
+                gmsh.model.occ.synchronize()
+                gmsh.fltk.run()
             for surf in area:
                 tool_area = createAPISurf(surf)
                 for segment in range(0, int(tool_area.nbrSegments / sym_factor)):
                     dup_tool_surf = tool_area.rotateDuplicate(segment)
                     main_surf.cutOut(dup_tool_surf)
-                    # if logging.getLogger().level <= logging.DEBUG:
-                    #     gmsh.model.occ.synchronize()
-                    #     gmsh.fltk.run()
+                if logging.getLogger().level <= logging.DEBUG:
+                    # show model after each tool cut out
+                    gmsh.model.occ.synchronize()
+                    gmsh.fltk.run()
 
             # correct values for nbrSegments in tools (angle updates automatically):
             for surf in main_surf.tools:
