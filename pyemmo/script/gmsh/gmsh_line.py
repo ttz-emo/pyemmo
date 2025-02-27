@@ -72,6 +72,7 @@ import gmsh
 
 from ..geometry import defaultCenterPoint
 from ..geometry.line import Line
+from ..geometry.point import Point
 from .gmsh_point import GmshPoint
 
 
