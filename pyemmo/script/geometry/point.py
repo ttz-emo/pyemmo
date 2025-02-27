@@ -80,7 +80,7 @@ class Point(Transformable):
         self.meshLength = meshLength
 
         # set point id
-        if tag != -1:
+        if tag == -1:
             self.id = self._getNewID()  # no id given
         else:
             self.id = tag  # id given
@@ -130,8 +130,9 @@ class Point(Transformable):
         Args:
             newID (int): New ID of point
         """
-        if isinstance(newID, int):
-            self._id = newID
+        if newID % 1 == 0:
+            self._id = int(newID)
+        raise ValueError("Point ID must be an integer!")
 
     @property
     def name(self) -> str:
