@@ -183,7 +183,8 @@ class SurfaceAPI(Surface):
             )
             raise TypeError(msg)
         self._nbrSegments = nbrSegments
-        self.angle = 2 * pi / nbrSegments
+        # set private angle property because no separate setter for angle
+        self._angle = 2 * pi / nbrSegments
 
     @property
     def meshSize(self) -> float:
