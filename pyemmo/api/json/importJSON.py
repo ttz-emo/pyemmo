@@ -459,6 +459,9 @@ def createMaterial(matDict: dict[str, dict[Literal["wert"], Any]]) -> Material:
         else:
             if "tk_rem_100" in magMatDict.keys():
                 remanenceTempCoef = magMatDict["tk_rem_100"]["wert"]
+                if not isinstance(remanenceTempCoef, (int, float)):
+                    # if not valid value for temperature coefficient of remanence
+                    remanenceTempCoef = None  # set to None
         # BH Curve
         bhCurve = None
         if "bh_kl" in magMatDict.keys():
