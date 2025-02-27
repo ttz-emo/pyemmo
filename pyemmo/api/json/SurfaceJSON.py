@@ -21,6 +21,7 @@
 from __future__ import annotations
 
 import gmsh
+import numpy as np
 from numpy import pi
 
 from ...script.geometry.circleArc import CircleArc
@@ -100,7 +101,7 @@ class SurfaceAPI(Surface):
         self._idExt: str = idExt
         self._material: Material = material
         self._nbrSegments: int = nbrSegments
-        if not angle == 2 * pi / nbrSegments:
+        if not np.isclose(angle, 2 * pi / nbrSegments, atol=np.deg2rad(0.1)):
             raise ValueError(
                 f"Segment angle ({angle}) of surface {name} "
                 f"does not match 2*pi/nbrSegments ({2 * pi / nbrSegments})"
@@ -175,14 +176,14 @@ class SurfaceAPI(Surface):
         Args:
             nbrSegments (int): number of segments to form a whole circle.
         """
-        if not isinstance(nbrSegments, int):
+        if nbrSegments % 1 != 0:
             msg = (
                 f"Given number of segments for API surface '{self.name}'"
                 f"was not an integer but type '{type(nbrSegments)}'!"
             )
             raise TypeError(msg)
         self._nbrSegments = nbrSegments
-        self._angle = 2 * pi / nbrSegments
+        self.angle = 2 * pi / nbrSegments
 
     @property
     def meshSize(self) -> float:
