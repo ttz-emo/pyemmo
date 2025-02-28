@@ -132,7 +132,8 @@ class Point(Transformable):
         """
         if newID % 1 == 0:
             self._id = int(newID)
-        raise ValueError("Point ID must be an integer!")
+        else:
+            raise ValueError("Point ID must be an integer!")
 
     @property
     def name(self) -> str:
