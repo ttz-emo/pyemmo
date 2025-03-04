@@ -73,10 +73,12 @@ import gmsh
 from ..geometry import defaultCenterPoint
 from ..geometry.line import Line
 from ..geometry.point import Point
+from . import DimTag
+from .gmsh_geometry import GmshGeometry
 from .gmsh_point import GmshPoint
 
 
-class GmshLine(Line):
+class GmshLine(Line, GmshGeometry):
     """
     Represents a Gmsh line in 3D space defined by a start and end point, with a unique
     identifier (tag), a name. The start and end points are instances of
@@ -100,6 +102,10 @@ class GmshLine(Line):
         end_point (GmshPoint): The ending point of the line.
         name (str): The name of the line.
     """
+
+    @property
+    def dim(self) -> int:
+        return 1
 
     def __init__(
         self,
@@ -128,6 +134,7 @@ class GmshLine(Line):
                 raise ValueError(f"Curve with {tag=} does not exist in the model.")
             if gmsh.model.getType(1, tag) != "Line":
                 raise ValueError(f"Curve with {tag=} is not of type Line.")
+            self._id = tag
             # get boundary points:
             point_tags = gmsh.model.get_boundary(dimTags=[(1, tag)])
             start_point = GmshPoint(
@@ -142,46 +149,8 @@ class GmshLine(Line):
                 name = gmsh.model.get_entity_name(1, tag)
             else:
                 self.name = name
-        self._start_point = start_point
-        self._end_point = end_point
-
-    @Line.id.setter
-    def id(self, new_id: int):
-        """
-        Setter for the tag property.
-
-        Args:
-            new_tag (int): The new tag value to set.
-        """
-        gmsh.model.occ.synchronize()
-        # check that given tag does not exist in gmsh model
-        if (1, new_id) in gmsh.model.get_entities(1):
-            raise RuntimeError(f"Given line tag={new_id} allready exists in gmsh!")
-        gmsh.model.set_tag(1, self.id, new_id)  # set new tag
-        self._id = new_id  # update id
-
-    @Line.name.getter
-    def name(self) -> str:
-        """
-        Getter for the name property.
-
-        Returns:
-            str: The name of the line.
-        """
-        gmsh.model.occ.synchronize()
-        return gmsh.model.getEntityName(1, self.id)
-
-    @name.setter
-    def name(self, new_name: str):
-        """
-        Setter for the name property.
-
-        Args:
-            new_name (str): The new name to set.
-        """
-        gmsh.model.occ.synchronize()
-        gmsh.model.setEntityName(1, self.id, new_name)
-        self._name = new_name
+        # self._start_point = start_point
+        # self._end_point = end_point
 
     @property
     def start_point(self) -> GmshPoint:
@@ -321,8 +290,9 @@ class GmshLine(Line):
             L2 = L1.duplicate("new name")\n
         """
 
-        dim_tags = gmsh.model.occ.copy([(1, self.id)])
-        assert len(dim_tags) == 1, "Error while duplicating line!"
+        dim_tags: list[DimTag] = gmsh.model.occ.copy([(1, self.id)])
+        if len(dim_tags) != 1:
+            raise RuntimeError("Error while duplicating line!")
         new_line = GmshLine(tag=dim_tags[0][1])
         # set new line name
         if name == "":
@@ -333,12 +303,13 @@ class GmshLine(Line):
                 new_line.name = parentName
         return new_line
 
-    def combine(self, line: "GmshLine") -> "GmshLine":
+    def combine(self, line: "GmshLine", touchPoint=None) -> "GmshLine":
         """Combine two lines to one.
 
         Args:
             line (GmshLine): Line to combine with.
             name (str, optional): Name of new line. Defaults to "".
+            touchPoint (GmshPoint, optional): Unused. Defaults to None.
 
         Returns:
             GmshLine: Combined line.

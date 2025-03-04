@@ -455,6 +455,7 @@ class Line(Transformable):
                     f"{type(self)} != {type(addLine)}"
                 )
             )
+        # TODO: Remove touchpoint from arguments since its unnessecary in gmsh representation
         if not touchPoint:
             for p in self.points:
                 for addP in addLine.points:

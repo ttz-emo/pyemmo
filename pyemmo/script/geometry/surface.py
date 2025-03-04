@@ -82,7 +82,7 @@ class Surface(Transformable):
         # init because _cut(=tools) is only accessed by method ``cutOut``
         self._cut: list[Surface] = []
         self._isTool: bool = False
-        self._delete: bool = False
+        # self._delete: bool = False
 
     def __eq__(self, other: Surface):
         # check type and number of points
@@ -127,18 +127,18 @@ class Surface(Transformable):
         """
         self._curve = curves
 
-    @property
-    def delete(self) -> bool:
-        """Get the delete-status of the surface"""
-        return self._delete
+    # @property
+    # def delete(self) -> bool:
+    #     """Get the delete-status of the surface"""
+    #     return self._delete
 
-    @delete.setter
-    def delete(self, status: bool) -> None:
-        """Delete Surface at the end of script generation"""
-        if isinstance(status, bool):
-            self._delete = status
-        else:
-            raise TypeError("Delete status was not type bool!")
+    # @delete.setter
+    # def delete(self, status: bool) -> None:
+    #     """Delete Surface at the end of script generation"""
+    #     if isinstance(status, bool):
+    #         self._delete = status
+    #     else:
+    #         raise TypeError("Delete status was not type bool!")
 
     @property
     def points(self) -> list[Point]:

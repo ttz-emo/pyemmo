@@ -68,16 +68,18 @@ Note:
     This docstring was created by ChatGPT.
 """
 
-from typing import Union
+from typing import Literal, Union
 
 import gmsh
+import numpy as np
+from numpy.typing import NDArray
 
 from ..geometry.circleArc import CircleArc
-from ..geometry.point import Point
+from .gmsh_geometry import GmshGeometry
 from .gmsh_point import GmshPoint
 
 
-class GmshArc(CircleArc):
+class GmshArc(CircleArc, GmshGeometry):
     """
     TODO
 
@@ -88,6 +90,11 @@ class GmshArc(CircleArc):
         name (str): The name of the line.
         type (str): The type of the line (e.g., "Line", "Circle").
     """
+
+    @property
+    def dim(self) -> Literal[1]:
+        """Dimension of the CircleArc in Gmsh = 1"""
+        return 1
 
     def __init__(
         self,
@@ -104,113 +111,84 @@ class GmshArc(CircleArc):
             the center point by creating a middle point on the existing arc. For more
             details see https://gitlab.onelab.info/gmsh/gmsh/-/issues/2394
         2.  Define the arc like the classical PyEMMO CircleArc by giving 3 GmshPoint
-            objects. The class will then call the CircleArc.__init__() method.
+            objects.
 
         Args:
             tag (int): The unique identifier for the line.
-            start_point (GmshPoint, optional): The starting point of the line.
-
-            center_point: Union[GmshPoint, None] = None,
-
-            end_point (GmshPoint, optional): The ending point of the line.
+            start_point (GmshPoint, optional): The starting point of the line. Defaults
+                to None.
+            center_point (GmshPoint): The center point of the line. Defaults to None.
+            end_point (GmshPoint, optional): The ending point of the line. Defaults to
+                None.
             name (str, optional): The name of the line. Defaults to an empty string.
         """
-        if tag >= 0 and (start_point, center_point, end_point) == (None, None, None):
-            # tag is given and points are None -> try to find points from gmsh and
-            # create center point.
-            self._init_with_tag(tag, name)
-        elif tag < 0 and all(
-            filter(
-                lambda p: isinstance(p, Point), (start_point, center_point, end_point)
+        if tag == -1:
+            if not all(
+                filter(
+                    lambda p: isinstance(p, GmshPoint),
+                    (start_point, center_point, end_point),
+                )
+            ):
+                raise ValueError("All points must be of type GmshPoint for GmshArc!")
+            # no tag given, but all three points are of type GmshPoint
+            self._id = gmsh.model.occ.addCircleArc(
+                start_point.id, center_point.id, end_point.id
             )
-        ):
-            # no tag given, but all three points are of type Point
-            super().__init__(name, start_point, center_point, end_point)
-            self.tag = self.id
+            self._start_point = start_point
+            self._center = center_point
+            self._end_point = end_point
+            self.name = name
+        elif tag >= 0:
+            if (start_point, center_point, end_point) == (None, None, None):
+                # tag is given and points are None -> try to find points from gmsh and
+                # create center point.
+                self._init_with_tag(tag, name)
+            else:
+                raise ValueError("Can not create GmshArc for input of tag AND points!")
         else:
-            raise ValueError("Can not create GmshArc for input of tag AND points!")
+            raise ValueError("Tag must be a positive integer or -1 if points given!")
 
     def _init_with_tag(self, tag: int, name: str):
-        self.tag = tag
-        assert (
-            gmsh.model.get_type(1, tag) == "Circle"
-        ), "Given curve tag for GmshArc does not yeald to Gmsh Circle instance!"
-        point_tags = gmsh.model.get_boundary(dimTags=[(1, tag)])
-        self.start_point = GmshPoint(
-            point_tags[0][1], gmsh.model.get_value(0, point_tags[0][1], [])
-        )
-        self.end_point = GmshPoint(
-            point_tags[1][1],
-            gmsh.model.get_value(0, point_tags[1][1], []),
-        )
-        center_tag, center_coords = get_center(tag)
-        if center_tag is None:
-            # center point not existant yet!
-            self.center = Point(
-                f"Center of CircleArc {self.tag}",
-                center_coords[0],
-                center_coords[1],
-                center_coords[2],
-                1,
-            )
-        else:
-            self.center = GmshPoint(center_tag, center_coords)
+        """Init GmshArc with existing tag.
+
+        Args:
+            tag (int): Gmsh OCC tag of the CircleArc.
+            name (str): Name of the CircleArc.
+
+        Raises:
+            ValueError: If tag is not a CircleArc.
+            ValueError: If curve tag does not exist in current Gmsh model.
+        """
+        gmsh.model.occ.synchronize()
+        if (1, tag) not in gmsh.model.getEntities(1):
+            raise ValueError(f"Curve with tag {tag=} does not exist in Gmsh model!")
+        if gmsh.model.get_type(1, tag) != "Circle":
+            raise ValueError(f"Curve with tag {tag=} is not a CircleArc!")
+        self._id = tag  # set tag
         if not name:
             name = gmsh.model.get_entity_name(1, tag)
         self.name = name
 
-    @property
-    def tag(self) -> int:
-        """
-        Getter for the tag property.
-
-        Returns:
-            int: The unique identifier for the line.
-        """
-        return self._tag
-
-    @tag.setter
-    def tag(self, new_tag: int):
-        """
-        Setter for the tag property.
-
-        Args:
-            new_tag (int): The new tag value to set.
-        """
-
-        self._tag = new_tag
-
-    @property
-    def id(self) -> int:
-        """
-        Getter for the tag property but with name 'id' to be compatible with PyEMMO.
-
-        Returns:
-            int: The unique identifier for the line.
-        """
-        return self._tag
-
-    @id.setter
-    def id(self, newID: int) -> None:
-        """setter of GmshArc ID
-
-        Args:
-            newID (int): New ID of Arc
-        """
-        if isinstance(newID, int):
-            self._tag = newID
-        else:
-            raise TypeError("Line ID must be an integer!")
-
-    # @name.setter
-    # def name(self, name: str):
-    #     """Set name of line .
-
-    #     Args:
-    #         name (str): New line name
-    #     """
-    #     gmsh.model.set_entity_name(1, self._id, name)
-    #     self._name = name
+        # # Skip the following since point info is accessed at runtime
+        # point_tags = gmsh.model.get_boundary(dimTags=[(1, tag)])
+        # self._start_point = GmshPoint(
+        #     point_tags[0][1], gmsh.model.get_value(0, point_tags[0][1], [])
+        # )
+        # self._end_point = GmshPoint(
+        #     point_tags[1][1],
+        #     gmsh.model.get_value(0, point_tags[1][1], []),
+        # )
+        # center_tag, center_coords = _get_center(tag)
+        # if center_tag is None:
+        #     # center point not existant yet!
+        #     self.center = Point(
+        #         f"Center of CircleArc {self.id}",
+        #         center_coords[0],
+        #         center_coords[1],
+        #         center_coords[2],
+        #     )
+        # else:
+        #     self.center = GmshPoint(center_tag, center_coords)
 
     @property
     def start_point(self) -> GmshPoint:
@@ -220,7 +198,11 @@ class GmshArc(CircleArc):
         Returns:
             GmshPoint: The starting point of the line.
         """
-        return self._start_point
+        gmsh.model.occ.synchronize()
+        point_tags = gmsh.model.get_boundary(dimTags=[(1, self.id)])
+        return GmshPoint(
+            point_tags[0][1], gmsh.model.get_value(0, point_tags[0][1], [])
+        )
 
     @start_point.setter
     def start_point(self, new_start_point: GmshPoint):
@@ -230,8 +212,7 @@ class GmshArc(CircleArc):
         Args:
             new_start_point (GmshPoint): The new starting point to set.
         """
-        assert isinstance(new_start_point, GmshPoint)
-        self._start_point = new_start_point
+        raise ValueError("Can not change start point of GmshArc!")
 
     @property
     def end_point(self) -> GmshPoint:
@@ -241,7 +222,12 @@ class GmshArc(CircleArc):
         Returns:
             GmshPoint: The ending point of the line.
         """
-        return self._end_point
+        gmsh.model.occ.synchronize()
+        point_tags = gmsh.model.get_boundary(dimTags=[(1, self.id)])
+        return GmshPoint(
+            point_tags[1][1],
+            gmsh.model.get_value(0, point_tags[1][1], []),
+        )
 
     @end_point.setter
     def end_point(self, new_end_point: GmshPoint):
@@ -251,17 +237,46 @@ class GmshArc(CircleArc):
         Args:
             new_end_point (GmshPoint): The new ending point to set.
         """
-        self._end_point = new_end_point
+        raise ValueError("Can not change end point of GmshArc!")
+
+    @property
+    @CircleArc.center.getter
+    def center(self) -> GmshPoint:
+        """
+        Getter for the center property.
+
+        Returns:
+            GmshPoint: The center point of the arc.
+        """
+        gmsh.model.occ.synchronize()
+        center_tag, center_coords = _get_center(self)
+        if center_tag:
+            # if center point exists
+            return GmshPoint(center_tag)
+        else:
+            # otherwise create a new point
+            return GmshPoint(coords=center_coords)
+
+    @center.setter
+    def center(self, new_center: GmshPoint):
+        """
+        Setter for the center property.
+
+        Args:
+            new_center (GmshPoint): The new center point to set.
+        """
+        raise ValueError("Can not change center point of GmshArc!")
 
     def __str__(self) -> str:
         """
         Returns a string representation of the GmshLine.
 
         Returns:
-            str: A string containing the tag, name, type, and the start and end points of the line.
+            str: A string containing the tag, name, type, and the start and end points
+            of the line.
         """
         return (
-            f"GmshLine(tag={self.tag}, name={self.name}, type={self.type}, "
+            f"GmshLine(name={self.name}, type={self.type}, id={self.id}, "
             f"start_point=({self.start_point.x}, {self.start_point.y}, {self.start_point.z}), "
             f"end_point=({self.end_point.x}, {self.end_point.y}, {self.end_point.z}))"
         )
@@ -269,34 +284,30 @@ class GmshArc(CircleArc):
 
 ## The following is the solution to issue #2394 on the Gmsh Gitlab page on how to get
 # the center point of an arc by only knowing the start and end point of the arc..
-def is_int(val):
+def _is_int(val):
     try:
         return int(val) == val
     except TypeError:
         return False
 
 
-import numpy as np
-from numpy.typing import NDArray
-
-
-def get_point_coord(tag: int):
+def _get_point_coord(tag: int):
     """
     Get coordinate of point.
     """
     return gmsh.model.get_value(0, tag, [])
 
 
-def dist(p1, p2):
+def _dist(p1: int, p2: int) -> float:
     """
     Return the distance between points/3D-coordinates
     """
-    if is_int(p1):  # if tag and not coordinates
-        coord1 = get_point_coord(p1)
+    if _is_int(p1):  # if tag and not coordinates
+        coord1 = _get_point_coord(p1)
     else:
         coord1 = p1
-    if is_int(p2):  # if tag and not coordinates
-        coord2 = get_point_coord(p2)
+    if _is_int(p2):  # if tag and not coordinates
+        coord2 = _get_point_coord(p2)
     else:
         coord2 = p2
 
@@ -307,9 +318,11 @@ def dist(p1, p2):
     )
 
 
-def get_closest_point(coord, vtol: float = 1e-6):
+def _get_closest_point(coord, vtol: float = 1e-6):
     """
-    Return (tag, coord) of the closest point to 'coord' up to a distance 'vtol', otherwise return (None, None)
+    Return (tag, coord) of the closest point to 'coord' up to a distance 'vtol',
+    otherwise return (None, None)
+
     Warning: slow
     """
     dim_tags = gmsh.model.getEntitiesInBoundingBox(
@@ -325,8 +338,8 @@ def get_closest_point(coord, vtol: float = 1e-6):
     best_coord = None
     best_dist = np.inf
     for dim_tag in dim_tags:
-        coord2 = get_point_coord(dim_tag[1])
-        d = dist(coord, coord2)
+        coord2 = _get_point_coord(dim_tag[1])
+        d = _dist(coord, coord2)
         if d <= vtol and d < best_dist:
             best_tag = dim_tag[1]
             best_coord = coord2
@@ -337,16 +350,17 @@ def get_closest_point(coord, vtol: float = 1e-6):
     return (best_tag, best_coord)
 
 
-def get_center(l_tag) -> tuple[int, NDArray]:
+def _get_center(self) -> tuple[int, NDArray]:
     """
     Return (in a very complicated way) the center tag of a circle arc (if available) and
     its coordinate. Only works for points on z-normal plane.
     """
+    l_tag = self.id
     if gmsh.model.getType(1, l_tag) != "Circle":
         raise ValueError("Can only calculate the radius for a circle arc")
 
     p1, p3 = gmsh.model.getAdjacencies(1, l_tag)[1]
-    coord1, coord3 = get_point_coord(p1), get_point_coord(p3)
+    coord1, coord3 = _get_point_coord(p1), _get_point_coord(p3)
     coord2 = gmsh.model.getClosestPoint(1, l_tag, (coord1 + coord3) / 2)[0]
     A = np.array(
         [
@@ -366,7 +380,7 @@ def get_center(l_tag) -> tuple[int, NDArray]:
     coord = np.array([-X[0], -X[1], coord1[2]])
 
     try:
-        c_tag, coord = get_closest_point(coord, vtol=1e-5)
+        c_tag, coord = _get_closest_point(coord, vtol=1e-5)
         return c_tag, coord
     except ValueError:
         return None, coord

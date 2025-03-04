@@ -52,16 +52,17 @@ Note:
     This docstring was created by ChatGPT.
 """
 import numbers
-from typing import Tuple
+from typing import Literal, Tuple
 
 import gmsh
 import numpy as np
 
 from ..geometry.point import Point
 from . import DimTag
+from .gmsh_geometry import GmshGeometry
 
 
-class GmshPoint(Point):
+class GmshPoint(Point, GmshGeometry):
     """
     Represents a point in 3D space with a unique identifier (tag) in the context of
     Gmsh.
@@ -86,12 +87,17 @@ class GmshPoint(Point):
             Returns a string representation of the GmshPoint object.
     """
 
+    @property
+    def dim(self) -> Literal[0]:
+        """Dimension of Point = 0"""
+        return 0
+
     def __init__(
         self,
         tag: int = -1,
         name="",
         coords: np.ndarray = np.empty(0),
-        meshLength: float = 0.0,
+        meshLength: float = 1e-3,
     ):
         """
         Constructor for GmshPoint class.
@@ -101,11 +107,12 @@ class GmshPoint(Point):
             coords (np.ndarray, optional): Coordinates of the point as a NumPy array
                 with shape (3,) or empty. When empty, try to find the point with its tag
                 in Gmsh and get the coordinates from there.
+            meshLength (float, optional): Mesh length of the point. Defaults to 1 mm.
         """
         if tag == -1:
             # init with coords
             assert isinstance(meshLength, (int, float)), "meshLength must be a number!"
-            assert meshLength > 0, "meshLength must not be zero!"
+            assert meshLength > 0, "meshLength must be greater than 0!"
             if coords.size == 2:
                 # 2D point
                 self._id = gmsh.model.occ.addPoint(
@@ -130,39 +137,15 @@ class GmshPoint(Point):
             if (0, tag) not in gmsh.model.get_entities(0):
                 raise ValueError(f"Point with given {tag=} does not exist!")
             self._id = tag  # set tag
-            # get name from gmsh:
-            self._name = gmsh.model.get_entity_name(0, tag)
+            if not name:
+                # get name from gmsh if not given
+                self._name = gmsh.model.get_entity_name(0, tag)
+            else:
+                # otherwise set name of gmsh point
+                self.name = name
             # get mesh length from gmsh:
             self._meshLength = gmsh.model.mesh.getSizes([(0, tag)])[0]
             # coordinates will be directly accessed from gmsh at runtime
-
-    # overwrite point id property setter
-    @Point.id.setter
-    def id(self, new_id: int):
-        """
-        Setter for the id property.
-
-        Args:
-            new_id (int): New id value to set.
-        """
-        gmsh.model.occ.synchronize()
-        # check that given tag does not exist in gmsh model
-        if (0, new_id) in gmsh.model.get_entities(0):
-            raise RuntimeError("Given point tag allready exists in gmsh model!")
-        gmsh.model.set_tag(0, self.id, new_id)  # set new tag
-        self._id = new_id  # update id
-
-    @Point.name.setter
-    def name(self, name: str):
-        """
-        Setter for the name property.
-
-        Args:
-            name (str): New name for the point.
-        """
-        gmsh.model.occ.synchronize()
-        gmsh.model.setEntityName(0, self.id, name)
-        self._name = name  # call setter of Point
 
     @property
     def meshLength(self) -> float:
@@ -189,7 +172,7 @@ class GmshPoint(Point):
             self._meshLength = meshLength
         raise ValueError("meshLength must be a number!")
 
-    @property
+    @Point.coordinate.getter
     def coordinate(self) -> Tuple[float, float, float]:
         """
         Getter for the coordinate property.
@@ -204,7 +187,9 @@ class GmshPoint(Point):
 
     @coordinate.setter
     def coordinate(self, coords: Tuple[float, float, float]):
-        raise AttributeError("You can't set coordinates of a GmshPoint!")
+        raise AttributeError(
+            "You can't set coordinates of a GmshPoint! Use the translate method!"
+        )
 
     @property
     def x(self) -> float:

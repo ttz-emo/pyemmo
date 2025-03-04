@@ -29,11 +29,14 @@ import numpy as np
 
 from ..geometry.point import Point
 from ..geometry.surface import Surface
+from ..gmsh import DimTag
 from .gmsh_arc import GmshArc
+from .gmsh_geometry import GmshGeometry
 from .gmsh_line import GmshLine
+from .gmsh_point import GmshPoint
 
 
-class GmshSurface(Surface):
+class GmshSurface(Surface, GmshGeometry):
     """
     TODO
     """
@@ -45,35 +48,46 @@ class GmshSurface(Surface):
         name: str = "",
     ):
         """ """
-        if tag >= 0 and curves == []:
+        if tag >= 0:
+            if curves != []:
+                raise ValueError(
+                    "Can not create GmshSurface for input of tag AND line list!"
+                )
+            # create GmshSurface from existing tag
             self._init_with_tag(tag, name)
-        elif tag < 0 and all(
-            filter(lambda l: isinstance(l, [GmshLine, GmshArc]), curves)
-        ):
-            # no tag given, but all curves are type Line
+        elif tag == -1:
+            if not all(filter(lambda l: isinstance(l, [GmshLine, GmshArc]), curves)):
+                raise ValueError("All curves must be of type GmshLine or GmshArc!")
+            # no tag given, but all curves are type GmshLine or GmshArc
             # FIXME: addCurveLoop() can create new line objects in gmsh to share touch points
-            curve_loop = gmsh.model.occ.addCurveLoop([curve.id for curve in self.curve])
-            self.id = gmsh.model.occ.addPlaneSurface([curve_loop])
-            super().__init__(name, curves=curves)
-            self.tag = self.id
+            curve_loop = gmsh.model.occ.addCurveLoop([curve.id for curve in curves])
+            self._id = gmsh.model.occ.addPlaneSurface([curve_loop])
         else:
             raise ValueError(
                 "Can not create GmshSurface for input of tag AND line list!"
             )
+        # init because _cut(=tools) is only accessed by method ``cutOut``
+        self._cut: list[Surface] = []
+        self._isTool: bool = False
 
     def _init_with_tag(self, tag: int, name: str):
-        self.tag = tag
         gmsh.model.occ.synchronize()
-        assert (
-            gmsh.model.get_type(2, tag) == "Plane"
-        ), "Given surface tag for GmshSurface does not yeald to Gmsh Surface instance!"
-        self.curve = self.get_lineloop(tag)
+        if (2, tag) not in gmsh.model.get_entities(2):
+            raise ValueError(f"Surface tag {tag} does not exist in the Gmsh model!")
+        if not gmsh.model.get_type(2, tag) == "Plane":
+            surf_type = gmsh.model.get_type(2, tag)
+            raise ValueError(
+                f"Tag {tag} is not of type 'Plane' but is type '{surf_type}'!"
+            )
+        self._id = tag
         if not name:
+            # if no name is given, get the name from the Gmsh model
             name = gmsh.model.get_entity_name(2, tag)
+        # otherwise set the name to the given name
         self.name = name
 
-    def get_lineloop(self, tag: int) -> list[Union[GmshLine, GmshArc]]:
-        """Get the lineloop of the surfacef from the Gmsh model.
+    def _get_lineloop(self, tag: int) -> list[Union[GmshLine, GmshArc]]:
+        """Get the lineloop of the surface from the Gmsh model.
 
         Args:
             tag (int): The tag of the surface in the Gmsh model.
@@ -84,6 +98,7 @@ class GmshSurface(Surface):
         Returns:
             list[Union[GmshLine, GmshArc]]: The list of lines that form the lineloop.
         """
+        gmsh.model.occ.synchronize()
         line_tags = np.abs(np.array(gmsh.model.get_boundary(dimTags=[(2, tag)]))[:, 1])
         curves: list[Union[GmshLine, GmshArc]] = []
         for ltag in line_tags:
@@ -96,49 +111,79 @@ class GmshSurface(Surface):
                 raise ValueError(f"Line with tag {ltag} is not of type Line or Circle!")
         return curves
 
-    @property
-    def tag(self) -> int:
-        """
-        Getter for the tag property.
-
-        Returns:
-            int: The unique identifier for the line.
-        """
-        return self._tag
-
-    @tag.setter
-    def tag(self, new_tag: int):
-        """
-        Setter for the tag property.
-
-        Args:
-            new_tag (int): The new tag value to set.
-        """
-
-        self._tag = new_tag
+    def __str__(self) -> str:
+        msg = f"GmshSurface with ID {self.id}\n"
+        msg += f"Name: {self.name}\n"
+        msg += f"Loop contains {len(self.curve)} curves:\n"
+        for curve in self.curve:
+            msg += (
+                f"  {type(curve)} ('{curve.id}'): Point ('{curve.start_point.id}') -> "
+                f"Point ('{curve.end_point.id}')\n"
+            )
+        return msg
 
     @property
-    def id(self) -> int:
-        """
-        Getter for the tag property but with name 'id' to be compatible with PyEMMO.
+    def curve(self) -> list[Union[GmshLine, GmshArc]]:
+        """Get the curves that form the surface.
 
         Returns:
-            int: The unique identifier for the line.
+            list[Union[GmshLine, GmshArc]]: The list of curves that form the surface.
         """
-        return self._tag
+        return self._get_lineloop(self.id)
 
-    @id.setter
-    def id(self, newID: int) -> None:
-        """setter of GmshArc ID
+    @curve.setter
+    def curve(self, curves: list[Union[GmshLine, GmshArc]]) -> None:
+        """Set the curves that form the surface.
 
         Args:
-            newID (int): New ID of Arc
+            curves (list[Union[GmshLine, GmshArc]]): The list of curves that form the surface.
         """
-        if isinstance(newID, int):
-            gmsh.model.set_tag(2, self.tag, newID)
-            self._tag = newID
-        else:
-            raise TypeError("Line ID must be an integer!")
+        raise ValueError("Can not set the lineloop of a existing GmshSurface!")
+
+    @property
+    def meanMeshLength(self) -> float:
+        """get the mean mesh length of all points of the surface.
+
+        Returns:
+            float: mean of mesh length of all points in meter
+        """
+        points: list[GmshPoint] = self.allPoints
+        mlList = [p.meshLength for p in points]
+        return np.mean(mlList)
+
+    def setMeshLength(self, meshLength: float) -> None:
+        """set the meshLength of all points of a surface.
+
+        Args:
+            meshLength (float): mesh length to be set for all points
+        """
+        points: list[GmshPoint] = self.allPoints
+        for point in points:
+            point.meshLength = meshLength
+
+    def getMinMeshLength(self) -> float:
+        """get the minimum meshLength of all points of the surface.
+
+        Returns:
+            float: min mesh length of all points
+        """
+        points: list[GmshPoint] = self.allPoints
+        ml = points.pop().meshLength
+        for point in points:
+            nml = point.meshLength
+            ml = min(ml, nml)
+        return ml
+
+    def translate(self, dx, dy, dz):
+        """Translates the surface by the factors dx, dy and dz.
+
+        Args:
+            dx (float): Translation in x-direction.
+            dy (float): Translation in y-direction.
+            dz (float): Translation in z-direction.
+
+        """
+        return gmsh.model.occ.translate([(2, self.id)], dx, dy, dz)
 
     def rotateZ(self, rotationPoint: Point, angle: float):
         """Rotates the surface around the z-axis.
@@ -156,4 +201,90 @@ class GmshSurface(Surface):
         """
         x, y, z = rotationPoint.coordinate
         gmsh.model.occ.rotate([(2, self.id)], x, y, z, 0, 0, 1, angle)
-        self.curve = self.get_lineloop(self.id)  # reset the line loop
+
+    def rotateX(self, rotationPoint: Point, angle: float):
+        """Rotates the surface around the x-axis.
+
+        Args:
+            rotationPoint (Point): The point around which the surface should be rotated.
+            angle (float): The angle in degrees by which the surface should be rotated.
+
+        example:
+            >>> from pyemmo.gmsh import GmshSurface, GmshPoint
+            >>> from math import pi
+            >>> surface = GmshSurface()
+            >>> rotationPoint = GmshPoint()
+            >>> surface.rotateX(rotationPoint, pi/2)
+        """
+        x, y, z = rotationPoint.coordinate
+        gmsh.model.occ.rotate([(2, self.id)], x, y, z, 1, 0, 0, angle)
+
+    def rotateY(self, rotationPoint, angle):
+        """Rotates the surface around the y-axis.
+
+        Args:
+            rotationPoint (Point): The point around which the surface should be rotated.
+            angle (float): The angle in degrees by which the surface should be rotated.
+
+        example:
+            >>> from pyemmo.gmsh import GmshSurface, GmshPoint
+            >>> from math import pi
+            >>> surface = GmshSurface()
+            >>> rotationPoint = GmshPoint()
+            >>> surface.rotateY(rotationPoint, pi/2)
+        """
+        x, y, z = rotationPoint.coordinate
+        gmsh.model.occ.rotate([(2, self.id)], x, y, z, 0, 1, 0, angle)
+
+    def duplicate(self, name: str = "") -> "GmshSurface":
+        """Duplicates the surface.
+
+        Args:
+            name (str, optional): The name of the duplicated surface.
+
+        Returns:
+            GmshSurface: The duplicated surface.
+        """
+        outDimTags: list[DimTag] = gmsh.model.occ.copy([(2, self.id)])
+        if len(outDimTags) != 1:
+            raise ValueError("Error in duplicating surface!")
+        dup_surf = GmshSurface(tag=outDimTags[0][1], name=name)
+        return dup_surf
+
+    def mirror(self, planePoint, planeVector1, planeVector2, name=""):
+        raise NotImplementedError("Method not implemented yet!")
+
+    def combine(self, addSurf: "GmshSurface") -> "GmshSurface":
+        """Combines two surfaces to a new surface.
+
+        Args:
+            addSurf (GmshSurface): The surface to be added to the current surface.
+
+        Returns:
+            GmshSurface: The combined surface.
+        """
+        # TODO: add remove of old surfaces
+        outDimTags: list[DimTag] = gmsh.model.occ.fuse(
+            [(2, self.id)], [(2, addSurf.id)]
+        )
+        if len(outDimTags) != 1:
+            raise ValueError("Error in combining surfaces!")
+        comb_surf = GmshSurface(tag=outDimTags[0][1])
+        return comb_surf
+
+    def sortCurves(self):
+        # no need to sort gmsh curves sind _get_lineloop() returns the curves in the
+        # correct order
+        pass
+
+    def replaceCurve(self, oldCurve, newCurve):
+        raise RuntimeError("No need to replace curves in GmshSurface!")
+
+    def cutOut(self, tool: Surface) -> None:
+        # TODO: implement cutOut
+        raise NotImplementedError("Method not implemented yet!")
+
+    def calcCOG(self) -> Point:
+        # TODO: implement calcCOG
+        x, y, z = gmsh.model.occ.get_center_of_mass(2, self.id)
+        return Point(f"COG of Surface {self.id}", x, y, z)
