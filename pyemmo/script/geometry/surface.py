@@ -23,6 +23,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from numpy import mean
 
@@ -756,7 +757,7 @@ class Surface(Transformable):
         marker=".",
         markersize=1,
         tag=False,
-    ) -> None:
+    ) -> tuple[Figure, Axes]:
         """
         2D Line plot of the surface
         """
@@ -785,6 +786,7 @@ class Surface(Transformable):
                 xytext=(1, 1),
                 ha="left",
             )
+        return fig, ax
 
     def getBoundingBox(
         self, scalingFactor: float = 1.0
