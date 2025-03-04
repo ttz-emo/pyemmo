@@ -22,13 +22,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import gmsh
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from numpy import mean
 
 from ...definitions import LINE_COLOR
-from ..gmsh import DimTag
 from .circleArc import CircleArc
 from .line import Line
 from .point import Point
@@ -61,17 +59,13 @@ class Surface(Transformable):
         S1 = Surface('S1', [L1, L3, L2, L4])
     """
 
-    ID = 0
-    """Statische Variable zur ID-Verwaltung"""
-
-    ###Konstruktor der Klasse Surface
     def __init__(self, name: str, curves: list[Line | CircleArc | Spline]):
         """Create a surface object.
 
         Args:
             name (str): Surface name
             curves (List[Union[Line, CircleArc, Spline]]): Line loop defining the
-             surface boundary line (must be closed!)
+                surface boundary line (must be closed!)
         """
         ###Kurven die eine Fläche umschließen.
         if isinstance(curves, list) and curves:
@@ -83,16 +77,8 @@ class Surface(Transformable):
                     f"list ({type(curves)})."
                 )
             )
-        self.sortCurves()  # sort the curves (direction can be neglected with occ)
-        curve_loop = gmsh.model.occ.addCurveLoop([curve.id for curve in self.curve])
-        # TODO: Move this part of the code to the GmshSurface class!
-        # TODO: addCurveLoop() can create new line objects in gmsh to share touch points
-        #       e.g. when duplicating a surface object all the lines are individuals
-        #       (not sharing interface points). Then addCurveLoop() will generate new
-        #       lines and the original line IDs will be lost...
-        self.id = gmsh.model.occ.addPlaneSurface([curve_loop])
-        self.name: str = name  # set name after id was set to also set name in gmsh
-        self._color = ""  # mesh color
+        self.sortCurves()  # sort curves to make sure line loop is closed.
+        self.name: str = name
         # init because _cut(=tools) is only accessed by method ``cutOut``
         self._cut: list[Surface] = []
         self._isTool: bool = False
@@ -108,79 +94,19 @@ class Surface(Transformable):
             for point in self.allPoints:
                 if point not in otherPoints:
                     return False
-
             return True
         return False
 
     def __str__(self) -> str:
         msg = f"Surface of type: {type(self)}\n"
-        msg += f"ID: {self.id}\n"
         msg += f"Name: {self.name}\n"
         msg += f"Loop contains {len(self.curve)} curves:\n"
         for curve in self.curve:
             msg += (
-                f"  Curve L{curve.id}: P{curve.start_point.id} -> P{curve.end_point.id}"
+                f"  Curve ('{curve.name}'): Point ('{curve.start_point.name}') -> "
+                f"Point ('{curve.end_point.name}')\n"
             )
-            msg += "\n"
         return msg
-
-    # Wird eine Fläche erzeugt, bekommt sie automatisch eine eindeutige ID
-    # zugewiesen. Mit getNewID() wird eine neue ID erzeugt.
-    @classmethod
-    def _getNewID(cls) -> int:
-        Surface.ID = Surface.ID + 1
-        return Surface.ID
-
-    # --------- properties ----------
-    @property
-    def type(self) -> str:
-        """Mit getType() wird ein Identifier der Klasse als String zurück
-        gegeben.
-
-        Returns:
-            str: "Surface"
-        """
-        return "Surface"
-
-    # pylint: disable=locally-disabled, invalid-name
-    @property
-    def id(self) -> int:
-        """get global surface ID
-
-        Returns:
-            int: ID of surface
-        """
-        return self._id
-
-    @id.setter
-    def id(self, newID: int) -> None:
-        """setter of surface ID
-
-        Args:
-            newID (int): New ID of surface
-        """
-        if not isinstance(newID, int):
-            raise ValueError("Surface ID must be int.")
-        self._id = newID
-
-    @property
-    def name(self) -> str:
-        """Get name of surface.
-
-        Returns:
-            str: name
-        """
-        return self._name
-
-    @name.setter
-    def name(self, name: str):
-        """Set name of surface.
-
-        Args:
-            name (str): New surface name
-        """
-        gmsh.model.set_entity_name(2, self.id, name)
-        self._name = name
 
     @property
     def curve(self) -> list[Line | CircleArc | Spline]:
@@ -192,7 +118,6 @@ class Surface(Transformable):
         """
         return self._curve
 
-    # TODO: Rename "curve"
     @curve.setter
     def curve(self, curves: list[Line]) -> None:
         """Set line loop of surface
@@ -201,44 +126,6 @@ class Surface(Transformable):
             curves (list[Line]): Line loop with surface boundary lines.
         """
         self._curve = curves
-
-    # @property
-    # def meshColor(self) -> str:
-    #     """get the mesh color
-
-    #     Returns:
-    #         str: name of the color
-    #     """
-    #     return self._color
-
-    # @meshColor.setter
-    # def setMeshColor(self, color: str) -> str:
-    #     """Setter for Mesh Color
-
-    #     Args:
-    #         color (str): _description_
-
-    #     Returns:
-    #         str: _description_
-    #     """
-    #     self._color = color
-    # TODO: mesh color as property
-    def setMeshColor(self, color: str) -> None:
-        """set the mesh color
-
-        Args:
-            color (str): _description_
-        """
-        # FIXME: Add color check here!
-        self._color = color
-
-    def getMeshColor(self) -> str:
-        """get the mesh color
-
-        Returns:
-            str: name of the color
-        """
-        return self._color
 
     @property
     def delete(self) -> bool:
@@ -249,7 +136,6 @@ class Surface(Transformable):
     def delete(self, status: bool) -> None:
         """Delete Surface at the end of script generation"""
         if isinstance(status, bool):
-            # self._delete = True # bug fix
             self._delete = status
         else:
             raise TypeError("Delete status was not type bool!")
@@ -275,16 +161,6 @@ class Surface(Transformable):
         return []
 
     @property
-    def meanMeshLength(self) -> float:
-        """get the mean mesh length of all points of the surface.
-
-        Returns:
-            float: mean of mesh length of all points in meter
-        """
-        mlList = [p.meshLength for p in self.allPoints]
-        return mean(mlList)
-
-    @property
     def allPoints(self) -> list[Point]:
         """Get all Points of a Surface (including rotation points of circle arcs)
 
@@ -294,14 +170,17 @@ class Surface(Transformable):
         LineLoop = self.curve
         PointList: list[Point] = []
         for line in LineLoop:
-            if line.type == "CircleArc":
+            if isinstance(line, CircleArc):
+                # if is circle arc, get center point
                 CenterPoint = line.center
                 if CenterPoint not in PointList:
                     PointList.append(CenterPoint)
-            elif line.type == "Spline":
+            elif isinstance(line, Spline):
+                # if is spline get control points
                 for controlPoint in line.control_points:
                     if controlPoint not in PointList:
                         PointList.append(controlPoint)
+            # get start and end point
             startPoint = line.start_point
             endPoint = line.end_point
             if startPoint not in PointList:
@@ -333,9 +212,8 @@ class Surface(Transformable):
             dy (float): y-offset in m
             dz (float): z-offset in m
         """
-        gmsh.model.occ.translate([(2, self.id)], dx, dy, dz)
         for p in self.allPoints:
-            p.translate(dx, dy, dz, flag_gmsh=False)
+            p.translate(dx, dy, dz)
 
     def rotateZ(self, rotationPoint: Point, angle: float):
         """Mit rotateZ() wird eine Fläche um einen Rotationspunkt
@@ -350,10 +228,8 @@ class Surface(Transformable):
             rotationPoint (Point): Center point for rotation.
             angle (float): rotation angle in rad.
         """
-        x, y, z = rotationPoint.coordinate
-        gmsh.model.occ.rotate([(2, self.id)], x, y, z, 0, 0, 1, angle)
         for p in self.allPoints:
-            p.rotateZ(rotationPoint, angle, flag_gmsh=False)
+            p.rotateZ(rotationPoint, angle)
 
     def rotateX(self, rotationPoint: Point, angle: float):
         """Mit rotateX() wird eine Fläche um einen Rotationspunkt
@@ -370,7 +246,6 @@ class Surface(Transformable):
             angle (float): rotation angle in rad.
         """
         allP = self.allPoints
-
         for p in allP:
             p.rotateX(rotationPoint, angle)
 
@@ -413,15 +288,14 @@ class Surface(Transformable):
         newCurves: list[Line | CircleArc | Spline] = []
         for curve in self.curve:
             newCurves.append(curve.duplicate())
-        s = Surface(name, newCurves)
+        dup_surf = Surface(name, newCurves)
         if name == "":
             parentName = self.name
             if "_dup" not in parentName:
-                s.name = f"{parentName}_dup"
+                dup_surf.name = f"{parentName}_dup"
             else:
-                s.name = parentName
-        s._color = self._color
-        return s
+                dup_surf.name = parentName
+        return dup_surf
 
     def mirror(
         self,
@@ -446,7 +320,7 @@ class Surface(Transformable):
         Returns:
             Surface: Mirrored surface.
         """
-        allCurve = []
+        allCurve: list[Line] = []
         for aC in self._curve:
             allCurve.append(aC)
         allCurve.reverse()
@@ -454,16 +328,14 @@ class Surface(Transformable):
         for aC in allCurve:
             allNewCurve.append(aC.mirror(planePoint, planeVector1, planeVector2))
 
-        s = Surface(self._name, allNewCurve)
+        mirr_surf = Surface(self._name, allNewCurve)
 
         if name == "":
-            s.name = f"s_{self.id}"
+            mirr_surf.name = f"surf_{self.name}_mirrored"
         else:
-            s.name = name
+            mirr_surf.name = name
 
-        s.setMeshColor(self.getMeshColor())
-
-        return s
+        return mirr_surf
 
     def combine(self, addSurf: Surface) -> Surface:
         """combine two surfaces.
@@ -482,10 +354,12 @@ class Surface(Transformable):
         """
         if addSurf == self:
             return self
-        touchpoints = None  # default setting of touching points (start and endpoint of interface line)
+        touchpoints = None  # default setting of touching points (start and endpoint of
+        # interface line)
         curves = self.curve.copy()  # copy curve lists
         addCurves = addSurf.curve.copy()
-        # compare each curve in the curve loop to check if there is a matching line = interface line
+        # compare each curve in the curve loop to check if there is a matching line =
+        # interface line
         for curve in curves:
             for addCurve in addCurves:
                 if curve.arePointsEqual(addCurve):
@@ -551,14 +425,18 @@ class Surface(Transformable):
             newSurf.name = f"combinedLine_{sName}_{addName}"
             newSurf.curve = newCurves
             return newSurf
-        else:
-            mssg = (
-                f"Cound not combine surfaces ({self.name} and "
-                f"{addSurf.name}). No intersection curve was found!"
-            )
-            raise (RuntimeError(mssg))
+        raise RuntimeError(
+            f"Cound not combine surfaces ({self.name} and {addSurf.name}). "
+            "No intersection curve was found!"
+        )
 
     def recombineCurves(self) -> None:
+        """Recombine the curves bounding the surface to a loop with minimal number of
+        curves. This recombines straight lines and arcs.
+
+        Returns:
+            _type_: _description_
+        """
         oldLoop = self.curve
         newLoop: list[Line | CircleArc | Spline] = []
         while oldLoop:
@@ -574,8 +452,8 @@ class Surface(Transformable):
                     continue
                 except TypeError:
                     continue
-                except Exception as e:
-                    raise (e)
+                except Exception as exce:
+                    raise exce
             if newCurve:
                 oldLoop.remove(otherCurve)
                 newLoop.append(newCurve)
@@ -660,7 +538,6 @@ class Surface(Transformable):
         ToolSurface.setTool()  # set to the tool surface
         if not keepTool:
             ToolSurface.delete = True
-        cut_dim_tags: list[DimTag] = [(2, ToolSurface.id)]
         # cut out tools of tools aswell!
         tools = ToolSurface.tools
         while tools:
@@ -668,40 +545,10 @@ class Surface(Transformable):
             new_tools = []
             for tool in tools:
                 # add tool surface to cut out
-                cut_dim_tags.append((2, tool.id))
                 if tool.tools:
                     # if tool itself has tools
                     new_tools.extend(tool.tools)  # update new_tools list
             tools = new_tools  # reset tools
-
-        out_dim_tags, out_dim_tags_map = gmsh.model.occ.cut(
-            [(2, self._id)], cut_dim_tags, removeTool=ToolSurface.delete
-        )
-        self.id = out_dim_tags[0][1]  # CHECK
-
-    def setMeshLength(self, meshLength: float) -> None:
-        """set the meshLength of all points of a surface.
-
-        Args:
-            meshLength (float): mesh length to be set for all points
-        """
-        pointList = self.allPoints
-        for point in pointList:
-            point.meshLength = meshLength
-
-    def getMinMeshLength(self) -> float:
-        """get the minimum meshLength of all points of the surface.
-
-        Returns:
-            float: min mesh length of all points
-        """
-        pointList = self.allPoints
-        ml = pointList.pop().meshLength
-        for point in pointList:
-            nml = point.meshLength
-            if nml < ml:
-                ml = nml
-        return ml
 
     def calcCOG(self) -> Point:
         """
@@ -726,13 +573,7 @@ class Surface(Transformable):
             x.append(coords[0])
             y.append(coords[1])
             z.append(coords[2])
-        return Point(
-            name=("CP_" + self.name),
-            x=mean(x),
-            y=mean(y),
-            z=mean(z),
-            meshLength=1,
-        )
+        return Point(name=("CP_" + self.name), x=mean(x), y=mean(y), z=mean(z))
 
     def plot(
         self,
@@ -765,7 +606,7 @@ class Surface(Transformable):
         if tag:
             cog = self.calcCOG().coordinate
             ax.annotate(
-                f"""S {self.id} ("{self.name}")""",
+                f"""S ("{self.name}")""",
                 (cog[0], cog[1]),
                 textcoords="offset points",
                 xytext=(1, 1),
@@ -785,7 +626,7 @@ class Surface(Transformable):
         """
         minx, maxx, miny, maxy = 0.0, 0.0, 0.0, 0.0
         for point in self.points:
-            x, y, z = point.coordinate
+            x, y, _ = point.coordinate
             if x < minx:
                 minx = x
             elif x > maxx:

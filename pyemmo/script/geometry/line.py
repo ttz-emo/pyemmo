@@ -53,10 +53,6 @@ class Line(Transformable):
         L1 = pyd.Line('l1', P1, P2)
     """
 
-    # Die statische Variable ID wird durch die Methode getNewID() hochgezählt. Diese
-    # Variable wird für die automatische ID-Vergabe der Geraden bzw. Kurven verwendet!
-    ID: int = 0
-
     def __init__(
         self,
         name: str,
@@ -75,8 +71,6 @@ class Line(Transformable):
                     f"{start_point.coordinate} - {end_point.coordinate}."
                 )
             )
-        # set ID of line
-        self.id = self._getNewID()
         ###Name der Linie.
         self.name = name
 
@@ -86,59 +80,6 @@ class Line(Transformable):
             # check that all points are equal
             return self.arePointsEqual(other)
         return False
-
-    @classmethod
-    def _getNewID(cls) -> int:
-        """
-        Class method: Can not access self!
-        Wird eine Linie erzeugt, bekommt sie automatisch eine eindeutige ID zugewiesen.
-        Mit _getNewID() wird eine neue ID erzeugt.
-
-        Returns:
-            int: New unique line ID
-        """
-        Line.ID = Line.ID + 1
-        return Line.ID
-
-    # pylint: disable=locally-disabled, invalid-name
-    @property
-    def id(self) -> int:
-        """get global line ID
-
-        Returns:
-            int: ID of line
-        """
-        return self._id
-
-    @id.setter
-    def id(self, newID: int) -> None:
-        """setter of line ID
-
-        Args:
-            newID (int): New ID of Line
-        """
-        if isinstance(newID, int):
-            self._id = newID
-        else:
-            raise TypeError("Line ID must be an integer!")
-
-    @property
-    def name(self) -> str:
-        """Get name of line.
-
-        Returns:
-            str: name
-        """
-        return self._name
-
-    @name.setter
-    def name(self, name: str):
-        """Set name of line .
-
-        Args:
-            name (str): New line name
-        """
-        self._name = name
 
     @property
     def start_point(self) -> Point:
@@ -208,7 +149,6 @@ class Line(Transformable):
             x=(self.start_point.coordinate[0] + self.end_point.coordinate[0]) / 2,
             y=(self.start_point.coordinate[1] + self.end_point.coordinate[1]) / 2,
             z=(self.start_point.coordinate[2] + self.end_point.coordinate[2]) / 2,
-            meshLength=(self.start_point.meshLength + self.end_point.meshLength) / 2,
         )
 
     @property
@@ -279,7 +219,10 @@ class Line(Transformable):
             L1 = Line('l1', P1, P2)\n
             L1.rotateZ(P0, pi)\n
         """
-        x, y, z = rotationPoint.coordinate
+        if not isinstance(rotationPoint, Point):
+            raise TypeError("Rotation point must be a Point object!")
+        if not isinstance(angle, (int, float)):
+            raise TypeError("Angle must be a number!")
         self.start_point.rotateZ(rotationPoint, angle)
         self.end_point.rotateZ(rotationPoint, angle)
 
@@ -298,11 +241,14 @@ class Line(Transformable):
             L1.rotateY(P0, pi)\n
 
         """
-        x, y, z = rotationPoint.coordinate
+        if not isinstance(rotationPoint, Point):
+            raise TypeError("Rotation point must be a Point object!")
+        if not isinstance(angle, (int, float)):
+            raise TypeError("Angle must be a number!")
         self.start_point.rotateY(rotationPoint, angle)
         self.end_point.rotateY(rotationPoint, angle)
 
-    def rotateX(self, rotationPoint: Point, angle):
+    def rotateX(self, rotationPoint: Point, angle: float):
         """
         Mit rotateX() wird eine Gerade um einen Rotationspunkt (rotationPoint) und die
         X-Achse mit einem definierten Winkel rotiert.
@@ -317,7 +263,10 @@ class Line(Transformable):
             L1.rotateX(P0, pi)\n
 
         """
-        x, y, z = rotationPoint.coordinate
+        if not isinstance(rotationPoint, Point):
+            raise TypeError("Rotation point must be a Point object!")
+        if not isinstance(angle, (int, float)):
+            raise TypeError("Angle must be a number!")
         self.start_point.rotateX(rotationPoint, angle)
         self.end_point.rotateX(rotationPoint, angle)
 
@@ -373,7 +322,7 @@ class Line(Transformable):
         p2 = self.end_point.mirror(planePoint, planeVector1, planeVector2)
         mirLine = Line(self._name, p2, p1)
         if name == "":
-            mirLine.name = "L_" + str(abs(mirLine.id))
+            mirLine.name = f"mirrored line ({self.name})"
         else:
             mirLine.name = name
         return mirLine
@@ -423,7 +372,7 @@ class Line(Transformable):
         if tag:
             # add tag to line
             ax.annotate(
-                f"""L {self.id} ("{self.name}")""",
+                f"""L ("{self.name}")""",
                 (
                     sum([startCoords[0], endCoords[0]]) / 2,
                     sum([startCoords[1], endCoords[1]]) / 2,

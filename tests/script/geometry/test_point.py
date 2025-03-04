@@ -18,42 +18,38 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-import gmsh
 import numpy as np
 import pytest
 
 from pyemmo.script.geometry.point import Point
 
-init_cases = [("Point 1", 0, 1, 0, 1), ("Point 2", 1, 0, 0, 1)]
+init_cases = [("Point 1", 0, 1, 0), ("Point 2", 1, 0, 0)]
 
 
 class TestPoint:
 
     # @pytest.mark.parametrize("name, sp, ep", init_cases)
     def setup_method(self):
-        gmsh.initialize()
-        gmsh.model.add("test PyEMMO Point class")
+        pass
         # self.line = Line(name=name, startPoint=sp, endPoint=ep)
 
     def teardown_method(self):
-        gmsh.finalize()
+        pass
 
-    @pytest.mark.parametrize("name, x,  y, z, ml", init_cases)
-    def test_init(self, name, x, y, z, ml):
-        point = Point(name, x, y, z, ml)
+    @pytest.mark.parametrize("name, x,  y, z", init_cases)
+    def test_init(self, name, x, y, z):
+        point = Point(name, x, y, z)
         assert point.name == name
         assert point.coordinate == (x, y, z)
         assert point.x == x
         assert point.y == y
         assert point.z == z
-        assert point.id == 1
-        assert gmsh.model.get_entity_name(dim=0, tag=1) == name
 
     @pytest.mark.parametrize(
         "new_x", [0, 1, -1, pytest.param("a", marks=pytest.mark.xfail)]
     )
     def test_reset_x(self, new_x):
-        point = Point("test point", 0, 0, 0, 1)
+        point = Point("test point", 0, 0, 0)
         point.x = new_x
         assert point.coordinate[0] == new_x
         assert point.x == new_x
@@ -61,11 +57,11 @@ class TestPoint:
     @pytest.mark.parametrize(
         "point, expected_angle",
         [
-            (Point("test", 0, 0, 0, 1), 0.0),
-            (Point("test", 1, 1, 0, 1), np.radians(45)),
-            (Point("test", -1, 1, 0, 1), np.radians(135)),
-            (Point("test", -1, 0, 0, 1), np.radians(180)),
-            (Point("test", 0, -1, 0, 1), np.radians(270)),
+            (Point("test", 0, 0, 0), 0.0),
+            (Point("test", 1, 1, 0), np.radians(45)),
+            (Point("test", -1, 1, 0), np.radians(135)),
+            (Point("test", -1, 0, 0), np.radians(180)),
+            (Point("test", 0, -1, 0), np.radians(270)),
         ],
     )
     def test_get_angle_to_x(self, point: Point, expected_angle):
@@ -75,11 +71,11 @@ class TestPoint:
     @pytest.mark.parametrize(
         "point, expected_angle",
         [
-            (Point("test", 0, 0, 0, 1), 0.0),
-            (Point("test", 1, 1, 0, 1), 45),
-            (Point("test", -1, 1, 0, 1), 135),
-            (Point("test", -1, 0, 0, 1), 180),
-            (Point("test", 0, -1, 0, 1), 270),
+            (Point("test", 0, 0, 0), 0.0),
+            (Point("test", 1, 1, 0), 45),
+            (Point("test", -1, 1, 0), 135),
+            (Point("test", -1, 0, 0), 180),
+            (Point("test", 0, -1, 0), 270),
         ],
     )
     def test_get_angle_to_x_deg(self, point: Point, expected_angle):

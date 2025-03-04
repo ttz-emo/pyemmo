@@ -19,31 +19,16 @@
 #
 from typing import List, Literal, Union
 
-import gmsh
 import matplotlib.pyplot as plt
 import numpy as np
 from splines import Bernstein, CatmullRom, Natural
 
 from ...definitions import LINE_COLOR, POINT_COLOR
+from . import defaultCenterPoint
 from .line import Line
 from .point import Point
 
 NBR_INTERPOLATION_POINTS = 100
-
-###
-# Eine Instanz der Unterklasse Spilne ist ein Polynomzug, zwischen beliebig vielen Punkten (Objekte der Klasse Point) im dreidimensionalen Raum.
-# Spline-Befehl aus Gmsh erzeugt einie Linie, die durch all gegebenen Punkte laufen.
-#
-#   Beispiel:
-#
-#       import pyemmo as pyd
-#       P0 = pyd.Point('p0', 0, 0, 0, 0.3)
-#       P1 = pyd.Point('p1', 1, 0, 0, 0.3)
-#       P2 = pyd.Point('p2', 1, 1, 0, 0.3)
-#       P3 = pyd.Point('p3', 0, 1, 0, 0.3)
-#       SP1 = pyd.Spline('sp1', P0, P3, [P1, P2])
-#
-###
 
 
 class Spline(Line):
@@ -77,22 +62,6 @@ class Spline(Line):
         self.control_points = control_points
         # 0: Catmull-Rom Spline, 1: Bezierkurve, 2: Basis-Spline
         self._spline_type = spline_type
-        point_list = (
-            [start_point.id] + [cp.id for cp in control_points] + [end_point.id]
-        )
-        if spline_type in (0, 2):
-            self._id = gmsh.model.occ.addSpline(point_list)
-        else:
-            self._id = gmsh.model.occ.addBezier(point_list)
-
-    @property
-    def type(self) -> Literal["Spline"]:
-        """Mit type wird ein Identifier der Klasse als String zurück gegeben.
-
-        Returns:
-            Literal["Spline"]: Class identifier
-        """
-        return "Spline"
 
     @property
     def spline_type(self) -> Literal[0, 1, 2]:
@@ -215,7 +184,7 @@ class Spline(Line):
         for p in self._control_points:
             p.rotateY(rotationPoint, angle)
 
-    def rotateZ(self, rotationPoint, angle):
+    def rotateZ(self, rotationPoint: Point = defaultCenterPoint, angle: float = 0.0):
         """Mit rotateZ() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die
         Z-Achse mit einem definierten Winkel rotiert.
 
@@ -296,7 +265,7 @@ class Spline(Line):
         cp.reverse()
         SP = Spline(self._name, p2, p1, cp)
         if name == "":
-            SP.name = "SP_" + str(abs(SP.id))
+            SP.name = f"mirrored spline {self.name}"
         else:
             SP.name = name
         return SP
@@ -361,7 +330,7 @@ class Spline(Line):
         if tag:
             # add tag to line
             ax.annotate(
-                f"""Spline {self.id} ("{self.name}")""",
+                f"""Spline ("{self.name}")""",
                 spline.evaluate(0.5),
                 textcoords="offset points",
                 xytext=(1, 1),

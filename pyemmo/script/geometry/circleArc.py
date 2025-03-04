@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences
+# Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -19,9 +20,8 @@
 #
 """Module for CircleArc Geometry"""
 from math import atan2, cos, isclose, sin
-from typing import Literal, Tuple
+from typing import Tuple
 
-import gmsh
 from matplotlib import pyplot as plt
 from matplotlib.patches import Arc
 from numpy import pi, rad2deg
@@ -75,10 +75,6 @@ class CircleArc(Line):
                 "If you really want to draw a full circle  consider using 4 circle arcs."
             )
         self.center: Point = centerPoint
-
-        self.id = gmsh.model.occ.addCircleArc(
-            startPoint.id, centerPoint.id, endPoint.id
-        )
         # Name der Linie.
         self.name = name
         # make sure that start and end point have the same distance (radius)
@@ -112,17 +108,13 @@ class CircleArc(Line):
         Args:
             newP (Point): New center point of CircleArc
         """
+        if not isinstance(newCenterPoint, Point):
+            raise TypeError(
+                f"Center point of CircleArc '{self.name}' must be a Point object, "
+                f"but is {type(newCenterPoint)}"
+            )
         self._center = newCenterPoint
         # FIXME: Make sure other points are changed too, !if position changes!
-
-    @property
-    def type(self) -> Literal["CircleArc"]:
-        """getter of curve type
-
-        Returns:
-            str: Literal 'CircleArc'
-        """
-        return "CircleArc"
 
     def translate(self, dx: float, dy: float, dz: float) -> None:
         """Mit translate() kann ein Kreisbogen linear verschoben werden. Die
@@ -177,8 +169,6 @@ class CircleArc(Line):
         self.end_point.rotateY(rotationPoint, angle)
         self._center.rotateY(rotationPoint, angle)
 
-    ##
-    ###
     def rotateZ(self, rotationPoint=defaultCenterPoint, angle=0.0) -> None:
         """Mit rotateZ() wird ein Kreisbogen um einen Rotationspunkt
         (rotationPoint) und die Z-Achse mit einem definierten Winkel rotiert.
@@ -197,8 +187,6 @@ class CircleArc(Line):
         self.start_point.rotateZ(rotationPoint, angle)
         self.end_point.rotateZ(rotationPoint, angle)
         self._center.rotateZ(rotationPoint, angle)
-        x, y, z = rotationPoint.coordinate
-        gmsh.model.occ.rotate([(1, self.id)], x, y, z, 0, 0, 1, angle=angle)
 
     def duplicate(self, name="") -> "CircleArc":
         """Mit duplicate() wird einer Kreisbogen mit gleichen Eigenschaften zum
@@ -269,7 +257,7 @@ class CircleArc(Line):
         centerPoint = self._center.mirror(planePoint, planeVector1, planeVector2)
         mirArc = CircleArc(self.name, endPoint, centerPoint, startPoint)
         if name == "":
-            mirArc.name = "CA_" + str(abs(mirArc.id))
+            mirArc.name = f"mirrored CircleArc {self.name}"
         else:
             mirArc.name = name
         return mirArc
@@ -308,8 +296,7 @@ class CircleArc(Line):
         angle = atan2(sin(angleDiff), cos(angleDiff))
         if inDeg:
             return rad2deg(angle)
-        else:
-            return angle
+        return angle
 
     @property
     def radius(self) -> float:
@@ -333,10 +320,10 @@ class CircleArc(Line):
         ):
             radius = center.calcDist(startPoint.coordinate)
             return radius
-        # pylint: disable=locally-disabled,  line-too-long
         raise (
             ValueError(
-                f"Start and end point of circle arc '{self.name}' dont have the same distance to the center point:"
+                f"Start and end point of circle arc '{self.name}' "
+                "dont have the same distance to the center point:"
                 f"Distance Pc-P1={center.calcDist(startPoint.coordinate)}; "
                 f"Distance Pc-P2 = {center.calcDist(endPoint.coordinate)}."
             )
@@ -359,7 +346,7 @@ class CircleArc(Line):
             markersize (float, optional): Defaults to 1.
             linewidth (float): Defaults to 0.5.
             color (list, optional): Defaults to [random() for i in range(3)].
-            tag (bool): Flag to print arc id and name like "C `L_ID` ("`L_Name`")"
+            tag (bool): Flag to print name like "C ("`L_Name`")"
             and point tags if marker is not None.
         """
         # pylint: disable=locally-disabled, too-many-locals, too-many-arguments
@@ -400,7 +387,7 @@ class CircleArc(Line):
             tagPoint.rotateZ(centerPoint, (theta2 - theta1) / 2)
             tagCo = tagPoint.coordinate
             axes.annotate(
-                f"""C {self.id} ("{self.name}")""",
+                f"""CA ("{self.name}")""",
                 (tagCo[0], tagCo[1]),
                 textcoords="offset points",
                 xytext=(1, 1),

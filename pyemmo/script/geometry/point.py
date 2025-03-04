@@ -19,13 +19,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for geometry element Point"""
-import logging
 from math import atan2, cos, degrees, sin
 from typing import TYPE_CHECKING, Tuple, Union
-
-import gmsh
-
-gmsh.initialize()
 
 import matplotlib.pyplot as plt
 from numpy import array, array_equal, cross, pi, vdot
@@ -40,30 +35,16 @@ if TYPE_CHECKING:
     from .line import Line
 
 
-###
-# Eine Instanz der Klasse Point ist ein Punkt im dreidimensionalen Raum.
-#
-#   Beispiel:
-#
-#       import pyemmo as pyd
-#       P1 = pyd.Point(name = 'P1', x = 0.0, y = 1.0, z = 0.0, meshLength = 0.3)
-###
 class Point(Transformable):
     """
     Eine Instanz der Klasse Point ist ein Punkt im dreidimensionalen Raum.
 
     Beispiel:
         import pyemmo as pyd
-        P1 = pyd.Point(name = 'P1', x = 0.0, y = 1.0, z = 0.0, meshLength = 0.3)
+        P1 = pyd.Point(name = 'P1', x = 0.0, y = 1.0, z = 0.0)
     """
 
-    # Die statische Variable ID wird durch die Methode getNewID() hochgezählt.
-    # Diese Variable wird für die automatische ID-Vergabe der Punkte verwendet!
-    pointID = 0
-
-    def __init__(
-        self, name: str, x: float, y: float, z: float, meshLength: float, tag: int = -1
-    ):
+    def __init__(self, name: str, x: float, y: float, z: float):
         """Konstruktor der Klasse Point.
 
         Args:
@@ -71,19 +52,9 @@ class Point(Transformable):
             x (float): x-Coordinate
             y (float): y-Coordinate
             z (float): z-Coordinate
-            meshLength (float): Mesh length of point in meter.
-            tag (int, optional): ID of point. Defaults to unique point ID (internal
-                class variable).
         """
         self.name = name
         self.coordinate = (x, y, z)
-        self.meshLength = meshLength
-
-        # set point id
-        if tag == -1:
-            self.id = self._getNewID()  # no id given
-        else:
-            self.id = tag  # id given
 
     # def __eq__(self, x) -> bool:
     #     """Overload the "==" operator to compare if points are equal in a given tolerance"""
@@ -99,61 +70,6 @@ class Point(Transformable):
     #         return True
     #     else:
     #         return False
-
-    # ------ attributes ------
-
-    @classmethod
-    def _getNewID(cls) -> int:
-        """Wird ein Punkt erzeugt, bekommt er automatisch eine eindeutige ID zugewiesen.
-        Mit getNewID() wird eine neue ID erzeugt.
-
-        Returns:
-            int: New unique ID for point.
-        """
-        Point.pointID = Point.pointID + 1
-        return Point.pointID
-
-    # pylint: disable=locally-disabled, invalid-name
-    @property
-    def id(self) -> int:
-        """get global point ID
-
-        Returns:
-            int: ID of point
-        """
-        return self._id
-
-    @id.setter
-    def id(self, newID: int) -> None:
-        """setter of point ID
-
-        Args:
-            newID (int): New ID of point
-        """
-        if newID % 1 == 0:
-            self._id = int(newID)
-        else:
-            raise ValueError("Point ID must be an integer!")
-
-    @property
-    def name(self) -> str:
-        """Get name of point.
-
-        Returns:
-            str: name
-        """
-        return self._name
-
-    @name.setter
-    def name(self, name: str):
-        """Set name of point.
-
-        Args:
-            name (str): New Point name
-        """
-        if not isinstance(name, str):
-            raise TypeError(f"Name must be string, not {type(name)}")
-        self._name = name
 
     @property
     def x(self) -> float:
@@ -243,28 +159,6 @@ class Point(Transformable):
         self.y = coordinate[1]
         self.z = coordinate[2]
 
-    @property
-    def meshLength(self) -> float:
-        """get mesh length of point
-
-        Returns:
-            float: mesh length
-        """
-        return self._meshLength
-
-    @meshLength.setter
-    def meshLength(self, meshLength: float):
-        """Set mesh length of point.
-
-        Args:
-            meshLength (float): mesh length
-        """
-        if not isinstance(meshLength, (int, float)):
-            raise ValueError(
-                "Mesh length must be int or float. (Mesh length of Point in meter)"
-            )
-        self._meshLength = meshLength
-
     # ------ methods ------
 
     def isEqual(self, compPoint: "Point", tol=DEFAULT_GEO_TOL):
@@ -280,30 +174,26 @@ class Point(Transformable):
         return False
 
     def translate(self, dx: float, dy: float, dz: float) -> None:
-        """Mit translate() kann ein Punkt linear verschoben werden. Die Inputvariablen dx, dy und dz
-        beschreiben die Verschiebungsfaktoren in der x-, y- und z- Richtung.
+        """Linear translation of the point by dx, dy and dz.
 
         Args:
             dx (float): x offset
             dy (float): y offset
             dz (float): z offset
-            flag_gmsh (bool): Flag to control if the operation should be run in gmsh
-                aswell. Defaults to True.
         """
         self._x = self._x + dx
         self._y = self._y + dy
         self._z = self._z + dz
 
     def rotateZ(self, rotationPoint: "Point", angle: float):
-        """Mit rotateZ() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die Z-Achse mit
-        einem definierten Winkel rotiert.
+        """rotate a point around a rotation point and the Z-axis with a defined angle.
 
         Args:
             rotationPoint (Point): Centerpoint of rotation.
             angle (float): Rotational angle in radians.
         """
         # durch Verschiebung Rotation im Ursprung!
-        x, y, z = rotationPoint.coordinate
+        x, y, _ = rotationPoint.coordinate
         self.translate(-x, -y, 0)
         oldx = self._x
         oldy = self._y
@@ -312,8 +202,8 @@ class Point(Transformable):
         self.translate(x, y, 0)
 
     def rotateX(self, rotationPoint: "Point", angle: float):
-        """Mit rotateX() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die X-Achse mit
-        einem definierten Winkel rotiert.
+        """Mit rotateX() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die
+        X-Achse mit einem definierten Winkel rotiert.
 
         Args:
             rotationPoint (Point): Centerpoint of rotation.
@@ -329,8 +219,8 @@ class Point(Transformable):
         self.translate(rotPointCoords[0], rotPointCoords[1], rotPointCoords[2])
 
     def rotateY(self, rotationPoint: "Point", angle: float):
-        """Mit rotateY() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die Y-Achse mit
-        einem definierten Winkel rotiert.
+        """Mit rotateY() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die
+        Y-Achse mit einem definierten Winkel rotiert.
 
         Args:
             rotationPoint (Point): Centerpoint of rotation.
@@ -347,18 +237,17 @@ class Point(Transformable):
         self.translate(rotPointCoords[0], rotPointCoords[1], rotPointCoords[2])
 
     def duplicate(self, name="") -> "Point":
-        """Mit duplicate() wird ein neuer Punkt mit gleichen Koordinaten erzeugt. Dieser Punkt hat
-        jedoch eine unterschiedliche ID zum Originalpunkt.
+        """Mit duplicate() wird ein neuer Punkt mit gleichen Koordinaten erzeugt.
 
         Args:
-            name (str, optional): Name of new Point. Defaults to original point name + "_dup".
+            name (str, optional): Name of new Point. Defaults to original point name +
+                "_dup".
 
         Returns:
             Point: Duplicate of point.
         """
         x, y, z = self.coordinate
-        meshLen = self.meshLength
-        dupPoint = Point(name, x, y, z, meshLen)
+        dupPoint = Point(name, x, y, z)
         if not name:
             parentName = self.name
             if "_dup" not in parentName:
@@ -376,9 +265,9 @@ class Point(Transformable):
         planeVector2: "Line",
         name: str = None,
     ) -> "Point":
-        """Mit mirror() kann ein Punkt an einer definierten Ebene gespiegelt werden. Ein Bildpunkt
-        wird hierbei erzeugt. Die Spiegelebene wird durch einen Aufpunkt (planePoint) und 2 Vektoren
-        (planeVector1 und planeVector2) beschrieben.
+        """Mit mirror() kann ein Punkt an einer definierten Ebene gespiegelt werden.
+        Ein Bildpunkt wird hierbei erzeugt. Die Spiegelebene wird durch einen Aufpunkt
+        (planePoint) und 2 Vektoren (planeVector1 und planeVector2) beschrieben.
 
         Args:
             planePoint (Point)
@@ -387,16 +276,16 @@ class Point(Transformable):
             name (str, optional): Name of new mirrored point. Defaults to None.
 
         Returns:
-            Point or None: Mirrored point or None if no mirror plane could be created (plane vetors
-            parallel)
+            Point or None: Mirrored point or None if no mirror plane could be created
+            (plane vetors parallel)
 
         Beispiel:
-            P0 = Point('P0', 0, 0, 0, 1) \n
-            Py = Point('Py', 0, 1, 0, 1) \n
-            Pz = Point('Pz', 0, 0, 1, 1) \n
+            P0 = Point('P0', 0, 0, 0) \n
+            Py = Point('Py', 0, 1, 0) \n
+            Pz = Point('Pz', 0, 0, 1) \n
             yAxis = Line(P0, Py) \n
             zAxis = Line(P0, Pz) \n
-            P1 = Point('P1', 1, 0, 0, 0.3) \n
+            P1 = Point('P1', 1, 0, 0) \n
             P2 = P1.mirror(P0, yAxis, zAxis) \n
         """
         # 1. Normalenvektor der Ebene E bestimmen (Ebene aus den beiden Inputvektoren und Aufpunkt)
@@ -442,40 +331,13 @@ class Point(Transformable):
         # 6) Mirror point is intersection plus that vector
         mirPoint = intersectionPoint + vecPtoS
 
-        R_Point = Point(
-            self.name, mirPoint[0], mirPoint[1], mirPoint[2], self._meshLength
-        )
+        R_Point = Point(self.name, mirPoint[0], mirPoint[1], mirPoint[2])
         if not name:
-            R_Point.name = "P_" + str(abs(R_Point.id))
+            R_Point.name = f"mirrored point {self.name}"
         else:
             R_Point.name = name
 
         return R_Point
-
-    def addToScript(self, script: "Script") -> Union["Point", None]:
-        """
-        Mit addToScript wird der Punkt zum Skriptobjekt übergeben und in
-        gmsh-Syntax übersetzt. Transformationen von Punkten sind nach dem Aufruf
-        nicht mehr erlaubt, da die neuen Koordinaten der Punkte nicht mehr erfasst
-        werden. Diese Methode sollte stets nur in Kombination mit generateScript
-        (Klassenmethode von Script) verwendet werden.
-
-            Input:
-                script : Script
-            Output:
-                None
-
-            Beispiel:
-                myScript = Script(...)
-                P1.addToScript(myScript)
-
-            Returns:
-                _type_: _description_
-        """
-        if self.isDrawn():
-            logging.warn(f"Point '{self.name}' is allready in a script.")
-            return None
-        return script._addPoint(self)
 
     def getAngleToX(
         self,
@@ -500,11 +362,17 @@ class Point(Transformable):
         if isinstance(CenterPoint, tuple):
             if len(CenterPoint) == 3:
                 cCoords = CenterPoint
+            else:
+                raise ValueError(
+                    "CenterPoint must be a tuple with 3 coordinates or class Point!"
+                )
         else:
             try:
                 cCoords = CenterPoint.coordinate
-            except AttributeError:
-                ValueError("CenterPoint was not class Point or array of coordinates")
+            except AttributeError as exce:
+                raise ValueError(
+                    "CenterPoint was not class Point or array of coordinates!"
+                ) from exce
             except Exception as exce:
                 raise exce
         x, y, _ = self.coordinate
@@ -528,8 +396,8 @@ class Point(Transformable):
         return angle if angle >= 0 else angle + 2 * pi
 
     def calcDist(self, xyz=(0, 0, 0)) -> float:
-        """Mit calcDist() der Abstand zwischen dem Punkt (self) und den Koordinaten xyz
-        zurückgegeben (Euklidische Norm).
+        """calculate the distance between the point and the coordinates xyz by the
+        Euclidean norm.
 
         Args:
             xyz (tuple, optional): Coordinates of distance to calculate. Defaults to
@@ -544,7 +412,7 @@ class Point(Transformable):
 
     @property
     def radius(self) -> float:
-        """get the radius to the center point (0,0,0)
+        """get the radius (equals to the distance to the center point)
 
         Returns:
             float: distance to center point (radius)
@@ -566,7 +434,7 @@ class Point(Transformable):
             marker (str, optional): Defaults to "o".
             markersize (float, optional): Defaults to 1.0.
             color (list, optional): Defaults to DEFAULT_POINT_COLOR.
-            tag (bool): Flag to print point id and name like "P `P_ID` ("`P_Name`")"
+            tag (bool): Flag to print point id and name like "P ("`P_Name`")"
         """
         coords = self.coordinate
         if fig is None:
@@ -584,7 +452,7 @@ class Point(Transformable):
         )
         if tag:
             ax.annotate(
-                f"""P {self.id} ("{self.name}")""",
+                f"""P ("{self.name}")""",
                 (coords[0], coords[1]),
                 textcoords="offset points",
                 xytext=(1, 1),

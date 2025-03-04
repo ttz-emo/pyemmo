@@ -93,7 +93,7 @@ class TestRotorIPMSM(unittest.TestCase):
             "r_We": 0.1,
             "r_R": 1.1,
             "meshLength": 0.01,
-            "machineCentrePoint": Point(name="P_name", x=0, y=0, z=0, meshLength=0.1),
+            "machineCentrePoint": Point(name="P_name", x=0, y=0, z=0),
         }
 
         # Run
