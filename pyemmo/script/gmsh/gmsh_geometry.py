@@ -19,10 +19,15 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module gmsh_geometry.py for the abstract class GmshGeometry."""
+import numbers
 from abc import ABC, abstractmethod
 from typing import Literal
 
 import gmsh
+
+from ..geometry import defaultCenterPoint
+from ..geometry.point import Point
+from . import DimTag
 
 
 class GmshGeometry(ABC):
@@ -94,3 +99,139 @@ class GmshGeometry(ABC):
         gmsh.model.occ.synchronize()
         gmsh.model.setEntityName(1, self.id, new_name)
         self._name = new_name
+
+    def translate(self, dx, dy, dz):
+        """
+        Translates the geometric entity by the given offsets in the x, y, and z
+        directions.
+
+        Parameters:
+        dx (float): The offset in the x direction.
+        dy (float): The offset in the y direction.
+        dz (float): The offset in the z direction.
+        """
+        if not all(isinstance(shift, numbers.Number) for shift in (dx, dy, dz)):
+            raise TypeError("Translation inputs dx,dy,dz must be a number!")
+        gmsh.model.occ.translate([(self.dim, self.id)], dx, dy, dz)
+
+    def rotateZ(self, rotationPoint: Point = defaultCenterPoint, angle=0.0):
+        """Mit rotateZ() wird eine Gerade um einen Rotationspunkt (rotationPoint) und die
+        Z-Achse mit einem definierten Winkel rotiert.
+
+        Args:
+            - rotationPoint (Point, optional): Rotation center point.
+            Defaults to gobal center point at (0,0,0).
+            - angle (float, optional): Rotation angle in rad. Defaults to 0.0.
+
+        Beispiel:
+            from math import pi\n
+            L1 = GmshLine(-1, 'l1', P1, P2)\n
+            L1.rotateZ(P0, pi)\n
+        """
+        if not isinstance(rotationPoint, Point):
+            # pylint: disable=locally-disabled, consider-using-f-string
+            raise TypeError(
+                "Rotation center point must be of type point but is %s!"
+                % type(rotationPoint),
+            )
+        if not isinstance(angle, numbers.Number):
+            raise TypeError("Rotation angle must be a number!")
+        x, y, z = rotationPoint.coordinate
+        gmsh.model.occ.rotate([(self.dim, self.id)], x, y, z, 0, 0, 1, angle=angle)
+
+    def rotateX(self, rotationPoint: Point = defaultCenterPoint, angle=0.0):
+        """Mit rotateX() wird eine Gerade um einen Rotationspunkt (rotationPoint) und die
+        X-Achse mit einem definierten Winkel rotiert.
+
+        Args:
+            - rotationPoint (Point, optional): Rotation center point.
+            Defaults to gobal center point at (0,0,0).
+            - angle (float, optional): Rotation angle in rad. Defaults to 0.0.
+
+        Beispiel:
+            from math import pi\n
+            L1 = GmshLine(-1, 'l1', P1, P2)\n
+            L1.rotateX(P0, pi)\n
+        """
+        if not isinstance(rotationPoint, Point):
+            # pylint: disable=locally-disabled, consider-using-f-string
+            raise TypeError(
+                "Rotation center point must be of type point but is %s!"
+                % type(rotationPoint),
+            )
+        if not isinstance(angle, numbers.Number):
+            raise TypeError("Rotation angle must be a number!")
+        x, y, z = rotationPoint.coordinate
+        gmsh.model.occ.rotate([(self.dim, self.id)], x, y, z, 1, 0, 0, angle=angle)
+
+    def rotateY(self, rotationPoint: Point = defaultCenterPoint, angle=0.0):
+        """Mit rotateY() wird eine Gerade um einen Rotationspunkt (rotationPoint) und die
+        Y-Achse mit einem definierten Winkel rotiert.
+
+        Args:
+            - rotationPoint (Point, optional): Rotation center point.
+            Defaults to gobal center point at (0,0,0).
+            - angle (float, optional): Rotation angle in rad. Defaults to 0.0.
+
+        Beispiel:
+            from math import pi\n
+            L1 = GmshLine(-1, 'l1', P1, P2)\n
+            L1.rotateX(P0, pi)\n
+        """
+        if not isinstance(rotationPoint, Point):
+            # pylint: disable=locally-disabled, consider-using-f-string
+            raise TypeError(
+                "Rotation center point must be of type point but is %s!"
+                % type(rotationPoint),
+            )
+        if not isinstance(angle, numbers.Number):
+            raise TypeError("Rotation angle must be a number!")
+        x, y, z = rotationPoint.coordinate
+        gmsh.model.occ.rotate([(self.dim, self.id)], x, y, z, 0, 1, 0, angle=angle)
+
+    def duplicate(self, name=""):
+        """Create a copy of the gmsh instance.
+
+        Args:
+            name (str, optional): Name of duplicate. Defaults to "".
+
+        Returns:
+            GmshObj: A copy of the gmsh class instance.
+        """
+
+        dim_tags: list[DimTag] = gmsh.model.occ.copy([(self.dim, self.id)])
+        if len(dim_tags) != 1:
+            raise RuntimeError(f"Error while duplicating gmsh object ({type(self)})!")
+        new_instance = type(self)(tag=dim_tags[0][1])
+        # set new line name
+        if name == "":
+            parentName = self.name
+            if "_dup" not in parentName:
+                new_instance.name = f"{parentName}_dup"
+            else:
+                new_instance.name = parentName
+        return new_instance
+
+    def combine(self, add_obj):
+        """Combine two objects to one using opencascade fuse command.
+        The old objects will be removed!
+
+        Args:
+            add_obj (Gmsh*): Gmsh class instance.
+
+        Returns:
+            Gmsh*: Combined Gmsh class objects.
+
+        Example:
+            from pyemmo.script.gmsh.gmsh_line import GmshArc\n
+            L1 = GmshArc(-1, 'L1', P1, P2)\n
+            L2 = GmshArc(-1, 'L2', P2, P3)\n
+            L3 = L1.combine(L2)\n
+        """
+        assert isinstance(add_obj, type(self))
+        out_dim_tags, out_dim_tags_map = gmsh.model.occ.fuse(
+            [(self.dim, self.id)], [(add_obj.dim, add_obj.id)]
+        )
+        assert len(out_dim_tags) == 1, "Error while combining objects!"
+        new_obj = type(self)(tag=out_dim_tags[0][1])
+        return new_obj
