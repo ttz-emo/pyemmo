@@ -69,7 +69,7 @@ class GmshGeometry(ABC):
         # check that given tag does not exist in gmsh model
         if (1, new_id) in gmsh.model.get_entities(1):
             raise RuntimeError(f"Given line tag={new_id} allready exists in gmsh!")
-        gmsh.model.set_tag(1, self.id, new_id)  # set new tag
+        gmsh.model.set_tag(self.dim, self.id, new_id)  # set new tag
         self._id = new_id  # update id
 
     @property
