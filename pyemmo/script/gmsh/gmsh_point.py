@@ -95,7 +95,7 @@ class GmshPoint(Point, GmshGeometry):
     def __init__(
         self,
         tag: int = -1,
-        name="",
+        name: str = "",
         coords: np.ndarray = np.empty(0),
         meshLength: float = 1e-3,
     ):
@@ -104,6 +104,7 @@ class GmshPoint(Point, GmshGeometry):
 
         Args:
             tag (int): Tag of the point.
+            name (str, optional): Name of the point. Defaults to "".
             coords (np.ndarray, optional): Coordinates of the point as a NumPy array
                 with shape (3,) or empty. When empty, try to find the point with its tag
                 in Gmsh and get the coordinates from there.
@@ -271,27 +272,6 @@ class GmshPoint(Point, GmshGeometry):
         # rotate point in gmsh
         gmsh.model.occ.rotate([(0, self.id)], x, y, z, 0, 0, 1, angle)
 
-    def rotateX(self, rotationPoint: "Point", angle: float):
-        """Mit rotateX() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die X-Achse mit
-        einem definierten Winkel rotiert.
-
-        Args:
-            rotationPoint (Point): Centerpoint of rotation.
-            angle (float): Rotational angle in radians.
-        """
-        raise NotImplementedError("rotateX is not implemented for GmshPoint!")
-
-    def rotateY(self, rotationPoint: "Point", angle: float):
-        """Mit rotateY() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die Y-Achse mit
-        einem definierten Winkel rotiert.
-
-        Args:
-            rotationPoint (Point): Centerpoint of rotation.
-            angle (float): Rotational angle in radians.
-
-        """
-        raise NotImplementedError("rotateX is not implemented for GmshPoint!")
-
     def duplicate(self, name="") -> "GmshPoint":
         dimTags: list[DimTag] = gmsh.model.occ.copy([(0, self.id)])
         assert len(dimTags) == 1, "Error while duplicating point!"
@@ -318,3 +298,7 @@ class GmshPoint(Point, GmshGeometry):
         """TODO"""
         raise NotImplementedError("mirror is not implemented for GmshPoint!")
         # gmsh.model.occ.mirror(...)
+
+
+GmshPoint.rotateX = GmshGeometry.rotateX
+GmshPoint.rotateY = GmshGeometry.rotateY
