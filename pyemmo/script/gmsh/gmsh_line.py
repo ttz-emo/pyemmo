@@ -156,7 +156,7 @@ class GmshLine(Line, GmshGeometry):
             of the line.
         """
         return (
-            f"{type(self)}(name={self.name}, id={self.id}, "
+            f"{self.__class__.__name__}(name={self.name}, id={self.id}, "
             f"start_point=({self.start_point.x:.1e}, {self.start_point.y:.1e}, {self.start_point.z:.1e}), "
             f"end_point=({self.end_point.x:.1e}, {self.end_point.y:.1e}, {self.end_point.z:.1e}))"
         )
