@@ -44,19 +44,44 @@ class GmshSurface(Surface, GmshGeometry):
     def __init__(
         self,
         tag: int = -1,
-        curves: list[Union[GmshLine, GmshArc]] = [],
+        curves: list[Union[GmshLine, GmshArc]] = None,
         name: str = "",
     ):
-        """ """
+        """GmshSurface init
+        Possible initialization with gmsh tag OR curve loop (list of gmsh curve objects).
+
+
+        Args:
+            tag (int, optional): Gmsh internal surface tag. Defaults to -1.
+            curves (list[Union[GmshLine, GmshArc]], optional): List of surfaces that
+                form a closed curve loop to construct plane surface. Defaults to None.
+            name (str, optional): Name of surface to set or reset. Defaults to internal.
+                gmsh name.
+
+        Example:
+            >>> from pyemmo.gmsh import GmshSurface
+            >>> import gmsh
+            >>> gmsh.initialize()
+            >>> gmsh.model.add("model")
+            >>> # init with tag
+            >>> square_id = gmsh.model.occ.addRectangle(0, 0, 0, 1, 1)
+            >>> square_surf = GmshSurface(tag = square_id)
+
+            >>> # init with curve loop
+            >>> ... create lines that form a closed loop in `line_list`
+            >>> gmsh_surf = GmshSurface(tag = -1, curves = line_list)
+        """
         if tag >= 0:
-            if curves != []:
+            if curves is not None:
                 raise ValueError(
                     "Can not create GmshSurface for input of tag AND line list!"
                 )
             # create GmshSurface from existing tag
             self._init_with_tag(tag, name)
         elif tag == -1:
-            if not all(filter(lambda l: isinstance(l, [GmshLine, GmshArc]), curves)):
+            if not all(
+                l is not None and isinstance(l, (GmshLine, GmshArc)) for l in curves
+            ):
                 raise ValueError("All curves must be of type GmshLine or GmshArc!")
             # no tag given, but all curves are type GmshLine or GmshArc
             # FIXME: addCurveLoop() can create new line objects in gmsh to share touch points
@@ -66,9 +91,7 @@ class GmshSurface(Surface, GmshGeometry):
             raise ValueError(
                 "Can not create GmshSurface for input of tag AND line list!"
             )
-        # init because _cut(=tools) is only accessed by method ``cutOut``
-        self._cut: list[Surface] = []
-        self._isTool: bool = False
+        super().__init__(name=name, curves=self.curve)
 
     def _init_with_tag(self, tag: int, name: str):
         gmsh.model.occ.synchronize()
@@ -280,11 +303,11 @@ class GmshSurface(Surface, GmshGeometry):
     def replaceCurve(self, oldCurve, newCurve):
         raise RuntimeError("No need to replace curves in GmshSurface!")
 
-    def cutOut(self, tool: Surface) -> None:
+    def cutOut(self, tool: Surface, keepTool: bool = True) -> None:
         # TODO: implement cutOut
         raise NotImplementedError("Method not implemented yet!")
 
     def calcCOG(self) -> Point:
-        # TODO: implement calcCOG
+        # TODO: test this works
         x, y, z = gmsh.model.occ.get_center_of_mass(2, self.id)
         return Point(f"COG of Surface {self.id}", x, y, z)
