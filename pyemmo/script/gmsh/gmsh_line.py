@@ -137,13 +137,8 @@ class GmshLine(Line, GmshGeometry):
             self._id = tag
             # get boundary points:
             point_tags = gmsh.model.get_boundary(dimTags=[(1, tag)])
-            start_point = GmshPoint(
-                point_tags[0][1], gmsh.model.get_value(0, point_tags[0][1], [])
-            )
-            end_point = GmshPoint(
-                point_tags[1][1],
-                gmsh.model.get_value(0, point_tags[1][1], []),
-            )
+            start_point = GmshPoint(tag=point_tags[0][1])
+            end_point = GmshPoint(tag=point_tags[1][1])
             # if no name given try to get it from gmsh
             if not name:
                 name = gmsh.model.get_entity_name(1, tag)
@@ -151,6 +146,20 @@ class GmshLine(Line, GmshGeometry):
                 self.name = name
         # self._start_point = start_point
         # self._end_point = end_point
+
+    def __str__(self) -> str:
+        """
+        Returns a string representation of the GmshLine.
+
+        Returns:
+            str: A string containing the tag, name, type, and the start and end points
+            of the line.
+        """
+        return (
+            f"{type(self)}(name={self.name}, id={self.id}, "
+            f"start_point=({self.start_point.x:.1e}, {self.start_point.y:.1e}, {self.start_point.z:.1e}), "
+            f"end_point=({self.end_point.x:.1e}, {self.end_point.y:.1e}, {self.end_point.z:.1e}))"
+        )
 
     @property
     def start_point(self) -> GmshPoint:
@@ -193,20 +202,6 @@ class GmshLine(Line, GmshGeometry):
             new_end_point (GmshPoint): The new ending point to set.
         """
         raise AttributeError("Cannot set end_point of GmshLine!")
-
-    def __str__(self) -> str:
-        """
-        Returns a string representation of the GmshLine.
-
-        Returns:
-            str: A string containing the tag, name, type, and the start and end points
-            of the line.
-        """
-        return (
-            f"GmshLine(tag={self.id}, name={self.name}, type={self.type}, "
-            f"start_point=({self.start_point.x:.1e}, {self.start_point.y:.1e}, {self.start_point.z:.1e}), "
-            f"end_point=({self.end_point.x:.1e}, {self.end_point.y:.1e}, {self.end_point.z:.1e}))"
-        )
 
     def switchPoints(self):
         raise AttributeError("Cannot switch points of GmshLine!")
@@ -277,8 +272,8 @@ class GmshLine(Line, GmshGeometry):
     def duplicate(self, name="") -> "GmshLine":
         """Create a copy of the line.
 
-                Args:
-            name (str, optional): Name of duplicte. Defaults to "".
+        Args:
+            name (str, optional): Name of duplicate. Defaults to "".
 
         Returns:
 

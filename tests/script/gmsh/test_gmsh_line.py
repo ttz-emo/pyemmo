@@ -18,24 +18,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""
-TODO: Update gmsh_line test due to changes in the GmshLine class.
-
-    Returns:
-        _type_: _description_
-"""
+"""Module for GmshLine class and its reflection GmshPoint."""
 import logging
 
 import gmsh
 import numpy as np
 import pytest
 
-from pyemmo.script.gmsh.gmsh_line import GmshLine, Line
-from pyemmo.script.gmsh.gmsh_point import GmshPoint, Point
+from pyemmo.definitions import DEFAULT_GEO_TOL as TOLERANCE
+from pyemmo.script.gmsh.gmsh_line import GmshLine
+from pyemmo.script.gmsh.gmsh_point import GmshPoint
 
 
 @pytest.fixture(scope="module", autouse=True)
 def initialize_gmsh():
+    """init gmsh function"""
     gmsh.initialize()
     gmsh.model.add("test_model")
     yield
@@ -44,54 +41,63 @@ def initialize_gmsh():
 
 @pytest.fixture
 def gmsh_points():
-    p1 = Point("test point 1", 0.0, 0.0, 0.0, 0.2)
-    p2 = Point("test point 2", 1.0, 1.0, 1.0, 0.2)
-    gmsh.model.occ.synchronize()
-    gmsh_p1 = GmshPoint(tag=p1.id)
-    gmsh_p2 = GmshPoint(tag=p2.id)
+    """Gmsh Points for testing GmshLine class"""
+    gmsh_p1 = GmshPoint(-1, "test point 1", [0.0, 0.0, 0.0], 0.2)
+    gmsh_p2 = GmshPoint(-1, "test point 2", [1.0, 1.0, 0.0], 0.2)
     return gmsh_p1, gmsh_p2
 
 
 @pytest.fixture
 def gmsh_line(gmsh_points: tuple[GmshPoint, GmshPoint]):
+    """Create a GmshLine with start_point and end_point."""
     p1, p2 = gmsh_points
-    line = Line(name="test_line", start_point=p1, end_point=p2)
+    line = GmshLine(-1, start_point=p1, end_point=p2, name="test_line")
     gmsh.model.occ.synchronize()
-    return GmshLine(tag=line.id)
+    return line
 
 
-def test_gmsh_line_creation(
+def test_gmsh_line_init_points(
     gmsh_line: GmshLine, gmsh_points: tuple[GmshPoint, GmshPoint]
 ):
+    """Test to create GmshLine with start_point and end_point."""
     p1, p2 = gmsh_points
-    assert gmsh_line.tag == gmsh_line.id
+    assert gmsh_line.id == gmsh_line.id
     assert gmsh_line.start_point.isEqual(p1)
     assert gmsh_line.end_point.isEqual(p2)
     assert gmsh_line.name == "test_line"
 
 
-def test_gmsh_line_tag(gmsh_line: GmshLine):
+def test_gmsh_line_init_id():
+    """Test to create GmshLine without start_point and end_point."""
+    gmsh_line_tag = 1  # tag has to match with the initialization above
+    line = GmshLine(tag=gmsh_line_tag)
+    assert isinstance(line.start_point, GmshPoint)
+    assert isinstance(line.end_point, GmshPoint)
+    assert line.id == gmsh_line_tag
+
+
+def test_gmsh_line_id_setter(gmsh_line: GmshLine):
+
     new_tag = 10
-    gmsh_line.tag = new_tag
-    assert gmsh_line.tag == new_tag
+    gmsh_line.id = new_tag
     assert gmsh_line.id == new_tag
 
 
 def test_gmsh_line_start_point(gmsh_line: GmshLine):
-    new_start = GmshPoint(tag=3, coords=np.array([0.0, 0.0, 1.0]))
-    gmsh_line.start_point = new_start
-    assert gmsh_line.start_point == new_start
+    new_start = GmshPoint(tag=-1, coords=np.array([0.0, 0.0, 1.0]))
+    with pytest.raises(AttributeError):
+        gmsh_line.start_point = new_start
 
 
 def test_gmsh_line_end_point(gmsh_line: GmshLine):
-    new_end = GmshPoint(tag=4, coords=np.array([1.0, 1.0, 0.0]))
-    gmsh_line.end_point = new_end
-    assert gmsh_line.end_point == new_end
+    new_end = GmshPoint(tag=-1, coords=np.array([1.0, 1.0, 0.0]))
+    with pytest.raises(AttributeError):
+        gmsh_line.end_point = new_end
 
 
 def test_gmsh_line_str(gmsh_line: GmshLine):
     expected_str = (
-        f"GmshLine(tag={gmsh_line.tag}, name=test_line, type={gmsh_line.type}, "
+        f"GmshLine(tag={gmsh_line.id}, name=test_line, type={gmsh_line.type}, "
         f"start_point=({gmsh_line.start_point.x:.1e}, {gmsh_line.start_point.y:.1e}, {gmsh_line.start_point.z:.1e}), "
         f"end_point=({gmsh_line.end_point.x:.1e}, {gmsh_line.end_point.y:.1e}, {gmsh_line.end_point.z:.1e}))"
     )
@@ -99,13 +105,31 @@ def test_gmsh_line_str(gmsh_line: GmshLine):
     assert str(gmsh_line) == expected_str
 
 
-def test_gmsh_line_reflection_ctor():
-    """
-    Test to create GmshLine without start_point and end_point.
-    """
-    gmsh.model.occ.synchronize()
-    gmsh_line_tag = 1  # tag has to match with the initialization above
-    line = GmshLine(tag=gmsh_line_tag)
-    assert isinstance(line.start_point, GmshPoint)
-    assert isinstance(line.end_point, GmshPoint)
-    assert line.tag == gmsh_line_tag
+def test_switch_points(gmsh_line: GmshLine):
+    """Test to switch the start_point and end_point of a GmshLine.
+    Fail because the start_point and end_point are read-only properties."""
+    with pytest.raises(AttributeError):
+        gmsh_line.switchPoints()
+
+
+def test_translate(gmsh_line: GmshLine):
+    """Test to translate a GmshLine"""
+    gmsh_line.translate(1, 1, 0)
+    assert np.isclose(gmsh_line.start_point.coordinate, (1, 1, 0), atol=TOLERANCE).all()
+    assert np.isclose(gmsh_line.end_point.coordinate, (2, 2, 0), atol=TOLERANCE).all()
+
+
+def test_rotateZ(gmsh_line: GmshLine):
+    """Test to rotate a GmshLine around the Z-axis."""
+    gmsh_line.rotateZ(angle=np.radians(90))
+    assert np.isclose(gmsh_line.start_point.coordinate, (0, 0, 0), atol=TOLERANCE).all()
+    assert np.isclose(gmsh_line.end_point.coordinate, (-1, 1, 0), atol=TOLERANCE).all()
+
+
+def test_duplicate(gmsh_line: GmshLine):
+    """Test to duplicate a GmshLine."""
+    duplicate = gmsh_line.duplicate()
+    assert duplicate.start_point.isEqual(gmsh_line.start_point)
+    assert duplicate.end_point.isEqual(gmsh_line.end_point)
+    assert duplicate.name == gmsh_line.name + "_dup"
+    assert duplicate.id != gmsh_line.id
