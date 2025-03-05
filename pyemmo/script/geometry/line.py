@@ -20,7 +20,7 @@
 #
 """Module of geometry class Line"""
 
-from typing import TYPE_CHECKING, Literal, Tuple, Union
+from typing import TYPE_CHECKING, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -186,15 +186,6 @@ class Line(Transformable):
         oldP2 = self.end_point
         self.start_point = oldP2
         self.end_point = oldP1
-
-    @property
-    def type(self) -> Literal["Line"]:
-        """Get geometric element type
-
-        Returns:
-            Literial: "Line"
-        """
-        return "Line"
 
     def translate(self, dx: float, dy: float, dz: float):
         """Translate line

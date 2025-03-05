@@ -364,7 +364,7 @@ class Surface(Transformable):
             for addCurve in addCurves:
                 if curve.arePointsEqual(addCurve):
                     # found matching curve! Make sure the line types are equal:
-                    if curve.type == addCurve.type:
+                    if type(curve) == type(addCurve):
                         touchpoints = curve.points
                         break
                     else:

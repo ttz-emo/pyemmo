@@ -540,7 +540,7 @@ class Script:
         existingLines: list[Line] = []
         # getting all existing lines from _curveList
         for savedCurve in curveList:
-            if savedCurve.type == "Line":
+            if type(savedCurve) == Line:
                 existingLines.append(savedCurve)
         # getting points of tested line
         testPointDict = {"p1": line2Test.start_point, "p2": line2Test.end_point}
@@ -584,7 +584,7 @@ class Script:
         curveList = self.curveList
         existingArcs: list[CircleArc] = list()
         for savedCurve in curveList:
-            if savedCurve.type == "CircleArc":
+            if type(savedCurve) == CircleArc:
                 existingArcs.append(savedCurve)
         testPointDict = {
             "p1": curve.start_point,
@@ -636,7 +636,7 @@ class Script:
         curveList = self.curveList
         existingSplines: list[Spline] = []
         for savedCurve in curveList:
-            if savedCurve.type == "Spline":
+            if type(savedCurve) == Spline:
                 existingSplines.append(savedCurve)
 
         testPointDict = {
@@ -688,12 +688,11 @@ class Script:
                 found, or None.
         """
         # test line
-        curveType = curve.type
-        if curveType == "Line":
+        if type(curve) == Line:
             testResult = self._testLine(curve)
-        elif curveType == "CircleArc":
+        elif type(curve) == CircleArc:
             testResult = self._testCircleArc(curve)
-        elif curveType == "Spline":
+        elif type(curve) == Spline:
             testResult = self._testSpline(curve)
         else:
             msg = f"Curve type of {curve} is unknown."
@@ -729,12 +728,12 @@ class Script:
             curve.start_point = addP1
         if addP2:
             curve.end_point = addP2
-        if curve.type == "CircleArc":
+        if type(curve) == CircleArc:
             centerPoint = curve.center
             addC = self._addPoint(centerPoint)
             if addC is not None:
                 curve.center = addC
-        elif curve.type == "Spline":
+        elif type(curve) == Spline:
             controlPointList = curve.control_points.copy()
             for controlPoint in controlPointList:
                 newP = self._addPoint(controlPoint)
@@ -751,15 +750,14 @@ class Script:
             # create the geometrical curve Code
             curveName = cleanName(curve.name)
             curveID = curve.id
-            curveType = curve.type
             startPointID = curve.start_point.id
             endPointID = curve.end_point.id
-            if curveType == "Line":
+            if type(curve) == Line:
                 code = (
                     f"{curveName} = {curveID};"
                     f"Line({curveName}) = {{{startPointID}, {endPointID}}};\n"
                 )
-            elif curveType == "CircleArc":
+            elif type(curve) == CircleArc:
                 curve: CircleArc = curve
                 centerPointID = curve.center.id
                 code = (
@@ -774,13 +772,15 @@ class Script:
                 # nbrMeshPoints = round(arcLen*1e3) # 1mm distance
                 # code += f"Transfinite Curve {{{curve.id}}} = {nbrMeshPoints};"
                 ###
-            elif curveType == "Spline":
+            elif type(curve) == Spline:
                 if curve.spline_type == 0:
                     splineType = "Spline"
                 elif curve.spline_type == 1:
                     splineType = "Bezier"
                 elif curve.spline_type == 2:
                     splineType = "BSpline"
+                else:
+                    raise RuntimeError("Could not identify spline type")
 
                 code = (
                     f"{curveName} = {curveID}; \n"
@@ -1282,6 +1282,10 @@ class Script:
                 elementType = "Surface"
             elif geoElmType == Line:
                 elementType = "Curve"
+            else:
+                raise ValueError(
+                    "PhysicalElement geometry type was not Line or Surface!"
+                )
             code += (
                 "Physical "
                 + elementType
