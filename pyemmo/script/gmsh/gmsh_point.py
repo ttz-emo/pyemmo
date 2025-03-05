@@ -111,8 +111,15 @@ class GmshPoint(Point, GmshGeometry):
         """
         if tag == -1:
             # init with coords
-            assert isinstance(meshLength, (int, float)), "meshLength must be a number!"
-            assert meshLength > 0, "meshLength must be greater than 0!"
+            if not isinstance(meshLength, numbers.Number):
+                raise TypeError("meshLength must be a number!")
+            if not meshLength > 0:
+                raise ValueError("meshLength must be greater than 0!")
+            # type cast coords to np.ndarray if necessary
+            if not isinstance(coords, np.ndarray):
+                if not isinstance(coords, (list, tuple)):
+                    raise TypeError("coords must be a numpy array, list or tuple!")
+                coords = np.array(coords)
             if coords.size == 2:
                 # 2D point
                 self._id = gmsh.model.occ.addPoint(
@@ -170,7 +177,8 @@ class GmshPoint(Point, GmshGeometry):
         if isinstance(meshLength, numbers.Number):
             gmsh.model.occ.mesh.setSize([(0, self.id)], meshLength)
             self._meshLength = meshLength
-        raise ValueError("meshLength must be a number!")
+        else:
+            raise ValueError("meshLength must be a number!")
 
     @Point.coordinate.getter
     def coordinate(self) -> Tuple[float, float, float]:
