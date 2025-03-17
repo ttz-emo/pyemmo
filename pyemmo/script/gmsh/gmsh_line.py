@@ -69,6 +69,7 @@ Note:
 from typing import Union
 
 import gmsh
+import numpy as np
 
 from ..geometry import defaultCenterPoint
 from ..geometry.line import Line
@@ -123,6 +124,9 @@ class GmshLine(Line, GmshGeometry):
             end_point (GmshPoint, optional): The ending point of the line.
             name (str, optional): The name of the line. Defaults to an empty string.
         """
+        if not isinstance(tag, (int, np.integer)):
+            raise TypeError("Gmsh tag must be positive integer!")
+
         if tag == -1:
             # init with start and end point
             self._id = gmsh.model.occ.addLine(start_point.id, end_point.id)
