@@ -52,7 +52,7 @@ Note:
     This docstring was created by ChatGPT.
 """
 import numbers
-from typing import Literal, Tuple
+from typing import Literal, Tuple, Union
 
 import gmsh
 import numpy as np
@@ -79,6 +79,7 @@ class GmshPoint(Point, GmshGeometry):
         x (float): The x-coordinate of the point.
         y (float): The y-coordinate of the point.
         z (float): The z-coordinate of the point.
+        TODO: Add more attributes.
 
     Methods:
         __init__(self, tag: int, coords: np.ndarray):
@@ -96,7 +97,7 @@ class GmshPoint(Point, GmshGeometry):
         self,
         tag: int = -1,
         name: str = "",
-        coords: np.ndarray = np.empty(0),
+        coords: Union[np.ndarray, list, tuple] = np.empty(0),
         meshLength: float = 1e-3,
     ):
         """
@@ -105,9 +106,9 @@ class GmshPoint(Point, GmshGeometry):
         Args:
             tag (int): Tag of the point.
             name (str, optional): Name of the point. Defaults to "".
-            coords (np.ndarray, optional): Coordinates of the point as a NumPy array
-                with shape (3,) or empty. When empty, try to find the point with its tag
-                in Gmsh and get the coordinates from there.
+            coords (np.ndarray or list or tuple, optional): Coordinates of the point as
+                a NumPy array with shape (3,) or empty. When empty, try to find the
+                point with its tag in Gmsh and get the coordinates from there.
             meshLength (float, optional): Mesh length of the point. Defaults to 1 mm.
         """
         if tag == -1:
