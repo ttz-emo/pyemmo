@@ -39,6 +39,10 @@ class GmshSurface(Surface, GmshGeometry):
     GmshSurface class for Surfaces in Gmsh.
     """
 
+    @property
+    def dim(self) -> int:
+        return 2
+
     def __init__(
         self,
         tag: int = -1,
