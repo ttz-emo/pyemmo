@@ -18,9 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""
-TODO
-"""
+"""Module gmsh_surface.py for the class GmshSurface."""
 
 from typing import Union
 
@@ -38,7 +36,7 @@ from .gmsh_point import GmshPoint
 
 class GmshSurface(Surface, GmshGeometry):
     """
-    TODO
+    GmshSurface class for Surfaces in Gmsh.
     """
 
     def __init__(

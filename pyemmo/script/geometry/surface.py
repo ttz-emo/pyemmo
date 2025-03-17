@@ -532,14 +532,14 @@ class Surface(Transformable):
             if curve == oldCurve:
                 self._curve[i] = newCurve
 
-    def cutOut(self, ToolSurface: Surface, keepTool: bool = True) -> None:
+    def cutOut(self, tool: Surface, keepTool: bool = True) -> None:
         """Cut out a Tool Surface from the Parent surface by Boolean Difference"""
-        self._cut.append(ToolSurface)
-        ToolSurface.setTool()  # set to the tool surface
+        self._cut.append(tool)
+        tool.setTool()  # set to the tool surface
         if not keepTool:
-            ToolSurface.delete = True
+            tool.delete = True
         # cut out tools of tools aswell!
-        tools = ToolSurface.tools
+        tools = tool.tools
         while tools:
             # while tools array is not empty
             new_tools = []
