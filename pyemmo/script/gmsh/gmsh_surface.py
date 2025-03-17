@@ -73,6 +73,9 @@ class GmshSurface(Surface, GmshGeometry):
             >>> ... create lines that form a closed loop in `line_list`
             >>> gmsh_surf = GmshSurface(tag = -1, curves = line_list)
         """
+        if not isinstance(tag, int):
+            raise TypeError("Gmsh tag must be positive integer!")
+
         if tag >= 0:
             if curves is not None:
                 raise ValueError(

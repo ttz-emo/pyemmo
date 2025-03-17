@@ -122,6 +122,9 @@ class GmshArc(CircleArc, GmshGeometry):
                 None.
             name (str, optional): The name of the line. Defaults to an empty string.
         """
+        if not isinstance(tag, int):
+            raise TypeError("Gmsh tag must be positive integer!")
+
         if tag == -1:
             if not all(
                 p is not None and isinstance(p, GmshPoint)

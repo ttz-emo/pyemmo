@@ -111,6 +111,9 @@ class GmshPoint(Point, GmshGeometry):
                 point with its tag in Gmsh and get the coordinates from there.
             meshLength (float, optional): Mesh length of the point. Defaults to 1 mm.
         """
+        if not isinstance(tag, int):
+            raise TypeError("Gmsh tag must be positive integer!")
+
         if tag == -1:
             # init with coords
             if not isinstance(meshLength, numbers.Number):
@@ -136,7 +139,7 @@ class GmshPoint(Point, GmshGeometry):
                 raise ValueError(f"Wrong GmshPoint coordinates {coords=}!")
             self.name = name
             self._meshLength = meshLength
-        else:
+        elif tag > 0:
             # init with tag
             # if coordinates AND tag are given, raise an error
             if coords.size != 0:
@@ -155,6 +158,8 @@ class GmshPoint(Point, GmshGeometry):
             # get mesh length from gmsh:
             self._meshLength = gmsh.model.mesh.getSizes([(0, tag)])[0]
             # coordinates will be directly accessed from gmsh at runtime
+        else:
+            raise ValueError(f"Gmsh tag must be positive integer! {tag=}")
 
     @property
     def meshLength(self) -> float:
