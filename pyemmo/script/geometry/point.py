@@ -23,6 +23,7 @@ from math import atan2, cos, degrees, sin
 from typing import TYPE_CHECKING, Tuple, Union
 
 import matplotlib.pyplot as plt
+import numpy as np
 from numpy import array, array_equal, cross, pi, vdot
 from numpy.linalg import norm
 
@@ -56,20 +57,20 @@ class Point(Transformable):
         self.name = name
         self.coordinate = (x, y, z)
 
-    # def __eq__(self, x) -> bool:
-    #     """Overload the "==" operator to compare if points are equal in a given tolerance"""
-    #     if x is None:
-    #         return False
-    #     tol=1e-7
-    #     xP, yP, zP = self.getCoordinate()
-    #     xTest, yTest, zTest = x.getCoordinate()
-    #     diffX = abs(xTest - xP)
-    #     diffY = abs(yTest - yP)
-    #     diffZ = abs(zTest - zP)
-    #     if diffX < tol and diffY < tol and diffZ < tol:
-    #         return True
-    #     else:
-    #         return False
+    def __eq__(self, comp_point: "Point") -> bool:
+        """Overload the "==" operator to compare if points are equal in a given
+        tolerance"""
+        if not isinstance(comp_point, Point):
+            raise ValueError(
+                "Point can only be compared with another Point! "
+                f"But got: {type(comp_point)=}"
+            )
+        if not self.isEqual(comp_point):
+            # checks coordinates within tolerance
+            return False
+        if self.name != comp_point.name:
+            return False
+        return True
 
     @property
     def x(self) -> float:
@@ -161,17 +162,12 @@ class Point(Transformable):
 
     # ------ methods ------
 
-    def isEqual(self, compPoint: "Point", tol=DEFAULT_GEO_TOL):
+    def isEqual(self, comp_point: "Point", tol=DEFAULT_GEO_TOL):
         """
         isEqual checks if another points coordinates are equal with a given tolerance
         (default < 1e-7)
         """
-        originCoords = array(self.coordinate)
-        compCoords = array(compPoint.coordinate)
-
-        if norm(originCoords - compCoords) < tol:
-            return True
-        return False
+        return all(np.isclose(self.coordinate, comp_point.coordinate, atol=tol))
 
     def translate(self, dx: float, dy: float, dz: float) -> None:
         """Linear translation of the point by dx, dy and dz.

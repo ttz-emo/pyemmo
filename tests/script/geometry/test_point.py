@@ -82,6 +82,45 @@ class TestPoint:
         angle_to_x = point.getAngleToX(flag_deg=True)
         assert angle_to_x == expected_angle
 
+    @pytest.mark.parametrize(
+        "points",
+        [
+            (Point("test", 0, 0, 0), Point("test", 0, 0, 0)),
+            (Point("", 10, 0, 0), Point("", 10, 0, 0)),
+            pytest.param(
+                (Point("name", 10, -4, 8), Point("other name", 10, -4, 8)),
+                marks=pytest.mark.xfail(reason="fails because of different name"),
+            ),
+            pytest.param(
+                (Point("name", 0, 0, 0), Point("name", 1, 1, 1)),
+                marks=pytest.mark.xfail(
+                    reason="fails because of different coordinates"
+                ),
+            ),
+        ],
+    )
+    def test_equal(self, points: tuple[Point, Point]):
+        """Test __eq__ method"""
+        assert points[0] == points[1]
+
+    @pytest.mark.parametrize(
+        "points",
+        [
+            (Point("test", 0, 0, 0), Point("test", 0, 0, 0)),
+            (Point("", 10, 0, 0), Point("", 10, 0, 0)),
+            (Point("name", 10, -4, 8), Point("other name", 10, -4, 8)),
+            pytest.param(
+                (Point("name", 0, 0, 0), Point("name", 1, 1, 1)),
+                marks=pytest.mark.xfail(
+                    reason="fails because of different coordinates"
+                ),
+            ),
+        ],
+    )
+    def test_is_equal_coords(self, points: tuple[Point, Point]):
+        """Test isEqual() method"""
+        assert points[0].isEqual(points[1])
+
     # TODO: Add test for Point methods:
     #   Point.calcDist
     #   Point.coordinate
