@@ -286,7 +286,9 @@ class GmshSurface(Surface, GmshGeometry):
     def mirror(self, planePoint, planeVector1, planeVector2, name=""):
         raise NotImplementedError("Method not implemented yet!")
 
-    def combine(self, addSurf: "GmshSurface") -> "GmshSurface":
+    def combine(
+        self, addSurf: "GmshSurface", removeObject: bool = True, removeTool: bool = True
+    ) -> "GmshSurface":
         """Combines two surfaces to a new surface.
 
         Args:
@@ -295,12 +297,17 @@ class GmshSurface(Surface, GmshGeometry):
         Returns:
             GmshSurface: The combined surface.
         """
-        # TODO: add remove of old surfaces
-        outDimTags: list[DimTag] = gmsh.model.occ.fuse(
-            [(2, self.id)], [(2, addSurf.id)]
+        out = gmsh.model.occ.fuse(
+            [(2, self.id)],
+            [(2, addSurf.id)],
+            removeObject=removeObject,
+            removeTool=removeTool,
         )
+        outDimTags: list[DimTag] = out[0]
+        # outDimTagsMap: list[list[DimTag]] = out[1]
         if len(outDimTags) != 1:
             raise ValueError("Error in combining surfaces!")
+        # TODO: add additional logic to check for correct fusion process
         comb_surf = GmshSurface(tag=outDimTags[0][1])
         return comb_surf
 
