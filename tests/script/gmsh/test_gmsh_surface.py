@@ -22,6 +22,7 @@ import gmsh
 import numpy as np
 import pytest
 
+from pyemmo.script.geometry.point import Point
 from pyemmo.script.gmsh.gmsh_surface import GmshArc, GmshLine, GmshPoint, GmshSurface
 
 
@@ -34,8 +35,39 @@ def initialize_gmsh():
     gmsh.finalize()
 
 
-@pytest.fixture
+@pytest.fixture(scope="function", autouse=True)
+def add_new_model():
+    """Create a new gmsh model every time a test function is called.
+    This is necessary since the parameters (like mesh size) might change during
+    execution. Even tough a new surface is create by the a fixture every time a new
+    test is called, by synchronizing the model, changes in a old geometry might be
+    transfered to the new one. E.g. If the mesh size of a point of a surface is changed
+    in one test, this mesh size might be transfered to the new surface if its in the
+    same model.
+    """
+    # we need to create a new model for each test!
+    gmsh.model.add("test_model")
+
+
+@pytest.fixture(scope="function")
 def gmsh_surface():
+    """Default test Surface
+
+            |
+    (1,0).---------------.(1,1)
+            |               |
+            |               |
+            |               |
+            |               |
+            |               |
+    (0,0).---------------.(0,1)---->
+            |
+
+    """
+    return create_rectangle()
+
+
+def create_rectangle():
     """Default test Surface
 
             |
@@ -91,16 +123,60 @@ def add_circle(center: GmshPoint, radius: float):
 def test_init(gmsh_surface: GmshSurface):
     """Test the init of Surface"""
     assert len(gmsh_surface.curve) == 4
+    assert gmsh_surface.dim == 2
     assert gmsh_surface.name == "Test surface"
-    # TODO: Add more assert statements
+    assert np.isclose(gmsh_surface.meanMeshLength, 1e-3, rtol=1e-3)
+
+
+def test_set_mesh_length(gmsh_surface: GmshSurface):
+    """Test setMeshLength() method"""
+    gmsh_surface.setMeshLength(0.1)
+    assert np.isclose(gmsh_surface.meanMeshLength, 0.1, rtol=1e-3)
+
+
+def test_get_min_mesh_length(gmsh_surface: GmshSurface):
+    """Test getMinMeshLength() method"""
+    min_ml = 1e-6
+    gmsh_surface.curve[0].start_point.meshLength = min_ml
+    assert np.isclose(gmsh_surface.getMinMeshLength(), min_ml, rtol=1e-3)
 
 
 def test_translate(gmsh_surface: GmshSurface):
     """Test translate() method"""
-    gmsh_surface.translate(1.1, 0, 0)  # translate surf into x by 1.1
-    exspected_coords = [(1.1, 0, 0), (2.1, 0, 0), (2.1, 1.0, 0), (1.1, 1.0, 0)]
+    gmsh_surface.translate(1.1, -1.1, 0)  # translate surf into x by 1.1, y by -1.1
+    exspected_coords = [(1.1, -1.1, 0), (2.1, -1.1, 0), (2.1, -0.1, 0), (1.1, -0.1, 0)]
     for coords in exspected_coords:
-        assert any(coords == point.coordinate for point in gmsh_surface.points)
+        assert any(
+            all(np.isclose(coords, point.coordinate, atol=1e-6))
+            for point in gmsh_surface.points
+        )
+
+
+def test_rotate_z(gmsh_surface: GmshSurface):
+    """Test rotateZ() method"""
+    # rotate surf by 90 degrees around z-axis
+    center = Point("center point", 0, 0, 0)
+    gmsh_surface.rotateZ(center, np.pi / 2)
+    exspected_coords = [(0, 0, 0), (0, 1, 0), (-1, 0, 0), (-1, 1, 0)]
+    for coords in exspected_coords:
+        assert any(
+            all(np.isclose(coords, point.coordinate, atol=1e-6))
+            for point in gmsh_surface.points
+        )
+
+
+def test_duplicate():
+    """Test duplicate() method"""
+    gmsh_surface = add_circle(GmshPoint(name="center", coords=[0, 0]), 0.2)
+    duplicate = gmsh_surface.duplicate(name="new name")
+    assert gmsh_surface.id != duplicate.id
+    assert gmsh_surface.points != duplicate.points
+    # lines are equal if they are of the same line type (line, arc, spline) and have
+    # matching points
+    assert gmsh_surface.curve == duplicate.curve
+    assert gmsh_surface.dim == duplicate.dim
+    assert duplicate.name == "new name"
+    assert gmsh_surface.meanMeshLength == duplicate.meanMeshLength
 
 
 # TODO: Add tests for the following methods:
@@ -110,10 +186,8 @@ def test_translate(gmsh_surface: GmshSurface):
 # Surface.curve
 # Surface.cutOut
 # Surface.delete
-# Surface.duplicate
 # Surface.points
 # Surface.recombineCurves
-# Surface.rotateZ
 
 
 @pytest.mark.xfail(reason="not implemented subtraction yet")
