@@ -276,6 +276,10 @@ class GmshSurface(Surface, GmshGeometry):
         outDimTags: list[DimTag] = gmsh.model.occ.copy([(2, self.id)])
         if len(outDimTags) != 1:
             raise ValueError("Error in duplicating surface!")
+        # reset name if not given
+        if not name:
+            name = self.name + "_dup"
+        # create new GmshSurface object
         dup_surf = GmshSurface(tag=outDimTags[0][1], name=name)
         return dup_surf
 
