@@ -49,8 +49,8 @@ def add_new_model():
     gmsh.model.add("test_model")
 
 
-@pytest.fixture(scope="function")
-def gmsh_surface():
+@pytest.fixture(scope="function", name="gmsh_surface")
+def fixture_gmsh_surface():
     """Default test Surface
 
             |
@@ -165,17 +165,30 @@ def test_rotate_z(gmsh_surface: GmshSurface):
         )
 
 
-def test_duplicate():
+@pytest.mark.parametrize(
+    "name",
+    [
+        "new name",
+        "",
+        pytest.param(
+            123, marks=pytest.mark.xfail(reason="New name has to be a string")
+        ),
+    ],
+)
+def test_duplicate(gmsh_surface: GmshSurface, name: str):
     """Test duplicate() method"""
-    gmsh_surface = add_circle(GmshPoint(name="center", coords=[0, 0]), 0.2)
-    duplicate = gmsh_surface.duplicate(name="new name")
+    duplicate = gmsh_surface.duplicate(name=name)
     assert gmsh_surface.id != duplicate.id
     assert gmsh_surface.points != duplicate.points
     # lines are equal if they are of the same line type (line, arc, spline) and have
     # matching points
     assert gmsh_surface.curve == duplicate.curve
     assert gmsh_surface.dim == duplicate.dim
-    assert duplicate.name == "new name"
+    if name:
+        assert duplicate.name == name
+    else:
+        assert duplicate.name == gmsh_surface.name + "_dup"
+
     assert gmsh_surface.meanMeshLength == duplicate.meanMeshLength
 
 
