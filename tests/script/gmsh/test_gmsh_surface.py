@@ -22,6 +22,7 @@ import gmsh
 import numpy as np
 import pytest
 
+from pyemmo.script.geometry.line import Line
 from pyemmo.script.geometry.point import Point
 from pyemmo.script.gmsh.gmsh_surface import GmshArc, GmshLine, GmshPoint, GmshSurface
 
@@ -190,6 +191,19 @@ def test_duplicate(gmsh_surface: GmshSurface, name: str):
         assert duplicate.name == gmsh_surface.name + "_dup"
 
     assert gmsh_surface.meanMeshLength == duplicate.meanMeshLength
+
+
+@pytest.mark.xfail(reason="not implemented mirror yet")
+def test_mirror(gmsh_surface: GmshSurface):
+    """Test mirror() method. NOT IMPLEMENTED YET"""
+    plane_point = Point("center point", 0, 0, 0)
+    x_point = Point("x point", 1, 0, 0)
+    y_point = Point("y point", 0, 1, 0)
+    x_vector = Line(name="x vector", start_point=plane_point, end_point=x_point)
+    y_vector = Line(name="y vector", start_point=plane_point, end_point=y_point)
+    gmsh_surface.mirror(
+        planePoint=plane_point, planeVector1=x_vector, planeVector2=y_vector
+    )
 
 
 # TODO: Add tests for the following methods:
