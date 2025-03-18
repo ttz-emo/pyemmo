@@ -206,10 +206,17 @@ def test_mirror(gmsh_surface: GmshSurface):
     )
 
 
+def test_combine(gmsh_surface: GmshSurface):
+    """Test combine() method"""
+    add_surf = add_circle(gmsh_surface.points[0], gmsh_surface.curve[0].getPointDist())
+    # FIXME: For now just make sure the combination creates a valid surface and does not
+    # raise an error
+    comb_surf = gmsh_surface.combine(add_surf, removeObject=True, removeTool=True)
+
+
 # TODO: Add tests for the following methods:
 # Surface.allPoints
 # Surface.calcCOG
-# Surface.combine
 # Surface.curve
 # Surface.cutOut
 # Surface.delete
