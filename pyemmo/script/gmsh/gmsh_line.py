@@ -136,7 +136,8 @@ class GmshLine(Line, GmshGeometry):
             gmsh.model.occ.synchronize()
             if (1, tag) not in gmsh.model.getEntities(1):
                 raise ValueError(f"Curve with {tag=} does not exist in the model.")
-            if gmsh.model.getType(1, tag) != "Line":
+            # TODO Add support for 'TrimmedCurve' curve type
+            if gmsh.model.getType(1, tag) not in ("Line", "TrimmedCurve"):
                 raise ValueError(f"Curve with {tag=} is not of type Line.")
             self._id = tag
             # get boundary points:
@@ -146,8 +147,7 @@ class GmshLine(Line, GmshGeometry):
             # if no name given try to get it from gmsh
             if not name:
                 name = gmsh.model.get_entity_name(1, tag)
-            else:
-                self.name = name
+            self.name = name
         # self._start_point = start_point
         # self._end_point = end_point
 
