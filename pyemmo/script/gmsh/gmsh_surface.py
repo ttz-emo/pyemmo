@@ -89,7 +89,8 @@ class GmshSurface(Surface, GmshGeometry):
             ):
                 raise ValueError("All curves must be of type GmshLine or GmshArc!")
             # no tag given, but all curves are type GmshLine or GmshArc
-            # FIXME: addCurveLoop() can create new line objects in gmsh to share touch points
+            # FIXME: addCurveLoop() can create new line objects in gmsh to share touch
+            # points
             curve_loop = gmsh.model.occ.addCurveLoop([curve.id for curve in curves])
             self._id = gmsh.model.occ.addPlaneSurface([curve_loop])
         else:
@@ -164,7 +165,8 @@ class GmshSurface(Surface, GmshGeometry):
         """Set the curves that form the surface.
 
         Args:
-            curves (list[Union[GmshLine, GmshArc]]): The list of curves that form the surface.
+            curves (list[Union[GmshLine, GmshArc]]): The list of curves that form the
+            surface.
         """
         raise ValueError("Can not set the lineloop of a existing GmshSurface!")
 
@@ -319,9 +321,99 @@ class GmshSurface(Surface, GmshGeometry):
     def replaceCurve(self, oldCurve, newCurve):
         raise RuntimeError("No need to replace curves in GmshSurface!")
 
-    def cutOut(self, tool: Surface, keepTool: bool = True) -> None:
-        # TODO: implement cutOut
-        raise NotImplementedError("Method not implemented yet!")
+    def cutOut(self, tool: "GmshSurface", keepTool: bool = True) -> None:
+        """Cut out a Tool Surface from the Parent surface by Boolean Difference"""
+        self._cut.append(tool)
+        tool.setTool()  # set to the tool surface
+        cut_dim_tags: list[DimTag] = [(2, tool.id)]
+        # cut out tools of tools aswell!
+        if tool.tools:
+            raise RuntimeError("Tool surfaces can not have tools for now!")
+            # TODO: Implement cutting out tools of tools, maybe be creating new united
+            # surface from all tools.
+            tools = tool.tools
+            while tools:
+                # while tools array is not empty
+                new_tools = []
+                for tool in tools:
+                    # add tool surface to cut out
+                    cut_dim_tags.append((2, tool.id))
+                    if tool.tools:
+                        # if tool itself has tools
+                        new_tools.extend(tool.tools)  # update new_tools list
+                tools = new_tools  # reset tools
+        # fragment resutls in a list of new surfaces tags + a map that tells which of
+        # the new surfaces together form the old surface. So for e.g. if surface 2,
+        # which intersects surface 1 partly, is subtracted from surface 1, then 3 new
+        # surfaces are created:
+        # Tag 1: the part of surface 1 that is not intersected by surface 2
+        # Tag 2: the part of surface 1 that is intersected by surface 2
+        # Tag 3: the part of surface 2 that is not intersected by surface 1
+        # And outDimTagsMap will tell you which of the new surfaces build the original
+        # surface, like:
+        #   [[(2,1),(2,2)],[(2,2),(2,3)]]
+        # This means e.g. that the original surface with old tag 1 is build by the new
+        # surfaces 1 and 2.
+        out_dim_tags, out_dim_tags_map = gmsh.model.occ.fragment(
+            [(2, self.id)], cut_dim_tags, removeTool=not keepTool
+        )
+        if len(out_dim_tags) == 1:
+            # single output surface -> new surface should be the = ParentSurface-Tool
+            if out_dim_tags_map[0] == out_dim_tags + cut_dim_tags:
+                # old parent surface is new surface + tool
+                if out_dim_tags[0][1] != self.id:
+                    # the parent surface id changed -> set new id
+                    old_id = self.id  # get old id
+                    self._id = out_dim_tags[0][1]  # set id to new surface tag
+                    gmsh.model.setEntityName(
+                        2, self.id, self.name
+                    )  # update name of surface
+                    # gmsh.model.occ.remove(
+                    #     [(2, old_id)]
+                    # )  # remove old surface
+                return None
+            else:
+                raise RuntimeError("Unhandled fragment output!")
+        if len(out_dim_tags) == 2:
+            # the number of surfaces did not change (still one object and one tool)
+            # check if one of the surface ids changed:
+            if out_dim_tags[0][1] != self.id:
+                # the parent surface id changed -> set new id
+                old_id = self.id  # get old id
+                self._id = out_dim_tags[0][1]  # set id to new surface tag
+                gmsh.model.setEntityName(
+                    2, self.id, self.name
+                )  # update name of surface
+                gmsh.model.occ.remove([(2, old_id)])  # remove old surface
+            if out_dim_tags[1][1] != tool.id:
+                # the tool surface id changed -> set new id
+                old_id = tool.id  # get old id
+                tool._id = out_dim_tags[1][1]
+                gmsh.model.setEntityName(2, tool.id, tool.name)
+                gmsh.model.occ.remove([(2, old_id)])  # remove old tool surface
+            return None
+        if len(out_dim_tags) > 2:
+            # extra surface(s) was/were created (additional to parent and tool), so
+            # surfaces partly intersected.
+            self._id = out_dim_tags[0][1]  # update parent surface id
+            gmsh.model.setEntityName(2, self.id, self.name)  # update name of surface
+
+            # TODO: handle the newly created tool surfaces
+            # new_tool_dimtags = out_dim_tags_map[-1]
+            # for dimtag in new_tool_dimtags:
+            #     if dimtag not in out_dim_tags_map[0]:
+            #         # new (outer) tool surface since it is not part of the original
+            #         # surface
+            #         # What to do with the new tool surface?
+            #         outer_tool_part = GmshSurface(tag=dimtag[1])
+            #     else:
+            #         # replace old tool surface with new (not rotated) tool surface
+            #         inner_tool_part = GmshSurface(tag=dimtag[1])
+        else:
+            raise ValueError(
+                "Unexpected number of output surfaces after cutting out tool surface: "
+                f"{len(out_dim_tags)}"
+            )
 
     def calcCOG(self) -> Point:
         # TODO: test this works
