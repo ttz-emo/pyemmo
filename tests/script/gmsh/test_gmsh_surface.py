@@ -54,6 +54,7 @@ def add_new_model():
 def fixture_gmsh_surface():
     """Default test Surface
 
+          y
             |
     (1,0).---------------.(1,1)
             |               |
@@ -62,7 +63,7 @@ def fixture_gmsh_surface():
             |               |
             |               |
     (0,0).---------------.(0,1)---->
-            |
+            |                      x
 
     """
     return create_rectangle()
@@ -105,6 +106,7 @@ def add_circle(center: GmshPoint, radius: float):
                 -1,
                 name=f"P{i}",
                 coords=[xy[0] * radius + dx, xy[1] * radius + dy, 0],
+                meshLength=2 * np.pi * radius / 60,
             )
         )
     lines: list[GmshArc] = []
@@ -121,12 +123,29 @@ def add_circle(center: GmshPoint, radius: float):
     return GmshSurface(-1, lines, f"Circle {radius=:.1f}")
 
 
-def test_init(gmsh_surface: GmshSurface):
+def test_init_with_curveloop(gmsh_surface: GmshSurface):
     """Test the init of Surface"""
     assert len(gmsh_surface.curve) == 4
     assert gmsh_surface.dim == 2
     assert gmsh_surface.name == "Test surface"
     assert np.isclose(gmsh_surface.meanMeshLength, 1e-3, rtol=1e-3)
+
+
+def test_init_with_id(gmsh_surface: GmshSurface):
+    """Test the init of Surface"""
+    new_gmsh_surface = GmshSurface(tag=gmsh_surface.id)
+    assert len(new_gmsh_surface.curve) == len(gmsh_surface.curve)
+    assert new_gmsh_surface.dim == 2
+    assert new_gmsh_surface.name == "Test surface"
+    assert np.isclose(
+        new_gmsh_surface.meanMeshLength, gmsh_surface.meanMeshLength, rtol=1e-3
+    )
+
+
+def test_init_with_id_newName(gmsh_surface: GmshSurface):
+    """Test the init of Surface"""
+    new_gmsh_surface = GmshSurface(tag=gmsh_surface.id, name="new name")
+    assert new_gmsh_surface.name == "new name"
 
 
 def test_set_mesh_length(gmsh_surface: GmshSurface):
@@ -212,6 +231,40 @@ def test_combine(gmsh_surface: GmshSurface):
     # FIXME: For now just make sure the combination creates a valid surface and does not
     # raise an error
     comb_surf = gmsh_surface.combine(add_surf, removeObject=True, removeTool=True)
+
+
+def test_cut_out_inside(gmsh_surface: GmshSurface):
+    """Test cutOut() method for circle that is **completly inside** the parent surface."""
+    center = GmshPoint(name="Center", coords=[0.5, 0.5, 0])
+    circ = add_circle(center, radius=0.4)
+    gmsh_surface.cutOut(circ)
+    assert len(gmsh_surface.curve) == 8
+    assert gmsh_surface.dim == 2
+    assert gmsh_surface.name == "Test surface"
+    assert gmsh_surface.id == 3
+
+
+def test_cut_out_overlap(gmsh_surface: GmshSurface):
+    """Test cutOut() method for circle that **overlaps** the parent surface."""
+    circ_center = gmsh_surface.points[0]
+    circ = add_circle(circ_center, radius=gmsh_surface.curve[0].getPointDist() / 2)
+    gmsh_surface.cutOut(circ)
+    assert len(gmsh_surface.curve) == 5
+    assert gmsh_surface.dim == 2
+    assert gmsh_surface.name == "Test surface"
+    assert gmsh_surface.id == 3
+
+
+def test_cut_out_noIntersect(gmsh_surface: GmshSurface):
+    """Test cutOut() method for circle that **does not intersect** the parent surface."""
+    circ_center = gmsh_surface.points[0]
+    circ = add_circle(circ_center, radius=0.1)
+    circ.translate(-0.3, 0, 0)  # move circle out of parent surface
+    gmsh_surface.cutOut(circ)
+    assert len(gmsh_surface.curve) == 4
+    assert gmsh_surface.dim == 2
+    assert gmsh_surface.name == "Test surface"
+    assert gmsh_surface.id == 1
 
 
 # TODO: Add tests for the following methods:
