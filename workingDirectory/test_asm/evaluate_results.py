@@ -10,9 +10,11 @@ from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 
 from pyemmo.functions.import_results import (
+    get_result_files,
     read_RegionValue_dat,
     read_timetable_dat,
 )
+from pyemmo.functions.runOnelab import import_results_default
 
 
 class NumpyEncoder(json.JSONEncoder):
@@ -59,12 +61,32 @@ RES_DIR = select_results_folder()
 resId = os.path.basename(RES_DIR)
 json_res_file = os.path.join(RES_DIR, f"{resId}.json")
 if not os.path.isfile(json_res_file):
-    raise FileNotFoundError(f"Could not find results json file {json_res_file}")
-with open(json_res_file, encoding="utf-8") as jFile:
-    out_dict = json.load(jFile)
-    # out_dict = json.load(jFile, indent=4, cls=NumpyEncoder)
-# out_dict = json.load(json_res_file)
-results = out_dict
+    logging.warning(f"Could not find results json file {json_res_file}")
+    dat_files, pos_files = get_result_files(RES_DIR)
+else:
+    try:
+        with open(json_res_file, encoding="utf-8") as jFile:
+            out_dict = json.load(jFile)
+            # out_dict = json.load(jFile, indent=4, cls=NumpyEncoder)
+            # out_dict = json.load(json_res_file)
+            results = out_dict
+            param_dict = out_dict["getdp"]
+            dat_files, pos_files = get_result_files(RES_DIR)
+            time, data = read_timetable_dat(os.path.join(RES_DIR, dat_files[0]))
+            if not results["time"] == time:
+                logging.warning("Time values from json and dat file do not match!")
+                logging.warning("Trying to reimport values from dat files...")
+                try:
+                    results = import_results_default(results, RES_DIR)
+                    results["getdp"] = param_dict
+                except Exception as exce:
+                    logging.error(
+                        "Could not reimport results from dat files! Due to %s",
+                        exce,
+                    )
+    except Exception:
+        pass
+
 # %%
 # Imported results
 if "sim_duration" in out_dict:
@@ -114,9 +136,11 @@ nbr_bars = results["current"]["bars"].shape[1]
 nbr_stator_periods = results["getdp"]["nbrStatorPeriods"]
 n = results["getdp"]["RPM"]
 f_r = results["getdp"]["freq_rotor"]
+T_r = 1 / f_r
 f_s = f_r + 2 * n / 60
 T_s = 1 / f_s
 nbr_steps_per_period = T_s / t[1]
+nbr_steps_per_rotorPeriod = int(T_r / t[1])
 
 fig, axi = plt.subplots()
 axi: Axes = axi
@@ -129,10 +153,11 @@ for nBar in range(nbr_bars):
         markersize=3,
     )
 axi.set_ylabel("Strom in A")
-if t[-1] > 2 * T_s:  # if specific amount of periods is calculated
-    axi.set_xlim(
-        t[int(t.size * ((nbr_stator_periods - 1) / nbr_stator_periods))], t[-1]
-    )
+# if t[-1] > 2 * T_s:  # if specific amount of periods is calculated
+#     axi.set_xlim(
+#         t[int(t.size * ((nbr_stator_periods - 1) / nbr_stator_periods))], t[-1]
+#     )
+axi.set_xlim(t[int(t.size - nbr_steps_per_rotorPeriod)], t[-1])
 axi.legend()
 axi.grid(True)
 axi.set_title(f"Stabströme")
@@ -159,10 +184,10 @@ if os.path.isfile(resfile):
     ax.legend(handles=[line_u[0], line_i[0]])
     ax.set_title(f"Stab {nBar+1}")
     if t[-1] > (nbr_stator_periods - 2) * T_s:
-        ax.set_xlim(T_s * (nbr_stator_periods - 1), T_s * nbr_stator_periods)
+        ax.set_xlim(t[int(t.size - nbr_steps_per_rotorPeriod)], t[-1])
+        # ax.set_xlim(T_s * (nbr_stator_periods - 1), T_s * nbr_stator_periods)
 
-    # %%
-    # Plot: R = U/I (Stab)
+    # %% Plot: R = U/I (Stab)
     fig, ax = plt.subplots()
     ax: Axes = ax
     r_bar = np.mean(U_bars[1:, nBar] / results["current"]["bars"][1:, nBar])
@@ -184,14 +209,14 @@ if os.path.isfile(resfile):
     ax.grid(True)
     ax.legend()
 
-    # %
+    # % PLOT STABSPANNUNGEN
     fig, ax = plt.subplots()
     ax: Axes = ax
     for nBar in range(nbr_bars):
         line_u = ax.plot(t, U_bars[:, nBar], label=f"Stab {nBar}")
     ax.set_xlabel("time in s")
     ax.set_ylabel("Spannung in V")
-    # ax.set_xlim(14.75,15)
+    ax.set_xlim(t[i_last_period], t[-1])
     ax.legend()
     # ax.set_ylim(-1e-5,1e-5)
     ax.grid(True)
@@ -210,10 +235,9 @@ line_u = ax.plot(results["time"][:-1], results["inducedVoltage"]["c"], label=f"U
 ax.legend(loc=1)
 t = results["time"]
 # ax.set_xlim(t[int(t.size * (nbr_stator_periods - 2) / nbr_stator_periods)], t[-1])
+ax.set_xlim(t[int(t.size - nbr_steps_per_rotorPeriod)], t[-1])
 ax.grid(True)
 
-
-# %%
 # %%
 # Plot Drehmoment
 fig, ax = plt.subplots()
@@ -231,13 +255,13 @@ if os.path.isfile(os.path.join(RES_DIR, "Ts_vw.dat")):
     ax.legend()
 
 # mean torque
-results["torque"]["mean"] = np.mean(
-    [results["torque"]["stator"], results["torque"]["rotor"]], axis=0
-)
+# results["torque"]["mean"] = np.mean(
+#     [results["torque"]["stator"], results["torque"]["rotor"]], axis=0
+# )
 
 ax.plot(
     results["time"],
-    results["torque"]["mean"],
+    results["torque"],
     "-",
     label=f"MST ({resId})",
 )
@@ -254,7 +278,7 @@ ax.minorticks_on()
 
 # %%
 # PRINT DES MITTLEREN DREHOMMENTS
-M_mean_actual = np.mean(results["torque"]["stator"][i_last_period:])
+M_mean_actual = np.mean(results["torque"][i_last_period:])
 print(
     f"Das mittlere Drehmoment der letzten Periode (ID: {resId}) sind {M_mean_actual:.2f} Nm"
 )

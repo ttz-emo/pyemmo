@@ -51,11 +51,11 @@ I_eff = 50
 n = 1000
 f_s = f_r + 2 * n / 60
 T_s = 1 / f_s
-nbr_stator_periods = 3
+nbr_stator_periods = 120
 nbr_steps_per_period = 128  # only needed in case n = 0
 # Zum Abgleich mit Maxwell
 Nbr_Sect = 2048  # Bandsegmentierung
-multi = 8  # Default=4 number of Segments per timestep
+multi = 4  # Default=4 number of Segments per timestep
 timestep = (60 / (n * Nbr_Sect / multi)) if n > 0 else T_s / nbr_steps_per_period
 winkelschritt = n / 60 * 360 * timestep  # Default: 0.703125
 nbr_timesteps = T_s / timestep * nbr_stator_periods
@@ -98,8 +98,8 @@ paramDict = {
         "Flag_Debug": 0,
         "Flag_ClearResults": 0,
         "verbosity level": 3,
-        # "AxialLength_R": 1,
-        # "AxialLength_S": 1,
+        # "AxialLength_R": 1, # 0.225m in param file
+        # "AxialLength_S": 1, # 0.225m in param file
         "NbrParallelPaths": 1,
         "R_endring_segment": 16e-7 / 2,  # Initial value: 16e-7,
         "L_endring_segment": 2e-9 / 2,
