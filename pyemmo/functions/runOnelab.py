@@ -166,7 +166,8 @@ def mergeAllGeoFiles(folderPath, gmshExe):
     for filename in allFiles:
         if ".geo" in filename:  # if its a geo file
             geoFilePath = join(folderPath, filename)
-            allCommands.append(geoFilePath)  # append the total filename to allCommands
+            # append the total filename to allCommands:
+            allCommands.append(geoFilePath)
     subprocess.run(allCommands, shell=False)
     return None
 
@@ -227,7 +228,8 @@ def createCmdCommand(
         # first part of the cmd command: open the geo or pro-file
         if not gmshPath:
             gmshPath = findGmsh()
-        gmsh_command = f'{gmshPath} "{onelabFile}"'  # the command is: 'gmsh "FILE.xxx"'
+        # the command is: 'gmsh "FILE.xxx"'
+        gmsh_command = f'{gmshPath} "{onelabFile}"'
         if ext.lower() == ".geo":
             # if its a geo file
             if not useGUI:
@@ -493,6 +495,45 @@ def runCalcforCurrent(param: dict):
     ##########################################################################
     # EVALUATE RESULTS
     ##########################################################################
+    results_dict = import_results_default(param, simulation_res_dir, post_operations)
+    return results_dict
+
+
+def import_results_default(
+    param: dict,
+    simulation_res_dir: str,
+    post_operations: list[str] | None = None,
+):
+    """Import results for standard simulation with PyEMMO.
+
+    See `runCalcforCurrent` for more information.
+
+    Args:
+        param (dict): Parameter dict for start of simulation. See `runCalcforCurrent`.
+        simulation_res_dir (str): Path to result directory.
+        post_operations (list[str], optional): Post operation list. Defaults to None.
+
+    Raises:
+        exce: _description_
+        FileNotFoundError: _description_
+
+    Returns:
+        dict[str, numpy.ndarray]: Results dictionary with keys:
+            - "id": d-axis current
+            - "iq": q-axis current
+            - "speed": Rotational speed in 1/min.
+            - "current": dict with keys "a", "b", "c" and "bars" for phase currents.
+            - "torque": dict with keys "rotor" and "stator" for torque values.
+            - "torque_vw": dict with keys "rotor" and "stator" for virtual work torque
+                values.
+            - "flux": dict with keys "a", "b", "c", "d", "q" and "0" for flux values.
+            - "inducedVoltage": dict with keys "a", "b" and "c" for induced voltage values.
+            - "rotorPos": Rotor position in degrees.
+            - "coreLoss": dict with keys "rotor" and "stator" for iron loss values.
+                Where each value is a dict with keys "hyst", "eddy" and "exc" for
+                hysteresis, eddy current and excess loss values.
+
+    """
     logging.info("Import results for result-ID '%s'", param["getdp"]["ResId"])
     results_dict = {}
     # try to import getdp parameters from param dict
@@ -583,35 +624,34 @@ def runCalcforCurrent(param: dict):
     # Check if file hystLoss_rotor.dat allready exists -> loss allready calculated
     core_loss_dict = {}
     if not os.path.exists(os.path.join(simulation_res_dir, "hystLoss_rotor.dat")):
-        if "GetBIron" in post_operations:
-            # calculate core loss
-            totalLoss = 0
-            for _, side in enumerate(["rotor", "stator"]):
-                bFilePath = os.path.join(simulation_res_dir, f"b_{side}.pos")
-                lossDict, time = calcIronLoss.main(
-                    bFilePath,
-                    loss_factor={
-                        "hyst": param["hyst"],
-                        "eddy": param["eddy"],
-                        "exc": param["exc"],
-                    },
-                    sym_factor=param["sym"],
-                    axial_length=param["axLen"],
-                )
-                totalLoss += sum(lossDict.values())
-                # print(f"Iron losses for {paramDict['ResId']} on {side} are: {lossDict}")
-
-                # save to file:
-                for loss_type, loss_data in lossDict.items():
-                    core_loss_res_file = os.path.join(
-                        simulation_res_dir,
-                        str(loss_type) + f"Loss_{side}" + ".dat",
+        if post_operations is not None:
+            if "GetBIron" in post_operations:
+                # calculate core loss
+                totalLoss = 0
+                for _, side in enumerate(["rotor", "stator"]):
+                    bFilePath = os.path.join(simulation_res_dir, f"b_{side}.pos")
+                    lossDict, time = calcIronLoss.main(
+                        bFilePath,
+                        loss_factor={
+                            "hyst": param["hyst"],
+                            "eddy": param["eddy"],
+                            "exc": param["exc"],
+                        },
+                        sym_factor=param["sym"],
+                        axial_length=param["axLen"],
                     )
-                    calcIronLoss.write_simple(core_loss_res_file, time, loss_data)
-                    # with open(ironLossResFile, mode="w+", encoding="utf-8") as file:
-                    #     lossDataJSON = json.dumps(ironLossDictList, indent=3)
-                    #     file.write(lossDataJSON)
-                core_loss_dict[side] = lossDict
+                    totalLoss += sum(lossDict.values())
+                    # save to file:
+                    for loss_type, loss_data in lossDict.items():
+                        core_loss_res_file = os.path.join(
+                            simulation_res_dir,
+                            str(loss_type) + f"Loss_{side}" + ".dat",
+                        )
+                        calcIronLoss.write_simple(core_loss_res_file, time, loss_data)
+                        # with open(ironLossResFile, mode="w+", encoding="utf-8") as file:
+                        #     lossDataJSON = json.dumps(ironLossDictList, indent=3)
+                        #     file.write(lossDataJSON)
+                    core_loss_dict[side] = lossDict
     else:
         logging.warning(
             "Iron losses for %s have allready been calculated.\nImporting values...",
@@ -646,6 +686,7 @@ def runCalcforCurrent(param: dict):
         logging.debug(
             f"{'Summe:':<14} {np.mean(core_loss_dict['rotor']['exc']+core_loss_dict['rotor']['eddy']+core_loss_dict['rotor']['hyst']) : 8.3f} W {np.mean(core_loss_dict['stator']['exc']+core_loss_dict['stator']['eddy']+core_loss_dict['stator']['hyst']) : 9.3f} W {np.mean(core_loss_dict['rotor']['exc']+core_loss_dict['rotor']['eddy']+core_loss_dict['rotor']['hyst']+core_loss_dict['stator']['exc']+core_loss_dict['stator']['eddy']+core_loss_dict['stator']['hyst']) : 9.3f} W"
         )
+
     return results_dict
 
 
