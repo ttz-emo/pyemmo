@@ -34,7 +34,7 @@ from .gmsh_line import GmshLine
 from .gmsh_point import GmshPoint
 
 
-class GmshSurface(Surface, GmshGeometry):
+class GmshSurface(GmshGeometry, Surface):
     """
     GmshSurface class for Surfaces in Gmsh.
     """
@@ -83,6 +83,13 @@ class GmshSurface(Surface, GmshGeometry):
                 )
             # create GmshSurface from existing tag
             self._init_with_tag(tag, name)
+            # if no name is given, get the name from the Gmsh model:
+            if not name:
+                name = gmsh.model.get_entity_name(2, tag)
+            # name attribute will be set in super().__init__(). Since the first parent
+            # class of GmshSurface is GmshGeometry, the name attribute will be set by
+            # GmshGeometry.name.setter() even though the setter is called by Surface
+            # class!
         elif tag == -1:
             if not all(
                 l is not None and isinstance(l, (GmshLine, GmshArc)) for l in curves
@@ -109,11 +116,6 @@ class GmshSurface(Surface, GmshGeometry):
                 f"Tag {tag} is not of type 'Plane' but is type '{surf_type}'!"
             )
         self._id = tag
-        if not name:
-            # if no name is given, get the name from the Gmsh model
-            name = gmsh.model.get_entity_name(2, tag)
-        # otherwise set the name to the given name
-        self.name = name
 
     def _get_lineloop(self, tag: int) -> list[Union[GmshLine, GmshArc]]:
         """Get the lineloop of the surface from the Gmsh model.
