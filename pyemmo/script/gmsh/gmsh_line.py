@@ -207,6 +207,11 @@ class GmshLine(GmshGeometry, Line):
         """
         raise AttributeError("Cannot set end_point of GmshLine!")
 
+    @property
+    def length(self) -> float:
+        """Length of gmsh line by gmsh.model.occ.getMass(dim, tag)"""
+        return gmsh.model.occ.getMass(self.dim, self.id)
+
     def switchPoints(self):
         raise AttributeError("Cannot switch points of GmshLine!")
 

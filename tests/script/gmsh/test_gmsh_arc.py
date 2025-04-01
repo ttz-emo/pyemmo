@@ -147,6 +147,10 @@ class TestGmshArc:
         )
         assert str(arc) == expected_str
 
+    def test_length(self, gmsh_arc: GmshArc):
+        """Test length method of class GmshArc"""
+        assert np.isclose(gmsh_arc.length, math.pi / 2, atol=TOLERANCE)
+
     def test_duplicate(self, gmsh_arc: GmshArc):
         """Test duplicate method of class GmshGeometry"""
         dup_arc = gmsh_arc.duplicate()

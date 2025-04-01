@@ -105,6 +105,11 @@ def test_gmsh_line_str(gmsh_line: GmshLine):
     assert str(gmsh_line) == expected_str
 
 
+def test_length(gmsh_line: GmshLine):
+    """Test to get the length of a GmshLine."""
+    assert np.isclose(gmsh_line.length, np.sqrt(2), atol=TOLERANCE)
+
+
 def test_switch_points(gmsh_line: GmshLine):
     """Test to switch the start_point and end_point of a GmshLine.
     Fail because the start_point and end_point are read-only properties."""

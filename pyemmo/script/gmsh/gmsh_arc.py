@@ -279,6 +279,11 @@ class GmshArc(GmshGeometry, CircleArc):
         """
         raise ValueError("Can not change center point of GmshArc!")
 
+    @property
+    def length(self) -> float:
+        """Length of gmsh line by gmsh.model.occ.getMass(dim, tag)"""
+        return gmsh.model.occ.getMass(self.dim, self.id)
+
 
 GmshArc.duplicate = GmshGeometry.duplicate
 GmshArc.combine = GmshGeometry.combine
