@@ -69,6 +69,13 @@ def fixture_gmsh_surface():
     return create_rectangle()
 
 
+@pytest.fixture(scope="function")
+def fixture_gmsh_circle():
+    """Default test circle with radius 1 meter."""
+    centerpoint = GmshPoint(-1, coords=(0, 0, 0))
+    return add_circle(centerpoint, 1)
+
+
 def create_rectangle():
     """Default test Surface
 
@@ -159,6 +166,21 @@ def test_get_min_mesh_length(gmsh_surface: GmshSurface):
     min_ml = 1e-6
     gmsh_surface.curve[0].start_point.meshLength = min_ml
     assert np.isclose(gmsh_surface.getMinMeshLength(), min_ml, rtol=1e-3)
+
+
+@pytest.mark.parametrize(
+    "surf_fixture, expected_area",
+    [
+        ("gmsh_surface", 1.0),
+        ("fixture_gmsh_circle", np.pi),
+    ],
+)
+def test_area(surf_fixture, expected_area: float, request):
+    """Test area() property"""
+    # request is a special fixture to request other fixtures. For more information see:
+    # https://docs.pytest.org/en/7.1.x/reference/reference.html#id37
+    surf: GmshSurface = request.getfixturevalue(surf_fixture)
+    assert np.isclose(surf.area, expected_area, rtol=1e-3)
 
 
 def test_translate(gmsh_surface: GmshSurface):

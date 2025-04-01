@@ -183,6 +183,11 @@ class GmshSurface(GmshGeometry, Surface):
         mlList = [p.meshLength for p in points]
         return np.mean(mlList)
 
+    @property
+    def area(self) -> float:
+        """Surface areo of gmsh surface by gmsh.model.occ.getMass(dim, tag)"""
+        return gmsh.model.occ.getMass(self.dim, self.id)
+
     def setMeshLength(self, meshLength: float) -> None:
         """set the meshLength of all points of a surface.
 
