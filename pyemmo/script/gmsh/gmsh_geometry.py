@@ -97,7 +97,7 @@ class GmshGeometry(ABC):
             new_name (str): The new name to set.
         """
         gmsh.model.occ.synchronize()
-        gmsh.model.setEntityName(1, self.id, new_name)
+        gmsh.model.setEntityName(self.dim, self.id, new_name)
         self._name = new_name
 
     def translate(self, dx, dy, dz):
