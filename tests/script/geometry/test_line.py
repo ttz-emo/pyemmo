@@ -18,8 +18,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-import logging
-from math import cos, radians, sin
+# import logging
+from math import cos, radians, sin, sqrt
+
+import pytest
 
 from pyemmo.script.geometry.line import Line, Point
 
@@ -40,6 +42,21 @@ class TestLine:
         assert line.name == "Test init line"
         assert line.start_point == sp
         assert line.end_point == ep
+
+    @pytest.mark.parametrize(
+        "start_point, end_point, expected_length",
+        [
+            (Point("P0", 0, 0, 0), Point("P1", 1, 0, 0), 1),
+            (Point("P0", 0, 0, 0), Point("P2", 0, 0.5, 0), 0.5),
+            (Point("P0", 0, 0, 0), Point("P3", 0, 0, -1.75), 1.75),
+            (Point("P0", 0, 0, 0), Point("P4", 1, 1, 0), sqrt(2)),
+            (Point("P0", 0, 0, 0), Point("P5", -1, 0, 0), 1),
+        ],
+    )
+    def test_length(self, start_point, end_point, expected_length):
+        """Test the length of a line segment"""
+        line = Line("Test length line", start_point, end_point)
+        assert line.length == expected_length
 
     def test_duplicate(self):
         """Test the duplication of a line segment"""
@@ -69,4 +86,5 @@ class TestLine:
     #   Line.rotateZ
 
     def teardown_method(self):
-        logging.info("Teardown")
+        # logging.info("Teardown")
+        pass

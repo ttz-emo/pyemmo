@@ -116,6 +116,19 @@ class CircleArc(Line):
         self._center = newCenterPoint
         # FIXME: Make sure other points are changed too, !if position changes!
 
+    @property
+    def length(self) -> float:
+        """Get the length of the line
+
+        Returns:
+            float: Length of the line.
+        """
+        r = self.radius
+        theta = self.getAngle()
+        # circumference = 2*pi*r where the part of the circle is theta/(2*pi)
+        # => 2*pi*r*theta/(2*pi) = r*theta
+        return abs(r * theta)
+
     def translate(self, dx: float, dy: float, dz: float) -> None:
         """Mit translate() kann ein Kreisbogen linear verschoben werden. Die
         Inputvariablen dx, dy und dz beschreiben die Verschiebungsfaktoren in der

@@ -176,6 +176,15 @@ class Line(Transformable):
             )
         return complex(self.vector[0], self.vector[1])
 
+    @property
+    def length(self) -> float:
+        """Get the length of the line
+
+        Returns:
+            float: Length of the line.
+        """
+        return self.getPointDist()
+
     def switchPoints(self) -> None:
         """switch start and end point of curve (revert direction)
 
