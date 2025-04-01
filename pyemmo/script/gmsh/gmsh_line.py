@@ -79,7 +79,7 @@ from .gmsh_geometry import GmshGeometry
 from .gmsh_point import GmshPoint
 
 
-class GmshLine(Line, GmshGeometry):
+class GmshLine(GmshGeometry, Line):
     """
     Represents a Gmsh line in 3D space defined by a start and end point, with a unique
     identifier (tag), a name. The start and end points are instances of

@@ -79,7 +79,7 @@ from .gmsh_geometry import GmshGeometry
 from .gmsh_point import GmshPoint
 
 
-class GmshArc(CircleArc, GmshGeometry):
+class GmshArc(GmshGeometry, CircleArc):
     """
     TODO
 

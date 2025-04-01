@@ -62,7 +62,7 @@ from . import DimTag
 from .gmsh_geometry import GmshGeometry
 
 
-class GmshPoint(Point, GmshGeometry):
+class GmshPoint(GmshGeometry, Point):
     """
     Represents a point in 3D space with a unique identifier (tag) in the context of
     Gmsh.
