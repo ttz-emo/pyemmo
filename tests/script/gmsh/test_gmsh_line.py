@@ -101,7 +101,7 @@ def test_gmsh_line_str(gmsh_line: GmshLine):
         f"start_point=({gmsh_line.start_point.x:.1e}, {gmsh_line.start_point.y:.1e}, {gmsh_line.start_point.z:.1e}), "
         f"end_point=({gmsh_line.end_point.x:.1e}, {gmsh_line.end_point.y:.1e}, {gmsh_line.end_point.z:.1e}))"
     )
-    logging.info(str(gmsh_line))
+    logging.debug(str(gmsh_line))
     assert str(gmsh_line) == expected_str
 
 
