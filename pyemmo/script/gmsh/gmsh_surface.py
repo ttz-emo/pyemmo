@@ -367,12 +367,10 @@ class GmshSurface(GmshGeometry, Surface):
                     # the parent surface id changed -> set new id
                     old_id = self.id  # get old id
                     self._id = out_dim_tags[0][1]  # set id to new surface tag
-                    gmsh.model.setEntityName(
-                        2, self.id, self.name
-                    )  # update name of surface
-                    # gmsh.model.occ.remove(
-                    #     [(2, old_id)]
-                    # )  # remove old surface
+                    # update name of surface
+                    self.name = gmsh.model.getEntityName(self.dim, old_id)
+                    # # remove old surface
+                    # gmsh.model.occ.remove([(2, old_id)])
                 return None
             else:
                 raise RuntimeError("Unhandled fragment output!")
@@ -383,22 +381,25 @@ class GmshSurface(GmshGeometry, Surface):
                 # the parent surface id changed -> set new id
                 old_id = self.id  # get old id
                 self._id = out_dim_tags[0][1]  # set id to new surface tag
-                gmsh.model.setEntityName(
-                    2, self.id, self.name
-                )  # update name of surface
+                # update name of new surface
+                self.name = gmsh.model.getEntityName(self.dim, old_id)
                 gmsh.model.occ.remove([(2, old_id)])  # remove old surface
             if out_dim_tags[1][1] != tool.id:
                 # the tool surface id changed -> set new id
                 old_id = tool.id  # get old id
                 tool._id = out_dim_tags[1][1]
-                gmsh.model.setEntityName(2, tool.id, tool.name)
+                # update name of new tool
+                self.name = gmsh.model.getEntityName(self.dim, old_id)
                 gmsh.model.occ.remove([(2, old_id)])  # remove old tool surface
             return None
         if len(out_dim_tags) > 2:
             # extra surface(s) was/were created (additional to parent and tool), so
             # surfaces partly intersected.
+            old_id = self.id
             self._id = out_dim_tags[0][1]  # update parent surface id
-            gmsh.model.setEntityName(2, self.id, self.name)  # update name of surface
+            # update name of new parent surface:
+            self.name = gmsh.model.getEntityName(self.dim, old_id)
+            # gmsh.model.setEntityName(2, self.id, self.name)  # update name of surface
 
             # TODO: handle the newly created tool surfaces
             # new_tool_dimtags = out_dim_tags_map[-1]
