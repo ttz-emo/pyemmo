@@ -2015,7 +2015,7 @@ class Script:
         meshSettingsCode += "Mesh.Algorithm = 6; // Frontal-Delaunay for 2D meshes\n"
         # TODO: This can be removed with a new GetDP version according to:
         # https://gitlab.onelab.info/gmsh/gmsh/-/issues/3194
-        meshSettingsCode += "Mesh.MshFileVersion = 4.0; // Fix bug in mesh file creation for GetDP Version 3.6.0 \n"
+        meshSettingsCode += "Mesh.MshFileVersion = 4.0; // Fix bug in mesh file creation for GetDP Version 3.6.0\n"
         meshSettingsCode += "\n"
 
         meshModCode = ""
