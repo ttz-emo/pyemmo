@@ -1,4 +1,4 @@
-// This script was created with pyemmo (Version 1.3.1b1, git bc8992)
+// This script was created with pyemmo (Version 1.3.2, git b5e4ca)
 
 // MACHINE SPECIFIC VALUES
 SYMMETRY_FACTOR = 2;
