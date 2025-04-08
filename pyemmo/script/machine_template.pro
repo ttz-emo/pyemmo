@@ -34,11 +34,22 @@ INPUT_MAT_PROPERTIES_STATOR = StrCat[INPUT_MAT_PROPERTIES, "Stator/"];
 
 mm = 1e-3;
 
+// PARAMETER: MachineType
 SYNCHRONOUS = 0;
 ASYNCHRONOUS = 1;
 
+// PARAMETER: Flag_AnalysisType
 TRANSIENT = 1;
 STATIC = 0;
+
+// PARAMETER: CircuitConnection
+STAR_CONNECTION = 0;
+DELTA_CONNECTION = 1;
+
+// PARAMETER: Flag_SrcType_Stator
+CURRENT_SOURCE = 1; // standard current source (no circuit)
+VOLTAGE_SOURCE = 2; // voltage source (with circuit)
+CEMF_SOURCE = 0; // back EMF in circuit
 
 // Some script constants which are currently unused:
 DefineConstant[
@@ -98,21 +109,19 @@ DefineConstant[
 
     Flag_AnalysisType = {
         ANALYSIS_TYPE, Name StrCat[INPUT_ANA_SETTINGS, "01Analysis Type"],
-        Choices{STATIC = "Static", TRANSIENT = "Transient"}
+        Choices{ STATIC = "Static", TRANSIENT = "Transient" }
     },
 
     Flag_SrcType_Stator = {
         1, Name StrCat[INPUT_ANA_SETTINGS, "02Source Input Type"],
-        Choices{1 = "Current Source"}, // Only current source for now
-        // Choices{1 = "Current Source", 2 = "Voltage Source", 0 = "back EMF in Circuit"},
+        Choices{
+            CURRENT_SOURCE = "Current Source",
+            VOLTAGE_SOURCE = "Voltage Source",
+            CEMF_SOURCE = "Back EMF in Circuit"
+        },
         Visible Flag_ExpertMode
     },
-    // Variable controlling if the current density in the windings is imposed
-    // (via current) or calculated (volatge imposed, or back-emf calculation in
-    // circuit)
-    Flag_ImposedCurrentDensity = (Flag_SrcType_Stator == 1),
-    // are the windings connected via an external circuit
-    Flag_Cir = Flag_ImposedCurrentDensity != 1,
+
 
     initrotor_pos = {
         INIT_ROTOR_POS, Name StrCat[INPUT_ANA_SETTINGS, "04Initial rotor position"],
@@ -472,19 +481,29 @@ DefineConstant[
         ReadOnly 1
     },
 
-    // Amplitude of the input voltage (in case of voltage input)
-    VV = {12,
-            Name StrCat[INPUT_ELEC, "V [V]"],
-            Units "V",
-            Visible Flag_SrcType_Stator == 2},
+    VV = {
+        12, Name StrCat[INPUT_ELEC, "V [V]"],
+        Units "V",
+        Visible Flag_SrcType_Stator == 2,
+        Help "Amplitude of the input voltage (in case of voltage input)"
+    },
     R_wire = {
-        0, Name StrCat[INPUT_ELEC, "Connection Resistance [Ohm]"],
+        500e-3, Name StrCat[INPUT_ELEC, "Phase Resistance [Ohm]"],
         Visible Flag_Cir
     },
 
+    R_terminal = {
+        1e12, // Default value is very high so its like open circuit if not set
+        Name StrCat[INPUT_ELEC, "Terminal Connection Resistance [Ohm]"],
+        Visible Flag_SrcType_Stator == 0 // Only if source type is back-emf
+    }
+
     CircuitConnection = {
         0, Name StrCat[INPUT_ELEC, "Winding Type"],
-        Choices{0 = "Star Connection", 1 = "Delta Connection"},
+        Choices{
+            STAR_CONNECTION = "Star Connection",
+            DELTA_CONNECTION = "Delta Connection"
+        },
         Visible Flag_Cir
     },
 
@@ -492,7 +511,7 @@ DefineConstant[
     pA_deg = {
         0, Name StrCat[INPUT_ELEC, "Current System Offset"],
         Units "deg",
-        Help "Offset angle for (sinusoidal) stator phase currents",
+        Help "Offset angle for (sinusoidal) stator phase currents/voltages",
         Visible !Flag_ParkTransformation
     },
 
@@ -529,7 +548,13 @@ DefineConstant[
         ],
         ReadOnly !Flag_Cir_RotorCage,
         Visible (nbrRotorBars>0)
-    }
+    },
+    // Variable controlling if the current density in the windings is imposed
+    // (via current) or calculated (volatge imposed, or back-emf calculation in
+    // circuit)
+    Flag_ImposedCurrentDensity = (Flag_SrcType_Stator == CURRENT_SOURCE),
+    // are the windings connected via an external circuit
+    Flag_Cir = (!Flag_ImposedCurrentDensity || Flag_Cir_RotorCage)
 ];
 //=============================================================================
 //========================= END EXCITATION PARAMETERS =========================
@@ -627,7 +652,6 @@ Group
     PhaseB_pos = Region[{Stator_Ind_Bp}];
     PhaseC_pos = Region[{Stator_Ind_Cp}];
 
-    /*
 	// If we use an external circuit we populate these regions in the Circuit.pro
 	// file => otherwise we still need to define them in order to avoid an error
 	// message by machine_magstadyn_a.pro
@@ -636,7 +660,6 @@ Group
 	Inductance_Cir 		= Region[{}];
 	DomainZt 			= Region[{}];
 	DomainSource_Cir	= Region[{}];
-	*/
 
     // Control eddy current calculation in magentic material
     If(!Flag_EC_Magnets)
@@ -851,9 +874,9 @@ Function
 
 FUNCTION_CODE
 
-If(Flag_Cir_RotorCage)
-    // include circuit
-    Include "Circuit_SC_ASM.pro";
+If(Flag_Cir)
+    // include circuit constraints for the stator and rotor circuit
+    Include "Circuit.pro";
 EndIf
 
 // load 2D or 3D problem

@@ -150,8 +150,8 @@ Group {
 
   DomainM = Region[ {Rotor_Magnets} ] ;
 
-  // DomainB is coupled to an external circuit, so if we impose the current density, it is obvious that
-  // we cannot include them there
+  // DomainB is coupled to an external circuit, so if we impose the current density, it
+  // is obvious that we cannot include them there
   If(!Flag_ImposedCurrentDensity)
     DomainB = Region[ {Inds} ] ;
     DomainS = Region[ {} ];
@@ -722,7 +722,7 @@ Formulation {
       // if we have an estimation of the resistance of DomainB, via e.g. measurements
       // which is better to account for the end windings...
 
-      If(Flag_Cir_RotorCage)
+      If(Flag_Cir)
 	      GlobalTerm { NeverDt[ Dof{Uz}                , {Iz} ] ; In Resistance_Cir ; }
         GlobalTerm { NeverDt[ Resistance[] * Dof{Iz} , {Iz} ] ; In Resistance_Cir ; }
 
@@ -912,7 +912,7 @@ Resolution {
             PostOperation[Get_EC_LossesMagnets];
           EndIf
           If (Flag_Cir)
-            If (Rterminal < 1 )
+            If (R_terminal < 1 ) // Threshold for short circuit current evaluation
               PostOperation[GetShortCircuitCurrent];
             EndIf
           EndIf

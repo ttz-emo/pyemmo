@@ -16,15 +16,15 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
+
+# %%
 
 import json
 import logging
-
-# %%
 import os
 
 from pyleecan.Classes.Machine import Machine
+from pyleecan.definitions import DATA_DIR
 from pyleecan.Functions import load
 
 from pyemmo.api.pyleecan import main as pyleecanAPI
@@ -39,9 +39,10 @@ logging.getLogger().setLevel(logging.INFO)
 # Determination of the machine to be calculated:
 # ==============================================
 # machine folder pyemmo
-machineFolder = os.path.join(ROOT_DIR, "workingDirectory/machineData")
+# machineFolder = os.path.join(ROOT_DIR, r"tests\data\api\pyleecan")
 # machine folder pyleecan:
-# machineFolder = os.path.join(DATA_DIR, "Machine")
+machineFolder = os.path.join(DATA_DIR, "Machine")
+
 resFolder = os.path.join(ROOT_DIR, r"Results\pyleecanAPI")
 if not os.path.isdir(resFolder):
     os.makedirs(resFolder)
@@ -52,9 +53,7 @@ for i, filename in enumerate(os.listdir(machineFolder)):
         print(f"{machineList.index(filename)}: " + filename)
 # %%working machines
 # Load data with info about working machine names
-pylcn_machine_testfile = os.path.join(
-    ROOT_DIR, r"Results\pyleecan_machine_test.json"
-)
+pylcn_machine_testfile = os.path.join(ROOT_DIR, r"Results\pyleecan_machine_test.json")
 if os.path.isfile(pylcn_machine_testfile):
     # define filter function
     def filter_success(keyVal):
@@ -85,10 +84,8 @@ if os.path.isfile(pylcn_machine_testfile):
 fileName = machineList[33]  # SELECT MACHINE HERE BY INDEX OR NAME
 # fileName = "SIPMSM_002.json"  # SELECT MACHINE HERE BY INDEX OR NAME
 print("\nUsing machine: " + fileName)
-pyleecan_machine: Machine = (
-    load.load(  # pylint: disable=locally-disabled, no-member
-        os.path.abspath(os.path.join(machineFolder, fileName))
-    )
+pyleecan_machine: Machine = load.load(  # pylint: disable=locally-disabled, no-member
+    os.path.abspath(os.path.join(machineFolder, fileName))
 )
 # Workaround for wrong material
 CuMat = load.load(os.path.join(DATA_DIR, "Material", "Copper2.json"))

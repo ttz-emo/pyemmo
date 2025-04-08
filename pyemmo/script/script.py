@@ -2282,8 +2282,8 @@ class Script:
 
         ## COPY CIRCUIT FILE
         shutil.copy(
-            join(MAIN_DIR, "script", "Circuit_SC_ASM.pro"),
-            join(self.scriptPath, "Circuit_SC_ASM.pro"),
+            join(MAIN_DIR, "script", "Circuit.pro"),
+            join(self.scriptPath, "Circuit.pro"),
         )
 
         #  6.1 add the PostOperation command code before including the
