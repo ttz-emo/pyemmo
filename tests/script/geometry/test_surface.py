@@ -23,6 +23,20 @@ import pytest
 from pyemmo.script.geometry.surface import CircleArc, Line, Point, Surface
 
 
+def add_circle(center: Point, radius: float):
+    """Create a test Circle"""
+    points: list[Point] = []
+    for i, xy in enumerate([(0, 1), (1, 0), (0, -1), (-1, 0)]):
+        x, y, _ = center.coordinate
+        dx = x
+        dy = y
+        points.append(Point(f"P{i}", xy[0] * radius + dx, xy[1] * radius + dy, 0))
+    lines: list[CircleArc] = []
+    for i, point in enumerate(points):
+        lines.append(CircleArc(f"L{i}", points[i - 1], center, point))
+    return Surface(f"Circle {radius=:.1f}", lines)
+
+
 class TestSurface:
 
     def setup_method(self):
@@ -50,19 +64,6 @@ class TestSurface:
         for i, point in enumerate(points):
             lines.append(Line(f"L{i}", points[i - 1], point))
         return Surface("Test surface", lines)
-
-    def add_circle(self, center: Point, radius: float):
-        """Create a test Circle"""
-        points: list[Point] = []
-        for i, xy in enumerate([(0, 1), (1, 0), (0, -1), (-1, 0)]):
-            x, y, _ = center.coordinate
-            dx = x
-            dy = y
-            points.append(Point(f"P{i}", xy[0] * radius + dx, xy[1] * radius + dy, 0))
-        lines: list[CircleArc] = []
-        for i, point in enumerate(points):
-            lines.append(CircleArc(f"L{i}", points[i - 1], center, point))
-        return Surface(f"Circle {radius=:.1f}", lines)
 
     def test_init(self, test_surface: Surface):
         """Test the init of Surface"""
@@ -93,8 +94,8 @@ class TestSurface:
         """Test a two layer subtraction where the tool of the main surface has a tool
         aswell"""
         center = Point("Center", 0.5, 0.5, 0)
-        circ_big = self.add_circle(center, radius=0.4)
-        circ_small = self.add_circle(center, radius=0.15)
+        circ_big = add_circle(center, radius=0.4)
+        circ_small = add_circle(center, radius=0.15)
         circ_big.cutOut(circ_small)  # SECOND LAYER CUT
         test_surface.cutOut(circ_big)  # FIRST LAYER CUT
         # TODO: Add assert statements

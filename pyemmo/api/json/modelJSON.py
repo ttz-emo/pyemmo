@@ -332,7 +332,7 @@ def importMachineGeometry(
             new_quantity = sym_factor
             # rotate and duplicate main surface and previous cut out tools:
             for i in range(1, int(nbr_main_segments)):
-                dup_main_surf = main_surf.rotateDuplicate(i)
+                dup_main_surf = main_surf.rotate_duplicate(i)
                 # fuse main surface:
                 out_dim_tags, out_dim_tags_map = gmsh.model.occ.fuse(
                     [(2, main_surf.id)], [(2, dup_main_surf.id)]
@@ -348,7 +348,7 @@ def importMachineGeometry(
             for surf in area:
                 tool_area = createAPISurf(surf)
                 for segment in range(0, int(tool_area.nbrSegments / sym_factor)):
-                    dup_tool_surf = tool_area.rotateDuplicate(segment)
+                    dup_tool_surf = tool_area.rotate_duplicate(segment)
                     main_surf.cutOut(dup_tool_surf)
                 if logging.getLogger().level <= logging.DEBUG:
                     # show model after each tool cut out
@@ -457,7 +457,7 @@ def createMachineGeometryFromSegment(
         logging.debug("Rotating and duplicating %s %i times", surf.name, nbrSegments)
         for segment_nbr in range(0, int(nbrSegments)):
             # rotate_duplicate also considers the tools automatically
-            surf_dict[surf_id].append(surf.rotateDuplicate(segment_nbr))
+            surf_dict[surf_id].append(surf.rotate_duplicate(segment_nbr))
 
             ### update surf dict with tool surfaces
             tools = surf_dict[surf_id][-1].tools
