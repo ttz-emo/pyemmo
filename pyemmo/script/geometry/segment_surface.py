@@ -24,17 +24,17 @@ import gmsh
 import numpy as np
 from numpy import pi
 
-from ...script.geometry.circleArc import CircleArc
-from ...script.geometry.line import Line
-from ...script.geometry.spline import Spline
-from ...script.geometry.surface import Surface
-from ...script.gmsh import DimTag
-from ...script.gmsh.gmsh_surface import GmshSurface
-from ...script.material.material import Material
-from . import globalCenterPoint as gcp
+from ..gmsh import DimTag
+from ..gmsh.gmsh_surface import GmshSurface
+from ..material.material import Material
+from . import defaultCenterPoint as gcp
+from .circleArc import CircleArc
+from .line import Line
+from .spline import Spline
+from .surface import Surface
 
 
-class SurfaceAPI(Surface):
+class SegmentSurface(Surface):
     """
     SurfaceAPI is a child of geometry class Surface and has additional attributes:
 
@@ -115,7 +115,7 @@ class SurfaceAPI(Surface):
         # self._id = gmsh.model.occ.addPlaneSurface(curve_loop)
 
     @property
-    def tools(self) -> list[SurfaceAPI]:
+    def tools(self) -> list[SegmentSurface]:
         """Subtraction surfaces"""
         return super().tools
 
@@ -215,7 +215,7 @@ class SurfaceAPI(Surface):
         """Actual segement number of SurfaceAPI object"""
         return self._segment_number
 
-    def duplicate(self, name="", segment=0) -> SurfaceAPI:
+    def duplicate(self, name="", segment=0) -> SegmentSurface:
         """create a copy of the surface
 
         Args:
@@ -230,7 +230,7 @@ class SurfaceAPI(Surface):
         for curve in self.curve:
             newCurves.append(curve.duplicate())
         # create duplicate surfcace object
-        dup_surf = SurfaceAPI(
+        dup_surf = SegmentSurface(
             name=name,
             idExt=self.idExt,
             curves=newCurves,
@@ -253,7 +253,7 @@ class SurfaceAPI(Surface):
         dup_surf.setMeshColor(self.getMeshColor())
         return dup_surf
 
-    def rotateDuplicate(self, segment: int) -> SurfaceAPI:
+    def rotateDuplicate(self, segment: int) -> SegmentSurface:
         """
         Create a copy of the give surface and its tools surfaces + rotate it by
         :attr:`angle`.
@@ -271,7 +271,7 @@ class SurfaceAPI(Surface):
         rot_angle = self.angle * segment
 
         if rot_angle != 0:  # if the rotation angle is not zero
-            dup_surf: SurfaceAPI = self.duplicate(
+            dup_surf: SegmentSurface = self.duplicate(
                 name=f"{self.name} (Seg.: {segment})", segment=segment
             )
             dup_surf.rotateZ(gcp, rot_angle)
@@ -291,7 +291,7 @@ class SurfaceAPI(Surface):
         # if the angle is zero: give back the old surface
         return self
 
-    def cutOut(self, ToolSurface: SurfaceAPI, keepTool: bool = True) -> None:
+    def cutOut(self, ToolSurface: SegmentSurface, keepTool: bool = True) -> None:
         """Cut out a Tool Surface from the Parent surface by Boolean Difference"""
         self._cut.append(ToolSurface)
         ToolSurface.setTool()  # set to the tool surface
@@ -384,7 +384,7 @@ class SurfaceAPI(Surface):
                     # gmsh_surf.rotateZ(globalCenterPoint, self.angle)
                     # gmsh.model.occ.synchronize()
 
-                    new_tool = SurfaceAPI(
+                    new_tool = SegmentSurface(
                         name=ToolSurface.name + "_1",
                         idExt=ToolSurface.idExt,
                         curves=gmsh_surf.curve,
@@ -403,7 +403,7 @@ class SurfaceAPI(Surface):
                     # There is no way to initialize SurfaceAPI with a GmshSurface object
                     # directly so we need to create a GmshSurface first and extract the
                     # curve loop from it
-                    replace_tool = SurfaceAPI(
+                    replace_tool = SegmentSurface(
                         name=ToolSurface.name + "_0",
                         idExt=ToolSurface.idExt,
                         curves=gmsh_surf.curve,

@@ -26,12 +26,12 @@ import math
 
 from ...script.geometry.circleArc import CircleArc
 from ...script.geometry.line import Line
-from ..json.SurfaceJSON import SurfaceAPI
+from ...script.geometry.segment_surface import SegmentSurface
 
 
 def calc_wind_contour(
-    lam_surf: SurfaceAPI,
-    slot_surf_list: list[SurfaceAPI],
+    lam_surf: SegmentSurface,
+    slot_surf_list: list[SegmentSurface],
     rint: float,
     rext: float,
     is_internal: bool,

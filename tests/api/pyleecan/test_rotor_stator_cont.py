@@ -19,26 +19,26 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module to test the rotor and stator contour function of the pyleecan api."""
-from os.path import abspath, join
 import math
+from os.path import abspath, join
 from typing import List
+
 import pytest
 from pyleecan.Classes.Machine import Machine
+from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
+from pyleecan.Classes.MachineSyRM import MachineSyRM
 
 # pylint: disable=locally-disabled, no-name-in-module
 from pyleecan.Functions.load import load
-from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
-from pyleecan.Classes.MachineSyRM import MachineSyRM
-from pyemmo.api.json.modelJSON import SurfaceAPI
 
 # from pyemmo.script.geometry.point import Point
-from pyemmo.api.json.modelJSON import createSurfaceDict
-from pyemmo.api.pyleecan.translate_surfs import translate_surface
+from pyemmo.api.json.modelJSON import SegmentSurface, createSurfaceDict
 from pyemmo.api.pyleecan.get_rotor_stator_cont import (
     get_even_rotor_cont,
     get_spmsm_rotor_cont,
     get_winding_cont,
 )
+from pyemmo.api.pyleecan.translate_surfs import translate_surface
 from tests.api.pyleecan import TEST_API_PYLCN_DATA_DIR
 
 
@@ -46,7 +46,7 @@ def get_translated_machine(machine: Machine):
     """Local functionto get api geometry list."""
     all_surfs_labels = []
     all_surfs_labels_split2 = []
-    geometry_list: List[SurfaceAPI] = []
+    geometry_list: List[SegmentSurface] = []
     angle_point_ref_list = []
 
     all_surfaces: list = machine.rotor.build_geometry(
@@ -83,9 +83,7 @@ def get_translated_machine(machine: Machine):
 
 def contour_function(get_rotor_cont_function, machine_file):
     """Function to test the the contour identification functions"""
-    machine: Machine = load(
-        abspath(join(TEST_API_PYLCN_DATA_DIR, machine_file))
-    )
+    machine: Machine = load(abspath(join(TEST_API_PYLCN_DATA_DIR, machine_file)))
     geometry_list, is_internal = get_translated_machine(machine)
 
     result = get_rotor_cont_function(
@@ -113,12 +111,8 @@ def contour_function(get_rotor_cont_function, machine_file):
         assert result[1].meshLength == 0.001
 
         # asserts for l_point_rotor_cont
-        assert math.isclose(
-            result[2].coordinate[0], 0.047732002668121894, abs_tol=1e-6
-        )
-        assert math.isclose(
-            result[2].coordinate[1], 0.03467932988525591, abs_tol=1e-6
-        )
+        assert math.isclose(result[2].coordinate[0], 0.047732002668121894, abs_tol=1e-6)
+        assert math.isclose(result[2].coordinate[1], 0.03467932988525591, abs_tol=1e-6)
         assert math.isclose(result[2].coordinate[2], 0, abs_tol=1e-6)
         assert result[2].meshLength == 0.001
 

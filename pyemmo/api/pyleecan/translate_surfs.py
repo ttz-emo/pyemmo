@@ -44,6 +44,7 @@ import pyleecan.Classes.Machine
 import pyleecan.Classes.Surface
 from numpy import angle
 
+from ...script.geometry.segment_surface import SegmentSurface
 from ..json import (
     ROTOR_BAR_IDEXT,
     ROTOR_LAM_IDEXT,
@@ -51,7 +52,6 @@ from ..json import (
     STATOR_LAM_IDEXT,
     STATOR_SLOT_IDEXT,
 )
-from ..json.SurfaceJSON import SurfaceAPI
 from . import POLE_HOLE_IDEXT, PyleecanMachine
 from .build_pyemmo_line_list import build_pyemmo_line_list
 from .build_pyemmo_material import build_pyemmo_material
@@ -62,7 +62,7 @@ def translate_surface(
     machine: PyleecanMachine,
     surface: pyleecan.Classes.Surface.Surface,
     angle_point_ref_list: list,
-) -> tuple[SurfaceAPI, list]:
+) -> tuple[SegmentSurface, list]:
     """
     Translates pyleecan surfaces into pyemmo surfaces.
 
@@ -175,7 +175,7 @@ def translate_surface(
         )
 
     angle_seg = 2 * pi / nbr_seg
-    pyemmo_surf = SurfaceAPI(
+    pyemmo_surf = SegmentSurface(
         name=name,
         idExt=id_ext,
         curves=build_pyemmo_line_list(surface.line_list),

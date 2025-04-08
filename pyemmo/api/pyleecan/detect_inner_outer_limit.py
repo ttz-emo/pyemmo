@@ -31,15 +31,15 @@ from __future__ import annotations
 
 import math
 
-from ..json.SurfaceJSON import SurfaceAPI
+from ...script.geometry.segment_surface import SegmentSurface
 
 
 def detect_inner_outer_limit(
-    geometry_list: list[SurfaceAPI],
+    geometry_list: list[SegmentSurface],
     inner_radius: float,
     outer_radius: float,
     has_shaft: bool,
-) -> list[SurfaceAPI]:
+) -> list[SegmentSurface]:
     """Detects and labels the most inner and outer curves of the machine geometry.
 
     Overwrites the name of the curve to "InnerLimit" if it is the most inner curve,

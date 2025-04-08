@@ -32,14 +32,14 @@ from __future__ import annotations
 
 import re
 
+from ...script.geometry.segment_surface import SegmentSurface
 from .. import logger
 from ..json import ROTOR_LAM_IDEXT, ROTOR_MAG_IDEXT
-from ..json.SurfaceJSON import SurfaceAPI
 
 
 def get_rotor_surfs(
-    geometry_list: list[SurfaceAPI],
-) -> tuple[list[SurfaceAPI], list[SurfaceAPI]]:
+    geometry_list: list[SegmentSurface],
+) -> tuple[list[SegmentSurface], list[SegmentSurface]]:
     """
     Get the surfaces of the rotor.
 
@@ -74,8 +74,8 @@ def get_rotor_surfs(
 
 
 def get_stator_surfs(
-    geometry_list: list[SurfaceAPI],
-) -> list[SurfaceAPI]:
+    geometry_list: list[SegmentSurface],
+) -> list[SegmentSurface]:
     """
     Get the surface of the stator lamination.
 

@@ -39,8 +39,8 @@ from pyleecan.Classes.LamSlotWind import LamSlotWind
 from ...script.geometry.circleArc import CircleArc
 from ...script.geometry.line import Line
 from ...script.geometry.point import Point
+from ...script.geometry.segment_surface import SegmentSurface
 from ..json import ROTOR_LAM_IDEXT
-from ..json.SurfaceJSON import SurfaceAPI
 from . import PyleecanMachine
 from .calc_wind_cont import calc_wind_contour
 from .calcs_even_rotor_cont import calc_even_rotor_cont
@@ -149,8 +149,8 @@ def get_even_rotor_cont(
 
 
 def get_winding_cont(
-    lamination_surf: SurfaceAPI,
-    slot_surfs: list[SurfaceAPI],
+    lamination_surf: SegmentSurface,
+    slot_surfs: list[SegmentSurface],
     lamination: LamSlotWind,
 ) -> list[Line | CircleArc]:
     """

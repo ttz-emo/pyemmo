@@ -67,10 +67,10 @@ from pyleecan.Classes.SurfLine import SurfLine
 from ...script.geometry.circleArc import CircleArc
 from ...script.geometry.line import Line
 from ...script.geometry.point import Point
+from ...script.geometry.segment_surface import SegmentSurface
 from .. import logger
 from ..json import ROTOR_BAR_IDEXT, ROTOR_LAM_IDEXT, STATOR_LAM_IDEXT, STATOR_SLOT_IDEXT
 from ..json.modelJSON import createSurfaceDict
-from ..json.SurfaceJSON import SurfaceAPI
 from . import PyleecanMachine
 from .calcs_rotor_spmsm_cont import get_lr_points
 from .detect_inner_outer_limit import detect_inner_outer_limit
@@ -87,7 +87,7 @@ def create_geo_dict(
     machine: PyleecanMachine,
     is_internal_rotor: bool,
 ) -> tuple[
-    list[SurfaceAPI],
+    list[SegmentSurface],
     list[Line | CircleArc],
     list[Line | CircleArc],
     Point,
@@ -125,7 +125,7 @@ def create_geo_dict(
 
     all_surfs_labels = []
     all_surfs_labels_split2 = []
-    geometry_list: list[SurfaceAPI] = []
+    geometry_list: list[SegmentSurface] = []
     angle_point_ref_list = []
 
     logger.debug("Geometry translation started")

@@ -29,8 +29,8 @@ from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 from ...script.geometry.circleArc import CircleArc
 from ...script.geometry.line import Line
 from ...script.geometry.point import Point
+from ...script.geometry.segment_surface import SegmentSurface
 from .. import logger
-from ..json.SurfaceJSON import SurfaceAPI
 
 
 def get_lr_points(
@@ -94,8 +94,8 @@ def get_lr_points(
 
 def general_calc_spmsm_cont(
     machine: MachineSIPMSM,
-    rotor_lam_surf_list: list[SurfaceAPI],
-    rotor_mag_surf_list: list[SurfaceAPI],
+    rotor_lam_surf_list: list[SegmentSurface],
+    rotor_mag_surf_list: list[SegmentSurface],
     radius: float,
     is_internal_rotor: bool,
 ) -> tuple[list[Line | CircleArc], Point, Point]:

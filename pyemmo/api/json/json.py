@@ -38,6 +38,7 @@ from ... import logFmt
 from ...functions import calcIronLoss, import_results, runOnelab
 from ...script.geometry.machineAllType import MachineAllType
 from ...script.geometry.rotor import Rotor
+from ...script.geometry.segment_surface import SegmentSurface
 from ...script.geometry.stator import Stator
 from ...script.material import ElectricalSteel
 from ...script.script import Script
@@ -45,7 +46,6 @@ from .. import logger
 from . import apiNameDict
 from . import boundaryJSON as boundary
 from . import importJSON, modelJSON
-from .SurfaceJSON import SurfaceAPI
 
 if not gmsh_api.is_initialized():
     gmsh_api.initialize()
@@ -57,8 +57,8 @@ if not gmsh_api.is_initialized():
 
 
 def createMachine(
-    segmentSurfDict: dict[str, SurfaceAPI], extendedInfo: dict
-) -> tuple[MachineAllType, dict[str, list[SurfaceAPI]]]:
+    segmentSurfDict: dict[str, SegmentSurface], extendedInfo: dict
+) -> tuple[MachineAllType, dict[str, list[SegmentSurface]]]:
     """create a pyemmo Machine object from a list of surfaces forming one machine segment
     (imported from matlab).
 
@@ -150,7 +150,7 @@ def createMachine(
     return machineSiemens, maschineSurfDict
 
 
-def createMeshSizeGUICode(machineSurfDict: dict[str, list[SurfaceAPI]]):
+def createMeshSizeGUICode(machineSurfDict: dict[str, list[SegmentSurface]]):
     """
     Create the gmsh fomatted code to set the mesh size of the machine surfaces via the GUI.
 
@@ -207,7 +207,7 @@ def createMeshSizeGUICode(machineSurfDict: dict[str, list[SurfaceAPI]]):
         # if there were ids containing idExt
         if surfID_List:
             # create a List of all surfaces with idExt in it -> surfList
-            surfList: list[SurfaceAPI] = []
+            surfList: list[SegmentSurface] = []
             for surfID in surfID_List:
                 surfList.extend(machineSurfDict[surfID])
             # get the mesh size
@@ -359,7 +359,7 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
 
 
 def main(
-    geo: str | dict[str, SurfaceAPI],
+    geo: str | dict[str, SegmentSurface],
     extInfo: str | dict,
     model: str | os.PathLike,
     gmsh: str | os.PathLike = "",
@@ -450,7 +450,7 @@ def main(
             raise FileNotFoundError(f"Given file path {geo} was not a file.")
     elif isinstance(geo, dict):
         # Make sure all given surfaces have the correct type:
-        if not all(type(surf) == SurfaceAPI for surf in geo.values()):
+        if not all(type(surf) == SegmentSurface for surf in geo.values()):
             raise ValueError(
                 "Invalid geometry dict provided! "
                 "Make sure that the geometry values are of type SurfaceAPI!"

@@ -36,6 +36,7 @@ from ...script.geometry.circleArc import CircleArc, Line
 from ...script.geometry.magnet import Magnet
 from ...script.geometry.physicalElement import PhysicalElement
 from ...script.geometry.rotorLamination import RotorLamination
+from ...script.geometry.segment_surface import SegmentSurface
 from ...script.geometry.slot import Slot
 from ...script.geometry.spline import Spline
 from ...script.geometry.statorLamination import StatorLamination
@@ -54,7 +55,6 @@ from . import (
     importJSON,
 )
 from .get_coilspan import get_min_coilspan
-from .SurfaceJSON import SurfaceAPI
 
 # from .. import calc_phaseangle_starvoltageV2
 # analyse.calc_phaseangle_starvoltage = calc_phaseangle_starvoltageV2
@@ -257,7 +257,7 @@ def getSurfaceLineList(
     return lineList
 
 
-def createAPISurf(areaDict: dict) -> SurfaceAPI:
+def createAPISurf(areaDict: dict) -> SegmentSurface:
     """create a SurfaceAPI object from a area dict imported via json.
 
     Args:
@@ -277,7 +277,7 @@ def createAPISurf(areaDict: dict) -> SurfaceAPI:
     - Meshsize
     """
     try:
-        surf = SurfaceAPI(
+        surf = SegmentSurface(
             name=areaDict["Name"],
             idExt=areaDict["IdExt"],  # get short area name ("IdExt") as dict key
             curves=getSurfaceLineList(
@@ -298,7 +298,7 @@ def createAPISurf(areaDict: dict) -> SurfaceAPI:
 
 def importMachineGeometry(
     machineGeoList: list[dict | list[dict]],
-) -> dict[str, SurfaceAPI]:
+) -> dict[str, SegmentSurface]:
     """import one segment of the whole machine geometry from the geo.json file
 
     Args:
@@ -309,11 +309,11 @@ def importMachineGeometry(
         Dict[str, SurfaceAPI]: Segment Surface dict with short IDs (IdExt) as keys and
         SurfaceAPI objects as values
     """
-    segmentSurfDict: dict[str, SurfaceAPI] = {}
+    segmentSurfDict: dict[str, SegmentSurface] = {}
     for area in machineGeoList:
         if isinstance(area, dict):
             # normal surface; no subtraction
-            apiSurf: SurfaceAPI = createAPISurf(area)
+            apiSurf: SegmentSurface = createAPISurf(area)
             segmentSurfDict[apiSurf.idExt] = apiSurf
         elif isinstance(area, list):
             area: list[dict] = area
@@ -377,7 +377,7 @@ def importMachineGeometry(
     return segmentSurfDict
 
 
-def createSurfaceDict(surfList: list[SurfaceAPI]) -> dict[str, SurfaceAPI]:
+def createSurfaceDict(surfList: list[SegmentSurface]) -> dict[str, SegmentSurface]:
     """creates a Dict of SurfaceAPI objects from a List of SurfaceAPI (see
     :func:`importMachineGeometry() <pyemmo.api.modelJSON.importMachineGeometry>`).
     The dict-keys are the surface IDs (short names/abbriviations of the surface
@@ -401,9 +401,9 @@ def createSurfaceDict(surfList: list[SurfaceAPI]) -> dict[str, SurfaceAPI]:
         )
         raise ValueError(msg)
 
-    surfaceDict: dict[str, SurfaceAPI] = {}
+    surfaceDict: dict[str, SegmentSurface] = {}
     for surf in surfList:
-        if not isinstance(surf, SurfaceAPI):
+        if not isinstance(surf, SegmentSurface):
             msg = (
                 "The object in the surface list was not type 'SurfaceAPI',"
                 f" but '{type(surf)}'."
@@ -415,8 +415,8 @@ def createSurfaceDict(surfList: list[SurfaceAPI]) -> dict[str, SurfaceAPI]:
 
 
 def createMachineGeometryFromSegment(
-    segmentSurfDict: dict[str, SurfaceAPI], symFactor: int
-) -> dict[str, list[SurfaceAPI]]:
+    segmentSurfDict: dict[str, SegmentSurface], symFactor: int
+) -> dict[str, list[SegmentSurface]]:
     """
     Generate (rotate and duplicate) all Surfaces of the machine from a segment
     (list of surfaces) and return them as surface-list
@@ -436,7 +436,7 @@ def createMachineGeometryFromSegment(
         ValueError: If number of segments on (2*Pi / symFactor) is not an
             integer.
     """
-    surf_dict: dict[str, list[SurfaceAPI]] = {}  # init surface dict
+    surf_dict: dict[str, list[SegmentSurface]] = {}  # init surface dict
     # iterate through machine surface segments:
     for surf_id, surf in segmentSurfDict.items():
         nbrSegments = surf.nbrSegments / symFactor
@@ -480,7 +480,7 @@ def createMachineGeometryFromSegment(
 
 def createPhysicalSurfaces(
     idExt: str,
-    surfList: list[SurfaceAPI],
+    surfList: list[SegmentSurface],
     rotorMBRadius: float,
     extendedInfo: dict,
 ) -> tuple[list[PhysicalElement], Literal["Rotor", "Stator"]]:
@@ -574,7 +574,7 @@ def createPhysicalSurfaces(
     return [physElem], machineSide
 
 
-def createMagnet(surf: SurfaceAPI, mat: Material, extInfo: dict) -> Magnet:
+def createMagnet(surf: SegmentSurface, mat: Material, extInfo: dict) -> Magnet:
     """create a Magnet (PhysicalElement) object.
         The magnet name will be the surface IdExt.
         The magnetization direction is determined by the segment number.
@@ -769,7 +769,7 @@ def getSlotPhase(
     raise RuntimeError("Could not determine phase index by slot number.")
 
 
-def createSlot(surf: SurfaceAPI, material: Material, extendedInfo: dict) -> Slot:
+def createSlot(surf: SegmentSurface, material: Material, extendedInfo: dict) -> Slot:
     """create a Physical Element of type Slot.
 
     Args:

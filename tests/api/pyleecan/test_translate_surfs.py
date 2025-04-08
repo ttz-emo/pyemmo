@@ -30,8 +30,8 @@ from pyleecan.Classes.Machine import Machine
 # pylint: disable=locally-disabled, no-name-in-module
 from pyleecan.Functions.load import load
 
-from pyemmo.api.json.modelJSON import SurfaceAPI
 import pyemmo.api.pyleecan.translate_surfs
+from pyemmo.api.json.modelJSON import SegmentSurface
 from tests.api.pyleecan import TEST_API_PYLCN_DATA_DIR
 
 
@@ -39,7 +39,7 @@ def test_translate_surfs():
     """Function to test ``pyemmo.api.pyleecan.translate_surfs``"""
     all_surfs_labels = []
     all_surfs_labels_split2 = []
-    geometry_list: List[SurfaceAPI] = []
+    geometry_list: List[SegmentSurface] = []
     angle_point_ref_list = []
     machine: Machine = load(
         abspath(join(TEST_API_PYLCN_DATA_DIR, "00_prius_machine.json"))

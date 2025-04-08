@@ -63,15 +63,15 @@ from pyleecan.Classes.MachineIPMSM import MachineIPMSM
 from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 from pyleecan.Classes.Magnet import Magnet
 
+from ...script.geometry.segment_surface import SegmentSurface
 from ..json import ROTOR_MAG_IDEXT
-from ..json.SurfaceJSON import SurfaceAPI
 from . import POLE_HOLE_IDEXT
 
 
 def get_magnetization_dict(
     machine: Machine,
     angle_point_ref_list: list[float],
-    geometry_list: list[SurfaceAPI],
+    geometry_list: list[SegmentSurface],
 ) -> dict:
     """Generate a dictionary mapping magnets to their respective magnetization
     angles.
