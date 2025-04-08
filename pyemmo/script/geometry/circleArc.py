@@ -67,6 +67,8 @@ class CircleArc(Line):
         Raises:
             ValueError: If start and endpoint are equal.
         """
+        # Name der Linie.
+        self.name = name
         if not startPoint.isEqual(endPoint):
             self.start_point = startPoint
             self.end_point = endPoint
@@ -75,8 +77,6 @@ class CircleArc(Line):
                 "If you really want to draw a full circle  consider using 4 circle arcs."
             )
         self.center: Point = centerPoint
-        # Name der Linie.
-        self.name = name
         # make sure that start and end point have the same distance (radius)
         # to the center point:
         _ = self.radius  # raises error if not
