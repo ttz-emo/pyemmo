@@ -190,7 +190,7 @@ class Surface(Transformable):
         return PointList
 
     @property
-    def tools(self) -> list[type[Surface]]:
+    def tools(self) -> list[Surface]:
         """Get the list of tool surfaces to cut out of this surface
 
         ``tools`` has NO SETTER, because is only accessed by method ``cutOut()``
@@ -289,6 +289,12 @@ class Surface(Transformable):
         for curve in self.curve:
             newCurves.append(curve.duplicate())
         dup_surf = Surface(name, newCurves)
+
+        # Cut out tool surfaces from the duplicated surface
+        for tool_surf in self.tools:
+            new_tool = tool_surf.duplicate()
+            dup_surf.cutOut(new_tool)
+
         if name == "":
             parentName = self.name
             if "_dup" not in parentName:
@@ -532,12 +538,10 @@ class Surface(Transformable):
             if curve == oldCurve:
                 self._curve[i] = newCurve
 
-    def cutOut(self, tool: Surface, keepTool: bool = True) -> None:
+    def cutOut(self, tool: Surface) -> None:
         """Cut out a Tool Surface from the Parent surface by Boolean Difference"""
         self._cut.append(tool)
         tool.setTool()  # set to the tool surface
-        if not keepTool:
-            tool.delete = True
         # cut out tools of tools aswell!
         tools = tool.tools
         while tools:
