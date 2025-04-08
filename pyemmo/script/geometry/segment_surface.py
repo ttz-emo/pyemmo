@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO, Technical University of Applied Sciences
+# Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -17,16 +18,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module for json api surface class"""
+"""Module for class SegmentSurface"""
 from __future__ import annotations
 
 import gmsh
-import numpy as np
 from numpy import pi
 
 from ..gmsh import DimTag
 from ..gmsh.gmsh_surface import GmshSurface
-from ..material.material import Material
 from . import defaultCenterPoint as gcp
 from .circleArc import CircleArc
 from .line import Line
@@ -36,26 +35,17 @@ from .surface import Surface
 
 class SegmentSurface(Surface):
     """
-    SurfaceAPI is a child of geometry class Surface and has additional attributes:
+    SegmentSurface is a child of geometry class Surface and has additional attributes:
 
 
-        .. SurfaceAPI_Params_Table:
+        .. SegmentSurface_Params_Table:
 
-        .. table:: SurfaceAPI Parameters.
+        .. table:: SegmentSurface Parameters.
 
            +-----------------+-----------------------------+-----------------+
            | parameter       | description                 | format          |
            | name            |                             |                 |
            +=================+=============================+=================+
-           | idExt           | | External ID which is an   | string          |
-           |                 |   abbriviation of surface   |                 |
-           |                 |   name.                     |                 |
-           |                 | | E.g. rotor lamination     |                 |
-           |                 |   → RoLam                   |                 |
-           +-----------------+-----------------------------+-----------------+
-           | material        | Surface material of type    | Material        |
-           |                 | Material.                   |                 |
-           +-----------------+-----------------------------+-----------------+
            | nbrSegments     | | Number of surface         | int             |
            |                 |   segements on a whole      |                 |
            |                 |   circle                    |                 |
@@ -64,10 +54,6 @@ class SegmentSurface(Surface):
            | angle           | Angle of the segment (rad). | float           |
            |                 | Should be 2*Pi/nbrSegments  |                 |
            +-----------------+-----------------------------+-----------------+
-           | meshSize        | | Mesh size of the surface  | float           |
-           |                 |   (m). If no surface mesh   |                 |
-           |                 | | should be created its None|                 |
-           +-----------------+-----------------------------+-----------------+
 
 
     """
@@ -75,12 +61,8 @@ class SegmentSurface(Surface):
     def __init__(
         self,
         name: str,
-        idExt: str,
         curves: list[Line],
-        material: Material,
         nbrSegments: int,
-        angle: float,
-        meshSize: float,
         segment_nbr: int = 0,
     ):
         """init of surface for API. This type of surface is special,
@@ -88,77 +70,29 @@ class SegmentSurface(Surface):
 
         Args:
             name (str): name of the surface
-            idExt (str): abbriviation of surface name (short name)
             curves (List[Line]): list of surface boundary lines
-            material (Material): surface material in simulation.
-            nbrSegments (int): number of segments in the full machine.
-            angle (float): angle of the segment. Should be 2*Pi/nbrSegments.
-            meshSize (float): mesh size of the surface.
-            segment_nbr (int): actual segment number of surface in model
+            nbrSegments (int): number of segments to form the complete body.
+            segment_nbr (optional, int): actual segment number of surface (default is 0).
         """
         super().__init__(name=name, curves=curves)
         # FIXME: Update by using setters to check init values!!
-        self._idExt: str = idExt
-        self._material: Material = material
         self._nbrSegments: int = nbrSegments
-        if not np.isclose(angle, 2 * pi / nbrSegments, atol=np.deg2rad(0.1)):
-            raise ValueError(
-                f"Segment angle ({angle}) of surface {name} "
-                f"does not match 2*pi/nbrSegments ({2 * pi / nbrSegments})"
-            )
-        self._angle: float = angle
-        self._meshSize: float = meshSize
-
         self._segment_number = segment_nbr  # default segment number is 0
 
-        # curve_loop = gmsh.model.occ.addCurveLoop(curves)
-        # self._id = gmsh.model.occ.addPlaneSurface(curve_loop)
-
-    @property
-    def tools(self) -> list[SegmentSurface]:
-        """Subtraction surfaces"""
-        return super().tools
-
-    @property
-    def idExt(self) -> str:
-        """get the abbriviation of the surface name (literal Surface ID)
-
-        Returns:
-            str: abbriviation of surface name (short name)
-        """
-        return self._idExt
-
-    def setIdExt(self, newName: str) -> None:
-        """set the abbriviation of the surface name (literal Surface ID)
-
-        Args:
-            name (str): abbriviation of surface name (short name)
-
-        Returns:
-            None
-        """
-        if isinstance(newName, str):
-            self._idExt = newName
-        else:
-            raise ValueError(f"The given name was not type str: {newName}!")
-
-    @property
-    def material(self) -> Material:
-        """get the material of the API surface
-
-        Returns:
-            Material: surface material
-        """
-        return self._material
+    # @property
+    # def tools(self) -> list[SegmentSurface]:
+    #     """Subtraction surfaces"""
+    #     return super().tools
 
     @property
     def angle(self) -> float:
-        """get the angle of one surface segment. Should be 2*Pi/self._nbrSegments
+        """Get the angle of one surface segmen in radians. This equals:
+            2 * Pi / self.nbrSegments
 
         Returns:
             float: segment angle of that surface in rad.
         """
-        return self._angle
+        return 2 * pi / self.nbrSegments
 
     @property
     def nbrSegments(self) -> int:
@@ -183,75 +117,36 @@ class SegmentSurface(Surface):
             )
             raise TypeError(msg)
         self._nbrSegments = nbrSegments
-        # set private angle property because no separate setter for angle
-        self._angle = 2 * pi / nbrSegments
-
-    @property
-    def meshSize(self) -> float:
-        """get the mesh size of the points of the surface
-
-        Returns:
-            float: Mesh size of the surface points.
-        """
-        return self._meshSize
-
-    @meshSize.setter
-    def meshSize(self, meshSize: float) -> None:
-        """set the mesh size of the points.
-
-        Args:
-            meshSize (float): Mesh size of the surface points.
-        """
-        if not isinstance(meshSize, (float, int)):
-            msg = (
-                f"Given mesh size for API surface '{self.name}'"
-                f"was not a number but type '{type(meshSize)}'!"
-            )
-            raise TypeError(msg)
-        self._meshSize = meshSize
 
     @property
     def segment_nbr(self) -> int:
-        """Actual segement number of SurfaceAPI object"""
+        """Actual segement number of SegmentSurface object. The default value is 0."""
         return self._segment_number
 
-    def duplicate(self, name="", segment=0) -> SegmentSurface:
-        """create a copy of the surface
+    def duplicate(self, name="", new_segment: int = 0) -> SegmentSurface:
+        """create a copy of the SegmentSurface
 
         Args:
             name (str, optional): New name for copied surface.
                 Defaults to previous surface name + "_dup" for duplicate.
 
         Returns:
-            SurfaceAPI: Duplicate of SurfaceAPI object.
+            SegmentSurface: Duplicate of SegmentSurface object.
         """
         # duplicate curves for new surface
         newCurves: list[Line | CircleArc | Spline] = []
         for curve in self.curve:
             newCurves.append(curve.duplicate())
         # create duplicate surfcace object
-        dup_surf = SegmentSurface(
-            name=name,
-            idExt=self.idExt,
-            curves=newCurves,
-            material=self.material,
+        dup_surf = super().duplicate(name)
+        # create duplicate of SegmentSurface object
+        dup_seg_surf = SegmentSurface(
+            name=dup_surf.name,
+            curves=dup_surf.curve,
             nbrSegments=self.nbrSegments,
-            angle=self.angle,
-            meshSize=self.meshSize,
-            segment_nbr=segment,
+            segment_nbr=new_segment if new_segment != 0 else self.segment_nbr,
         )
-        for tool in self.tools:
-            new_tool = tool.duplicate(segment=segment)
-            dup_surf.cutOut(new_tool)
-        # add "_dup" str to new surface name, if it was not duplicted before
-        if name == "":
-            parentName = self.name
-            if "_dup" not in parentName:
-                dup_surf.name = f"{parentName}_dup"
-            else:
-                dup_surf.name = f"{parentName}_{dup_surf.id}"
-        dup_surf.setMeshColor(self.getMeshColor())
-        return dup_surf
+        return dup_seg_surf
 
     def rotateDuplicate(self, segment: int) -> SegmentSurface:
         """
@@ -263,7 +158,7 @@ class SegmentSurface(Surface):
             segment (float): Segment number.
 
         Returns:
-            SurfaceAPI: Copied and rotated SurfaceAPI object.
+            SegmentSurface: Copied and rotated SegmentSurface object.
         """
         if (segment % 1) != 0 or segment >= self.nbrSegments:
             raise ValueError("Segment number must be valid integer!")
@@ -272,31 +167,29 @@ class SegmentSurface(Surface):
 
         if rot_angle != 0:  # if the rotation angle is not zero
             dup_surf: SegmentSurface = self.duplicate(
-                name=f"{self.name} (Seg.: {segment})", segment=segment
+                name=f"{self.name} (Seg.: {segment})", new_segment=segment
             )
             dup_surf.rotateZ(gcp, rot_angle)
             tools = dup_surf.tools  # init tools array
             while tools:
                 new_tools = []  # init new tools
-                for tool in dup_surf.tools:
+                for tool_surf in dup_surf.tools:
                     # rotate tools
-                    tool.rotateZ(gcp, rot_angle)
-                    tool.name = f"{tool.name} (Seg.: {segment})"
-                    if tool.tools:
+                    tool_surf.rotateZ(gcp, rot_angle)
+                    tool_surf.name = f"{tool_surf.name} (Seg.: {segment})"
+                    if tool_surf.tools:
                         # if tool has tools
-                        new_tools.extend(tool.tools)  # extend new tools
+                        new_tools.extend(tool_surf.tools)  # extend new tools
                 tools = new_tools  # update tools array
 
             return dup_surf
         # if the angle is zero: give back the old surface
         return self
 
-    def cutOut(self, ToolSurface: SegmentSurface, keepTool: bool = True) -> None:
+    def cutOut(self, ToolSurface: SegmentSurface) -> None:
         """Cut out a Tool Surface from the Parent surface by Boolean Difference"""
         self._cut.append(ToolSurface)
         ToolSurface.setTool()  # set to the tool surface
-        if not keepTool:
-            ToolSurface.delete = True
         cut_dim_tags: list[DimTag] = [(2, ToolSurface.id)]
         # cut out tools of tools aswell!
         if ToolSurface.tools:
@@ -374,7 +267,7 @@ class SegmentSurface(Surface):
                     gmsh.model.occ.rotate(
                         [dimtag], gcp.x, gcp.y, gcp.z, 0, 0, 1, self.angle
                     )
-                    # There is no way to initialize SurfaceAPI with a GmshSurface object
+                    # There is no way to initialize SegmentSurface with a GmshSurface object
                     # directly so we need to create a GmshSurface first and extract the
                     # curve loop from it:
                     gmsh.model.occ.synchronize()
@@ -400,7 +293,7 @@ class SegmentSurface(Surface):
                 else:
                     # replace old tool surface with new (not rotated) tool surface
                     gmsh_surf = GmshSurface(tag=dimtag[1])
-                    # There is no way to initialize SurfaceAPI with a GmshSurface object
+                    # There is no way to initialize SegmentSurface with a GmshSurface object
                     # directly so we need to create a GmshSurface first and extract the
                     # curve loop from it
                     replace_tool = SegmentSurface(
