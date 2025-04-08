@@ -408,7 +408,7 @@ def main(
         mode="w",
         encoding="utf-8",
     )
-    jsonLogFileHandler.setLevel(logger.getEffectiveLevel())
+    jsonLogFileHandler.setLevel(min(logger.getEffectiveLevel(), logging.INFO))
     jsonLogFileHandler.setFormatter(logFmt)
     logger.addHandler(jsonLogFileHandler)
     logging.info(
