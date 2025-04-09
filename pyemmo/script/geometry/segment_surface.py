@@ -73,9 +73,9 @@ class SegmentSurface(Surface):
             segment_nbr (optional, int): actual segment number of surface (default is 0).
         """
         super().__init__(name=name, curves=curves)
-        # FIXME: Update by using setters to check init values!!
-        self._nbrSegments: int = nbrSegments
-        self._segment_number = segment_nbr  # default segment number is 0
+        self.nbrSegments: int = nbrSegments
+        # there is no setter for segment number_number because its fixed!
+        self._segment_number = segment_nbr
 
     # @property
     # def tools(self) -> list[SegmentSurface]:
@@ -99,7 +99,7 @@ class SegmentSurface(Surface):
         Returns:
             int: maximal number of segments to form a whole circle.
         """
-        return self._nbrSegments
+        return self.nbrSegments
 
     @nbrSegments.setter
     def nbrSegments(self, nbrSegments: int) -> None:
@@ -114,7 +114,7 @@ class SegmentSurface(Surface):
                 f"was not an integer but type '{type(nbrSegments)}'!"
             )
             raise TypeError(msg)
-        self._nbrSegments = nbrSegments
+        self.nbrSegments = nbrSegments
 
     @property
     def segment_nbr(self) -> int:
