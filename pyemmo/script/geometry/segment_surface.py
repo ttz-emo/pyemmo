@@ -61,7 +61,6 @@ class SegmentSurface(Surface):
         name: str,
         curves: list[Line],
         nbrSegments: int,
-        segment_nbr: int = 0,
     ):
         """init of surface for API. This type of surface is special,
         because it allways forms a machine segment or a part of a segment.
@@ -70,17 +69,11 @@ class SegmentSurface(Surface):
             name (str): name of the surface
             curves (List[Line]): list of surface boundary lines
             nbrSegments (int): number of segments to form the complete body.
-            segment_nbr (optional, int): actual segment number of surface (default is 0).
         """
         super().__init__(name=name, curves=curves)
         self.nbrSegments: int = nbrSegments
         # there is no setter for segment number_number because its fixed!
-        self._segment_number = segment_nbr
-
-    # @property
-    # def tools(self) -> list[SegmentSurface]:
-    #     """Subtraction surfaces"""
-    #     return super().tools
+        self._segment_number = 0
 
     @property
     def angle(self) -> float:
@@ -99,7 +92,7 @@ class SegmentSurface(Surface):
         Returns:
             int: maximal number of segments to form a whole circle.
         """
-        return self.nbrSegments
+        return self._nbrSegments
 
     @nbrSegments.setter
     def nbrSegments(self, nbrSegments: int) -> None:
@@ -114,14 +107,14 @@ class SegmentSurface(Surface):
                 f"was not an integer but type '{type(nbrSegments)}'!"
             )
             raise TypeError(msg)
-        self.nbrSegments = nbrSegments
+        self._nbrSegments = nbrSegments
 
     @property
     def segment_nbr(self) -> int:
         """Actual segement number of SegmentSurface object. The default value is 0."""
         return self._segment_number
 
-    def duplicate(self, name="", new_segment: int = 0) -> SegmentSurface:
+    def duplicate(self, name="") -> SegmentSurface:
         """create a copy of the SegmentSurface
 
         Args:
@@ -131,10 +124,6 @@ class SegmentSurface(Surface):
         Returns:
             SegmentSurface: Duplicate of SegmentSurface object.
         """
-        # # duplicate curves for new surface
-        # newCurves: list[Line | CircleArc | Spline] = []
-        # for curve in self.curve:
-        #     newCurves.append(curve.duplicate())
         # create duplicate surfcace object
         dup_surf = super().duplicate(name)
         # create duplicate of SegmentSurface object
@@ -142,7 +131,6 @@ class SegmentSurface(Surface):
             name=dup_surf.name,
             curves=dup_surf.curve,
             nbrSegments=self.nbrSegments,
-            segment_nbr=new_segment if new_segment != 0 else self.segment_nbr,
         )
         return dup_seg_surf
 
@@ -161,27 +149,22 @@ class SegmentSurface(Surface):
         if (segment % 1) != 0 or segment >= self.nbrSegments:
             raise ValueError("Segment number must be valid integer!")
 
-        rot_angle = self.angle * segment
-
-        if rot_angle != 0:  # if the rotation angle is not zero
+        if segment != 0:
+            # duplicate the segment and its tools and give new name
             dup_surf: SegmentSurface = self.duplicate(
-                name=f"{self.name} (Seg.: {segment})", new_segment=segment
+                name=f"{self.name} (Seg.: {segment})"
             )
+            # rotate the surface by the given angle:
+            rot_angle = self.angle * segment
             dup_surf.rotateZ(gcp, rot_angle)
-            tools = dup_surf.tools  # init tools array
-            while tools:
-                new_tools = []  # init new tools
-                for tool_surf in dup_surf.tools:
-                    # rotate tools
-                    tool_surf.rotateZ(gcp, rot_angle)
-                    tool_surf.name = f"{tool_surf.name} (Seg.: {segment})"
-                    if tool_surf.tools:
-                        # if tool has tools
-                        new_tools.extend(tool_surf.tools)  # extend new tools
-                tools = new_tools  # update tools array
+            # set the segment number
+            dup_surf._segment_number = segment
+            # update tool names
+            for tool_surf in dup_surf.tools:
+                tool_surf.name = f"{tool_surf.name} (Seg.: {segment})"
 
             return dup_surf
-        # if the angle is zero: give back the old surface
+        # if the segment number is zero: give back the original surface
         return self
 
     def cutOut(self, tool: SegmentSurface) -> None:
@@ -190,6 +173,11 @@ class SegmentSurface(Surface):
             raise TypeError(
                 f"Tool surface is not a SegmentSurface object! "
                 f"But it type '{type(tool)}'!"
+            )
+        if self.segment_nbr != 0:
+            raise ValueError(
+                "Cutting out a tool from a segment surface is only allowed for the "
+                "first segment!"
             )
         # check the number of segments
         if tool.nbrSegments != self.nbrSegments:

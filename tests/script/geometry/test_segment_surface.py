@@ -21,12 +21,10 @@
 import numpy as np
 import pytest
 
+from pyemmo.script.geometry.circleArc import CircleArc
+from pyemmo.script.geometry.line import Line
 from pyemmo.script.geometry.point import Point
-from pyemmo.script.geometry.segment_surface import (
-    CircleArc,
-    Line,
-    SegmentSurface,
-)
+from pyemmo.script.geometry.segment_surface import SegmentSurface
 
 from .test_surface import add_circle
 
@@ -58,9 +56,7 @@ class TestSegmentSurface:
             Line("L2", points[2], points[3]),
             CircleArc("Inner curve", points[3], center_point, points[0]),
         ]
-        return SegmentSurface(
-            "Test segment surface", lines, nbrSegments=8, segment_nbr=0
-        )
+        return SegmentSurface("Test segment surface", lines, nbrSegments=8)
 
     def test_init(self, test_surface: SegmentSurface):
         """Test the init of Surface"""
