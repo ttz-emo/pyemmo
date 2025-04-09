@@ -124,5 +124,30 @@ class TestSegmentSurface:
         assert len(test_surface.tools) == 3  # check that an extra tool is added
         assert test_surface.nbrSegments == 8
 
+    def test_duplicate(self, test_surface: SegmentSurface):
+        """Test the duplicate method"""
+        # Duplicate the test surface
+        duplicated_surface = test_surface.duplicate("Duplicated surface")
+        assert duplicated_surface.name == "Duplicated surface"
+        assert len(duplicated_surface.curve) == 4
+        assert len(duplicated_surface.points) == 4
+        assert duplicated_surface.nbrSegments == 8
+        assert duplicated_surface.segment_nbr == 0
+
+    def test_plot_noSym(self, test_surface: SegmentSurface):
+        """Test the plot method"""
+        # plot the surface without symmetry
+        figure = test_surface.plot(tag=True, symmetry=None)
+
+    def test_plot_fullSym(self, test_surface: SegmentSurface):
+        """Test the plot method"""
+        # plot surface with symmetry to make sure the whole surface is plotted
+        figure = test_surface.plot(symmetry=1)
+
+    def test_plot_wrongSym(self, test_surface: SegmentSurface):
+        """Test the plot method"""
+        with pytest.raises(ValueError):
+            test_surface.plot(symmetry=3)  # invalid symmetry value
+
     def teardown_method(self):
         pass

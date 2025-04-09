@@ -21,13 +21,13 @@
 """Module for class SegmentSurface"""
 from __future__ import annotations
 
+import matplotlib.pyplot as plt
 import numpy as np
-from numpy import pi
+from matplotlib.figure import Figure
 
+from ...definitions import LINE_COLOR
 from . import defaultCenterPoint as gcp
-from .circleArc import CircleArc
 from .line import Line
-from .spline import Spline
 from .surface import Surface
 
 
@@ -90,7 +90,7 @@ class SegmentSurface(Surface):
         Returns:
             float: segment angle of that surface in rad.
         """
-        return 2 * pi / self.nbrSegments
+        return 2 * np.pi / self.nbrSegments
 
     @property
     def nbrSegments(self) -> int:
@@ -131,10 +131,10 @@ class SegmentSurface(Surface):
         Returns:
             SegmentSurface: Duplicate of SegmentSurface object.
         """
-        # duplicate curves for new surface
-        newCurves: list[Line | CircleArc | Spline] = []
-        for curve in self.curve:
-            newCurves.append(curve.duplicate())
+        # # duplicate curves for new surface
+        # newCurves: list[Line | CircleArc | Spline] = []
+        # for curve in self.curve:
+        #     newCurves.append(curve.duplicate())
         # create duplicate surfcace object
         dup_surf = super().duplicate(name)
         # create duplicate of SegmentSurface object
@@ -210,3 +210,78 @@ class SegmentSurface(Surface):
             super().cutOut(tool)
 
     # TODO: Update plot function to also plot tool surfaces
+    def plot(
+        self,
+        fig: Figure = None,
+        linewidth=0.5,
+        color=LINE_COLOR,
+        marker=".",
+        markersize=1,
+        tag=False,
+        symmetry=None,
+    ) -> None:
+        """
+        2D Line plot of the surface
+
+        Args:
+            fig (pyplot.Figure, optional): Defaults to None.
+            linewidth (float): Line width in points. Defaults to 0.5.
+            color (list, optional): Line color. Defaults to
+                ``pyemmo.definitions.LINE_COLOR``. See
+                `Matplotlib Colors<https://matplotlib.org/stable/users/explain/colors/colors.html#color-formats>`_
+                for more details.
+            marker (str, optional): Defaults to None. Examples are '.', 'o', 'x', '+',
+                ... See
+                `Matplotlib Markers<https://matplotlib.org/stable/api/markers_api.html#module-matplotlib.markers>`_
+                for more details.
+            markersize (float, optional): Marker size in points. Defaults to 1.
+            tag (bool): Flag to print surface and line namea like "S ("`Surface_Name`")"
+                and point tags if `marker` is given.
+            symmetry (int|None, optional): Number of segments to plot. Defaults to None
+                which means that only one segment will be shown. For symmetry = 1 the
+                whole model will be shown.
+
+        Returns:
+            Figure: Matplotlib figure object.
+        """  # noqa
+        if fig is None:
+            fig, ax = plt.subplots()
+            fig.set_dpi(200)
+            xlim, ylim = self.getBoundingBox(scalingFactor=1.1)
+            fig.axes[0].set(xlim=(-xlim[1], xlim[1]), ylim=(-xlim[1], xlim[1]))
+            ax.set_aspect("equal", adjustable="box")
+        ax = fig.axes[0]
+        # If there is no symmetry given plot the surface as it is and return
+        if symmetry is None:
+            super().plot(
+                fig,
+                linewidth=linewidth,
+                color=color,
+                marker=marker,
+                markersize=markersize,
+                tag=tag,
+            )
+            return fig
+        # otherwise calculate number of segments to plot:
+        nbr_segments_plot = self.nbrSegments / symmetry
+        if nbr_segments_plot % 1 != 0:
+            raise ValueError(
+                f"Bad symmetry value {symmetry} for SegmentSurface with "
+                f"{self.nbrSegments} segments! Number of segments to plot must be an "
+                f"integer! But it is {nbr_segments_plot}."
+            )
+        # rotate and duplicate segments and recall plot-method without symmetry
+        for segment in range(int(nbr_segments_plot)):
+            # rotate and duplicate surface
+            dup_surf = self.rotate_duplicate(segment)
+            # plot the duplicate with out symmetry
+            dup_surf.plot(
+                fig,
+                linewidth=linewidth,
+                color=color,
+                marker=marker,
+                markersize=markersize,
+                tag=tag,
+                symmetry=None,
+            )
+        return fig  # return figure object for further usage
