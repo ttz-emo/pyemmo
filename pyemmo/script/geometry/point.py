@@ -72,6 +72,10 @@ class Point(Transformable):
             return False
         return True
 
+    def __str__(self) -> str:
+        msg = f"Point '{self.name}' with coorinates {self.coordinate}"
+        return msg
+
     @property
     def x(self) -> float:
         """
