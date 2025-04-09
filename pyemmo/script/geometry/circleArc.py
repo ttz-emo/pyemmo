@@ -397,7 +397,7 @@ class CircleArc(Line):
         if tag:
             # add tag to arc
             tagPoint = self.start_point.duplicate()
-            tagPoint.rotateZ(centerPoint, (theta2 - theta1) / 2)
+            tagPoint.rotateZ(centerPoint, (thetaEnd - thetaStart) / 2)
             tagCo = tagPoint.coordinate
             axes.annotate(
                 f"""CA ("{self.name}")""",
