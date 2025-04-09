@@ -228,8 +228,8 @@ class Surface(Transformable):
             rotationPoint (Point): Center point for rotation.
             angle (float): rotation angle in rad.
         """
-        for p in self.allPoints:
-            p.rotateZ(rotationPoint, angle)
+        for l in self.curve:
+            l.rotateZ(rotationPoint, angle)
 
     def rotateX(self, rotationPoint: Point, angle: float):
         """Mit rotateX() wird eine Fläche um einen Rotationspunkt
@@ -587,10 +587,28 @@ class Surface(Transformable):
         marker=".",
         markersize=1,
         tag=False,
-    ) -> None:
+    ) -> Figure:
         """
         2D Line plot of the surface
-        """
+
+        Args:
+            fig (pyplot.Figure, optional): Defaults to None.
+            linewidth (float): Line width in points. Defaults to 0.5.
+            color (list, optional): Line color. Defaults to
+                ``pyemmo.definitions.LINE_COLOR``. See
+                `Matplotlib Colors<https://matplotlib.org/stable/users/explain/colors/colors.html#color-formats>`_
+                for more details.
+            marker (str, optional): Defaults to None. Examples are '.', 'o', 'x', '+',
+                ... See
+                `Matplotlib Markers<https://matplotlib.org/stable/api/markers_api.html#module-matplotlib.markers>`_
+                for more details.
+            markersize (float, optional): Marker size in points. Defaults to 1.
+            tag (bool): Flag to print surface and line namea like "S ("`Surface_Name`")"
+                and point tags if `marker` is given.
+
+        Returns:
+            Figure: Matplotlib figure object.
+        """  # noqa
         if fig is None:
             fig, ax = plt.subplots()
             fig.set_dpi(200)
@@ -616,6 +634,7 @@ class Surface(Transformable):
                 xytext=(1, 1),
                 ha="left",
             )
+        return fig
 
     def getBoundingBox(
         self, scalingFactor: float = 1.0
