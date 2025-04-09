@@ -228,8 +228,12 @@ class Surface(Transformable):
             rotationPoint (Point): Center point for rotation.
             angle (float): rotation angle in rad.
         """
-        for l in self.curve:
-            l.rotateZ(rotationPoint, angle)
+        # rotate the parent surf
+        for c in self.curve:
+            c.rotateZ(rotationPoint, angle)
+        # if the surface has tools, rotate them as well
+        for tool in self.tools:
+            tool.rotateZ(rotationPoint, angle)
 
     def rotateX(self, rotationPoint: Point, angle: float):
         """Mit rotateX() wird eine Fläche um einen Rotationspunkt
