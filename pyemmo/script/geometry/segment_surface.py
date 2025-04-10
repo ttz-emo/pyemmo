@@ -194,9 +194,11 @@ class SegmentSurface(Surface):
                 comb_surf = self.combine(dup_parent)  # combine the parent surfaces
                 # update curve loop
                 self.curve = comb_surf.curve
+            self.nbrSegments = symmetry  # update number of segments
             for segment in range(int(tool.nbrSegments / symmetry)):
                 dup_tool = tool.rotate_duplicate(segment)  # rotate and duplicate tool
                 super().cutOut(dup_tool)  # cut out new tool
+                dup_tool.nbrSegments = symmetry  # update number of segments
         else:
             # if the number of segments is the same, cut out the tool directly
             super().cutOut(tool)
