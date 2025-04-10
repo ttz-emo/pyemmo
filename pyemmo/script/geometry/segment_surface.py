@@ -162,7 +162,9 @@ class SegmentSurface(Surface):
             rot_angle = self.angle * segment
             dup_surf.rotateZ(gcp, rot_angle)
             # set the segment number
-            dup_surf._segment_number = segment
+            dup_surf._segment_number = segment  # pylint: disable=protected-access
+            # its ok to access the protected attribute here, because we are in the same
+            # class. rotate_duplicate() is the only method that sets the segment number!
             # update tool names
             for tool_surf in dup_surf.tools:
                 tool_surf.name = f"{tool_surf.name} (Seg.: {segment})"
@@ -203,7 +205,6 @@ class SegmentSurface(Surface):
             # if the number of segments is the same, cut out the tool directly
             super().cutOut(tool)
 
-    # TODO: Update plot function to also plot tool surfaces
     def plot(
         self,
         fig: Figure = None,
