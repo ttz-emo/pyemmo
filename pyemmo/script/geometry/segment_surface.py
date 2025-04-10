@@ -101,13 +101,13 @@ class SegmentSurface(Surface):
         Args:
             nbrSegments (int): number of segments to form a whole circle.
         """
-        if nbrSegments % 1 != 0:
+        if not float(nbrSegments).is_integer():
             msg = (
                 f"Given number of segments for API surface '{self.name}'"
-                f"was not an integer but type '{type(nbrSegments)}'!"
+                f"was not an integer '{nbrSegments=}'!"
             )
             raise TypeError(msg)
-        self._nbrSegments = nbrSegments
+        self._nbrSegments = int(nbrSegments)
 
     @property
     def segment_nbr(self) -> int:
@@ -146,8 +146,12 @@ class SegmentSurface(Surface):
         Returns:
             SegmentSurface: Copied and rotated SegmentSurface object.
         """
-        if (segment % 1) != 0 or segment >= self.nbrSegments:
-            raise ValueError("Segment number must be valid integer!")
+        if (
+            not float(segment).is_integer()
+            or 0 > segment
+            or segment >= self.nbrSegments
+        ):
+            raise ValueError(f"Segment number must be valid integer, but is {segment}!")
 
         if segment != 0:
             # duplicate the segment and its tools and give new name
@@ -252,7 +256,7 @@ class SegmentSurface(Surface):
             return fig
         # otherwise calculate number of segments to plot:
         nbr_segments_plot = self.nbrSegments / symmetry
-        if nbr_segments_plot % 1 != 0:
+        if not float(nbr_segments_plot).is_integer():
             raise ValueError(
                 f"Bad symmetry value {symmetry} for SegmentSurface with "
                 f"{self.nbrSegments} segments! Number of segments to plot must be an "

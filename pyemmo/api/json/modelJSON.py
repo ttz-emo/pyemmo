@@ -328,7 +328,7 @@ def importMachineGeometry(
                 sym_factor = np.gcd(sym_factor, nbr_segments)
             # calc number of segments to fullfill symmetry:
             nbr_main_segments = main_surf.nbrSegments / sym_factor
-            assert nbr_main_segments % 1 == 0
+            assert float(nbr_main_segments).is_integer()
             new_quantity = sym_factor
             # rotate and duplicate main surface and previous cut out tools:
             for i in range(1, int(nbr_main_segments)):
