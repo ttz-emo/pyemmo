@@ -104,7 +104,7 @@ class GmshSurface(GmshGeometry, Surface):
             raise ValueError(
                 "Can not create GmshSurface for input of tag AND line list!"
             )
-        super().__init__(name=name, curves=self.curve)
+        Surface.__init__(self, name=name, curves=self.curve)
 
     def _init_with_tag(self, tag: int, name: str):
         gmsh.model.occ.synchronize()
@@ -179,7 +179,10 @@ class GmshSurface(GmshGeometry, Surface):
         Returns:
             float: mean of mesh length of all points in meter
         """
-        points: list[GmshPoint] = self.allPoints
+        points: list[GmshPoint] = (
+            self.allPoints
+        )  # TODO: Check if the usage of allPoints
+        # is correct here...
         mlList = [p.meshLength for p in points]
         return np.mean(mlList)
 
@@ -238,6 +241,7 @@ class GmshSurface(GmshGeometry, Surface):
         """
         x, y, z = rotationPoint.coordinate
         gmsh.model.occ.rotate([(2, self.id)], x, y, z, 0, 0, 1, angle)
+        # TODO: Also rotate tools?
 
     def rotateX(self, rotationPoint: Point, angle: float):
         """Rotates the surface around the x-axis.
@@ -290,6 +294,7 @@ class GmshSurface(GmshGeometry, Surface):
             name = self.name + "_dup"
         # create new GmshSurface object
         dup_surf = GmshSurface(tag=outDimTags[0][1], name=name)
+        # TODO: Handle duplication of tools!
         return dup_surf
 
     def mirror(self, planePoint, planeVector1, planeVector2, name=""):
