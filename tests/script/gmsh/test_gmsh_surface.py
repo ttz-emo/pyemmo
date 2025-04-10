@@ -102,7 +102,7 @@ def create_rectangle():
 
 
 def add_circle(center: GmshPoint, radius: float):
-    """Create a test Circle"""
+    """Create a test Circle with ``radius`` at ``center`` contructed by 4 arcs."""
     points: list[GmshPoint] = []
     for i, xy in enumerate([(0, 1), (1, 0), (0, -1), (-1, 0)]):
         x, y, _ = center.coordinate
