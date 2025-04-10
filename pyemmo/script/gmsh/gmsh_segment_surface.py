@@ -38,7 +38,7 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
 
     def __init__(
         self,
-        nbrSegments: int,
+        nbr_segments: int,
         tag: int = -1,
         curves: list[GmshLine | GmshArc | None] = None,
         name: str = "",
@@ -59,7 +59,9 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
             name (str, optional): name of the surface
         """
         GmshSurface.__init__(self, tag=tag, curves=curves, name=name)
-        SegmentSurface.__init__(self, self.name, self.curve, nbrSegments)
+        SegmentSurface.__init__(
+            self, name=self.name, curves=self.curve, nbr_segments=nbr_segments
+        )
 
     def duplicate(self, name="") -> GmshSegmentSurface:
         """create a copy of the surface
@@ -75,7 +77,7 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
         dup_gmsh_surf = GmshSurface.duplicate(self, name)
         # create new GmshSegmentSurface object from new tag
         dup_gs_surf = GmshSegmentSurface(
-            tag=dup_gmsh_surf.id, nbrSegments=self.nbrSegments
+            tag=dup_gmsh_surf.id, nbr_segments=self.nbr_segments
         )
         return dup_gs_surf
 
@@ -94,10 +96,10 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
         if (
             not float(segment).is_integer()
             or segment < 0
-            or segment >= self.nbrSegments
+            or segment >= self.nbr_segments
         ):
             raise ValueError(
-                f"Segment number {segment=} must be valid integer from 0...{self.nbrSegments-1}!"
+                f"Segment number {segment=} must be valid integer from 0...{self.nbr_segments-1}!"
             )
 
         rot_angle = self.angle * segment
@@ -134,27 +136,27 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
         else:
             # otherwise create segment surface from tool
             tool = GmshSegmentSurface(
-                nbrSegments=self.nbrSegments,
+                nbr_segments=self.nbr_segments,
                 tag=tool.id,
                 name=tool.name,
             )
         # check the number of segments
-        if tool.nbrSegments != self.nbrSegments:
+        if tool.nbr_segments != self.nbr_segments:
             # calculate total number of segments
-            symmetry = np.gcd(tool.nbrSegments, self.nbrSegments)
+            symmetry = np.gcd(tool.nbr_segments, self.nbr_segments)
             # create nbrSegments/symmetry copies
-            for segment in range(1, int(self.nbrSegments / symmetry)):
+            for segment in range(1, int(self.nbr_segments / symmetry)):
                 # rotate and duplicate parent surface if needed
                 dup_parent = self.rotate_duplicate(segment)
                 comb_surf = self.combine(dup_parent)  # combine the parent surfaces
                 # update surface tag (without using set_tag() method!)
                 self._id = comb_surf.id
             # update number of segments
-            self.nbrSegments = symmetry
-            for segment in range(int(tool.nbrSegments / symmetry)):
+            self.nbr_segments = symmetry
+            for segment in range(int(tool.nbr_segments / symmetry)):
                 dup_tool = tool.rotate_duplicate(segment)  # rotate and duplicate tool
                 GmshSurface.cutOut(self, dup_tool, keepTool)  # cut out new tool
-                dup_tool.nbrSegments = symmetry  # update number of segments
+                dup_tool.nbr_segments = symmetry  # update number of segments
         else:
             # if the number of segments is the same, cut out the tool directly
             GmshSurface.cutOut(self, tool, keepTool)

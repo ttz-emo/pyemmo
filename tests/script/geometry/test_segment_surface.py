@@ -56,15 +56,15 @@ class TestSegmentSurface:
             Line("L2", points[2], points[3]),
             CircleArc("Inner curve", points[3], center_point, points[0]),
         ]
-        return SegmentSurface("Test segment surface", lines, nbrSegments=8)
+        return SegmentSurface("Test segment surface", lines, nbr_segments=8)
 
     def test_init(self, test_surface: SegmentSurface):
         """Test the init of Surface"""
         assert len(test_surface.curve) == 4
         assert test_surface.name == "Test segment surface"
-        assert test_surface.nbrSegments == 8
+        assert test_surface.nbr_segments == 8
         assert test_surface.segment_nbr == 0
-        assert test_surface.angle == 2 * np.pi / test_surface.nbrSegments
+        assert test_surface.angle == 2 * np.pi / test_surface.nbr_segments
 
     # def test_translate(self, test_surface: Surface):
     #     """Test translate() method"""
@@ -91,34 +91,34 @@ class TestSegmentSurface:
         aswell"""
         center = Point(
             "point in center of test_surface",
-            1.15 * np.cos(2 * np.pi / test_surface.nbrSegments / 2),
-            1.15 * np.sin(2 * np.pi / test_surface.nbrSegments / 2),
+            1.15 * np.cos(2 * np.pi / test_surface.nbr_segments / 2),
+            1.15 * np.sin(2 * np.pi / test_surface.nbr_segments / 2),
             0,
         )
         # create a circle with the same number of segments as the test surface
         center_circle = add_circle(center, radius=0.05)
         center_circle = SegmentSurface(
-            "center circle", center_circle.curve, nbrSegments=8
+            "center circle", center_circle.curve, nbr_segments=8
         )
         test_surface.cutOut(center_circle)  # FIRST LAYER CUT
         assert test_surface.tools == [center_circle]  # check if the tool is set
-        assert test_surface.nbrSegments == 8
-        assert center_circle.nbrSegments == 8
+        assert test_surface.nbr_segments == 8
+        assert center_circle.nbr_segments == 8
 
         # create another circle with with double the number of segments
         center2 = center.duplicate("center2")  # duplicate center point
         # rotate center point -1/4 of the segment angle
         center2.rotateZ(
-            Point("global center", 0, 0, 0), -2 * np.pi / test_surface.nbrSegments / 4
+            Point("global center", 0, 0, 0), -2 * np.pi / test_surface.nbr_segments / 4
         )
         double_circle = add_circle(center2, radius=0.01)
         double_circle = SegmentSurface(
-            "double circle", double_circle.curve, nbrSegments=16
+            "double circle", double_circle.curve, nbr_segments=16
         )
         # cut out the double circle from the test surface
         test_surface.cutOut(double_circle)
         assert len(test_surface.tools) == 3  # check that an extra tool is added
-        assert test_surface.nbrSegments == 8
+        assert test_surface.nbr_segments == 8
 
     def test_duplicate(self, test_surface: SegmentSurface):
         """Test the duplicate method"""
@@ -127,7 +127,7 @@ class TestSegmentSurface:
         assert duplicated_surface.name == "Duplicated surface"
         assert len(duplicated_surface.curve) == 4
         assert len(duplicated_surface.points) == 4
-        assert duplicated_surface.nbrSegments == 8
+        assert duplicated_surface.nbr_segments == 8
         assert duplicated_surface.segment_nbr == 0
 
     def test_plot_noSym(self, test_surface: SegmentSurface):

@@ -155,7 +155,7 @@ def getBoundaryLines(
         dupLines: list[Line] = []
         angle = boundarySurface.angle
         # number of segments in symmetry:
-        nbrSegments = boundarySurface.nbrSegments / symFactor
+        nbrSegments = boundarySurface.nbr_segments / symFactor
         for line in lineList:
             for i in range(1, int(nbrSegments)):
                 dupLines.append(line.duplicate())

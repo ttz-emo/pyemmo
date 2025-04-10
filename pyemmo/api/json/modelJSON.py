@@ -284,7 +284,7 @@ def createAPISurf(areaDict: dict) -> SegmentSurface:
                 lineDictList=areaDict["Lines"], meshLen=areaDict["Meshsize"]
             ),
             material=importJSON.createMaterial(areaDict["Material"]),
-            nbrSegments=areaDict["Quantity"],
+            nbr_segments=areaDict["Quantity"],
             angle=areaDict["Angel"],
             meshSize=areaDict["Meshsize"],
         )
@@ -322,12 +322,12 @@ def importMachineGeometry(
             # The tools can have a different symmtery than the main surface. To account
             # for that, we need to determine number of segements of the main surface
             # that need to be duplicated for the tools to be cut out:
-            sym_factor = main_surf.nbrSegments  # init sym factor
+            sym_factor = main_surf.nbr_segments  # init sym factor
             # calculate symmetry factor for all tools:
             for nbr_segments in [tool_area["Quantity"] for tool_area in area]:
                 sym_factor = np.gcd(sym_factor, nbr_segments)
             # calc number of segments to fullfill symmetry:
-            nbr_main_segments = main_surf.nbrSegments / sym_factor
+            nbr_main_segments = main_surf.nbr_segments / sym_factor
             assert float(nbr_main_segments).is_integer()
             new_quantity = sym_factor
             # rotate and duplicate main surface and previous cut out tools:
@@ -340,14 +340,14 @@ def importMachineGeometry(
                 # update surface ids:
                 main_surf.id = out_dim_tags[0][1]
             # update nbr segements (angle updates automatically) of main surface
-            main_surf.nbrSegments = new_quantity
+            main_surf.nbr_segments = new_quantity
 
             if logging.getLogger().level <= logging.DEBUG and nbr_main_segments != 1.0:
                 gmsh.model.occ.synchronize()
                 gmsh.fltk.run()
             for surf in area:
                 tool_area = createAPISurf(surf)
-                for segment in range(0, int(tool_area.nbrSegments / sym_factor)):
+                for segment in range(0, int(tool_area.nbr_segments / sym_factor)):
                     dup_tool_surf = tool_area.rotate_duplicate(segment)
                     main_surf.cutOut(dup_tool_surf)
                 if logging.getLogger().level <= logging.DEBUG:
@@ -439,7 +439,7 @@ def createMachineGeometryFromSegment(
     surf_dict: dict[str, list[SegmentSurface]] = {}  # init surface dict
     # iterate through machine surface segments:
     for surf_id, surf in segmentSurfDict.items():
-        nbrSegments = surf.nbrSegments / symFactor
+        nbrSegments = surf.nbr_segments / symFactor
         # make sure number of segments is an integer
         if not nbrSegments.is_integer():
             raise ValueError(
@@ -602,7 +602,7 @@ def createMagnet(surf: SegmentSurface, mat: Material, extInfo: dict) -> Magnet:
         material=mat,
         magDirection=magDir,
         magType=importJSON.getMagDir(extInfo),
-        magVectorAngle=magAngle + radians(360 / surf.nbrSegments) * surf.segment_nbr,
+        magVectorAngle=magAngle + radians(360 / surf.nbr_segments) * surf.segment_nbr,
     )
 
 

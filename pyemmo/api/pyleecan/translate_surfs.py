@@ -180,7 +180,7 @@ def translate_surface(
         idExt=id_ext,
         curves=build_pyemmo_line_list(surface.line_list),
         material=build_pyemmo_material(pyleecan_mat),
-        nbrSegments=nbr_seg,
+        nbr_segments=nbr_seg,
         angle=angle_seg,
         meshSize=0,
     )

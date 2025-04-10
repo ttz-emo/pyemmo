@@ -109,7 +109,7 @@ def create_segment():
         ),
     ]
     return GmshSegmentSurface(
-        nbrSegments=8,
+        nbr_segments=8,
         curves=lines,
         name="Test segment surface",
     )
@@ -124,7 +124,7 @@ def test_init_with_id():
     circ = add_circle(GmshPoint(coords=(1, 0, 0)), radius)
     expected_name = "Test surface"
     gmsh_surface = GmshSegmentSurface(
-        tag=circ.id, nbrSegments=nbr_segments, name=expected_name
+        tag=circ.id, nbr_segments=nbr_segments, name=expected_name
     )
     # test ``Transormable`` properties
     assert gmsh_surface.name == expected_name
@@ -138,14 +138,14 @@ def test_init_with_id():
     assert gmsh_surface.id == circ.id
     assert math.isclose(gmsh_surface.area, np.pi * radius**2, rel_tol=1e-3)
     # test ``SegmentSurface`` properties
-    assert gmsh_surface.nbrSegments == nbr_segments
+    assert gmsh_surface.nbr_segments == nbr_segments
     assert gmsh_surface.segment_nbr == 0
 
 
 def test_init_with_curveloop(gmsh_surface: GmshSegmentSurface):
     """Test the init of Surface"""
     gmsh_rect = create_rectangle()
-    new_gmsh_surface_seg = GmshSegmentSurface(nbrSegments=4, curves=gmsh_rect.curve)
+    new_gmsh_surface_seg = GmshSegmentSurface(nbr_segments=4, curves=gmsh_rect.curve)
     assert new_gmsh_surface_seg.name == ""
 
     assert new_gmsh_surface_seg.curve == gmsh_rect.curve
@@ -158,7 +158,7 @@ def test_init_with_curveloop(gmsh_surface: GmshSegmentSurface):
     )
     assert np.isclose(new_gmsh_surface_seg.area, 1, rtol=1e-3)
 
-    assert new_gmsh_surface_seg.nbrSegments == 4
+    assert new_gmsh_surface_seg.nbr_segments == 4
     assert new_gmsh_surface_seg.segment_nbr == 0
     assert np.isclose(new_gmsh_surface_seg.angle, 2 * np.pi / 4, rtol=1e-3)
 
@@ -317,7 +317,7 @@ def test_cut_out_greaterSymTool(gmsh_surface: GmshSegmentSurface):
     )
     # create segment surface from tool
     circ = GmshSegmentSurface(
-        tag=circ.id, name=circ.name, nbrSegments=3 * gmsh_surface.nbrSegments
+        tag=circ.id, name=circ.name, nbr_segments=3 * gmsh_surface.nbr_segments
     )
     gmsh_surface.cutOut(circ)
     # assert len(gmsh_surface.curve) == 8
@@ -336,7 +336,7 @@ def test_cut_out_lowerSymTool(gmsh_surface: GmshSegmentSurface):
     circ.rotateZ(rotationPoint=GmshPoint(coords=(0, 0)), angle=gmsh_surface.angle / 2)
     # create segment surface from tool
     circ = GmshSegmentSurface(
-        tag=circ.id, name=circ.name, nbrSegments=gmsh_surface.nbrSegments / 2
+        tag=circ.id, name=circ.name, nbr_segments=gmsh_surface.nbr_segments / 2
     )
     gmsh_surface.cutOut(circ)
     # assert len(gmsh_surface.curve) == 8

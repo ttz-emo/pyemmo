@@ -60,7 +60,7 @@ class SegmentSurface(Surface):
         self,
         name: str,
         curves: list[Line],
-        nbrSegments: int,
+        nbr_segments: int,
     ):
         """init of surface for API. This type of surface is special,
         because it allways forms a machine segment or a part of a segment.
@@ -71,7 +71,7 @@ class SegmentSurface(Surface):
             nbrSegments (int): number of segments to form the complete body.
         """
         super().__init__(name=name, curves=curves)
-        self.nbrSegments: int = nbrSegments
+        self.nbr_segments: int = nbr_segments
         # there is no setter for segment number_number because its fixed!
         self._segment_number = 0
 
@@ -83,10 +83,10 @@ class SegmentSurface(Surface):
         Returns:
             float: segment angle of that surface in rad.
         """
-        return 2 * np.pi / self.nbrSegments
+        return 2 * np.pi / self.nbr_segments
 
     @property
-    def nbrSegments(self) -> int:
+    def nbr_segments(self) -> int:
         """get the nbrSegments of segments of a API surface to form a whole circle (2*Pi)
 
         Returns:
@@ -94,8 +94,8 @@ class SegmentSurface(Surface):
         """
         return self._nbrSegments
 
-    @nbrSegments.setter
-    def nbrSegments(self, nbrSegments: int) -> None:
+    @nbr_segments.setter
+    def nbr_segments(self, nbrSegments: int) -> None:
         """set the nbrSegments of segments of a API surface to form a whole circle (2*Pi)
 
         Args:
@@ -130,7 +130,7 @@ class SegmentSurface(Surface):
         dup_seg_surf = SegmentSurface(
             name=dup_surf.name,
             curves=dup_surf.curve,
-            nbrSegments=self.nbrSegments,
+            nbr_segments=self.nbr_segments,
         )
         return dup_seg_surf
 
@@ -149,7 +149,7 @@ class SegmentSurface(Surface):
         if (
             not float(segment).is_integer()
             or 0 > segment
-            or segment >= self.nbrSegments
+            or segment >= self.nbr_segments
         ):
             raise ValueError(f"Segment number must be valid integer, but is {segment}!")
 
@@ -186,21 +186,21 @@ class SegmentSurface(Surface):
                 "first segment!"
             )
         # check the number of segments
-        if tool.nbrSegments != self.nbrSegments:
+        if tool.nbr_segments != self.nbr_segments:
             # calculate total number of segments
-            symmetry = np.gcd(tool.nbrSegments, self.nbrSegments)
+            symmetry = np.gcd(tool.nbr_segments, self.nbr_segments)
             # create nbrSegments/symmetry copies
-            for segment in range(1, int(self.nbrSegments / symmetry)):
+            for segment in range(1, int(self.nbr_segments / symmetry)):
                 # rotate and duplicate parent surface if needed
                 dup_parent = self.rotate_duplicate(segment)
                 comb_surf = self.combine(dup_parent)  # combine the parent surfaces
                 # update curve loop
                 self.curve = comb_surf.curve
-            self.nbrSegments = symmetry  # update number of segments
-            for segment in range(int(tool.nbrSegments / symmetry)):
+            self.nbr_segments = symmetry  # update number of segments
+            for segment in range(int(tool.nbr_segments / symmetry)):
                 dup_tool = tool.rotate_duplicate(segment)  # rotate and duplicate tool
                 super().cutOut(dup_tool)  # cut out new tool
-                dup_tool.nbrSegments = symmetry  # update number of segments
+                dup_tool.nbr_segments = symmetry  # update number of segments
         else:
             # if the number of segments is the same, cut out the tool directly
             super().cutOut(tool)
@@ -258,11 +258,11 @@ class SegmentSurface(Surface):
             )
             return fig
         # otherwise calculate number of segments to plot:
-        nbr_segments_plot = self.nbrSegments / symmetry
+        nbr_segments_plot = self.nbr_segments / symmetry
         if not float(nbr_segments_plot).is_integer():
             raise ValueError(
                 f"Bad symmetry value {symmetry} for SegmentSurface with "
-                f"{self.nbrSegments} segments! Number of segments to plot must be an "
+                f"{self.nbr_segments} segments! Number of segments to plot must be an "
                 f"integer! But it is {nbr_segments_plot}."
             )
         # rotate and duplicate segments and recall plot-method without symmetry

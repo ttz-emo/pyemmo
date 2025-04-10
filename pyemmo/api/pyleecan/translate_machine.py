@@ -134,7 +134,7 @@ def build_bands_rotor(
         idExt="rotor air",
         curves=rotor_air_gap1_curves,
         material=air,
-        nbrSegments=nbr_rotor_seg,
+        nbr_segments=nbr_rotor_seg,
         angle=angle_rotor,
         meshSize=1.0,
     )
@@ -214,7 +214,7 @@ def build_bands_rotor(
         idExt=ROTOR_AIRGAP_IDEXT,
         curves=rotor_air_gap2_curves,
         material=air,
-        nbrSegments=nbr_rotor_seg,
+        nbr_segments=nbr_rotor_seg,
         angle=angle_rotor,
         meshSize=1.0,
     )
@@ -324,7 +324,7 @@ def build_bands_stator(
         idExt="stator air",
         curves=curves_stlu1,
         material=air,
-        nbrSegments=nbr_stator_seg,
+        nbr_segments=nbr_stator_seg,
         angle=angle_stator,
         meshSize=1.0,
     )
@@ -377,7 +377,7 @@ def build_bands_stator(
         idExt=STATOR_AIRGAP_IDEXT,
         curves=curves_stlu2,
         material=air,
-        nbrSegments=nbr_stator_seg,
+        nbr_segments=nbr_stator_seg,
         angle=angle_stator,
         meshSize=1.0,
     )
