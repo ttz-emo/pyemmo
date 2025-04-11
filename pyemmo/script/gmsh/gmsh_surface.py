@@ -263,17 +263,6 @@ class GmshSurface(GmshGeometry, Surface):
             ml = min(ml, nml)
         return ml
 
-    def translate(self, dx, dy, dz):
-        """Translates the surface by the factors dx, dy and dz.
-
-        Args:
-            dx (float): Translation in x-direction.
-            dy (float): Translation in y-direction.
-            dz (float): Translation in z-direction.
-
-        """
-        return gmsh.model.occ.translate([(2, self.id)], dx, dy, dz)
-
     def rotateZ(self, rotationPoint: Point = defaultCenterPoint, angle: float = 0.0):
         """Rotates the surface around the z-axis.
 
@@ -290,43 +279,8 @@ class GmshSurface(GmshGeometry, Surface):
             >>> rotationPoint = GmshPoint()
             >>> surface.rotateZ(rotationPoint, pi/2)
         """
-        x, y, z = rotationPoint.coordinate
-        gmsh.model.occ.rotate([(2, self.id)], x, y, z, 0, 0, 1, angle)
+        GmshGeometry.rotateZ(self, rotationPoint, angle)
         # TODO: Also rotate tools?
-
-    def rotateX(self, rotationPoint: Point, angle: float):
-        """Rotates the surface around the x-axis.
-
-        Args:
-            rotationPoint (Point): The point around which the surface should be rotated.
-            angle (float): The angle in degrees by which the surface should be rotated.
-
-        example:
-            >>> from pyemmo.gmsh import GmshSurface, GmshPoint
-            >>> from math import pi
-            >>> surface = GmshSurface()
-            >>> rotationPoint = GmshPoint()
-            >>> surface.rotateX(rotationPoint, pi/2)
-        """
-        x, y, z = rotationPoint.coordinate
-        gmsh.model.occ.rotate([(2, self.id)], x, y, z, 1, 0, 0, angle)
-
-    def rotateY(self, rotationPoint, angle):
-        """Rotates the surface around the y-axis.
-
-        Args:
-            rotationPoint (Point): The point around which the surface should be rotated.
-            angle (float): The angle in degrees by which the surface should be rotated.
-
-        example:
-            >>> from pyemmo.gmsh import GmshSurface, GmshPoint
-            >>> from math import pi
-            >>> surface = GmshSurface()
-            >>> rotationPoint = GmshPoint()
-            >>> surface.rotateY(rotationPoint, pi/2)
-        """
-        x, y, z = rotationPoint.coordinate
-        gmsh.model.occ.rotate([(2, self.id)], x, y, z, 0, 1, 0, angle)
 
     def duplicate(self, name: str = "") -> "GmshSurface":
         """Duplicates the surface.
@@ -337,14 +291,7 @@ class GmshSurface(GmshGeometry, Surface):
         Returns:
             GmshSurface: The duplicated surface.
         """
-        outDimTags: list[DimTag] = gmsh.model.occ.copy([(2, self.id)])
-        if len(outDimTags) != 1:
-            raise ValueError("Error in duplicating surface!")
-        # reset name if not given
-        if not name:
-            name = self.name + "_dup"
-        # create new GmshSurface object
-        dup_surf = GmshSurface(tag=outDimTags[0][1], name=name)
+        dup_surf = GmshGeometry.duplicate(self, name)
         # TODO: Handle duplication of tools!
         return dup_surf
 

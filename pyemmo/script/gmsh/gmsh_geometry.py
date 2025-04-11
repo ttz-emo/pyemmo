@@ -201,9 +201,9 @@ class GmshGeometry(ABC):
 
         dim_tags: list[DimTag] = gmsh.model.occ.copy([(self.dim, self.id)])
         if len(dim_tags) != 1:
-            raise RuntimeError(f"Error while duplicating gmsh object ({type(self)})!")
-        new_instance = type(self)(tag=dim_tags[0][1])
-        # set new line name
+            raise RuntimeError(f"Error while duplicating gmsh object ({self})!")
+        new_instance = type(self)(tag=dim_tags[0][1], name=name)
+        # set new instance name
         if name == "":
             parentName = self.name
             if "_dup" not in parentName:
