@@ -71,7 +71,7 @@ def fixture_gmsh_surface():
 
 @pytest.fixture(scope="function")
 def fixture_gmsh_circle():
-    """Default test circle with radius 1 meter."""
+    """Default test circle with origin (0,0,0) and radius 1 meter."""
     centerpoint = GmshPoint(-1, coords=(0, 0, 0))
     return add_circle(centerpoint, 1)
 
@@ -98,7 +98,7 @@ def create_rectangle():
         lines.append(
             GmshLine(tag=-1, name=f"L{i}", start_point=points[i - 1], end_point=point)
         )
-    return GmshSurface(tag=-1, name="Test surface", curves=lines)
+    return GmshSurface.from_curve_loop(curve_loop=lines, name="Test surface")
 
 
 def add_circle(center: GmshPoint, radius: float):
@@ -127,23 +127,31 @@ def add_circle(center: GmshPoint, radius: float):
                 end_point=point,
             )
         )
-    return GmshSurface(-1, lines, f"Circle {radius=:.1f}")
+    return GmshSurface.from_curve_loop(curve_loop=lines, name=f"Circle {radius=:.1f}")
 
 
 def test_init_with_curveloop(gmsh_surface: GmshSurface):
     """Test the init of Surface"""
-    assert len(gmsh_surface.curve) == 4
-    assert gmsh_surface.dim == 2
-    assert gmsh_surface.name == "Test surface"
-    assert np.isclose(gmsh_surface.meanMeshLength, 1e-3, rtol=1e-3)
+    curves = gmsh_surface.curve
+    new_gmsh_surface = GmshSurface.from_curve_loop(curve_loop=curves, name="new name")
+    assert len(gmsh_surface.curve) == len(gmsh_surface.curve)
+    assert new_gmsh_surface.curve == gmsh_surface.curve
+    assert new_gmsh_surface.dim == 2
+    assert new_gmsh_surface.name == "new name"
+    assert np.isclose(new_gmsh_surface.meanMeshLength, 1e-3, rtol=1e-3)
 
 
 def test_init_with_id(gmsh_surface: GmshSurface):
     """Test the init of Surface"""
     new_gmsh_surface = GmshSurface(tag=gmsh_surface.id)
+    # test `Surface` attributes
+    assert new_gmsh_surface.name == gmsh_surface.name
     assert len(new_gmsh_surface.curve) == len(gmsh_surface.curve)
+    assert new_gmsh_surface.curve == gmsh_surface.curve
+    assert new_gmsh_surface.points == gmsh_surface.points
+    # test `GmshGeometry` attributes
     assert new_gmsh_surface.dim == 2
-    assert new_gmsh_surface.name == "Test surface"
+    assert new_gmsh_surface.id == gmsh_surface.id
     assert np.isclose(
         new_gmsh_surface.meanMeshLength, gmsh_surface.meanMeshLength, rtol=1e-3
     )
