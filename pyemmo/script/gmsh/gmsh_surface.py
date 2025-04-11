@@ -294,7 +294,20 @@ class GmshSurface(GmshGeometry, Surface):
         Returns:
             GmshSurface: The duplicated surface.
         """
-        dup_surf = GmshGeometry.duplicate(self, name)
+        # NOTE: We cannot use the GmshGeometry.duplicate() method here, because it calls
+        #   type(self).__init__(...) which does not work for child classes with more
+        #   attributes than GmshSurface (e.g. GmshSegmentSurface which has additional
+        #   non-positional attribute 'nbr_segments').
+        # Do not use this!: new_surf = GmshGeometry.duplicate(self, name)
+
+        outDimTags: list[DimTag] = gmsh.model.occ.copy([(2, self.id)])
+        if len(outDimTags) != 1:
+            raise ValueError("Error in duplicating surface!")
+        # reset name if not given
+        if not name:
+            name = self.name + "_dup"
+        # create new GmshSurface object
+        dup_surf = GmshSurface(tag=outDimTags[0][1], name=name)
         # TODO: Handle duplication of tools!
         return dup_surf
 
