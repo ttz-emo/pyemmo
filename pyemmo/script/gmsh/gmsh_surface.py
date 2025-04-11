@@ -199,6 +199,9 @@ class GmshSurface(GmshGeometry, Surface):
             )
         return msg
 
+    def __deepcopy__(self, memo) -> "GmshSurface":
+        return self.duplicate()
+
     @property
     def curve(self) -> list[Union[GmshLine, GmshArc]]:
         """Get the curves that form the surface.

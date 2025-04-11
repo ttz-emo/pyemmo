@@ -18,6 +18,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+import logging
+from copy import deepcopy
+
 import gmsh
 import numpy as np
 import pytest
@@ -240,6 +243,15 @@ def test_duplicate(gmsh_surface: GmshSurface, name: str):
         assert duplicate.name == gmsh_surface.name + "_dup"
 
     assert gmsh_surface.meanMeshLength == duplicate.meanMeshLength
+
+
+def test_deepcopy(gmsh_surface: GmshSurface):
+    """test deepcopy method"""
+    gs_copy = deepcopy(gmsh_surface)
+    logging.info(f"original: {gmsh_surface}")
+    logging.info(f"copy: {gs_copy}")
+    assert gs_copy.id != gmsh_surface.id
+    assert len(gs_copy.curve) == len(gmsh_surface.curve)
 
 
 @pytest.mark.xfail(reason="not implemented mirror yet")
