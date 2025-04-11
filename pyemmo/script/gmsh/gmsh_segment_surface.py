@@ -25,7 +25,6 @@ import numpy as np
 
 from ..geometry import defaultCenterPoint as gcp
 from ..geometry.segment_surface import SegmentSurface
-from .gmsh_arc import GmshArc
 from .gmsh_line import GmshLine
 from .gmsh_surface import GmshSurface
 
@@ -38,13 +37,12 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
 
     def __init__(
         self,
+        tag: int,
         nbr_segments: int,
-        tag: int = -1,
-        curves: list[GmshLine | GmshArc | None] = None,
         name: str = "",
     ):
         """GmshSegmentSurface can be initialized with a existing gmsh surface ``tag`` or
-        with a list of gmsh curves. But you cannot give both!
+        with a list of gmsh curves (see )
         If the surface ``tag`` is given, the curves are retrieved from the current gmsh
         model. See pyemmo.script.gmsh.GmshSurface for more information.
         If a list of ``GmshLine`` objects is given, a PlaneSurface object will be
@@ -53,15 +51,38 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
         ``nbrSegments`` times.
 
         Args:
-            nbrSegments (int): number of segments in the full machine.
-            tag (int, optional): Gmsh surface tag.
-            curves (List[Line], optional): list of surface boundary lines
+            tag (int): Gmsh surface tag.
+            nbr_segments (int): number of segments in the full model.
             name (str, optional): name of the surface
         """
-        GmshSurface.__init__(self, tag=tag, curves=curves, name=name)
+        GmshSurface.__init__(self, tag=tag, name=name)
         SegmentSurface.__init__(
             self, name=self.name, curves=self.curve, nbr_segments=nbr_segments
         )
+
+    # pylint: disable=arguments-differ
+    #   Its ok that the number of arguments is higher than in the parent class because
+    #   this is like a __init__ method!
+    # pylint: disable=arguments-renamed
+    #   This probably happens because the number of arguments is different from the parent
+    #   implementation of from_curve_loop() method.
+    @classmethod
+    def from_curve_loop(
+        cls, curve_loop: list[GmshLine], nbr_segments: int, name: str = ""
+    ) -> GmshSegmentSurface:
+        """Create a GmshSegmentSurface object from a curve loop.
+        This method creates a GmshSegmentSurface object from a curve loop object.
+
+        Args:
+            curve_loop (list[GmshLine]): List of GmshLine objects.
+            nbr_segments (int): Number of segments in the full model.
+            name (str, optional): Name. Defaults to "".
+
+        Returns:
+            GmshSegmentSurface
+        """
+        gmsh_surf = GmshSurface.from_curve_loop(curve_loop=curve_loop, name=name)
+        return cls(tag=gmsh_surf.id, nbr_segments=nbr_segments, name=name)
 
     def duplicate(self, name="") -> GmshSegmentSurface:
         """create a copy of the surface
