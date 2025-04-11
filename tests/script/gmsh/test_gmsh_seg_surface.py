@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO, Technical University of
 # Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -108,9 +108,9 @@ def create_segment():
             end_point=points[0],
         ),
     ]
-    return GmshSegmentSurface(
+    return GmshSegmentSurface.from_curve_loop(
         nbr_segments=8,
-        curves=lines,
+        curve_loop=lines,
         name="Test segment surface",
     )
 
@@ -132,7 +132,7 @@ def test_init_with_id():
     assert len(gmsh_surface.curve) == 4
     assert gmsh_surface.curve == circ.curve
     assert gmsh_surface.points == circ.points
-    assert gmsh_surface.tools == []
+    assert not gmsh_surface.tools
     # test ``GmshSurface`` properties
     assert gmsh_surface.dim == 2
     assert gmsh_surface.id == circ.id
@@ -145,7 +145,9 @@ def test_init_with_id():
 def test_init_with_curveloop(gmsh_surface: GmshSegmentSurface):
     """Test the init of Surface"""
     gmsh_rect = create_rectangle()
-    new_gmsh_surface_seg = GmshSegmentSurface(nbr_segments=4, curves=gmsh_rect.curve)
+    new_gmsh_surface_seg = GmshSegmentSurface.from_curve_loop(
+        nbr_segments=4, curve_loop=gmsh_rect.curve
+    )
     assert new_gmsh_surface_seg.name == ""
 
     assert new_gmsh_surface_seg.curve == gmsh_rect.curve
@@ -165,7 +167,9 @@ def test_init_with_curveloop(gmsh_surface: GmshSegmentSurface):
 
 def test_init_with_id_newName(gmsh_surface: GmshSegmentSurface):
     """Test the init of Surface"""
-    new_gmsh_surface = GmshSurface(tag=gmsh_surface.id, name="new name")
+    new_gmsh_surface = GmshSegmentSurface(
+        tag=gmsh_surface.id, nbr_segments=gmsh_surface.nbr_segments, name="new name"
+    )
     assert new_gmsh_surface.name == "new name"
 
 
