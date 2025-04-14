@@ -20,6 +20,7 @@
 """Module for class Magnet_Slot01"""
 
 from .. import colorDict
+from ..gmsh.gmsh_surface import GmshSurface
 from .line import Line
 from .magnet import Magnet
 from .point import Point
@@ -100,7 +101,6 @@ class MagnetSlot01(Magnet):
             coordCentre[0] + r_M_bottom,
             coordCentre[1],
             coordCentre[2],
-            self._machineDict["meshLength"],
         )
         pMagnet2 = pMagnet1.duplicate()
         pMagnet2.translate(0, width_M / 2, 0)
@@ -137,11 +137,12 @@ class MagnetSlot01(Magnet):
         self._lamLinePart = [lMagnet1, lMagnet2, lMagnet3]
         self._laminationDockingPoint = [pMagnet1, pMagnet2, pMagnet3, pMagnet4]
 
-        for s in self._geo_list:
-            if self.magDir == 1:
-                s.meshColor = colorDict["Red"]
-            elif self.magDir == -1:
-                s.meshColor(colorDict["Green"])
+        for s in self.geo_list:
+            if isinstance(s, GmshSurface):
+                if self.magDir == 1:
+                    s.mesh_color = colorDict["Red"]
+                elif self.magDir == -1:
+                    s.mesh_color(colorDict["Green"])
 
     # def getAirDockingPoint(self):
     #     return self._airDockingPoint
