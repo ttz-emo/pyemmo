@@ -345,8 +345,8 @@ def importMachineGeometry(
                 logging.debug(
                     f"Surface: '{main_surf.name}' before subtraction of tools."
                 )
-                gmsh.model.occ.synchronize()
-                gmsh.fltk.run()
+                # gmsh.model.occ.synchronize()
+                # gmsh.fltk.run()
             for surf in area:
                 tool_area = createAPISurf(surf)
                 # for segment in range(0, int(tool_area.nbr_segments / sym_factor)):
@@ -356,10 +356,10 @@ def importMachineGeometry(
                 if logging.getLogger().level <= logging.DEBUG:
                     # show model after each tool cut out
                     logging.debug(
-                        f"Surface: {main_surf} after subtraction of tool: {tool_area}."
+                        f"Surface: {main_surf.name} after subtraction of tool: {tool_area.name}."
                     )
-                    gmsh.model.occ.synchronize()
-                    gmsh.fltk.run()
+                    # gmsh.model.occ.synchronize()
+                    # gmsh.fltk.run()
 
             # # correct values for nbrSegments in tools (angle updates automatically):
             # for surf in main_surf.tools:
@@ -673,7 +673,7 @@ def phase2color(
         if phaseChar.lower() == "u":
             return "Magenta"
         if phaseChar.lower() == "v":
-            return "Yellow4"
+            return "Yellow"
         if phaseChar.lower() == "w":
             return "Cyan"
         raise ValueError(

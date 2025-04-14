@@ -21,12 +21,11 @@
 """Module for class PhysicalElement"""
 
 import logging
-from random import random
 from typing import TYPE_CHECKING, List, Union
 
 import gmsh
+import numpy as np
 
-from .. import colorDict
 from ..gmsh.gmsh_surface import GmshSurface
 from ..material.material import Material
 from .circleArc import CircleArc
@@ -284,11 +283,8 @@ class PhysicalElement:
                 as string. Defaults to None.
         """
         if not colorName:
-            index = round((len(colorDict) - 1) * random())
-            colorName = list(colorDict.keys())[index]
-            # colorName = colorName.replace("Light", "") # FIXME: This leads to an error in case of
-            # "LightGoldenrodYellow"... Maybe skip that color in the color-dict or implement better
-            # algorithm to catch light colors
+            colorName = np.random.random(4)
+            colorName[3] = 1.0  # set alpha to 1.0
         for geoElem in self.geo_list:
             if isinstance(geoElem, GmshSurface):
                 geoElem.mesh_color = colorName

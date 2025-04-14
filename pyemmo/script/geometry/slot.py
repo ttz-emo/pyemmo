@@ -229,7 +229,7 @@ class Slot(PhysicalElement):
                 super().setColor("Magenta")
             elif isclose(phaseDeg, 120):
                 # phase v
-                super().setColor("Yellow4")
+                super().setColor("Yellow")
             elif isclose(phaseDeg, 240):
                 # phase w
                 super().setColor("Cyan")
