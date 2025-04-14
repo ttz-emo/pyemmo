@@ -26,7 +26,6 @@ from math import radians
 from typing import Literal
 
 import gmsh
-import numpy as np
 from numpy import pi, sign
 from swat_em import datamodel
 
@@ -36,14 +35,16 @@ from ...script.geometry.circleArc import CircleArc, Line
 from ...script.geometry.magnet import Magnet
 from ...script.geometry.physicalElement import PhysicalElement
 from ...script.geometry.rotorLamination import RotorLamination
-from ...script.geometry.segment_surface import SegmentSurface
 from ...script.geometry.slot import Slot
 from ...script.geometry.spline import Spline
 from ...script.geometry.statorLamination import StatorLamination
 from ...script.geometry.surface import Point
-from ...script.gmsh.gmsh_surface import GmshSurface
+from ...script.gmsh.gmsh_arc import GmshArc
+from ...script.gmsh.gmsh_line import GmshLine
+from ...script.gmsh.gmsh_point import GmshPoint
 from ...script.material.material import Material
 from .. import logger
+from ..machine_segment_surface import MachineSegmentSurface
 from . import (
     ROTOR_AIRGAP_IDEXT,
     ROTOR_BAR_IDEXT,
@@ -61,7 +62,7 @@ from .get_coilspan import get_min_coilspan
 
 
 def createLine(
-    lineDict: dict,
+    lineDict: dict[str, GmshLine],
     meshLen: float,
     startPoint: Point,
     endPoint: Point,
@@ -91,17 +92,23 @@ def createLine(
         mpName = lineDict["MpName"]
         # import coordinates of Centerpoint for THIS arc
         coordsMP = (lineDict["MpX"], lineDict["MpY"], lineDict["MpZ"])
-        centerPoint = Point(
-            mpName,
-            coordsMP[0],
-            coordsMP[1],
-            coordsMP[2],
-            meshLen if meshLen else lineDict["MpMesh"],
+        centerPoint = GmshPoint(
+            name=mpName,
+            coords=coordsMP,
+            meshLength=meshLen if meshLen else lineDict["MpMesh"],
         )
-        line = CircleArc(lineName, startPoint, centerPoint, endPoint)
+        line = GmshArc(
+            name=lineName,
+            start_point=startPoint,
+            center_point=centerPoint,
+            end_point=endPoint,
+        )
     elif lineType == "Line":
-        line = Line(lineName, startPoint, endPoint)
+        line = GmshLine(name=lineName, start_point=startPoint, end_point=endPoint)
     elif lineType == "Bezier":
+        raise NotImplementedError(
+            "Line type Spline not implemented in pyemmo GmshAPI yet."
+        )
         # in json api Bezier curves can only have one control point yet!
         controlPointName = lineDict["MpName"]
         # import control point coordinates
@@ -115,7 +122,6 @@ def createLine(
             controlPointCoords[0],
             controlPointCoords[1],
             controlPointCoords[2],
-            meshLen if meshLen else lineDict["MpMesh"],
         )
         line = Spline(
             name=lineName,
@@ -135,7 +141,7 @@ def createLine(
 def getSurfaceLineList(
     lineDictList: list[dict[str, float] | dict[str, str]],
     meshLen: float = None,
-) -> list[Line]:
+) -> list[GmshLine | GmshArc]:
     """
     This function takes a list of dicts with surface-line-information (lineloop structure)
     and generates a list of pyemmo :class:`Line <pyemmo.script.geometry.line.Line>` objects
@@ -192,8 +198,8 @@ def getSurfaceLineList(
             f"mesh size has wrong type: {type(meshLen)}. "
             "Should be float, int or None."
         )
-    lineList: list[Line] = []
-    pointList: list[Point] = []
+    lineList: list[GmshLine | GmshArc] = []
+    pointList: list[GmshPoint] = []
     for lineID, lineDict in enumerate(lineDictList):  # for each line in lineDict
         # import line-point coordinates
         # start point
@@ -202,20 +208,16 @@ def getSurfaceLineList(
         coordsP2 = (lineDict["EpX"], lineDict["EpY"], lineDict["EpZ"])
         # Points
         if lineID == 0:
-            startPoint = Point(
-                lineDict["ApName"],
-                coordsP1[0],
-                coordsP1[1],
-                coordsP1[2],
-                meshLen if meshLen else lineDict["ApMesh"],
+            startPoint = GmshPoint(
+                name=lineDict["ApName"],
+                coords=coordsP1,
+                meshLength=meshLen if meshLen else lineDict["ApMesh"],
             )
             pointList.append(startPoint)
-            endPoint = Point(
-                lineDict["EpName"],
-                coordsP2[0],
-                coordsP2[1],
-                coordsP2[2],
-                meshLen if meshLen else lineDict["EpMesh"],
+            endPoint = GmshPoint(
+                name=lineDict["EpName"],
+                coords=coordsP2,
+                meshLength=meshLen if meshLen else lineDict["EpMesh"],
             )
             pointList.append(endPoint)
         elif lineID == len(lineDictList) - 1:
@@ -244,12 +246,10 @@ def getSurfaceLineList(
                     f"End point ({startPoint.name}) of last line in line loop is NOT "
                     f"startpoint of this line ('{lineDict['LineName']}'). Check line loop!"
                 )
-            endPoint = Point(
-                lineDict["EpName"],
-                coordsP2[0],
-                coordsP2[1],
-                coordsP2[2],
-                meshLen if meshLen else lineDict["EpMesh"],
+            endPoint = GmshPoint(
+                name=lineDict["EpName"],
+                coords=coordsP2,
+                meshLength=meshLen if meshLen else lineDict["EpMesh"],
             )
             pointList.append(endPoint)
         line = createLine(lineDict, meshLen, startPoint, endPoint)
@@ -257,7 +257,7 @@ def getSurfaceLineList(
     return lineList
 
 
-def createAPISurf(areaDict: dict) -> SegmentSurface:
+def createAPISurf(areaDict: dict) -> MachineSegmentSurface:
     """create a SurfaceAPI object from a area dict imported via json.
 
     Args:
@@ -277,17 +277,16 @@ def createAPISurf(areaDict: dict) -> SegmentSurface:
     - Meshsize
     """
     try:
-        surf = SegmentSurface(
+        surf = MachineSegmentSurface.from_curve_loop(
             name=areaDict["Name"],
-            idExt=areaDict["IdExt"],  # get short area name ("IdExt") as dict key
-            curves=getSurfaceLineList(
+            part_id=areaDict["IdExt"],  # get short area name ("IdExt") as dict key
+            curve_loop=getSurfaceLineList(
                 lineDictList=areaDict["Lines"], meshLen=areaDict["Meshsize"]
             ),
             material=importJSON.createMaterial(areaDict["Material"]),
             nbr_segments=areaDict["Quantity"],
-            angle=areaDict["Angel"],
-            meshSize=areaDict["Meshsize"],
         )
+        surf.setMeshLength(areaDict["Meshsize"]) if areaDict["Meshsize"] else None
     except Exception as exce:
         raise RuntimeError(
             f"""Failed to generate API surface for '{areaDict["Name"]}' """
@@ -298,7 +297,7 @@ def createAPISurf(areaDict: dict) -> SegmentSurface:
 
 def importMachineGeometry(
     machineGeoList: list[dict | list[dict]],
-) -> dict[str, SegmentSurface]:
+) -> dict[str, MachineSegmentSurface]:
     """import one segment of the whole machine geometry from the geo.json file
 
     Args:
@@ -309,61 +308,66 @@ def importMachineGeometry(
         Dict[str, SurfaceAPI]: Segment Surface dict with short IDs (IdExt) as keys and
         SurfaceAPI objects as values
     """
-    segmentSurfDict: dict[str, SegmentSurface] = {}
+    segmentSurfDict: dict[str, MachineSegmentSurface] = {}
     for area in machineGeoList:
         if isinstance(area, dict):
             # normal surface; no subtraction
-            apiSurf: SegmentSurface = createAPISurf(area)
-            segmentSurfDict[apiSurf.idExt] = apiSurf
+            apiSurf = createAPISurf(area)
+            segmentSurfDict[apiSurf.part_id] = apiSurf
         elif isinstance(area, list):
             area: list[dict] = area
             # TODO: add multi layer subtraction here!
             main_surf = createAPISurf(area.pop(0))
-            # The tools can have a different symmtery than the main surface. To account
-            # for that, we need to determine number of segements of the main surface
-            # that need to be duplicated for the tools to be cut out:
-            sym_factor = main_surf.nbr_segments  # init sym factor
-            # calculate symmetry factor for all tools:
-            for nbr_segments in [tool_area["Quantity"] for tool_area in area]:
-                sym_factor = np.gcd(sym_factor, nbr_segments)
-            # calc number of segments to fullfill symmetry:
-            nbr_main_segments = main_surf.nbr_segments / sym_factor
-            assert float(nbr_main_segments).is_integer()
-            new_quantity = sym_factor
-            # rotate and duplicate main surface and previous cut out tools:
-            for i in range(1, int(nbr_main_segments)):
-                dup_main_surf = main_surf.rotate_duplicate(i)
-                # fuse main surface:
-                out_dim_tags, out_dim_tags_map = gmsh.model.occ.fuse(
-                    [(2, main_surf.id)], [(2, dup_main_surf.id)]
-                )
-                # update surface ids:
-                main_surf.id = out_dim_tags[0][1]
-            # update nbr segements (angle updates automatically) of main surface
-            main_surf.nbr_segments = new_quantity
+            # # The tools can have a different symmtery than the main surface. To account
+            # # for that, we need to determine number of segements of the main surface
+            # # that need to be duplicated for the tools to be cut out:
+            # sym_factor = main_surf.nbr_segments  # init sym factor
+            # # calculate symmetry factor for all tools:
+            # for nbr_segments in [tool_area["Quantity"] for tool_area in area]:
+            #     sym_factor = np.gcd(sym_factor, nbr_segments)
+            # # calc number of segments to fullfill symmetry:
+            # nbr_main_segments = main_surf.nbr_segments / sym_factor
+            # assert float(nbr_main_segments).is_integer()
+            # new_quantity = sym_factor
+            # # rotate and duplicate main surface and previous cut out tools:
+            # for i in range(1, int(nbr_main_segments)):
+            #     dup_main_surf = main_surf.rotate_duplicate(i)
+            #     # fuse main surface:
+            #     out_dim_tags, out_dim_tags_map = gmsh.model.occ.fuse(
+            #         [(2, main_surf.id)], [(2, dup_main_surf.id)]
+            #     )
+            #     # update surface ids:
+            #     main_surf.id = out_dim_tags[0][1]
+            # # update nbr segements (angle updates automatically) of main surface
+            # main_surf.nbr_segments = new_quantity
 
-            if logging.getLogger().level <= logging.DEBUG and nbr_main_segments != 1.0:
+            if logging.getLogger().level <= logging.DEBUG:
+                logging.debug(f"Surface: {main_surf} before subtraction of tools.")
                 gmsh.model.occ.synchronize()
                 gmsh.fltk.run()
             for surf in area:
                 tool_area = createAPISurf(surf)
-                for segment in range(0, int(tool_area.nbr_segments / sym_factor)):
-                    dup_tool_surf = tool_area.rotate_duplicate(segment)
-                    main_surf.cutOut(dup_tool_surf)
+                # for segment in range(0, int(tool_area.nbr_segments / sym_factor)):
+                #     dup_tool_surf = tool_area.rotate_duplicate(segment)
+                #     main_surf.cutOut(dup_tool_surf)
+                main_surf.cutOut(tool_area)
                 if logging.getLogger().level <= logging.DEBUG:
                     # show model after each tool cut out
+                    logging.debug(
+                        f"Surface: {main_surf} after subtraction of tool: {tool_area}."
+                    )
                     gmsh.model.occ.synchronize()
                     gmsh.fltk.run()
 
-            # correct values for nbrSegments in tools (angle updates automatically):
-            for surf in main_surf.tools:
-                surf.nbrSegments = new_quantity
-            # update curve of main surface
-            gmsh.model.occ.synchronize()
-            gmsh_main_surf = GmshSurface(tag=main_surf.id)
-            main_surf.curve = gmsh_main_surf.curve
+            # # correct values for nbrSegments in tools (angle updates automatically):
+            # for surf in main_surf.tools:
+            #     surf.nbrSegments = new_quantity
+            # # update curve of main surface
+            # gmsh.model.occ.synchronize()
+            # gmsh_main_surf = GmshSurface(tag=main_surf.id)
+            # main_surf.curve = gmsh_main_surf.curve
 
-            segmentSurfDict[main_surf.idExt] = main_surf
+            segmentSurfDict[main_surf.part_id] = main_surf
         else:
             msg = (
                 "The type of an element in the area list imported from the"
@@ -377,7 +381,9 @@ def importMachineGeometry(
     return segmentSurfDict
 
 
-def createSurfaceDict(surfList: list[SegmentSurface]) -> dict[str, SegmentSurface]:
+def createSurfaceDict(
+    surfList: list[MachineSegmentSurface],
+) -> dict[str, MachineSegmentSurface]:
     """creates a Dict of SurfaceAPI objects from a List of SurfaceAPI (see
     :func:`importMachineGeometry() <pyemmo.api.modelJSON.importMachineGeometry>`).
     The dict-keys are the surface IDs (short names/abbriviations of the surface
@@ -401,22 +407,22 @@ def createSurfaceDict(surfList: list[SegmentSurface]) -> dict[str, SegmentSurfac
         )
         raise ValueError(msg)
 
-    surfaceDict: dict[str, SegmentSurface] = {}
+    surfaceDict: dict[str, MachineSegmentSurface] = {}
     for surf in surfList:
-        if not isinstance(surf, SegmentSurface):
+        if not isinstance(surf, MachineSegmentSurface):
             msg = (
                 "The object in the surface list was not type 'SurfaceAPI',"
                 f" but '{type(surf)}'."
             )
             raise ValueError(msg)
-        surfID = surf.idExt  # key is area ID
+        surfID = surf.part_id  # key is area ID
         surfaceDict[surfID] = surf
     return surfaceDict
 
 
 def createMachineGeometryFromSegment(
-    segmentSurfDict: dict[str, SegmentSurface], symFactor: int
-) -> dict[str, list[SegmentSurface]]:
+    segmentSurfDict: dict[str, MachineSegmentSurface], symFactor: int
+) -> dict[str, list[MachineSegmentSurface]]:
     """
     Generate (rotate and duplicate) all Surfaces of the machine from a segment
     (list of surfaces) and return them as surface-list
@@ -436,7 +442,7 @@ def createMachineGeometryFromSegment(
         ValueError: If number of segments on (2*Pi / symFactor) is not an
             integer.
     """
-    surf_dict: dict[str, list[SegmentSurface]] = {}  # init surface dict
+    surf_dict: dict[str, list[MachineSegmentSurface]] = {}  # init surface dict
     # iterate through machine surface segments:
     for surf_id, surf in segmentSurfDict.items():
         nbrSegments = surf.nbr_segments / symFactor
@@ -459,18 +465,19 @@ def createMachineGeometryFromSegment(
             # rotate_duplicate also considers the tools automatically
             surf_dict[surf_id].append(surf.rotate_duplicate(segment_nbr))
 
-            ### update surf dict with tool surfaces
-            tools = surf_dict[surf_id][-1].tools
-            while tools:
-                new_tools = []  # init new tools
-                for tool in tools:
-                    if tool.idExt in surf_dict:
-                        surf_dict[tool.idExt].append(tool)
-                    else:
-                        surf_dict[tool.idExt] = [tool]
-                    # add tool tools to new tools if not empty
-                    new_tools.extend(tool.tools)  # extent tools
-                tools = new_tools
+            # ### update surf dict with tool surfaces
+            # tools = surf_dict[surf_id][-1].tools
+            # while tools:
+            #     new_tools = []  # init new tools
+            #     for tool in tools:
+            #         if tool.part_id in surf_dict:
+            #             surf_dict[tool.part_id].append(tool)
+            #         else:
+            #             surf_dict[tool.part_id] = [tool]
+            #         # add tool tools to new tools if not empty
+            #         new_tools.extend(tool.tools)  # extent tools
+            #     tools = new_tools
+
     # TODO: Add airgap creation if no airgap in given geometry
     # if logging.getLogger().level <= logging.DEBUG:
     #     gmsh.model.occ.synchronize()
@@ -479,8 +486,8 @@ def createMachineGeometryFromSegment(
 
 
 def createPhysicalSurfaces(
-    idExt: str,
-    surfList: list[SegmentSurface],
+    part_id: str,
+    surfList: list[MachineSegmentSurface],
     rotorMBRadius: float,
     extendedInfo: dict,
 ) -> tuple[list[PhysicalElement], Literal["Rotor", "Stator"]]:
@@ -516,7 +523,7 @@ def createPhysicalSurfaces(
         else "Stator"
     )
 
-    if STATOR_SLOT_IDEXT in idExt:  # if is stator slot
+    if STATOR_SLOT_IDEXT in part_id:  # if is stator slot
         slots: list[Slot] = list()
         for surf in surfList:
             slot = createSlot(
@@ -524,7 +531,7 @@ def createPhysicalSurfaces(
             )
             slots.append(slot)
         return slots, machineSide
-    if ROTOR_MAG_IDEXT in idExt:  # if is magnet
+    if ROTOR_MAG_IDEXT in part_id:  # if is magnet
         magList = list()
         for surf in surfList:
             # create magnet object
@@ -535,7 +542,7 @@ def createPhysicalSurfaces(
             )
             magList.append(mag)
         return magList, machineSide
-    if idExt in (ROTOR_AIRGAP_IDEXT, STATOR_AIRGAP_IDEXT):
+    if part_id in (ROTOR_AIRGAP_IDEXT, STATOR_AIRGAP_IDEXT):
         # if "1" in idExt:
         #     airArea = AirArea(
         #         name=idExt,
@@ -544,37 +551,37 @@ def createPhysicalSurfaces(
         #     )
         #     return [airArea], machineSide
         airGap = AirGap(
-            name=idExt,
+            name=part_id,
             geo_list=surfList,
             material=surfList[0].material,
         )
         return [airGap], machineSide
-    if idExt == ROTOR_BAR_IDEXT:  # For ASM-Cage
-        bars = [Bar(surf.idExt, surf, surf.material) for surf in surfList]
+    if part_id == ROTOR_BAR_IDEXT:  # For ASM-Cage
+        bars = [Bar(surf.part_id, surf, surf.material) for surf in surfList]
         return bars, machineSide
 
-    if ROTOR_LAM_IDEXT in idExt:
+    if ROTOR_LAM_IDEXT in part_id:
         lam = RotorLamination(
-            name=idExt,
+            name=part_id,
             geo_list=surfList,
             material=surfList[0].material,
         )
         return [lam], machineSide
-    if STATOR_LAM_IDEXT in idExt:
+    if STATOR_LAM_IDEXT in part_id:
         lam = StatorLamination(
-            name=idExt,
+            name=part_id,
             geo_list=surfList,
             material=surfList[0].material,
         )
         return [lam], machineSide
     physElem = PhysicalElement(
-        name=idExt, geo_list=surfList, material=surfList[0].material
+        name=part_id, geo_list=surfList, material=surfList[0].material
     )
     physElem.setColor()  # set random color for all surfs
     return [physElem], machineSide
 
 
-def createMagnet(surf: SegmentSurface, mat: Material, extInfo: dict) -> Magnet:
+def createMagnet(surf: MachineSegmentSurface, mat: Material, extInfo: dict) -> Magnet:
     """create a Magnet (PhysicalElement) object.
         The magnet name will be the surface IdExt.
         The magnetization direction is determined by the segment number.
@@ -595,9 +602,9 @@ def createMagnet(surf: SegmentSurface, mat: Material, extInfo: dict) -> Magnet:
     # first segment (segmentNbr=0) must be north pole for dq-Offset calculation
     magDir = 1 if (surf.segment_nbr + 1) % 2 else -1  # 1: north/outwards
     # get magentization angle from magAngle dict by idExt
-    magAngle = importJSON.getMagAngle(extInfo)[surf.idExt]
+    magAngle = importJSON.getMagAngle(extInfo)[surf.part_id]
     return Magnet(
-        name=surf.idExt,
+        name=surf.part_id,
         geoElements=[surf],
         material=mat,
         magDirection=magDir,
@@ -639,7 +646,7 @@ def phase2angle(phaseChar: Literal["u", "v", "w"]) -> float:
 
 
 def phase2color(
-    phaseChar: Literal["u", "v", "w"]
+    phaseChar: Literal["u", "v", "w"],
 ) -> Literal["IndianRed", "Yellow", "Aquamarine"]:
     """Get gmsh mesh color name for a phase-character. See `gmsh colors
     <https://gitlab.onelab.info/gmsh/gmsh/blob/gmsh_4_11_0/src/common/Colors.h>`_
@@ -769,7 +776,9 @@ def getSlotPhase(
     raise RuntimeError("Could not determine phase index by slot number.")
 
 
-def createSlot(surf: SegmentSurface, material: Material, extendedInfo: dict) -> Slot:
+def createSlot(
+    surf: MachineSegmentSurface, material: Material, extendedInfo: dict
+) -> Slot:
     """create a Physical Element of type Slot.
 
     Args:
@@ -784,11 +793,11 @@ def createSlot(surf: SegmentSurface, material: Material, extendedInfo: dict) -> 
         Slot: Slot object generated from the above information.
     """
 
-    slotSide = getSlotInfo(surf.idExt)
+    slotSide = getSlotInfo(surf.part_id)
     windingLayout = importJSON.getWindingList(extendedInfo)
     # slotSide is set 0 or 1 where the naming of slotSide is 1 or 2
     cDir, phase = getSlotPhase(windingLayout, surf.segment_nbr, slotSide)
-    slotName = f"{surf.idExt}_{phase.upper()}{cDir}{surf.segment_nbr}"
+    slotName = f"{surf.part_id}_{phase.upper()}{cDir}{surf.segment_nbr}"
     # create slot without winding information, because winding is set by stator
     slot = Slot(name=slotName, geo_list=[surf], material=material)
     surf.setMeshColor(phase2color(phase))
