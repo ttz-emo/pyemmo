@@ -24,7 +24,9 @@ from typing import Union
 
 import gmsh
 import numpy as np
+from matplotlib import colors
 
+from ...colors import Colors
 from ..geometry import defaultCenterPoint
 from ..geometry.point import Point
 from ..geometry.surface import Surface
@@ -242,6 +244,56 @@ class GmshSurface(GmshGeometry, Surface):
     def area(self) -> float:
         """Surface area of gmsh surface by gmsh.model.occ.getMass(dim, tag)"""
         return gmsh.model.occ.getMass(self.dim, self.id)
+
+    @property
+    def mesh_color(self) -> Union[str, tuple[int, int, int, int]]:
+        """Get the mesh color of the surface.
+
+        Returns:
+            Union[str, tuple[int]]: The mesh color of the surface.
+        """
+        rgba = gmsh.model.getColor(self.dim, self.id)
+        for c_name, rgba_val in Colors.items():
+            if tuple(rgba_val) == rgba:
+                return c_name
+        # If no color name is found, return the RGBA tuple
+        return rgba
+
+    @mesh_color.setter
+    def mesh_color(self, color: Union[str, tuple[int]]) -> None:
+        """Set the mesh color of the surface.
+        This method allows setting the color of the surface mesh using either a string
+        representing a color name or a tuple of integers representing RGBA values.
+
+        Args:
+            color (Union[str, tuple[int]]): The mesh color to set for the surface.
+                - If a string is provided, it should be a valid color name that can be
+                  converted to RGBA using `matplotlib.colors.to_rgba`.
+                - If a tuple is provided, it should contain four integers representing
+                  the red, green, blue, and alpha channels (RGBA), each in the range 0-255.
+
+        Raises:
+            ValueError: If the provided color is not a valid string or tuple of integers.
+
+        Example:
+            >>> surface.mesh_color("red")  # Set the mesh color to red.
+            >>> surface.mesh_color((255, 0, 0, 255))  # Set the mesh color to opaque red.
+        """
+        if isinstance(color, str):
+            rgba = colors.to_rgba(color)
+        else:
+            if any(c > 1 for c in color[1:3]):
+                # if rgb values given in 0-255 range, convert to 0-1 range
+                color = tuple(c / 255 for c in color)
+            rgba = color
+        gmsh.model.setColor(
+            [(self.dim, self.id)],
+            int(rgba[0] * 255),
+            int(rgba[1] * 255),
+            int(rgba[2] * 255),
+            int(rgba[3] * 255),
+        )
+        gmsh.model.occ.synchronize()
 
     def setMeshLength(self, meshLength: float) -> None:
         """set the meshLength of all points of a surface.

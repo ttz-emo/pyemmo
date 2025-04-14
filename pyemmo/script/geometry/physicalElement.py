@@ -20,13 +20,14 @@
 #
 """Module for class PhysicalElement"""
 
+import logging
 from random import random
 from typing import TYPE_CHECKING, List, Union
 
 import gmsh
 
-from ...colors import Colors
 from .. import colorDict
+from ..gmsh.gmsh_surface import GmshSurface
 from ..material.material import Material
 from .circleArc import CircleArc
 from .line import Line
@@ -289,7 +290,12 @@ class PhysicalElement:
             # "LightGoldenrodYellow"... Maybe skip that color in the color-dict or implement better
             # algorithm to catch light colors
         for geoElem in self.geo_list:
-            if isinstance(geoElem, Surface):
-                geoElem.setMeshColor(colorName)
-                r, g, b, a = Colors[colorName]
-                gmsh.model.setColor([(2, geoElem.id)], r, g, b, a)
+            if isinstance(geoElem, GmshSurface):
+                geoElem.mesh_color = colorName
+                # r, g, b, a = Colors[colorName]
+                # gmsh.model.setColor([(2, geoElem.id)], r, g, b, a)
+            else:
+                logging.warning(
+                    "Could not set mesh color for surface %s, because it is not a GmshSurface!",
+                    geoElem.name,
+                )

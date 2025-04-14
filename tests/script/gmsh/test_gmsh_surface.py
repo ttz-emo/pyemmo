@@ -329,3 +329,19 @@ def test_2_layer_subtract(gmsh_surface: GmshSurface):
     circ_big.cutOut(circ_small)  # SECOND LAYER CUT
     gmsh_surface.cutOut(circ_big)  # FIRST LAYER CUT
     # TODO: Add assert statements
+
+
+def test_mesh_color(gmsh_surface: GmshSurface):
+    """Test color property"""
+    color_str = "Blue"
+    gmsh_surface.mesh_color = color_str
+    # since 'Blue' is a known color the method must return the color string
+    assert gmsh_surface.mesh_color == color_str
+
+    rgba = (136, 255, 119, 255)  # rgba array for arbitrary color
+    gmsh_surface.mesh_color = rgba  # set color to rgba array
+    assert gmsh_surface.mesh_color == rgba
+
+    # set color to rgba array with values between 0 and 1
+    gmsh_surface.mesh_color = np.array(rgba) / 255
+    assert gmsh_surface.mesh_color == rgba

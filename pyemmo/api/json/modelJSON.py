@@ -802,7 +802,7 @@ def createSlot(
     slotName = f"{surf.part_id}_{phase.upper()}{cDir}{surf.segment_nbr}"
     # create slot without winding information, because winding is set by stator
     slot = Slot(name=slotName, geo_list=[surf], material=material)
-    surf.setMeshColor(phase2color(phase))
+    surf.mesh_color = phase2color(phase)
     return slot
 
 

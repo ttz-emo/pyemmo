@@ -947,16 +947,16 @@ class Script:
             self.areaCode += code
             self.areaArray.append(surface)
 
-            cCode = ""
-            if surface.getMeshColor():
-                cCode = f"Color {surface.getMeshColor()} {{Surface {{{surfID}}}; }}\n"
-            for toolSurf in surface.tools:
-                if toolSurf.getMeshColor():
-                    cCode += (
-                        f"Color {toolSurf.getMeshColor()} "
-                        f"{{Surface {{{toolSurf.id}}}; }}\n"
-                    )
-            self.colorCode += cCode
+            # cCode = ""
+            # if surface.getMeshColor():
+            #     cCode = f"Color {surface.getMeshColor()} {{Surface {{{surfID}}}; }}\n"
+            # for toolSurf in surface.tools:
+            #     if toolSurf.getMeshColor():
+            #         cCode += (
+            #             f"Color {toolSurf.getMeshColor()} "
+            #             f"{{Surface {{{toolSurf.id}}}; }}\n"
+            #         )
+            # self.colorCode += cCode
 
     def _resetGeometry(self) -> None:
         """Reset all geometry attributes of the script (point, line and surface
