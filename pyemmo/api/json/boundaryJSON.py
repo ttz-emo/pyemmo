@@ -36,7 +36,6 @@ from ...script.geometry.line import Line
 from ...script.geometry.movingBand import MovingBand
 from ...script.geometry.physicalElement import PhysicalElement
 from ...script.geometry.primaryLine import PrimaryLine
-from ...script.geometry.segment_surface import SegmentSurface
 from ...script.geometry.slaveLine import SlaveLine
 from ...script.geometry.transformable import Transformable
 from ...script.gmsh import SurfDimTag
@@ -52,6 +51,7 @@ from ...script.gmsh.utils import (
 from ...script.material.material import Material
 from .. import air
 from .. import logger as apiLogger
+from ..machine_segment_surface import MachineSegmentSurface
 from . import STATOR_AIRGAP_IDEXT, globalCenterPoint
 
 
@@ -85,10 +85,10 @@ def findLine(lineName: str, lineIDList) -> bool:
 
 
 def findLines(
-    segmentSurfDict: dict[str, SegmentSurface],
+    segmentSurfDict: dict[str, MachineSegmentSurface],
     surfID: str,
     lineIDList: list[list[str] | str],
-) -> tuple[list[Line], SegmentSurface]:
+) -> tuple[list[Line], MachineSegmentSurface]:
     """
     findLines looks for a surface in segmentSurfDict by the SurfID and checks if this
     surface has lines containing the LindIDList IDs.
@@ -128,7 +128,7 @@ def findLines(
 
 
 def getBoundaryLines(
-    segmentSurfDict: dict[str, SegmentSurface],
+    segmentSurfDict: dict[str, MachineSegmentSurface],
     surfID: str,
     lineIDList: str | list[str],
     symFactor: int,
@@ -169,7 +169,7 @@ def getBoundaryLines(
 
 def createMBLines(
     movingBandLineDict: dict,
-    segmentSurfDict: dict[str, SegmentSurface],
+    segmentSurfDict: dict[str, MachineSegmentSurface],
     symFactor: int,
 ) -> list[Line]:
     """
@@ -401,7 +401,7 @@ def createMB(
 
 def getLimitLines(
     limitLineDict: dict[str, list[str]],
-    machineSurfList: list[SegmentSurface],
+    machineSurfList: list[MachineSegmentSurface],
     symFactor: int,
 ) -> list[Line] | None:
     """
@@ -437,7 +437,7 @@ def getLimitLines(
 
 
 def get_rotor_stator_dim_tags(
-    surf_dict: dict[str, list[SegmentSurface]], rotor_mb_radius: float
+    surf_dict: dict[str, list[MachineSegmentSurface]], rotor_mb_radius: float
 ) -> tuple[list[SurfDimTag], list[SurfDimTag]]:
     """
     Classifies Gmsh surfaces into rotor and stator based on their radius.
@@ -578,7 +578,9 @@ def get_secondary_lines(
 
 
 def get_boundaries(
-    surf_dict: dict[str, list[SegmentSurface]], symFactor: int, rotor_mb_radius: float
+    surf_dict: dict[str, list[MachineSegmentSurface]],
+    symFactor: int,
+    rotor_mb_radius: float,
 ) -> tuple[list[PhysicalElement], list[PhysicalElement]]:
     """TODO"""
     is_inner_rotor = True  # FIXME: Adapt for outer rotor
