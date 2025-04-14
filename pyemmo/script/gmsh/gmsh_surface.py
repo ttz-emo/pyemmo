@@ -20,6 +20,7 @@
 #
 """Module gmsh_surface.py for the class GmshSurface."""
 
+import logging
 from typing import Union
 
 import gmsh
@@ -280,7 +281,24 @@ class GmshSurface(GmshGeometry, Surface):
             >>> surface.mesh_color((255, 0, 0, 255))  # Set the mesh color to opaque red.
         """
         if isinstance(color, str):
-            rgba = colors.to_rgba(color)
+            try:
+                # try to convert color name to rgba, but not possible for all X11 names
+                rgba = colors.to_rgba(color)
+            except ValueError as exce:
+                if "Invalid RGBA argument" in str(exce):
+                    # if color name is not valid, use random color
+                    logging.warning(str(exce))
+                    rgba = np.random.random(4)  # use random color
+                    rgba[3] = 1.0  # set alpha to 1.0
+                    logging.warning(
+                        "Setting color of GmshSurface %s (ID: %d) to random color.",
+                        self.name,
+                        self.id,
+                    )
+                else:
+                    raise exce
+            except Exception as exce:
+                raise exce
         else:
             if any(c > 1 for c in color[1:3]):
                 # if rgb values given in 0-255 range, convert to 0-1 range
