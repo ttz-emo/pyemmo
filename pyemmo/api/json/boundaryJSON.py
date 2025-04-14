@@ -35,7 +35,6 @@ from ...script.geometry.limitLine import LimitLine
 from ...script.geometry.line import Line
 from ...script.geometry.movingBand import MovingBand
 from ...script.geometry.physicalElement import PhysicalElement
-from ...script.geometry.point import Point
 from ...script.geometry.primaryLine import PrimaryLine
 from ...script.geometry.segment_surface import SegmentSurface
 from ...script.geometry.slaveLine import SlaveLine
@@ -43,6 +42,7 @@ from ...script.geometry.transformable import Transformable
 from ...script.gmsh import SurfDimTag
 from ...script.gmsh.gmsh_arc import GmshArc
 from ...script.gmsh.gmsh_line import GmshLine
+from ...script.gmsh.gmsh_point import GmshPoint
 from ...script.gmsh.utils import (
     filter_curves_on_radius,
     filter_lines_at_angle,
@@ -263,11 +263,12 @@ def createMBAux(
             if i_band == 1 and i_curve == 1:
                 # first curve of first band -> use interface point
                 p_start = p_on_sym_axis
-                p_end = Point(
+                p_end = GmshPoint(
                     name=f"Movingband point {i_band+1}.{i_curve}",
-                    x=np.cos(p_end_angle) * mb_radius,
-                    y=np.sin(p_end_angle) * mb_radius,
-                    z=0,
+                    coords=(
+                        np.cos(p_end_angle) * mb_radius,
+                        np.sin(p_end_angle) * mb_radius,
+                    ),
                     meshLength=1,
                 )
                 # p_end = GmshPoint(p_end.id)
@@ -299,19 +300,20 @@ def createMBAux(
                     p_start = mb_aux_list[-1].geo_list[-1].end_point
                 else:
                     p_start = mb_lines_aux[-1].end_point
-                p_end = Point(
+                p_end = GmshPoint(
                     name=f"Movingband point {i_band+1}.{i_curve}",
-                    x=np.cos(p_end_angle) * mb_radius,
-                    y=np.sin(p_end_angle) * mb_radius,
-                    z=0,
+                    coords=(
+                        np.cos(p_end_angle) * mb_radius,
+                        np.sin(p_end_angle) * mb_radius,
+                    ),
                     meshLength=1,
                 )
                 # p_end = GmshPoint(p_end.id)
-            band_arc = CircleArc(
+            band_arc = GmshArc(
                 name=f"rotor auxiliary movingband {i_band+1}.{i_curve}",
-                startPoint=p_start,
-                centerPoint=mb_center_point,
-                endPoint=p_end,
+                start_point=p_start,
+                center_point=mb_center_point,
+                end_point=p_end,
             )
             # mb_lines_aux.append(GmshArc(tag=band_arc.id))
             mb_lines_aux.append(band_arc)
@@ -350,7 +352,7 @@ def createMB(
           or None if symFactor=1
     """
     # get dim tags list of stator boundary lines (GmshLine):
-    bnd_line_dim_tags = [(1, line.tag) for line in stator_bnd_lines]
+    bnd_line_dim_tags = [(1, line.id) for line in stator_bnd_lines]
     # filter stator movingband lines:
     mb_lines_stator = filter_curves_on_radius(
         stator_bnd_lines, get_min_radius(bnd_line_dim_tags)
@@ -359,7 +361,7 @@ def createMB(
         raise RuntimeError("Could not find stator movingband lines")
     # Get rotor movingband lines:
     # get dim tags list of ROTOR boundary lines (GmshLine):
-    bnd_line_dim_tags = [(1, line.tag) for line in rotor_bnd_lines]
+    bnd_line_dim_tags = [(1, line.id) for line in rotor_bnd_lines]
     # filter ROTOR movingband lines.
     # Must be the most outer (max. radius) lines in the boundary list:
     mb_lines_rotor = filter_curves_on_radius(
