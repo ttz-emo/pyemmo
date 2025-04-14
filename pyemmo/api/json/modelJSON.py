@@ -342,7 +342,9 @@ def importMachineGeometry(
             # main_surf.nbr_segments = new_quantity
 
             if logging.getLogger().level <= logging.DEBUG:
-                logging.debug(f"Surface: {main_surf} before subtraction of tools.")
+                logging.debug(
+                    f"Surface: '{main_surf.name}' before subtraction of tools."
+                )
                 gmsh.model.occ.synchronize()
                 gmsh.fltk.run()
             for surf in area:
