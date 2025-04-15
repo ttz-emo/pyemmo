@@ -72,7 +72,7 @@ class GmshGeometry(ABC):
         """Reset the ID of the geometry object"""
         gmsh.model.occ.synchronize()
         # check that given tag does not exist in gmsh model
-        if (1, new_id) in gmsh.model.get_entities(1):
+        if (self.dim, new_id) in gmsh.model.occ.getEntities(self.dim):
             raise RuntimeError(f"Given line tag={new_id} allready exists in gmsh!")
         gmsh.model.set_tag(self.dim, self.id, new_id)  # set new tag
         self._id = new_id  # update id
@@ -85,8 +85,13 @@ class GmshGeometry(ABC):
         Returns:
             str: The name of the line.
         """
-        gmsh.model.occ.synchronize()
-        return gmsh.model.getEntityName(self.dim, self.id)
+        try:
+            return gmsh.model.getEntityName(self.dim, self.id)
+        except Exception as e:
+            if "does not exist" in str(e):
+                gmsh.model.occ.synchronize()
+                return gmsh.model.getEntityName(self.dim, self.id)
+            raise e
 
     @name.setter
     def name(self, new_name: str):
@@ -96,9 +101,17 @@ class GmshGeometry(ABC):
         Args:
             new_name (str): The new name to set.
         """
-        gmsh.model.occ.synchronize()
-        gmsh.model.setEntityName(self.dim, self.id, new_name)
+        # set name private property for Transformable class instances
         self._name = new_name
+        if new_name != "":
+            # set name in gmsh if not empty
+            try:
+                return gmsh.model.setEntityName(self.dim, self.id, new_name)
+            except Exception as e:
+                if "does not exist" in str(e):
+                    gmsh.model.occ.synchronize()
+                    return gmsh.model.setEntityName(self.dim, self.id, new_name)
+                raise e
 
     def translate(self, dx, dy, dz):
         """
