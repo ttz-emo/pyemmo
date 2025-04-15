@@ -206,52 +206,17 @@ def getSurfaceLineList(
         coordsP1 = (lineDict["ApX"], lineDict["ApY"], lineDict["ApZ"])
         # end point
         coordsP2 = (lineDict["EpX"], lineDict["EpY"], lineDict["EpZ"])
-        # Points
-        if lineID == 0:
-            startPoint = GmshPoint(
-                name=lineDict["ApName"],
-                coords=coordsP1,
-                meshLength=meshLen if meshLen else lineDict["ApMesh"],
-            )
-            pointList.append(startPoint)
-            endPoint = GmshPoint(
-                name=lineDict["EpName"],
-                coords=coordsP2,
-                meshLength=meshLen if meshLen else lineDict["EpMesh"],
-            )
-            pointList.append(endPoint)
-        elif lineID == len(lineDictList) - 1:
-            # last line has allready two existing points. Start point is end point of last line.
-            # End point is startpoint of first line.
-            # endpoint of penultimate (vorletzte) line must be first point
-            # of this line (==last line in curve loop)
-            startPoint = pointList[-1]
-            if not startPoint.coordinate == coordsP1:
-                raise ValueError(
-                    f"Start point ({startPoint.name}) of last line {lineDict['LineName']} "
-                    "is NOT endpoint of previous line. Check line loop!"
-                )
-            endPoint = pointList[0]
-            if not endPoint.coordinate == coordsP2:
-                raise ValueError(
-                    f"End point ({endPoint.name}) of last line ('{lineDict['LineName']}') "
-                    "in line loop is NOT startpoint of first line. Check line loop!"
-                )
-        else:
-            # ATTENTION: StartPoint of new line must be EndPoint of last line
-            startPoint = pointList[-1]
-            # make sure the coordinates are correct
-            if not startPoint.coordinate == coordsP1:
-                raise ValueError(
-                    f"End point ({startPoint.name}) of last line in line loop is NOT "
-                    f"startpoint of this line ('{lineDict['LineName']}'). Check line loop!"
-                )
-            endPoint = GmshPoint(
-                name=lineDict["EpName"],
-                coords=coordsP2,
-                meshLength=meshLen if meshLen else lineDict["EpMesh"],
-            )
-            pointList.append(endPoint)
+        startPoint = GmshPoint(
+            name=lineDict["ApName"],
+            coords=coordsP1,
+            meshLength=meshLen if meshLen else lineDict["ApMesh"],
+        )
+        pointList.append(startPoint)
+        endPoint = GmshPoint(
+            name=lineDict["EpName"],
+            coords=coordsP2,
+            meshLength=meshLen if meshLen else lineDict["EpMesh"],
+        )
         line = createLine(lineDict, meshLen, startPoint, endPoint)
         lineList.append(line)
     return lineList
@@ -456,9 +421,8 @@ def createMachineGeometryFromSegment(
         surf_dict[surf_id] = []  # init list to append surfaces
         # rotate and duplicte the original surface segment nbrSegments times
         if logging.getLogger().level <= logging.DEBUG:
-            gmsh.model.occ.synchronize()
-            nbr_lines = len(gmsh.model.get_entities(dim=1))
-            nbr_surfs = len(gmsh.model.get_entities(dim=2))
+            nbr_lines = len(gmsh.model.occ.get_entities(dim=1))
+            nbr_surfs = len(gmsh.model.occ.get_entities(dim=2))
             logging.debug(f"{nbr_lines = :3}")
             logging.debug(f"{nbr_surfs = :3}")
             # gmsh.fltk.run()
@@ -520,9 +484,7 @@ def createPhysicalSurfaces(
     # because if one point is inside, all the others have to be too.
     # FIXME: This assumes all machine are inner rotor!
     machineSide = (
-        "Rotor"
-        if surfList[0].curve[0].start_point.calcDist() <= rotorMBRadius
-        else "Stator"
+        "Rotor" if surfList[0].calcCOG().calcDist() <= rotorMBRadius else "Stator"
     )
 
     if STATOR_SLOT_IDEXT in part_id:  # if is stator slot
