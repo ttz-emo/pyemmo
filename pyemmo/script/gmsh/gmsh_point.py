@@ -118,7 +118,7 @@ class GmshPoint(GmshGeometry, Point):
             # init with coords
             if not isinstance(meshLength, numbers.Number):
                 raise TypeError("meshLength must be a number!")
-            if not meshLength > 0:
+            if meshLength <= 0:
                 raise ValueError("meshLength must be greater than 0!")
             # type cast coords to np.ndarray if necessary
             if not isinstance(coords, np.ndarray):
@@ -137,29 +137,22 @@ class GmshPoint(GmshGeometry, Point):
                 )
             else:
                 raise ValueError(f"Wrong GmshPoint coordinates {coords=}!")
-            self.name = name
-            self._meshLength = meshLength
         elif tag > 0:
             # init with tag
             # if coordinates AND tag are given, raise an error
             if coords.size != 0:
                 raise ValueError("You can't init GmshPoint with tag AND coordinates!")
-            # make sure the point with given tag exists in gmsh:
-            gmsh.model.occ.synchronize()
-            if (0, tag) not in gmsh.model.get_entities(0):
-                raise ValueError(f"Point with given {tag=} does not exist!")
-            self._id = tag  # set tag
-            if not name:
-                # get name from gmsh if not given
-                self._name = gmsh.model.get_entity_name(0, tag)
-            else:
-                # otherwise set name of gmsh point
-                self.name = name
-            # get mesh length from gmsh:
-            self._meshLength = gmsh.model.mesh.getSizes([(0, tag)])[0]
-            # coordinates will be directly accessed from gmsh at runtime
+            self._init_with_tag(tag)
         else:
             raise ValueError(f"Gmsh tag must be positive integer! {tag=}")
+        # set name in gmsh if not empty
+        self.name = name
+
+    def _init_with_tag(self, tag: int):
+        # make sure the point with given tag exists in gmsh:
+        if (0, tag) not in gmsh.model.occ.getEntities(0):
+            raise ValueError(f"Point with given {tag=} does not exist!")
+        self._id = tag  # set tag
 
     @property
     def meshLength(self) -> float:
@@ -168,8 +161,14 @@ class GmshPoint(GmshGeometry, Point):
         Returns:
             float: mesh length in meter
         """
-        gmsh.model.occ.synchronize()
-        return gmsh.model.mesh.getSizes([(0, self.id)])[0]
+        try:
+            # try to get the mesh size
+            return gmsh.model.mesh.getSizes([(0, self.id)])[0]
+        except Exception as exce:
+            if "does not exist" in str(exce):
+                gmsh.model.occ.synchronize()
+                return gmsh.model.mesh.getSizes([(0, self.id)])[0]
+            raise exce
 
     @meshLength.setter
     def meshLength(self, meshLength: float):
@@ -182,8 +181,16 @@ class GmshPoint(GmshGeometry, Point):
         # this operation seems to be only valid for a occ point until we call sync().
         # Otherwise sync() resets the mesh size to its initial value...
         if isinstance(meshLength, numbers.Number):
-            gmsh.model.occ.mesh.setSize([(0, self.id)], meshLength)
-            self._meshLength = meshLength
+            try:
+                gmsh.model.occ.mesh.setSize([(0, self.id)], meshLength)
+            except Exception as exce:
+                if "does not exist" in str(exce):
+                    gmsh.model.occ.synchronize()
+                    gmsh.model.occ.mesh.setSize([(0, self.id)], meshLength)
+                raise exce
+            # We need to call synchronize() to make sure the mesh size is set internally
+            # in gmsh aswell so it can be used in the getter!
+            gmsh.model.occ.synchronize()
         else:
             raise ValueError("meshLength must be a number!")
 
@@ -196,8 +203,14 @@ class GmshPoint(GmshGeometry, Point):
             Tuple[float, float, float]: Tuple containing the x, y, and z coordinates of
                 the point.
         """
-        gmsh.model.occ.synchronize()
-        coords = gmsh.model.get_value(0, self.id, [])
+        try:
+            coords = gmsh.model.get_value(0, self.id, [])
+        except Exception as e:
+            if "does not exist" in str(e):
+                # if point does not exist, synchronize and try again
+                gmsh.model.occ.synchronize()
+                coords = gmsh.model.get_value(0, self.id, [])
+
         return (coords[0], coords[1], coords[2])
 
     @coordinate.setter
