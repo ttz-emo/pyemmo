@@ -38,6 +38,26 @@ from .gmsh_line import GmshLine
 from .gmsh_point import GmshPoint
 
 
+def create_curve(id: int) -> Union[GmshLine, GmshArc]:
+    """Create a curve object based on the given id.
+
+    Args:
+        id (int): The id of the curve in the Gmsh model.
+
+    Returns:
+        Union[GmshLine, GmshArc]: The created curve object.
+
+    Raises:
+        ValueError: If the line with the given id is not of type Line or Circle.
+    """
+    # TODO Add support for 'TrimmedCurve' curve type
+    if gmsh.model.getType(1, id) in ("Line", "TrimmedCurve"):
+        return GmshLine(tag=id)
+    if gmsh.model.getType(1, id) == "Circle":
+        return GmshArc(tag=id)
+    raise ValueError(f"Line with tag {id} is not of type Line or Circle!")
+
+
 class GmshSurface(GmshGeometry, Surface):
     """GmshSurface is a class that represents a 2D surface in the Gmsh model. It provides
     methods for creating, manipulating, and querying surfaces in the Gmsh geometry kernel.
@@ -124,21 +144,15 @@ class GmshSurface(GmshGeometry, Surface):
 
         if tag >= 0:
             # create GmshSurface from existing tag
-            gmsh.model.occ.synchronize()
-            if (2, tag) not in gmsh.model.get_entities(2):
+            if (2, tag) not in gmsh.model.occ.getEntities(2):
                 raise ValueError(f"Surface tag {tag} does not exist in the Gmsh model!")
-            if not gmsh.model.get_type(2, tag) == "Plane":
-                surf_type = gmsh.model.get_type(2, tag)
-                raise ValueError(
-                    f"Tag {tag} is not of type 'Plane' but is type '{surf_type}'!"
-                )
             self._id = tag  # set private id because setter will try to reset the id!
-            # if no name is given, get the name from the Gmsh model:
-            #   Name attribute itself will be set through Surface.__init__().
-            if not name:
-                name = gmsh.model.get_entity_name(2, tag)
+            if name:
+                self.name = name
         else:
             raise ValueError(f"Bad Gmsh surface {tag=}!")
+        # FIXME: calling self.curves does trigger the _get_lineloop() method which
+        # calls synchronize() ... Maybe skip init of Surface parent class here?
         Surface.__init__(self, name=name, curves=self.curve)
 
     @classmethod
@@ -178,17 +192,18 @@ class GmshSurface(GmshGeometry, Surface):
         Returns:
             list[Union[GmshLine, GmshArc]]: The list of lines that form the lineloop.
         """
-        gmsh.model.occ.synchronize()
-        line_tags = np.abs(np.array(gmsh.model.get_boundary(dimTags=[(2, tag)]))[:, 1])
+        curve_loop_tags, curve_tags = gmsh.model.occ.getCurveLoops(tag)
+        line_tags = curve_tags[0]
         curves: list[Union[GmshLine, GmshArc]] = []
         for ltag in line_tags:
-            # TODO Add support for 'TrimmedCurve' curve type
-            if gmsh.model.getType(1, ltag) in ("Line", "TrimmedCurve"):
-                curves.append(GmshLine(tag=ltag))
-            elif gmsh.model.getType(1, ltag) == "Circle":
-                curves.append(GmshArc(tag=ltag))
-            else:
-                raise ValueError(f"Line with tag {ltag} is not of type Line or Circle!")
+            try:
+                curves.append(create_curve(ltag))
+            except Exception as exce:
+                if "does not exist" in exce.args[0]:
+                    gmsh.model.occ.synchronize()
+                    curves.append(create_curve(ltag))
+                else:
+                    raise exce
         return curves
 
     def __str__(self) -> str:
@@ -311,7 +326,7 @@ class GmshSurface(GmshGeometry, Surface):
             int(rgba[2] * 255),
             int(rgba[3] * 255),
         )
-        gmsh.model.occ.synchronize()
+        # gmsh.model.occ.synchronize()
 
     def setMeshLength(self, meshLength: float) -> None:
         """set the meshLength of all points of a surface.
@@ -319,9 +334,7 @@ class GmshSurface(GmshGeometry, Surface):
         Args:
             meshLength (float): mesh length to be set for all points
         """
-        points: list[GmshPoint] = self.allPoints
-        for point in points:
-            point.meshLength = meshLength
+        gmsh.model.occ.mesh.setSize([(self.dim, self.id)], meshLength)
 
     def getMinMeshLength(self) -> float:
         """get the minimum meshLength of all points of the surface.
