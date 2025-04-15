@@ -251,7 +251,6 @@ def createAPISurf(areaDict: dict) -> MachineSegmentSurface:
             material=importJSON.createMaterial(areaDict["Material"]),
             nbr_segments=areaDict["Quantity"],
         )
-        surf.setMeshLength(areaDict["Meshsize"]) if areaDict["Meshsize"] else None
     except Exception as exce:
         raise RuntimeError(
             f"""Failed to generate API surface for '{areaDict["Name"]}' """
