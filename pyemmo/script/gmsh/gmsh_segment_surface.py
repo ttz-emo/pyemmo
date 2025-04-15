@@ -56,6 +56,8 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
             name (str, optional): name of the surface
         """
         GmshSurface.__init__(self, tag=tag, name=name)
+        # FIXME: calling self.curves does trigger the _get_lineloop() method which
+        # calls synchronize() ... Maybe skip init of SegmentSurface parent class here?
         SegmentSurface.__init__(
             self, name=self.name, curves=self.curve, nbr_segments=nbr_segments
         )
