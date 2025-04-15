@@ -29,6 +29,7 @@ import json
 import logging
 import os
 import subprocess
+import timeit
 from os import mkdir
 from os.path import isdir, isfile, join
 
@@ -399,6 +400,8 @@ def main(
         results (str, optional): Folder path to store the simulation results.
             Defaults to "modelDir/res_ModelName"
     """
+    if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+        t0 = timeit.default_timer()
     # create dir for model files if it doesnt exist
     if not isdir(model):
         mkdir(model)
@@ -455,6 +458,7 @@ def main(
                 "Invalid geometry dict provided! "
                 "Make sure that the geometry values are of type SurfaceAPI!"
             )
+        # TODO: I think this can be skipped now!
         # Assert that the given surfaces are created in the current gmsh model
         gmsh_api.model.occ.synchronize()
         surf_dim_tags = gmsh_api.model.get_entities(2)
@@ -472,10 +476,15 @@ def main(
     if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
         # update gmsh fltk GUI config
         gmsh_api.option.setNumber("Geometry.Surfaces", 1)  # show surface indications
-        gmsh_api.option.setNumber("Geometry.Light", 0)  # show surface indications
+        gmsh_api.option.setNumber("Geometry.Light", 0)  # deactivate 3D light
 
+        t1 = timeit.default_timer()
+        logger.debug("Time for loading geometry: %.2fs", t1 - t0)
     # generate the machine geometry
     machine, machineSurfDict = createMachine(segmentSurfDict, extendedInfo)
+    if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+        t2 = timeit.default_timer()
+        logger.info("Time for creating machine object: %.2fs", t2 - t1)
 
     # set function mesh
     if "useFunctionMesh" in extendedInfo.keys():
@@ -493,10 +502,16 @@ def main(
         resultsPath=results,
         # factory="OpenCascade",
     )
+    if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+        t3 = timeit.default_timer()
+        logger.debug("Time for creating script object: %.2fs", t3 - t2)
     addPostOperations(apiScript, extendedInfo)
     meshSizeSetCode = createMeshSizeGUICode(machineSurfDict)
     # generate geo and pro files:
     apiScript.generateScript(UD_MeshCode=meshSizeSetCode)
+    if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+        t4 = timeit.default_timer()
+        logger.debug("Time for generating script files: %.2fs", t4 - t3)
 
     if importJSON.getFlagOpenGui(extendedInfo) is True:
         _open_onelab(apiScript, extendedInfo, gmsh, getdp)
