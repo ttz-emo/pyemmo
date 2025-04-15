@@ -73,7 +73,7 @@ class Surface(Transformable):
         else:
             raise (
                 ValueError(
-                    f"Given curve loop for surface {name} was emtpy not type "
+                    f"Given curve loop for surface {name} was emtpy or not type "
                     f"list ({type(curves)})."
                 )
             )
