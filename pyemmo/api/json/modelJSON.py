@@ -104,7 +104,9 @@ def createLine(
             end_point=endPoint,
         )
     elif lineType == "Line":
-        line = GmshLine(name=lineName, start_point=startPoint, end_point=endPoint)
+        line = GmshLine.from_points(
+            name=lineName, start_point=startPoint, end_point=endPoint
+        )
     elif lineType == "Bezier":
         raise NotImplementedError(
             "Line type Spline not implemented in pyemmo GmshAPI yet."

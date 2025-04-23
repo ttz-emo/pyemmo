@@ -49,8 +49,7 @@ Example:
     end = GmshPoint(tag=2, coords=np.array([1.0, 1.0, 1.0]))
 
     # Define a line using GmshLine
-    line = GmshLine(
-        tag=1,
+    line = GmshLine.from_points(
         start_point=start,
         end_point=end,
         name="Diagonal",
@@ -66,7 +65,6 @@ Note:
     This docstring was created by ChatGPT.
 """
 
-from typing import Union
 
 import gmsh
 import numpy as np
@@ -83,24 +81,14 @@ class GmshLine(GmshGeometry, Line):
     """
     Represents a Gmsh line in 3D space defined by a start and end point, with a unique
     identifier (tag), a name. The start and end points are instances of
-    GmshPoint. If they are not given the instance tries to find and create the points
-    throught the gmsh api by calling:
-
-    ..python:
-
-        point_tags = gmsh.model.get_boundary(dimTags=[(1, tag)])
-        start_point = GmshPoint(
-            point_tags[0][1], gmsh.model.get_value(0, point_tags[0][1], [])
-        )
-        end_point = (
-            point_tags[1][1],
-            gmsh.model.get_value(0, point_tags[1][1], []),
-        )
+    GmshPoint.
 
     Attributes:
         tag (int): The unique identifier for the line.
         start_point (GmshPoint): The starting point of the line.
         end_point (GmshPoint): The ending point of the line.
+        points (list[GmshPoint]): A list containing the start and end points of the line.
+        length (float): The length of the line.
         name (str): The name of the line.
     """
 
@@ -111,8 +99,6 @@ class GmshLine(GmshGeometry, Line):
     def __init__(
         self,
         tag: int = -1,
-        start_point: Union[GmshPoint, None] = None,
-        end_point: Union[GmshPoint, None] = None,
         name: str = "",
     ):
         """
@@ -127,29 +113,39 @@ class GmshLine(GmshGeometry, Line):
         if not isinstance(tag, (int, np.integer)):
             raise TypeError("Gmsh tag must be positive integer!")
 
-        if tag == -1:
-            # init with start and end point
-            self._id = gmsh.model.occ.addLine(start_point.id, end_point.id)
-            self.name = name
-        else:
-            # init with tag
-            gmsh.model.occ.synchronize()
-            if (1, tag) not in gmsh.model.getEntities(1):
-                raise ValueError(f"Curve with {tag=} does not exist in the model.")
-            # TODO Add support for 'TrimmedCurve' curve type
-            if gmsh.model.getType(1, tag) not in ("Line", "TrimmedCurve"):
-                raise ValueError(f"Curve with {tag=} is not of type Line.")
-            self._id = tag
-            # get boundary points:
-            point_tags = gmsh.model.get_boundary(dimTags=[(1, tag)])
-            start_point = GmshPoint(tag=point_tags[0][1])
-            end_point = GmshPoint(tag=point_tags[1][1])
-            # if no name given try to get it from gmsh
-            if not name:
-                name = gmsh.model.get_entity_name(1, tag)
-            self.name = name
-        # self._start_point = start_point
-        # self._end_point = end_point
+        # gmsh.model.occ.synchronize()
+        if (1, tag) not in gmsh.model.occ.getEntities(self.dim):
+            raise ValueError(f"Curve with {tag=} does not exist in the model.")
+        # TODO Add support for 'TrimmedCurve' curve type
+        # FIXME: Check if there is another way to identify what type of line the
+        # curve is, without calling gmsh.model.occ.synchronize()!
+        # if gmsh.model.getType(1, tag) not in ("Line", "TrimmedCurve"):
+        #     raise ValueError(f"Curve with {tag=} is not of type Line.")
+        self._id = tag
+        self.name = name
+        # NOTE: ``GmshGeometry`` is just a abstract class, so no need to call its init
+        # here.
+        # There is also no need to call the ``Line`` class init, because all required
+        # attributes (start_point, end_point) are redefined in this (``GmshLine``) class.
+
+    @classmethod
+    def from_points(
+        cls, start_point: GmshPoint, end_point: GmshPoint, name: str = ""
+    ) -> "GmshLine":
+        """
+        Create a GmshLine from two GmshPoint instances.
+
+        Args:
+            start_point (GmshPoint): The starting point of the line.
+            end_point (GmshPoint): The ending point of the line.
+            name (str, optional): The name of the line. Defaults to an empty string.
+
+        Returns:
+            GmshLine: A new GmshLine instance.
+        """
+        # init with start and end point
+        id = gmsh.model.occ.addLine(start_point.id, end_point.id)
+        return cls(tag=id, name=name)
 
     def __str__(self) -> str:
         """
@@ -166,6 +162,27 @@ class GmshLine(GmshGeometry, Line):
         )
 
     @property
+    def points(self) -> list[GmshPoint]:
+        """
+        Getter for the points property.
+
+        Returns:
+            list[GmshPoint]: A list containing the start and end points of the line.
+        """
+        try:
+            dimTags: list[DimTag] = gmsh.model.getBoundary(dimTags=[(1, self.id)])
+        except Exception as exce:
+            if "Unknown model curve with tag" in exce.args[0]:
+                gmsh.model.occ.synchronize()
+                dimTags: list[DimTag] = gmsh.model.getBoundary(dimTags=[(1, self.id)])
+            else:
+                raise exce
+        if len(dimTags) != 2:
+            raise RuntimeError("Error while getting points of line!")
+
+        return (GmshPoint(dimTags[0][1]), GmshPoint(dimTags[1][1]))
+
+    @property
     def start_point(self) -> GmshPoint:
         """
         Getter for the start_point property.
@@ -173,8 +190,7 @@ class GmshLine(GmshGeometry, Line):
         Returns:
             GmshPoint: The starting point of the line.
         """
-        tag = gmsh.model.getBoundary(dimTags=[(1, self.id)])[0][1]
-        return GmshPoint(tag=tag)
+        return self.points[0]
 
     @start_point.setter
     def start_point(self, new_start_point: GmshPoint):
@@ -194,8 +210,7 @@ class GmshLine(GmshGeometry, Line):
         Returns:
             GmshPoint: The ending point of the line.
         """
-        tag = gmsh.model.getBoundary(dimTags=[(1, self.id)])[1][1]
-        return GmshPoint(tag=tag)
+        return self.points[1]
 
     @end_point.setter
     def end_point(self, new_end_point: GmshPoint):
@@ -290,7 +305,7 @@ class GmshLine(GmshGeometry, Line):
 
         Example:
             from pyemmo.script.gmsh.gmsh_line import GmshLine\n
-            L1 = GmshLine(-1, 'L1', P1, P2)\n
+            L1 = GmshLine.from_points(P1, P2,'Line 1')\n
             L2 = L1.duplicate("new name")\n
         """
 
@@ -320,8 +335,8 @@ class GmshLine(GmshGeometry, Line):
 
         Example:
             from pyemmo.script.gmsh.gmsh_line import GmshLine\n
-            L1 = GmshLine(-1, 'L1', P1, P2)\n
-            L2 = GmshLine(-1, 'L2', P2, P3)\n
+            L1 = GmshLine.from_points(P1, P2,'Line 1')\n
+            L1 = GmshLine.from_points(P1, P2,'Line 1')\n
             L3 = L1.combine(L2, "L3")\n
         """
         out_dim_tags, out_dim_tags_map = gmsh.model.occ.fuse(

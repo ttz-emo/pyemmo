@@ -51,8 +51,8 @@ def gmsh_points():
 def gmsh_line(gmsh_points: tuple[GmshPoint, GmshPoint]):
     """Create a GmshLine with start_point and end_point."""
     p1, p2 = gmsh_points
-    line = GmshLine(-1, start_point=p1, end_point=p2, name="test_line")
-    gmsh.model.occ.synchronize()
+    line = GmshLine.from_points(start_point=p1, end_point=p2, name="test_line")
+    # gmsh.model.occ.synchronize()
     return line
 
 
@@ -138,3 +138,17 @@ def test_duplicate(gmsh_line: GmshLine):
     assert duplicate.end_point.isEqual(gmsh_line.end_point)
     assert duplicate.name == gmsh_line.name + "_dup"
     assert duplicate.id != gmsh_line.id
+
+
+def test_combine(gmsh_line: GmshLine):
+    """Test to combine two GmshLine objects."""
+    gmsh_line2 = GmshLine.from_points(
+        start_point=GmshPoint(-1, "test point 3", [1.0, 1.0, 0.0], 0.2),
+        end_point=GmshPoint(-1, "test point 4", [2.0, 2.0, 0.0], 0.2),
+        name="test_line2",
+    )
+    combined_line = gmsh_line.combine(gmsh_line2)
+    logging.info(f"Combined line: {combined_line}")
+    assert isinstance(combined_line, GmshLine)
+    assert combined_line.start_point.coordinate in [(0.0, 0.0, 0.0), (2.0, 2.0, 0.0)]
+    assert combined_line.end_point.coordinate in [(0.0, 0.0, 0.0), (2.0, 2.0, 0.0)]

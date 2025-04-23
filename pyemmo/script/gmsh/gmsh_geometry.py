@@ -138,7 +138,7 @@ class GmshGeometry(ABC):
 
         Beispiel:
             from math import pi\n
-            L1 = GmshLine(-1, 'l1', P1, P2)\n
+            L1 = GmshLine.from_points(P1, P2,'Line 1')\n
             L1.rotateZ(P0, pi)\n
         """
         if not isinstance(rotationPoint, Point):
@@ -163,7 +163,7 @@ class GmshGeometry(ABC):
 
         Beispiel:
             from math import pi\n
-            L1 = GmshLine(-1, 'l1', P1, P2)\n
+            L1 = GmshLine.from_points(P1, P2,'Line 1')\n
             L1.rotateX(P0, pi)\n
         """
         if not isinstance(rotationPoint, Point):
@@ -188,7 +188,7 @@ class GmshGeometry(ABC):
 
         Beispiel:
             from math import pi\n
-            L1 = GmshLine(-1, 'l1', P1, P2)\n
+            L1 = GmshLine.from_points(P1, P2,'Line 1')\n
             L1.rotateX(P0, pi)\n
         """
         if not isinstance(rotationPoint, Point):
