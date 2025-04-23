@@ -242,6 +242,8 @@ class GmshSurface(GmshGeometry, Surface):
             "Use transformation methods (translate, rotate, mirror) instead!"
         )
 
+    # TODO: Update Surface properties: points, allPoints
+
     @property
     def meanMeshLength(self) -> float:
         """get the mean mesh length of all points of the surface.
@@ -249,12 +251,9 @@ class GmshSurface(GmshGeometry, Surface):
         Returns:
             float: mean of mesh length of all points in meter
         """
-        points: list[GmshPoint] = (
-            self.allPoints
-        )  # TODO: Check if the usage of allPoints
-        # is correct here...
-        mlList = [p.meshLength for p in points]
-        return np.mean(mlList)
+        points: list[GmshPoint] = self.points
+        mesh_lenght_list = [p.meshLength for p in points]
+        return np.mean(mesh_lenght_list)
 
     @property
     def area(self) -> float:
@@ -334,7 +333,12 @@ class GmshSurface(GmshGeometry, Surface):
         Args:
             meshLength (float): mesh length to be set for all points
         """
-        gmsh.model.occ.mesh.setSize([(self.dim, self.id)], meshLength)
+        # The following only works for points!
+        # gmsh.model.occ.mesh.setSize([(self.dim, self.id)], meshLength)
+
+        # instead we need to set the mesh length of all points of the surface:
+        for point in self.points:
+            point.meshLength = meshLength
 
     def getMinMeshLength(self) -> float:
         """get the minimum meshLength of all points of the surface.
