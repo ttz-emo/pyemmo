@@ -78,7 +78,7 @@ def fixture_gmsh_surface():
 @pytest.fixture(scope="function")
 def fixture_gmsh_circle():
     """Default test circle with radius 1 meter."""
-    centerpoint = GmshPoint(-1, coords=(0, 0, 0))
+    centerpoint = GmshPoint.from_coordinates(coords=(0, 0, 0))
     return add_circle(centerpoint, 1)
 
 
@@ -88,7 +88,7 @@ def test_init_with_id():
     # add circle that fits into a perimeter of 1m nbr_segments times
     max_circ_radius = 2 * np.pi / 8
     radius = 0.75 * max_circ_radius
-    circ = add_circle(GmshPoint(coords=(1, 0, 0)), radius)
+    circ = add_circle(GmshPoint.from_coordinates(coords=(1, 0, 0)), radius)
     expected_part_id = "hole"
     expected_name = "Test surface"
     gmsh_surface = MachineSegmentSurface(
@@ -266,7 +266,9 @@ def test_combine(machine_seg_surf: MachineSegmentSurface):
 
 def test_cut_out_inside(machine_seg_surf: MachineSegmentSurface):
     """Test cutOut() method for circle that is **completly inside** the parent surface."""
-    center = GmshPoint(name="Center", coords=machine_seg_surf.calcCOG().coordinate)
+    center = GmshPoint.from_coordinates(
+        name="Center", coords=machine_seg_surf.calcCOG().coordinate
+    )
     circ = add_circle(center, radius=machine_seg_surf.curve[0].length / 4)
     machine_seg_surf.cutOut(circ)
     # assert len(gmsh_surface.curve) == 8
@@ -282,7 +284,7 @@ def test_cut_out_overlap(machine_seg_surf: MachineSegmentSurface):
     circ_center = machine_seg_surf.curve[
         0
     ].middle_point  # center point between start and
-    circ_center = GmshPoint(coords=circ_center.coordinate)
+    circ_center = GmshPoint.from_coordinates(coords=circ_center.coordinate)
     # end point
     circ = add_circle(circ_center, radius=machine_seg_surf.curve[0].length / 4)
     machine_seg_surf.cutOut(circ)
@@ -306,11 +308,14 @@ def test_cut_out_noIntersect(machine_seg_surf: MachineSegmentSurface):
 
 def test_cut_out_greaterSymTool(machine_seg_surf: MachineSegmentSurface):
     """Test cutOut() method for circle that is **completly inside** the parent surface."""
-    center = GmshPoint(name="Center", coords=machine_seg_surf.calcCOG().coordinate)
+    center = GmshPoint.from_coordinates(
+        name="Center", coords=machine_seg_surf.calcCOG().coordinate
+    )
     circ = add_circle(center, radius=machine_seg_surf.curve[0].length / 4)
     # rotate circle so it fits into the segment 2 times
     circ.rotateZ(
-        rotationPoint=GmshPoint(coords=(0, 0)), angle=-machine_seg_surf.angle * 3 / 8
+        rotationPoint=GmshPoint.from_coordinates(coords=(0, 0)),
+        angle=-machine_seg_surf.angle * 3 / 8,
     )
     # create segment surface from tool
     circ = MachineSegmentSurface(
@@ -331,11 +336,14 @@ def test_cut_out_greaterSymTool(machine_seg_surf: MachineSegmentSurface):
 
 def test_cut_out_lowerSymTool(machine_seg_surf: MachineSegmentSurface):
     """Test cutOut() method for circle that is **completly inside** the parent surface."""
-    center = GmshPoint(name="Center", coords=machine_seg_surf.calcCOG().coordinate)
+    center = GmshPoint.from_coordinates(
+        name="Center", coords=machine_seg_surf.calcCOG().coordinate
+    )
     circ = add_circle(center, radius=machine_seg_surf.curve[0].length / 4)
     # rotate circle so it fits into the segment 2 times
     circ.rotateZ(
-        rotationPoint=GmshPoint(coords=(0, 0)), angle=machine_seg_surf.angle / 2
+        rotationPoint=GmshPoint.from_coordinates(coords=(0, 0)),
+        angle=machine_seg_surf.angle / 2,
     )
     # create segment surface from tool
     circ = MachineSegmentSurface(
@@ -368,7 +376,9 @@ def test_cut_out_lowerSymTool(machine_seg_surf: MachineSegmentSurface):
 def test_2_layer_subtract(machine_seg_surf: MachineSegmentSurface):
     """Test a two layer subtraction where the tool of the main surface has a tool
     aswell"""
-    center = GmshPoint(name="Center", coords=machine_seg_surf.calcCOG().coordinate)
+    center = GmshPoint.from_coordinates(
+        name="Center", coords=machine_seg_surf.calcCOG().coordinate
+    )
     circ_big = add_circle(center, radius=0.25 / 2)
     circ_small = add_circle(center, radius=0.1 / 2)
     circ_big.cutOut(circ_small)  # SECOND LAYER CUT

@@ -45,9 +45,9 @@ Example:
     import numpy as np
 
     # Create GmshPoint instances
-    center = GmshPoint(tag=1, coords=np.array([0.0, 0.0, 0.0]))
-    start = GmshPoint(tag=2, coords=np.array([1.0, 0.0, 0.0]))
-    end = GmshPoint(tag=3, coords=np.array([0.0, 1.0, 0.0]))
+    center = GmshPoint.from_coordinates(coords=np.array([0.0, 0.0, 0.0]))
+    start = GmshPoint.from_coordinates(coords=np.array([1.0, 0.0, 0.0]))
+    end = GmshPoint.from_coordinates(coords=np.array([0.0, 1.0, 0.0]))
 
     # Define a line using GmshArc
     line = GmshArc.from_points(
@@ -270,7 +270,7 @@ class GmshArc(GmshLine, CircleArc):
             # if center point exists
             return GmshPoint(center_tag)
         # otherwise create a new point
-        return GmshPoint(coords=center_coords)
+        return GmshPoint.from_coordinates(coords=center_coords)
 
     @center.setter
     def center(self, new_center: GmshPoint):

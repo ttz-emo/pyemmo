@@ -42,8 +42,12 @@ def initialize_gmsh():
 @pytest.fixture
 def gmsh_points():
     """Gmsh Points for testing GmshLine class"""
-    gmsh_p1 = GmshPoint(-1, "test point 1", [0.0, 0.0, 0.0], 0.2)
-    gmsh_p2 = GmshPoint(-1, "test point 2", [1.0, 1.0, 0.0], 0.2)
+    gmsh_p1 = GmshPoint.from_coordinates(
+        name="test point 1", coords=[0.0, 0.0, 0.0], meshLength=0.2
+    )
+    gmsh_p2 = GmshPoint.from_coordinates(
+        name="test point 2", coords=[1.0, 1.0, 0.0], meshLength=0.2
+    )
     return gmsh_p1, gmsh_p2
 
 
@@ -84,13 +88,13 @@ def test_gmsh_line_id_setter(gmsh_line: GmshLine):
 
 
 def test_gmsh_line_start_point(gmsh_line: GmshLine):
-    new_start = GmshPoint(tag=-1, coords=np.array([0.0, 0.0, 1.0]))
+    new_start = GmshPoint.from_coordinates(coords=np.array([0.0, 0.0, 1.0]))
     with pytest.raises(AttributeError):
         gmsh_line.start_point = new_start
 
 
 def test_gmsh_line_end_point(gmsh_line: GmshLine):
-    new_end = GmshPoint(tag=-1, coords=np.array([1.0, 1.0, 0.0]))
+    new_end = GmshPoint.from_coordinates(coords=np.array([1.0, 1.0, 0.0]))
     with pytest.raises(AttributeError):
         gmsh_line.end_point = new_end
 
@@ -143,8 +147,12 @@ def test_duplicate(gmsh_line: GmshLine):
 def test_combine(gmsh_line: GmshLine):
     """Test to combine two GmshLine objects."""
     gmsh_line2 = GmshLine.from_points(
-        start_point=GmshPoint(-1, "test point 3", [1.0, 1.0, 0.0], 0.2),
-        end_point=GmshPoint(-1, "test point 4", [2.0, 2.0, 0.0], 0.2),
+        start_point=GmshPoint.from_coordinates(
+            name="test point 3", coords=[1.0, 1.0, 0.0], meshLength=0.2
+        ),
+        end_point=GmshPoint.from_coordinates(
+            name="test point 4", coords=[2.0, 2.0, 0.0], meshLength=0.2
+        ),
         name="test_line2",
     )
     combined_line = gmsh_line.combine(gmsh_line2)

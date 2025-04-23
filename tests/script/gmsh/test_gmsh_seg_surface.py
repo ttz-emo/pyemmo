@@ -67,41 +67,41 @@ def fixture_gmsh_surface():
 @pytest.fixture(scope="function")
 def fixture_gmsh_circle():
     """Default test circle with radius 1 meter."""
-    centerpoint = GmshPoint(-1, coords=(0, 0, 0))
+    centerpoint = GmshPoint.from_coordinates(coords=(0, 0, 0))
     return add_circle(centerpoint, 1)
 
 
 def create_segment():
     """Default test 8th-segment gmsh surface"""
-    center_point = GmshPoint(name="Center point", coords=(0, 0, 0))
+    center_point = GmshPoint.from_coordinates(name="Center point", coords=(0, 0, 0))
     nbr_segments = 8
     angle = 2 * np.pi / nbr_segments
     radius_inner = 1.0
     thickness = 0.3
     radius_outer = radius_inner + thickness
     points: list[GmshPoint] = [
-        GmshPoint(name="P1", coords=(radius_inner, 0, 0)),
-        GmshPoint(name="P2", coords=(radius_outer, 0, 0)),
-        GmshPoint(
+        GmshPoint.from_coordinates(name="P1", coords=(radius_inner, 0, 0)),
+        GmshPoint.from_coordinates(name="P2", coords=(radius_outer, 0, 0)),
+        GmshPoint.from_coordinates(
             name="P3",
             coords=(radius_outer * np.cos(angle), radius_outer * np.sin(angle), 0),
         ),
-        GmshPoint(
+        GmshPoint.from_coordinates(
             name="P4",
             coords=(radius_inner * np.cos(angle), radius_inner * np.sin(angle), 0),
         ),
     ]
 
     lines = [
-        GmshLine(name="L1", start_point=points[0], end_point=points[1]),
-        GmshArc(
+        GmshLine.from_points(name="L1", start_point=points[0], end_point=points[1]),
+        GmshArc.from_points(
             name="Outer curve",
             start_point=points[1],
             center_point=center_point,
             end_point=points[2],
         ),
-        GmshLine(name="L2", start_point=points[2], end_point=points[3]),
-        GmshArc(
+        GmshLine.from_points(name="L2", start_point=points[2], end_point=points[3]),
+        GmshArc.from_points(
             name="Inner curve",
             start_point=points[3],
             center_point=center_point,
@@ -121,7 +121,7 @@ def test_init_with_id():
     # add circle that fits into a perimeter of 1m nbr_segments times
     max_circ_radius = 2 * np.pi / 8
     radius = 0.75 * max_circ_radius
-    circ = add_circle(GmshPoint(coords=(1, 0, 0)), radius)
+    circ = add_circle(GmshPoint.from_coordinates(coords=(1, 0, 0)), radius)
     expected_name = "Test surface"
     gmsh_surface = GmshSegmentSurface(
         tag=circ.id, nbr_segments=nbr_segments, name=expected_name
@@ -176,6 +176,7 @@ def test_init_with_id_newName(gmsh_surface: GmshSegmentSurface):
 def test_set_mesh_length(gmsh_surface: GmshSegmentSurface):
     """Test setMeshLength() method"""
     gmsh_surface.setMeshLength(0.1)
+
     assert np.isclose(gmsh_surface.meanMeshLength, 0.1, rtol=1e-3)
 
 
@@ -275,7 +276,9 @@ def test_combine(gmsh_surface: GmshSegmentSurface):
 
 def test_cut_out_inside(gmsh_surface: GmshSegmentSurface):
     """Test cutOut() method for circle that is **completly inside** the parent surface."""
-    center = GmshPoint(name="Center", coords=gmsh_surface.calcCOG().coordinate)
+    center = GmshPoint.from_coordinates(
+        name="Center", coords=gmsh_surface.calcCOG().coordinate
+    )
     circ = add_circle(center, radius=gmsh_surface.curve[0].length / 4)
     gmsh_surface.cutOut(circ)
     # assert len(gmsh_surface.curve) == 8
@@ -289,7 +292,7 @@ def test_cut_out_inside(gmsh_surface: GmshSegmentSurface):
 def test_cut_out_overlap(gmsh_surface: GmshSegmentSurface):
     """Test cutOut() method for circle that **overlaps** the parent surface."""
     circ_center = gmsh_surface.curve[0].middle_point  # center point between start and
-    circ_center = GmshPoint(coords=circ_center.coordinate)
+    circ_center = GmshPoint.from_coordinates(coords=circ_center.coordinate)
     # end point
     circ = add_circle(circ_center, radius=gmsh_surface.curve[0].length / 4)
     gmsh_surface.cutOut(circ)
@@ -313,11 +316,14 @@ def test_cut_out_noIntersect(gmsh_surface: GmshSegmentSurface):
 
 def test_cut_out_greaterSymTool(gmsh_surface: GmshSegmentSurface):
     """Test cutOut() method for circle that is **completly inside** the parent surface."""
-    center = GmshPoint(name="Center", coords=gmsh_surface.calcCOG().coordinate)
+    center = GmshPoint.from_coordinates(
+        name="Center", coords=gmsh_surface.calcCOG().coordinate
+    )
     circ = add_circle(center, radius=gmsh_surface.curve[0].length / 4)
     # rotate circle so it fits into the segment 2 times
     circ.rotateZ(
-        rotationPoint=GmshPoint(coords=(0, 0)), angle=-gmsh_surface.angle * 3 / 8
+        rotationPoint=GmshPoint.from_coordinates(coords=(0, 0)),
+        angle=-gmsh_surface.angle * 3 / 8,
     )
     # create segment surface from tool
     circ = GmshSegmentSurface(
@@ -334,10 +340,15 @@ def test_cut_out_greaterSymTool(gmsh_surface: GmshSegmentSurface):
 
 def test_cut_out_lowerSymTool(gmsh_surface: GmshSegmentSurface):
     """Test cutOut() method for circle that is **completly inside** the parent surface."""
-    center = GmshPoint(name="Center", coords=gmsh_surface.calcCOG().coordinate)
+    center = GmshPoint.from_coordinates(
+        name="Center", coords=gmsh_surface.calcCOG().coordinate
+    )
     circ = add_circle(center, radius=gmsh_surface.curve[0].length / 4)
     # rotate circle so it fits into the segment 2 times
-    circ.rotateZ(rotationPoint=GmshPoint(coords=(0, 0)), angle=gmsh_surface.angle / 2)
+    circ.rotateZ(
+        rotationPoint=GmshPoint.from_coordinates(coords=(0, 0)),
+        angle=gmsh_surface.angle / 2,
+    )
     # create segment surface from tool
     circ = GmshSegmentSurface(
         tag=circ.id, name=circ.name, nbr_segments=gmsh_surface.nbr_segments / 2
@@ -365,7 +376,7 @@ def test_cut_out_lowerSymTool(gmsh_surface: GmshSegmentSurface):
 def test_2_layer_subtract(gmsh_surface: GmshSegmentSurface):
     """Test a two layer subtraction where the tool of the main surface has a tool
     aswell"""
-    center = GmshPoint(name="Center", coords=[0.5, 0.5, 0])
+    center = GmshPoint.from_coordinates(name="Center", coords=[0.5, 0.5, 0])
     circ_big = add_circle(center, radius=0.4)
     circ_small = add_circle(center, radius=0.15)
     circ_big.cutOut(circ_small)  # SECOND LAYER CUT

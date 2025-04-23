@@ -361,8 +361,8 @@ class GmshSurface(GmshGeometry, Surface):
         example:
             >>> from pyemmo.gmsh import GmshSurface, GmshPoint
             >>> from math import pi
-            >>> surface = GmshSurface()
-            >>> rotationPoint = GmshPoint()
+            >>> surface = GmshSurface(...)
+            >>> rotationPoint = GmshPoint(...)
             >>> surface.rotateZ(rotationPoint, pi/2)
         """
         GmshGeometry.rotateZ(self, rotationPoint, angle)

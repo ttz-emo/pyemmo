@@ -46,9 +46,9 @@ class TestGmshArc:
     @pytest.fixture
     def gmsh_arc(self):
         """Create a GmshArx with start_point, center and end_point."""
-        center = GmshPoint(tag=-1, coords=np.array([0.0, 0.0, 0.0]))
-        start = GmshPoint(tag=-1, coords=np.array([1.0, 0.0, 0.0]))
-        end = GmshPoint(tag=-1, coords=np.array([0.0, 1.0, 0.0]))
+        center = GmshPoint.from_coordinates(coords=np.array([0.0, 0.0, 0.0]))
+        start = GmshPoint.from_coordinates(coords=np.array([1.0, 0.0, 0.0]))
+        end = GmshPoint.from_coordinates(coords=np.array([0.0, 1.0, 0.0]))
 
         arc = GmshArc.from_points(
             start_point=start,
@@ -60,9 +60,9 @@ class TestGmshArc:
 
     def test_gmsh_arc_creation_with_points(self):
         """Test init of gmsh arc with GmshPoint objects"""
-        center = GmshPoint(tag=-1, coords=np.array([0.0, 0.0, 0.0]))
-        start = GmshPoint(tag=-1, coords=np.array([1.0, 0.0, 0.0]))
-        end = GmshPoint(tag=-1, coords=np.array([0.0, 1.0, 0.0]))
+        center = GmshPoint.from_coordinates(coords=np.array([0.0, 0.0, 0.0]))
+        start = GmshPoint.from_coordinates(coords=np.array([1.0, 0.0, 0.0]))
+        end = GmshPoint.from_coordinates(coords=np.array([0.0, 1.0, 0.0]))
 
         arc = GmshArc.from_points(
             start_point=start,
@@ -79,9 +79,9 @@ class TestGmshArc:
 
     def test_gmsh_arc_creation_with_tag(self):
         """Test init of GmshArc with gmsh curve tag"""
-        center = GmshPoint(tag=-1, coords=np.array([0.0, 0.0, 0.0]))
-        start = GmshPoint(tag=-1, coords=np.array([1.0, 0.0, 0.0]))
-        end = GmshPoint(tag=-1, coords=np.array([0.0, 1.0, 0.0]))
+        center = GmshPoint.from_coordinates(coords=np.array([0.0, 0.0, 0.0]))
+        start = GmshPoint.from_coordinates(coords=np.array([1.0, 0.0, 0.0]))
+        end = GmshPoint.from_coordinates(coords=np.array([0.0, 1.0, 0.0]))
 
         arc_id = gmsh.model.occ.addCircleArc(start.id, center.id, end.id)
         arc_with_tag = GmshArc(tag=arc_id, name="Quarter circle")
@@ -99,16 +99,18 @@ class TestGmshArc:
 
         with pytest.raises(ValueError):
             GmshArc.from_points(
-                start_point=GmshPoint(tag=-1, coords=np.array([1.0, 0.0, 0.0])),
+                start_point=GmshPoint.from_coordinates(
+                    coords=np.array([1.0, 0.0, 0.0])
+                ),
                 center_point=None,
                 end_point=None,
             )
 
     def test_gmsh_arc_properties(self):
         """Test GmshArc Properties give correct values"""
-        center = GmshPoint(tag=-1, coords=np.array([0.0, 0.0, 0.0]))
-        start = GmshPoint(tag=-1, coords=np.array([1.0, 0.0, 0.0]))
-        end = GmshPoint(tag=-1, coords=np.array([0.0, 1.0, 0.0]))
+        center = GmshPoint.from_coordinates(coords=np.array([0.0, 0.0, 0.0]))
+        start = GmshPoint.from_coordinates(coords=np.array([1.0, 0.0, 0.0]))
+        end = GmshPoint.from_coordinates(coords=np.array([0.0, 1.0, 0.0]))
 
         arc = GmshArc.from_points(
             start_point=start,
@@ -125,9 +127,9 @@ class TestGmshArc:
 
     def test_gmsh_arc_str(self):
         """Test string output of class GmshArc"""
-        center = GmshPoint(tag=-1, coords=np.array([0.0, 0.0, 0.0]))
-        start = GmshPoint(tag=-1, coords=np.array([1.0, 0.0, 0.0]))
-        end = GmshPoint(tag=-1, coords=np.array([0.0, 1.0, 0.0]))
+        center = GmshPoint.from_coordinates(coords=np.array([0.0, 0.0, 0.0]))
+        start = GmshPoint.from_coordinates(coords=np.array([1.0, 0.0, 0.0]))
+        end = GmshPoint.from_coordinates(coords=np.array([0.0, 1.0, 0.0]))
 
         arc = GmshArc.from_points(
             start_point=start,

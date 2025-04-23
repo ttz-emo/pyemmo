@@ -92,7 +92,7 @@ def createLine(
         mpName = lineDict["MpName"]
         # import coordinates of Centerpoint for THIS arc
         coordsMP = (lineDict["MpX"], lineDict["MpY"], lineDict["MpZ"])
-        centerPoint = GmshPoint(
+        centerPoint = GmshPoint.from_coordinates(
             name=mpName,
             coords=coordsMP,
             meshLength=meshLen if meshLen else lineDict["MpMesh"],
@@ -208,13 +208,13 @@ def getSurfaceLineList(
         coordsP1 = (lineDict["ApX"], lineDict["ApY"], lineDict["ApZ"])
         # end point
         coordsP2 = (lineDict["EpX"], lineDict["EpY"], lineDict["EpZ"])
-        startPoint = GmshPoint(
+        startPoint = GmshPoint.from_coordinates(
             name=lineDict["ApName"],
             coords=coordsP1,
             meshLength=meshLen if meshLen else lineDict["ApMesh"],
         )
         pointList.append(startPoint)
-        endPoint = GmshPoint(
+        endPoint = GmshPoint.from_coordinates(
             name=lineDict["EpName"],
             coords=coordsP2,
             meshLength=meshLen if meshLen else lineDict["EpMesh"],

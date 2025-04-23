@@ -263,7 +263,7 @@ def createMBAux(
             if i_band == 1 and i_curve == 1:
                 # first curve of first band -> use interface point
                 p_start = p_on_sym_axis
-                p_end = GmshPoint(
+                p_end = GmshPoint.from_coordinates(
                     name=f"Movingband point {i_band+1}.{i_curve}",
                     coords=(
                         np.cos(p_end_angle) * mb_radius,
@@ -300,7 +300,7 @@ def createMBAux(
                     p_start = mb_aux_list[-1].geo_list[-1].end_point
                 else:
                     p_start = mb_lines_aux[-1].end_point
-                p_end = GmshPoint(
+                p_end = GmshPoint.from_coordinates(
                     name=f"Movingband point {i_band+1}.{i_curve}",
                     coords=(
                         np.cos(p_end_angle) * mb_radius,

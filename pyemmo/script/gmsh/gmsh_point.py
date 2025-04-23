@@ -36,7 +36,7 @@ Example:
     Create a GmshPoint instance and print its details:
 
     >>> import numpy as np
-    >>> p = GmshPoint(tag=1, coords=np.array([0.0, 1.0, 2.0]))
+    >>> p = GmshPoint.from_coordinates(coords=[0.0, 1.0, 2.0])
     >>> print(p)
     GmshPoint(tag=1, coords=(0.0, 1.0, 2.0))
 
@@ -57,6 +57,7 @@ from typing import Literal, Tuple, Union
 import gmsh
 import numpy as np
 
+from ..geometry import defaultCenterPoint
 from ..geometry.point import Point
 from . import DimTag
 from .gmsh_geometry import GmshGeometry
@@ -93,66 +94,73 @@ class GmshPoint(GmshGeometry, Point):
         """Dimension of Point = 0"""
         return 0
 
-    def __init__(
-        self,
-        tag: int = -1,
-        name: str = "",
-        coords: Union[np.ndarray, list, tuple] = np.empty(0),
-        meshLength: float = 1e-3,
-    ):
+    def __init__(self, tag: int = -1, name: str = ""):
         """
         Constructor for GmshPoint class.
 
         Args:
             tag (int): Tag of the point.
             name (str, optional): Name of the point. Defaults to "".
-            coords (np.ndarray or list or tuple, optional): Coordinates of the point as
-                a NumPy array with shape (3,) or empty. When empty, try to find the
-                point with its tag in Gmsh and get the coordinates from there.
-            meshLength (float, optional): Mesh length of the point. Defaults to 1 mm.
         """
         if not isinstance(tag, (int, np.integer)):
             raise TypeError("Gmsh tag must be positive integer!")
-
-        if tag == -1:
-            # init with coords
-            if not isinstance(meshLength, numbers.Number):
-                raise TypeError("meshLength must be a number!")
-            if meshLength <= 0:
-                raise ValueError("meshLength must be greater than 0!")
-            # type cast coords to np.ndarray if necessary
-            if not isinstance(coords, np.ndarray):
-                if not isinstance(coords, (list, tuple)):
-                    raise TypeError("coords must be a numpy array, list or tuple!")
-                coords = np.array(coords)
-            if coords.size == 2:
-                # 2D point
-                self._id = gmsh.model.occ.addPoint(
-                    coords[0], coords[1], 0.0, meshLength
-                )
-            elif coords.size == 3:
-                # 3D point
-                self._id = gmsh.model.occ.addPoint(
-                    coords[0], coords[1], coords[2], meshLength
-                )
-            else:
-                raise ValueError(f"Wrong GmshPoint coordinates {coords=}!")
-        elif tag > 0:
-            # init with tag
-            # if coordinates AND tag are given, raise an error
-            if coords.size != 0:
-                raise ValueError("You can't init GmshPoint with tag AND coordinates!")
-            self._init_with_tag(tag)
-        else:
-            raise ValueError(f"Gmsh tag must be positive integer! {tag=}")
-        # set name in gmsh if not empty
-        self.name = name
-
-    def _init_with_tag(self, tag: int):
         # make sure the point with given tag exists in gmsh:
         if (0, tag) not in gmsh.model.occ.getEntities(0):
             raise ValueError(f"Point with given {tag=} does not exist!")
         self._id = tag  # set tag
+        # set name in gmsh if not empty
+        self.name = name
+        # NOTE: There is no need to call the constructor of the Point class here, because
+        # all relevant properties are accessed dynamically via the gmsh API.
+
+    @classmethod
+    def from_coordinates(
+        cls,
+        coords: Union[np.ndarray, list, tuple],
+        meshLength: float = 1e-3,
+        name: str = "",
+    ) -> "GmshPoint":
+        """
+        Create a GmshPoint instance from given coordinates.
+        This method initializes a GmshPoint object using the provided coordinates,
+        mesh length, and optional name. It supports both 2D and 3D points.
+        Args:
+            coords (Union[np.ndarray, list, tuple]): The coordinates of the point.
+                Must be a numpy array, list, or tuple. For 2D points, provide
+                [x, y]. For 3D points, provide [x, y, z].
+            meshLength (float, optional): The mesh size associated with the point.
+                Must be a positive number. Defaults to 1e-3.
+            name (str, optional): An optional name for the point. Defaults to an
+                empty string.
+        Returns:
+            GmshPoint: An instance of the GmshPoint class.
+        Raises:
+            TypeError: If `meshLength` is not a number or if `coords` is not a
+                numpy array, list, or tuple.
+            ValueError: If `meshLength` is less than or equal to 0, or if the
+                size of `coords` is not 2 or 3.
+        """
+        # init with coords
+        if not isinstance(meshLength, numbers.Number):
+            raise TypeError("meshLength must be a number!")
+        if meshLength <= 0:
+            raise ValueError("meshLength must be greater than 0!")
+        # type cast coords to np.ndarray if necessary
+        if not isinstance(coords, np.ndarray):
+            if not isinstance(coords, (list, tuple)):
+                raise TypeError("coords must be a numpy array, list or tuple!")
+            coords = np.array(coords)
+        if coords.size == 2:
+            # 2D point
+            point_tag = gmsh.model.occ.addPoint(coords[0], coords[1], 0.0, meshLength)
+        elif coords.size == 3:
+            # 3D point
+            point_tag = gmsh.model.occ.addPoint(
+                coords[0], coords[1], coords[2], meshLength
+            )
+        else:
+            raise ValueError(f"Wrong GmshPoint coordinates {coords=}!")
+        return cls(tag=point_tag, name=name)
 
     @property
     def meshLength(self) -> float:
@@ -194,7 +202,7 @@ class GmshPoint(GmshGeometry, Point):
         else:
             raise ValueError("meshLength must be a number!")
 
-    @Point.coordinate.getter
+    @property
     def coordinate(self) -> Tuple[float, float, float]:
         """
         Getter for the coordinate property.
@@ -280,7 +288,7 @@ class GmshPoint(GmshGeometry, Point):
         """
         gmsh.model.occ.translate([(0, self.id)], dx, dy, dz)
 
-    def rotateZ(self, rotationPoint: "Point", angle: float):
+    def rotateZ(self, rotationPoint: "Point" = defaultCenterPoint, angle: float = 0.0):
         """Rotate the point around a rotation point and the Z-axis by a given angle.
 
         Args:

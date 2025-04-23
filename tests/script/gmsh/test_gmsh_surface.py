@@ -75,7 +75,7 @@ def fixture_gmsh_surface():
 @pytest.fixture(scope="function")
 def fixture_gmsh_circle():
     """Default test circle with origin (0,0,0) and radius 1 meter."""
-    centerpoint = GmshPoint(-1, coords=(0, 0, 0))
+    centerpoint = GmshPoint.from_coordinates(coords=(0, 0, 0))
     return add_circle(centerpoint, 1)
 
 
@@ -95,11 +95,15 @@ def create_rectangle():
     """
     points: list[GmshPoint] = []
     for i, xy in enumerate([(0, 0), (0, 1), (1, 1), (1, 0)]):
-        points.append(GmshPoint(-1, f"P{i}", np.array([xy[0], xy[1], 0])))
+        points.append(
+            GmshPoint.from_coordinates(name=f"P{i}", coords=np.array([xy[0], xy[1], 0]))
+        )
     lines: list[GmshLine] = []
     for i, point in enumerate(points):
         lines.append(
-            GmshLine(tag=-1, name=f"L{i}", start_point=points[i - 1], end_point=point)
+            GmshLine.from_points(
+                name=f"L{i}", start_point=points[i - 1], end_point=point
+            )
         )
     return GmshSurface.from_curve_loop(curve_loop=lines, name="Test surface")
 
@@ -112,8 +116,7 @@ def add_circle(center: GmshPoint, radius: float):
         dx = x
         dy = y
         points.append(
-            GmshPoint(
-                -1,
+            GmshPoint.from_coordinates(
                 name=f"P{i}",
                 coords=[xy[0] * radius + dx, xy[1] * radius + dy, 0],
                 meshLength=2 * np.pi * radius / 60,
@@ -122,8 +125,7 @@ def add_circle(center: GmshPoint, radius: float):
     lines: list[GmshArc] = []
     for i, point in enumerate(points):
         lines.append(
-            GmshArc(
-                tag=-1,
+            GmshArc.from_points(
                 name=f"L{i}",
                 start_point=points[i - 1],
                 center_point=center,
@@ -168,6 +170,7 @@ def test_init_with_id_newName(gmsh_surface: GmshSurface):
 
 def test_set_mesh_length(gmsh_surface: GmshSurface):
     """Test setMeshLength() method"""
+    # initial mesh length is 1e-3
     gmsh_surface.setMeshLength(0.1)
     assert np.isclose(gmsh_surface.meanMeshLength, 0.1, rtol=1e-3)
 
@@ -197,6 +200,7 @@ def test_area(surf_fixture, expected_area: float, request):
 def test_translate(gmsh_surface: GmshSurface):
     """Test translate() method"""
     gmsh_surface.translate(1.1, -1.1, 0)  # translate surf into x by 1.1, y by -1.1
+    gmsh.model.occ.synchronize()  # synchronize the model to check the coordinates
     exspected_coords = [(1.1, -1.1, 0), (2.1, -1.1, 0), (2.1, -0.1, 0), (1.1, -0.1, 0)]
     for coords in exspected_coords:
         assert any(
@@ -210,7 +214,9 @@ def test_rotate_z(gmsh_surface: GmshSurface):
     # rotate surf by 90 degrees around z-axis
     center = Point("center point", 0, 0, 0)
     gmsh_surface.rotateZ(center, np.pi / 2)
+    gmsh.model.occ.synchronize()  # synchronize the model to check the coordinates
     exspected_coords = [(0, 0, 0), (0, 1, 0), (-1, 0, 0), (-1, 1, 0)]
+
     for coords in exspected_coords:
         assert any(
             all(np.isclose(coords, point.coordinate, atol=1e-6))
@@ -277,10 +283,10 @@ def test_combine(gmsh_surface: GmshSurface):
 
 def test_cut_out_inside(gmsh_surface: GmshSurface):
     """Test cutOut() method for circle that is **completly inside** the parent surface."""
-    center = GmshPoint(name="Center", coords=[0.5, 0.5, 0])
+    center = GmshPoint.from_coordinates(name="Center", coords=[0.5, 0.5, 0])
     circ = add_circle(center, radius=0.4)
     gmsh_surface.cutOut(circ)
-    assert len(gmsh_surface.curve) == 8
+    assert len(gmsh_surface.curve) == 4
     assert gmsh_surface.dim == 2
     assert gmsh_surface.name == "Test surface"
     assert gmsh_surface.id == 3
@@ -323,7 +329,7 @@ def test_cut_out_noIntersect(gmsh_surface: GmshSurface):
 def test_2_layer_subtract(gmsh_surface: GmshSurface):
     """Test a two layer subtraction where the tool of the main surface has a tool
     aswell"""
-    center = GmshPoint(name="Center", coords=[0.5, 0.5, 0])
+    center = GmshPoint.from_coordinates(name="Center", coords=[0.5, 0.5, 0])
     circ_big = add_circle(center, radius=0.4)
     circ_small = add_circle(center, radius=0.15)
     circ_big.cutOut(circ_small)  # SECOND LAYER CUT
