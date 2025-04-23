@@ -97,7 +97,7 @@ def createLine(
             coords=coordsMP,
             meshLength=meshLen if meshLen else lineDict["MpMesh"],
         )
-        line = GmshArc(
+        line = GmshArc.from_points(
             name=lineName,
             start_point=startPoint,
             center_point=centerPoint,

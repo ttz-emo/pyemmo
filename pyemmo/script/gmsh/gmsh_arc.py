@@ -50,8 +50,7 @@ Example:
     end = GmshPoint(tag=3, coords=np.array([0.0, 1.0, 0.0]))
 
     # Define a line using GmshArc
-    line = GmshArc(
-        tag=1,
+    line = GmshArc.from_points(
         start_point=start,
         center_point=center,
         end_point=end,
@@ -68,29 +67,53 @@ Note:
     This docstring was created by ChatGPT.
 """
 
-from typing import Literal, Union
+from typing import Literal
 
 import gmsh
 import numpy as np
 from numpy.typing import NDArray
 
 from ..geometry.circleArc import CircleArc
-from . import DimTag
 from .gmsh_geometry import GmshGeometry
+from .gmsh_line import GmshLine
 from .gmsh_point import GmshPoint
 
 
-class GmshArc(GmshGeometry, CircleArc):
-    """
-    TODO
-
+class GmshArc(GmshLine, CircleArc):
+    """GmshArc is a class that represents a circular arc in the Gmsh geometric modeling kernel.
+    It inherits from both GmshLine and CircleArc, providing functionality to interact with
+    and manipulate circular arcs in a Gmsh model.
     Attributes:
-        tag (int): The unique identifier for the line.
-        start_point (GmshPoint): The starting point of the line.
-        end_point (GmshPoint): The ending point of the line.
-        name (str): The name of the line.
-        type (str): The type of the line (e.g., "Line", "Circle").
-    """
+        dim (Literal[1]): The dimension of the CircleArc in Gmsh, which is always 1.
+        id (int): The unique identifier (tag) of the arc in the Gmsh model.
+        name (str): The name of the arc.
+        center (GmshPoint): The center point of the arc.
+        length (float): The length of the arc, calculated using Gmsh's geometric modeling functions.
+    Methods:
+        __init__(tag: int, name: str = ""):
+            Initializes a GmshArc instance using an existing Gmsh line tag. Validates the tag
+            and retrieves the start and end points of the arc.
+        from_points(start_point: GmshPoint, center_point: GmshPoint, end_point: GmshPoint, name: str) -> GmshArc:
+            Class method to create a new GmshArc instance by specifying the start, center,
+            and end points of the arc.
+        __str__() -> str:
+            Returns a string representation of the GmshArc, including its name, ID, and
+            start and end points.
+        start_point (property):
+            Getter for the starting point of the arc. Raises an error if an attempt is made
+            to modify the start point.
+        end_point (property):
+            Getter for the ending point of the arc. Raises an error if an attempt is made
+            to modify the end point.
+        center (property):
+            Getter for the center point of the arc. If the center point does not exist, it
+            is created. Raises an error if an attempt is made to modify the center point.
+        length (property):
+            Getter for the length of the arc, calculated using Gmsh's geometric modeling
+            functions.
+        TypeError: If the provided tag is not a positive integer.
+        ValueError: If the specified tag does not correspond to an existing curve in the
+                    Gmsh model or if the provided points are not of type GmshPoint."""
 
     @property
     def dim(self) -> Literal[1]:
@@ -99,88 +122,78 @@ class GmshArc(GmshGeometry, CircleArc):
 
     def __init__(
         self,
-        tag: int = -1,
-        start_point: Union[GmshPoint, None] = None,
-        center_point: Union[GmshPoint, None] = None,
-        end_point: Union[GmshPoint, None] = None,
+        tag: int,
         name: str = "",
     ):
         """
-        Constructor for the GmshArc class. With two possible creation methods:
-        1.  Specifiy a **existing** gmsh line tag with ``tag``:
-            The init method will find start and end point from gmsh and try to calculate
-            the center point by creating a middle point on the existing arc. For more
-            details see https://gitlab.onelab.info/gmsh/gmsh/-/issues/2394
-        2.  Define the arc like the classical PyEMMO CircleArc by giving 3 GmshPoint
-            objects.
+        Constructor for the GmshArc class. Specifiy a **existing** gmsh line tag with ``tag``:
+        The init method will find start and end point from gmsh and try to calculate
+        the center point by creating a middle point on the existing arc. For more
+        details see https://gitlab.onelab.info/gmsh/gmsh/-/issues/2394
+
+        Optionally you can create a new arc by using the
+        `from_points() <pyemmo.script.gmsh.gmsh_arc.GmshArc.from_points>`_ method by
+        specifying the start, center and end point of the arc.
 
         Args:
             tag (int): The unique identifier for the line.
-            start_point (GmshPoint, optional): The starting point of the line. Defaults
-                to None.
-            center_point (GmshPoint): The center point of the line. Defaults to None.
-            end_point (GmshPoint, optional): The ending point of the line. Defaults to
-                None.
             name (str, optional): The name of the line. Defaults to an empty string.
         """
         if not isinstance(tag, (int, np.integer)):
             raise TypeError("Gmsh tag must be positive integer!")
-
-        if tag == -1:
-            if not all(
-                p is not None and isinstance(p, GmshPoint)
-                for p in [start_point, center_point, end_point]
-            ):
-                raise ValueError("All points must be of type GmshPoint for GmshArc!")
-            # no tag given, but all three points are of type GmshPoint
-            self._id = gmsh.model.occ.addCircleArc(
-                start_point.id, center_point.id, end_point.id
-            )
-            # FIXME: I think we can skip this...
-            self._start_point = start_point
-            self._center = center_point
-            self._end_point = end_point
-            self.name = name
-        elif tag >= 0:
-            if (start_point, center_point, end_point) == (None, None, None):
-                # tag is given and points are None -> try to find points from gmsh and
-                # create center point.
-                self._init_with_tag(tag, name)
-            else:
-                raise ValueError("Can not create GmshArc for input of tag AND points!")
-        else:
-            raise ValueError("Tag must be a positive integer or -1 if points given!")
-
-    def _init_with_tag(self, tag: int, name: str):
-        """Init GmshArc with existing tag.
-
-        Args:
-            tag (int): Gmsh OCC tag of the CircleArc.
-            name (str): Name of the CircleArc.
-
-        Raises:
-            ValueError: If tag is not a CircleArc.
-            ValueError: If curve tag does not exist in current Gmsh model.
-        """
         if (1, tag) not in gmsh.model.occ.getEntities(1):
             raise ValueError(f"Curve with tag {tag=} does not exist in Gmsh model!")
+        # FIXME: Currently don't check line type, because synchronize() is too costly.
+        # try:
+        #     curve_type = gmsh.model.getType(1, tag)
+        # except Exception as exce:
+        #     if "does not exist" in str(exce) or "Unknown model curve" in str(exce):
+        #         gmsh.model.occ.synchronize()
+        #         curve_type = gmsh.model.getType(1, tag)
+        #     else:
+        #         raise exce
         # TODO: Create separate handle for TrimmedCurve type.
-        try:
-            curve_type = gmsh.model.getType(1, tag)
-        except Exception as exce:
-            if "does not exist" in str(exce) or "Unknown model curve" in str(exce):
-                gmsh.model.occ.synchronize()
-                curve_type = gmsh.model.getType(1, tag)
-            else:
-                raise exce
-        if curve_type not in ("Circle", "TrimmedCurve"):
-            raise ValueError(
-                f"Curve with {tag=} is not a Circle but {gmsh.model.get_type(1, tag)}!"
-            )
+        # if curve_type not in ("Circle", "TrimmedCurve"):
+        #     raise ValueError(
+        #         f"Curve with {tag=} is not a Circle but {gmsh.model.get_type(1, tag)}!"
+        #     )
         self._id = tag  # set tag
-        if not name:
-            name = gmsh.model.get_entity_name(1, tag)
         self.name = name
+
+    @classmethod
+    def from_points(
+        cls,
+        start_point: GmshPoint,
+        center_point: GmshPoint,
+        end_point: GmshPoint,
+        name: str = "",
+    ):
+        """Create a GmshArc instance from three GmshPoint objects representing the
+        start point, center point, and end point of the arc.
+
+        Args:
+            start_point (GmshPoint): The starting point of the arc.
+            center_point (GmshPoint): The center point of the arc.
+            end_point (GmshPoint): The ending point of the arc.
+            name (str): The name to assign to the arc.
+
+        Returns:
+            GmshArc: An instance of the GmshArc class.
+
+        Raises:
+            ValueError: If any of the provided points are not of type GmshPoint.
+        """
+        # make sure all points are of type GmshPoint
+        if not all(
+            isinstance(p, GmshPoint) for p in [start_point, center_point, end_point]
+        ):
+            raise ValueError("All points must be of type GmshPoint for GmshArc!")
+        # create arc in gmsh
+        arc_id = gmsh.model.occ.addCircleArc(
+            start_point.id, center_point.id, end_point.id
+        )
+        # return class constructor with the new arc id and name
+        return cls(arc_id, name)
 
     def __str__(self) -> str:
         """
@@ -196,15 +209,6 @@ class GmshArc(GmshGeometry, CircleArc):
             f"end_point=({self.end_point.x}, {self.end_point.y}, {self.end_point.z}))"
         )
 
-    def _get_points(self) -> tuple[DimTag, DimTag]:
-        try:
-            return gmsh.model.get_boundary(dimTags=[(1, self.id)])
-        except Exception as exce:
-            if "does not exist" in str(exce) or "Unknown model curve" in str(exce):
-                gmsh.model.occ.synchronize()
-                return gmsh.model.get_boundary(dimTags=[(1, self.id)])
-            raise exce
-
     @property
     def start_point(self) -> GmshPoint:
         """
@@ -213,8 +217,7 @@ class GmshArc(GmshGeometry, CircleArc):
         Returns:
             GmshPoint: The starting point of the line.
         """
-        point_dimTags = self._get_points()
-        return GmshPoint(point_dimTags[0][1])
+        return self.points[0]
 
     @start_point.setter
     def start_point(self, new_start_point: GmshPoint):
@@ -234,8 +237,10 @@ class GmshArc(GmshGeometry, CircleArc):
         Returns:
             GmshPoint: The ending point of the line.
         """
-        point_dimTags = self._get_points()
-        return GmshPoint(point_dimTags[1][1])
+        return self.points[1]
+
+        # point_dimTags = self._get_points()
+        # return GmshPoint(point_dimTags[1][1])
 
     @end_point.setter
     def end_point(self, new_end_point: GmshPoint):
@@ -264,9 +269,8 @@ class GmshArc(GmshGeometry, CircleArc):
         if center_tag:
             # if center point exists
             return GmshPoint(center_tag)
-        else:
-            # otherwise create a new point
-            return GmshPoint(coords=center_coords)
+        # otherwise create a new point
+        return GmshPoint(coords=center_coords)
 
     @center.setter
     def center(self, new_center: GmshPoint):

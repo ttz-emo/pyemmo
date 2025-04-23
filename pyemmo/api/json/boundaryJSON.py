@@ -309,7 +309,7 @@ def createMBAux(
                     meshLength=1,
                 )
                 # p_end = GmshPoint(p_end.id)
-            band_arc = GmshArc(
+            band_arc = GmshArc.from_points(
                 name=f"rotor auxiliary movingband {i_band+1}.{i_curve}",
                 start_point=p_start,
                 center_point=mb_center_point,

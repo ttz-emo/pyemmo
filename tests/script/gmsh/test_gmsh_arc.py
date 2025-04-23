@@ -19,6 +19,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for testing of class GmshArc."""
+import logging
 import math
 
 import gmsh
@@ -49,8 +50,7 @@ class TestGmshArc:
         start = GmshPoint(tag=-1, coords=np.array([1.0, 0.0, 0.0]))
         end = GmshPoint(tag=-1, coords=np.array([0.0, 1.0, 0.0]))
 
-        arc = GmshArc(
-            tag=-1,
+        arc = GmshArc.from_points(
             start_point=start,
             center_point=center,
             end_point=end,
@@ -64,8 +64,7 @@ class TestGmshArc:
         start = GmshPoint(tag=-1, coords=np.array([1.0, 0.0, 0.0]))
         end = GmshPoint(tag=-1, coords=np.array([0.0, 1.0, 0.0]))
 
-        arc = GmshArc(
-            tag=-1,
+        arc = GmshArc.from_points(
             start_point=start,
             center_point=center,
             end_point=end,
@@ -96,11 +95,10 @@ class TestGmshArc:
     def test_gmsh_arc_invalid_creation(self):
         """Make sure wrong init raises ValueErrors"""
         with pytest.raises(ValueError):
-            GmshArc(tag=-1, start_point=None, center_point=None, end_point=None)
+            GmshArc(tag=2)
 
         with pytest.raises(ValueError):
-            GmshArc(
-                tag=1,
+            GmshArc.from_points(
                 start_point=GmshPoint(tag=-1, coords=np.array([1.0, 0.0, 0.0])),
                 center_point=None,
                 end_point=None,
@@ -112,8 +110,7 @@ class TestGmshArc:
         start = GmshPoint(tag=-1, coords=np.array([1.0, 0.0, 0.0]))
         end = GmshPoint(tag=-1, coords=np.array([0.0, 1.0, 0.0]))
 
-        arc = GmshArc(
-            tag=-1,
+        arc = GmshArc.from_points(
             start_point=start,
             center_point=center,
             end_point=end,
@@ -132,8 +129,7 @@ class TestGmshArc:
         start = GmshPoint(tag=-1, coords=np.array([1.0, 0.0, 0.0]))
         end = GmshPoint(tag=-1, coords=np.array([0.0, 1.0, 0.0]))
 
-        arc = GmshArc(
-            tag=-1,
+        arc = GmshArc.from_points(
             start_point=start,
             center_point=center,
             end_point=end,
@@ -187,9 +183,25 @@ class TestGmshArc:
         """Test combine method of abstract class GmshGeometry"""
         add_arc = gmsh_arc.duplicate()
         add_arc.rotateZ(angle=gmsh_arc.getAngle())
+        # We need to call sync() here because otherwise the rotation will only be available
+        # in the OCC representation and not in the GMSH representation.
+        gmsh.model.occ.synchronize()
+        combined_arc: GmshArc = gmsh_arc.combine(add_arc)
+        # after fuse we need to call sync() again to make the changes available for the
+        # python api to check for the properties of the arc
+        gmsh.model.occ.synchronize()
+        logging.debug(f"Combined arc: {combined_arc}")
 
-        combined_arc = gmsh_arc.combine(add_arc)
-
-        assert combined_arc.center.isEqual(gmsh_arc.center)
+        assert combined_arc.center.coordinate == (0.0, 0.0, 0.0)
+        assert any(
+            all(np.isclose(combined_arc.start_point.coordinate, coords, atol=TOLERANCE))
+            for coords in [(-1.0, 0.0, 0.0), (1.0, 0.0, 0.0)]
+        )
+        assert any(
+            all(np.isclose(combined_arc.end_point.coordinate, coords, atol=TOLERANCE))
+            for coords in [(-1.0, 0.0, 0.0), (1.0, 0.0, 0.0)]
+        )
         assert combined_arc.dim == 1
         assert np.isclose(abs(combined_arc.getAngle(inDeg=True)), 180, atol=TOLERANCE)
+        assert np.isclose(combined_arc.radius, 1, atol=TOLERANCE)
+        assert np.isclose(combined_arc.length, math.pi, atol=TOLERANCE)

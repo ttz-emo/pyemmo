@@ -237,8 +237,8 @@ class GmshGeometry(ABC):
 
         Example:
             from pyemmo.script.gmsh.gmsh_line import GmshArc\n
-            L1 = GmshArc(-1, 'L1', P1, P2)\n
-            L2 = GmshArc(-1, 'L2', P2, P3)\n
+            L1 = GmshArc.from_points(name='L1',start_point=P1, center_point = P0, end_point=P2)\n
+            L2 = GmshArc.from_points(name='L2',start_point=P2, center_point = P0, end_point=P3)\n
             L3 = L1.combine(L2)\n
         """
         assert isinstance(add_obj, type(self))
