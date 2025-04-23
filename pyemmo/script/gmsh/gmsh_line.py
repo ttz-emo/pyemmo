@@ -98,7 +98,7 @@ class GmshLine(GmshGeometry, Line):
 
     def __init__(
         self,
-        tag: int = -1,
+        tag: int,
         name: str = "",
     ):
         """
@@ -106,8 +106,6 @@ class GmshLine(GmshGeometry, Line):
 
         Args:
             tag (int): The unique identifier for the line.
-            start_point (GmshPoint, optional): The starting point of the line.
-            end_point (GmshPoint, optional): The ending point of the line.
             name (str, optional): The name of the line. Defaults to an empty string.
         """
         if not isinstance(tag, (int, np.integer)):
