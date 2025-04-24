@@ -151,9 +151,12 @@ class GmshSurface(GmshGeometry, Surface):
                 self.name = name
         else:
             raise ValueError(f"Bad Gmsh surface {tag=}!")
-        # FIXME: calling self.curves does trigger the _get_lineloop() method which
-        # calls synchronize() ... Maybe skip init of Surface parent class here?
-        Surface.__init__(self, name=name, curves=self.curve)
+        # NOTE: calling self.curves does trigger the _get_lineloop() method which
+        # calls synchronize(). Therefore we skip the call to the parent class and
+        # initialize the missing attributes (cut, is_tool) here:
+        # Surface.__init__(self, name=name, curves=self.curve)
+        self._cut: list[Surface] = []
+        self._is_tool: bool = False
 
     @classmethod
     def from_curve_loop(
@@ -267,7 +270,15 @@ class GmshSurface(GmshGeometry, Surface):
         Returns:
             Union[str, tuple[int]]: The mesh color of the surface.
         """
-        rgba = gmsh.model.getColor(self.dim, self.id)
+        try:
+            rgba = gmsh.model.getColor(self.dim, self.id)
+        except Exception as exce:
+            if f"Surface {self.id} does not exist" in str(exce):
+                # sync() and try again if surface could not be found
+                gmsh.model.occ.synchronize()
+                rgba = gmsh.model.getColor(self.dim, self.id)
+            else:
+                raise exce
         for c_name, rgba_val in Colors.items():
             if tuple(rgba_val) == rgba:
                 return c_name
@@ -318,6 +329,10 @@ class GmshSurface(GmshGeometry, Surface):
                 # if rgb values given in 0-255 range, convert to 0-1 range
                 color = tuple(c / 255 for c in color)
             rgba = color
+        # we need to test if the surface exists in the current model, because
+        # gmsh.model.setColor() will not raise an error if the surface does not exist!
+        if (self.dim, self.id) not in gmsh.model.getEntities(self.dim):
+            raise RuntimeError(f"Surface {self.id=} does not exist!")
         gmsh.model.setColor(
             [(self.dim, self.id)],
             int(rgba[0] * 255),
@@ -325,7 +340,6 @@ class GmshSurface(GmshGeometry, Surface):
             int(rgba[2] * 255),
             int(rgba[3] * 255),
         )
-        # gmsh.model.occ.synchronize()
 
     def setMeshLength(self, meshLength: float) -> None:
         """set the meshLength of all points of a surface.
