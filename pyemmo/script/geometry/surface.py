@@ -81,7 +81,7 @@ class Surface(Transformable):
         self.name: str = name
         # init because _cut(=tools) is only accessed by method ``cutOut``
         self._cut: list[Surface] = []
-        self._isTool: bool = False
+        self._is_tool: bool = False
         # self._delete: bool = False
 
     def __eq__(self, other: Surface):
@@ -474,7 +474,7 @@ class Surface(Transformable):
 
     def setTool(self) -> None:
         """set the surface as subtraction surface"""
-        self._isTool = True
+        self._is_tool = True
 
     def isTool(self) -> bool:
         """returns True if the surface has been subtracted from a other surface.
@@ -482,7 +482,7 @@ class Surface(Transformable):
         Returns:
             bool: True if the surface has been subtracted, False if not.
         """
-        return self._isTool
+        return self._is_tool
 
     def sortCurves(self) -> None:
         """sortiert die Kurven einer geschlossenen Fläche neu, um eine Curve
