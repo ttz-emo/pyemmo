@@ -18,7 +18,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 import unittest
-from pyemmo.functions.runOnelab import findGmsh
+
+from pyemmo.functions.runOnelab import findGmsh, runCalcforCurrent
 
 
 class TestRunOnelab(unittest.TestCase):
@@ -68,6 +69,37 @@ class TestRunOnelab(unittest.TestCase):
         GmshExe = findGmsh()
         # Verify
         ...
+
+    def test_run_ONELAB(self):
+        runCalcforCurrent(
+            {
+                "getdp": {
+                    "IQ_RMS": 10.0,
+                    "ID_RMS": 0.0,
+                    "RPM": 1000,
+                    "initrotor_pos": 0.0,
+                    "d_theta": 5,
+                    "finalrotor_pos": 90,
+                    "ResId": "test01",
+                    "Flag_AnalysisType": 1,
+                    "Flag_PrintFields": 0,
+                    "Flag_Debug": 1,
+                    "Flag_ClearResults": 1,
+                    "verbosity level": 5,
+                    #                     mesh_veryFine, fineMesh or coarseMesh
+                    # "msh": os.path.join(MODEL_DIR, "mesh_veryFine.msh"),
+                    # "Flag_SecondOrder": 0,
+                    "stop_criterion": 1e-8,
+                },
+                "ResId": "test01",
+                "pro": r"D:\pyemmo\Results\Baukasten\Test_SPMSM\Test_SPMSM_Baukasten.pro",
+                "res": r"D:\pyemmo\Results\Baukasten\Test_SPMSM\res_Test_SPMSM_Baukasten",
+                "exe": r"C:\Software\onelab\getdp.exe",
+                "gmsh": r"C:\Software\onelab\gmsh.exe",
+                "info": "",
+                "PostOp": [],  # "GetBOnRadius" - "Get_LocalFields_Post"
+            }
+        )
 
 
 # Dieser Abschnitt ermöglicht das direkte Starten der Testmethoden beim ausführen der Datei

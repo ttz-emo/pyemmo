@@ -19,20 +19,19 @@
 #
 from __future__ import annotations
 
+import json
 import logging
 import os
 import subprocess
 import sys
+import time as time_module
 from argparse import ArgumentParser
 from io import BufferedReader
 from os.path import expanduser, isdir, isfile, join, normpath, splitext
 from shutil import which
 from subprocess import PIPE, STDOUT, Popen
 
-import numpy as np
-
-from . import calcIronLoss
-from .import_results import read_timetable_dat
+from . import SETUP_FILE_NAME, calcIronLoss, import_results
 
 
 def log_subprocess_output(pipe: BufferedReader, stderr: BufferedReader = None):
@@ -417,12 +416,14 @@ def runCalcforCurrent(param: dict):
             raise RuntimeError(
                 "Result directory does not exist and can not be created: " + RES_DIR
             )
-    # adding additional results path because its initally set in the parameter geo file.
-    # But if the files are moved the results folder might not exist any more!
+    # adding additional results path to GetDP parameters (only then GetDP knows where to
+    # put the results) because its initally set in the parameter geo
+    # file. But if the files are moved the results folder might not exist any more!
     param["getdp"]["res"] = RES_DIR
     pro_file = param["pro"]
+    # simulation_res_dir is the actual res folder joined from the global RES_DIR and
+    # ResId (which is the folder name).
     simulation_res_dir = os.path.join(RES_DIR, param["getdp"]["ResId"])
-    # Remove previous results if flag activated
     if "Flag_ClearResults" in param["getdp"] and os.path.isdir(simulation_res_dir):
         if param["getdp"]["Flag_ClearResults"]:
             logging.warning(
@@ -436,10 +437,18 @@ def runCalcforCurrent(param: dict):
     post_operations = param["PostOp"] if "PostOp" in param else []
 
     if not os.path.isdir(simulation_res_dir):
+        os.mkdir(simulation_res_dir)
         # only run if results dir for this simulation not exists
         # determine if core loss can be calculated
-        if "hyst" in param and "eddy" in param:
-            post_operations = ["GetBIron"]  # calc core loss
+        if "hyst" in param and "eddy" in param and "GetBIron" not in post_operations:
+            post_operations.append("GetBIron")  # calc core loss
+        if "datetime" not in param:
+            param["datetime"] = (time_module.ctime(),)
+
+        # save simulation setup to file
+        setup_file_path = join(simulation_res_dir, SETUP_FILE_NAME)
+        with open(setup_file_path, "x", encoding="utf-8") as setup_file:
+            json.dump(param, setup_file)
 
         cmdCommand = createCmdCommand(
             pro_file,
@@ -491,103 +500,103 @@ def runCalcforCurrent(param: dict):
         # raise RuntimeError(
         #     f"Result directory {simulation_res_dir} allready exists!"
         # )
-        logging.warning("Result directory %s allready exists!", simulation_res_dir)
-    ##########################################################################
-    # EVALUATE RESULTS
-    ##########################################################################
-
-    logging.info("Import results for result-ID '%s'", param["getdp"]["ResId"])
-    results_dict = {}
-    # try to import getdp parameters from param dict
-    # TODO: Add start and stop angle, angle and time step, ...
-    # OTHER OPTION: Just add input param dict to result dict...
-    for key, getdp_param in {
-        "id": "ID_RMS",
-        "iq": "IQ_RMS",
-        "speed": "RPM",
-    }.items():
-        try:
-            results_dict[key] = param["getdp"][getdp_param]
-        except KeyError:
-            pass
-        except Exception as exce:
-            raise exce
-    # 1. Phase currents
-    results_dict["current"] = {}
-    for index in "abc":
-        res_file = os.path.join(simulation_res_dir, f"I{index}.dat")
-        if os.path.isfile(res_file):
-            # get first char in machine side to index rotor and stator results
-            results_dict["time"], results_dict["current"][index] = read_timetable_dat(
-                res_file
-            )
-        else:
-            # Error because we need to import time here!
-            raise FileNotFoundError(
-                f"Could not find result file for phase current I{index}"
-            )
-    # optional import bar currents
-    res_file = os.path.join(simulation_res_dir, "I_bars.dat")
-    if isfile(res_file):
-        results_dict["time"], results_dict["current"]["bars"] = read_timetable_dat(
-            res_file
+        logging.warning(
+            "Result directory %s allready exists! Importing results...",
+            simulation_res_dir,
         )
 
-    # 2. Torque Results
-    results_dict["torque"] = {}
-    results_dict["torque_vw"] = {}
-    for side in ["rotor", "stator"]:
-        res_file = os.path.join(simulation_res_dir, f"T{side[0]}.dat")
-        if os.path.isfile(res_file):
-            # get first char in machine side to index rotor and stator results
-            _, results_dict["torque"][side] = read_timetable_dat(res_file)
-        # Virtual Work results
-        res_file = os.path.join(simulation_res_dir, f"T{side[0]}_vw.dat")
-        if os.path.isfile(res_file):
-            # get first char in machine side to index rotor and stator results
-            _, results_dict["torque_vw"][side] = read_timetable_dat(res_file)
-    if {"rotor", "stator"} <= results_dict["torque"].keys():
-        # calc mean torque
-        results_dict["rotor torque"] = results_dict["torque"]["rotor"]
-        results_dict["stator torque"] = results_dict["torque"]["stator"]
-        results_dict["torque"] = np.mean(
-            [
-                results_dict["rotor torque"],
-                results_dict["stator torque"],
-            ],
-            axis=0,
-        )
+    # logging.info("Import results for result-ID '%s'", param["getdp"]["ResId"])
+    # results_dict = {}
+    # # try to import getdp parameters from param dict
+    # # TODO: Add start and stop angle, angle and time step, ...
+    # # OTHER OPTION: Just add input param dict to result dict...
+    # for key, getdp_param in {
+    #     "id": "ID_RMS",
+    #     "iq": "IQ_RMS",
+    #     "speed": "RPM",
+    # }.items():
+    #     try:
+    #         results_dict[key] = param["getdp"][getdp_param]
+    #     except KeyError:
+    #         pass
+    #     except Exception as exce:
+    #         raise exce
+    # # 1. Phase currents
+    # results_dict["current"] = {}
+    # for index in "abc":
+    #     res_file = os.path.join(simulation_res_dir, f"I{index}.dat")
+    #     if os.path.isfile(res_file):
+    #         # get first char in machine side to index rotor and stator results
+    #         results_dict["time"], results_dict["current"][index] = read_timetable_dat(
+    #             res_file
+    #         )
+    #     else:
+    #         # Error because we need to import time here!
+    #         raise FileNotFoundError(
+    #             f"Could not find result file for phase current I{index}"
+    #         )
+    # # optional import bar currents
+    # res_file = os.path.join(simulation_res_dir, "I_bars.dat")
+    # if isfile(res_file):
+    #     results_dict["time"], results_dict["current"]["bars"] = read_timetable_dat(
+    #         res_file
+    #     )
 
-    # 3. Flux results
-    results_dict["flux"] = {}
-    for index in "abcdq0":
-        res_file = os.path.join(simulation_res_dir, f"Flux_{index}.dat")
-        if os.path.isfile(res_file):
-            # get first char in machine side to index rotor and stator results
-            time, results_dict["flux"][index] = read_timetable_dat(res_file)
+    # # 2. Torque Results
+    # results_dict["torque"] = {}
+    # results_dict["torque_vw"] = {}
+    # for side in ["rotor", "stator"]:
+    #     res_file = os.path.join(simulation_res_dir, f"T{side[0]}.dat")
+    #     if os.path.isfile(res_file):
+    #         # get first char in machine side to index rotor and stator results
+    #         _, results_dict["torque"][side] = read_timetable_dat(res_file)
+    #     # Virtual Work results
+    #     res_file = os.path.join(simulation_res_dir, f"T{side[0]}_vw.dat")
+    #     if os.path.isfile(res_file):
+    #         # get first char in machine side to index rotor and stator results
+    #         _, results_dict["torque_vw"][side] = read_timetable_dat(res_file)
+    # if {"rotor", "stator"} <= results_dict["torque"].keys():
+    #     # calc mean torque
+    #     results_dict["rotor torque"] = results_dict["torque"]["rotor"]
+    #     results_dict["stator torque"] = results_dict["torque"]["stator"]
+    #     results_dict["torque"] = np.mean(
+    #         [
+    #             results_dict["rotor torque"],
+    #             results_dict["stator torque"],
+    #         ],
+    #         axis=0,
+    #     )
 
-    # 4. Induced voltage
-    results_dict["inducedVoltage"] = {}
-    for index in "ABC":
-        res_file = os.path.join(simulation_res_dir, f"InducedVoltage{index}.dat")
-        if os.path.isfile(res_file):
-            # get first char in machine side to index rotor and stator results
-            _, results_dict["inducedVoltage"][index.lower()] = read_timetable_dat(
-                res_file
-            )
+    # # 3. Flux results
+    # results_dict["flux"] = {}
+    # for index in "abcdq0":
+    #     res_file = os.path.join(simulation_res_dir, f"Flux_{index}.dat")
+    #     if os.path.isfile(res_file):
+    #         # get first char in machine side to index rotor and stator results
+    #         time, results_dict["flux"][index] = read_timetable_dat(res_file)
 
-    # 5. Rotor position
-    res_file = os.path.join(simulation_res_dir, "RotorPos_deg.dat")
-    if os.path.isfile(res_file):
-        # get first char in machine side to index rotor and stator results
-        _, results_dict["rotorPos"] = read_timetable_dat(res_file)
+    # # 4. Induced voltage
+    # results_dict["inducedVoltage"] = {}
+    # for index in "ABC":
+    #     res_file = os.path.join(simulation_res_dir, f"InducedVoltage{index}.dat")
+    #     if os.path.isfile(res_file):
+    #         # get first char in machine side to index rotor and stator results
+    #         _, results_dict["inducedVoltage"][index.lower()] = read_timetable_dat(
+    #             res_file
+    #         )
 
-    # 6. Core loss
+    # # 5. Rotor position
+    # res_file = os.path.join(simulation_res_dir, "RotorPos_deg.dat")
+    # if os.path.isfile(res_file):
+    #     # get first char in machine side to index rotor and stator results
+    #     _, results_dict["rotorPos"] = read_timetable_dat(res_file)
+
+    # Calculate core loss
     # Check if file hystLoss_rotor.dat allready exists -> loss allready calculated
-    core_loss_dict = {}
+    # core_loss_dict = {}
     if not os.path.exists(os.path.join(simulation_res_dir, "hystLoss_rotor.dat")):
         if "GetBIron" in post_operations:
-            # calculate core loss
+            # if B in core region was extracted -> calculate core loss
             totalLoss = 0
             for _, side in enumerate(["rotor", "stator"]):
                 bFilePath = os.path.join(simulation_res_dir, f"b_{side}.pos")
@@ -612,42 +621,42 @@ def runCalcforCurrent(param: dict):
                     # with open(ironLossResFile, mode="w+", encoding="utf-8") as file:
                     #     lossDataJSON = json.dumps(ironLossDictList, indent=3)
                     #     file.write(lossDataJSON)
-                core_loss_dict[side] = lossDict
-    else:
-        logging.warning(
-            "Iron losses for %s have allready been calculated.\nImporting values...",
-            param["getdp"]["ResId"],
-        )
-        for side in ["rotor", "stator"]:
-            core_loss_dict[side] = {}
-            for loss_type in ("hyst", "eddy", "exc"):
-                time, core_loss_dict[side][loss_type] = read_timetable_dat(
-                    os.path.join(
-                        simulation_res_dir,
-                        str(loss_type) + f"Loss_{side}" + ".dat",
-                    )
-                )
-    if core_loss_dict:
-        results_dict["coreLoss"] = core_loss_dict
-        # pylint: disable=locally-disabled, logging-not-lazy, logging-fstring-interpolation, line-too-long
-        logging.debug("Iron loss for '" + param["getdp"]["ResId"] + "'")
-        logging.debug(f"{'Rotor':>24} {'Stator':>11} {'Gesamt':>11}")
-        logging.debug(
-            f"{'Hysteresis:':<14} {np.mean(core_loss_dict['rotor']['hyst']) : 8.3f} W {np.mean(core_loss_dict['stator']['hyst']) : 9.3f} W {np.mean(core_loss_dict['stator']['hyst']+core_loss_dict['rotor']['hyst']) : 9.3f} W"
-        )
-        logging.debug(
-            f"{'Eddy Current:':<14} {np.mean(core_loss_dict['rotor']['eddy']) : 8.3f} W {np.mean(core_loss_dict['stator']['eddy']) : 9.3f} W {np.mean(core_loss_dict['stator']['eddy']+core_loss_dict['rotor']['eddy']) : 9.3f} W"
-        )
-        logging.debug(
-            f"{'Excess:':<14} {np.mean(core_loss_dict['rotor']['exc']) : 8.3f} W {np.mean(core_loss_dict['stator']['exc']) : 9.3f} W {np.mean(core_loss_dict['stator']['exc']+core_loss_dict['rotor']['exc']) : 9.3f} W"
-        )
-        logging.debug(
-            "---------------------------------------------------------------------"
-        )
-        logging.debug(
-            f"{'Summe:':<14} {np.mean(core_loss_dict['rotor']['exc']+core_loss_dict['rotor']['eddy']+core_loss_dict['rotor']['hyst']) : 8.3f} W {np.mean(core_loss_dict['stator']['exc']+core_loss_dict['stator']['eddy']+core_loss_dict['stator']['hyst']) : 9.3f} W {np.mean(core_loss_dict['rotor']['exc']+core_loss_dict['rotor']['eddy']+core_loss_dict['rotor']['hyst']+core_loss_dict['stator']['exc']+core_loss_dict['stator']['eddy']+core_loss_dict['stator']['hyst']) : 9.3f} W"
-        )
-
+                # core_loss_dict[side] = lossDict
+    # else:
+    #     logging.warning(
+    #         "Iron losses for %s have allready been calculated.\nImporting values...",
+    #         param["getdp"]["ResId"],
+    #     )
+    #     for side in ["rotor", "stator"]:
+    #         core_loss_dict[side] = {}
+    #         for loss_type in ("hyst", "eddy", "exc"):
+    #             time, core_loss_dict[side][loss_type] = read_timetable_dat(
+    #                 os.path.join(
+    #                     simulation_res_dir,
+    #                     str(loss_type) + f"Loss_{side}" + ".dat",
+    #                 )
+    #             )
+    # if core_loss_dict:
+    #     results_dict["coreLoss"] = core_loss_dict
+    #     # pylint: disable=locally-disabled, logging-not-lazy, logging-fstring-interpolation, line-too-long
+    #     logging.debug("Iron loss for '" + param["getdp"]["ResId"] + "'")
+    #     logging.debug(f"{'Rotor':>24} {'Stator':>11} {'Gesamt':>11}")
+    #     logging.debug(
+    #         f"{'Hysteresis:':<14} {np.mean(core_loss_dict['rotor']['hyst']) : 8.3f} W {np.mean(core_loss_dict['stator']['hyst']) : 9.3f} W {np.mean(core_loss_dict['stator']['hyst']+core_loss_dict['rotor']['hyst']) : 9.3f} W"
+    #     )
+    #     logging.debug(
+    #         f"{'Eddy Current:':<14} {np.mean(core_loss_dict['rotor']['eddy']) : 8.3f} W {np.mean(core_loss_dict['stator']['eddy']) : 9.3f} W {np.mean(core_loss_dict['stator']['eddy']+core_loss_dict['rotor']['eddy']) : 9.3f} W"
+    #     )
+    #     logging.debug(
+    #         f"{'Excess:':<14} {np.mean(core_loss_dict['rotor']['exc']) : 8.3f} W {np.mean(core_loss_dict['stator']['exc']) : 9.3f} W {np.mean(core_loss_dict['stator']['exc']+core_loss_dict['rotor']['exc']) : 9.3f} W"
+    #     )
+    #     logging.debug(
+    #         "---------------------------------------------------------------------"
+    #     )
+    #     logging.debug(
+    #         f"{'Summe:':<14} {np.mean(core_loss_dict['rotor']['exc']+core_loss_dict['rotor']['eddy']+core_loss_dict['rotor']['hyst']) : 8.3f} W {np.mean(core_loss_dict['stator']['exc']+core_loss_dict['stator']['eddy']+core_loss_dict['stator']['hyst']) : 9.3f} W {np.mean(core_loss_dict['rotor']['exc']+core_loss_dict['rotor']['eddy']+core_loss_dict['rotor']['hyst']+core_loss_dict['stator']['exc']+core_loss_dict['stator']['eddy']+core_loss_dict['stator']['hyst']) : 9.3f} W"
+    #     )
+    results_dict = import_results.main(param)
     return results_dict
 
 
