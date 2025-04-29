@@ -50,14 +50,13 @@ from typing import Literal, Union
 import gmsh
 import numpy as np
 
+from ...definitions import DEFAULT_GEO_TOL
 from ..geometry.circleArc import CircleArc
 from ..geometry.line import Line
 from ..geometry.physicalElement import PhysicalElement
 from ..geometry.surface import Surface
 from . import DimTag
 from .gmsh_line import GmshLine
-
-################################## MISC FUNCTIONS ######################################
 
 # TODO: add tests for misc functions!!
 
@@ -130,11 +129,26 @@ def get_point_tags(dim_tags: list[DimTag]) -> list[DimTag]:
     for dim_tag in dim_tags:
         if dim_tag[0] == 2:
             # case surface
-            p_dim_tags = gmsh.model.get_boundary([dim_tag], recursive=True)
+            try:
+                p_dim_tags = gmsh.model.get_boundary([dim_tag], recursive=True)
+            except Exception as exce:
+                if "Unknown model face" in str(exce):
+                    gmsh.model.occ.synchronize()
+                    p_dim_tags = gmsh.model.get_boundary([dim_tag], recursive=True)
+                else:
+                    raise exce
+
             p_tags.extend([dt[1] for dt in p_dim_tags])
         elif dim_tag[0] == 1:
             # case curve
-            _, point_tags = gmsh.model.get_adjacencies(1, dim_tag[1])
+            try:
+                _, point_tags = gmsh.model.get_adjacencies(1, dim_tag[1])
+            except Exception as exce:
+                if f"Curve {dim_tag[1]} does not exist" in str(exce):
+                    gmsh.model.occ.synchronize()
+                    _, point_tags = gmsh.model.get_adjacencies(1, dim_tag[1])
+                else:
+                    raise exce
             p_tags.extend([point_tags[0], point_tags[1]])
         elif dim_tag[0] == 0:
             # case point
@@ -143,10 +157,11 @@ def get_point_tags(dim_tags: list[DimTag]) -> list[DimTag]:
             raise ValueError(
                 f"Cannot handle object of dimension {dim_tag[0]} (id: {dim_tag[1]})"
             )
+
     return list(set(p_tags))  # remove duplicates
 
 
-def get_max_radius(dim_tags: list[tuple[Literal[0, 1, 2], int]]) -> float:
+def get_max_radius(dim_tags: list[DimTag]) -> float:
     """Get the maximal radius of a list of line dim-tags.
 
     Args:
@@ -164,7 +179,7 @@ def get_max_radius(dim_tags: list[tuple[Literal[0, 1, 2], int]]) -> float:
     return max_radius
 
 
-def get_min_radius(dim_tags: list[tuple[Literal[0, 1, 2], int]]) -> float:
+def get_min_radius(dim_tags: list[DimTag]) -> float:
     """Get the minimal radius of a list of curve dim-tags.
 
     Args:
@@ -243,4 +258,22 @@ def filter_lines_at_angle(line_list: list[Line], angle: float) -> list[Line]:
     return lines_at_angle
 
 
-################################ END MISC FUNCTIONS ####################################
+def is_straight(curve_tag: int) -> bool:
+    """Check if the gmsh curve is straight.
+
+    This can be especially useful if the curve type if not Line or Arc, which is the
+    case for OCC TrimmedCurve type.
+
+    Returns:
+        bool: True if the line is straight, False otherwise.
+    """
+    # get boundary points of the curve:
+    point_tags = gmsh.model.getBoundary([1, curve_tag])
+    start_coords = gmsh.model.get_value(0, point_tags[0][1], [])
+    end_coords = gmsh.model.get_value(0, point_tags[1][1], [])
+    # calculate the distance between start and end point:
+    distance = np.linalg.norm(np.array(start_coords) - np.array(end_coords))
+    # if the distance is equal to gmsh.model.occ.getMass, the line is straight:
+    return np.isclose(
+        distance, gmsh.model.occ.getMass(1, curve_tag), atol=DEFAULT_GEO_TOL
+    )
