@@ -1,28 +1,24 @@
 #!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
 # %%
+# coding: utf-8
 # %matplotlib widget
-import os
+import datetime
 import json
 import logging
+import os
 import time
-import datetime
+
+import numpy as np
+from definitions import MODEL_DIR, MODEL_NAME
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
-import numpy as np
-from pyemmo.functions.runOnelab import runCalcforCurrent
-from pyemmo.functions.import_results import (
-    read_timetable_dat,
-    plot_all_dat,
-    plot_timetable_dat,
-    read_RegionValue_dat,
-)
+
 from pyemmo.definitions import ROOT_DIR
-from definitions import MODEL_NAME, MODEL_DIR
+from pyemmo.functions.import_results import (
+    read_RegionValue_dat,
+    read_timetable_dat,
+)
+from pyemmo.functions.runOnelab import runCalcforCurrent
 
 
 class NumpyEncoder(json.JSONEncoder):
@@ -49,46 +45,37 @@ if add_StreamHandler:
 logger = logging.getLogger("matplotlib").setLevel(logging.WARNING)
 
 
-# In[2]:
-
-
 logging.debug(f"Start simulation at {time.ctime()}")
 start = time.perf_counter()
 
 nbr_bars = 9
+axial_length = 0.225  # meter
 
-f_r = 50
+f_r = 1
 I_eff = 50
 n = 0
 f_s = f_r + 2 * n / 60
 T_s = 1 / f_s
-nbr_stator_periods = 4
+nbr_stator_periods = 3
 nbr_steps_per_period = 128
 # Zum Abgleich mit Maxwell
 Nbr_Sect = 2048  # Bandsegmentierung
 multi = 4  # Default=4 number of Segments per timestep
-timestep = (
-    (60 / (n * Nbr_Sect / multi)) if n > 0 else T_s / nbr_steps_per_period
-)
+timestep = (60 / (n * Nbr_Sect / multi)) if n > 0 else T_s / nbr_steps_per_period
 winkelschritt = n / 60 * 360 * timestep  # Default: 0.703125
 nbr_timesteps = T_s * nbr_stator_periods / timestep
 
 flag_dynamic_resistance = False
 thers = 100  # Thershold for bar resistance reset in A
 
-logging.info(
-    "Simulation should execute %i time steps.", int(nbr_timesteps) + 1
-)
+logging.info("Simulation should execute %i time steps.", int(nbr_timesteps) + 1)
 logging.debug("Timestep %e s.", timestep)
 logging.debug("One time step equals %f° mechanical degrees.", winkelschritt)
 logging.debug("Stop time of simulation: %.7e s", int(nbr_timesteps) * timestep)
 
 
-# In[3]:
-
-
 # %%
-resId = f"blockedRotor_{f_r}Hz_{nbr_stator_periods}Periods_{nbr_steps_per_period}Steps"
+resId = f"blockedRotor_{f_r}Hz_{nbr_stator_periods}Periods_{nbr_steps_per_period}Steps_FaktorAxialLength"  # +"_1METER"
 if flag_dynamic_resistance:
     resId += "_R_dyn2"
     if thers:
@@ -109,17 +96,17 @@ paramDict = {
         "Flag_Debug": 1,
         "Flag_ClearResults": 0,
         "verbosity level": 3,
-        # "AxialLength_R": 1,
-        # "AxialLength_S": 1,
+        "AxialLength_R": axial_length,
+        "AxialLength_S": axial_length,
         "NbrParallelPaths": 1,
-        "R_endring_segment": 16e-7 / 2,  # Initial value: 16e-7,
-        "L_endring_segment": 2e-9 / 2,
+        "R_endring_segment": 16e-7 / 2 / axial_length,  # Initial value: 16e-7,
+        "L_endring_segment": 2e-9 / 2 / axial_length,
         "Flag_Cir_RotorCage": 1,
         "Flag_Dynamic_RotorBarResistance": flag_dynamic_resistance,
         "thers_dyn_Bar": thers,
         "Flag_Calculate_VW": 0,
-        #                           fineMesh or coarseMesh
-        "msh": os.path.join(MODEL_DIR, "coarseMesh.msh"),
+        #                    mesh_veryFine, fineMesh or coarseMesh
+        "msh": os.path.join(MODEL_DIR, "fineMesh.msh"),
         # "Flag_SecondOrder": 0,
         "stop_criterion": 1e-7,
     },
@@ -137,7 +124,10 @@ paramDict = {
     # "exc": 0,
     # "axLen": 0.2,
     # "sym": 4,
-    "info": "Adapted magstadyn with axialLength in Formlation of induced current density.",
+    "info": (
+        "Simulation with rotor cage elements scaled by 1/axial_length, because the "
+        "bar voltage ur in the circuit is probably calculated for 1 meter axial length."
+    ),
     "datetime": time.ctime(),
     "PostOp": [],  # GetBOnRadius - Get_LocalFields_Post
 }
@@ -145,9 +135,7 @@ sim_res_dir = os.path.join(paramDict["res"], resId)
 results = runCalcforCurrent(paramDict)
 stop = time.perf_counter()
 sim_duration = stop - start
-logging.info(
-    "Simulation took %s", str(datetime.timedelta(seconds=sim_duration))
-)
+logging.info("Simulation took %s", str(datetime.timedelta(seconds=sim_duration)))
 if sim_duration > nbr_timesteps:
     results["sim_duration"] = str(datetime.timedelta(seconds=sim_duration))
 
@@ -171,9 +159,7 @@ if not os.path.isfile(json_res_path):
 
 # %%
 # plot currents
-nbr_timesteps = len(
-    results["time"]
-)  # update number of timesteps with actual val
+nbr_timesteps = len(results["time"])  # update number of timesteps with actual val
 fig, ax = plt.subplots()
 ax.plot(results["time"], results["current"]["a"], label="u")
 ax.plot(results["time"], results["current"]["b"], label="v")
@@ -181,7 +167,6 @@ ax.plot(results["time"], results["current"]["c"], label="w")
 ax.legend()
 ax.grid(True)
 ax.minorticks_on()
-
 
 
 # In[6]:
@@ -266,7 +251,19 @@ if os.path.isfile(resfile):
     # ax.set_ylim(-1e-5,1e-5)
     ax.grid(True)
 
+if os.path.isfile(os.path.join(sim_res_dir, "InducedVoltage_bar_1.dat")):
+    resfile = os.path.join(sim_res_dir, "InducedVoltage_bar_1.dat")
+    t, U_ind_bar_1 = read_timetable_dat(resfile)
+    fig, ax = plt.subplots()
+    ax: Axes = ax
+    line_u = ax.plot(
+        t,
+        U_ind_bar_1,
+        label="Induzierte Spannung = mean(axialLength[] * Dt[CompZ[{a}]])",
+    )
+    line_u = ax.plot(t, U_bars[:, 1], label="Stab-Spannung = 'U'= 'u_r' = grad(phi)")
 
+    ax.set_ylabel("Spannung in V")
 
 # In[7]:
 
@@ -276,15 +273,9 @@ if os.path.isfile(resfile):
 fig, ax = plt.subplots()
 ax: Axes = ax
 # for phase in 'ABC':
-line_u = ax.plot(
-    results["time"][:-1], results["inducedVoltage"]["a"], label=f"U_ind,A"
-)
-line_u = ax.plot(
-    results["time"][:-1], results["inducedVoltage"]["b"], label=f"U_ind,B"
-)
-line_u = ax.plot(
-    results["time"][:-1], results["inducedVoltage"]["c"], label=f"U_ind,C"
-)
+line_u = ax.plot(results["time"][:-1], results["inducedVoltage"]["a"], label=f"U_ind,A")
+line_u = ax.plot(results["time"][:-1], results["inducedVoltage"]["b"], label=f"U_ind,B")
+line_u = ax.plot(results["time"][:-1], results["inducedVoltage"]["c"], label=f"U_ind,C")
 # line_u = ax.plot(t, U_iB, label=f"U_iB")
 # line_u = ax.plot(t, U_iC, label=f"U_iC")
 # ax.set_ylabel("Spannung in V")
@@ -312,18 +303,20 @@ if os.path.isfile(os.path.join(sim_res_dir, "Ts_vw.dat")):
     # ax.plot(t_t, tr_vw, label=f"Tr (VW)")
     ax.plot(t_t, torque_vw, "x-", label="VW")
     ax.legend()
+try:
+    # mean torque
+    results["torque"]["mean"] = np.mean(
+        [results["torque"]["stator"], results["torque"]["rotor"]], axis=0
+    )
 
-# mean torque
-results["torque"]["mean"] = np.mean(
-    [results["torque"]["stator"], results["torque"]["rotor"]], axis=0
-)
-
-ax.plot(
-    results["time"],
-    results["torque"]["mean"],
-    "-",
-    label="MST",
-)
+    ax.plot(
+        results["time"],
+        results["torque"]["mean"],
+        "-",
+        label="MST",
+    )
+except:
+    pass
 # ax.set_ylabel("Spannung in V")
 ax.legend(loc=1)
 # ax.set_xlim(
@@ -411,9 +404,7 @@ if os.path.isfile(resfile):
     # plt.close()
     # plot_timetable_dat(resfile,dataLabel=f"R_{{bar,{nBar}}}")
 else:
-    logging.info(
-        "No bar resistance results in result directory %s", sim_res_dir
-    )
+    logging.info("No bar resistance results in result directory %s", sim_res_dir)
 ## ADD PLOT OF RUNTIME RESISTANCE
 resfile = os.path.join(sim_res_dir, "R_bar_runtime_1.dat")
 if os.path.isfile(resfile):
@@ -523,7 +514,6 @@ line_r = axr.plot(t, R_bar_rt, label=f"Stabwiderstand", marker=".", color="r")
 
 # Add single legend
 ax.legend(handles=[line_u[0], line_i[0], line_r[0]], loc=2)
-
 
 
 # In[16]:
@@ -647,4 +637,3 @@ line_i = ax.plot(
 ax.legend()
 ax.set_xlabel("time in s")
 ax.set_ylabel("current in A")
-
