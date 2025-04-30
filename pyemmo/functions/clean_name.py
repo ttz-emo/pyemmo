@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences
+# Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -17,11 +18,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""This module defines a function to clean strings for variable names in Onelab (C-programming style)"""
+"""This module defines a function to clean strings for variable names in Onelab
+(C-programming style)"""
 import re
 
 
-def cleanName(instanceName: str) -> str:
+def clean_name(instanceName: str) -> str:
     """
     cleanName removes characters that cannot be interpreted by Onelab.
     Like in C programming language there can only be letters, digits and underscores.
@@ -57,13 +59,15 @@ def cleanName(instanceName: str) -> str:
         if not re.match(pattern=pattern, string=newName):
             raise (
                 ValueError(
-                    f"Variable name '{instanceName}' is invalid for GetDP/Gmsh script. Name could not be resolved. Variable names must have valid C or C# syntax."
+                    f"Variable name '{instanceName}' is invalid for GetDP/Gmsh script. "
+                    "Name could not be resolved. Variable names must have valid C or "
+                    "C# syntax."
                 )
             )
     return newName
 
 
-def isValidFilename(fileName: str) -> bool:
+def is_valid_filename(fileName: str) -> bool:
     """check if filename is a valid Windows filename to use.
 
     Valid characters are:

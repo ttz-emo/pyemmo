@@ -30,7 +30,7 @@ from typing import Any, Literal
 from numpy import pi, zeros
 from numpy.linalg import norm
 
-from ...functions.cleanName import cleanName
+from ...functions.clean_name import clean_name
 from ...script.material.electricalSteel import ElectricalSteel
 from ...script.material.material import Material
 from .. import air, logger
@@ -332,7 +332,7 @@ def getModelName(extendedInfo: dict) -> str:
     """
     mNKey = "modelName"
     if mNKey in extendedInfo.keys():
-        correctScriptName = cleanName(extendedInfo[mNKey])
+        correctScriptName = clean_name(extendedInfo[mNKey])
         return correctScriptName
     raise KeyError(f"Name of model files ('{mNKey}') missing from extended info dict!")
 

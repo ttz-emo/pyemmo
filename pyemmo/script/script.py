@@ -39,7 +39,7 @@ from pygetdp import PostOperation
 from pygetdp.postoperation import PostopItem
 
 from ..definitions import DEFAULT_GEO_TOL, MAIN_DIR
-from ..functions.cleanName import cleanName, isValidFilename
+from ..functions.clean_name import clean_name, is_valid_filename
 from . import (
     DOMAIN_AIRGAP,
     DOMAIN_BAR,
@@ -142,7 +142,7 @@ class Script:
             }
         """
         # Name des Skriptes
-        if isValidFilename(name):
+        if is_valid_filename(name):
             self.name = name
         else:
             raise ValueError(
@@ -748,7 +748,7 @@ class Script:
         # Wenn identicalCurve = None -> no identical curve found in list
         if not identicalCurve:
             # create the geometrical curve Code
-            curveName = cleanName(curve.name)
+            curveName = clean_name(curve.name)
             curveID = curve.id
             startPointID = curve.start_point.id
             endPointID = curve.end_point.id
@@ -908,7 +908,7 @@ class Script:
             code: str = "\n"
             toolIDCode: str = ", "  # string for tool surfaces that should be subtracted
             for toolSurf in surface.tools:  # if _cut list is not empty
-                toolSurfName = cleanName(toolSurf.name)
+                toolSurfName = clean_name(toolSurf.name)
                 toolSurfID = toolSurf.id
                 # if toolSurf not in self._areaArray:
                 if not toolSurf.isDrawn():  # if the surface is not in script
@@ -930,7 +930,7 @@ class Script:
 
             # Add CurveLoop code for parent surface
             code += self._addLoopCode(surface)
-            surfName = cleanName(surface.name)
+            surfName = clean_name(surface.name)
             surfID = surface.id
             ## Add surface code:
             # Generate name for ID; adding Surface name for better
@@ -1237,7 +1237,7 @@ class Script:
         # (PostOperation) has a list of PostOperations ("items") which can have
         # several "Operations" (eg. Prints, Echos,...) defined
 
-        name = cleanName(name)
+        name = clean_name(name)
         if name in postOperationNames:
             # if that PostOperation allready exists, get the PostOperationItem
             # with that name
@@ -1406,7 +1406,7 @@ class Script:
 
     def _addMagnetisationRadial(self, magnet: Magnet):
         magDir = magnet.magDir
-        matName = cleanName(magnet.material.name)
+        matName = clean_name(magnet.material.name)
         self.functionMagnetisation.add(
             name="br",
             expression=f"{magDir}*br_{matName} * XYZ[]/Norm[XYZ[]]",
@@ -1414,7 +1414,7 @@ class Script:
         )
 
     def _addMagnetisationParallel(self, physicalElement: Magnet):
-        matName = cleanName(physicalElement.material.name)
+        matName = clean_name(physicalElement.material.name)
         magAngle = physicalElement.magAngle
         magDir = physicalElement.magDir
         magFunction = (
@@ -1431,7 +1431,7 @@ class Script:
     def _addMagnetisationTangential(self, magnet: Magnet):
         magAngle = magnet.magAngle
         magDir = magnet.magDir
-        matName = cleanName(magnet.material.name)
+        matName = clean_name(magnet.material.name)
         magFunction = (
             f"{magDir}*br_{matName} * Vector["
             f"-Sin[{magAngle} + RotorPosition[]], "
@@ -1452,7 +1452,7 @@ class Script:
             self._addPhysicalElement(physicalElement)
             physIDs.append(physicalElement.id)
             # allPhysicalName.append(pE.getName())
-        self.group.add(cleanName(domain.name), physIDs)
+        self.group.add(clean_name(domain.name), physIDs)
 
     def _printAllMaterial(self):
         """Generate the GetDP function code for all materials in the material
@@ -1469,7 +1469,7 @@ class Script:
             for physicalElementID in self.materialDict["physicalElemID"][i]:
                 physElemIDstr.append(str(physicalElementID))
             # add group for material
-            matName = cleanName(mat.name)
+            matName = clean_name(mat.name)
             # FIXME: Group Add fails if mat name exists twice
             # added workaround by adding _dup id
             try:
@@ -1609,7 +1609,7 @@ class Script:
         point could not be recognized
         """
         for point in self.pointArray:
-            pName = cleanName(point.name)
+            pName = clean_name(point.name)
             pID = point.id
             coord = point.coordinate
             pMeshSize = point.meshLength
@@ -2045,12 +2045,13 @@ class Script:
             )
             geoScript.write(meshSettingsCode)  # write code for mesh variables
             geoScript.writelines(geo_code)
-            geoScript.write(
-                "\n// Color code\n"
-                + """If (!Flag_individualColoring)\n"""
-                + self.colorCode
-                + """EndIf\n"""
-            )
+            if self.colorCode:
+                geoScript.write(
+                    "\n// Color code\n"
+                    + """If (!Flag_individualColoring)\n"""
+                    + self.colorCode
+                    + """EndIf\n"""
+                )
             geoScript.write(UD_MeshCode)
             geoScript.write(meshModCode)
             geoScript.write(movingGeoCode)
