@@ -22,7 +22,7 @@
 from __future__ import annotations
 
 import logging
-from math import radians
+import math
 from typing import Literal
 
 import gmsh
@@ -432,18 +432,13 @@ def createMachineGeometryFromSegment(
             # rotate_duplicate also considers the tools automatically
             surf_dict[surf_id].append(surf.rotate_duplicate(segment_nbr))
 
-            # ### update surf dict with tool surfaces
-            # tools = surf_dict[surf_id][-1].tools
-            # while tools:
-            #     new_tools = []  # init new tools
-            #     for tool in tools:
-            #         if tool.part_id in surf_dict:
-            #             surf_dict[tool.part_id].append(tool)
-            #         else:
-            #             surf_dict[tool.part_id] = [tool]
-            #         # add tool tools to new tools if not empty
-            #         new_tools.extend(tool.tools)  # extent tools
-            #     tools = new_tools
+            ### update surf dict with tool surfaces
+            tools: list[MachineSegmentSurface] = surf_dict[surf_id][-1].tools
+            for tool in tools:
+                if tool.part_id in surf_dict:
+                    surf_dict[tool.part_id].append(tool)
+                else:
+                    surf_dict[tool.part_id] = [tool]
 
     # TODO: Add airgap creation if no airgap in given geometry
     # if logging.getLogger().level <= logging.DEBUG:
@@ -574,7 +569,8 @@ def createMagnet(surf: MachineSegmentSurface, mat: Material, extInfo: dict) -> M
         material=mat,
         magDirection=magDir,
         magType=importJSON.getMagDir(extInfo),
-        magVectorAngle=magAngle + radians(360 / surf.nbr_segments) * surf.segment_nbr,
+        magVectorAngle=magAngle
+        + math.radians(360 / surf.nbr_segments) * surf.segment_nbr,
     )
 
 
@@ -683,7 +679,7 @@ def getSlotInfo(slotSurfName: str) -> int:
 
 
 def getSlotPhase(
-    windingLayout: list[list[int]], segmentNbr: int, slotSide: int
+    windingLayout: list[list[int]], slot_number: int, slot_side: int
 ) -> tuple[Literal["p", "n"], Literal["u", "v", "w"]]:
     """Gets the name (u, v, w) of the Phase with it's direction (+, -)
 
@@ -691,10 +687,9 @@ def getSlotPhase(
         windingLayout (list[list[int]]): Winding layout formatted for swat-em
             phases attribute (see `this <https://swat-em.readthedocs.io/en/latest/reference.html#swat_em.datamodel.datamodel.set_phases>`__
             SWAT-EM method for more details)
-        segmentNbr (int): Circumferderal model segment number starting with 0
-            on the x-axis (first segment). Number increasing in math. positive
-            direction.
-        slotSide (int): Slot side 0 = right side or  slot bottom;
+        slot_number (int): Slot number of the slot surface. The slot number is increasing
+            in circumferential direction from 1 to total number of slots.
+        slot_side (int): Slot side 0 = right side or slot bottom;
             1 = left side or slot opening. (Slot side can also be 2 or 3 but
             is merged into 0 and 1 by modulo operation. This is usefull when
             you have multiple slot side (>2) per lamination segment.)
@@ -713,10 +708,12 @@ def getSlotPhase(
 
     """
     for phaseIndex, phaseList in enumerate(windingLayout):
-        # for slotSideList in phaseList:
-        for slotNumber in phaseList[slotSide % 2]:  # TODO: Test if multiple
+        if slot_side > 1:
+            # multiple slots per stator lamination segment
+            logging.debug("More than one slot in segment %d", slot_number)
+        for slotNumber in phaseList[slot_side % 2]:  # TODO: Test if multiple
             # layer winding is working.
-            if abs(slotNumber) == segmentNbr + 1:
+            if abs(slotNumber) == slot_number:
                 if phaseIndex == 0:
                     phase = "u"
                 elif phaseIndex == 1:
@@ -731,9 +728,9 @@ def getSlotPhase(
                 else:
                     cDir = "n"
                 logger.debug(
-                    "segment number: %i || slot side: %i || phase: %s || direction: %s",
-                    segmentNbr,
-                    slotSide,
+                    "slot number: %i || slot side: %i || phase: %s || direction: %s",
+                    slot_number,
+                    slot_side,
                     phase,
                     cDir,
                 )
@@ -759,9 +756,16 @@ def createSlot(
     """
 
     slotSide = getSlotInfo(surf.part_id)
+    # NOTE: slotSide is set 0 or 1 where the naming of slotSide is 1 or 2
     windingLayout = importJSON.getWindingList(extendedInfo)
-    # slotSide is set 0 or 1 where the naming of slotSide is 1 or 2
-    cDir, phase = getSlotPhase(windingLayout, surf.segment_nbr, slotSide)
+    # calculate the slot number from the slot surface position:
+    # the slot number is the angular position divided by the slot pitch
+    # calculate angle of slot surface center to x-axis:
+    slot_angle = surf.calcCOG().getAngleToX()
+    slot_pitch = 2 * pi / importJSON.getNbrSlots(extendedInfo)  # calculate slot pitch
+    # NOTE: need to add half slot pitch because slot angle is the center of the slot
+    slot_nbr = (slot_angle + slot_pitch / 2) / slot_pitch  # calculate slot number
+    cDir, phase = getSlotPhase(windingLayout, round(slot_nbr, 0), slotSide)
     slotName = f"{surf.part_id}_{phase.upper()}{cDir}{surf.segment_nbr}"
     # create slot without winding information, because winding is set by stator
     slot = Slot(name=slotName, geo_list=[surf], material=material)
