@@ -21,7 +21,6 @@
 """Module for json api surface class"""
 from __future__ import annotations
 
-from ..script.geometry.segment_surface import SegmentSurface
 from ..script.gmsh.gmsh_line import GmshLine
 from ..script.gmsh.gmsh_segment_surface import GmshSegmentSurface
 from ..script.material.material import Material
@@ -186,6 +185,8 @@ class MachineSegmentSurface(GmshSegmentSurface):
             material=self.material,
             nbr_segments=self.nbr_segments,
         )
+        # copy the tools from the GmshSurface
+        dup_mss._cut = dup_gss.tools  # pylint: disable=protected-access
         return dup_mss
 
     def rotate_duplicate(self, segment: int) -> GmshSegmentSurface:
@@ -200,7 +201,7 @@ class MachineSegmentSurface(GmshSegmentSurface):
         Returns:
             SurfaceAPI: Copied and rotated SurfaceAPI object.
         """
-        return SegmentSurface.rotate_duplicate(self, segment=segment)
+        return GmshSegmentSurface.rotate_duplicate(self, segment=segment)
 
     # TODO: Overload cutOut to type check for type(tool). Because it makes no sense to
     # cut out a standard GmshSurface from a MachineSegmentSurface unless the tool is
