@@ -82,7 +82,7 @@ InnerLimitLineDict = {
 }
 
 # Predefine IdExt of special surface api objects for identification
-ROTOR_MAG_IDEXT = "mag"
+ROTOR_MAG_IDEXT = "magnet"
 ROTOR_BAR_IDEXT = "rotor bar"
 ROTOR_LAM_IDEXT = "rotor lamination"
 ROTOR_AIRGAP_IDEXT = "rotor airgap"
