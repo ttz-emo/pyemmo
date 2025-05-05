@@ -384,7 +384,8 @@ class GmshSurface(GmshGeometry, Surface):
             >>> surface.rotateZ(rotationPoint, pi/2)
         """
         GmshGeometry.rotateZ(self, rotationPoint, angle)
-        # TODO: Also rotate tools?
+        for tool in self.tools:
+            tool.rotateZ(self, rotationPoint, angle)
 
     def duplicate(self, name: str = "") -> "GmshSurface":
         """Duplicates the surface.
@@ -409,7 +410,15 @@ class GmshSurface(GmshGeometry, Surface):
             name = self.name + "_dup"
         # create new GmshSurface object
         dup_surf = GmshSurface(tag=outDimTags[0][1], name=name)
-        # TODO: Handle duplication of tools!
+        # duplicate tool surfaces:
+        for tool in self.tools:
+            # NOTE: It's ok to access the protected attribute here, because we are in
+            # the same class. We also know that if a tool is in the tools list, its
+            # allready cut out of the duplicated parent surface.
+            # We cannot just simply add the tool id to the gmsh.model.occ.copy() call,
+            # because the tool surface must not be of type GmshSurface, but can be a
+            # child class of GmshSurface (e.g. GmshSegmentSurface).
+            dup_surf._cut.append(tool.duplicate())  # pylint: disable=protected-access
         return dup_surf
 
     def mirror(self, planePoint, planeVector1, planeVector2, name=""):
@@ -438,6 +447,7 @@ class GmshSurface(GmshGeometry, Surface):
             raise ValueError("Error in combining surfaces!")
         # TODO: add additional logic to check for correct fusion process
         comb_surf = GmshSurface(tag=outDimTags[0][1])
+        comb_surf._cut = self.tools + addSurf.tools
         return comb_surf
 
     def sortCurves(self):
@@ -514,7 +524,7 @@ class GmshSurface(GmshGeometry, Surface):
                 old_id = tool.id  # get old id
                 tool._id = out_dim_tags[1][1]
                 # update name of new tool
-                self.name = gmsh.model.getEntityName(self.dim, old_id)
+                tool.name = gmsh.model.getEntityName(self.dim, old_id)
                 gmsh.model.occ.remove([(2, old_id)])  # remove old tool surface
             return None
         if len(out_dim_tags) > 2:
