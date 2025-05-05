@@ -21,8 +21,6 @@
 
 from __future__ import annotations
 
-import logging
-
 # from matplotlib import pyplot as plt
 # from ..functions.plot import plot
 import gmsh
@@ -53,6 +51,8 @@ from .. import air
 from .. import logger as apiLogger
 from ..machine_segment_surface import MachineSegmentSurface
 from . import STATOR_AIRGAP_IDEXT, globalCenterPoint
+
+# import logging
 
 
 def findLine(lineName: str, lineIDList) -> bool:
@@ -237,23 +237,12 @@ def createMBAux(
             break
 
     # TODO: This needs to be tested for different configurations!
-    if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
-        from ...functions.plot import plot
+    # if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+    #     from ...functions.plot import plot
+    #     fig, _ = plot(mb_lines_rotor, tag=True)
 
-        fig, _ = plot(mb_lines_rotor, tag=True)
     for i_band in range(1, symFaktor):  # for every symmetry part
         mb_lines_aux: list[GmshArc] = []  # re-init mb_lines_list
-        # # create duplicate curves, rotate them and add them to line list:
-        # for arc in mb_lines_rotor:
-        #     mb_line = arc.duplicate()
-        #     mb_line.rotateZ(angle=i * sym_angle)
-        #     mb_line = GmshArc(
-        #         start_point=mb_line.start_point,
-        #         center_point=mb_line.start_point,
-        #         end_point=mb_line.end_point,
-        #         name=mb_line.name,
-        #     )
-        #     mb_lines_aux.append(mb_line)
 
         # create curves individually since the duplicated instances cannot be
         # automatically removed by gmsh... This is only possible for instances of the
@@ -275,17 +264,6 @@ def createMBAux(
             elif i_band == symFaktor - 1 and i_curve == nbr_mb_curves:
                 # final curve of last band -> use other interface point:
 
-                # p_start_angle = sym_angle * i_band + sym_angle / nbr_mb_curves * (
-                #     i_curve - 1
-                # )
-                # p_start = Point(
-                #     name=f"Movingband point {i_band+1}.{i_curve}",
-                #     x=np.cos(p_start_angle) * mb_radius,
-                #     y=np.sin(p_start_angle) * mb_radius,
-                #     z=0,
-                #     meshLength=1,
-                # )
-                # p_start = GmshPoint(p_start.id)
                 if not mb_lines_aux:
                     # mb lines are empty -> there is only one MB curve per segment
                     p_start = mb_aux_list[-1].geo_list[-1].end_point
@@ -315,10 +293,9 @@ def createMBAux(
                 center_point=mb_center_point,
                 end_point=p_end,
             )
-            # mb_lines_aux.append(GmshArc(tag=band_arc.id))
             mb_lines_aux.append(band_arc)
-            if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
-                plot(mb_lines_aux, fig=fig, tag=True)
+            # if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+            #     plot(mb_lines_aux, fig=fig, tag=True)
 
         gmsh.model.occ.synchronize()  # need to sync before adding Physical
         mb_aux_list.append(
