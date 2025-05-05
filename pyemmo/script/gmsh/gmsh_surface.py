@@ -385,7 +385,7 @@ class GmshSurface(GmshGeometry, Surface):
         """
         GmshGeometry.rotateZ(self, rotationPoint, angle)
         for tool in self.tools:
-            tool.rotateZ(self, rotationPoint, angle)
+            tool.rotateZ(rotationPoint, angle)
 
     def duplicate(self, name: str = "") -> "GmshSurface":
         """Duplicates the surface.
