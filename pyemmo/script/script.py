@@ -2135,19 +2135,6 @@ class Script:
             nbrSlots = default_param_dict["GEO"]["NBR_SLOTS"]
             slotPitch = 2 * pi / nbrSlots
             mmfOrder, _, angle = machine.stator.winding.get_MMF_harmonics()
-            ## DEBUGGING:
-            if logging.root.level == logging.DEBUG:
-                if not os.path.exists(self.resultsPath):
-                    os.mkdir(self.resultsPath)
-                machine.stator.winding.save_to_file(
-                    os.path.join(self.resultsPath, f"winding_{self.name}.wdg")
-                )
-                # FIXME: Cannot use plot function with Pyleecan-SWATEM version
-                # machine.stator.winding.plot_MMK(
-                #     filename=os.path.join(
-                #         self.resultsPath, rf".\{self.name}_MMF.png"
-                #     ),
-                # )
 
             # Stator angle for I_U = 1 p.u., I_V = -1/2, I_W = -1/2 in rad elec
             systemOffset = float(angle[where(mmfOrder == nbrPolePairs)])
@@ -2324,6 +2311,14 @@ class Script:
         proFilePath = join(self.scriptPath, self.name + ".pro")
         with open(proFilePath, "w", encoding="utf-8") as proScript:
             proScript.write(machineFileCode)
+
+        # If logging is set to debug, save the winding to a file
+        if logging.root.level <= logging.DEBUG:
+            if not os.path.exists(self.scriptPath):
+                os.mkdir(self.scriptPath)
+            self.machine.stator.winding.save_to_file(
+                os.path.join(self.scriptPath, f"winding_{self.name}.wdg")
+            )
 
     def generateScript(self, mode: int = 0, UD_MeshCode: str = ""):
         """
