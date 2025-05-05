@@ -480,7 +480,7 @@ def createPhysicalSurfaces(
     # because if one point is inside, all the others have to be too.
     # FIXME: This assumes all machine are inner rotor!
     machineSide = (
-        "Rotor" if surfList[0].calcCOG().calcDist() <= rotorMBRadius else "Stator"
+        "Rotor" if surfList[0].points[0].calcDist() <= rotorMBRadius else "Stator"
     )
 
     if STATOR_SLOT_IDEXT in part_id:  # if is stator slot
