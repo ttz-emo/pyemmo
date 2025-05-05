@@ -36,7 +36,7 @@ from os.path import isdir, isfile, join
 import gmsh as gmsh_api
 
 from ... import logFmt
-from ...functions import calcIronLoss, import_results, runOnelab
+from ...functions import calcIronLoss, clean_name, import_results, runOnelab
 from ...script.geometry.machineAllType import MachineAllType
 from ...script.geometry.rotor import Rotor
 from ...script.geometry.stator import Stator
@@ -200,10 +200,10 @@ def createMeshSizeGUICode(machineSurfDict: dict[str, list[MachineSegmentSurface]
     # First get all IDs containing idExt into idList (e.g. there could be "LplR" and "LplL"
     # for idExt = "Lpl")
     # FIXME: Rework this since the default IDs will change in the future!
-    for idExt, apiSurfName in apiNameDict.items():
+    for part_id, apiSurfName in apiNameDict.items():
         surfID_List = []
         for surfID in machineSurfDict.keys():
-            if idExt in surfID:
+            if part_id in surfID:
                 surfID_List.append(surfID)
         # if there were ids containing idExt
         if surfID_List:
@@ -225,15 +225,17 @@ def createMeshSizeGUICode(machineSurfDict: dict[str, list[MachineSegmentSurface]
                 surfName = surfList[0].name()
             except Exception as exce:
                 raise exce
+            # create the mesh size parameter name
+            param_name = clean_name.clean_name(part_id) + "_msf"
             mscDefConst += (
-                f"""\t\t{idExt}_msf = {{{meshSize},"""
+                f"""\t\t{param_name} = {{{meshSize},"""
                 + f""" Name StrCat[INPUT_MESH, "05Mesh Size/{surfName} [mm]"],"""
                 + f"""Min {meshSize/10}, Max {meshSize * 10}, Step 0.1,"""
                 + "Visible Flag_SpecifyMeshSize},\n"
             )
             surfIds = [str(surf.id) for surf in surfList]
             # pylint: disable=locally-disabled,  line-too-long
-            mscSetSize += f"\tMeshSize {{ PointsOf {{Surface{{ {','.join(surfIds)} }};}} }} = {idExt}_msf*mm;\n"
+            mscSetSize += f"\tMeshSize {{ PointsOf {{Surface{{ {','.join(surfIds)} }};}} }} = {param_name}*mm;\n"
     # At the end remove last comma and close bracket
     if mscDefConst[-2] == ",":
         mscDefConst = mscDefConst[0 : len(mscDefConst) - 2] + "\n\t];\n"
