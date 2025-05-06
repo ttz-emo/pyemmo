@@ -425,7 +425,10 @@ class GmshSurface(GmshGeometry, Surface):
         raise NotImplementedError("Method not implemented yet!")
 
     def combine(
-        self, addSurf: "GmshSurface", removeObject: bool = True, removeTool: bool = True
+        self,
+        addSurf: Union["GmshSurface", list["GmshSurface"]],
+        removeObject: bool = True,
+        removeTool: bool = True,
     ) -> "GmshSurface":
         """Combines two surfaces to a new surface.
 
@@ -435,9 +438,31 @@ class GmshSurface(GmshGeometry, Surface):
         Returns:
             GmshSurface: The combined surface.
         """
+        if isinstance(addSurf, list):
+            return self._combine_multi_surface(addSurf, removeObject, removeTool)
+        elif isinstance(addSurf, GmshSurface):
+            return self._combine_single_surface(addSurf, removeObject, removeTool)
+        else:
+            raise TypeError(
+                "Surface to be combined must be of type GmshSurface or list of GmshSurface! "
+                "But it was of type %s!",
+                type(addSurf),
+            )
+
+    def _combine_single_surface(
+        self, surf_to_add: "GmshSurface", removeObject: bool, removeTool: bool
+    ) -> "GmshSurface":
+        """Combine the current surface with a single surface.
+
+        Args:
+            surf_to_add (GmshSurface): The surface to be added to the current surface.
+
+        Returns:
+            GmshSurface: The combined surface.
+        """
         out = gmsh.model.occ.fuse(
             [(2, self.id)],
-            [(2, addSurf.id)],
+            [(2, surf_to_add.id)],
             removeObject=removeObject,
             removeTool=removeTool,
         )
@@ -447,7 +472,38 @@ class GmshSurface(GmshGeometry, Surface):
             raise ValueError("Error in combining surfaces!")
         # TODO: add additional logic to check for correct fusion process
         comb_surf = GmshSurface(tag=outDimTags[0][1])
-        comb_surf._cut = self.tools + addSurf.tools
+        # add tools of parent surfaces
+        comb_surf._cut += self.tools + surf_to_add.tools
+        return comb_surf
+
+    def _combine_multi_surface(
+        self, surfs_to_add: list["GmshSurface"], removeObject: bool, removeTool: bool
+    ) -> "GmshSurface":
+        """Combine the current surface with a single surface.
+
+        Args:
+            surf_to_add (GmshSurface): The surface to be added to the current surface.
+
+        Returns:
+            GmshSurface: The combined surface.
+        """
+        out = gmsh.model.occ.fuse(
+            [(2, self.id)],
+            [(2, surf.id) for surf in surfs_to_add],
+            removeObject=removeObject,
+            removeTool=removeTool,
+        )
+        outDimTags: list[DimTag] = out[0]
+        # outDimTagsMap: list[list[DimTag]] = out[1]
+        if len(outDimTags) != 1:
+            raise ValueError("Error in combining surfaces!")
+        # TODO: add additional logic to check for correct fusion process
+        comb_surf = GmshSurface(tag=outDimTags[0][1])
+        # add tools of parent surfaces
+        comb_surf._cut += self.tools
+        # add tools of all surfaces to be added
+        for surf in surfs_to_add:
+            comb_surf._cut += surf.tools
         return comb_surf
 
     def sortCurves(self):
