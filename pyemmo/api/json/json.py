@@ -34,6 +34,7 @@ from os import mkdir
 from os.path import isdir, isfile, join
 
 import gmsh as gmsh_api
+import numpy as np
 
 from ... import logFmt
 from ...functions import calcIronLoss, clean_name, import_results, runOnelab
@@ -88,7 +89,7 @@ def createMachine(
     )
 
     # Log winding layout for debugging *before* createSlot() is called.
-    logger.debug(f"Winding layout: {importJSON.getWindingList(extendedInfo)}")
+    logger.debug("Winding layout: %s", importJSON.getWindingList(extendedInfo))
     # create physical elements from the surfaces
     for idExt, surfList in maschineSurfDict.items():
         surfName = surfList[0].name
@@ -458,7 +459,7 @@ def main(
         if not all(type(surf) == MachineSegmentSurface for surf in geo.values()):
             raise ValueError(
                 "Invalid geometry dict provided! "
-                "Make sure that the geometry values are of type SurfaceAPI!"
+                "Make sure that the geometry values are of type MachineSegmentSurface!"
             )
         # TODO: I think this can be skipped now!
         # Assert that the given surfaces are created in the current gmsh model
@@ -475,6 +476,10 @@ def main(
         raise TypeError(
             f"Geometry file has to be type 'File' or 'dict', not {type(geo)}"
         )
+    # check if the symmetry factor from the segment surf dict matches the externally
+    # given symmetry factor in extendedInfo:
+    _check_symmetry(segmentSurfDict, extendedInfo)
+
     if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
         # update gmsh fltk GUI config
         gmsh_api.option.setNumber("Geometry.Surfaces", 1)  # show surface indications
@@ -521,6 +526,35 @@ def main(
     logger.removeHandler(jsonLogFileHandler)
     jsonLogFileHandler.close()  # close log file handler!
     return apiScript
+
+
+def _check_symmetry(
+    segmentSurfDict: dict[str, MachineSegmentSurface], extendedInfo: dict
+) -> bool:
+    """Private function to check if the symmetry factor given in the extendedInfo is
+    valid.
+
+    Args:
+        segmentSurfDict (dict[str, MachineSegmentSurface]): Dictionary with segment
+            surfaces as values and their part ids as keys.
+        extendedInfo (dict): Extended information dict with the symmetry factor.
+
+    Raises:
+        ValueError: If the symmetry factor is not compatible with the minimal symmetry
+        of the machine.
+    """
+    # Check if the symmetry factor given from extendedInfo is valid:
+    reqested_sym = importJSON.getSymFactor(extendedInfo)
+    # get number of segments of the first surface to init symmetry check
+    highest_sym = list(segmentSurfDict.values())[0].nbr_segments
+    # get maximal symmetry for all segment surface:
+    for seg_surf in segmentSurfDict.values():
+        highest_sym = np.gcd(highest_sym, seg_surf.nbr_segments)
+    # symFactor must be a multiple of the highest symmetry (sym)
+    if (highest_sym / reqested_sym) % 1 != 0:
+        raise ValueError(
+            f"Given symmetry factor {reqested_sym} is not compatible with the minimal symmetry {highest_sym}."
+        )
 
 
 def _open_onelab(
