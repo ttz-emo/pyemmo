@@ -473,6 +473,13 @@ DefineConstant[
     //======================== CIRCUIT PARAMETERS =========================
     // STATOR CIRCUIT
 
+    // Variable controlling if the current density in the windings is imposed
+    // (via current) or calculated (volatge imposed, or back-emf calculation in
+    // circuit)
+    Flag_ImposedCurrentDensity = (Flag_SrcType_Stator == CURRENT_SOURCE),
+    // are the windings connected via an external circuit
+    Flag_Cir = (!Flag_ImposedCurrentDensity),
+
     // Use the Park transformation
     Flag_ParkTransformation = {
         Flag_SrcType_Stator == TRANSIENT && MachineType==SYNCHRONOUS,
@@ -548,13 +555,7 @@ DefineConstant[
         ],
         ReadOnly !Flag_Cir_RotorCage,
         Visible (nbrRotorBars>0)
-    },
-    // Variable controlling if the current density in the windings is imposed
-    // (via current) or calculated (volatge imposed, or back-emf calculation in
-    // circuit)
-    Flag_ImposedCurrentDensity = (Flag_SrcType_Stator == CURRENT_SOURCE),
-    // are the windings connected via an external circuit
-    Flag_Cir = (!Flag_ImposedCurrentDensity || Flag_Cir_RotorCage)
+    }
 ];
 //=============================================================================
 //========================= END EXCITATION PARAMETERS =========================
