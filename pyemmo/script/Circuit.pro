@@ -291,14 +291,17 @@ Constraint {
 			];
 		EndIf
 	EndIf
-	Case Circuit4 {
-		For k In {1:nbrRotorBars}
-		{ Region Rotor_Bar~{k} ; Branch {NB1~{k}, NB2~{k}} ; }
-		{ Region Rbar~{k} ;     Branch {NB2~{k}, NB3~{k}} ; }
-		{ Region Ruers~{k} ;     Branch {NRu1~{k}, NRu2~{k}} ; }
-		{ Region Rlers~{k} ;     Branch {NRl1~{k}, NRl2~{k}} ; }
-		{ Region Luers~{k} ;      Branch {NLu1~{k}, NLu2~{k}} ; }
-		{ Region Llers~{k} ;      Branch {NLl1~{k}, NLl2~{k}} ; }
-		EndFor
-	}
+	If Flag_Cir_RotorCage
+		Case Circuit4 {
+			For k In {1:nbrRotorBars}
+			{ Region Rotor_Bar~{k} ; Branch {NB1~{k}, NB2~{k}} ; }
+			{ Region Rbar~{k} ;     Branch {NB2~{k}, NB3~{k}} ; }
+			{ Region Ruers~{k} ;     Branch {NRu1~{k}, NRu2~{k}} ; }
+			{ Region Rlers~{k} ;     Branch {NRl1~{k}, NRl2~{k}} ; }
+			{ Region Luers~{k} ;      Branch {NLu1~{k}, NLu2~{k}} ; }
+			{ Region Llers~{k} ;      Branch {NLl1~{k}, NLl2~{k}} ; }
+			EndFor
+		}
+	EndIf
+}
 }
