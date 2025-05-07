@@ -76,9 +76,6 @@ class Stator:
         self.axialLength = axLen  # active axial length
         self.winding = winding
         self.physicalElements = physicalElements
-        # only generate domains if they are physical elements
-        if self.physicalElements:
-            self._createDomainForStator()
 
     @property
     def name(self) -> str:
