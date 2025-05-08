@@ -179,6 +179,27 @@ Constraint {
           { Region R3            ; Branch {303,300} ; }
         }
       }*/
+	If (
+		(NbrRegions[Stator_Ind_Ap] > 1 || NbrRegions[Stator_Ind_Am] > 1) ||
+		(NbrRegions[Stator_Ind_Bp] > 1 || NbrRegions[Stator_Ind_Bm] > 1) ||
+		(NbrRegions[Stator_Ind_Cp] > 1 || NbrRegions[Stator_Ind_Cm] > 1)
+	)
+		// If any winding region has more than 1 physical raise error.
+		Error[
+			Sprintf[
+				StrCat[
+					"Stator winding domains (Stator_Ind_{A,B,C}{p,m}) need to ",
+					"contain exactly one Physical object to use circuit! ",
+					"Stator_Ind_Ap: %.0f, Stator_Ind_Am: %.0f, ",
+					"Stator_Ind_Bp: %.0f, Stator_Ind_Bm: %.0f, ",
+					"Stator_Ind_Cp: %.0f, Stator_Ind_Cm: %.0f"
+				],
+				NbrRegions[Stator_Ind_Ap], NbrRegions[Stator_Ind_Am],
+				NbrRegions[Stator_Ind_Bp], NbrRegions[Stator_Ind_Bm],
+				NbrRegions[Stator_Ind_Cp], NbrRegions[Stator_Ind_Cm]
+			]
+		];
+	EndIf
 {
 	Name ElectricalCircuit;
 	Type Network;
@@ -200,18 +221,6 @@ Constraint {
 				ElseIf (NbrRegions[Stator_Ind_Ap] == 1)
 					// Only positive stator winding region
 					{Region Stator_Ind_Ap;	Branch {31,5};}
-				Else
-					Error[
-						Sprintf[
-							StrCat[
-								"Stator winding domains (Stator_Ind_{A,B,C}{p,m}) need to ",
-								"contain exactly one Physical object to use circuit! ",
-								"Stator_Ind_Ap: %.0f, Stator_Ind_Am: %.0f"
-							],
-							NbrRegions[Stator_Ind_Ap],
-							NbrRegions[Stator_Ind_Am]
-						]
-					];
 				EndIf
 
 				// for phase B
@@ -230,18 +239,6 @@ Constraint {
 				ElseIf (NbrRegions[Stator_Ind_Bp] == 1)
 					// Only positive stator winding region
 					{Region Stator_Ind_Bp;	Branch {41,5};}
-				Else
-					Error[
-						Sprintf[
-							StrCat[
-								"Stator winding domains (Stator_Ind_{A,B,C}{p,m}) need to ",
-								"contain exactly one Physical object to use circuit! ",
-								"Stator_Ind_Bp: %.0f, Stator_Ind_Bm: %.0f"
-							],
-							NbrRegions[Stator_Ind_Bp],
-							NbrRegions[Stator_Ind_Bm]
-						]
-					];
 				EndIf
 
 
@@ -259,18 +256,6 @@ Constraint {
 				ElseIf (NbrRegions[Stator_Ind_Cp] == 1)
 					// Only positive stator winding region
 					{Region Stator_Ind_Cp;	Branch {21,5};}
-				Else
-					Error[
-						Sprintf[
-							StrCat[
-								"Stator winding domains (Stator_Ind_{A,B,C}{p,m}) need to ",
-								"contain exactly one Physical object to use circuit! ",
-								"Stator_Ind_Cp: %.0f, Stator_Ind_Cm: %.0f"
-							],
-							NbrRegions[Stator_Ind_Cp],
-							NbrRegions[Stator_Ind_Cm]
-						]
-					];
 				EndIf
 
 			Else
