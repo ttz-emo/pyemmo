@@ -189,6 +189,7 @@ Constraint {
 				{Region Input1; 		Branch {1,3};}
 				{Region Rp1;			Branch {1,3};}
 				{Region R1; 			Branch {3,31};}
+
 				If (NbrRegions[Stator_Ind_Ap] == 1 && NbrRegions[Stator_Ind_Am] == 1)
 					// There are positive and negative stator winding regions
 					{Region Stator_Ind_Ap;	Branch {31,32};}
@@ -217,15 +218,61 @@ Constraint {
 				{Region Input2; 		Branch {1,4};}
 				{Region Rp2;			Branch {1,4};}
 				{Region R2; 			Branch {4,41};}
-				{Region Stator_Ind_Bp;	Branch {41,42};}
-				{Region Stator_Ind_Bm;	Branch {5,42};}
+
+				If (NbrRegions[Stator_Ind_Bp] == 1 && NbrRegions[Stator_Ind_Bm] == 1)
+					// There are positive and negative stator winding regions
+					{Region Stator_Ind_Bp;	Branch {41,42};}
+					{Region Stator_Ind_Bm;	Branch {5,42};}
+
+				ElseIf (NbrRegions[Stator_Ind_Bm] == 1)
+					// Only negative wound stator winding region
+					{Region Stator_Ind_Bm;	Branch {5,41};}
+				ElseIf (NbrRegions[Stator_Ind_Bp] == 1)
+					// Only positive stator winding region
+					{Region Stator_Ind_Bp;	Branch {41,5};}
+				Else
+					Error[
+						Sprintf[
+							StrCat[
+								"Stator winding domains (Stator_Ind_{A,B,C}{p,m}) need to ",
+								"contain exactly one Physical object to use circuit! ",
+								"Stator_Ind_Bp: %.0f, Stator_Ind_Bm: %.0f"
+							],
+							NbrRegions[Stator_Ind_Bp],
+							NbrRegions[Stator_Ind_Bm]
+						]
+					];
+				EndIf
+
 
 				// for phase C
 				{Region Input3; 		Branch {1,2};}
 				{Region Rp3;			Branch {1,2};}
 				{Region R3; 			Branch {2,21};}
-				{Region Stator_Ind_Cp;	Branch {21,22};}
-				{Region Stator_Ind_Cm;	Branch {5,22};}
+				If (NbrRegions[Stator_Ind_Cp] == 1 && NbrRegions[Stator_Ind_Cm] == 1)
+					// There are positive and negative stator winding regions
+					{Region Stator_Ind_Cp;	Branch {21,22};}
+					{Region Stator_Ind_Cm;	Branch {5,22};}
+				ElseIf (NbrRegions[Stator_Ind_Cm] == 1)
+					// Only negative wound stator winding region
+					{Region Stator_Ind_Cm;	Branch {5,21};}
+				ElseIf (NbrRegions[Stator_Ind_Cp] == 1)
+					// Only positive stator winding region
+					{Region Stator_Ind_Cp;	Branch {21,5};}
+				Else
+					Error[
+						Sprintf[
+							StrCat[
+								"Stator winding domains (Stator_Ind_{A,B,C}{p,m}) need to ",
+								"contain exactly one Physical object to use circuit! ",
+								"Stator_Ind_Cp: %.0f, Stator_Ind_Cm: %.0f"
+							],
+							NbrRegions[Stator_Ind_Cp],
+							NbrRegions[Stator_Ind_Cm]
+						]
+					];
+				EndIf
+
 			Else
 				// If source type is back-emf, skip soure and phase resistances
 				{Region Stator_Ind_Ap;	Branch {1,2};}
@@ -291,7 +338,7 @@ Constraint {
 			];
 		EndIf
 	EndIf
-	If Flag_Cir_RotorCage
+	If (Flag_Cir_RotorCage)
 		Case Circuit4 {
 			For k In {1:nbrRotorBars}
 			{ Region Rotor_Bar~{k} ; Branch {NB1~{k}, NB2~{k}} ; }
