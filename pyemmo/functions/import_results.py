@@ -73,10 +73,7 @@ def read_timetable_dat(
         # static simulation
         if not data_array.size > 1:
             # there must be at least one time + value
-            raise ValueError(
-                f"Less than one value was imported from {file_path}. "
-                "There must be at least one time-value pair!"
-            )
+            return (np.array([]), np.array([]))
         time = np.reshape(data_array[0], (1))
         values = data_array[1:]
     else:
