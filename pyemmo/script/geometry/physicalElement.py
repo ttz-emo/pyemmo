@@ -22,6 +22,11 @@
 from random import random
 from typing import TYPE_CHECKING, List, Union
 
+import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
+
+from ...definitions import LINE_COLOR
 from .. import colorDict
 from ..material.material import Material
 from .circleArc import CircleArc
@@ -289,3 +294,44 @@ class PhysicalElement:
         for geoElem in self.geometricalElement:
             if isinstance(geoElem, Surface):
                 geoElem.setMeshColor(colorName)
+
+    def plot(
+        self,
+        fig: Figure = None,
+        linewidth=0.5,
+        color=LINE_COLOR,
+        marker=".",
+        markersize=1,
+        tag=False,
+    ) -> tuple[Figure, Axes]:
+        """
+        2D Line plot of the surface
+        """
+        if fig is None:
+            fig, ax = plt.subplots()
+            fig.set_dpi(200)
+            # xlim, ylim = self.getBoundingBox(scalingFactor=1.1)
+            # fig.axes[0].set(xlim=xlim, ylim=ylim)
+            ax.set_aspect("equal", adjustable="box")
+        ax = fig.axes[0]
+        for geo in self.geometricalElement:
+            geo.plot(
+                fig,
+                linewidth=linewidth,
+                color=color,
+                marker=marker,
+                markersize=markersize,
+                tag=False,
+            )
+
+        if tag and self.geoElementType == Surface:
+            for surf in self.geometricalElement:
+                cog = surf.calcCOG().coordinate
+                ax.annotate(
+                    f"""S {self.id} ("{self.name}")""",
+                    (cog[0], cog[1]),
+                    textcoords="offset points",
+                    xytext=(1, 1),
+                    ha="left",
+                )
+        return fig, ax
