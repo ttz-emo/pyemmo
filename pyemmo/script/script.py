@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences
+# Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -1924,6 +1925,7 @@ class Script:
                 nbrSeg0 = (2 * pi * rRotorMB / mbMeshSize) - (
                     2 * pi * rRotorMB / mbMeshSize
                 ) % 10  # calc number of movingband segments by steps of 10
+                max_nbr_segments = max(nbrSeg0, 1440)
                 # create parameter code for movingband segment setting
                 meshModCode += "// Add mesh size setting for Movingband lines\n"
                 meshModCode += (
@@ -1931,7 +1933,7 @@ class Script:
                     + (
                         f"\tNbrMbSegments = {{{nbrSeg0}, "
                         """Name StrCat[INPUT_MESH, "Number of Rotor Movingband Segments"],"""
-                        "Max 1440, Min 180, Step 10, Help "
+                        f"Max {max_nbr_segments}, Min 180, Step 10, Help "
                         '"Set the number of mesh segments on the interface between rotor/stator'
                         "airgap and movingband. Value represents number of segments on whole "
                         'circle.", Visible Flag_ExpertMode},\n'
