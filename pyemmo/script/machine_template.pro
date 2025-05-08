@@ -116,8 +116,8 @@ DefineConstant[
         1, Name StrCat[INPUT_ANA_SETTINGS, "02Source Input Type"],
         Choices{
             CURRENT_SOURCE = "Current Source",
-            VOLTAGE_SOURCE = "Voltage Source",
-            CEMF_SOURCE = "Back EMF in Circuit"
+            VOLTAGE_SOURCE = "Voltage Source"
+            // CEMF_SOURCE = "Back EMF in Circuit"
         },
         Visible Flag_ExpertMode
     },
