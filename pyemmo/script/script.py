@@ -494,7 +494,7 @@ class Script:
             self.idedentPoints.append(point)
             return identicalPoint
         # point was allready drawn
-        logging.debug(f"Point '%s' has allready been added to the script.", point.name)
+        logging.debug("Point '%s' has allready been added to the script.", point.name)
         return None
 
     def _testPoint(
@@ -799,6 +799,10 @@ class Script:
                     splineType = "Bezier"
                 elif curve.splineType == 2:
                     splineType = "BSpline"
+                else:
+                    raise ValueError(
+                        f"Invalid Spline type with index {curve.splineType}"
+                    )
 
                 code = (
                     f"{curveName} = {curveID}; \n"
@@ -846,7 +850,7 @@ class Script:
         newLoop.append(oldLoop.pop(0))
         nbrLines = len(oldLoop)  # get the remaining number of lines
         # for every line thats left:
-        for outerCounter in range(nbrLines):
+        for _ in range(nbrLines):
             # Check which line in oldLoop appends to the last line in newLoop
             # if that line was found get direction, append it to newLoop and
             # remove it from oldLoop
@@ -1128,6 +1132,7 @@ class Script:
         # material domain. TODO: This could be handled by the pro-file for sure.
         try:
             airgap_mat = statorPhysicalsDict[DOMAIN_AIRGAP][0].material
+        # pylint: disable=locally-disabled, broad-exception-caught
         except Exception as exce_1:
             try:
                 airgap_mat = rotorPhysicalsDict[DOMAIN_AIRGAP][0].material
@@ -1370,6 +1375,8 @@ class Script:
                 elementType = "Surface"
             elif geoElmType == Line:
                 elementType = "Curve"
+            else:
+                raise TypeError(f"Invalid geometry type {geoElmType}")
             code += (
                 "Physical "
                 + elementType
@@ -1552,15 +1559,15 @@ class Script:
                 physElemIDstr.append(str(physicalElementID))
             # add group for material
             matName = cleanName(mat.name)
-            # FIXME: Group Add fails if mat name exists twice
-            # added workaround by adding _dup id
+            # Group Add fails if mat name exists twice: workaround by adding _dup id
             try:
                 self.group.add(id="group_" + matName, glist=physElemIDstr)
             except ValueError as val_err:
                 if re.search(r"Identifier .* already in use.", val_err.args[0]):
                     logging.warning(
-                        f"Material with name {matName} is defined multiple times, but with different properties. "
-                        "Trying to add it again with different identifier..."
+                        "Material with name %s is defined multiple times, but with different "
+                        "properties. Trying to add it again with different identifier...",
+                        matName,
                     )
                     matName = matName + "_dup"
                     self.group.add(id="group_" + matName, glist=physElemIDstr)
@@ -2204,12 +2211,6 @@ class Script:
                 machine.stator.winding.save_to_file(
                     os.path.join(self.resultsPath, f"winding_{self.name}.wdg")
                 )
-                # FIXME: Cannot use plot function with Pyleecan-SWATEM version
-                # machine.stator.winding.plot_MMK(
-                #     filename=os.path.join(
-                #         self.resultsPath, rf".\{self.name}_MMF.png"
-                #     ),
-                # )
 
             # Stator angle for I_U = 1 p.u., I_V = -1/2, I_W = -1/2 in rad elec
             systemOffset = float(angle[where(mmfOrder == nbrPolePairs)])
