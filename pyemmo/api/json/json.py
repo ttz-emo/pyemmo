@@ -537,14 +537,21 @@ def _open_onelab(
             for file in os.listdir(resPath):
                 filename, fileExt = os.path.splitext(file)
                 if fileExt == ".dat":
-                    import_results.plot_timetable_dat(
-                        os.path.abspath(join(resPath, file)),
-                        filename,
-                        title=filename,
-                        savefig=True,
-                        showfig=False,
-                        savePath=None,
-                    )
+                    try:
+                        import_results.plot_timetable_dat(
+                            os.path.abspath(join(resPath, file)),
+                            filename,
+                            title=filename,
+                            savefig=True,
+                            showfig=False,
+                            savePath=None,
+                        )
+                    except Exception as e:
+                        logger.warning(
+                            "Unable to plot file %s due to error: %s",
+                            file,
+                            e,
+                        )
 
 
 def _run_core_loss_calculation(resPath, apiScript: Script):
