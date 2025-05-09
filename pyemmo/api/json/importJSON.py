@@ -39,13 +39,13 @@ from .. import air, logger
 # ================================ START EXTENDED INFO FUNCTIONS ===================================
 class InvalidSheetThicknessError(Exception):
     """
-    .. todo::
-
-        write descriptions
-
+    Exception raised for errors in the sheet thickness input.
     Attributes:
-        input -- input that caused the error
-        message -- explanation of the error
+        sheet_thickness (any): The invalid sheet thickness value that caused the error.
+        message (str): Explanation of the error. Defaults to "Invalid sheet thickness provided".
+    Methods:
+        __str__(): Returns a string representation of the error, including the message
+        and the invalid input value.
     """
 
     def __init__(self, sheet_thickness, message="Invalid sheet thickness provided"):
