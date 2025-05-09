@@ -479,6 +479,16 @@ def createMaterial(matDict: dict[str, dict[Literal["wert"], Any]]) -> Material:
                         bhCurve[i] = [hbArray[1], hbArray[0]]
                 # else:
                 # raise ValueError(f"BH-Curve of Material '{name}' is empty!")
+            elif isinstance(bhDict["wert"], memoryview):
+                # workaround from coupling with matlab. class memoryview is only used
+                # for matrices (not vectors).
+                bhDict["wert"] = bhDict["wert"].tolist()  # convert memoryview to list
+                nbrBasePoints = len(bhDict["wert"])
+                if nbrBasePoints > 0:
+                    bhCurve = zeros((nbrBasePoints, 2))
+                    for i, hbArray in enumerate(bhDict["wert"]):
+                        bhCurve[i] = [hbArray[1], hbArray[0]]
+
             elif "kl_1" in bhDict.keys():
                 ...  # TODO: add temperatur depended BH curve to material
             else:
