@@ -27,6 +27,8 @@ from typing import Literal
 from numpy import pi, sign
 from swat_em import datamodel
 
+import gmsh
+
 from ...script.geometry.airArea import AirArea
 from ...script.geometry.airGap import AirGap
 from ...script.geometry.bar import Bar
@@ -304,6 +306,7 @@ def importMachineGeometry(machineGeoList: list[dict]) -> dict[str, SurfaceAPI]:
             apiSurf: SurfaceAPI = createAPISurf(area)
             segmentSurfDict[apiSurf.idExt] = apiSurf
         elif isinstance(area, list):
+            # TODO: add multi layer subtraction here!
             mainSurf = createAPISurf(area.pop(0))
             for toolArea in area:
                 toolSurf = createAPISurf(toolArea)
@@ -385,6 +388,11 @@ def rotateDuplicate(geoObj: Transformable, angle: float) -> Transformable:
         duplicatedGeoObj.rotateZ(globalCenterPoint, angle)  # rotate obj
         # if type(GeoObj) == Surface:
         #     replaceIdenticalLines(GeoObj, DuplicatedGeoObj)
+
+        dupe_obj_id = gmsh.model.occ.copy([(2, geoObj.id)])
+        (global_x, global_y, global_z) = globalCenterPoint.coordinate
+        gmsh.model.occ.rotate(dupe_obj_id, global_x, global_y, global_z, 0, 0, 1, angle)
+
         return duplicatedGeoObj
     # if the angle is zero: give back duplicate of the old surface
     return geoObj.duplicate()
@@ -716,7 +724,7 @@ def getSlotInfo(slotSurfName: str) -> tuple[int, int]:
 
 def getSlotPhase(
     windingLayout: list[list[int]], segmentNbr: int, slotSide: int
-) -> (Literal["p", "n"], Literal["u", "v", "w"]):
+) -> Tuple[Literal["p", "n"], Literal["u", "v", "w"]]:
     """Gets the name (u, v, w) of the Phase with it's direction (+, -)
 
     Args:

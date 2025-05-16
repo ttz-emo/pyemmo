@@ -29,6 +29,10 @@ from .line import Line
 from .spline import Spline
 from .surface import Surface
 
+from ...colors import Colors
+
+import gmsh
+
 if TYPE_CHECKING:
     from ..script import Script
 
@@ -77,6 +81,9 @@ class PhysicalElement:
             self.id = self._getNewID()
         else:
             self.id = phyID
+
+        surface_tag_list = [elem.id for elem in geometricalElement]
+        self._id = gmsh.model.addPhysicalGroup(2, surface_tag_list, name = name)
 
     # ----- properties -----
 
@@ -289,3 +296,5 @@ class PhysicalElement:
         for geoElem in self.geometricalElement:
             if isinstance(geoElem, Surface):
                 geoElem.setMeshColor(colorName)
+                r, g, b, a = Colors[colorName]
+                gmsh.model.setColor([(2,geoElem.id)], r, g, b, a)

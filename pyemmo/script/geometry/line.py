@@ -25,7 +25,9 @@ import matplotlib.pyplot as plt
 from numpy import array
 from numpy.linalg import norm
 
-from ...definitions import DEFAULT_GEO_TOL, LINE_COLOR, POINT_COLOR
+import gmsh
+
+from ...definitions import DEFAULT_GEO_TOL
 from ..geometry import defaultCenterPoint
 from .point import Point
 from .transformable import Transformable
@@ -77,6 +79,8 @@ class Line(Transformable):
         # (Aufruf von addToScript())!
         self._todesmerker = False
         self._force: bool = force
+
+        self._id = gmsh.model.occ.addLine(startPoint.id, endPoint.id)
 
     def __eq__(self, other: "Line") -> bool:
         # check type:

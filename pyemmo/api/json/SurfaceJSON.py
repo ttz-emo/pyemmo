@@ -28,6 +28,8 @@ from ...script.geometry.spline import Spline
 from ...script.geometry.surface import Surface
 from ...script.material.material import Material
 
+import gmsh
+
 
 class SurfaceAPI(Surface):
     """
@@ -100,6 +102,9 @@ class SurfaceAPI(Surface):
             )
         self._angle: float = angle
         self._meshSize: float = meshSize
+
+        # curve_loop = gmsh.model.occ.addCurveLoop(curves)
+        # self._id = gmsh.model.occ.addPlaneSurface(curve_loop)
 
     @property
     def idExt(self) -> str:

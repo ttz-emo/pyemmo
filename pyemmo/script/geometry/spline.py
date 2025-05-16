@@ -19,6 +19,8 @@
 #
 from typing import List, Literal
 
+import gmsh
+
 import matplotlib.pyplot as plt
 import numpy as np
 from splines import Bernstein, CatmullRom, Natural
@@ -74,6 +76,11 @@ class Spline(Line):
         self.controlPoints = controlPoints
         # 0: Catmull-Rom Spline, 1: Bezierkurve, 2: Basis-Spline
         self._splineType = SplineType
+        point_list = [startPoint.id] + controlPoints + [endPoint.id]
+        if SplineType == 0 or SplineType == 2:
+            self._id = gmsh.model.occ.addSpline(point_list)
+        else:
+            self._id = gmsh.model.occ.addBezier(point_list)
 
     @property
     def type(self) -> Literal["Spline"]:

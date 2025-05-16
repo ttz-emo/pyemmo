@@ -22,6 +22,8 @@ from typing import List
 
 from .physicalElement import Material, PhysicalElement, Surface
 
+import gmsh
+
 
 class AirArea(PhysicalElement):
     """

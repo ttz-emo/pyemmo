@@ -30,6 +30,8 @@ from ..geometry import defaultCenterPoint
 from .line import Line
 from .point import Point
 
+import gmsh
+
 
 class CircleArc(Line):
     """Eine Instanz der Unterklasse CircleArc ist ein Kreissegment, zwischen zwei Punkten
@@ -92,6 +94,10 @@ class CircleArc(Line):
         # (Aufruf von addToScript())!
         self._todesmerker = False
         self._force = force
+
+        self._id = gmsh.model.occ.addCircleArc(startPoint.id, centerPoint.id, endPoint.id)
+
+        
 
     def __eq__(self, other: "CircleArc") -> bool:
         # check type:

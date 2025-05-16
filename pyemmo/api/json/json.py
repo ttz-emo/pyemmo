@@ -32,16 +32,21 @@ import subprocess
 from os import mkdir
 from os.path import isdir, isfile, join
 
+import gmsh
+
 from ... import logFmt
 from ...functions import calcIronLoss, import_results, runOnelab
 from ...script.geometry.machineAllType import MachineAllType
 from ...script.geometry.rotor import Rotor
 from ...script.geometry.stator import Stator
 from ...script.material import ElectricalSteel
-from ...script.script import Script
+from ...colors import Colors
 from .. import logger
 from . import apiNameDict, boundaryJSON, importJSON, modelJSON
 from .SurfaceJSON import SurfaceAPI
+
+import gmsh
+gmsh.initialize()
 
 # from swat_em import analyse
 # from .. import calcPhaseangleStarvoltageCorr
@@ -75,6 +80,7 @@ def createMachine(
         rotorMBRadius=rotorMovingBandRadius,
     )
     # create the remaining machine surfaces
+    # TODO: Use gmsh-python api to rotate and duplicate the segments directly
     maschineSurfDict = modelJSON.createMachineGeometryFromSegment(
         segmentSurfDict, symFactor
     )

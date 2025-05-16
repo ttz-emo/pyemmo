@@ -26,7 +26,8 @@ import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from numpy import mean
 
-from ...definitions import LINE_COLOR
+import gmsh
+
 from .circleArc import CircleArc
 from .line import Line
 from .point import Point
@@ -95,7 +96,11 @@ class Surface(Transformable):
         self._isTool: bool = False
         self._delete: bool = False
 
-    def __eq__(self, other: Surface):
+        curve_tags = [curve.id for curve in curves]
+        curve_loop = gmsh.model.occ.addCurveLoop(curve_tags)
+        self._id = gmsh.model.occ.addPlaneSurface([curve_loop])
+
+    def __eq__(self, other: "Surface"):
         # check type and number of points
         if isinstance(other, self.__class__) and (
             len(self.allPoints) == len(other.allPoints)
@@ -237,7 +242,8 @@ class Surface(Transformable):
     def delete(self, status: bool) -> None:
         """Delete Surface at the end of script generation"""
         if isinstance(status, bool):
-            self._delete = True
+            # self._delete = True # bug fix
+            self._delete = status
         else:
             raise TypeError("Delete status was not type bool!")
 
@@ -692,6 +698,8 @@ class Surface(Transformable):
         ToolSurface.setTool()  # set to the tool surface
         if not keepTool:
             ToolSurface.delete = True
+        
+        self._id = gmsh.model.occ.cut([(2,self._id)], [(2, ToolSurface.id)], removeTool=ToolSurface.delete)
 
     def setMeshLength(self, meshLength: float) -> None:
         """set the meshLength of all points of a surface.
