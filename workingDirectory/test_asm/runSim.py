@@ -45,6 +45,8 @@ logging.debug(f"Start simulation at {time.ctime()}")
 start = time.perf_counter()
 
 nbr_bars = 9
+axial_length = 0.225  # meter
+
 
 f_r = 4
 I_eff = 50
@@ -58,7 +60,7 @@ Nbr_Sect = 2048  # Bandsegmentierung
 multi = 4  # Default=4 number of Segments per timestep
 timestep = (60 / (n * Nbr_Sect / multi)) if n > 0 else T_s / nbr_steps_per_period
 winkelschritt = n / 60 * 360 * timestep  # Default: 0.703125
-nbr_timesteps = T_s / timestep * nbr_stator_periods
+nbr_timesteps = T_s * nbr_stator_periods / timestep
 
 flag_dynamic_resistance = False
 thers = 100  # Thershold for bar resistance reset in A
@@ -101,14 +103,14 @@ paramDict = {
         # "AxialLength_R": 1, # 0.225m in param file
         # "AxialLength_S": 1, # 0.225m in param file
         "NbrParallelPaths": 1,
-        "R_endring_segment": 16e-7 / 2,  # Initial value: 16e-7,
-        "L_endring_segment": 2e-9 / 2,
+        "R_endring_segment": 16e-7 / 2 / axial_length,  # Initial value: 16e-7,
+        "L_endring_segment": 2e-9 / 2 / axial_length,
         "Flag_Cir_RotorCage": 1,
         "Flag_Dynamic_RotorBarResistance": flag_dynamic_resistance,
         "thers_dyn_Bar": thers,
         "Flag_Calculate_VW": 0,
         #                     mesh_veryFine, fineMesh or coarseMesh
-        "msh": os.path.join(MODEL_DIR, "mesh_veryFine.msh"),
+        "msh": os.path.join(MODEL_DIR, "fineMesh.msh"),
         # "Flag_SecondOrder": 0,
         "stop_criterion": 1e-8,
     },
@@ -126,9 +128,12 @@ paramDict = {
     # "exc": 0,
     # "axLen": 0.2,
     # "sym": 4,
-    "info": "",
+    "info": (
+        "Simulation with rotor cage elements scaled by 1/axial_length, because the "
+        "bar voltage ur in the circuit is calculated for 1 meter axial length."
+    ),
     "datetime": time.ctime(),
-    "PostOp": ["GetBOnRadius"],  # "GetBOnRadius" - "Get_LocalFields_Post"
+    "PostOp": [],  # "GetBOnRadius" - "Get_LocalFields_Post"
 }
 sim_res_dir = os.path.join(paramDict["res"], resId)
 results = runCalcforCurrent(paramDict)
