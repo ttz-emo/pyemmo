@@ -57,7 +57,7 @@ n = 0
 f_s = f_r + 2 * n / 60
 T_s = 1 / f_s
 nbr_stator_periods = 3
-nbr_steps_per_period = 128
+nbr_steps_per_period = 128  # only needed in case n = 0
 # Zum Abgleich mit Maxwell
 Nbr_Sect = 2048  # Bandsegmentierung
 multi = 4  # Default=4 number of Segments per timestep
@@ -72,7 +72,6 @@ logging.info("Simulation should execute %i time steps.", int(nbr_timesteps) + 1)
 logging.debug("Timestep %e s.", timestep)
 logging.debug("One time step equals %f° mechanical degrees.", winkelschritt)
 logging.debug("Stop time of simulation: %.7e s", int(nbr_timesteps) * timestep)
-
 
 # %%
 resId = f"blockedRotor_{f_r}Hz_{nbr_stator_periods}Periods_{nbr_steps_per_period}Steps_FaktorAxialLength"  # +"_1METER"
@@ -159,7 +158,8 @@ if not os.path.isfile(json_res_path):
 
 # %%
 # plot currents
-nbr_timesteps = len(results["time"])  # update number of timesteps with actual val
+# update number of timesteps with actual val
+nbr_timesteps = len(results["time"])
 fig, ax = plt.subplots()
 ax.plot(results["time"], results["current"]["a"], label="u")
 ax.plot(results["time"], results["current"]["b"], label="v")

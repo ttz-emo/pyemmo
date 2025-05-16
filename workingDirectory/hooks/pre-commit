@@ -25,7 +25,7 @@
 # ID: 138fd403232d2ddd5efb44317e38bf03
 
 # start templated
-INSTALL_PYTHON='D:\pyemmo\.pyemmo_venv\Scripts\python.exe'
+INSTALL_PYTHON='C:\Users\ganser\AppData\Local\Programs\pyemmo\.pyemmo_venv39\Scripts\python.exe'
 ARGS=(hook-impl --config=.pre-commit-config.yaml --hook-type=pre-commit)
 # end templated
 
