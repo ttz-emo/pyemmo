@@ -79,16 +79,23 @@ def create_segment():
     radius_inner = 1.0
     thickness = 0.3
     radius_outer = radius_inner + thickness
+    ml = 2 * np.pi * (radius_inner + thickness / 2) / 90  # mesh length
     points: list[GmshPoint] = [
-        GmshPoint.from_coordinates(name="P1", coords=(radius_inner, 0, 0)),
-        GmshPoint.from_coordinates(name="P2", coords=(radius_outer, 0, 0)),
+        GmshPoint.from_coordinates(
+            name="P1", coords=(radius_inner, 0, 0), meshLength=ml
+        ),
+        GmshPoint.from_coordinates(
+            name="P2", coords=(radius_outer, 0, 0), meshLength=ml
+        ),
         GmshPoint.from_coordinates(
             name="P3",
             coords=(radius_outer * np.cos(angle), radius_outer * np.sin(angle), 0),
+            meshLength=ml,
         ),
         GmshPoint.from_coordinates(
             name="P4",
             coords=(radius_inner * np.cos(angle), radius_inner * np.sin(angle), 0),
+            meshLength=ml,
         ),
     ]
 
