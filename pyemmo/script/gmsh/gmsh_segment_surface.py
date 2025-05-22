@@ -64,6 +64,20 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
             self, name=self.name, curves=self.curve, nbr_segments=nbr_segments
         )
 
+    @property
+    def tools(self) -> list[GmshSegmentSurface]:
+        """Get the list of tool surfaces to cut out of this surface
+
+        ``tools`` has NO SETTER, because is only accessed by method ``cutOut()``
+
+        NOTE: Needed to reimplement property in GmshSegmentSurface class, because
+        otherwise type hint for properties of tools are missing.
+
+        Returns:
+            list: List of tool surfaces
+        """
+        return self._cut
+
     # pylint: disable=arguments-differ
     #   Its ok that the number of arguments is higher than in the parent class because
     #   this is like a __init__ method!
