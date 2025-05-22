@@ -439,7 +439,9 @@ class GmshSurface(GmshGeometry, Surface):
             GmshSurface: The combined surface.
         """
         if isinstance(addSurf, list):
-            return self._combine_multi_surface(addSurf, removeObject, removeTool)
+            if addSurf:
+                return self._combine_multi_surface(addSurf, removeObject, removeTool)
+            raise ValueError("List of surfaces to be combined must not be empty!")
         elif isinstance(addSurf, GmshSurface):
             return self._combine_single_surface(addSurf, removeObject, removeTool)
         else:
