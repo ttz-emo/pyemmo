@@ -32,6 +32,7 @@ def check_model_files(model_dir: os.PathLike, model_name: str):
     2. model_name + ".geo"
     3. model_name + ".pro"
     4. "machine_magstadyn_a"
+    5. "Circuit_SC_ASM.pro"
 
     Args:
         model_dir (os.PathLike): File path to model directory.
@@ -54,6 +55,7 @@ def check_model_files(model_dir: os.PathLike, model_name: str):
             )
 
     model_file = join(model_dir, "machine_magstadyn_a.pro")
+    model_file = join(model_dir, "Circuit_SC_ASM.pro")
     assert os.path.isfile(model_file)
 
 
