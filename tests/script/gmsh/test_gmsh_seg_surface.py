@@ -149,7 +149,7 @@ def test_init_with_id():
     assert gmsh_surface.segment_nbr == 0
 
 
-def test_init_with_curveloop(gmsh_surface: GmshSegmentSurface):
+def test_init_with_curveloop():
     """Test the init of Surface"""
     gmsh_rect = create_rectangle()
     new_gmsh_surface_seg = GmshSegmentSurface.from_curve_loop(
@@ -161,9 +161,9 @@ def test_init_with_curveloop(gmsh_surface: GmshSegmentSurface):
     assert new_gmsh_surface_seg.points == gmsh_rect.points
 
     assert new_gmsh_surface_seg.dim == 2
-    assert new_gmsh_surface_seg.id == 3
+    assert new_gmsh_surface_seg.id == 2
     assert np.isclose(
-        new_gmsh_surface_seg.meanMeshLength, gmsh_surface.meanMeshLength, rtol=1e-3
+        new_gmsh_surface_seg.meanMeshLength, gmsh_rect.meanMeshLength, rtol=1e-3
     )
     assert np.isclose(new_gmsh_surface_seg.area, 1, rtol=1e-3)
 
