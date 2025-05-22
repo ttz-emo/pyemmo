@@ -60,12 +60,11 @@ PYTHON_REQUIRES = ">= 3.6"
 
 # Pyleecan dependancies
 install_requires = [
-    "pyleecan>=1.5.1",
     "swat_em>=0.6.3",
     "pygetdp>=1.0.0",
     "gmsh>=4.10.3",
     "matplotlib>=3.3.4",
-    "pandas>=1.2.4",
+    "pandas>=1.2.4",  # TODO: remove pandas since its a big package and not used after change of material database to json.
     "numpy>=1.23.1",
     "parse>=1.19.0",
     "splines>=0.3.2",
@@ -105,4 +104,5 @@ setuptools.setup(
     # ],
     # python_requires=PYTHON_REQUIRES,
     install_requires=install_requires,
+    extras_require={"pyleecan": ["pyleecan>=1.5.1"]},
 )

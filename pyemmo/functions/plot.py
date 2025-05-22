@@ -43,7 +43,7 @@ def plot(
     """
     2D Line plot of the surface
     """
-    if not isinstance(geoList, list):
+    if not isinstance(geoList, (list, tuple)):
         msg = f"Given object for geometry list was not type list, but {type(geoList)}"
         raise (TypeError(msg))
     if fig is None:

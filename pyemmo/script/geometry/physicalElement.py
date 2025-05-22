@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of
+# Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -19,15 +20,17 @@
 #
 """Module for class PhysicalElement"""
 
-from random import random
+import logging
 from typing import TYPE_CHECKING, List, Union
 
+import gmsh
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
 from ...definitions import LINE_COLOR
-from .. import colorDict
+from ..gmsh.gmsh_surface import GmshSurface
 from ..material.material import Material
 from .circleArc import CircleArc
 from .line import Line
@@ -44,7 +47,7 @@ class PhysicalElement:
     dreidimensionalen Raum.\n
     Input:
         name : string
-        geometricalElement : [Line] oder [Surface]
+        geo_list : [Line] oder [Surface]
         material : Material
 
     Beispiel:
@@ -67,21 +70,25 @@ class PhysicalElement:
     def __init__(
         self,
         name: str,
-        geometricalElement: List[Union[Surface, Line, CircleArc, Spline]],
+        geo_list: List[Union[Surface, Line, CircleArc, Spline]],
         material: Material = None,
-        phyID: int = None,
+        phyID: Union[int, None] = None,
     ):
         # the physical element type can be used to identify physical elements
         self.physicalElementType = "PhysicalElement"
-        self.name = name
-        self.geometricalElement = geometricalElement
-        self.material = material
 
+        self.name = name
+        self.geo_list = geo_list  # set geo list to determine geo_type
+
+        geo_type = 1 if self.geoElementType == Line else 2  # geo_type is Line or Surf
+        tag_list = [elem.id for elem in geo_list]  # tag list for gmsh physical group
         if phyID is None:
-            # pylint: disable=locally-disabled, invalid-name
-            self.id = self._getNewID()
+            self.id = gmsh.model.addPhysicalGroup(geo_type, tag_list, name=name)
         else:
-            self.id = phyID
+            self.id = gmsh.model.addPhysicalGroup(
+                geo_type, tag_list, tag=phyID, name=name
+            )
+        self.material = material
 
     # ----- properties -----
 
@@ -159,45 +166,39 @@ class PhysicalElement:
     @id.setter
     def id(self, newID: int):
         """setter of PhysicalElement ID
-        The values for pe IDs start at 1000. The choosen value MUST be bigger that the actual
-        max. value (=``PhysicalElement.Physical_ID``).
-        After the value is set once manually, max. value (``PhysicalElement.Physical_ID``) is
-        updated and all future IDs will be bigger than the manually set value.
 
         Args:
             newID (int): new physical element ID.
+
+        Raises:
+            TypeError: If new id not is integer.
         """
         if not isinstance(newID, int):
             raise TypeError(f"PhysicalElement ID must be positive integer! {newID}")
-        if 1000 < newID < PhysicalElement.physicalID:
-            raise ValueError(
-                "New ID of PhysicalElement is smaller than global ID count."
-                "Given newID must be existing!"
-            )
-        PhysicalElement.physicalID = newID  # set global ID to not overcount newID
         self._id = newID
 
     @property
-    def geometricalElement(self) -> Union[List[Surface], List[Line]]:
+    def geo_list(self) -> Union[List[Surface], List[Line]]:
         """Geometrical enities of physical element.
 
         Returns:
             Union[List[Surface], List[Line]]: Geometrical Entities.
         """
-        return self._geometricalElement
+        return self._geo_list
 
-    @geometricalElement.setter
-    def geometricalElement(self, geometricalElement: Union[List[Surface], List[Line]]):
+    @geo_list.setter
+    def geo_list(self, geo_list: Union[List[Surface], List[Line]]):
         """Geometrical elements
 
         Args:
-            geometricalElement (Union[List[Surface], List[Line]]): Geometrical elements
+            geo_list (Union[List[Surface], List[Line]]): Geometrical elements
         """
         # FIXME: No type checking implemented!
-        self._geometricalElement = geometricalElement
+        self._geo_list = geo_list
         # run element type funtion to ensure there are not lines AND surfaces at the same time
         self.geoElementType
 
+    # FIXME: TODO Rename geoElementType -> geo_type like in init!
     @property
     def geoElementType(self) -> Union[Line, Surface, None]:
         """get type of geometry elements.
@@ -210,13 +211,13 @@ class PhysicalElement:
         Returns:
             Union[Line, Surface, None]: Type of geometric elements in geo list.
         """
-        if len(self.geometricalElement) == 0:
+        if len(self.geo_list) == 0:
             # if list is empty return None
             return None
         # Otherwise determine geometry type:
         isSurface = False
         isLine = False
-        for GeoElement in self.geometricalElement:
+        for GeoElement in self.geo_list:
             if isinstance(GeoElement, Surface):
                 isSurface = True
             elif isinstance(GeoElement, (Line, CircleArc, Spline)):
@@ -286,14 +287,18 @@ class PhysicalElement:
                 as string. Defaults to None.
         """
         if not colorName:
-            index = round((len(colorDict) - 1) * random())
-            colorName = list(colorDict.keys())[index]
-            # colorName = colorName.replace("Light", "") # FIXME: This leads to an error in case of
-            # "LightGoldenrodYellow"... Maybe skip that color in the color-dict or implement better
-            # algorithm to catch light colors
-        for geoElem in self.geometricalElement:
-            if isinstance(geoElem, Surface):
-                geoElem.setMeshColor(colorName)
+            colorName = np.random.random(4)
+            colorName[3] = 1.0  # set alpha to 1.0
+        for geoElem in self.geo_list:
+            if isinstance(geoElem, GmshSurface):
+                geoElem.mesh_color = colorName
+                # r, g, b, a = Colors[colorName]
+                # gmsh.model.setColor([(2, geoElem.id)], r, g, b, a)
+            else:
+                logging.warning(
+                    "Could not set mesh color for surface %s, because it is not a GmshSurface!",
+                    geoElem.name,
+                )
 
     def plot(
         self,
@@ -314,7 +319,7 @@ class PhysicalElement:
             # fig.axes[0].set(xlim=xlim, ylim=ylim)
             ax.set_aspect("equal", adjustable="box")
         ax = fig.axes[0]
-        for geo in self.geometricalElement:
+        for geo in self.geo_list:
             geo.plot(
                 fig,
                 linewidth=linewidth,
@@ -325,7 +330,7 @@ class PhysicalElement:
             )
 
         if tag and self.geoElementType == Surface:
-            for surf in self.geometricalElement:
+            for surf in self.geo_list:
                 cog = surf.calcCOG().coordinate
                 ax.annotate(
                     f"""S {self.id} ("{self.name}")""",

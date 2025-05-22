@@ -24,10 +24,11 @@ from __future__ import annotations
 
 import numpy as np
 from pyleecan.Classes.InputCurrent import InputCurrent
-from pyleecan.Classes.Machine import Machine as PyleecanMachine
 from pyleecan.Classes.OPdq import OPdq
 from pyleecan.Classes.Simu1 import Simu1
 from pyleecan.Classes.Simulation import Simulation as PyleecanSimulation
+
+from . import PyleecanMachine
 
 
 def create_simulation(

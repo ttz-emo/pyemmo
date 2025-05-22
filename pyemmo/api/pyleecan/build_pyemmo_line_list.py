@@ -95,8 +95,8 @@ def build_pyemmo_line_list(
             # translate a Segment into a Line
             translated_line = Line(
                 name="Line",
-                startPoint=build_pyemmo_point(geo_element.begin),
-                endPoint=build_pyemmo_point(geo_element.end),
+                start_point=build_pyemmo_point(geo_element.begin),
+                end_point=build_pyemmo_point(geo_element.end),
             )
             pyemmo_line_list.append(translated_line)
 

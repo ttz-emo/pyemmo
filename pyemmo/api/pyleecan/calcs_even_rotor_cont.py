@@ -26,11 +26,11 @@ import math
 from ...script.geometry.circleArc import CircleArc
 from ...script.geometry.line import Line
 from ...script.geometry.point import Point
-from ..json.SurfaceJSON import SurfaceAPI
+from ...script.geometry.segment_surface import SegmentSurface
 
 
 def calc_even_rotor_cont(
-    rotor_lam_surf_list: list[SurfaceAPI],
+    rotor_lam_surf_list: list[SegmentSurface],
     radius: float,
 ) -> tuple[list[Line | CircleArc], Point, Point]:
     """
@@ -63,8 +63,8 @@ def calc_even_rotor_cont(
     # rotor lamination:
     for curve in rotor_lam_surf_list[0].curve:
         if not (
-            math.isclose(a=curve.startPoint.radius, b=radius, abs_tol=1e-6)
-        ) and not math.isclose(a=curve.endPoint.radius, b=radius, abs_tol=1e-6):
+            math.isclose(a=curve.start_point.radius, b=radius, abs_tol=1e-6)
+        ) and not math.isclose(a=curve.end_point.radius, b=radius, abs_tol=1e-6):
             rotor_cont_line_list.append(curve)
     # print("---")
     # print("Plot Überprüfung des Löschens der Seitenlinien.")

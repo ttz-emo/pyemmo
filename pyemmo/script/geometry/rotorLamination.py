@@ -38,14 +38,14 @@ class RotorLamination(PhysicalElement):
     def __init__(
         self,
         name: str,
-        geometricalElement: List[Surface],
+        geo_list: List[Surface],
         material: Material,
         phyID: int = None,
     ):
         super().__init__(
             name=name,
             material=material,
-            geometricalElement=geometricalElement,
+            geo_list=geo_list,
             phyID=phyID,
         )
         # the physical element type can be used to identify physical elements

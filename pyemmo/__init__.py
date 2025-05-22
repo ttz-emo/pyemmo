@@ -27,6 +27,7 @@ from os.path import isdir
 from typing import List, Literal
 
 import numpy as np
+from matplotlib import pyplot as plt
 from swat_em import analyse
 
 from .version import __version__
@@ -61,6 +62,22 @@ logging.info(
     datetime.date.today(),
     datetime.datetime.now().strftime("%H:%M:%S"),
 )
+# Update matplotlib logging level in case debugging because creates a lot of debugging
+# outputs...
+logging.getLogger("matplotlib.font_manager").setLevel(logging.WARNING)
+
+# check if pyleecan is available
+try_pyleecan = True  # set this to False to never use pyleecan
+use_pyleecan = False
+if try_pyleecan:
+    try:
+        import pyleecan
+
+        use_pyleecan = True
+    except ImportError:
+        use_pyleecan = False
+    except Exception as exce:
+        raise exce
 
 
 def calcPhaseangleStarvoltageCorr(volVecList):

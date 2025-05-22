@@ -23,12 +23,13 @@ import argparse
 import logging
 import os
 
-from pyleecan.Functions import load
-
 from ...definitions import RESULT_DIR
 from .. import ch, logger
+from . import use_pyleecan
 from .main import main
 
+if use_pyleecan:
+    from pyleecan.Functions import load
 if __name__ == "__main__":
     # 1. Check that all argvs are valid!
     parser = argparse.ArgumentParser(

@@ -21,7 +21,6 @@
 import math
 from typing import Any, Dict
 
-from .. import colorDict
 from .line import Line
 from .magnet import Magnet
 from .point import Point
@@ -90,7 +89,7 @@ class Magnet_Surface03(Magnet):
             centerCoords[0] + dockingLength,
             centerCoords[1],
             centerCoords[2],
-            self._machineDict["meshLength"],
+            # self._machineDict["meshLength"],
         )
         alpha1 = math.asin(magnetWidth / 2 / dockingLength)
         pMagnet1.rotateZ(globalCenter, alpha1)
@@ -121,7 +120,7 @@ class Magnet_Surface03(Magnet):
 
         # Bei jedem Baukasten muss diese Definition identisch sein
         ###Fläche des halben Magneten in einer Liste.
-        self.geometricalElement = [surfaceMagnet]
+        self.geo_list = [surfaceMagnet]
         ###Schnittkante des halben Magneten.
         # \image html innerLinePart03.png
         self._innerLinePart = [lMagnet1]
@@ -135,11 +134,11 @@ class Magnet_Surface03(Magnet):
         # \image html laminationDockingPoint03.png
         self._laminationDockingPoint = [pMagnet2]
 
-        for surf in self.geometricalElement:
-            if self.magDir() == 1:
-                surf.setMeshColor(colorDict["Red"])
-            elif self.magDir() == -1:
-                surf.setMeshColor(colorDict["Green"])
+        # for surf in self.geo_list:
+        #     if self.magDir() == 1:
+        #         surf.setMeshColor(colorDict["Red"])
+        #     elif self.magDir() == -1:
+        #         surf.setMeshColor(colorDict["Green"])
 
     ###Gibt eine Liste mit der Schnittkante im Magneten zurück (siehe _innerLinePart).
     @property

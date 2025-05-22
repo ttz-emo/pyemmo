@@ -328,13 +328,14 @@ class MachineAllType:
         primeLines: List[Line] = list()
         for physicalPrimeLine in physicalPrimeLines:
             if physicalPrimeLine.geoElementType == Line:
-                primeLines.extend(physicalPrimeLine.geometricalElement)
+                primeLines.extend(physicalPrimeLine.geo_list)
             else:
                 raise (
                     TypeError(
                         f"Physical Element (Primary Line) must only contain Line objects!"
                     )
                 )
+        primeLines.sort(key=_get_line_middle_raidus)
         return primeLines
 
     def getSecondaryLines(self) -> List[Line]:
@@ -349,13 +350,15 @@ class MachineAllType:
         secondaryLines: List[Line] = list()
         for physicalSecLine in physicalSecLines:
             if physicalSecLine.geoElementType == Line:
-                secondaryLines.extend(physicalSecLine.geometricalElement)
+                secondaryLines.extend(physicalSecLine.geo_list)
             else:
                 raise (
                     TypeError(
                         f"Physical Element (Primary Line) must only contain Line objects!"
                     )
                 )
+        secondaryLines.sort(key=_get_line_middle_raidus)
+
         return secondaryLines
 
     @property
@@ -412,7 +415,7 @@ class MachineAllType:
         # # get max. stator radius:
         # rS = 0
         # for phys in self.stator._domainOuterLimit.physicals:
-        #     for geo in phys.geometricalElement:
+        #     for geo in phys.geo_list:
         #         if isinstance(geo, Line):
         #             for p in geo.points:
         #                 if p.radius > rS:
@@ -433,7 +436,7 @@ class MachineAllType:
         #     mssg = f"Unknown function specifier '{functionType}' for functional mesh."
         #     raise ValueError(mssg)
         # for physical in self.physicalElements:
-        #     for geo in physical.geometricalElement:
+        #     for geo in physical.geo_list:
         #         points: List[Point] = []
         #         if isinstance(geo, Surface):
         #             for curve in geo.curve:
@@ -481,7 +484,7 @@ class MachineAllType:
                 if not plot_mb:
                     if isinstance(phys, MovingBand):
                         break
-                for geoElem in phys.geometricalElement:
+                for geoElem in phys.geo_list:
                     geoElem.plot(
                         fig=fig,
                         linewidth=linewidth,
@@ -513,3 +516,15 @@ class MachineAllType:
             if self.symmetryFactor > 2:
                 ax.set_xlim(left=0)
         return fig
+
+
+def _get_line_middle_raidus(line: Line) -> float:
+    """Get the radius of the middlepoint of a Line object
+
+    Args:
+        line (Line): Line object
+
+    Returns:
+        float: Radius of ``Line.middle_point``
+    """
+    return line.middle_point.radius

@@ -25,7 +25,7 @@ from os import path
 
 from ..definitions import RESULT_DIR
 from ..script.material.material import Material
-from . import cleanName
+from . import clean_name
 
 
 def exportBH2Maxwell(material: Material, filepath: str = None) -> None:
@@ -49,7 +49,7 @@ def exportBH2Maxwell(material: Material, filepath: str = None) -> None:
     header = ["H (A_per_meter)", "B (tesla)"]
     if not filepath:
         filepath = path.join(
-            RESULT_DIR, cleanName.cleanName(material.getName()) + "_BH.tab"
+            RESULT_DIR, clean_name.clean_name(material.getName()) + "_BH.tab"
         )
     exportTabMaxwell([h, b], header, filepath)
 

@@ -24,6 +24,7 @@ import logging
 from math import pi
 from typing import *
 
+import gmsh
 from matplotlib import pyplot as plt
 
 from ...definitions import DEFAULT_GEO_TOL
@@ -43,10 +44,12 @@ from .. import (
     DOMAIN_PRIMARY,
     DOMAIN_SECONDARY,
 )
+from ..gmsh.gmsh_point import GmshPoint
+from ..gmsh.utils import get_dim_tags, get_point_tags
 from ..material.electricalSteel import ElectricalSteel
 from . import default_domain_dict
 from .domain import Domain
-from .line import Line, Point
+from .line import Line
 from .magnet import Magnet
 from .movingBand import MovingBand
 from .physicalElement import PhysicalElement
@@ -431,9 +434,9 @@ class Rotor:
             # no inner limit
             return 0.0
         else:
-            r_in = inner_limits[0].geometricalElement[0].points[0].radius
+            r_in = inner_limits[0].geo_list[0].points[0].radius
             for phys in inner_limits:
-                for geo in phys.geometricalElement:
+                for geo in phys.geo_list:
                     if isinstance(geo, Line):
                         for p in geo.points:
                             if p.radius < r_in:
@@ -474,7 +477,7 @@ class Rotor:
             axis.set_aspect("equal", adjustable="box")
         kwargs["fig"] = fig
         for phys in self.physicalElements:
-            for geoElem in phys.geometricalElement:
+            for geoElem in phys.geo_list:
                 geoElem.plot(**kwargs)
         if symFactor:
             radius = self.movingBandRadius
@@ -533,33 +536,32 @@ class Rotor:
             self._set_linear_mesh(meshGainFactor, basisMeshsize)
         else:
             self._set_quad_mesh(meshGainFactor, basisMeshsize)
+        gmsh.model.occ.synchronize()
+
+    def _get_points(self) -> list[GmshPoint]:
+        """Get a list of currently available gmsh points from gmsh model belonging to a
+        stator physical element geometry.
+
+        Returns:
+            list[GmshPoint]: List of points belonging to stator physicals
+        """
+        phys_dim_tags = get_dim_tags(self.physicalElements)
+        p_tags = get_point_tags(phys_dim_tags)
+        return [GmshPoint(tag=p_tag) for p_tag in p_tags]
 
     def _set_linear_mesh(self, meshGainFactor: float, basisMeshsize: float):
         # calculate linear mesh size functions (ax+b)
         logging.debug("Setting linear mesh on rotor.")
         a1 = (1 - meshGainFactor) / self.movingBandRadius
         b1 = meshGainFactor
-
         # a2 = (meshGainFactor - 1) / (self.movingBandRadius - self.inner_radius)
         # b2 = meshGainFactor - a2 * self.movingBandRadius
-
-        for physical in self.physicalElements:
-            for geo in physical.geometricalElement:
-                points: List[Point] = []
-                if isinstance(geo, Surface):
-                    for curve in geo.curve:
-                        points.extend(curve.points)
-                elif isinstance(geo, Line):
-                    points.extend(geo.points)
-                # All curves should belong to a surface...
-                # else:
-                #     points.extend(geo.getPoints())
-                for point in points:
-                    rP = point.radius
-                    # if rP < rMb: # == rotor is allways true
-                    # meshSizeFaktor = (a1*rP+b1)
-                    pMeshSize = (a1 * rP + b1) * basisMeshsize
-                    point.meshLength = pMeshSize
+        for point in self._get_points():
+            rP = point.radius
+            # if rP < rMb: # == rotor is allways true
+            # meshSizeFaktor = (a1*rP+b1)
+            pMeshSize = (a1 * rP + b1) * basisMeshsize
+            point.meshLength = pMeshSize
 
     def _set_quad_mesh(self, meshGainFactor: float, basisMeshsize: float):
         logging.debug("Setting quadratic mesh on rotor.")
@@ -573,23 +575,12 @@ class Rotor:
         a = (meshGainFactor - 1) / f1
         b = -2 * a * r_mb
         c = (r_mb**2 * (meshGainFactor - 1)) / f1
-        for physical in self.physicalElements:
-            for geo in physical.geometricalElement:
-                points: List[Point] = []
-                if isinstance(geo, Surface):
-                    for curve in geo.curve:
-                        points.extend(curve.points)
-                elif isinstance(geo, Line):
-                    points.extend(geo.points)
-                # All curves should belong to a surface...
-                # else:
-                #     points.extend(geo.getPoints())
-                for point in points:
-                    rP = point.radius
-                    # faktor = 4770*rP**2 - 430 * rP + 10 # poly 2 fit
-                    gain_factor = (a * rP**2 + b * rP + c) + 1
-                    gain_factor = 1 if gain_factor < 1 else gain_factor
-                    point.meshLength = gain_factor * basisMeshsize
+        for point in self._get_points():
+            rP = point.radius
+            # faktor = 4770*rP**2 - 430 * rP + 10 # poly 2 fit
+            gain_factor = (a * rP**2 + b * rP + c) + 1
+            gain_factor = 1 if gain_factor < 1 else gain_factor
+            point.meshLength = gain_factor * basisMeshsize
 
     def addToScript(self, script):
         """Mit addToScript wird der Rotor zum Skriptobjekt übergeben und in gmsh-Syntax übersetzt.

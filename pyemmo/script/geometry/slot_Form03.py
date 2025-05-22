@@ -33,7 +33,7 @@ class Slot_Form03(Slot):
         self.machineDict = machineDict
         super().__init__(
             name="Slot_Form03",
-            geometricalElement=[],
+            geo_list=[],
             material=machineDict["material"],
         )
         self._name = "Slot_Form03_" + str(self.id)
@@ -96,7 +96,7 @@ class Slot_Form03(Slot):
         surfaceSlot = Surface("slotF1", [lS4, lS5, lS6, lS7, lS8])
 
         # Bei jedem Baukasten muss diese Definition identisch sein
-        self._geometricalElement = [surfaceSlotOP, surfaceSlot]
+        self._geo_list = [surfaceSlotOP, surfaceSlot]
         self._innerLinePart = [lS1]
         self._airDockingPoint = [pS1]
         self._laminationDockingLine = [lS3, lS5, lS6, lS7]

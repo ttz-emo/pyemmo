@@ -29,8 +29,8 @@ from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 from ...script.geometry.circleArc import CircleArc
 from ...script.geometry.line import Line
 from ...script.geometry.point import Point
+from ...script.geometry.segment_surface import SegmentSurface
 from .. import logger
-from ..json.SurfaceJSON import SurfaceAPI
 
 
 def get_lr_points(
@@ -94,8 +94,8 @@ def get_lr_points(
 
 def general_calc_spmsm_cont(
     machine: MachineSIPMSM,
-    rotor_lam_surf_list: list[SurfaceAPI],
-    rotor_mag_surf_list: list[SurfaceAPI],
+    rotor_lam_surf_list: list[SegmentSurface],
+    rotor_mag_surf_list: list[SegmentSurface],
     radius: float,
     is_internal_rotor: bool,
 ) -> tuple[list[Line | CircleArc], Point, Point]:
@@ -123,8 +123,8 @@ def general_calc_spmsm_cont(
     # rotor lamination:
     for curve in rotor_lam_surf_list[0].curve:
         if not (
-            math.isclose(curve.startPoint.radius, radius, abs_tol=1e-6)
-        ) and not math.isclose(a=curve.endPoint.radius, b=radius, abs_tol=1e-6):
+            math.isclose(curve.start_point.radius, radius, abs_tol=1e-6)
+        ) and not math.isclose(a=curve.end_point.radius, b=radius, abs_tol=1e-6):
             rotor_cont_line_list.append(curve)
 
     # logger.debug("---")
@@ -209,23 +209,23 @@ def calc_spmsm_rotor_cont(
                 # Rotor-Magnet Curves
                 if (
                     math.isclose(
-                        a=rotor_mag_curve.startPoint.coordinate[0],
-                        b=rotor_lam_curve.endPoint.coordinate[0],
+                        a=rotor_mag_curve.start_point.coordinate[0],
+                        b=rotor_lam_curve.end_point.coordinate[0],
                         abs_tol=1e-6,
                     )
                     and math.isclose(
-                        a=rotor_mag_curve.endPoint.coordinate[1],
-                        b=rotor_lam_curve.startPoint.coordinate[1],
+                        a=rotor_mag_curve.end_point.coordinate[1],
+                        b=rotor_lam_curve.start_point.coordinate[1],
                         abs_tol=1e-6,
                     )
                     and math.isclose(
-                        a=rotor_mag_curve.endPoint.coordinate[0],
-                        b=rotor_lam_curve.startPoint.coordinate[0],
+                        a=rotor_mag_curve.end_point.coordinate[0],
+                        b=rotor_lam_curve.start_point.coordinate[0],
                         abs_tol=1e-6,
                     )
                     and math.isclose(
-                        a=rotor_mag_curve.endPoint.coordinate[1],
-                        b=rotor_lam_curve.startPoint.coordinate[1],
+                        a=rotor_mag_curve.end_point.coordinate[1],
+                        b=rotor_lam_curve.start_point.coordinate[1],
                         abs_tol=1e-6,
                     )
                 ):

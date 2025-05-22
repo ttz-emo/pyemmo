@@ -63,8 +63,8 @@ class RotorASM(Rotor):
 
     @nbr_bars.setter
     def nbr_bars(self, nbr_bars: int):
-        if nbr_bars % 1 == 0.0:
-            self._nbr_bars = nbr_bars
+        if float(nbr_bars).is_integer():
+            self._nbr_bars = int(nbr_bars)
         else:
             raise ValueError(f"Number or rotor bars is not an integer: {nbr_bars}")
 
