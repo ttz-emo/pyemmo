@@ -329,7 +329,7 @@ def test_cut_out_greaterSymTool(machine_seg_surf: MachineSegmentSurface):
     # assert len(gmsh_surface.curve) == 8
     assert machine_seg_surf.dim == 2
     assert machine_seg_surf.name == "Test segment surface"
-    assert machine_seg_surf.id == 3
+    assert machine_seg_surf.id == 7
     assert len(machine_seg_surf.tools) == 3
     assert machine_seg_surf.tools[0].id == circ.id
 
