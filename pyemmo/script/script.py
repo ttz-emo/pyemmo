@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences
+# Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -122,7 +123,8 @@ class Script:
 
         DEFAULT SimuParam Dict:
 
-        .. code:: python
+        .. code-block:: python
+
             {
                 "SYM": {
                     "INIT_ROTOR_POS": 0.0,
@@ -368,16 +370,20 @@ class Script:
 
     @property
     def materialDict(self) -> dict[str, list[list[int]]]:
-        """Retrun the material dict of the script
+        """Return the material dict of the script
 
         Returns:
             Dict[str, List]: material dictionary having the structure:
-                {
-                    "material": [ListOfMaterials],
-                    "physicalElemID":  [[physicalIDs],[physicalIDs],...]
-                }
+                .. code-block:: python
+
+                    {
+                        "material": [ListOfMaterials],
+                        "physicalElemID":  [[physicalIDs],[physicalIDs],...]
+                    }
+
                 Every material in the material list has a list of physical
                 element IDs in the physicalElemID-List(=List of lists)
+
         """
         return self._materialDict
 
@@ -487,7 +493,7 @@ class Script:
             self.idedentPoints.append(point)
             return identicalPoint
         # point was allready drawn
-        logging.debug(f"Point '%s' has allready been added to the script.", point.name)
+        logging.debug("Point '%s' has allready been added to the script.", point.name)
         return None
 
     def _testPoint(
@@ -792,6 +798,10 @@ class Script:
                     splineType = "Bezier"
                 elif curve.splineType == 2:
                     splineType = "BSpline"
+                else:
+                    raise ValueError(
+                        f"Invalid Spline type with index {curve.splineType}"
+                    )
 
                 code = (
                     f"{curveName} = {curveID}; \n"
@@ -839,7 +849,7 @@ class Script:
         newLoop.append(oldLoop.pop(0))
         nbrLines = len(oldLoop)  # get the remaining number of lines
         # for every line thats left:
-        for outerCounter in range(nbrLines):
+        for _ in range(nbrLines):
             # Check which line in oldLoop appends to the last line in newLoop
             # if that line was found get direction, append it to newLoop and
             # remove it from oldLoop
@@ -1117,6 +1127,7 @@ class Script:
         # material domain. TODO: This could be handled by the pro-file for sure.
         try:
             airgap_mat = statorPhysicalsDict[DOMAIN_AIRGAP][0].material
+        # pylint: disable=locally-disabled, broad-exception-caught
         except Exception as exce_1:
             try:
                 airgap_mat = rotorPhysicalsDict[DOMAIN_AIRGAP][0].material
@@ -1219,17 +1230,20 @@ class Script:
         return None
 
     def addPostOperation(self, quantityName: str, name: str, **kwargs) -> None:
-        """Add a new PostOperation (Print) statement
+        r"""Add a new PostOperation (Print) statement
 
         Args:
             - quantityName (str): Name of the PostProcessing quantity (eg. a,
                 az, b, bn, hn, b_tangent, b_radial, br, mu, j, js, jz, Vmag,
                 I_n, ir, p_Lam, P_Lam, Inertia,...)
+
             - name (str, optional): Name of the PostOperation.
 
-            - **kwargs: kwargs are used to complete the Print statment, so eg.
+            - \*\*kwargs: kwargs are used to complete the Print statment, so eg.
                 to print Br on the whole Domain the function call would look
                 like:
+                .. code-block:: python
+
                     myScript.addPostOperation("b_radial", "User Defined
                     PostOperation", OnElementsOf="Domain",
                     File="Path/To/resFile.pos", LastTimeStepOnly="",)
@@ -1297,6 +1311,8 @@ class Script:
                 elementType = "Surface"
             elif geoElmType == Line:
                 elementType = "Curve"
+            else:
+                raise TypeError(f"Invalid geometry type {geoElmType}")
             code += (
                 "Physical "
                 + elementType
@@ -1479,15 +1495,15 @@ class Script:
                 physElemIDstr.append(str(physicalElementID))
             # add group for material
             matName = cleanName(mat.name)
-            # FIXME: Group Add fails if mat name exists twice
-            # added workaround by adding _dup id
+            # Group Add fails if mat name exists twice: workaround by adding _dup id
             try:
                 self.group.add(id="group_" + matName, glist=physElemIDstr)
             except ValueError as val_err:
                 if re.search(r"Identifier .* already in use.", val_err.args[0]):
                     logging.warning(
-                        f"Material with name {matName} is defined multiple times, but with different properties. "
-                        "Trying to add it again with different identifier..."
+                        "Material with name %s is defined multiple times, but with different "
+                        "properties. Trying to add it again with different identifier...",
+                        matName,
                     )
                     matName = matName + "_dup"
                     self.group.add(id="group_" + matName, glist=physElemIDstr)
@@ -1916,6 +1932,7 @@ class Script:
                 nbrSeg0 = (2 * pi * rRotorMB / mbMeshSize) - (
                     2 * pi * rRotorMB / mbMeshSize
                 ) % 10  # calc number of movingband segments by steps of 10
+                max_nbr_segments = max(nbrSeg0, 1440)
                 # create parameter code for movingband segment setting
                 meshModCode += "// Add mesh size setting for Movingband lines\n"
                 meshModCode += (
@@ -1923,7 +1940,7 @@ class Script:
                     + (
                         f"\tNbrMbSegments = {{{nbrSeg0}, "
                         """Name StrCat[INPUT_MESH, "Number of Rotor Movingband Segments"],"""
-                        "Max 1440, Min 180, Step 10, Help "
+                        f"Max {max_nbr_segments}, Min 180, Step 10, Help "
                         '"Set the number of mesh segments on the interface between rotor/stator'
                         "airgap and movingband. Value represents number of segments on whole "
                         'circle.", Visible Flag_ExpertMode},\n'
@@ -2004,7 +2021,12 @@ class Script:
         meshSettingsCode += (
             "Mesh.SurfaceEdges = 1;\nMesh.Light = 0;\nMesh.SurfaceFaces = 1;\n"
         )
-        meshSettingsCode += "Mesh.Algorithm = 6; // Frontal-Delaunay for 2D meshes\n\n"
+        meshSettingsCode += "Mesh.Algorithm = 6; // Frontal-Delaunay for 2D meshes\n"
+        # TODO: This can be removed with a new GetDP version according to:
+        # https://gitlab.onelab.info/gmsh/gmsh/-/issues/3194
+        meshSettingsCode += "Mesh.MshFileVersion = 4.0; // Fix bug in mesh file creation for GetDP Version 3.6.0\n"
+        meshSettingsCode += "\n"
+
         meshModCode = ""
         movingGeoCode = ""
         if self.machine:
@@ -2089,7 +2111,7 @@ class Script:
                     if isinstance(physicalElement, Magnet):
                         hasMagnets = True
         simuParamDict["SYM"]["FLAG_NL"] = flagCalcNL
-        if not hasMagnets:
+        if not hasMagnets and simuParamDict["SYM"]["CALC_MAGNET_LOSSES"] == 1:
             # if there where no magnet physical elements, set flag to false
             # even if its set to true...
             logging.warning(
@@ -2125,12 +2147,6 @@ class Script:
                 machine.stator.winding.save_to_file(
                     os.path.join(self.resultsPath, f"winding_{self.name}.wdg")
                 )
-                # FIXME: Cannot use plot function with Pyleecan-SWATEM version
-                # machine.stator.winding.plot_MMK(
-                #     filename=os.path.join(
-                #         self.resultsPath, rf".\{self.name}_MMF.png"
-                #     ),
-                # )
 
             # Stator angle for I_U = 1 p.u., I_V = -1/2, I_W = -1/2 in rad elec
             systemOffset = float(angle[where(mmfOrder == nbrPolePairs)])
@@ -2165,8 +2181,12 @@ class Script:
             simuParamDict["SYM"]["ParkAngOffset"] = dqOffset
 
     def _getParamCode(self, paramName: str, paramValue) -> str:
-        """Get a line of parameter code:
-        "paramCode = f"{paramName} = {paramValue};\n" """
+        """
+        Get a line of parameter code:
+        .. code-block:: python
+
+            paramCode = f"{paramName} = {paramValue}
+        """
         if isinstance(paramValue, (str)):
             paramCode = f'{paramName} = "{paramValue}";\n'  # add "" for string value
         else:  # isinstance(paramValue,(int, float)):

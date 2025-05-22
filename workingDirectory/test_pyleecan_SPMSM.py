@@ -20,18 +20,16 @@
 #
 """This tutorial script shows how to use the pyemmo api to create a ONELAB
 model of a pyleecan machine."""
-# %%
-import os
-from os.path import join
 import logging
 
-from pyleecan.Functions import load
-from pyleecan.Classes.MachineSCIM import MachineSCIM
-from pyleecan.definitions import USER_DIR
+# %%
+import os
 
-from pyemmo.definitions import ROOT_DIR
+from pyleecan.definitions import USER_DIR
+from pyleecan.Functions import load
+
 from pyemmo.api.pyleecan import main as pyleecanAPI
-from pyemmo.functions.runOnelab import runCalcforCurrent, findGmsh, findGetDP
+from pyemmo.definitions import ROOT_DIR
 
 # disable messages of matplotlib
 logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
@@ -45,12 +43,14 @@ logging.getLogger().setLevel(logging.INFO)
 #     ROOT_DIR, r"tests\data\api\pyleecan\Toyota_Prius.json"
 # )
 DATA_DIR = USER_DIR
-machine_file_list = ["SIPMSM_001.json", "Railway_Traction_noDucts.json"]
+machine_file_list = [
+    "Toyota_Prius.json",
+    "SIPMSM_001.json",
+    "Railway_Traction_noDucts.json",
+]
 
 machine_file_path = os.path.join(DATA_DIR, "Machine", machine_file_list[0])
-machine_file_path = (
-    r"D:\pyemmo\tests\data\api\pyleecan\03_synrm_muster_Bachelor.json"
-)
+# machine_file_path = r"D:\pyemmo\tests\data\api\pyleecan\03_synrm_muster_Bachelor.json"
 
 if not os.path.isfile(machine_file_path):  # make sure file exists
     raise FileNotFoundError(machine_file_path)
@@ -62,10 +62,7 @@ if not os.path.isdir(resFolder):
 
 # Load pyleecan machine object and call pyemmo-pyleecan-api
 # pylint: disable=locally-disabled, no-member
-pyleecan_machine: MachineSCIM = load.load(
-    machine_file_path
-)  # load machine obj
-
+pyleecan_machine = load.load(machine_file_path)  # load machine obj
 # %%
 # FIX: rotor bar material
 CuMat = load.load(os.path.join(DATA_DIR, "Material", "Copper2.json"))

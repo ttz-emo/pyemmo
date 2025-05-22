@@ -39,7 +39,8 @@ from .. import rootLogger as logger
 def read_timetable_dat(
     file_path: PathLike,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """returns the Data from the the .*dat file witten in the TimeTable Format
+    """
+    returns the Data from the the .*dat file witten in the TimeTable Format
     and returns the time and the corresponding data.
 
     TimeTable format is a whitespace separated list of time-value pairs and
@@ -72,10 +73,7 @@ def read_timetable_dat(
         # static simulation
         if not data_array.size > 1:
             # there must be at least one time + value
-            raise ValueError(
-                f"Less than one value was imported from {file_path}. "
-                "There must be at least one time-value pair!"
-            )
+            return (np.array([]), np.array([]))
         time = np.reshape(data_array[0], (1))
         values = data_array[1:]
     else:
@@ -90,10 +88,12 @@ def read_timetable_dat(
 def read_RegionValue_dat(
     file_path: PathLike,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Import data from 'RegionValue' formatted .dat-file (GetDP resutl file).
+    """
+    Import data from 'RegionValue' formatted .dat-file (GetDP resutl file).
     This usually only applies to torque results computed with the virtual works
     method.
     RegionValue format looks like:
+
         'time0 val0 time1 val1 ...'
 
     Args:
@@ -329,8 +329,10 @@ def importPos(
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Import POS file via gmsh api.
 
-    TODO: Does not work for SP-formatted pos files.
-        -> Use function getListData()
+    .. todo::
+
+        Does not work for SP-formatted pos files.
+            -> Use function getListData()
 
     Args:
         pos_file (Union[str, PathLike]): _description_

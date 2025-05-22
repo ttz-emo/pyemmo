@@ -1,6 +1,4 @@
-// This script was created with pyemmo (Version 1.3.1b1, git bc8992)
-
-// This script was created with pyemmo (Version 1.3.1b1)
+// This script was created with pyemmo (Version 1.3.2, git b5e4ca)
 
 /*
   This template file contains a generic getdp/onelab template for 2D models of

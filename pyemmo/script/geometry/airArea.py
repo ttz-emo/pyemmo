@@ -31,7 +31,9 @@ class AirArea(PhysicalElement):
     Beim Verwenden vom Baukasten muss der Luftspalt vom Nutzer nicht manuell definiert werden.
     Die Ergänzung vom Luftraum muss bei der Erstellung vom Rotor bzw. Stator automatisch erfolgen
     (siehe RotorSPMSM.py).
+
         \\image html class_airArea.png
+
     """
 
     ###
