@@ -195,28 +195,29 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
             logging.debug(
                 "New symmetry for GmshSegmentSurface (%s): %i", self.name, symmetry
             )
-            # create nbrSegments/symmetry copies
-            parent_name = self.name  # save name to update it later
-            dup_surfs: list[GmshSegmentSurface] = []  # list of duplicate surfaces
-            logging.debug(
-                "Rotating and duplicating %s %i times",
-                self.name,
-                int(self.nbr_segments / symmetry),
-            )
-            for segment in range(1, int(self.nbr_segments / symmetry)):
-                # rotate and duplicate parent surface if needed
-                dup_surfs.append(self.rotate_duplicate(segment))
-            comb_surf = self.combine(dup_surfs)  # combine the parent surfaces
-            # update surface tag (without using set_tag() method!)
-            self._id = comb_surf.id
-            self._cut = comb_surf.tools  # update tools
-            self.nbr_segments = symmetry  # update number of segments
-            logging.debug(
-                "New number of segments for GmshSegmentSurface (%s): %i",
-                parent_name,
-                self.nbr_segments,
-            )
-            self.name = parent_name  # update name
+            if (self.nbr_segments / symmetry) > 1:
+                # create nbrSegments/symmetry copies
+                parent_name = self.name  # save name to update it later
+                dup_surfs: list[GmshSegmentSurface] = []  # list of duplicate surfaces
+                logging.debug(
+                    "Rotating and duplicating %s %i times",
+                    self.name,
+                    int(self.nbr_segments / symmetry),
+                )
+                for segment in range(1, int(self.nbr_segments / symmetry)):
+                    # rotate and duplicate parent surface if needed
+                    dup_surfs.append(self.rotate_duplicate(segment))
+                comb_surf = self.combine(dup_surfs)  # combine the parent surfaces
+                # update surface tag (without using set_tag() method!)
+                self._id = comb_surf.id
+                self._cut = comb_surf.tools  # update tools
+                self.nbr_segments = symmetry  # update number of segments
+                logging.debug(
+                    "New number of segments for GmshSegmentSurface (%s): %i",
+                    parent_name,
+                    self.nbr_segments,
+                )
+                self.name = parent_name  # update name
             for segment in range(int(tool.nbr_segments / symmetry)):
                 dup_tool = tool.rotate_duplicate(segment)  # rotate and duplicate tool
                 GmshSurface.cutOut(self, dup_tool, keepTool)  # cut out new tool
