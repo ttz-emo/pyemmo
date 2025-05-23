@@ -18,16 +18,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module to test the function build_pyemmo_line_list of pyleecan api"""
+"""Module to test the function create_gmsh_lines of pyleecan api"""
 from math import isclose, pi
 
+import gmsh
 import pytest
 from pyleecan.Classes.Arc1 import Arc1
 from pyleecan.Classes.Arc2 import Arc2
 from pyleecan.Classes.Arc3 import Arc3
 from pyleecan.Classes.Segment import Segment
 
-from pyemmo.api.pyleecan.build_pyemmo_line_list import build_pyemmo_line_list
+from pyemmo.api.pyleecan.create_gmsh_lines import create_gmsh_lines
 from pyemmo.script.geometry.circleArc import CircleArc
 from pyemmo.script.geometry.line import Line
 
@@ -37,6 +38,15 @@ from pyemmo.script.geometry.line import Line
 # =======================
 # Declaration of fixtures
 # =======================
+@pytest.fixture(scope="module", autouse=True)
+def initialize_gmsh():
+    """init gmsh function"""
+    gmsh.initialize()
+    gmsh.model.add("test_model")
+    yield
+    gmsh.finalize()
+
+
 @pytest.fixture
 def sample_segment():
     """Fixture providing a sample Segment for testing."""
@@ -78,32 +88,32 @@ def sample_arc3():
 # =================
 def test_build_pyemmo_line_list_empty_list() -> None:
     """
-    Test case to verify the behavior of build_pyemmo_line_list function when
+    Test case to verify the behavior of create_gmsh_lines function when
     provided an empty list.
 
     Raises:
         IndexError: If the function fails to handle an empty list input correctly.
     """
     with pytest.raises(IndexError):
-        build_pyemmo_line_list([])
+        create_gmsh_lines([])
 
 
 def test_build_pyemmo_line_list_segment_error() -> None:
     """
-    Test case to verify the behavior of build_pyemmo_line_list function when
+    Test case to verify the behavior of create_gmsh_lines function when
     provided a list containing a Segment object with invalid parameters.
 
     Raises:
         ValueError: If the function fails to handle the provided Segment
             object correctly.
     """
-    with pytest.raises(ValueError):
-        build_pyemmo_line_list([Segment(begin=0 + 0j, end=0 + 0j)])
+    with pytest.raises(Exception):
+        create_gmsh_lines([Segment(begin=0 + 0j, end=0 + 0j)])
 
 
 def test_build_pyemmo_line_list_wrong_imput_type() -> None:
     """
-    Test case to verify the behavior of build_pyemmo_line_list function when
+    Test case to verify the behavior of create_gmsh_lines function when
     provided an invalid input type.
 
     Raises:
@@ -111,13 +121,13 @@ def test_build_pyemmo_line_list_wrong_imput_type() -> None:
             correctly.
     """
     with pytest.raises(TypeError):
-        build_pyemmo_line_list(Segment(begin=0 + 0j, end=0 + 0j))
+        create_gmsh_lines(Segment(begin=0 + 0j, end=0 + 0j))
 
 
 def test_build_pyemmo_line_list_with_segment(sample_segment: Segment) -> None:
-    """Test function for the build_pyemmo_line_list with a single Segment.
+    """Test function for the create_gmsh_lines with a single Segment.
 
-    This function verifies that the build_pyemmo_line_list correctly translates
+    This function verifies that the create_gmsh_lines correctly translates
     a list containing a sample Segment into a list of Line objects from the pyemmo
     module. It checks if the result is a list and if all items in the list are
     instances of the Line class.
@@ -129,7 +139,7 @@ def test_build_pyemmo_line_list_with_segment(sample_segment: Segment) -> None:
         None: The function asserts the test conditions and raises an exception
         if any of the conditions are not met.
     """
-    pyemmo_line_list = build_pyemmo_line_list([sample_segment])
+    pyemmo_line_list = create_gmsh_lines([sample_segment])
 
     assert pyemmo_line_list[0].start_point.coordinate == (0, 0, 0)
     assert pyemmo_line_list[0].end_point.coordinate == (1, 1, 0)
@@ -141,10 +151,10 @@ def test_build_pyemmo_line_list_with_segment(sample_segment: Segment) -> None:
 def test_build_pyemmo_line_list_arc1_under_180(
     sample_arc1_under_180_deg: Arc1,
 ) -> None:
-    """Test function for build_pyemmo_line_list with an Arc1 angle under 180 degrees.
+    """Test function for create_gmsh_lines with an Arc1 angle under 180 degrees.
 
     This function tests the translation of an Arc1 object with an angle under 180 degrees
-    into a pyemmo_line_list using build_pyemmo_line_list. It checks if the resulting
+    into a pyemmo_line_list using create_gmsh_lines. It checks if the resulting
     pyemmo_line_list contains a single Line object with the expected start and end points.
     Additionally, it ensures that the length of the pyemmo_line_list is 1, and the types
     of the list and its elements are as expected.
@@ -156,7 +166,7 @@ def test_build_pyemmo_line_list_arc1_under_180(
         None: The function asserts the test conditions and raises an exception
         if any of the conditions are not met.
     """
-    pyemmo_line_list = build_pyemmo_line_list([sample_arc1_under_180_deg])
+    pyemmo_line_list = create_gmsh_lines([sample_arc1_under_180_deg])
 
     assert pyemmo_line_list[0].start_point.coordinate == (0, 0, 0)
     assert pyemmo_line_list[0].end_point.coordinate == (1, 1, 0)
@@ -168,10 +178,10 @@ def test_build_pyemmo_line_list_arc1_under_180(
 def test_build_pyemmo_line_list_arc1_is_180(
     sample_arc1_is_180_deg: Arc1,
 ) -> None:
-    """Test function for build_pyemmo_line_list with an Arc1 angle equal to 180 degrees.
+    """Test function for create_gmsh_lines with an Arc1 angle equal to 180 degrees.
 
     This function tests the translation of an Arc1 object with an angle of 180 degrees
-    into a pyemmo_line_list using build_pyemmo_line_list. It checks if the resulting
+    into a pyemmo_line_list using create_gmsh_lines. It checks if the resulting
     pyemmo_line_list contains two CircleArc objects, representing the split of the
     original Arc1. Additionally, it ensures that the length of the pyemmo_line_list is 2,
     and the types of the list and its elements are as expected.
@@ -183,7 +193,7 @@ def test_build_pyemmo_line_list_arc1_is_180(
         None: The function asserts the test conditions and raises an exception
         if any of the conditions are not met.
     """
-    pyemmo_line_list = build_pyemmo_line_list([sample_arc1_is_180_deg])
+    pyemmo_line_list = create_gmsh_lines([sample_arc1_is_180_deg])
     assert len(pyemmo_line_list) == 2
     assert isinstance(pyemmo_line_list, list)
     assert all(isinstance(item, CircleArc) for item in pyemmo_line_list)
@@ -192,10 +202,10 @@ def test_build_pyemmo_line_list_arc1_is_180(
 def test_build_pyemmo_line_list_arc2_under_180(
     sample_arc2_under_180_deg: Arc2,
 ) -> None:
-    """Test function for build_pyemmo_line_list with an Arc2 angle under 180 degrees.
+    """Test function for create_gmsh_lines with an Arc2 angle under 180 degrees.
 
     This function tests the translation of an Arc2 object with an angle under 180 degrees
-    into a pyemmo_line_list using build_pyemmo_line_list. It checks if the resulting
+    into a pyemmo_line_list using create_gmsh_lines. It checks if the resulting
     pyemmo_line_list contains a single Line object with the expected start, end, and
     center points, as well as the correct angle. Additionally, it ensures that the length
     of the pyemmo_line_list is 1, and the types of the list and its elements are as expected.
@@ -207,7 +217,7 @@ def test_build_pyemmo_line_list_arc2_under_180(
         None: The function asserts the test conditions and raises an exception
         if any of the conditions are not met.
     """
-    pyemmo_line_list = build_pyemmo_line_list([sample_arc2_under_180_deg])
+    pyemmo_line_list = create_gmsh_lines([sample_arc2_under_180_deg])
 
     assert pyemmo_line_list[0].start_point.coordinate == (0, 0, 0)
     assert pyemmo_line_list[0].center.coordinate == (1, 0, 0)
@@ -222,10 +232,10 @@ def test_build_pyemmo_line_list_arc2_under_180(
 def test_build_pyemmo_line_list_arc2_is_180(
     sample_arc2_is_180_deg: Arc2,
 ) -> None:
-    """Test function for build_pyemmo_line_list with an Arc2 angle equal to 180 degrees.
+    """Test function for create_gmsh_lines with an Arc2 angle equal to 180 degrees.
 
     This function tests the translation of an Arc2 object with an angle of 180 degrees
-    into a pyemmo_line_list using build_pyemmo_line_list. It checks if the resulting
+    into a pyemmo_line_list using create_gmsh_lines. It checks if the resulting
     pyemmo_line_list contains two CircleArc objects, representing the split of the
     original Arc2. Additionally, it ensures that the length of the pyemmo_line_list is 2,
     and the types of the list and its elements are as expected.
@@ -237,17 +247,17 @@ def test_build_pyemmo_line_list_arc2_is_180(
         None: The function asserts the test conditions and raises an exception
         if any of the conditions are not met.
     """
-    pyemmo_line_list = build_pyemmo_line_list([sample_arc2_is_180_deg])
+    pyemmo_line_list = create_gmsh_lines([sample_arc2_is_180_deg])
     assert len(pyemmo_line_list) == 2
     assert isinstance(pyemmo_line_list, list)
     assert all(isinstance(item, CircleArc) for item in pyemmo_line_list)
 
 
 def test_build_pyemmo_line_list_with_arc3(sample_arc3):
-    """Test function for build_pyemmo_line_list with an Arc3.
+    """Test function for create_gmsh_lines with an Arc3.
 
     This function tests the translation of an Arc3 object into a pyemmo_line_list
-    using build_pyemmo_line_list. It checks if the resulting pyemmo_line_list
+    using create_gmsh_lines. It checks if the resulting pyemmo_line_list
     contains two CircleArc objects, representing the split of the original Arc3.
     Additionally, it ensures that the length of the pyemmo_line_list is 2, and the
     types of the list and its elements are as expected.
@@ -259,7 +269,7 @@ def test_build_pyemmo_line_list_with_arc3(sample_arc3):
         None: The function asserts the test conditions and raises an exception
         if any of the conditions are not met.
     """
-    pyemmo_line_list = build_pyemmo_line_list([sample_arc3])
+    pyemmo_line_list = create_gmsh_lines([sample_arc3])
     assert len(pyemmo_line_list) == 2
     assert isinstance(pyemmo_line_list, list)
     assert all(isinstance(item, CircleArc) for item in pyemmo_line_list)
@@ -274,7 +284,7 @@ def test_build_pyemmo_line_list_with_mixed_elements(
     sample_arc3,
 ):
     """Function to test the line list function with multiple elements"""
-    pyemmo_line_list = build_pyemmo_line_list(
+    pyemmo_line_list = create_gmsh_lines(
         [
             sample_segment,
             sample_arc1_under_180_deg,

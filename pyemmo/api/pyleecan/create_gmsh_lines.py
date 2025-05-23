@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO, Technical University of Applied Sciences
+# Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -17,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module: build_pyemmo_line_list
+"""Module: create_gmsh_lines
 
 This module provides functions to convert geometry elements from pyleecan to pyemmo format.
 
@@ -31,7 +32,7 @@ Module dependencies:
     - .build_pyemmo_point.build_pyemmo_point
 
 Functions:
-    -   ``build_pyemmo_line_list``: Translates a list of pyleecan curves into a
+    -   ``create_gmsh_lines``: Translates a list of pyleecan curves into a
         list of pyemmo curves.
 
 Example:
@@ -39,7 +40,7 @@ Example:
     .. code:: python
 
         pyleecan_line_list = [Segment(...), Arc1(...), ...]
-        pyemmo_line_list = build_pyemmo_line_list(pyleecan_line_list)
+        pyemmo_line_list = create_gmsh_lines(pyleecan_line_list)
         # Returns a list of pyemmo curves corresponding to the input pyleecan curves.
 
 Raises:
@@ -54,78 +55,82 @@ from pyleecan.Classes.Arc2 import Arc2
 from pyleecan.Classes.Arc3 import Arc3
 from pyleecan.Classes.Segment import Segment
 
-from ...script.geometry.circleArc import CircleArc
-from ...script.geometry.line import Line
-from .build_pyemmo_point import build_pyemmo_point
+from ...script.gmsh.gmsh_arc import GmshArc
+from ...script.gmsh.gmsh_line import GmshLine
+from .create_gmsh_point import create_gmsh_point
 
 
-def build_pyemmo_line_list(
-    pyleecan_line_list: list[Segment | Arc1 | Arc2 | Arc3],
-) -> list[Line | CircleArc]:
+def create_gmsh_lines(
+    pyleecan_lines: list[Segment | Arc1 | Arc2 | Arc3],
+) -> list[GmshLine | GmshArc]:
     """Translates a list of pyleecan curves into a list of pyemmo curves.
 
     This function translates a list of pyleecan curves (Segment, Arc1, Arc2, Arc3)
     into a list of pyemmo curves (Line, CircleArc).
 
     Args:
-        pyleecan_line_list (list[Union[Segment, Arc1, Arc2, Arc3]]): A list of curves
+        pyleecan_lines (list[Union[Segment, Arc1, Arc2, Arc3]]): A list of curves
             from a pyleecan-surface.
 
     Returns:
         list[Union[Line, CircleArc]]: A list of curves for the pyemmo-surface.
 
     Raises:
-        TypeError: If pyleecan_line_list is not of type 'list'.
-        IndexError: If pyleecan_line_list is empty.
+        TypeError: If pyleecan_lines is not of type 'list'.
+        IndexError: If pyleecan_lines is empty.
     """
     pyemmo_line_list = []
 
-    if not isinstance(pyleecan_line_list, list):
+    if not isinstance(pyleecan_lines, list):
         raise TypeError(
             "Type of pyleecan_line_list is not 'list'. No translation possible."
         )
 
-    if len(pyleecan_line_list) == 0:
+    if len(pyleecan_lines) == 0:
         raise IndexError(
             "The pyleecan_line_list provided is empty. No translation possible."
         )
 
-    for geo_element in pyleecan_line_list:
-        if isinstance(geo_element, Segment):
+    for line in pyleecan_lines:
+        if isinstance(line, Segment):
             # translate a Segment into a Line
-            translated_line = Line(
-                name="Line",
-                start_point=build_pyemmo_point(geo_element.begin),
-                end_point=build_pyemmo_point(geo_element.end),
+            pyemmo_line_list.append(
+                GmshLine.from_points(
+                    start_point=create_gmsh_point(line.begin),
+                    end_point=create_gmsh_point(line.end),
+                    name="",
+                )
             )
-            pyemmo_line_list.append(translated_line)
 
         else:
             # translate an Arc1, Arc2 into CircleArc
-            if abs(geo_element.get_angle(is_deg=True)) >= 180:
-                translated_line = CircleArc(
-                    name="CircleArc",
-                    startPoint=build_pyemmo_point(geo_element.get_begin()),
-                    endPoint=build_pyemmo_point(geo_element.get_middle()),
-                    centerPoint=build_pyemmo_point(geo_element.get_center()),
+            if abs(line.get_angle(is_deg=True)) >= 180:
+                # NOTE: Workaround for Gmsh handling of arcs with angle >90°. Split up
+                # the arc into two arcs with angle <90°.
+                pyemmo_line_list.append(
+                    GmshArc.from_points(
+                        start_point=create_gmsh_point(line.get_begin()),
+                        end_point=create_gmsh_point(line.get_middle()),
+                        center_point=create_gmsh_point(line.get_center()),
+                        name="",
+                    )
                 )
-                pyemmo_line_list.append(translated_line)
-
-                translated_line = CircleArc(
-                    name="CircleArc",
-                    startPoint=build_pyemmo_point(geo_element.get_middle()),
-                    endPoint=build_pyemmo_point(geo_element.get_end()),
-                    centerPoint=build_pyemmo_point(geo_element.get_center()),
+                pyemmo_line_list.append(
+                    GmshArc.from_points(
+                        start_point=create_gmsh_point(line.get_middle()),
+                        end_point=create_gmsh_point(line.get_end()),
+                        center_point=create_gmsh_point(line.get_center()),
+                        name="",
+                    )
                 )
-                pyemmo_line_list.append(translated_line)
-
             else:
-                translated_line = CircleArc(
-                    name="CircleArc",
-                    startPoint=build_pyemmo_point(geo_element.get_begin()),
-                    endPoint=build_pyemmo_point(geo_element.get_end()),
-                    centerPoint=build_pyemmo_point(geo_element.get_center()),
+                pyemmo_line_list.append(
+                    GmshArc.from_points(
+                        start_point=create_gmsh_point(line.get_begin()),
+                        end_point=create_gmsh_point(line.get_end()),
+                        center_point=create_gmsh_point(line.get_center()),
+                        name="",
+                    )
                 )
-                pyemmo_line_list.append(translated_line)
 
     return pyemmo_line_list
