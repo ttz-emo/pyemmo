@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -18,19 +19,13 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """
-Module: translate_surfs
+Module: create_gmsh_surface
 
 This module provides functions for translating surfaces from pyleecan format to
 pyemmo format.
 
 Functions:
-    -   ``build_pyemmo_material``: Translates a pyleecan-material into a pyemmo-
-        material.
-
-    -   ``build_pyemmo_line_list``: Translates a list of pyleecan curves into a
-        list of pyemmo curves.
-
-    -   ``translate_surfs``: Translates pyleecan surfaces into pyemmo surfaces.
+    -   ``create_gmsh_surface``: Translates pyleecan surfaces into pyemmo surfaces.
 """
 
 from __future__ import annotations
@@ -53,11 +48,11 @@ from ..json import (
     STATOR_SLOT_IDEXT,
 )
 from . import POLE_HOLE_IDEXT, PyleecanMachine
-from .build_pyemmo_line_list import build_pyemmo_line_list
 from .build_pyemmo_material import build_pyemmo_material
+from .create_gmsh_lines import create_gmsh_lines
 
 
-def translate_surface(
+def create_gmsh_surface(
     name_split_list: list[str],  # list with the splitted names
     machine: PyleecanMachine,
     surface: pyleecan.Classes.Surface.Surface,
@@ -178,7 +173,7 @@ def translate_surface(
     pyemmo_surf = SegmentSurface(
         name=name,
         idExt=id_ext,
-        curves=build_pyemmo_line_list(surface.line_list),
+        curves=create_gmsh_lines(surface.line_list),
         material=build_pyemmo_material(pyleecan_mat),
         nbr_segments=nbr_seg,
         angle=angle_seg,
