@@ -31,22 +31,20 @@ Classes:
 
 from __future__ import annotations
 
-from ...script.geometry.point import Point
+from ...script.gmsh.gmsh_point import GmshPoint
 
 
-def build_pyemmo_point(pyleecan_point: complex) -> Point:
+def create_gmsh_point(pyleecan_point: complex, meshLength: float = 1e-3) -> GmshPoint:
     """Translates the coordinates of a point in pyleecan into a pyemmo point.
 
     Args:
-        pyleecanPoint (complex): coordinates of the pyleecan point
+        pyleecan_point (complex): coordinates of point in pyleecan.
 
     Returns:
-        Point: pyemmoPoint: pyemmo point
+        GmshPoint: Point in gmsh
     """
-    coords = [pyleecan_point.real, pyleecan_point.imag]
 
-    pyemmo_point = Point(
-        name="point_pylc", x=coords[0], y=coords[1], z=0, meshLength=1e-3
+    gmsh_point = GmshPoint.from_coordinates(
+        coords=[pyleecan_point.real, pyleecan_point.imag], meshLength=meshLength
     )
-
-    return pyemmo_point
+    return gmsh_point
