@@ -17,7 +17,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
+# %%
 
 import json
 import logging
@@ -81,13 +81,14 @@ if os.path.isfile(pylcn_machine_testfile):
 # 17 (SIPMSM, SlotW22 + SlotM11) - full model
 # 31 (SynRM, SlotW11 (missing wedge) + HoleM54) - 1/4 model
 # 34 (Prius, SlotW11 + HoleM50)
-fileName = machineList[33]  # SELECT MACHINE HERE BY INDEX OR NAME
+fileName = machineList[31]  # SELECT MACHINE HERE BY INDEX OR NAME
 # fileName = "SIPMSM_002.json"  # SELECT MACHINE HERE BY INDEX OR NAME
 print("\nUsing machine: " + fileName)
 pyleecan_machine: Machine = load.load(  # pylint: disable=locally-disabled, no-member
     os.path.abspath(os.path.join(machineFolder, fileName))
 )
 # Workaround for wrong material
+# pylint: disable=locally-disabled, no-member
 CuMat = load.load(os.path.join(PYLEECAN_DATA_DIR, "Material", "Copper2.json"))
 try:
     if pyleecan_machine.rotor.winding.conductor.cond_mat.name == "Copper1":
@@ -103,6 +104,8 @@ except AttributeError:
     pass
 except Exception as exce:
     raise exce
+# %%
+# Run PyEMMO Pyleecan api
 pyleecanAPI.main(
     pyleecan_machine, model_dir=os.path.join(resFolder, pyleecan_machine.name)
 )
