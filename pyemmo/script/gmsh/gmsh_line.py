@@ -159,6 +159,12 @@ class GmshLine(GmshGeometry, Line):
             f"end_point=({self.end_point.x:.1e}, {self.end_point.y:.1e}, {self.end_point.z:.1e}))"
         )
 
+    def __eq__(self, other):
+        if type(self) == type(other):
+            if self.id == other.id:
+                return True
+        return False
+
     @property
     def points(self) -> list[GmshPoint]:
         """

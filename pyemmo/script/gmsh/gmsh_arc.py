@@ -160,6 +160,12 @@ class GmshArc(GmshLine, CircleArc):
         self._id = tag  # set tag
         self.name = name
 
+    def __eq__(self, other):
+        if type(self) == type(other):
+            if self.id == other.id:
+                return True
+        return False
+
     @classmethod
     def from_points(
         cls,

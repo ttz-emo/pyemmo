@@ -113,6 +113,12 @@ class GmshPoint(GmshGeometry, Point):
         # NOTE: There is no need to call the constructor of the Point class here, because
         # all relevant properties are accessed dynamically via the gmsh API.
 
+    def __eq__(self, other):
+        if type(self) == type(other):
+            if self.id == other.id:
+                return True
+        return False
+
     @classmethod
     def from_coordinates(
         cls,

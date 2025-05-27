@@ -158,6 +158,12 @@ class GmshSurface(GmshGeometry, Surface):
         self._cut: list[Surface] = []
         self._is_tool: bool = False
 
+    def __eq__(self, other):
+        if type(self) == type(other):
+            if self.id == other.id:
+                return True
+        return False
+
     @classmethod
     def from_curve_loop(
         cls, curve_loop: list[Union[GmshLine, GmshArc]], name: str = ""
