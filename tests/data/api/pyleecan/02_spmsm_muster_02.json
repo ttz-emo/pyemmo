@@ -1,12 +1,13 @@
 {
   "__class__": "MachineSIPMSM",
-  "__save_date__": "2023_11_06 11h48min37s ",
-  "__version__": "pyleecan_1.5.0",
-  "desc": null,
+  "__save_date__": "2025_05_27 12h01min07s ",
+  "__version__": "pyleecan_1.5.2",
+  "desc": "10 Pole 12 Slot Tooth Coil winding machine with 6 axial holes on the stator yoke to create different symmetry.",
   "frame": null,
   "logger_name": "FEMM_SPMSMPyleecanMuster.Machine",
-  "name": "SPMSMPyleecanMuster_2",
+  "name": "02_spmsm_muster_02",
   "rotor": {
+    "Brm20_matrix": null,
     "Kf1": 0.95,
     "L1": 0.08,
     "Nrvd": null,
@@ -608,13 +609,14 @@
         "rho": 7650.0
       }
     },
+    "mur_lin_matrix": null,
     "notch": [],
     "skew": null,
     "slot": {
       "H0": 0.01,
-      "Hmag": 0.01,
+      "H1": 0.01,
       "W0": 0.4363323129985824,
-      "Wmag": 0.3490658503988659,
+      "W1": 0.3490658503988659,
       "Zs": 10,
       "__class__": "SlotM11",
       "is_bore": true,
@@ -627,12 +629,82 @@
     "Kf1": 0.95,
     "Ksfill": null,
     "L1": 0.08,
-    "Nrvd": null,
+    "Nrvd": 0,
     "Rext": 0.1,
     "Rint": 0.06,
-    "Wrvd": null,
+    "Wrvd": 0.0,
     "__class__": "LamSlotWind",
-    "axial_vent": [],
+    "axial_vent": [
+      {
+        "Alpha0": 0,
+        "D0": 0.008,
+        "H0": 0.095,
+        "Zh": 6,
+        "__class__": "VentilationCirc",
+        "magnetization_dict_offset": null,
+        "mat_void": {
+          "HT": {
+            "Cp": null,
+            "__class__": "MatHT",
+            "alpha": null,
+            "lambda_x": null,
+            "lambda_y": null,
+            "lambda_z": null
+          },
+          "__class__": "Material",
+          "desc": null,
+          "eco": {
+            "__class__": "MatEconomical",
+            "cost_unit": null,
+            "unit_name": null
+          },
+          "elec": {
+            "__class__": "MatElectrical",
+            "alpha": null,
+            "epsr": null,
+            "rho": null
+          },
+          "is_isotropic": null,
+          "mag": {
+            "BH_curve": {
+              "__class__": "ImportMatrix",
+              "is_transpose": null
+            },
+            "Brm20": null,
+            "LossData": {
+              "__class__": "ImportMatrix",
+              "is_transpose": null
+            },
+            "ModelBH": {
+              "Bmax": null,
+              "Hmax": null,
+              "__class__": "ModelBH",
+              "delta": null
+            },
+            "Wlam": null,
+            "__class__": "MatMagnetics",
+            "alpha_Br": null,
+            "is_BH_extrapolate": null,
+            "mur_lin": null
+          },
+          "name": null,
+          "path": null,
+          "struct": {
+            "Ex": null,
+            "Ey": null,
+            "Ez": null,
+            "Gxy": null,
+            "Gxz": null,
+            "Gyz": null,
+            "__class__": "MatStructural",
+            "nu_xy": null,
+            "nu_xz": null,
+            "nu_yz": null,
+            "rho": null
+          }
+        }
+      }
+    ],
     "bore": null,
     "is_internal": false,
     "is_stator": true,
@@ -1187,69 +1259,66 @@
         "Wwire": 0.0032,
         "__class__": "CondType12",
         "cond_mat": {
-    "HT": {
-        "Cp": 381.0,
-        "__class__": "MatHT",
-        "alpha": 2.1e-05,
-        "lambda_x": 385.0,
-        "lambda_y": 385.0,
-        "lambda_z": 385.0
-    },
-    "__class__": "Material",
-    "__save_date__": "2021_05_03 14h38min33s ",
-    "__version__": "pyleecan_1.2.1",
-    "desc": "COPPER WINDING",
-    "eco": {
-        "__class__": "MatEconomical",
-        "cost_unit": 60.0,
-        "unit_name": "$"
-    },
-    "elec": {
-        "__class__": "MatElectrical",
-        "alpha": 0.003,
-        "epsr": 1,
-        "rho": 2.2e-08
-    },
-    "is_isotropic": true,
-    "mag": {
-        "BH_curve": {
-            "__class__": "ImportMatrix",
-            "is_transpose": false
+          "HT": {
+            "Cp": 381.0,
+            "__class__": "MatHT",
+            "alpha": 2.1e-05,
+            "lambda_x": 385.0,
+            "lambda_y": 385.0,
+            "lambda_z": 385.0
+          },
+          "__class__": "Material",
+          "desc": "COPPER WINDING",
+          "eco": {
+            "__class__": "MatEconomical",
+            "cost_unit": 60.0,
+            "unit_name": "$"
+          },
+          "elec": {
+            "__class__": "MatElectrical",
+            "alpha": 0.003,
+            "epsr": 1,
+            "rho": 2.2e-08
+          },
+          "is_isotropic": true,
+          "mag": {
+            "BH_curve": {
+              "__class__": "ImportMatrix",
+              "is_transpose": false
+            },
+            "Brm20": 0,
+            "LossData": {
+              "__class__": "ImportMatrix",
+              "is_transpose": false
+            },
+            "ModelBH": {
+              "Bmax": 2.31,
+              "Hmax": null,
+              "__class__": "ModelBH",
+              "delta": 100
+            },
+            "Wlam": 0,
+            "__class__": "MatMagnetics",
+            "alpha_Br": 0.0,
+            "is_BH_extrapolate": false,
+            "mur_lin": 1
+          },
+          "name": "Copper2",
+          "path": "Copper2.json",
+          "struct": {
+            "Ex": 115000000000.0,
+            "Ey": 115000000000.0,
+            "Ez": 115000000000.0,
+            "Gxy": null,
+            "Gxz": null,
+            "Gyz": null,
+            "__class__": "MatStructural",
+            "nu_xy": null,
+            "nu_xz": null,
+            "nu_yz": null,
+            "rho": 8900.0
+          }
         },
-        "Brm20": 0,
-        "Hc": 0,
-        "LossData": {
-            "__class__": "ImportMatrix",
-            "is_transpose": false
-        },
-        "ModelBH": {
-            "Bmax": 2.31,
-            "Hmax": null,
-            "__class__": "ModelBH",
-            "delta": 100
-        },
-        "Wlam": 0,
-        "__class__": "MatMagnetics",
-        "alpha_Br": 0.0,
-        "is_BH_extrapolate": false,
-        "mur_lin": 1
-    },
-    "name": "Copper2",
-    "path": "Copper2.json",
-    "struct": {
-        "Ex": 115000000000.0,
-        "Ey": 115000000000.0,
-        "Ez": 115000000000.0,
-        "Gxy": null,
-        "Gxz": null,
-        "Gyz": null,
-        "__class__": "MatStructural",
-        "nu_xy": null,
-        "nu_xz": null,
-        "nu_yz": null,
-        "rho": 8900.0
-    }
-},
         "ins_mat": {
           "HT": {
             "Cp": 671.0,
