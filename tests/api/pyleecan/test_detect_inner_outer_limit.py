@@ -28,10 +28,10 @@ from pyleecan.Classes.Machine import Machine
 # pylint: disable=locally-disabled, no-name-in-module
 from pyleecan.Functions.load import load
 
+from pyemmo.api.pyleecan.create_gmsh_surf import create_segment_surface
 from pyemmo.api.pyleecan.detect_inner_outer_limit import (
     detect_inner_outer_limit,
 )
-from pyemmo.api.pyleecan.translate_surfs import translate_surface
 from pyemmo.script.geometry.segment_surface import SegmentSurface
 from tests.api.pyleecan import TEST_API_PYLCN_DATA_DIR
 
@@ -72,7 +72,7 @@ def test_detect_inner_outer_limit(machine_sample):
         all_surfs_labels_split2.append(save_space_temp)
 
         # translating the surface
-        pyemmo_surf, angle_point_ref_list = translate_surface(
+        pyemmo_surf, angle_point_ref_list = create_segment_surface(
             name_split_list=all_surfs_labels_split2[i],
             machine=machine,
             surface=surf,

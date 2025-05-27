@@ -30,154 +30,30 @@ Functions:
 
 from __future__ import annotations
 
-from math import pi
+from pyleecan.Classes.SurfLine import SurfLine
 
-import pyleecan.Classes.LamHole
-import pyleecan.Classes.LamSlotMag
-import pyleecan.Classes.LamSlotWind
-import pyleecan.Classes.Machine
-import pyleecan.Classes.Surface
-from numpy import angle
-
-from ...script.geometry.segment_surface import SegmentSurface
-from ..json import (
-    ROTOR_BAR_IDEXT,
-    ROTOR_LAM_IDEXT,
-    ROTOR_MAG_IDEXT,
-    STATOR_LAM_IDEXT,
-    STATOR_SLOT_IDEXT,
-)
-from . import POLE_HOLE_IDEXT, PyleecanMachine
-from .build_pyemmo_material import build_pyemmo_material
+from ...script.gmsh.gmsh_line import GmshLine
+from ...script.gmsh.gmsh_surface import GmshSurface
 from .create_gmsh_lines import create_gmsh_lines
 
 
-def create_gmsh_surface(
-    name_split_list: list[str],  # list with the splitted names
-    machine: PyleecanMachine,
-    surface: pyleecan.Classes.Surface.Surface,
-    angle_point_ref_list: list,
-) -> tuple[SegmentSurface, list]:
+def create_gmsh_surface(surface: SurfLine) -> GmshSurface:
     """
-    Translates pyleecan surfaces into pyemmo surfaces.
+    Translates Pyleecan SurfLine surfaces into pyemmo GmshSurface objects.
 
     Args:
-        name_split_list (list[str]): List with the splitted names.
-        machine (pyleecan.Classes.Machine.Machine): Import of the motor.
-        surface (pyleecan.Classes.Surface.Surface): Pyleecan surface to be
-            translated.
-        angle_point_ref_list (list): List of angle point references.
-
-    Raises:
-        ValueError: If there is an issue with the input values.
+        surface (pyleecan.Classes.SurfLine.SurfLine): Pyleecan surface.
 
     Returns:
-        tuple[SurfaceAPI, list]: Translated pyemmo surface and updated angle
-        point reference list.
+        GmshSurface: PyEMMO surface in Gmsh.
     """
-    if name_split_list[0] == "Rotor":
-        if name_split_list[2] == "Lamination":
-            pyleecan_mat = machine.rotor.mat_type
-            id_ext = ROTOR_LAM_IDEXT  # "RoNut" "Rotorblech"
-            name = "Rotor Lamination"
-
-        elif name_split_list[2] in ("Magnet", "Hole", "HoleMag"):
-            id_ext = ROTOR_MAG_IDEXT
-            name = "Magnet"
-            angle_point_ref_list.append(angle(surface.point_ref))
-
-            if name_split_list[2] == "Magnet":
-                pyleecan_mat = machine.rotor.magnet.mat_type
-
-            elif name_split_list[2] == "Hole":
-                pyleecan_mat = machine.rotor.hole.mat_type
-
-            elif name_split_list[2] == "HoleMag":
-                pyleecan_mat = machine.rotor.hole[0].magnet_0.mat_type
-
-        elif name_split_list[2] in ("HoleVoid", "Ventilation"):
-            # TODO: Could we here directly set the index for the specific hole?
-            id_ext = POLE_HOLE_IDEXT  # "Loch (Pollueke)"
-            name = "Loch"  # important to keep name for correct cut out!
-
-            if name_split_list[2] == "HoleVoid":
-                pyleecan_mat = machine.rotor.hole[0].mat_void
-
-            elif name_split_list[2] == "Ventilation":
-                pyleecan_mat = machine.rotor.axial_vent[0].mat_void
-        elif name_split_list[2] == "Bar":
-            # Rotor Bar for SCIM
-            pyleecan_mat = machine.rotor.winding.conductor.cond_mat
-            id_ext = ROTOR_BAR_IDEXT  # "RoNut" "Rotorblech"
-            name = "Rotor Bar"
-        else:
-            raise ValueError(
-                f"Wrong input for 'detail'. Your input was '{name_split_list[2]}'."
-            )
-
-        nbr_seg = machine.rotor.comp_periodicity_geo()[0]
-
-    # stator
-    elif name_split_list[0] == "Stator":
-        if name_split_list[2] == "Lamination":
-            pyleecan_mat = machine.stator.mat_type
-            id_ext = STATOR_LAM_IDEXT  # "Statorblech"
-            name = "Stator Lamination"
-
-        elif name_split_list[2] == "Winding":
-            pyleecan_mat = machine.stator.winding.conductor.cond_mat
-            name = "Stator Slot"
-            z = machine.stator.slot.Zs
-            p = machine.stator.winding.p
-            m = machine.stator.winding.qs
-            q = z / (2 * m * p)
-            if name_split_list[3] == "R0":
-                if q == 0.5:
-                    if name_split_list[4] == "T0":
-                        id_ext = STATOR_SLOT_IDEXT + "0"
-                    else:
-                        id_ext = STATOR_SLOT_IDEXT + "1"
-                else:
-                    id_ext = STATOR_SLOT_IDEXT + "0"
-            elif name_split_list[3] == "R1":
-                # BUG, FIXME: 'T0' kann für q=0.5 Wicklung mit Ober- und
-                # Schicht vorkommen. Dann ist für R0 und R1 beides mal 'T0'
-                # Das führt dazu, dass beide StCu0 benannt werden und nur eins
-                # der beiden Segmente erzeugt wird!
-                if q == 0.5 and name_split_list[4] == "T0":
-                    id_ext = STATOR_SLOT_IDEXT + "1"
-                elif q == 0.5 and name_split_list[4] == "T1":
-                    # TODO: Außen liegende und linke Nuthälfte... Geht das? Mehr als
-                    # zwei Wicklungen pro Nut?
-                    id_ext = STATOR_SLOT_IDEXT + "1"
-                else:
-                    id_ext = STATOR_SLOT_IDEXT + "1"
-            else:
-                raise ValueError(
-                    f"Radial Index of '{name_split_list.join('_')}' was not R0 or R1, but '{name_split_list[3]}'"
-                )
-
-        else:
-            raise ValueError(
-                f"Wrong input for 'detail'. Your input was '{name_split_list[2]}'."
-            )
-
-        nbr_seg = machine.stator.comp_periodicity_geo()[0]
-
-    else:
-        raise ValueError(
-            f"Wrong input for 'bauteil'. 'bauteil' must be 'Rotor' or 'Stator'. Your input was '{name_split_list[0]}'."
-        )
-
-    angle_seg = 2 * pi / nbr_seg
-    pyemmo_surf = SegmentSurface(
-        name=name,
-        idExt=id_ext,
-        curves=create_gmsh_lines(surface.line_list),
-        material=build_pyemmo_material(pyleecan_mat),
-        nbr_segments=nbr_seg,
-        angle=angle_seg,
-        meshSize=0,
-    )
-
-    return pyemmo_surf, angle_point_ref_list
+    if not isinstance(surface, SurfLine):
+        raise TypeError(f"Surface must be of type SurfLine, got {type(surface)}")
+    # create line loop:
+    curves: list[GmshLine] = create_gmsh_lines(surface.get_lines())
+    # create gmsh surface
+    # FIXME: The line list of a pyleecan surface does not have to be closed. This
+    # happens for example in case of holes on the boundary of a surface. In this case,
+    # the curve loop is open at the part where the hole intersects.
+    pyemmo_surf = GmshSurface.from_curve_loop(curve_loop=curves, name=surface.label)
+    return pyemmo_surf

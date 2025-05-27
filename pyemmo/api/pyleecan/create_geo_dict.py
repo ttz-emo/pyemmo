@@ -73,6 +73,7 @@ from ..json import ROTOR_BAR_IDEXT, ROTOR_LAM_IDEXT, STATOR_LAM_IDEXT, STATOR_SL
 from ..json.modelJSON import createSurfaceDict
 from . import PyleecanMachine
 from .calcs_rotor_spmsm_cont import get_lr_points
+from .create_gmsh_surf import create_gmsh_surface
 from .detect_inner_outer_limit import detect_inner_outer_limit
 from .get_magnetization_dict import get_magnetization_dict
 from .get_rotor_stator_cont import (
@@ -80,7 +81,6 @@ from .get_rotor_stator_cont import (
     get_spmsm_rotor_cont,
     get_winding_cont,
 )
-from .translate_surfs import translate_surface
 
 
 def create_geo_dict(
@@ -147,7 +147,7 @@ def create_geo_dict(
             " - ".join(all_surfs_labels_split2[i]),
         )
         # translating the surface
-        pyemmo_surf, angle_point_ref_list = translate_surface(
+        pyemmo_surf, angle_point_ref_list = create_gmsh_surface(
             name_split_list=all_surfs_labels_split2[i],
             machine=machine,
             surface=surf,

@@ -33,12 +33,12 @@ from pyleecan.Functions.load import load
 
 # from pyemmo.script.geometry.point import Point
 from pyemmo.api.json.modelJSON import SegmentSurface, createSurfaceDict
+from pyemmo.api.pyleecan.create_gmsh_surf import create_segment_surface
 from pyemmo.api.pyleecan.get_rotor_stator_cont import (
     get_even_rotor_cont,
     get_spmsm_rotor_cont,
     get_winding_cont,
 )
-from pyemmo.api.pyleecan.translate_surfs import translate_surface
 from tests.api.pyleecan import TEST_API_PYLCN_DATA_DIR
 
 
@@ -70,7 +70,7 @@ def get_translated_machine(machine: Machine):
         (
             pyemmo_surf,
             angle_point_ref_list,
-        ) = translate_surface(
+        ) = create_segment_surface(
             name_split_list=all_surfs_labels_split2[i],
             machine=machine,
             surface=surf,

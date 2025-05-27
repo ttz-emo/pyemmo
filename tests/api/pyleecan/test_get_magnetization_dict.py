@@ -28,8 +28,8 @@ from pyleecan.Classes.Machine import Machine
 # pylint: disable=locally-disabled, no-name-in-module
 from pyleecan.Functions.load import load
 
+import pyemmo.api.pyleecan.create_gmsh_surf
 import pyemmo.api.pyleecan.get_magnetization_dict
-import pyemmo.api.pyleecan.translate_surfs
 from pyemmo.api.json.modelJSON import SegmentSurface
 from tests.api.pyleecan import TEST_API_PYLCN_DATA_DIR
 
@@ -70,7 +70,7 @@ def test_get_magnetization_dict():
         (
             pyemmo_surf,
             angle_point_ref_list,
-        ) = pyemmo.api.pyleecan.translate_surfs.translate_surface(
+        ) = pyemmo.api.pyleecan.create_gmsh_surf.create_segment_surface(
             name_split_list=all_surfs_labels_split2[i],
             machine=machine,
             surface=surf,
