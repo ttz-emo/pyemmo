@@ -42,7 +42,7 @@ Group {
 
 	// Why do we need to define Source_Cir and Z_Cir separately?
 	DomainSource_Cir = Region[ { } ] ;
-	If (Flag_SrcType_Stator != 0)
+	If (Flag_SrcType_Stator != CEMF_SOURCE)
 		Resistance_Cir += #{R1,R2,R3,Rp1,Rp2,Rp3};
 		DomainSource_Cir += #{Input1,Input2,Input3};
 	Else
@@ -240,7 +240,6 @@ Constraint {
 					// Only positive stator winding region
 					{Region Stator_Ind_Bp;	Branch {41,5};}
 				EndIf
-
 
 				// for phase C
 				{Region Input3; 		Branch {1,2};}
