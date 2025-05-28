@@ -774,7 +774,8 @@ Resolution {
       // SystemCommand[Sprintf["DEL /F /Q %s", ResDir()]]; // -> This does NOT work!
       If (Flag_ClearResults)
         // This works! But only removes the files in ResDir, not the directory itself.
-        Printf(Sprintf["del /F /Q %s", ResDir()]) > "delete.bat";
+        // Printf(Sprintf["del /F /Q %s", ResDir()]) > "delete.bat";
+        Printf(Sprintf["del /F /Q %s\*.pos %s\*.dat", ResDir(), ResDir()]) > "delete.bat";
         SystemCommand["delete.bat"];
         DeleteFile["delete.bat"];
       EndIf
@@ -1125,7 +1126,14 @@ PostProcessing {
       { Name urz  ; Value { Term { [ CompZ[{ur}] ]; In DomainC ; Jacobian Vol ; } } }
       { Name dta  ; Value { Term { [ Dt[{a}] ]; In DomainC ; Jacobian Vol ; } } }
       { Name dta_ur  ; Value { Term { [ Dt[{a}]+{ur} ]; In DomainC ; Jacobian Vol ; } } }
-      { Name j  ; Value { Term { [ -sigma[]*(Dt[{a}]+{ur}) ]; In DomainC ; Jacobian Vol ; } } }
+      { Name j  ; Value {
+          Term { [ -sigma[]*(Dt[{a}]+{ur}) ]; In DomainC ; Jacobian Vol ; }
+          Term { [ js[] ] ;                   In DomainS ; Jacobian Vol ; }
+          Term {
+            [ axialLength[] * NbWires[]/SurfCoil[] * Dt[ {a} ] - NbWires[]/SurfCoil[] * {ir} ];
+            In DomainB ; Jacobian Vol ;
+        }
+      } }
       { Name js ; Value { Term { [ js[] ] ;      In DomainS ; Jacobian Vol ; } } }
       { Name jz ; Value { Term { [ CompZ[-sigma[]*(Dt[{a}]+{ur})] ]; In DomainC ; Jacobian Vol ; } } }
       { Name intJz ; Value { Integral { [ CompZ[-sigma[]*(Dt[{a}]+{ur})] ]; In DomainC ; Jacobian Vol ; Integration I1; } } }
@@ -1227,13 +1235,13 @@ PostProcessing {
 
      { Name U ; Value {
          Term { [ {U} ]   ; In DomainC ; }
-         Term { [ {Ub} ]  ; In DomainB ; }
+         Term { [ {Ub} * Idir[] ]  ; In DomainB ; }
          Term { [ {Uz} ]  ; In DomainZt_Cir ; }
      } }
 
      { Name I ; Value {
          Term { [ {I} ]   ; In DomainC ; }
-         Term { [ {Ib} ]  ; In DomainB ; }
+         Term { [ {Ib} * Idir[] ]  ; In DomainB ; }
          Term { [ {Iz} ]  ; In DomainZt_Cir ; }
      } }
 
@@ -1378,6 +1386,25 @@ PostOperation Debug UsingPost MagStaDyn_a_2D{
       ];
     EndIf
   EndIf
+  If (Flag_SrcType_Stator == VOLTAGE_SOURCE)
+    Print[
+      j, OnElementsOf DomainB, File StrCat[ResDir,"j_DomaiB",ExtGmsh], LastTimeStepOnly,
+      AppendTimeStepToFileName Flag_SaveAllSteps, Name "j on DomainB"
+    ];
+    Print[
+      Resistance[PhaseA], OnGlobal, Format Table, LastTimeStepOnly,
+      File > StrCat[ResDir,"R_A",ExtGnuplot], SendToServer StrCat[poV,"R_A"]{0}
+    ];
+    Print[
+      Resistance[PhaseB], OnGlobal, Format Table, LastTimeStepOnly,
+      File > StrCat[ResDir,"R_B",ExtGnuplot], SendToServer StrCat[poV,"R_B"]{0}
+    ];
+    Print[
+      Resistance[PhaseC], OnGlobal, Format Table, LastTimeStepOnly,
+      File > StrCat[ResDir,"R_C",ExtGnuplot], SendToServer StrCat[poV,"R_C"]{0}
+    ];
+
+  EndIf
 }
 
 PostOperation Get_I_Bar UsingPost MagStaDyn_a_2D{
@@ -1410,7 +1437,7 @@ PostOperation Get_LocalFields UsingPost MagStaDyn_a_2D {
   // Print[ jz, OnElementsOf DomainC, File StrCat[ResDir,"jz",ExtGmsh], LastTimeStepOnly,
 	//  AppendTimeStepToFileName Flag_SaveAllSteps ] ;
 
-  Print[ js, OnElementsOf DomainS, File StrCat[ResDir,"js",ExtGmsh], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps ] ;
+  Print[ j, OnElementsOf Region[{DomainS, DomainB}], File StrCat[ResDir,"js",ExtGmsh], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps, Name "j (source)" ] ;
 
   Print[ b,  OnElementsOf Domain, File StrCat[ResDir,"b",ExtGmsh], Format Gmsh, LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps] ;
 
@@ -1516,54 +1543,94 @@ PostOperation Get_GlobalQuantities UsingPost MagStaDyn_a_2D {
 
   If(Flag_Cir)
     // plot the quantities for phase A in the case we have an external circuit
+    // Phase A
+    //  Input Values
     Print[ I, OnRegion Input1, Format Table,
      File > StrCat[ResDir,"Ia",ExtGnuplot], LastTimeStepOnly,
      SendToServer StrCat[poI,"Line/","A"]{0}, Color "Pink" ];
-
-    Print[ I, OnRegion PhaseA_pos, Format Table,
-     File > StrCat[ResDir,"Ia_w",ExtGnuplot], LastTimeStepOnly,
-     SendToServer StrCat[poI,"Winding/","A"]{0}, Color "Pink" ];
-
-    Print[ U, OnRegion Input1, Format Table,
-     File > StrCat[ResDir,"Ua",ExtGnuplot], LastTimeStepOnly,
-     SendToServer StrCat[poV,"Line/","A"]{0}, Color "Pink" ];
-    Print[ U, OnRegion PhaseA_pos, Format Table,
-     File > StrCat[ResDir,"Ua_w",ExtGnuplot], LastTimeStepOnly,
-     SendToServer StrCat[poV,"Winding/","A"]{0}, Color "Pink" ];
+     Print[ U, OnRegion Input1, Format Table,
+      File > StrCat[ResDir,"Ua",ExtGnuplot], LastTimeStepOnly,
+      SendToServer StrCat[poV,"Line/","A"]{0}, Color "Pink" ];
+    // Line Values
+    If (NbrRegions[PhaseA_pos] > 0)
+      Print[ I, OnRegion PhaseA_pos, Format Table,
+        File > StrCat[ResDir,"Ia_w",ExtGnuplot], LastTimeStepOnly,
+        SendToServer StrCat[poI,"Winding/","A"]{0}, Color "Pink"
+      ];
+      Print[ U, OnRegion PhaseA_pos, Format Table,
+        File > StrCat[ResDir,"Ua_w",ExtGnuplot], LastTimeStepOnly,
+        SendToServer StrCat[poV,"Winding/","A"]{0}, Color "Pink"
+      ];
+    Else
+      Print[ I, OnRegion PhaseA, Format Table,
+        File > StrCat[ResDir,"Ia_w",ExtGnuplot], LastTimeStepOnly,
+        SendToServer StrCat[poI,"Winding/","A"]{0}, Color "Pink"
+      ];
+      Print[ U, OnRegion PhaseA, Format Table,
+        File > StrCat[ResDir,"Ua_w",ExtGnuplot], LastTimeStepOnly,
+        SendToServer StrCat[poV,"Winding/","A"]{0}, Color "Pink"
+      ];
+    EndIf
 
     // phase B
+    //  Input Values
     Print[ I, OnRegion Input2, Format Table,
-     File > StrCat[ResDir,"Ib",ExtGnuplot], LastTimeStepOnly,
-     SendToServer StrCat[poI,"Line/","B"]{0}, Color "Yellow" ];
-
-    Print[ I, OnRegion PhaseB_pos, Format Table,
-     File > StrCat[ResDir,"Ib_w",ExtGnuplot], LastTimeStepOnly,
-     SendToServer StrCat[poI,"Winding/","B"]{0}, Color "Yellow" ];
-
+      File > StrCat[ResDir,"Ib",ExtGnuplot], LastTimeStepOnly,
+      SendToServer StrCat[poI,"Line/","B"]{0}, Color "Yellow"
+    ];
     Print[ U, OnRegion Input2, Format Table,
-     File > StrCat[ResDir,"Ub",ExtGnuplot], LastTimeStepOnly,
-     SendToServer StrCat[poV,"Line/","B"]{0}, Color "Yellow" ];
-
-    Print[ U, OnRegion PhaseB_pos, Format Table,
-       File > StrCat[ResDir,"Ub_w",ExtGnuplot], LastTimeStepOnly,
-       SendToServer StrCat[poV,"Winding/","B"]{0}, Color "Yellow" ];
+      File > StrCat[ResDir,"Ub",ExtGnuplot], LastTimeStepOnly,
+      SendToServer StrCat[poV,"Line/","B"]{0}, Color "Yellow"
+    ];
+    // Line Values
+    If (NbrRegions[PhaseB_pos] > 0)
+      Print[ I, OnRegion PhaseB_pos, Format Table,
+        File > StrCat[ResDir,"Ib_w",ExtGnuplot], LastTimeStepOnly,
+        SendToServer StrCat[poI,"Winding/","B"]{0}, Color "Yellow"
+      ];
+      Print[ U, OnRegion PhaseB_pos, Format Table,
+        File > StrCat[ResDir,"Ub_w",ExtGnuplot], LastTimeStepOnly,
+        SendToServer StrCat[poV,"Winding/","B"]{0}, Color "Yellow"
+      ];
+    Else
+      Print[ I, OnRegion PhaseB, Format Table,
+        File > StrCat[ResDir,"Ib_w",ExtGnuplot], LastTimeStepOnly,
+        SendToServer StrCat[poI,"Winding/","B"]{0}, Color "Yellow"
+      ];
+      Print[ U, OnRegion PhaseB, Format Table,
+        File > StrCat[ResDir,"Ub_w",ExtGnuplot], LastTimeStepOnly,
+        SendToServer StrCat[poV,"Winding/","B"]{0}, Color "Yellow"
+      ];
+    EndIf
 
     // phase C
+    //  Input Values
     Print[ I, OnRegion Input3, Format Table,
      File > StrCat[ResDir,"Ic",ExtGnuplot], LastTimeStepOnly,
      SendToServer StrCat[poI,"Line/","C"]{0}, Color "LightGreen" ];
-
-    Print[ I, OnRegion PhaseC_pos, Format Table,
-     File > StrCat[ResDir,"Ic_w",ExtGnuplot], LastTimeStepOnly,
-     SendToServer StrCat[poI,"Winding/","C"]{0}, Color "LightGreen" ];
-
     Print[ U, OnRegion Input3, Format Table,
-     File > StrCat[ResDir,"Uc",ExtGnuplot], LastTimeStepOnly,
-     SendToServer StrCat[poV,"Line/","C"]{0}, Color "LightGreen" ];
-
-    Print[ U, OnRegion PhaseC_pos, Format Table,
-     File > StrCat[ResDir,"Uc_w",ExtGnuplot], LastTimeStepOnly,
-     SendToServer StrCat[poV,"Winding/","C"]{0}, Color "LightGreen" ];
+      File > StrCat[ResDir,"Uc",ExtGnuplot], LastTimeStepOnly,
+      SendToServer StrCat[poV,"Line/","C"]{0}, Color "LightGreen" ];
+    // Line Values
+    If (NbrRegions[PhaseC_pos] > 0)
+      Print[ I, OnRegion PhaseC_pos, Format Table,
+        File > StrCat[ResDir,"Ic_w",ExtGnuplot], LastTimeStepOnly,
+        SendToServer StrCat[poI,"Winding/","C"]{0}, Color "LightGreen"
+      ];
+      Print[ U, OnRegion PhaseC_pos, Format Table,
+        File > StrCat[ResDir,"Uc_w",ExtGnuplot], LastTimeStepOnly,
+        SendToServer StrCat[poV,"Winding/","C"]{0}, Color "LightGreen"
+      ];
+    Else
+      Print[ I, OnRegion PhaseC, Format Table,
+        File > StrCat[ResDir,"Ic_w",ExtGnuplot], LastTimeStepOnly,
+        SendToServer StrCat[poI,"Winding/","C"]{0}, Color "LightGreen"
+      ];
+      Print[ U, OnRegion PhaseC, Format Table,
+        File > StrCat[ResDir,"Uc_w",ExtGnuplot], LastTimeStepOnly,
+        SendToServer StrCat[poV,"Winding/","C"]{0}, Color "LightGreen"
+      ];
+    EndIf
   Else
     // If there is no circuit the current is given by IA[], IB[], IC[]
     Print[
@@ -1579,6 +1646,7 @@ PostOperation Get_GlobalQuantities UsingPost MagStaDyn_a_2D {
       SendToServer StrCat[poI,"C"]{0}, Color "LightGreen"
     ];
   EndIf
+  // Get global values for induction machine rotor circuit
   If (Flag_Cir_RotorCage)
     Print[
       I, OnRegion Rotor_Bars, Format Table,
@@ -1590,22 +1658,6 @@ PostOperation Get_GlobalQuantities UsingPost MagStaDyn_a_2D {
       File > StrCat[ResDir,"U_bars",ExtGnuplot], LastTimeStepOnly,
       SendToServer StrCat[poV,"ROTOR"]{0}, Color "LightYellow"
     ];
-    // Print[
-    //   I_S[PhaseA], OnGlobal, Format TimeTable, LastTimeStepOnly,
-    //   File>StrCat[ResDir,"Ia",ExtGnuplot],
-    //   SendToServer StrCat[poI,"A"]{0}, Color "Pink"
-    // ];
-    // Print[
-    //   I_S[PhaseB], OnRegion DomainDummy, Format Table, LastTimeStepOnly,
-    //   File>StrCat[ResDir,"Ib",ExtGnuplot],
-    //   SendToServer StrCat[poI,"B"]{0}, Color "Yellow"
-    // ];
-    // Print[
-    //   I_S[PhaseC], OnRegion DomainDummy, Format Table, LastTimeStepOnly,
-    //   File>StrCat[ResDir,"Ic",ExtGnuplot],
-    //   SendToServer StrCat[poI,"C"]{0}, Color "LightGreen"
-    // ];
-
   EndIf
 
   // Calculate the Flux linkage
@@ -1663,7 +1715,7 @@ PostOperation Get_Torque_VW UsingPost MagStaDyn_a_2D {
 
 // PostOperation for getting the inducedVoltaged
 PostOperation GetInducedVoltages UsingPost MagStaDyn_a_2D {
-  If (Flag_SrcType_Stator > 0)
+  If (Flag_SrcType_Stator != CEMF_SOURCE)
     Print[ InducedVoltage[PhaseA], OnGlobal, Format Table,
       LastTimeStepOnly, SendToServer StrCat[po,"Induced Voltage","A"]{0},
       File>StrCat[ResDir,"InducedVoltageA",ExtGnuplot], Color "Pink"];
