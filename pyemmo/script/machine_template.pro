@@ -113,7 +113,8 @@ DefineConstant[
     },
 
     Flag_SrcType_Stator = {
-        1, Name StrCat[INPUT_ANA_SETTINGS, "02Source Input Type"],
+        CURRENT_SOURCE,
+        Name StrCat[INPUT_ANA_SETTINGS, "02Source Input Type"],
         Choices{
             CURRENT_SOURCE = "Current Source",
             VOLTAGE_SOURCE = "Voltage Source"
@@ -489,20 +490,27 @@ DefineConstant[
     },
 
     VV = {
-        12, Name StrCat[INPUT_ELEC, "V [V]"],
+        12, Name StrCat[INPUT_ELEC, "Input Voltage Amplitude"],
         Units "V",
-        Visible Flag_SrcType_Stator == 2,
+        Visible Flag_SrcType_Stator == VOLTAGE_SOURCE,
         Help "Amplitude of the input voltage (in case of voltage input)"
     },
+
     R_wire = {
-        500e-3, Name StrCat[INPUT_ELEC, "Phase Resistance [Ohm]"],
+        500e-3, Name StrCat[INPUT_ELEC, "Connection (Wire-)Resistance"],
+        Units "Ohm",
         Visible Flag_Cir
     },
 
     R_terminal = {
         1e12, // Default value is very high so its like open circuit if not set
-        Name StrCat[INPUT_ELEC, "Terminal Connection Resistance [Ohm]"],
-        Visible Flag_SrcType_Stator == 0 // Only if source type is back-emf
+        Name StrCat[INPUT_ELEC, "Terminal Connection Resistance"],
+        Units "Ohm",
+        Help StrCat[
+            "Terminal connection resistance to account for in short circuit case. ",
+            "Only used when source is CEMF in circuit!"
+        ],
+        Visible Flag_SrcType_Stator == CEMF_SOURCE // Only if source type is back-emf
     }
 
     CircuitConnection = {
