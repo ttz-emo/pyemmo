@@ -522,7 +522,7 @@ def runCalcforCurrent(param: dict):
         else:
             # Error because we need to import time here!
             raise FileNotFoundError(
-                f"Could not find result file for phase current I{index}"
+                f"Could not find result file for phase current I{index} in {simulation_res_dir}"
             )
     # optional import bar currents
     res_file = os.path.join(simulation_res_dir, "I_bars.dat")
