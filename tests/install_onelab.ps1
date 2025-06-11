@@ -70,5 +70,5 @@ else {
     }
 }
 Set-Location ..
-    # TODO: Check that executables actually exist before returning them!
+# TODO: Check that executables actually exist before returning them!
 Write-Output "$store_path\onelab-Windows64\gmsh.exe" "$store_path\onelab-Windows64\getdp.exe"

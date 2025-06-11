@@ -22,10 +22,12 @@
 
 from __future__ import annotations
 
+import json
+import logging
 import os
 import warnings
 from cmath import isclose
-from os import PathLike, path
+from os import path
 
 import gmsh
 import numpy as np
@@ -37,7 +39,7 @@ from .. import rootLogger as logger
 
 
 def read_timetable_dat(
-    file_path: PathLike,
+    file_path: str | bytes | str | bytes | os.PathLike,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
     returns the Data from the the .*dat file witten in the TimeTable Format
@@ -86,7 +88,7 @@ def read_timetable_dat(
 
 # pylint: disable=locally-disabled, invalid-name
 def read_RegionValue_dat(
-    file_path: PathLike,
+    file_path: str | bytes | os.PathLike,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
     Import data from 'RegionValue' formatted .dat-file (GetDP resutl file).
@@ -97,7 +99,7 @@ def read_RegionValue_dat(
         'time0 val0 time1 val1 ...'
 
     Args:
-        file_path (PathLike): Path to results file.
+        file_path (Union[str, bytes, os.PathLike]): Path to results file.
 
     Returns:
         Tuple[np.ndarray, np.ndarray]: time and data vector with shape:
@@ -236,11 +238,11 @@ def plot_timetable_dat(
     return figureList
 
 
-def plot_all_dat(dir_path: PathLike) -> None:
+def plot_all_dat(dir_path: str | bytes | os.PathLike) -> None:
     """Plot all .dat files as png in the folder dirPath
 
     Args:
-        dirPath (PathLike): Path to the folder containing the .dat files.
+        dirPath (Union[str, bytes, os.PathLike]): Path to the folder containing the .dat files.
     """
     if path.isdir(dir_path):
         # if the folder for results exists
@@ -325,7 +327,7 @@ def importSP(
 
 
 def importPos(
-    pos_file: str | PathLike,
+    pos_file: str | str | bytes | os.PathLike,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Import POS file via gmsh api.
 
@@ -335,7 +337,7 @@ def importPos(
             -> Use function getListData()
 
     Args:
-        pos_file (Union[str, PathLike]): _description_
+        pos_file (Union[str, Union[str, bytes, os.PathLike]]): _description_
 
     Returns:
         Tuple[np.ndarray, List[float], np.ndarray]:
@@ -410,16 +412,16 @@ def importPos(
 
 
 def get_result_files(
-    result_folder: PathLike,
-) -> tuple[list[PathLike], list[PathLike]]:
+    result_folder: str | bytes | os.PathLike,
+) -> tuple[list[str | bytes | os.PathLike], list[str | bytes | os.PathLike]]:
     """Return a list of GetDP result files from the folder ``resDir``.
     GetDP results can be .pos or .dat files.
 
     Args:
-        result_folder (PathLike): Path to GetDP results.
+        result_folder (Union[str, bytes, os.PathLike]): Path to GetDP results.
 
     Returns:
-        Tuple[list[PathLike], list[PathLike]]: List of .dat and list of .pos
+        Tuple[list[Union[str, bytes, os.PathLike]], list[Union[str, bytes, os.PathLike]]]: List of .dat and list of .pos
             files in the given folder.
     """
     if os.path.isdir(result_folder):
@@ -435,3 +437,142 @@ def get_result_files(
             logger.warning("No result files found in '%s'", result_folder)
         return dat_file_list, pos_file_list
     raise FileNotFoundError(f"Results folder {result_folder} does not exist.")
+
+
+def load_param_file(setup_file: str | bytes | os.PathLike) -> dict:
+    if not os.path.isfile(setup_file):
+        raise FileNotFoundError(f"Could not find setup.json file: {setup_file}")
+    return json.loads(setup_file)
+
+
+def main(sim_param: dict | str | bytes | os.PathLike):
+    if not isinstance(sim_param, dict):
+        sim_param = load_param_file(sim_param)
+    logging.info("Import results for result-ID '%s'", sim_param["getdp"]["ResId"])
+    results_dict = {}
+    # try to import getdp parameters from param dict
+    # TODO: Add start and stop angle, angle and time step, ...
+    # OTHER OPTION: Just add input param dict to result dict...
+
+    simulation_res_dir = os.path.join(sim_param["res"], sim_param["ResId"])
+    dat_files, geo_files = get_result_files(simulation_res_dir)
+
+    # for key, getdp_param in {
+    #     "id": "ID_RMS",
+    #     "iq": "IQ_RMS",
+    #     "speed": "RPM",
+    # }.items():
+    #     try:
+    #         results_dict[key] = sim_param["getdp"][getdp_param]
+    #     except KeyError:
+    #         pass
+    #     except Exception as exce:
+    #         raise exce
+
+    # 1. Phase currents
+    results_dict["current"] = {}
+    for index in "abc":
+        res_file_name = f"I{index}.dat"
+        if res_file_name in dat_files:
+            results_dict["time"], results_dict["current"][index] = read_timetable_dat(
+                os.path.join(simulation_res_dir, res_file_name)
+            )
+            dat_files.remove(res_file_name)
+        else:
+            # Error because we need to import time here!
+            raise FileNotFoundError(
+                f"Could not find result file for phase current I{index}"
+            )
+    # optional import bar currents
+    res_file = os.path.join(simulation_res_dir, "I_bars.dat")
+    if os.path.isfile(res_file):
+        results_dict["time"], results_dict["current"]["bars"] = read_timetable_dat(
+            res_file
+        )
+
+    # 2. Torque Results
+    results_dict["torque"] = {}
+    results_dict["torque_vw"] = {}
+    for side in ["rotor", "stator"]:
+        res_file = os.path.join(simulation_res_dir, f"T{side[0]}.dat")
+        if os.path.isfile(res_file):
+            # get first char in machine side to index rotor and stator results
+            _, results_dict["torque"][side] = read_timetable_dat(res_file)
+        # Virtual Work results
+        res_file = os.path.join(simulation_res_dir, f"T{side[0]}_vw.dat")
+        if os.path.isfile(res_file):
+            # get first char in machine side to index rotor and stator results
+            _, results_dict["torque_vw"][side] = read_timetable_dat(res_file)
+    if {"rotor", "stator"} <= results_dict["torque"].keys():
+        # calc mean torque
+        results_dict["rotor torque"] = results_dict["torque"]["rotor"]
+        results_dict["stator torque"] = results_dict["torque"]["stator"]
+        results_dict["torque"] = np.mean(
+            [
+                results_dict["rotor torque"],
+                results_dict["stator torque"],
+            ],
+            axis=0,
+        )
+
+    # 3. Flux results
+    results_dict["flux"] = {}
+    for index in "abcdq0":
+        res_file = os.path.join(simulation_res_dir, f"Flux_{index}.dat")
+        if os.path.isfile(res_file):
+            # get first char in machine side to index rotor and stator results
+            time, results_dict["flux"][index] = read_timetable_dat(res_file)
+
+    # 4. Induced voltage
+    results_dict["inducedVoltage"] = {}
+    for index in "ABC":
+        res_file = os.path.join(simulation_res_dir, f"InducedVoltage{index}.dat")
+        if os.path.isfile(res_file):
+            # get first char in machine side to index rotor and stator results
+            _, results_dict["inducedVoltage"][index.lower()] = read_timetable_dat(
+                res_file
+            )
+
+    # 5. Rotor position
+    res_file = os.path.join(simulation_res_dir, "RotorPos_deg.dat")
+    if os.path.isfile(res_file):
+        # get first char in machine side to index rotor and stator results
+        _, results_dict["rotorPos"] = read_timetable_dat(res_file)
+
+    # 6. Core loss
+    # Check if file hystLoss_rotor.dat allready exists -> loss calculated
+    core_loss_dict = {}
+    if os.path.exists(os.path.join(simulation_res_dir, "hystLoss_rotor.dat")):
+        logging.info(
+            "Importing core loss values for %s...", sim_param["getdp"]["ResId"]
+        )
+        for side in ["rotor", "stator"]:
+            core_loss_dict[side] = {}
+            for loss_type in ("hyst", "eddy", "exc"):
+                _, core_loss_dict[side][loss_type] = read_timetable_dat(
+                    os.path.join(
+                        simulation_res_dir,
+                        str(loss_type) + f"Loss_{side}" + ".dat",
+                    )
+                )
+    if core_loss_dict:
+        results_dict["coreLoss"] = core_loss_dict
+        # pylint: disable=locally-disabled, logging-not-lazy, logging-fstring-interpolation, line-too-long
+        logging.debug("Iron loss for '" + sim_param["getdp"]["ResId"] + "'")
+        logging.debug(f"{'Rotor':>24} {'Stator':>11} {'Gesamt':>11}")
+        logging.debug(
+            f"{'Hysteresis:':<14} {np.mean(core_loss_dict['rotor']['hyst']) : 8.3f} W {np.mean(core_loss_dict['stator']['hyst']) : 9.3f} W {np.mean(core_loss_dict['stator']['hyst']+core_loss_dict['rotor']['hyst']) : 9.3f} W"
+        )
+        logging.debug(
+            f"{'Eddy Current:':<14} {np.mean(core_loss_dict['rotor']['eddy']) : 8.3f} W {np.mean(core_loss_dict['stator']['eddy']) : 9.3f} W {np.mean(core_loss_dict['stator']['eddy']+core_loss_dict['rotor']['eddy']) : 9.3f} W"
+        )
+        logging.debug(
+            f"{'Excess:':<14} {np.mean(core_loss_dict['rotor']['exc']) : 8.3f} W {np.mean(core_loss_dict['stator']['exc']) : 9.3f} W {np.mean(core_loss_dict['stator']['exc']+core_loss_dict['rotor']['exc']) : 9.3f} W"
+        )
+        logging.debug(
+            "---------------------------------------------------------------------"
+        )
+        logging.debug(
+            f"{'Summe:':<14} {np.mean(core_loss_dict['rotor']['exc']+core_loss_dict['rotor']['eddy']+core_loss_dict['rotor']['hyst']) : 8.3f} W {np.mean(core_loss_dict['stator']['exc']+core_loss_dict['stator']['eddy']+core_loss_dict['stator']['hyst']) : 9.3f} W {np.mean(core_loss_dict['rotor']['exc']+core_loss_dict['rotor']['eddy']+core_loss_dict['rotor']['hyst']+core_loss_dict['stator']['exc']+core_loss_dict['stator']['eddy']+core_loss_dict['stator']['hyst']) : 9.3f} W"
+        )
+    return results_dict

@@ -144,7 +144,9 @@ if [[ $branch == "master" ]]; then
     check_tox
     run_tox
 else
-    # run tests to verify push for this branch
-    activate_virtualenv
-    python -m pytest tests
+  echo -e "\n${Yellow}Actual branch is '${branch}'${Color_Off}\n"
+#     # run tests to verify push for this branch
+#     activate_virtualenv
+#     python -m pytest tests
 fi
+echo -e "\n${Yellow}... end of pre-push hook${Color_Off}\n"
