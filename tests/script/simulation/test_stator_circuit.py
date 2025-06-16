@@ -33,10 +33,13 @@ from pyemmo.functions.runOnelab import runCalcforCurrent
 # import subprocess
 
 
-# from tests import TEST_DATA_DIR
-
+# from tests import TEST_DATA_DIR, GETDP_EXE, GMSH_EXE
 GETDP_EXE = ""
 GMSH_EXE = ""
+
+# # disable messages of matplotlib
+# logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
+# logging.getLogger().setLevel(logging.INFO)
 
 
 def test_simulation_with_stator_circuit():
@@ -125,10 +128,6 @@ def test_simulation_with_stator_circuit():
     torque = 78.45  # newton meter
 
     ## CREATE MODEL FOR PRIUS MOTOR IN ONELAB
-
-    # disable messages of matplotlib
-    logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
-    logging.getLogger().setLevel(logging.INFO)
 
     machine_file_path = os.path.join(USER_DIR, "Machine", "Toyota_Prius.json")
 
