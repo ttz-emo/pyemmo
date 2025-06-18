@@ -78,7 +78,7 @@ class TestRunOnelab(unittest.TestCase):
         # remove any results folders that match the test res_id pattern
         for folder in listdir(cls.test_sim_dir):
             if fnmatch.fnmatch(folder, "test_*"):
-                print(folder)
+                rmtree(join(cls.test_sim_dir, folder))
 
     def setUp(self):
         """
