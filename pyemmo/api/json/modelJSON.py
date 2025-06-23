@@ -326,6 +326,9 @@ def importMachineGeometry(
                     )
                     # gmsh.model.occ.synchronize()
                     # gmsh.fltk.run()
+                for tool in main_surf.tools:
+                    if not isinstance(tool, MachineSegmentSurface):
+                        raise RuntimeError(f"Tool {tool} is not MachineSegmentSurface...")
 
             # # correct values for nbrSegments in tools (angle updates automatically):
             # for surf in main_surf.tools:
