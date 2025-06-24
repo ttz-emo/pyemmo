@@ -212,7 +212,7 @@ class MachineSegmentSurface(GmshSegmentSurface):
         # FIXME: This should return a MSS object!
         return GmshSegmentSurface.rotate_duplicate(self, segment=segment)
 
-    def cutOut(self, tool_obj: MachineSegmentSurface, keepTool: bool = True) -> None:
+    def cutOut(self, tool: MachineSegmentSurface, keepTool: bool = True) -> None:
         """
         Cut out a tool surface from the parent surface using a Boolean Difference operation.
         This method subtracts the geometry of the provided `tool` surface from the current surface.
@@ -238,13 +238,13 @@ class MachineSegmentSurface(GmshSegmentSurface):
               counts to determine the symmetry, duplicates and rotates surfaces as
               necessary, and updates segment properties accordingly.
         """
-        if not isinstance(tool_obj, MachineSegmentSurface):
+        if not isinstance(tool, MachineSegmentSurface):
             raise TypeError(
                 f"Tool surface is not a MachineSegmentSurface object! "
-                f"But it type '{type(tool_obj)}'!"
+                f"But it type '{type(tool)}'!"
             )
         # check if tool has allready segment properties
-        if tool_obj.segment_nbr != 0:
+        if tool.segment_nbr != 0:
             raise ValueError(
                 "Cutting out a tool from a segment surface is only allowed for the "
                 "first segment!"
@@ -252,15 +252,15 @@ class MachineSegmentSurface(GmshSegmentSurface):
 
         logging.debug(
             "Cutting out tool (%s) with %i segments from surface (%s) with %i segments!",
-            tool_obj.name,
-            tool_obj.nbr_segments,
+            tool.name,
+            tool.nbr_segments,
             self.name,
             self.nbr_segments,
         )
         # check the number of segments
-        if tool_obj.nbr_segments != self.nbr_segments:
+        if tool.nbr_segments != self.nbr_segments:
             # calculate total number of segments
-            symmetry = np.gcd(tool_obj.nbr_segments, self.nbr_segments)
+            symmetry = np.gcd(tool.nbr_segments, self.nbr_segments)
             logging.debug(
                 "New symmetry for GmshSegmentSurface (%s): %i", self.name, symmetry
             )
@@ -287,14 +287,12 @@ class MachineSegmentSurface(GmshSegmentSurface):
                     self.nbr_segments,
                 )
                 self.name = parent_name  # update name
-            for segment in range(int(tool_obj.nbr_segments / symmetry)):
-                dup_tool = tool_obj.rotate_duplicate(
-                    segment
-                )  # rotate and duplicate tool
+            for segment in range(int(tool.nbr_segments / symmetry)):
+                dup_tool = tool.rotate_duplicate(segment)  # rotate and duplicate tool
                 self._subtract_segment(dup_tool, keepTool)  # cut out new tool
-            # NOTE: Need to update nbr_segments of the tools here, because otherwise the
-            # rotate_duplicate() method will use a wrong angle! (Angle is caclulated from
-            # the number of segments!)
+            # NOTE: Need to update nbr_segments of the tools afterwards here,
+            # because otherwise the rotate_duplicate() method will use a wrong
+            # angle! (Angle is calculated from the number of segments!)
             for tool_obj in self.tools:  # "tool" var name allready used as parameter
                 tool_obj.nbr_segments = symmetry  # update number of segments
                 # pylint: disable=protected-access
@@ -303,7 +301,7 @@ class MachineSegmentSurface(GmshSegmentSurface):
                 tool_obj._segment_number = self.segment_nbr  # update segment number
         else:
             # if the number of segments is the same, cut out the tool directly
-            self._subtract_segment(tool_obj, keepTool)
+            self._subtract_segment(tool, keepTool)
 
     def _subtract_segment(
         self, tool: MachineSegmentSurface, keep_tool: bool = True
