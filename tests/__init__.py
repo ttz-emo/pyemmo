@@ -53,11 +53,12 @@ if platform.system() == "Windows":
             check=True,
             capture_output=True,
         )
-    except subprocess.CalledProcessError:
+    except subprocess.CalledProcessError as e:
         # subprocess failed -> no determination of executables
         logging.warning(
-            "Failed to execute 'install_onelab.ps1' properly. "
-            "Could not determine ONELAB executables for testing!"
+            "Failed to execute 'install_onelab.ps1' properly due to %s. "
+            "Could not determine ONELAB executables for testing!",
+            e,
         )
     else:
         if not p.stderr:
