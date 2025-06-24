@@ -1,6 +1,6 @@
 #
-# Copyright (c) 2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences
-# Wuerzburg-Schweinfurt.
+# Copyright (c) 2025 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -28,9 +28,7 @@ from pyemmo.api.json import json
 
 root = tk.Tk()
 root.withdraw()
-model_folder = (
-    r"D:\pyemmo\Results\matlab\TTZ_1FW6190-xxx10-2Jxx_Mod_var_1_2025-02-11_16-24-49"
-)
+model_folder = r""
 if not model_folder:
     model_folder = filedialog.askdirectory()
 

@@ -450,14 +450,12 @@ class GmshSurface(GmshGeometry, Surface):
             if addSurf:
                 return self._combine_multi_surface(addSurf, removeObject, removeTool)
             raise ValueError("List of surfaces to be combined must not be empty!")
-        elif isinstance(addSurf, GmshSurface):
+        if isinstance(addSurf, GmshSurface):
             return self._combine_single_surface(addSurf, removeObject, removeTool)
-        else:
-            raise TypeError(
-                "Surface to be combined must be of type GmshSurface or list of GmshSurface! "
-                "But it was of type %s!",
-                type(addSurf),
-            )
+        raise TypeError(
+            "Surface to be combined must be of type GmshSurface or list of GmshSurface! "
+            f"But it was of type {type(addSurf)}!",
+        )
 
     def _combine_single_surface(
         self, surf_to_add: "GmshSurface", removeObject: bool, removeTool: bool
