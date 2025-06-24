@@ -2055,6 +2055,9 @@ class Script:
             geoScript.write(meshSettingsCode)  # write code for mesh variables
             geoScript.writelines(geo_code)
             if self.colorCode:
+                # TODO: Update to create color code from physical elements,
+                # because the colors set by the gmsh api are not exported to
+                # the geo_unrolled file.
                 geoScript.write(
                     "\n// Color code\n"
                     + """If (!Flag_individualColoring)\n"""
