@@ -122,6 +122,8 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
         )
         # copy the tools from the GmshSurface
         dup_gs_surf._cut = dup_gmsh_surf.tools  # pylint: disable=protected-access
+        if dup_gmsh_surf.isTool():
+            dup_gs_surf.setTool()
         return dup_gs_surf
 
     def rotate_duplicate(self, segment: int) -> GmshSegmentSurface:

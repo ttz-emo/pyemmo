@@ -425,6 +425,8 @@ class GmshSurface(GmshGeometry, Surface):
             # because the tool surface must not be of type GmshSurface, but can be a
             # child class of GmshSurface (e.g. GmshSegmentSurface).
             dup_surf._cut.append(tool.duplicate())  # pylint: disable=protected-access
+        if self.isTool():
+            dup_surf.setTool()
         return dup_surf
 
     def mirror(self, planePoint, planeVector1, planeVector2, name=""):

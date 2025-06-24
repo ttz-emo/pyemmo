@@ -1,6 +1,6 @@
 #
-# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO, Technical University of Applied Sciences
-# Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -187,6 +187,8 @@ class MachineSegmentSurface(GmshSegmentSurface):
         )
         # copy the tools from the GmshSurface
         dup_mss._cut = dup_gss.tools  # pylint: disable=protected-access
+        if dup_gss.isTool():
+            dup_mss.setTool()
         return dup_mss
 
     def rotate_duplicate(self, segment: int) -> GmshSegmentSurface:
