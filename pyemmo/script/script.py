@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences
+# Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -492,7 +493,7 @@ class Script:
             self.idedentPoints.append(point)
             return identicalPoint
         # point was allready drawn
-        logging.debug(f"Point '%s' has allready been added to the script.", point.name)
+        logging.debug("Point '%s' has allready been added to the script.", point.name)
         return None
 
     def _testPoint(
@@ -780,7 +781,9 @@ class Script:
                 elif curve.spline_type == 2:
                     splineType = "BSpline"
                 else:
-                    raise RuntimeError("Could not identify spline type")
+                    raise ValueError(
+                        f"Invalid Spline type with index {curve.spline_type}"
+                    )
 
                 code = (
                     f"{curveName} = {curveID}; \n"
@@ -827,7 +830,7 @@ class Script:
         newLoop.append(oldLoop.pop(0))
         nbrLines = len(oldLoop)  # get the remaining number of lines
         # for every line thats left:
-        for outerCounter in range(nbrLines):
+        for _ in range(nbrLines):
             # Check which line in oldLoop appends to the last line in newLoop
             # if that line was found get direction, append it to newLoop and
             # remove it from oldLoop
@@ -1099,6 +1102,7 @@ class Script:
         # material domain. TODO: This could be handled by the pro-file for sure.
         try:
             airgap_mat = statorPhysicalsDict[DOMAIN_AIRGAP][0].material
+        # pylint: disable=locally-disabled, broad-exception-caught
         except Exception as exce_1:
             try:
                 airgap_mat = rotorPhysicalsDict[DOMAIN_AIRGAP][0].material
@@ -1283,9 +1287,7 @@ class Script:
             elif geoElmType == Line:
                 elementType = "Curve"
             else:
-                raise ValueError(
-                    "PhysicalElement geometry type was not Line or Surface!"
-                )
+                raise TypeError(f"Invalid geometry type {geoElmType}")
             code += (
                 "Physical "
                 + elementType
@@ -1477,8 +1479,9 @@ class Script:
             except ValueError as val_err:
                 if re.search(r"Identifier .* already in use.", val_err.args[0]):
                     logging.warning(
-                        f"Material with name {matName} is defined multiple times, but with different properties. "
-                        "Trying to add it again with different identifier..."
+                        "Material with name %s is defined multiple times, but with different "
+                        "properties. Trying to add it again with different identifier...",
+                        matName,
                     )
                     matName = matName + "_dup"
                     self.group.add(id="group_" + matName, glist=physElemIDstr)
@@ -1926,6 +1929,7 @@ class Script:
                 nbrSeg0 = (2 * pi * rRotorMB / mbMeshSize) - (
                     2 * pi * rRotorMB / mbMeshSize
                 ) % 10  # calc number of movingband segments by steps of 10
+                max_nbr_segments = max(nbrSeg0, 1440)
                 # create parameter code for movingband segment setting
                 meshModCode += "// Add mesh size setting for Movingband lines\n"
                 meshModCode += (
@@ -1933,7 +1937,7 @@ class Script:
                     + (
                         f"\tNbrMbSegments = {{{nbrSeg0}, "
                         """Name StrCat[INPUT_MESH, "Number of Rotor Movingband Segments"],"""
-                        "Max 1440, Min 180, Step 10, Help "
+                        f"Max {max_nbr_segments}, Min 180, Step 10, Help "
                         '"Set the number of mesh segments on the interface between rotor/stator'
                         "airgap and movingband. Value represents number of segments on whole "
                         'circle.", Visible Flag_ExpertMode},\n'
@@ -2011,7 +2015,12 @@ class Script:
         meshSettingsCode += (
             "Mesh.SurfaceEdges = 1;\nMesh.Light = 0;\nMesh.SurfaceFaces = 1;\n"
         )
-        meshSettingsCode += "Mesh.Algorithm = 6; // Frontal-Delaunay for 2D meshes\n\n"
+        meshSettingsCode += "Mesh.Algorithm = 6; // Frontal-Delaunay for 2D meshes\n"
+        # TODO: This can be removed with a new GetDP version according to:
+        # https://gitlab.onelab.info/gmsh/gmsh/-/issues/3194
+        meshSettingsCode += "Mesh.MshFileVersion = 4.0; // Fix bug in mesh file creation for GetDP Version 3.6.0\n"
+        meshSettingsCode += "\n"
+
         # # Set mesh algorithm in Gmsh:
         # for surf_tag in [dimTag[1] for dimTag in gmsh.model.get_entities(2)]:
         #     gmsh.model.mesh.set_algorithm(2,surf_tag,6) # Frontal-Delaunay for 2D
@@ -2135,6 +2144,13 @@ class Script:
             nbrSlots = default_param_dict["GEO"]["NBR_SLOTS"]
             slotPitch = 2 * pi / nbrSlots
             mmfOrder, _, angle = machine.stator.winding.get_MMF_harmonics()
+            ## DEBUGGING:
+            if logging.root.level == logging.DEBUG:
+                if not os.path.exists(self.resultsPath):
+                    os.mkdir(self.resultsPath)
+                machine.stator.winding.save_to_file(
+                    os.path.join(self.resultsPath, f"winding_{self.name}.wdg")
+                )
 
             # Stator angle for I_U = 1 p.u., I_V = -1/2, I_W = -1/2 in rad elec
             systemOffset = float(angle[where(mmfOrder == nbrPolePairs)])

@@ -22,7 +22,9 @@
 This module runs the Pyleecan API simulation for selected machines, and create
 a tuple of result directories for use in testing. It can be expanded to support
 other types of tests. Running this module by itself will create base data for
-comparison in the actual tests.
+comparison in the actual tests. Use:
+    ``python -m tests.integrationTest.pyleecan_test_base``
+to run this module.
 """
 
 # from __future__ import absolute_import

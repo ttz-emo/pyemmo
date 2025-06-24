@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO, Technical University of Applied Sciences
+# Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -29,6 +30,7 @@ import gmsh
 from numpy import pi, sign
 from swat_em import datamodel
 
+from ...functions.phase import phase2color
 from ...script.geometry.airGap import AirGap
 from ...script.geometry.bar import Bar
 from ...script.geometry.circleArc import CircleArc, Line
@@ -328,7 +330,9 @@ def importMachineGeometry(
                     # gmsh.fltk.run()
                 for tool in main_surf.tools:
                     if not isinstance(tool, MachineSegmentSurface):
-                        raise RuntimeError(f"Tool {tool} is not MachineSegmentSurface...")
+                        raise RuntimeError(
+                            f"Tool {tool} is not MachineSegmentSurface..."
+                        )
 
             # # correct values for nbrSegments in tools (angle updates automatically):
             # for surf in main_surf.tools:
@@ -575,74 +579,6 @@ def createMagnet(surf: MachineSegmentSurface, mat: Material, extInfo: dict) -> M
         magVectorAngle=magAngle
         + math.radians(360 / surf.nbr_segments) * surf.segment_nbr,
     )
-
-
-def phase2angle(phaseChar: Literal["u", "v", "w"]) -> float:
-    """returns the angle of a specific phase name in "UVW"
-
-    * U = 0
-    * V = :math:`\\frac{2\\pi}{3}`
-    * W = :math:`-\\frac{2\\pi}{3}`
-
-    Args:
-        PhaseChar (str): char object for the phase name (phase ID).
-            Should be "u", "v" or "w".
-
-    Raises:
-        ValueError: PhaseChar should only by U,V or W
-        ValueError: PhaseChar should only habe length=1
-
-    Returns:
-        Angle (float): phase angle
-    """
-    # Case uvw
-    if len(phaseChar) == 1:  # if string PhaseChar is only one char
-        if phaseChar.lower() == "u":
-            return 0
-        if phaseChar.lower() == "v":
-            return 2 * pi / 3
-        if phaseChar.lower() == "w":
-            return -2 * pi / 3
-        raise ValueError(
-            f'Phase ID "{phaseChar}" is not uvw! Can not determine phase angle!'
-        )
-    raise ValueError(f'Phase ID "{phaseChar}"is not a single character!', phaseChar)
-
-
-def phase2color(
-    phaseChar: Literal["u", "v", "w"],
-) -> Literal["IndianRed", "Yellow", "Aquamarine"]:
-    """Get gmsh mesh color name for a phase-character. See `gmsh colors
-    <https://gitlab.onelab.info/gmsh/gmsh/blob/gmsh_4_11_0/src/common/Colors.h>`_
-    for all available colors.
-
-    Args:
-        PhaseChar (Literal["u","v","w"]): Character defining the phase [u,v or w].
-
-    Raises:
-        ValueError: if the phase character is different from u,v or w.
-        ValueError: if the length of the PhaseChar string is geater 1.
-
-    Returns:
-        Literal["IndianRed", "Yellow", "Aquamarine"]:
-
-        - u = "IndianRed"
-        - v = "Yellow"
-        - w = "Aquamarine"
-    """
-    # Case uvw
-    if len(phaseChar) == 1:  # if string PhaseChar is only one char
-        if phaseChar.lower() == "u":
-            return "Magenta"
-        if phaseChar.lower() == "v":
-            return "Yellow"
-        if phaseChar.lower() == "w":
-            return "Cyan"
-        raise ValueError(
-            f'Phase ID "{phaseChar}" is not uvw! Can not determine phase angle!'
-        )
-
-    raise ValueError(f'Phase ID "{phaseChar}"is not a single character!', phaseChar)
 
 
 def getSlotInfo(slotSurfName: str) -> int:

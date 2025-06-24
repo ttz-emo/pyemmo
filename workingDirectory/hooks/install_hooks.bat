@@ -19,6 +19,14 @@
 @REM  along with this program. If not, see <http://www.gnu.org/licenses/>.
 @REM
 
+REM Check if MSG command is available and session is interactive
+where msg >nul 2>&1
+if %ERRORLEVEL%==0 (
+    if not "%SESSIONNAME%"=="" (
+        MSG %USERNAME% "Make sure to update the Python path in workingDirectory\hooks\pre-commit to your preferred python version and pre-commit is installed there (install with: pip install pre-commit)"
+    )
+)
+
 @echo off
 setlocal
 
