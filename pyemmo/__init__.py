@@ -29,6 +29,8 @@ from typing import List, Literal
 import numpy as np
 from swat_em import analyse
 
+from .version import __version__
+
 # import debugpy
 # debugpy.debug_this_thread()
 

@@ -19,17 +19,19 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for testing building of band areas in pyleecan api"""
+import math
 import os
 from os.path import join
-import math
+
 from pyleecan.Classes.Machine import Machine
 
 # pylint: disable=locally-disabled, no-name-in-module
 from pyleecan.Functions.load import load
-import pyemmo.api.pyleecan.translate_surfs
-import pyemmo.api.pyleecan.get_magnetization_dict
-import pyemmo.api.pyleecan.get_translated_machine
+
 import pyemmo.api.pyleecan.create_geo_dict
+import pyemmo.api.pyleecan.get_magnetization_dict
+import pyemmo.api.pyleecan.translate_machine
+import pyemmo.api.pyleecan.translate_surfs
 from tests.api.pyleecan import TEST_API_PYLCN_DATA_DIR
 
 
@@ -42,7 +44,7 @@ def test_build_bands():
     (
         diff_radius,
         max_radius,
-    ) = pyemmo.api.pyleecan.get_translated_machine.calcs_radii(
+    ) = pyemmo.api.pyleecan.translate_machine.calcs_radii(
         machine=machine, is_internal_rotor=is_internal_rotor
     )
 
@@ -75,7 +77,7 @@ def test_build_bands():
         rotor_air_gap1,
         rotor_air_gap2,
         movingband_r,
-    ) = pyemmo.api.pyleecan.get_translated_machine.build_bands_rotor(
+    ) = pyemmo.api.pyleecan.translate_machine.build_bands_rotor(
         machine=machine,
         band_radius_list=band_radius_list,
         r_point_rotor_cont=r_point_rotor_cont,
@@ -85,7 +87,7 @@ def test_build_bands():
     (
         stator_air_gap1,
         stator_air_gap2,
-    ) = pyemmo.api.pyleecan.get_translated_machine.build_bands_stator(
+    ) = pyemmo.api.pyleecan.translate_machine.build_bands_stator(
         machine=machine,
         stator_cont_line_list=stator_cont_line_list,
         band_radius_list=band_radius_list,

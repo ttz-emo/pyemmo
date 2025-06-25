@@ -266,7 +266,7 @@ class TestCasesIntegration:
         #     base_simul_subfolder_path,
         # ) = test_tuple
         LOGGER.info(f"TEST CASE {test_id}: {test_case}")
-        LOGGER.info("Test point 5: check values in dat files")
+        LOGGER.info("Test point 4: check values in dat files")
         # with check("check base simulation subfolder existence"):
         #     assert os.path.isdir(base_simul_subfolder_path) and messagePrinter(
         #         "Base simulation result subfolder exists, continuing tests..."

@@ -84,7 +84,7 @@ setuptools.setup(
     # name="pyemmo",
     version=PYEMMO_VERSION,
     # author="AG-EM TTZ-EMO",
-    # author_email="max.schuler@thws.de",
+    # author_email="agem.ttz-emo@thws.de",
     # description="PyEMMO is a interface for modeling electrical machines in the open-source FEA software Onelab",
     # long_description=long_description,
     # long_description_content_type="text/markdown",

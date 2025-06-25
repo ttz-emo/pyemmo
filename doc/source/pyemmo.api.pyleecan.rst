@@ -1,148 +1,158 @@
-PYLEECAN-API
+Pyleecan-API
 ============
 
-This section is about the PyEMMO API (Application Programming Interface) to PYLEECAN, an open-source modelling software for electrical machines.
+TEXT TODO...
 
-build_pyemmo_line_list module
--------------------------------
+
+
+pyemmo.api.pyleecan.build\_pyemmo\_line\_list module
+----------------------------------------------------
 
 .. automodule:: pyemmo.api.pyleecan.build_pyemmo_line_list
    :members:
    :undoc-members:
    :show-inheritance:
 
-build_pyemmo_material module
-------------------------------
+pyemmo.api.pyleecan.build\_pyemmo\_material module
+--------------------------------------------------
 
 .. automodule:: pyemmo.api.pyleecan.build_pyemmo_material
    :members:
    :undoc-members:
    :show-inheritance:
 
-build_pyemmo_point module
----------------------------
+pyemmo.api.pyleecan.build\_pyemmo\_point module
+-----------------------------------------------
 
 .. automodule:: pyemmo.api.pyleecan.build_pyemmo_point
    :members:
    :undoc-members:
    :show-inheritance:
 
-calc_wind_cont module
------------------------
+pyemmo.api.pyleecan.calc\_wind\_cont module
+-------------------------------------------
 
 .. automodule:: pyemmo.api.pyleecan.calc_wind_cont
    :members:
    :undoc-members:
    :show-inheritance:
 
-calcs_even_rotor_cont module
-------------------------------
+pyemmo.api.pyleecan.calcs\_even\_rotor\_cont module
+---------------------------------------------------
 
 .. automodule:: pyemmo.api.pyleecan.calcs_even_rotor_cont
    :members:
    :undoc-members:
    :show-inheritance:
 
-calcs_rotor_spmsm_cont module
-------------------------------
+pyemmo.api.pyleecan.calcs\_rotor\_spmsm\_cont module
+----------------------------------------------------
 
 .. automodule:: pyemmo.api.pyleecan.calcs_rotor_spmsm_cont
    :members:
    :undoc-members:
    :show-inheritance:
 
-create_geo_dict module
-------------------------------
+pyemmo.api.pyleecan.create\_geo\_dict module
+--------------------------------------------
 
 .. automodule:: pyemmo.api.pyleecan.create_geo_dict
    :members:
    :undoc-members:
    :show-inheritance:
 
-create_param_dict module
------------------------------
+pyemmo.api.pyleecan.create\_param\_dict module
+----------------------------------------------
 
 .. automodule:: pyemmo.api.pyleecan.create_param_dict
    :members:
    :undoc-members:
    :show-inheritance:
 
-create_pyleecan_simulation module
-------------------------------------
+pyemmo.api.pyleecan.create\_pyleecan\_simulation module
+-------------------------------------------------------
 
 .. automodule:: pyemmo.api.pyleecan.create_pyleecan_simulation
    :members:
    :undoc-members:
    :show-inheritance:
 
-detect_inner_outer_limit module
-------------------------------------
+pyemmo.api.pyleecan.detect_inner_outer_limit module
+---------------------------------------------------
 
 .. automodule:: pyemmo.api.pyleecan.detect_inner_outer_limit
    :members:
    :undoc-members:
    :show-inheritance:
 
-get_coords_for_point module
----------------------------------
+pyemmo.api.pyleecan.get\_coords\_for\_point module
+--------------------------------------------------
 
 .. automodule:: pyemmo.api.pyleecan.get_coords_for_point
    :members:
    :undoc-members:
    :show-inheritance:
 
-get_magnetization_dict module
-----------------------------------
+pyemmo.api.pyleecan.get\_magnetization\_dict module
+---------------------------------------------------
 
 .. automodule:: pyemmo.api.pyleecan.get_magnetization_dict
    :members:
    :undoc-members:
    :show-inheritance:
 
-get_rotor_stator_cont module
-------------------------------
+pyemmo.api.pyleecan.get\_rotor\_stator\_cont module
+---------------------------------------------------
 
 .. automodule:: pyemmo.api.pyleecan.get_rotor_stator_cont
    :members:
    :undoc-members:
    :show-inheritance:
 
-get_rotor_stator_surfs module
---------------------------------
+pyemmo.api.pyleecan.get\_rotor\_stator\_surfs module
+----------------------------------------------------
 
 .. automodule:: pyemmo.api.pyleecan.get_rotor_stator_surfs
    :members:
    :undoc-members:
    :show-inheritance:
 
-get_translated_machine module
---------------------------------
-
-.. automodule:: pyemmo.api.pyleecan.get_translated_machine
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-main module
----------------------------------
+pyemmo.api.pyleecan.main module
+-------------------------------
 
 .. automodule:: pyemmo.api.pyleecan.main
    :members:
    :undoc-members:
    :show-inheritance:
 
-translate_surfs module
----------------------------------
+pyemmo.api.pyleecan.translate\_machine module
+---------------------------------------------
+
+.. automodule:: pyemmo.api.pyleecan.translate_machine
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyemmo.api.pyleecan.translate\_surfs module
+-------------------------------------------
 
 .. automodule:: pyemmo.api.pyleecan.translate_surfs
    :members:
    :undoc-members:
    :show-inheritance:
 
-translate_winding module
-----------------------------
+pyemmo.api.pyleecan.translate\_winding module
+---------------------------------------------
 
 .. automodule:: pyemmo.api.pyleecan.translate_winding
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: pyemmo.api.pyleecan
    :members:
    :undoc-members:
    :show-inheritance:

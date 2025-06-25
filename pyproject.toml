@@ -6,14 +6,14 @@ build-backend = "setuptools.build_meta"
 name = "pyemmo"
 authors = [
     { name = "AG-EM TTZ-EMO" },
-    { name = "Max Schuler", email = "max.schuler@thws.de" },
+    { name = "Max Schuler", email = "agem.ttz-emo@thws.de" },
     { name = "Sasithon Koenig" },
 ]
-maintainers = [{ name = "Max Schuler", email = "max.schuler@thws.de" }]
+maintainers = [{ name = "Max Schuler", email = "agem.ttz-emo@thws.de" }]
 readme = "README.md"
 description = "PyEMMO is a interface for modeling electrical machines in the open-source FEA software Onelab"
 urls = { Repository = "https://gitlab.ttz-emo.thws.de/ag-em/pyemmo" }
-requires-python = ">=3.8, <3.10"
+requires-python = ">=3.8"
 license = { file = "LICENSE" }
 keywords = [
     "electrical machine",

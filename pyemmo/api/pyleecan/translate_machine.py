@@ -434,10 +434,10 @@ def calcs_radii(
     return diff_radius, max_radius
 
 
-def get_translated_machine(
+def translate_machine(
     machine: PyleecanMachine,
-) -> tuple[float, dict[str, any], dict[str, SurfaceAPI]]:
-    """TODO
+) -> tuple[list[SurfaceAPI], list[SurfaceAPI], float, dict, dict]:
+    """_summary_
 
     Args:
         machine (PyleecanMachine): Pyleecan Machine object.

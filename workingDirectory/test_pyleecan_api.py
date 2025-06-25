@@ -18,15 +18,17 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import json
+import logging
+
 # %%
 import os
-import logging
-import json
-from pyleecan.Functions import load
-from pyleecan.Classes.Machine import Machine
 
-from pyemmo.definitions import ROOT_DIR
+from pyleecan.Classes.Machine import Machine
+from pyleecan.Functions import load
+
 from pyemmo.api.pyleecan import main as pyleecanAPI
+from pyemmo.definitions import ROOT_DIR
 
 # disable messages of matplotlib
 logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)

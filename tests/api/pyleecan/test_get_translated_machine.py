@@ -19,14 +19,15 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module to test pyemmo.api.pyleecan.get_translated_machine"""
-from os.path import abspath, join
 import math
+from os.path import abspath, join
+
 from pyleecan.Classes.Machine import Machine
 
 # pylint: disable=locally-disabled, no-name-in-module
 from pyleecan.Functions.load import load
 
-import pyemmo.api.pyleecan.get_translated_machine
+import pyemmo.api.pyleecan.translate_machine
 from tests.api.pyleecan import TEST_API_PYLCN_DATA_DIR
 
 
@@ -40,7 +41,7 @@ def test_get_translated_machine():
         movingband_r,
         magnetization_dict,
         geo_translation_dict,
-    ) = pyemmo.api.pyleecan.get_translated_machine.get_translated_machine(
+    ) = pyemmo.api.pyleecan.translate_machine.translate_machine(
         machine=machine,
     )
     # check movingband radius

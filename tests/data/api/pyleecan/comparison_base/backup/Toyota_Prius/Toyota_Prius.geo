@@ -1,4 +1,4 @@
-// This script was created with pyemmo (Version 1.3.1b1, git bc8992)
+// This script was created with pyemmo (Version 1.3.2, git b5e4ca)
 
 DefineConstant[
  Flag_ExpertMode = {1,Name '01View/Expert Mode', Choices {0, 1}}
@@ -14,6 +14,7 @@ Mesh.SurfaceEdges = 1;
 Mesh.Light = 0;
 Mesh.SurfaceFaces = 1;
 Mesh.Algorithm = 6; // Frontal-Delaunay for 2D meshes
+Mesh.MshFileVersion = 4.0; // Fix bug in mesh file creation for GetDP Version 3.6.0
 
 
 // Points
@@ -435,9 +436,9 @@ If (!Flag_individualColoring)
 Color SkyBlue {Surface {170}; }
 Color Red {Surface {153}; }
 Color Red {Surface {155}; }
-Color MediumAquamarine {Surface {152}; }
-Color Orchid {Surface {154}; }
-Color LightBlue2 {Surface {156}; }
+Color Gray95 {Surface {152}; }
+Color VioletRed3 {Surface {154}; }
+Color Gray1 {Surface {156}; }
 Color SkyBlue {Surface {169}; }
 Color SteelBlue {Surface {146}; }
 Color SkyBlue {Surface {177}; }
