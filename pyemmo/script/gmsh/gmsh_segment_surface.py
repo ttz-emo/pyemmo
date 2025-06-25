@@ -23,8 +23,8 @@ from __future__ import annotations
 
 import logging
 
-import numpy as np
 import gmsh
+import numpy as np
 
 from ..geometry import defaultCenterPoint as gcp
 from ..geometry.segment_surface import SegmentSurface
@@ -236,7 +236,7 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
             self._subtract_segment(tool, keepTool)
 
     def _subtract_segment(
-        self, tool: "GmshSegmentSurface", keep_tool: bool = True
+        self, tool: GmshSegmentSurface, keep_tool: bool = True
     ) -> None:
         """Cut out a Tool SegmentSurface from the Parent surface by Boolean Difference.
         This method is a duplicate of the GmshSurface.cutOut() method, but it
@@ -348,11 +348,16 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
                     self._handle_outer_tool(outer_tool, tool)
                 else:
                     # replace inital tools surface with new inner tool surface
-                    inner_tool = tool.duplicate()
-                    inner_tool._id = dimtag[1]  # update id of new tool
-                    inner_tool.setTool()
-                    self._cut.remove(tool)  # remove old tool surface
-                    self._cut.append(inner_tool)  # add new inner tool surface
+                    inner_tool = GmshSegmentSurface(
+                        name=tool.name,
+                        tag=dimtag[1],
+                        nbr_segments=tool.nbr_segments,
+                    )
+                    inner_tool.setTool()  # need to call setTool here because
+                    # the new partial tool is allready cut out.
+                    self.tools.append(inner_tool)  # add new inner tool surface
+                if tool in self.tools:
+                    self.tools.remove(tool)  # remove old tool surface
 
         else:
             raise ValueError(
@@ -375,7 +380,7 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
             outer_tool (GmshSegmentSurface): Outer tool surface that was created
                 after cutting out the tool surface.
             tool (GmshSegmentSurface): Original tool surface that was cut out.
-        
+
         NOTE: For some reason in OCC we can not rotate the original tool
         and subtract it again, but we need to duplicate it first and then
         rotate the duplicate. Otherwise OCC throws an error that the
@@ -386,7 +391,7 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
         arbitrary shape and is difficult to handle for OCC. This is just a
         workaround, because of the difficulties with OCC. **So in the case
         a tool part is outside the segment angle, it will be removed**.
-            
+
         """
         cog_tool = outer_tool.calcCOG()
         angle_to_x = cog_tool.getAngleToX()
@@ -401,8 +406,8 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
             # rotate that copy. Otherwise OCC throws an error that the
             # outline of the parent surface/tool part can not be recovered.
             new_tool = tool.duplicate()
-            new_tool.rotateZ(gcp, self.angle) # rotate tool by segment angle
-            self._subtract_segment(new_tool) 
+            new_tool.rotateZ(gcp, self.angle)  # rotate tool by segment angle
+            self._subtract_segment(new_tool)
             # removing outer tool surface
             gmsh.model.occ.remove([(outer_tool.dim, outer_tool.id)])
             if outer_tool in self.tools:
