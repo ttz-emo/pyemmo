@@ -108,7 +108,7 @@ def create_rectangle():
     return GmshSurface.from_curve_loop(curve_loop=lines, name="Test surface")
 
 
-def add_circle(center: GmshPoint, radius: float):
+def add_circle(center: GmshPoint, radius: float) -> GmshSurface:
     """Create a test Circle with ``radius`` at ``center`` contructed by 4 arcs."""
     points: list[GmshPoint] = []
     for i, xy in enumerate([(0, 1), (1, 0), (0, -1), (-1, 0)]):
@@ -238,10 +238,15 @@ def test_duplicate(gmsh_surface: GmshSurface, name: str):
     """Test duplicate() method"""
     duplicate = gmsh_surface.duplicate(name=name)
     assert gmsh_surface.id != duplicate.id
-    assert gmsh_surface.points != duplicate.points
+    assert len(gmsh_surface.points) == len(duplicate.points)
+    assert len(gmsh_surface.curve) == len(duplicate.curve)
     # lines are equal if they are of the same line type (line, arc, spline) and have
-    # matching points
-    assert gmsh_surface.curve == duplicate.curve
+    # matching points. Method arePointsEqual() checks for the points coordinates.
+    for curve in gmsh_surface.curve:
+        assert any(
+            isinstance(curve, type(dup_line)) and curve.arePointsEqual(dup_line)
+            for dup_line in duplicate.curve
+        )
     assert gmsh_surface.dim == duplicate.dim
     if name:
         assert duplicate.name == name

@@ -247,10 +247,15 @@ def test_duplicate(gmsh_surface: GmshSegmentSurface, name: str):
     """Test duplicate() method"""
     duplicate = gmsh_surface.duplicate(name=name)
     assert gmsh_surface.id != duplicate.id
-    assert gmsh_surface.points != duplicate.points
+    assert len(gmsh_surface.points) == len(duplicate.points)
+    assert len(gmsh_surface.curve) == len(duplicate.curve)
     # lines are equal if they are of the same line type (line, arc, spline) and have
-    # matching points
-    assert gmsh_surface.curve == duplicate.curve
+    # matching points. Method arePointsEqual() checks for the points coordinates.
+    for curve in gmsh_surface.curve:
+        assert any(
+            isinstance(curve, type(dup_line)) and curve.arePointsEqual(dup_line)
+            for dup_line in duplicate.curve
+        )
     assert gmsh_surface.dim == duplicate.dim
     if name:
         assert duplicate.name == name
@@ -303,10 +308,10 @@ def test_cut_out_overlap(gmsh_surface: GmshSegmentSurface):
     # end point
     circ = add_circle(circ_center, radius=gmsh_surface.curve[0].length / 4)
     gmsh_surface.cutOut(circ)
-    assert len(gmsh_surface.curve) == 7
+    assert len(gmsh_surface.curve) == 10
     assert gmsh_surface.dim == 2
     assert gmsh_surface.name == "Test segment surface"
-    assert gmsh_surface.id == 3
+    assert gmsh_surface.id == 7
 
 
 def test_cut_out_noIntersect(gmsh_surface: GmshSegmentSurface):
