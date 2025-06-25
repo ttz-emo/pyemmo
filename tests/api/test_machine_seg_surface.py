@@ -216,6 +216,7 @@ def test_rotate_z(machine_seg_surf: MachineSegmentSurface):
     # rotate surf by 90 degrees around z-axis
     center = Point("center point", 0, 0, 0)
     machine_seg_surf.rotateZ(center, np.pi / 2)
+    gmsh.model.occ.synchronize()  # synchronize model to apply changes
     new_angle = 3 * np.pi / 4
     exspected_coords = [
         (0, 1, 0),
@@ -224,10 +225,14 @@ def test_rotate_z(machine_seg_surf: MachineSegmentSurface):
         (1.3 * np.cos(new_angle), 1.3 * np.sin(new_angle), 0),
     ]
     for coords in exspected_coords:
-        assert any(
+        if not any(
             all(np.isclose(coords, point.coordinate, atol=1e-6))
             for point in machine_seg_surf.points
-        )
+        ):
+            points = ", ".join(str(point) for point in machine_seg_surf.points)
+            raise AssertionError(
+                f"Point with coordinates {coords} not found in points of " f"{points}."
+            )
 
 
 @pytest.mark.parametrize(
