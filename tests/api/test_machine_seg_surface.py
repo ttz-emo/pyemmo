@@ -249,10 +249,15 @@ def test_duplicate(machine_seg_surf: MachineSegmentSurface, name: str):
     """Test duplicate() method"""
     duplicate = machine_seg_surf.duplicate(name=name)
     assert machine_seg_surf.id != duplicate.id
-    assert machine_seg_surf.points != duplicate.points
+    assert len(machine_seg_surf.points) == len(duplicate.points)
+    assert len(machine_seg_surf.curve) == len(duplicate.curve)
     # lines are equal if they are of the same line type (line, arc, spline) and have
-    # matching points
-    assert machine_seg_surf.curve == duplicate.curve
+    # matching points. Method arePointsEqual() checks for the points coordinates.
+    for curve in machine_seg_surf.curve:
+        assert any(
+            isinstance(curve, type(dup_line)) and curve.arePointsEqual(dup_line)
+            for dup_line in duplicate.curve
+        )
     assert machine_seg_surf.dim == duplicate.dim
     if name:
         assert duplicate.name == name
