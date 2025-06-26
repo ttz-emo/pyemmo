@@ -60,6 +60,20 @@ class ElectricalSteel(Material):
         self.referenceFluxDensity = referenceFluxDensity
         self.lossParams = lossParams
 
+    def __str__(self) -> str:
+        """string representation of electrical steel material"""
+        mat_str = super().__str__()
+        return mat_str + "\n".join(
+            f"{key:>35}: {value:<15}"
+            for key, value in [
+                ("Sheet Thickness [mm]:", self.sheetThickness),
+                (
+                    "Core Loss Parameter [mm]:",
+                    self.lossParams[0] if self.lossParams else None,
+                ),
+            ]
+        )
+
     @property
     def sheetThickness(self) -> float:
         """The sheet thickness of the lamination material in m
@@ -245,22 +259,3 @@ class ElectricalSteel(Material):
                 "Must be float or int."
             )
         self._referenceFluxDensity = newReferenceFluxDensity
-
-    def print(self) -> None:
-        """print electrical steel material to stdout"""
-        table = [
-            ["Name:", self.name],
-            ["Is linear:", "Yes" if self.linear else "No"],
-            ["Electrical Conductivity [S/m]:", self.conductivity],
-            ["Relative Permeability []:", self.relPermeability],
-            ["Remanence Flux Density[T]:", self.remanence],
-            ["Density [kg/m³]:", self.density],
-            ["Sheet Thickness [mm]:", self.sheetThickness],
-            ["Thermal Conductivity [W/(m*K)]:", self.thermalConductivity],
-            ["Thermal Capacity [J/(kg*K)]:", self.thermalCapacity],
-        ]
-        for row in table:
-            if row[1] is None:
-                row[1] = "None"  # set to string because formatting None not supported
-            print(f"{row[0]: >25} {row[1]: <15}")
-        print("\n")
