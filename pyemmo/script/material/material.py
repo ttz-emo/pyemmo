@@ -69,28 +69,29 @@ class Material:
         self.thermalCapacity = thermalCapacity
 
     def __eq__(self, __o: object) -> bool:
-        if isinstance(__o, self.__class__):
-            # check BH is equal:
-            try:
-                if self.BH.shape == __o.BH.shape:
-                    # if comparison results in ValueError, shapes could not be broadcasted
-                    bh_comp = np.all(self.BH == __o.BH)
-                else:
-                    return False  # wrong BH shape
-            except ValueError:
-                # comparison with empty array returns a ValueError
-                return False
-            except Exception as exce:
-                raise exce
-            if bh_comp:
-                # matching BH arrays -> check rest of attributes by dict without BH
-                selfDict = self.__dict__.copy()
-                del selfDict["_BH"]
-                otherDict = __o.__dict__.copy()
-                del otherDict["_BH"]
-                return selfDict == otherDict
-            return False  # BH comparison was False
-        return False  # Wrong compare instance type!
+        if not isinstance(__o, self.__class__):
+            return False  # Wrong compare instance type!
+        # check BH is equal:
+        try:
+            if self.BH.shape == __o.BH.shape:
+                # if comparison results in ValueError, shapes could not be broadcasted
+                bh_comp = np.all(self.BH == __o.BH)
+            else:
+                return False  # wrong BH shape
+        except ValueError:
+            # comparison with empty array returns a ValueError
+            return False
+        except Exception as exce:
+            raise exce
+        if bh_comp:
+            # matching BH arrays -> check rest of attributes by dict without BH
+            selfDict = self.__dict__.copy()
+            del selfDict["_BH"]
+            otherDict = __o.__dict__.copy()
+            del otherDict["_BH"]
+            return selfDict == otherDict
+        return False  # BH comparison was False
+
 
     def load(self, materialName: str = ""):
         """Function to load material from JSON database.
