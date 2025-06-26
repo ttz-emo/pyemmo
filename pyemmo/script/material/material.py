@@ -92,6 +92,21 @@ class Material:
             return selfDict == otherDict
         return False  # BH comparison was False
 
+    def __str__(self) -> str:
+        """string representation of material"""
+        return "\n".join(
+            f"{key:>35}: {value:<15}"
+            for key, value in [
+                ("Name:", self.name),
+                ("Is linear:", "Yes" if self.linear else "No"),
+                ("Electrical Conductivity [S/m]:", self.conductivity),
+                ("Relative Permeability []:", self.relPermeability),
+                ("Remanence Flux Density[T]:", self.remanence),
+                ("Density [kg/m³]:", self.density),
+                ("Thermal Conductivity [W/(m*K)]:", self.thermalConductivity),
+                ("Thermal Capacity [J/(kg*K)]:", self.thermalCapacity),
+            ]
+        )
 
     def load(self, materialName: str = ""):
         """Function to load material from JSON database.
@@ -735,19 +750,5 @@ class Material:
             raise ValueError("Attribute linear must be type bool.")
 
     def print(self) -> None:
-        """print material to stdout"""
-        table = [
-            ["Name:", self.name],
-            ["Is linear:", "Yes" if self.linear else "No"],
-            ["Electrical Conductivity [S/m]:", self.conductivity],
-            ["Relative Permeability []:", self.relPermeability],
-            ["Remanence Flux Density[T]:", self.remanence],
-            ["Density [kg/m³]:", self.density],
-            ["Thermal Conductivity [W/(m*K)]:", self.thermalConductivity],
-            ["Thermal Capacity [J/(kg*K)]:", self.thermalCapacity],
-        ]
-        for row in table:
-            if row[1] is None:
-                row[1] = "None"  # set to string because formatting None not supported
-            print(f"{row[0]: >30} {row[1]: <15}")
-        print("\n")
+        """print the material information to console"""
+        print(str(self))
