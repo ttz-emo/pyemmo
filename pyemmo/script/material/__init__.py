@@ -18,5 +18,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Material Package"""
-from .electricalSteel import ElectricalSteel
-from .material import Material
+import os
+
+from ...definitions import ROOT_DIR
+
+DATABASE_PATH = os.path.join(ROOT_DIR, "pyemmo/script/material/material_json")

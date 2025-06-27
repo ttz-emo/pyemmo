@@ -20,7 +20,7 @@
 """Module for AirArea Physical Element"""
 from typing import List, Union
 
-from ..material import Material
+from ..material.material import Material
 from .circleArc import CircleArc, Line
 from .physicalElement import PhysicalElement
 from .spline import Spline
