@@ -44,14 +44,14 @@ class Material:
     def __init__(
         self,
         name: str = "",
-        conductivity: float = None,
-        relPermeability: float = None,
-        remanence: float = None,
-        tempCoefRem: float = None,
+        conductivity: float = 0.0,
+        relPermeability: float = 1.0,
+        remanence: float = 0.0,
+        tempCoefRem: float = 0.0,
         BH: NDArray = None,
-        density: float = None,
-        thermalConductivity: float = None,
-        thermalCapacity: float = None,
+        density: float = 0.0,
+        thermalConductivity: float = 0.0,
+        thermalCapacity: float = 0.0,
     ):
         self.name = name
         self.conductivity = conductivity
@@ -264,36 +264,35 @@ class Material:
         return self._name
 
     @property
-    def conductivity(self) -> Union[float, int, None]:
+    def conductivity(self) -> Union[float, int]:
         """get electrical conductivity
 
-
         Returns:
-            Union[float, int, None]: electrical conductivity in S/m or None if
+            Union[float, int]: electrical conductivity in S/m. 0 if
             not conductive.
         """
         return self._conductivity
 
     @property
-    def relPermeability(self) -> Union[float, int, None]:
-        """get relative magnetic permeability
+    def relPermeability(self) -> Union[float, int]:
+        """get linear relative magnetic permeability
 
         Returns:
-            Union[float, int, None]: relative permeability in []
+            Union[float, int]: linear relative permeability
         """
         return self._relPermeability
 
     @property
-    def remanence(self) -> Union[float, int, None]:
-        """get remanent flux density
+    def remanence(self) -> Union[float, int]:
+        """get remanent flux density at 20°C
 
         Returns:
-            Union[float, int, None]: remanent flux density (Br) in T
+            Union[float, int]: remanent flux density (Br) in T at 20°C
         """
         return self._remanence
 
     @property
-    def tempCoefRem(self) -> Union[float, int, None]:
+    def tempCoefRem(self) -> Union[float, int]:
         """Get the temperature coefficient of the remanent flux density.
         Formula for remanent flux density at temperature `tempMag` in °C is:
 
@@ -301,8 +300,7 @@ class Material:
             B_{r}(tempMag) =  b_{r,20°C} * (1 + ({tempCoef} * (tempMag - 20)))"
 
         Returns:
-            Union[float, int, None]: temperatur coefficient of remanent flux density in 1/K
-            ("one per Kelvin")
+            Union[float, int]: temperatur coefficient of remanent flux density in 1/K
         """
         return self._tempCoefRem
 
@@ -520,26 +518,20 @@ class Material:
             raise ValueError("Material name must be type str.")
 
     @conductivity.setter
-    def conductivity(self, conductivity: Union[float, int, None]):
+    def conductivity(self, conductivity: Union[float, int]):
         """set the electrical conductivity of the material
 
         Args:
             conductivity (Union[float, int]): electrical conductivity in S/m
         """
-        if conductivity is None:
-            self._conductivity = None
-        elif isinstance(conductivity, (int, float)):
-            if conductivity > 0:
+        if isinstance(conductivity, (int, float)):
+            if conductivity >= 0:
                 self._conductivity = conductivity
-            elif conductivity == 0:
-                # if zero than non-conductings
-                self._conductivity = None
             else:
                 # negative conductivity...
                 raise ValueError(
                     "Conductivy can not be negative!" f"Given value: {conductivity}"
                 )
-
         else:
             raise TypeError("Conductivity must be numeric.")
 
@@ -550,8 +542,14 @@ class Material:
         Args:
             relPermeability (Union[float, int]): relative permeability
         """
-        if isinstance(relPermeability, (int, float)) or relPermeability is None:
-            self._relPermeability = relPermeability
+        if isinstance(relPermeability, (int, float)):
+            if relPermeability > 0:
+                self._relPermeability = relPermeability
+            else:
+                raise ValueError(
+                    "Relative permeability must be a positive number, but is "
+                    f"'{relPermeability}'"
+                )
         else:
             raise ValueError("Relative permeability must be numeric.")
 
@@ -563,8 +561,14 @@ class Material:
         Args:
             remanence (Union[float, int]): remanent flux density in [T]
         """
-        if isinstance(remanence, (int, float)) or remanence is None:
-            self._remanence = remanence
+        if isinstance(remanence, (int, float)):
+            if remanence >= 0:
+                self._remanence = remanence
+            else:
+                raise ValueError(
+                    "Remanent flux density must be a positive number, but is "
+                    f"'{remanence}'"
+                )
         else:
             raise ValueError("Remanent flux density must be numeric.")
 
@@ -579,7 +583,12 @@ class Material:
             ValueError: If given value is not numeric.
         """
         # ("br_" = f"{br20} * (1 + ({tempCoef} * (tempMag - 20)))", "Reference temperatur is 20°C",
-        if isinstance(new_temp_coef, (int, float)) or new_temp_coef is None:
+        if isinstance(new_temp_coef, (int, float)):
+            if new_temp_coef < 0:
+                raise ValueError(
+                    "Remanence flux density temperature coefficient must be a positive number, "
+                    f"but is '{new_temp_coef}'"
+                )
             self._tempCoefRem = new_temp_coef
         else:
             raise ValueError(
@@ -592,28 +601,24 @@ class Material:
         """Get density of the material in kg/m³
 
         Returns:
-            Union[float, None]: Density in kg/m³
+            Union[float]: Density in kg/m³
         """
         return self._density
 
     @density.setter
-    def density(self, density: float) -> None:
+    def density(self, density: float):
         """set the density of the material in kg/m³
 
         Args:
             density (float): density of the material in kg/m³
 
         Raises:
-            TypeError: if given density if not numeric or None
+            TypeError: if given density if not numeric
             ValueError: if the given density is a negative number
         """
-        if density is None:
-            self._density = None
-            return None
-        elif isinstance(density, (int, float)):
+        if isinstance(density, (int, float)):
             if density >= 0:
                 self._density = density
-                return None
             else:
                 raise (
                     ValueError(
@@ -634,37 +639,35 @@ class Material:
         """get the thermal conductivity of the material in W/(m*K)
 
         Returns:
-            float | None: thermal conductivity of the material in W/(m*K)
+            float: thermal conductivity of the material in W/(m*K)
         """
         return self._thermalConductivity
 
     @thermalConductivity.setter
-    def thermalConductivity(self, thermalConductivity: float) -> None:
+    def thermalConductivity(self, thermalConductivity: float):
         """set the thermal conductivity of the material in W/(m*K)
 
         Args:
             thermalConductivity (float): thermal conductivity in W/(m*K)
         Raises:
-            TypeError: if given thermal conductivity if not numeric or None
+            TypeError: if given thermal conductivity if not numeric
             ValueError: if the given thermal conductivity is a negative number
         """
-        if thermalConductivity is None:
-            self._thermalConductivity = None
-            return None
-        elif isinstance(thermalConductivity, (int, float)):
+        if isinstance(thermalConductivity, (int, float)):
             if thermalConductivity >= 0:
                 self._thermalConductivity = thermalConductivity
-                return None
             else:
                 raise (
                     ValueError(
-                        f"Value for material thermal conductivity must be a positive number, but is '{thermalConductivity}'"
+                        "Value for material thermal conductivity must be a"
+                        f"positive number, but is '{thermalConductivity}'"
                     )
                 )
         else:
             raise (
                 TypeError(
-                    f"thermal conductivity of material must be a numeric value but is '{type(thermalConductivity)}':{thermalConductivity}"
+                    "thermal conductivity of material must be a numeric value "
+                    f"but is '{type(thermalConductivity)}':{thermalConductivity}"
                 )
             )
 
@@ -675,25 +678,21 @@ class Material:
         Returns:
             float | None: thermalCapacity of the material in J/(kg*K)
         """
-        return self._thermalConductivity
+        return self._thermalCapacity
 
     @thermalCapacity.setter
-    def thermalCapacity(self, thermalCapacity: float) -> None:
+    def thermalCapacity(self, thermalCapacity: Union[int, float]):
         """set the thermalCapacity of the material in J/(kg*K)
 
         Args:
             thermalCapacity (float): thermal capacity in J/(kg*K)
         Raises:
-            TypeError: if given thermalCapacity if not numeric or None
+            TypeError: if given thermalCapacity if not numeric
             ValueError: if the given thermalCapacity is a negative number
         """
-        if thermalCapacity is None:
-            self._thermalCapacity = None
-            return None
-        elif isinstance(thermalCapacity, (int, float)):
+        if isinstance(thermalCapacity, (int, float)):
             if thermalCapacity >= 0:
                 self._thermalCapacity = thermalCapacity
-                return None
             else:
                 raise (
                     ValueError(
