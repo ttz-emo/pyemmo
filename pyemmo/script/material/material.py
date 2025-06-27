@@ -94,19 +94,22 @@ class Material:
 
     def __str__(self) -> str:
         """string representation of material"""
-        return "\n".join(
-            f"{key:>35}: {value:<15}"
-            for key, value in [
-                ("Name:", self.name),
-                ("Is linear:", "Yes" if self.linear else "No"),
-                ("Electrical Conductivity [S/m]:", self.conductivity),
-                ("Relative Permeability []:", self.relPermeability),
-                ("Remanence Flux Density[T]:", self.remanence),
-                ("Density [kg/m³]:", self.density),
-                ("Thermal Conductivity [W/(m*K)]:", self.thermalConductivity),
-                ("Thermal Capacity [J/(kg*K)]:", self.thermalCapacity),
-            ]
-        )
+        str_repr = []
+        for key, value in [
+            ("Name", self.name),
+            ("Is linear", "Yes" if self.linear else "No"),
+            ("Electrical Conductivity [S/m]", self.conductivity),
+            ("Relative Permeability []", self.relPermeability),
+            ("Remanence Flux Density[T]", self.remanence),
+            ("Density [kg/m³]", self.density),
+            ("Thermal Conductivity [W/(m*K)]", self.thermalConductivity),
+            ("Thermal Capacity [J/(kg*K)]", self.thermalCapacity),
+        ]:
+            if value is not None:
+                str_repr.append(f"{key:>35}: {value:<15}")
+            else:
+                str_repr.append(f"{key:>35}: None")
+        return "\n".join(str_repr)
 
     def load(self, materialName: str = ""):
         """Function to load material from JSON database.

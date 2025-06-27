@@ -102,15 +102,39 @@ class ElectricalSteel(Material):
     def __str__(self) -> str:
         """string representation of electrical steel material"""
         mat_str = super().__str__()
-        return mat_str + "\n".join(
-            f"{key:>35}: {value:<15}"
-            for key, value in [
-                ("Sheet Thickness [mm]:", self.sheetThickness),
-                (
-                    "Core Loss Parameter [mm]:",
-                    self.lossParams[0] if self.lossParams else None,
-                ),
-            ]
+        return (
+            mat_str
+            + "\n"
+            + "\n".join(
+                f"{key:>35}: {value:<15}"
+                for key, value in [
+                    ("Sheet Thickness [mm]", self.sheetThickness),
+                    (
+                        "Hysteresis Loss Factor [W/m³]",
+                        self.lossParams[0],
+                    ),
+                    (
+                        "Eddy-Current Loss Factor [W/m³]",
+                        self.lossParams[1],
+                    ),
+                    (
+                        "Excess Loss Factor [W/m³]",
+                        self.lossParams[2],
+                    ),
+                    (
+                        "Reference Frequency [Hz]",
+                        self.referenceFrequency if self.referenceFrequency else "None",
+                    ),
+                    (
+                        "Reference Flux Density [T]",
+                        (
+                            self.referenceFluxDensity
+                            if self.referenceFluxDensity
+                            else "None"
+                        ),
+                    ),
+                ]
+            )
         )
 
     @property
