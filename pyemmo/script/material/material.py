@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -220,11 +221,9 @@ class Material:
         Args:
             temp: chosen temperature for the curve. can be "default", or a specific temp.
                 - if none is defined, all BH curves for all temps will be plotted
-        Returns:
-            None
         """
         if self.linear:
-            warnings.warn("Material is linear, there is no curve")
+            warnings.warn("Material is linear, there is no BH-curve")
             return
         if temp == None:
             for t in self.BH.keys():
@@ -254,31 +253,6 @@ class Material:
         plt.ylabel("Flux density B")
         plt.legend(loc="upper right")
         plt.show(block=True)
-
-    # def isLinear(self) -> bool:
-    #     """check if the material is linear or has BH curve
-
-    #     Returns:
-    #         bool: True if material doesn't have a BH curve, but a relative permeability.
-    #         Otherwise Flase
-    #     """
-    #     if self._linear and self.BH.size:
-    #         # pylint: disable=locally-disabled,  line-too-long
-    #         warnings.warn(
-    #             f"Linearity flag of material '{self.name}' is True although BH-curve is not empty!"
-    #         )
-    #     return self._linear
-
-    # def setLinear(self, linear: bool) -> None:
-    #     """set the linearity of the material
-
-    #     Args:
-    #         linear (bool): True if material is linear, otherwise False
-    #     """
-    #     if isinstance(linear, bool):
-    #         self._linear = linear
-    #     else:
-    #         raise ValueError("Attribute linear must be type bool.")
 
     @property
     def name(self) -> str:
@@ -321,6 +295,10 @@ class Material:
     @property
     def tempCoefRem(self) -> Union[float, int, None]:
         """Get the temperature coefficient of the remanent flux density.
+        Formula for remanent flux density at temperature `tempMag` in °C is:
+
+        .. math::
+            B_{r}(tempMag) =  b_{r,20°C} * (1 + ({tempCoef} * (tempMag - 20)))"
 
         Returns:
             Union[float, int, None]: temperatur coefficient of remanent flux density in 1/K
@@ -328,6 +306,7 @@ class Material:
         """
         return self._tempCoefRem
 
+    # pylint: disable=invalid-name
     @property
     def BH(self) -> NDArray:
         """getter property of BH
@@ -410,8 +389,7 @@ class Material:
         Args:
             BH (numpy.ndarray): BH curve (2D array) with shape (X,2) ->
             [[B1, H1],[B2, H2],[B3, H3],...]
-        Returns:
-            None
+
         NOTE: this sets the curve for the default temperature only. Use set_BH() to set
         BH Curve for specific temperature
         """
@@ -563,7 +541,7 @@ class Material:
                 )
 
         else:
-            raise ValueError("Conductivity must be numeric.")
+            raise TypeError("Conductivity must be numeric.")
 
     @relPermeability.setter
     def relPermeability(self, relPermeability: Union[float, int]):
@@ -579,7 +557,8 @@ class Material:
 
     @remanence.setter
     def remanence(self, remanence: Union[float, int]):
-        """set the remanence of the material
+        """Set the remanence flux density in T of permanent magnet material of
+        the material. Must be a positive number or zero (no remanence).
 
         Args:
             remanence (Union[float, int]): remanent flux density in [T]
@@ -590,7 +569,7 @@ class Material:
             raise ValueError("Remanent flux density must be numeric.")
 
     @tempCoefRem.setter
-    def tempCoefRem(self, new_temp_coef: float):
+    def tempCoefRem(self, new_temp_coef: Union[int, float]):
         """setter for temperature coefficient of Br
 
         Args:
@@ -638,13 +617,15 @@ class Material:
             else:
                 raise (
                     ValueError(
-                        f"Value for material density must be a positive number, but is '{density}'"
+                        "Value for material density must be a positive number,"
+                        f"but is '{density}'"
                     )
                 )
         else:
             raise (
                 TypeError(
-                    f"Density of material must be a numeric value but is '{type(density)}':{density}"
+                    "Density of material must be a numeric value but is "
+                    f"'{type(density)}':{density}"
                 )
             )
 
@@ -662,7 +643,7 @@ class Material:
         """set the thermal conductivity of the material in W/(m*K)
 
         Args:
-            thermalConductivity (float): [description]
+            thermalConductivity (float): thermal conductivity in W/(m*K)
         Raises:
             TypeError: if given thermal conductivity if not numeric or None
             ValueError: if the given thermal conductivity is a negative number
@@ -716,13 +697,15 @@ class Material:
             else:
                 raise (
                     ValueError(
-                        f"Value for material thermalCapacity must be a positive number, but is '{thermalCapacity}'"
+                        "Value for material thermalCapacity must be a positive"
+                        f" number, but is '{thermalCapacity}'"
                     )
                 )
         else:
             raise (
                 TypeError(
-                    f"thermalCapacity of material must be a numeric value but is '{type(thermalCapacity)}':{thermalCapacity}"
+                    "thermalCapacity of material must be a numeric value but "
+                    f"is '{type(thermalCapacity)}':{thermalCapacity}"
                 )
             )
 
