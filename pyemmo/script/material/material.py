@@ -29,13 +29,11 @@ import warnings
 from typing import Union
 
 import numpy as np
-import pandas as pd
 from matplotlib import pyplot as plt
 from numpy.typing import NDArray
 
-from pyemmo.definitions import ROOT_DIR
-
 from ... import rootLogger as logger
+from . import DATABASE_PATH
 
 
 class Material:
@@ -48,7 +46,7 @@ class Material:
         relPermeability: float = 1.0,
         remanence: float = 0.0,
         tempCoefRem: float = 0.0,
-        BH: NDArray = None,
+        BH: NDArray = np.empty(0),
         density: float = 0.0,
         thermalConductivity: float = 0.0,
         thermalCapacity: float = 0.0,
@@ -112,78 +110,69 @@ class Material:
                 str_repr.append(f"{key:>35}: None")
         return "\n".join(str_repr)
 
-    def load(self, materialName: str = ""):
+    @classmethod
+    def load(cls, mat_name):
         """Function to load material from JSON database.
 
         Args:
-            materialName (str, optional): Material name to load the Material from the
-                database, if its not given in the Material init before. Defaults to the
-                instance name (:func:`~material.Material.name`).
-
-        Raises:
-            RuntimeError: _description_
+            materialName (str): Material name to load the Material from the
+                database.
         """
-        if materialName == "":
-            if self.name == "":
-                raise RuntimeError("Material name undefined, cannot load.")
-            else:
-                json_path = os.path.join(
-                    ROOT_DIR,
-                    f"pyemmo/script/material/material_json/{self.name}.json",
-                )
-        else:
-            json_path = os.path.join(
-                ROOT_DIR,
-                f"pyemmo/script/material/material_json/{materialName}.json",
+        if mat_name == "":
+            raise ValueError("Material name must not be empty!")
+
+        json_path = os.path.join(DATABASE_PATH, f"{mat_name}.json")
+        if not os.path.exists(json_path):
+            raise FileNotFoundError(
+                f"Material {mat_name} does not exist in the material database!"
             )
-        try:
-            with open(json_path) as file:
-                mat_dict = json.load(file)
-            self.name = mat_dict["name"]
-            self.conductivity = mat_dict["conductivity"]
-            self.relPermeability = mat_dict["relPermeability"]
-            if isinstance(mat_dict["remanence"], str):
-                self.remanence = 0
-            else:
-                self.remanence = mat_dict["remanence"]
-            self.linear = mat_dict["linear"]
-            if not self.linear:
-                for temp_key in mat_dict["BHCurve"].keys():
-                    self.set_BH(mat_dict["BHCurve"][temp_key], temp_key)
-        except FileNotFoundError:
-            logger.error(FileNotFoundError)
+        with open(json_path) as file:
+            mat_dict = json.load(file)
+        name = mat_dict["name"]
+        conductivity = mat_dict["conductivity"]
+        rel_permeability = mat_dict["relPermeability"]
+        remanence = mat_dict["remanence"]
+        linear = mat_dict["linear"]
+        if linear:
+            assert mat_dict["BHCurve"] == {}
+        if mat_dict["BHCurve"] == {}:
+            bh_curve = np.empty(0)  # default value for empty
+        else:
+            bh_curve = mat_dict["BHCurve"]["default"]
+        # if not linear:
+        #     for temp_key in mat_dict["BHCurve"].keys():
+        #         self.set_BH(mat_dict["BHCurve"][temp_key], temp_key)
+        return cls(
+            name=name,
+            conductivity=conductivity,
+            relPermeability=rel_permeability,
+            remanence=remanence,
+            BH=bh_curve,
+        )
 
     def save(self):
         if self.name == "":
             raise RuntimeError("Material needs to have a name!")
         else:
-            material_folder = os.path.join(
-                ROOT_DIR, "pyemmo/script/material/material_json"
-            )
             mat_dict = {}
             mat_dict["ID"] = (
-                len([f for f in os.listdir(material_folder) if ".json" in f]) + 1
+                len([f for f in os.listdir(DATABASE_PATH) if ".json" in f]) + 1
             )
             mat_dict["name"] = self.name
             mat_dict["conductivity"] = self.conductivity
             mat_dict["relPermeability"] = self.relPermeability
-            if self.remanence == None:
-                mat_dict["remanence"] = "no information"
-            else:
-                mat_dict["remanence"] = self.remanence
+            mat_dict["remanence"] = self.remanence
             mat_dict["linear"] = self.linear
             mat_dict["BHCurve"] = {}
             if not self.linear:
                 for temp_key in self._BH.keys():
                     mat_dict["BHCurve"][temp_key] = self.get_BH(temp_key).tolist()
 
-            with open(os.path.join(material_folder, f"{self.name}.json"), "w") as file:
+            with open(os.path.join(DATABASE_PATH, f"{self.name}.json"), "w") as file:
                 json.dump(mat_dict, file, indent="\t")
 
     def delete(self):
-        json_path = os.path.join(
-            ROOT_DIR, f"pyemmo/script/material/material_json/{self.name}.json"
-        )
+        json_path = os.path.join(DATABASE_PATH, f"{self.name}.json")
         print(json_path)
         try:
             # pathlib.Path.unlink(json_path)
@@ -225,19 +214,25 @@ class Material:
         if self.linear:
             warnings.warn("Material is linear, there is no BH-curve")
             return
-        if temp == None:
+        if temp is None:
             for t in self.BH.keys():
                 if self._BH[t].size:
                     h = [row[0] for row in self._BH[t]]
                     b = [row[1] for row in self._BH[t]]
-                    label = lambda: "default" if t == "default" else f"{t}°C"
-                    plt.plot(h, b, label=label(t))
+                    if t == "default":
+                        label = t
+                    else:
+                        label = f"{t}°C"
+                    plt.plot(h, b, label=label)
         else:
             BH_vals = self.get_BH(temp)
             h = [row[0] for row in BH_vals]
             b = [row[1] for row in BH_vals]
-            label = lambda: ("default" if temp not in self._BH.keys() else f"{temp}°C")
-            plt.plot(h, b, label=label())
+            if temp not in self._BH.keys():
+                label = "default"
+            else:
+                label = f"{temp}°C"
+            plt.plot(h, b, label=label)
         plt.grid(visible=True, which="major", color="#666666", linestyle="-")
         plt.minorticks_on()
         plt.grid(
@@ -394,47 +389,47 @@ class Material:
 
         self.set_BH(newBH)
 
-    def _set_BH_decorator(set_BH):
-        """
-        decorator to extend the function of set_BH to also accepts dict or file path
-        """
+    # def _set_BH_decorator(set_BH):
+    #     """
+    #     decorator to extend the function of set_BH to also accepts dict or file path
+    #     """
 
-        def setBHWrapper(self, data, temp: float = None):
-            if isinstance(data, dict):
-                if len(data) < 1:
-                    raise (ValueError("There is no BH data to add!"))
-                for temp in data.keys():
-                    temp_key = lambda: ("default" if temp == "no information" else temp)
-                    set_BH(self, data[temp], temp_key())
-            elif isinstance(data, str):
-                try:
-                    file = pd.read_table(data)
-                except UnicodeDecodeError:
-                    file = pd.read_excel(data)
-                except FileNotFoundError:
-                    warnings.warn("Cannot load, file does not exist")
-                    return
-                allValue = file.values
-                try:
-                    temp_list = {row[2] for row in allValue}
-                    for temp in temp_list:
-                        if temp == "no information":
-                            temp_key = "default"
-                        else:
-                            temp_key = temp
-                        set_BH(
-                            self,
-                            [[row[0], row[1]] for row in allValue if row[2] == temp],
-                            temp_key,
-                        )
-                except IndexError:
-                    set_BH(self, [[row[0], row[1]] for row in allValue])
-            else:
-                set_BH(self, data)
+    #     def setBHWrapper(self, data, temp: float = None):
+    #         if isinstance(data, dict):
+    #             if len(data) < 1:
+    #                 raise (ValueError("There is no BH data to add!"))
+    #             for temp in data.keys():
+    #                 temp_key = lambda: ("default" if temp == "no information" else temp)
+    #                 set_BH(self, data[temp], temp_key())
+    #         elif isinstance(data, str):
+    #             try:
+    #                 file = pd.read_table(data)
+    #             except UnicodeDecodeError:
+    #                 file = pd.read_excel(data)
+    #             except FileNotFoundError:
+    #                 warnings.warn("Cannot load, file does not exist")
+    #                 return
+    #             allValue = file.values
+    #             try:
+    #                 temp_list = {row[2] for row in allValue}
+    #                 for temp in temp_list:
+    #                     if temp == "no information":
+    #                         temp_key = "default"
+    #                     else:
+    #                         temp_key = temp
+    #                     set_BH(
+    #                         self,
+    #                         [[row[0], row[1]] for row in allValue if row[2] == temp],
+    #                         temp_key,
+    #                     )
+    #             except IndexError:
+    #                 set_BH(self, [[row[0], row[1]] for row in allValue])
+    #         else:
+    #             set_BH(self, data)
 
-        return setBHWrapper
+    #     return setBHWrapper
 
-    @_set_BH_decorator
+    # @_set_BH_decorator
     def set_BH(self, newBH: NDArray, temp: float = None):
         """setter of BH curve.
 
@@ -451,6 +446,10 @@ class Material:
         else:
             temp_key = temp
         if newBH is None:
+            raise TypeError("BH curve cant be of type None")
+        if not isinstance(newBH, (np.ndarray, list)):
+            raise TypeError("BH curve must be numpy.ndarray or list of lists")
+        if len(newBH) == 0:
             # if BH is None, set empty array
             self._BH[temp_key] = np.empty(0)
             if temp_key == "default":

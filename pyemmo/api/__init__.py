@@ -24,16 +24,14 @@ from .. import logFmt, rootLogger
 from ..script.material.material import Material
 
 try:
-    air = Material()
-    air.load("air")
-    air.name = "Air"
+    air = Material.load("Air")
     air.density = 1.2041
 except FileNotFoundError:
     air = Material(
         name="Air",
-        conductivity=None,
+        conductivity=0,
         relPermeability=1,
-        remanence=None,
+        remanence=0,
         density=1.204,
         thermalConductivity=0.0261,
         thermalCapacity=1.005,

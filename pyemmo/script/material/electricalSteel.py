@@ -137,6 +137,8 @@ class ElectricalSteel(Material):
             )
         )
 
+    # TODO: Add overwrite of Material load class method
+
     @property
     def sheetThickness(self) -> float:
         """The sheet thickness of the lamination material in m
