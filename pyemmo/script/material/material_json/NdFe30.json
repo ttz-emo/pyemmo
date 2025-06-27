@@ -3,7 +3,7 @@
 	"name": "NdFe30",
 	"conductivity": 625000.0,
 	"relPermeability": 1.0445730167132,
-	"remanence": "no information",
+	"remanence": 0.0,
 	"linear": true,
 	"BHCurve": {}
 }

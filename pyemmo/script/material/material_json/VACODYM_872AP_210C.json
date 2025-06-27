@@ -2,8 +2,8 @@
 	"ID": 319,
 	"name": "VACODYM_872AP_210C",
 	"conductivity": 0.0,
-	"relPermeability": 0.0,
-	"remanence": "no information",
+	"relPermeability": 1.0,
+	"remanence": 0.0,
 	"linear": false,
 	"BHCurve": {
 		"default": [

@@ -2,8 +2,8 @@
 	"ID": 116,
 	"name": "VACODYM_3625_20C",
 	"conductivity": 0.0,
-	"relPermeability": 0.0,
-	"remanence": "no information",
+	"relPermeability": 1.0,
+	"remanence": 0.0,
 	"linear": false,
 	"BHCurve": {
 		"default": [

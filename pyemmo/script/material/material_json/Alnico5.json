@@ -2,8 +2,8 @@
 	"ID": 1,
 	"name": "Alnico5",
 	"conductivity": 2128000.0,
-	"relPermeability": 0.0,
-	"remanence": "no information",
+	"relPermeability": 1.0,
+	"remanence": 0.0,
 	"linear": false,
 	"BHCurve": {
 		"default": [

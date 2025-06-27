@@ -3,7 +3,7 @@
 	"name": "beryllium",
 	"conductivity": 25000000.0,
 	"relPermeability": 1.00000079,
-	"remanence": "no information",
+	"remanence": 0.0,
 	"linear": true,
 	"BHCurve": {}
 }

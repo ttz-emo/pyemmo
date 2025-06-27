@@ -3,7 +3,7 @@
 	"name": "silver",
 	"conductivity": 61000000.0,
 	"relPermeability": 0.99998,
-	"remanence": "no information",
+	"remanence": 0.0,
 	"linear": true,
 	"BHCurve": {}
 }

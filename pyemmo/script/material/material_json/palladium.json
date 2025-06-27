@@ -3,7 +3,7 @@
 	"name": "palladium",
 	"conductivity": 9300000.0,
 	"relPermeability": 1.00082,
-	"remanence": "no information",
+	"remanence": 0.0,
 	"linear": true,
 	"BHCurve": {}
 }

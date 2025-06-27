@@ -2,8 +2,8 @@
 	"ID": 403,
 	"name": "zinc",
 	"conductivity": 16700000.0,
-	"relPermeability": 0.0,
-	"remanence": "no information",
+	"relPermeability": 1.0,
+	"remanence": 0.0,
 	"linear": true,
 	"BHCurve": {}
 }

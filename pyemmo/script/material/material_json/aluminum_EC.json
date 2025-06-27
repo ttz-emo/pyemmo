@@ -3,7 +3,7 @@
 	"name": "aluminum_EC",
 	"conductivity": 36000000.0,
 	"relPermeability": 1.000021,
-	"remanence": "no information",
+	"remanence": 0.0,
 	"linear": true,
 	"BHCurve": {}
 }

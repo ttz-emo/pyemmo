@@ -3,7 +3,7 @@
 	"name": "SmCo24",
 	"conductivity": 1111111.0,
 	"relPermeability": 1.06313817927575,
-	"remanence": "no information",
+	"remanence": 0.0,
 	"linear": true,
 	"BHCurve": {}
 }

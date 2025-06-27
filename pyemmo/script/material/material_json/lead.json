@@ -3,7 +3,7 @@
 	"name": "lead",
 	"conductivity": 5000000.0,
 	"relPermeability": 0.999983,
-	"remanence": "no information",
+	"remanence": 0.0,
 	"linear": true,
 	"BHCurve": {}
 }

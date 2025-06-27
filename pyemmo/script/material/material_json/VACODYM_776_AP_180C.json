@@ -2,8 +2,8 @@
 	"ID": 236,
 	"name": "VACODYM_776_AP_180C",
 	"conductivity": 0.0,
-	"relPermeability": 0.0,
-	"remanence": "no information",
+	"relPermeability": 1.0,
+	"remanence": 0.0,
 	"linear": false,
 	"BHCurve": {
 		"default": [

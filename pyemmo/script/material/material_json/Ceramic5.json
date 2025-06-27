@@ -2,8 +2,8 @@
 	"ID": 3,
 	"name": "Ceramic5",
 	"conductivity": 0.0001,
-	"relPermeability": 0.0,
-	"remanence": "no information",
+	"relPermeability": 1.0,
+	"remanence": 0.0,
 	"linear": false,
 	"BHCurve": {
 		"default": [

@@ -3,7 +3,7 @@
 	"name": "copper",
 	"conductivity": 58000000.0,
 	"relPermeability": 0.999991,
-	"remanence": "no information",
+	"remanence": 0.0,
 	"linear": true,
 	"BHCurve": {}
 }

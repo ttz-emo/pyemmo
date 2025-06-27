@@ -3,7 +3,7 @@
 	"name": "cobalt",
 	"conductivity": 10000000.0,
 	"relPermeability": 250.0,
-	"remanence": "no information",
+	"remanence": 0.0,
 	"linear": true,
 	"BHCurve": {}
 }
