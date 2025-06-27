@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -26,10 +27,11 @@ from ... import rootLogger
 from .material import Material
 
 
+# pylint: disable=locally-disabled,  too-many-arguments, too-many-positional-arguments
+# pylint: disable=locally-disabled,  too-many-instance-attributes, line-too-long
 class ElectricalSteel(Material):
     """Electrical Steel Material"""
 
-    # pylint: disable=locally-disabled,  too-many-arguments
     def __init__(
         self,
         name: str = "",
@@ -44,6 +46,40 @@ class ElectricalSteel(Material):
         referenceFrequency: float = None,
         referenceFluxDensity: float = None,
     ):
+        """
+        Initializes an instance of the electrical steel material class.
+
+        Parameters:
+            name (str, optional): Name of the material. Defaults to "".
+            conductivity (float, optional): Electrical conductivity of the material in S/m.
+            relPermeability (float, optional): Relative magnetic permeability (no unit).
+            BH (numpy.ndarray, optional): B-H curve data as a NumPy array.
+                Where B is the flux density in T and H is the magnetic field strength in A/m.
+            density (float, optional): Density of the material in kg/m³.
+            thermalConductivity (float, optional): Thermal conductivity in W/(m·K).
+            thermalCapacity (float, optional): Thermal capacity in J/(kg·K).
+            sheetThickness (float, optional): Thickness of the steel sheet in meters.
+            lossParams (Tuple[float, float, float], optional): Loss parameters,
+                possibly recalculated based on reference frequency and flux density in W/m³.
+                The order in the tuple is:
+                - hysteresis loss
+                - eddy current loss
+                - excess loss
+                If the values are given in a range for W/kg (hysteresis value < 20 AND
+                eddy current value < 5), the values will be adapted by the
+                material density (kg/m³) to obtain the values in W/m³.
+            referenceFrequency (float, optional): Reference frequency for loss
+                calculations in Hz. This is used to adapt the loss parameters
+                if they are given in W/kg.
+            referenceFluxDensity (float, optional): Reference flux density for
+                loss calculations in T.
+
+        Notes:
+            - The lossParams parameter should be set last, as it may depend on
+              referenceFrequency and referenceFluxDensity for recalculation
+              (e.g., if given in W/kg).
+
+        """
         super().__init__(
             name,
             conductivity,
@@ -58,6 +94,9 @@ class ElectricalSteel(Material):
         self.sheetThickness = sheetThickness
         self.referenceFrequency = referenceFrequency
         self.referenceFluxDensity = referenceFluxDensity
+        # NOTE: lossParams needs to be set at last, because it uses reference
+        # frequency and flux density to recalculate loss parameters in case
+        # they are given in W/kg
         self.lossParams = lossParams
 
     def __str__(self) -> str:
@@ -100,15 +139,15 @@ class ElectricalSteel(Material):
             else:
                 raise (
                     ValueError(
-                        f"Value for material sheet thickness must be a "
-                        "positive number, but is '{newThickness}'"
+                        "Value for material sheet thickness must be a "
+                        f"positive number, but is '{newThickness}'"
                     )
                 )
         else:
             raise (
                 TypeError(
-                    f"Sheet thickness of material must be a numeric value but "
-                    "is '{type(newThickness)}':{newThickness}"
+                    "Sheet thickness of material must be a numeric value but "
+                    f"is '{type(newThickness)}':{newThickness}"
                 )
             )
 
@@ -151,7 +190,7 @@ class ElectricalSteel(Material):
                 parameters (order in Tuple hysteresis, eddy current, excess)
         """
         if newLossParams is None:
-            self._lossParams = None
+            self._lossParams = (0, 0, 0)
         else:
             if len(newLossParams) != 3:
                 raise ValueError(
@@ -219,12 +258,15 @@ class ElectricalSteel(Material):
         return self._referenceFrequency
 
     @referenceFrequency.setter
-    def referenceFrequency(self, newReferenceFrequency: Union[int, float]) -> None:
+    def referenceFrequency(self, newReferenceFrequency: Union[int, float, None]):
         """Setter of reference frequency in Hz
 
         Args:
             newLossParams (Tuple[float,float,float]): New reference frequency in Hz
         """
+        if newReferenceFrequency is None:
+            self._referenceFrequency = None
+            return
         if not isinstance(newReferenceFrequency, (float, int)):
             raise TypeError(
                 "Given reference frequency for iron loss parameters has "
@@ -245,13 +287,16 @@ class ElectricalSteel(Material):
         return self._referenceFluxDensity
 
     @referenceFluxDensity.setter
-    def referenceFluxDensity(self, newReferenceFluxDensity: Union[int, float]) -> None:
+    def referenceFluxDensity(self, newReferenceFluxDensity: Union[int, float, None]):
         """Setter of reference flux density in T
 
         Args:
             newReferenceFluxDensity (Tuple[float,float,float]): New reference
                 flux density in T
         """
+        if newReferenceFluxDensity is None:
+            self._referenceFluxDensity = None
+            return
         if not isinstance(newReferenceFluxDensity, (float, int)):
             raise TypeError(
                 "Given parameter for reference flux density has "
