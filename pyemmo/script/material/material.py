@@ -277,6 +277,18 @@ class Material:
         """
         return self._name
 
+    @name.setter
+    def name(self, name: str):
+        """set the material name
+
+        Args:
+            name (str): new material name
+        """
+        if isinstance(name, str):
+            self._name = name
+        else:
+            raise ValueError("Material name must be type str.")
+
     @property
     def conductivity(self) -> Union[float, int]:
         """get electrical conductivity
@@ -287,6 +299,24 @@ class Material:
         """
         return self._conductivity
 
+    @conductivity.setter
+    def conductivity(self, conductivity: Union[float, int]):
+        """set the electrical conductivity of the material
+
+        Args:
+            conductivity (Union[float, int]): electrical conductivity in S/m
+        """
+        if isinstance(conductivity, (int, float)):
+            if conductivity >= 0:
+                self._conductivity = conductivity
+            else:
+                # negative conductivity...
+                raise ValueError(
+                    "Conductivy can not be negative!" f"Given value: {conductivity}"
+                )
+        else:
+            raise TypeError("Conductivity must be numeric.")
+
     @property
     def relPermeability(self) -> Union[float, int]:
         """get linear relative magnetic permeability
@@ -296,6 +326,24 @@ class Material:
         """
         return self._relPermeability
 
+    @relPermeability.setter
+    def relPermeability(self, relPermeability: Union[float, int]):
+        """set the relative permeability of the material
+
+        Args:
+            relPermeability (Union[float, int]): relative permeability
+        """
+        if isinstance(relPermeability, (int, float)):
+            if relPermeability > 0:
+                self._relPermeability = relPermeability
+            else:
+                raise ValueError(
+                    "Relative permeability must be a positive number, but is "
+                    f"'{relPermeability}'"
+                )
+        else:
+            raise ValueError("Relative permeability must be numeric.")
+
     @property
     def remanence(self) -> Union[float, int]:
         """get remanent flux density at 20°C
@@ -304,6 +352,25 @@ class Material:
             Union[float, int]: remanent flux density (Br) in T at 20°C
         """
         return self._remanence
+
+    @remanence.setter
+    def remanence(self, remanence: Union[float, int]):
+        """Set the remanence flux density in T of permanent magnet material of
+        the material. Must be a positive number or zero (no remanence).
+
+        Args:
+            remanence (Union[float, int]): remanent flux density in [T]
+        """
+        if isinstance(remanence, (int, float)):
+            if remanence >= 0:
+                self._remanence = remanence
+            else:
+                raise ValueError(
+                    "Remanent flux density must be a positive number, but is "
+                    f"'{remanence}'"
+                )
+        else:
+            raise ValueError("Remanent flux density must be numeric.")
 
     @property
     def tempCoefRem(self) -> Union[float, int]:
@@ -317,6 +384,30 @@ class Material:
             Union[float, int]: temperatur coefficient of remanent flux density in 1/K
         """
         return self._tempCoefRem
+
+    @tempCoefRem.setter
+    def tempCoefRem(self, new_temp_coef: Union[int, float]):
+        """setter for temperature coefficient of Br
+
+        Args:
+            new_temp_coef (float): temperature coefficient of Br
+
+        Raises:
+            ValueError: If given value is not numeric.
+        """
+        # ("br_" = f"{br20} * (1 + ({tempCoef} * (tempMag - 20)))", "Reference temperatur is 20°C",
+        if isinstance(new_temp_coef, (int, float)):
+            if new_temp_coef < 0:
+                raise ValueError(
+                    "Remanence flux density temperature coefficient must be a positive number, "
+                    f"but is '{new_temp_coef}'"
+                )
+            self._tempCoefRem = new_temp_coef
+        else:
+            raise ValueError(
+                "Remanence flux density temperature coefficient must be numeric."
+                f"But is type {type(new_temp_coef)} of value: {new_temp_coef}"
+            )
 
     # pylint: disable=invalid-name
     @property
@@ -521,97 +612,6 @@ class Material:
                     f"Wrong type for BH curve ({type(newBH)}). BH curve must be type numpy.ndarraywith shape: "
                     + "[[B1, H1],[B2, H2],[B3, H3],...]"
                 )
-            )
-
-    @name.setter
-    def name(self, name: str):
-        """set the material name
-
-        Args:
-            name (str): new material name
-        """
-        if isinstance(name, str):
-            self._name = name
-        else:
-            raise ValueError("Material name must be type str.")
-
-    @conductivity.setter
-    def conductivity(self, conductivity: Union[float, int]):
-        """set the electrical conductivity of the material
-
-        Args:
-            conductivity (Union[float, int]): electrical conductivity in S/m
-        """
-        if isinstance(conductivity, (int, float)):
-            if conductivity >= 0:
-                self._conductivity = conductivity
-            else:
-                # negative conductivity...
-                raise ValueError(
-                    "Conductivy can not be negative!" f"Given value: {conductivity}"
-                )
-        else:
-            raise TypeError("Conductivity must be numeric.")
-
-    @relPermeability.setter
-    def relPermeability(self, relPermeability: Union[float, int]):
-        """set the relative permeability of the material
-
-        Args:
-            relPermeability (Union[float, int]): relative permeability
-        """
-        if isinstance(relPermeability, (int, float)):
-            if relPermeability > 0:
-                self._relPermeability = relPermeability
-            else:
-                raise ValueError(
-                    "Relative permeability must be a positive number, but is "
-                    f"'{relPermeability}'"
-                )
-        else:
-            raise ValueError("Relative permeability must be numeric.")
-
-    @remanence.setter
-    def remanence(self, remanence: Union[float, int]):
-        """Set the remanence flux density in T of permanent magnet material of
-        the material. Must be a positive number or zero (no remanence).
-
-        Args:
-            remanence (Union[float, int]): remanent flux density in [T]
-        """
-        if isinstance(remanence, (int, float)):
-            if remanence >= 0:
-                self._remanence = remanence
-            else:
-                raise ValueError(
-                    "Remanent flux density must be a positive number, but is "
-                    f"'{remanence}'"
-                )
-        else:
-            raise ValueError("Remanent flux density must be numeric.")
-
-    @tempCoefRem.setter
-    def tempCoefRem(self, new_temp_coef: Union[int, float]):
-        """setter for temperature coefficient of Br
-
-        Args:
-            new_temp_coef (float): temperature coefficient of Br
-
-        Raises:
-            ValueError: If given value is not numeric.
-        """
-        # ("br_" = f"{br20} * (1 + ({tempCoef} * (tempMag - 20)))", "Reference temperatur is 20°C",
-        if isinstance(new_temp_coef, (int, float)):
-            if new_temp_coef < 0:
-                raise ValueError(
-                    "Remanence flux density temperature coefficient must be a positive number, "
-                    f"but is '{new_temp_coef}'"
-                )
-            self._tempCoefRem = new_temp_coef
-        else:
-            raise ValueError(
-                "Remanence flux density temperature coefficient must be numeric."
-                f"But is type {type(new_temp_coef)} of value: {new_temp_coef}"
             )
 
     @property
