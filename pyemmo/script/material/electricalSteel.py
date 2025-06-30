@@ -19,11 +19,14 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """This module holds the electrical steel lamination Material-class definition"""
+import json
+import os
 from typing import Tuple, Union
 
-import numpy
+import numpy as np
 
 from ... import rootLogger
+from . import DATABASE_PATH
 from .material import Material
 
 
@@ -38,11 +41,10 @@ class ElectricalSteel(Material):
         sheetThickness: float,
         conductivity: float = 0.0,
         relPermeability: float = 1.0,
-        BH: numpy.ndarray = numpy.empty(0),
+        BH: np.ndarray = np.empty(0),
         density: float = 0.0,
         thermalConductivity: float = 0.0,
         thermalCapacity: float = 0.0,
-        sheetThickness: float = 0.0,
         lossParams: Tuple[float, float, float] = None,
         referenceFrequency: float = None,
         referenceFluxDensity: float = None,
@@ -139,6 +141,55 @@ class ElectricalSteel(Material):
         )
 
     # TODO: Add overwrite of Material load class method
+
+    @classmethod
+    def load(cls, mat_name: str) -> "ElectricalSteel":
+        """Load object of type ElectricalSteel from json file by name
+
+        Args:
+            materialName (str): Material name to load the Material from the
+                database.
+        """
+        if mat_name == "":
+            raise ValueError("Material name must not be empty!")
+
+        json_path = os.path.join(DATABASE_PATH, f"{mat_name}.json")
+        if not os.path.exists(json_path):
+            raise FileNotFoundError(
+                f"Material {mat_name} does not exist in the material database!"
+            )
+        with open(json_path) as file:
+            mat_dict: dict = json.load(file)
+        # remove keys that are not kwargs of ElectricalSteel
+        mat_dict.pop("ID")
+        mat_dict.pop("linear")
+        return cls.from_dict(mat_dict)
+
+    @classmethod
+    def from_dict(cls, mat_dict: dict) -> "ElectricalSteel":
+        """Create a ElectricalSteel object from a data dict"""
+        if mat_dict["BHCurve"] == {}:
+            bh_curve = np.empty(0)  # default value for empty
+        else:
+            bh_curve = mat_dict["BHCurve"]["default"]
+        # Update mat_dict to use correct keyword "BH"
+        mat_dict["BH"] = bh_curve
+        mat_dict.pop("BHCurve")
+        # remove unsetable properties of Material in ElectricalSteel
+        # These are automatically added as we call super().as_dict in
+        # ElectricalSteel.as_dict() from Material.save()
+        mat_dict.pop("remanence")
+        mat_dict.pop("tempCoefRem")
+        return cls(**mat_dict)
+
+    def as_dict(self) -> dict:
+        """Get dict representation of Material"""
+        mat_dict = super().as_dict()
+        mat_dict["sheetThickness"] = self.sheetThickness
+        mat_dict["lossParams"] = self.lossParams
+        mat_dict["referenceFrequency"] = self.referenceFrequency
+        mat_dict["referenceFluxDensity"] = self.referenceFluxDensity
+        return mat_dict
 
     @property
     def sheetThickness(self) -> float:

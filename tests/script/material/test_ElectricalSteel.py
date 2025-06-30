@@ -18,10 +18,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+import os
 
 import numpy as np
 import pytest
 
+from pyemmo.script.material import DATABASE_PATH
 from pyemmo.script.material.electricalSteel import ElectricalSteel
 
 
@@ -68,3 +70,27 @@ def test_electrical_steel_valid_sheetThickness(sheetThickness):
         name="TestSteel", sheetThickness=sheetThickness, density=7650
     )
     assert np.isclose(steel.sheetThickness, sheetThickness)
+
+
+@pytest.mark.parametrize(
+    "init_dict",
+    [
+        {
+            "name": "Test-M400-35A",
+            "sheetThickness": 0.5,
+            "density": 7650,
+            "lossParams": (140, 2, 0),
+        },
+        {
+            "name": "Test-M400-35A",
+            "sheetThickness": 0.5,
+        },
+    ],
+)
+def test_save_load(init_dict):
+    """Test the save and load methods"""
+    steel = ElectricalSteel(**init_dict)
+    steel.save()
+    assert os.path.isfile(os.path.join(DATABASE_PATH, f"{steel.name}.json"))
+    reloaded_steel = ElectricalSteel.load(steel.name)
+    assert steel == reloaded_steel
