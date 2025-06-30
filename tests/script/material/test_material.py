@@ -26,7 +26,7 @@ from pyemmo.script.material.material import Material
 
 
 def test_material_init_defaults():
-    m = Material()
+    m = Material(name="")
     assert m.name == ""
     assert m.conductivity == 0.0
     assert m.relPermeability == 1.0
@@ -41,7 +41,7 @@ def test_material_init_defaults():
 
 
 def test_material_name_setter_and_getter():
-    m = Material()
+    m = Material(name="Steel")
     m.name = "Steel"
     assert m.name == "Steel"
     with pytest.raises(ValueError):
@@ -49,7 +49,7 @@ def test_material_name_setter_and_getter():
 
 
 def test_conductivity_setter():
-    m = Material()
+    m = Material(name="Steel")
     m.conductivity = 5.0
     assert m.conductivity == 5.0
     m.conductivity = 0
@@ -61,7 +61,7 @@ def test_conductivity_setter():
 
 
 def test_relPermeability_setter():
-    m = Material()
+    m = Material(name="Steel")
     m.relPermeability = 1000
     assert m.relPermeability == 1000
     with pytest.raises(ValueError):
@@ -69,7 +69,7 @@ def test_relPermeability_setter():
 
 
 def test_remanence_setter():
-    m = Material()
+    m = Material(name="Steel")
     m.remanence = 1.2
     assert m.remanence == 1.2
     with pytest.raises(ValueError):
@@ -77,7 +77,7 @@ def test_remanence_setter():
 
 
 def test_tempCoefRem_setter():
-    m = Material()
+    m = Material(name="Steel")
     m.tempCoefRem = 0.01
     assert m.tempCoefRem == 0.01
     with pytest.raises(ValueError):
@@ -85,7 +85,7 @@ def test_tempCoefRem_setter():
 
 
 def test_density_setter():
-    m = Material()
+    m = Material(name="Steel")
     m.density = 7800
     assert m.density == 7800
     with pytest.raises(TypeError):
@@ -95,7 +95,7 @@ def test_density_setter():
 
 
 def test_thermalConductivity_setter():
-    m = Material()
+    m = Material(name="Steel")
     m.thermalConductivity = 50
     assert m.thermalConductivity == 50
     with pytest.raises(TypeError):
@@ -105,7 +105,7 @@ def test_thermalConductivity_setter():
 
 
 def test_thermalCapacity_setter():
-    m = Material()
+    m = Material(name="Steel")
     m.thermalCapacity = 500
     assert m.thermalCapacity == 500
     with pytest.raises(TypeError):
@@ -115,7 +115,7 @@ def test_thermalCapacity_setter():
 
 
 def test_linear_property():
-    m = Material()
+    m = Material(name="Steel")
     m.linear = True
     assert m.linear is True
     m.linear = False
@@ -125,7 +125,7 @@ def test_linear_property():
 
 
 def test_BH_setter_and_getter():
-    m = Material()
+    m = Material(name="Steel")
     arr = np.array([[0, 0], [1, 1]])
     m.BH = arr
     np.testing.assert_array_equal(m.BH, arr)
@@ -134,7 +134,7 @@ def test_BH_setter_and_getter():
 
 
 def test_set_BH_with_list():
-    m = Material()
+    m = Material(name="Steel")
     bh_list = [[0, 0], [1, 1]]
     m.set_BH(bh_list)
     np.testing.assert_array_equal(m.BH, np.array(bh_list))

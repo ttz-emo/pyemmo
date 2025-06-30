@@ -41,7 +41,7 @@ class Material:
 
     def __init__(
         self,
-        name: str = "",
+        name: str,
         conductivity: float = 0.0,
         relPermeability: float = 1.0,
         remanence: float = 0.0,

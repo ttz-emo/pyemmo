@@ -34,7 +34,8 @@ class ElectricalSteel(Material):
 
     def __init__(
         self,
-        name: str = "",
+        name: str,
+        sheetThickness: float,
         conductivity: float = 0.0,
         relPermeability: float = 1.0,
         BH: numpy.ndarray = numpy.empty(0),
@@ -50,7 +51,8 @@ class ElectricalSteel(Material):
         Initializes an instance of the electrical steel material class.
 
         Parameters:
-            name (str, optional): Name of the material. Defaults to "".
+            name (str): Name of the material.
+            sheetThickness (float): Thickness of the steel sheet in meters.
             conductivity (float, optional): Electrical conductivity of the material in S/m.
             relPermeability (float, optional): Relative magnetic permeability (no unit).
             BH (numpy.ndarray, optional): B-H curve data as a NumPy array.
@@ -58,7 +60,6 @@ class ElectricalSteel(Material):
             density (float, optional): Density of the material in kg/m³.
             thermalConductivity (float, optional): Thermal conductivity in W/(m·K).
             thermalCapacity (float, optional): Thermal capacity in J/(kg·K).
-            sheetThickness (float, optional): Thickness of the steel sheet in meters.
             lossParams (Tuple[float, float, float], optional): Loss parameters,
                 possibly recalculated based on reference frequency and flux density in W/m³.
                 The order in the tuple is:
