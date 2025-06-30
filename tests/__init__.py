@@ -39,9 +39,10 @@ TEST_DATA_DIR = os.path.join(TEST_DIR, "data")
 # if test_root not in sys.path:
 #     sys.path.append(test_root)
 
-save_path = os.path.join(TEST_DIR, "Results").replace("\\", "/")
+TEST_TEMP_DIR = os.path.join(TEST_DIR, "Results").replace("\\", "/")
 """save_path is the path where the test resutls should be stored temporarily"""
-
+if not os.path.isdir(TEST_TEMP_DIR):
+    os.makedirs(TEST_TEMP_DIR)
 
 GMSH_EXE = ""
 GETDP_EXE = ""

@@ -26,7 +26,7 @@ from shutil import copytree, ignore_patterns, rmtree
 
 from pyemmo.functions.runOnelab import findGetDP, findGmsh, runCalcforCurrent
 from tests import TEST_DATA_DIR
-from tests import save_path as TESTS_RESULTS_DIR
+from tests import TEST_TEMP_DIR as TESTS_RESULTS_DIR
 
 
 class TestRunOnelab(unittest.TestCase):
