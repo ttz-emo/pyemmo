@@ -26,7 +26,6 @@ import subprocess
 import sys
 import time as time_module
 from argparse import ArgumentParser
-from datetime import datetime
 from io import BufferedReader
 from os.path import expanduser, isdir, isfile, join, normpath, splitext
 from shutil import which
@@ -35,26 +34,12 @@ from subprocess import PIPE, STDOUT, Popen
 from . import SETUP_FILE_NAME, calcIronLoss, import_results
 
 
-def log_subprocess_output(
-    pipe: BufferedReader, stderr: BufferedReader = None, log_dest: str = None
-):
+def log_subprocess_output(pipe: BufferedReader, stderr: BufferedReader = None):
     """Function to redirect commandline output to Python logger.
     Took this from answer in https://stackoverflow.com/a/21978778
     TODO: add file handler to logger
     """
     err_msg = ""
-
-    if log_dest:
-        log_handler = logging.FileHandler(log_dest, encoding="utf-8")
-    else:
-        curr_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
-        log_handler = logging.FileHandler(
-            os.path.join(ROOT_DIR, "workingDirectory/Vu", f"{curr_datetime}.log"),
-            encoding="utf-8",
-        )
-
-    rootLogger = logging.getLogger()
-    rootLogger.addHandler(log_handler)
     for line in iter(pipe.readline, b""):  # b'\n'-separated lines
         logging.info("got line from subprocess: %s", line)
     if stderr:

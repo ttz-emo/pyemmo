@@ -42,6 +42,7 @@ from pyleecan.Classes.Machine import Machine
 from pyleecan.definitions import DATA_DIR
 from pyleecan.Functions import load
 
+from pyemmo import rootLogger as pyemmo_main_logger
 from pyemmo.api.pyleecan import main as pyleecanAPI
 from pyemmo.definitions import ROOT_DIR
 from pyemmo.functions.runOnelab import createCmdCommand, log_subprocess_output
@@ -211,11 +212,12 @@ def pyleecan_test_base(
     # with Popen(cmdCommand, stdout=PIPE, stderr=STDOUT) as process:
     with Popen(cmdCommand, stdout=PIPE, stderr=PIPE) as process:
         with process:
-            error_message = log_subprocess_output(
-                process.stdout,
-                process.stderr,
+            log_handler = logging.FileHandler(
                 os.path.join(sim_res_dir, f"simulation_log_{curr_datetime}.log"),
+                encoding="utf-8",
             )
+            pyemmo_main_logger.addHandler(log_handler)
+            error_message = log_subprocess_output(process.stdout, process.stderr)
         exitcode = process.wait()  # 0 means success
         if exitcode != 0:
             raise RuntimeError(
