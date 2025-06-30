@@ -134,48 +134,27 @@ class Material:
                 f"Material {mat_name} does not exist in the material database!"
             )
         with open(json_path) as file:
-            mat_dict = json.load(file)
-        name = mat_dict["name"]
-        conductivity = mat_dict["conductivity"]
-        rel_permeability = mat_dict["relPermeability"]
-        remanence = mat_dict["remanence"]
-        linear = mat_dict["linear"]
-        if linear:
-            assert mat_dict["BHCurve"] == {}
+            mat_dict: dict = json.load(file)
+        # remove keys that are not kwargs of Material
+        mat_dict.pop("ID")
+        mat_dict.pop("linear")
+        return cls.from_dict(mat_dict)
+
+    @classmethod
+    def from_dict(cls, mat_dict: dict) -> "Material":
+        """Create a instance of Material from a data dictionary, which contains
+        all relevant material properties"""
         if mat_dict["BHCurve"] == {}:
             bh_curve = np.empty(0)  # default value for empty
         else:
             bh_curve = mat_dict["BHCurve"]["default"]
-        # if not linear:
-        #     for temp_key in mat_dict["BHCurve"].keys():
-        #         self.set_BH(mat_dict["BHCurve"][temp_key], temp_key)
-        return cls(
-            name=name,
-            conductivity=conductivity,
-            relPermeability=rel_permeability,
-            remanence=remanence,
-            BH=bh_curve,
-        )
 
-    def save(self):
-        """Save the material to the material data base a JSON file.
+        mat_dict["BH"] = bh_curve
+        mat_dict.pop("BHCurve")
+        return cls(**mat_dict)
 
-        You can find the Material database under
-        `pyemmo.script.material.DATABASE_PATH`.
-
-        The default save path is 'DATABASE_PATH/*MATERIAL_NAME*.json'
-
-        FIXME: save/load methods do not pay attention to properties:
-            - tempCoefRem
-            - density
-            - thermalConductivity
-            - thermalCapacity
-        """
-        if self.name == "":
-            raise RuntimeError("Material needs to have a name!")
-        # create dict from material object
+    def as_dict(self) -> dict:
         mat_dict = {}
-        mat_dict["ID"] = len([f for f in os.listdir(DATABASE_PATH) if ".json" in f]) + 1
         mat_dict["name"] = self.name
         mat_dict["conductivity"] = self.conductivity
         mat_dict["relPermeability"] = self.relPermeability
@@ -185,6 +164,26 @@ class Material:
         if not self.linear:
             for temp_key in self._BH.keys():
                 mat_dict["BHCurve"][temp_key] = self.get_BH(temp_key).tolist()
+        mat_dict["tempCoefRem"] = self.tempCoefRem
+        mat_dict["density"] = self.density
+        mat_dict["thermalConductivity"] = self.thermalConductivity
+        mat_dict["thermalCapacity"] = self.thermalCapacity
+        return mat_dict
+
+    def save(self):
+        """Save the material to the material data base a JSON file.
+
+        You can find the Material database under
+        `pyemmo.script.material.DATABASE_PATH`.
+
+        The default save path is 'DATABASE_PATH/*MATERIAL_NAME*.json'
+        """
+        if self.name == "":
+            raise RuntimeError("Material needs to have a name!")
+        # create dict from material object
+        mat_dict = self.as_dict()
+        # add ID to material
+        mat_dict["ID"] = len([f for f in os.listdir(DATABASE_PATH) if ".json" in f]) + 1
         with open(
             os.path.join(DATABASE_PATH, f"{self.name}.json"), "w", encoding="utf-8"
         ) as file:
