@@ -20,6 +20,7 @@
 #
 """This module holds the electrical steel lamination Material-class definition"""
 import json
+import operator
 import os
 from typing import Tuple, Union
 
@@ -267,7 +268,7 @@ class ElectricalSteel(Material):
             newLossParams (Tuple[float,float,float] or None): New iron loss
                 parameters (order in Tuple hysteresis, eddy current, excess)
         """
-        if newLossParams is None:
+        if newLossParams is None or all(map(operator.eq, newLossParams, (0, 0, 0))):
             self._lossParams = (0, 0, 0)
         else:
             if len(newLossParams) != 3:
