@@ -242,7 +242,7 @@ class ElectricalSteel(Material):
                     self.name,
                 )
                 newLossParams = self._adapt_loss_params(newLossParams)
-            self._lossParams = newLossParams
+            self._lossParams = tuple(newLossParams)  # make sure its a tuple
 
     def _adapt_loss_params(
         self, lossParams: Tuple[float, float, float]
