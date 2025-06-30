@@ -439,12 +439,6 @@ class Material:
             numpy.ndarray: _description_
         """
         if not temperature:
-            if len(self._BH["default"]) < 1:
-                logger.info(
-                    "BH-Curve is linear, or default curve has not been set. "
-                    "Please set default curve (syntax: obj.BH = <NDArray>) "
-                    "or use get_BH(temperature)",
-                )
             return np.array(self._BH["default"])
         try:
             return np.array(self._BH[temperature])
