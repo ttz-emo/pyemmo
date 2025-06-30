@@ -117,6 +117,13 @@ class Material:
         Args:
             materialName (str): Material name to load the Material from the
                 database.
+
+        FIXME: save/load methods do not pay attention to properties:
+            - tempCoefRem
+            - density
+            - thermalConductivity
+            - thermalCapacity
+
         """
         if mat_name == "":
             raise ValueError("Material name must not be empty!")
@@ -151,25 +158,37 @@ class Material:
         )
 
     def save(self):
+        """Save the material to the material data base a JSON file.
+
+        You can find the Material database under
+        `pyemmo.script.material.DATABASE_PATH`.
+
+        The default save path is 'DATABASE_PATH/*MATERIAL_NAME*.json'
+
+        FIXME: save/load methods do not pay attention to properties:
+            - tempCoefRem
+            - density
+            - thermalConductivity
+            - thermalCapacity
+        """
         if self.name == "":
             raise RuntimeError("Material needs to have a name!")
-        else:
-            mat_dict = {}
-            mat_dict["ID"] = (
-                len([f for f in os.listdir(DATABASE_PATH) if ".json" in f]) + 1
-            )
-            mat_dict["name"] = self.name
-            mat_dict["conductivity"] = self.conductivity
-            mat_dict["relPermeability"] = self.relPermeability
-            mat_dict["remanence"] = self.remanence
-            mat_dict["linear"] = self.linear
-            mat_dict["BHCurve"] = {}
-            if not self.linear:
-                for temp_key in self._BH.keys():
-                    mat_dict["BHCurve"][temp_key] = self.get_BH(temp_key).tolist()
-
-            with open(os.path.join(DATABASE_PATH, f"{self.name}.json"), "w") as file:
-                json.dump(mat_dict, file, indent="\t")
+        # create dict from material object
+        mat_dict = {}
+        mat_dict["ID"] = len([f for f in os.listdir(DATABASE_PATH) if ".json" in f]) + 1
+        mat_dict["name"] = self.name
+        mat_dict["conductivity"] = self.conductivity
+        mat_dict["relPermeability"] = self.relPermeability
+        mat_dict["remanence"] = self.remanence
+        mat_dict["linear"] = self.linear
+        mat_dict["BHCurve"] = {}
+        if not self.linear:
+            for temp_key in self._BH.keys():
+                mat_dict["BHCurve"][temp_key] = self.get_BH(temp_key).tolist()
+        with open(
+            os.path.join(DATABASE_PATH, f"{self.name}.json"), "w", encoding="utf-8"
+        ) as file:
+            json.dump(mat_dict, file, indent="\t")
 
     def delete(self):
         json_path = os.path.join(DATABASE_PATH, f"{self.name}.json")
