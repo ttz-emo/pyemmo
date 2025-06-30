@@ -20,9 +20,12 @@
 #
 
 """Module to test all materials can be loaded from the material database."""
+import os
+
+import numpy as np
 import pytest
 
-from pyemmo.script.material.material import Material
+from pyemmo.script.material.material import DATABASE_PATH, Material
 
 
 @pytest.mark.parametrize("material_file_name", ["air", "aluminum"])
@@ -42,3 +45,28 @@ def test_nonlinear_material_load(material_file_name):
     mat = Material.load(material_file_name)
     assert mat.linear is False
     assert len(mat.BH) != 0
+
+
+def test_material_save():
+    """Test the Material.save method.
+    NOTE: save/load methods do not pay attention to this properties yet:
+            - tempCoefRem
+            - density
+            - thermalConductivity
+            - thermalCapacity
+    """
+    mat = Material(
+        "Test-Mat",
+        relPermeability=1000,
+        conductivity=1e6,
+        BH=np.array(
+            [[0.0, 0.0], [0.5, 100], [0.8, 200], [0.95, 280], [1.1, 500], [1.5, 1000]]
+        ),
+        remanence=0,
+    )
+    mat.save()  # save material to database path
+    mat_file_name = os.path.join(DATABASE_PATH, mat.name + ".json")
+    assert os.path.isfile(mat_file_name)
+    reloaded_mat = Material.load(mat.name)
+    assert mat == reloaded_mat
+    mat.delete()  # remove test file
