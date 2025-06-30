@@ -47,14 +47,8 @@ def test_nonlinear_material_load(material_file_name):
     assert len(mat.BH) != 0
 
 
-def test_material_save():
-    """Test the Material.save method.
-    NOTE: save/load methods do not pay attention to this properties yet:
-            - tempCoefRem
-            - density
-            - thermalConductivity
-            - thermalCapacity
-    """
+def test_material_save_load():
+    """Test the Material.save method."""
     mat = Material(
         "Test-Mat",
         relPermeability=1000,
@@ -62,7 +56,11 @@ def test_material_save():
         BH=np.array(
             [[0.0, 0.0], [0.5, 100], [0.8, 200], [0.95, 280], [1.1, 500], [1.5, 1000]]
         ),
-        remanence=0,
+        remanence=1.3,
+        density=1000,
+        thermalConductivity=30,
+        thermalCapacity=100,
+        tempCoefRem=0.0015,
     )
     mat.save()  # save material to database path
     mat_file_name = os.path.join(DATABASE_PATH, mat.name + ".json")
