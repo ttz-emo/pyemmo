@@ -29,19 +29,28 @@ import json
 import logging
 import os
 import subprocess
+import timeit
 from os import mkdir
 from os.path import isdir, isfile, join
 
+import gmsh as gmsh_api
+import numpy as np
+
 from ... import logFmt
-from ...functions import calcIronLoss, import_results, runOnelab
+from ...functions import calcIronLoss, clean_name, import_results, runOnelab
 from ...script.geometry.machineAllType import MachineAllType
 from ...script.geometry.rotor import Rotor
 from ...script.geometry.stator import Stator
 from ...script.material import ElectricalSteel
 from ...script.script import Script
 from .. import logger
-from . import apiNameDict, boundaryJSON, importJSON, modelJSON
-from .SurfaceJSON import SurfaceAPI
+from ..machine_segment_surface import MachineSegmentSurface
+from . import apiNameDict
+from . import boundaryJSON as boundary
+from . import importJSON, modelJSON
+
+if not gmsh_api.is_initialized():
+    gmsh_api.initialize()
 
 # from swat_em import analyse
 # from .. import calcPhaseangleStarvoltageCorr
@@ -50,8 +59,8 @@ from .SurfaceJSON import SurfaceAPI
 
 
 def createMachine(
-    segmentSurfDict: dict[str, SurfaceAPI], extendedInfo: dict
-) -> tuple[MachineAllType, dict[str, list[SurfaceAPI]]]:
+    segmentSurfDict: dict[str, MachineSegmentSurface], extendedInfo: dict
+) -> tuple[MachineAllType, dict[str, list[MachineSegmentSurface]]]:
     """create a pyemmo Machine object from a list of surfaces forming one machine segment
     (imported from matlab).
 
@@ -66,20 +75,21 @@ def createMachine(
         Tuple[MachineAllType, Dict[str, List[SurfaceAPI]]]: Resulting machine object and Machine
         surface dict with IdExt as keys and list of SurfaceAPI objects as items.
     """
-    # create boundaries
-    rotorMovingBandRadius = importJSON.getMovingbandRadius(extendedInfo)
     symFactor = importJSON.getSymFactor(extendedInfo)
-    statorPhysicals, rotorPhysicals = boundaryJSON.createBoundaries(
-        segmentSurfDict=segmentSurfDict,
-        symFactor=symFactor,
-        rotorMBRadius=rotorMovingBandRadius,
-    )
+    rotorMovingBandRadius = importJSON.getMovingbandRadius(extendedInfo)
     # create the remaining machine surfaces
     maschineSurfDict = modelJSON.createMachineGeometryFromSegment(
         segmentSurfDict, symFactor
     )
+    gmsh_api.model.occ.remove_all_duplicates()
+    gmsh_api.model.occ.synchronize()
+
+    rotorPhysicals, statorPhysicals = boundary.get_boundaries(
+        maschineSurfDict, symFactor, rotorMovingBandRadius
+    )
+
     # Log winding layout for debugging *before* createSlot() is called.
-    logger.debug(f"Winding layout: {importJSON.getWindingList(extendedInfo)}")
+    logger.debug("Winding layout: %s", importJSON.getWindingList(extendedInfo))
     # create physical elements from the surfaces
     for idExt, surfList in maschineSurfDict.items():
         surfName = surfList[0].name
@@ -87,10 +97,12 @@ def createMachine(
             # if the inner surface is air, overlapping the rotor, set the delete-flag to not create
             # the inner housing surface
             for surf in surfList:
+                # -> TODO: Make sure delete also removes the gmsh instance
                 surf.delete = True
         else:
+            logging.debug("Creating physical for %s", idExt)
             physSurfList, machineSide = modelJSON.createPhysicalSurfaces(
-                idExt=idExt,
+                part_id=idExt,
                 surfList=surfList,
                 rotorMBRadius=rotorMovingBandRadius,
                 extendedInfo=extendedInfo,
@@ -103,7 +115,10 @@ def createMachine(
                 raise ValueError(
                     f"MachineSide was whether rotor or stator: {machineSide}",
                 )
-
+    if logging.getLogger().level <= logging.DEBUG:
+        gmsh_api.model.occ.synchronize()
+        if extendedInfo["flag_openGUI"]:  # only open GUI if specified
+            gmsh_api.fltk.run()
     # create the rotor
     axLen = importJSON.getAxialLength(extendedInfo)
     rotorAPI = Rotor(
@@ -132,10 +147,12 @@ def createMachine(
         nbrPolePairs=nbrPolePair,
         symmetryFactor=symFactor,
     )
+    # TODO: Add algorithm to remove all unused gmsh instances (aka ones that do not
+    # belong to any Physical Line or Surface)
     return machineSiemens, maschineSurfDict
 
 
-def createMeshSizeGUICode(machineSurfDict: dict[str, list[SurfaceAPI]]):
+def createMeshSizeGUICode(machineSurfDict: dict[str, list[MachineSegmentSurface]]):
     """
     Create the gmsh fomatted code to set the mesh size of the machine surfaces via the GUI.
 
@@ -183,19 +200,20 @@ def createMeshSizeGUICode(machineSurfDict: dict[str, list[SurfaceAPI]]):
     mscSetSize = ""
     # First get all IDs containing idExt into idList (e.g. there could be "LplR" and "LplL"
     # for idExt = "Lpl")
-    for idExt, apiSurfName in apiNameDict.items():
+    # FIXME: Rework this since the default IDs will change in the future!
+    for part_id, apiSurfName in apiNameDict.items():
         surfID_List = []
         for surfID in machineSurfDict.keys():
-            if idExt in surfID:
+            if part_id in surfID:
                 surfID_List.append(surfID)
         # if there were ids containing idExt
         if surfID_List:
             # create a List of all surfaces with idExt in it -> surfList
-            surfList: list[SurfaceAPI] = []
+            surfList: list[MachineSegmentSurface] = []
             for surfID in surfID_List:
                 surfList.extend(machineSurfDict[surfID])
             # get the mesh size
-            meshSize = surfList[0].meshSize
+            meshSize = surfList[0].meanMeshLength
             # if meshsize in surfaceAPI was 0, get the mean mesh size of the points
             if not meshSize:
                 meshSize = surfList[0].meanMeshLength
@@ -208,15 +226,17 @@ def createMeshSizeGUICode(machineSurfDict: dict[str, list[SurfaceAPI]]):
                 surfName = surfList[0].name()
             except Exception as exce:
                 raise exce
+            # create the mesh size parameter name
+            param_name = clean_name.clean_name(part_id) + "_msf"
             mscDefConst += (
-                f"""\t\t{idExt}_msf = {{{meshSize},"""
+                f"""\t\t{param_name} = {{{meshSize},"""
                 + f""" Name StrCat[INPUT_MESH, "05Mesh Size/{surfName} [mm]"],"""
                 + f"""Min {meshSize/10}, Max {meshSize * 10}, Step 0.1,"""
                 + "Visible Flag_SpecifyMeshSize},\n"
             )
             surfIds = [str(surf.id) for surf in surfList]
             # pylint: disable=locally-disabled,  line-too-long
-            mscSetSize += f"\tMeshSize {{ PointsOf {{Surface{{ {','.join(surfIds)} }};}} }} = {idExt}_msf*mm;\n"
+            mscSetSize += f"\tMeshSize {{ PointsOf {{Surface{{ {','.join(surfIds)} }};}} }} = {param_name}*mm;\n"
     # At the end remove last comma and close bracket
     if mscDefConst[-2] == ",":
         mscDefConst = mscDefConst[0 : len(mscDefConst) - 2] + "\n\t];\n"
@@ -343,7 +363,7 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
 
 
 def main(
-    geo: str | dict,
+    geo: str | dict[str, MachineSegmentSurface],
     extInfo: str | dict,
     model: str | os.PathLike,
     gmsh: str | os.PathLike = "",
@@ -383,6 +403,8 @@ def main(
         results (str, optional): Folder path to store the simulation results.
             Defaults to "modelDir/res_ModelName"
     """
+    if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+        t0 = timeit.default_timer()
     # create dir for model files if it doesnt exist
     if not isdir(model):
         mkdir(model)
@@ -392,7 +414,7 @@ def main(
         mode="w",
         encoding="utf-8",
     )
-    jsonLogFileHandler.setLevel(logger.getEffectiveLevel())
+    jsonLogFileHandler.setLevel(min(logger.getEffectiveLevel(), logging.INFO))
     jsonLogFileHandler.setFormatter(logFmt)
     logger.addHandler(jsonLogFileHandler)
     logging.info(
@@ -400,28 +422,6 @@ def main(
         datetime.date.today(),
         datetime.datetime.now().strftime("%H:%M:%S"),
     )
-
-    # get geometry
-    if isinstance(geo, str):
-        if isfile(geo):
-            # import the segment surface list from the json file
-            try:
-                with open(geo, encoding="utf-8") as jsonFile:
-                    machineGeoList = json.load(jsonFile)
-                    # create dict with surface api (segment) objects from the surface list
-                    segmentSurfDict = modelJSON.importMachineGeometry(machineGeoList)
-            except FileNotFoundError as fnfe:
-                raise fnfe
-            except Exception as exept:
-                raise exept
-        else:
-            raise (FileNotFoundError(f"Given file path {geo} was not a file."))
-    elif isinstance(geo, dict):
-        segmentSurfDict = geo
-    else:
-        raise TypeError(
-            f"Geometry file has to be type 'File' or 'dict', not {type(geo)}"
-        )
 
     # addition information
     if isinstance(extInfo, str):
@@ -437,8 +437,61 @@ def main(
             f"Model information file has to be type 'File' or 'dict', not {type(extInfo)}"
         )
 
+    # get geometry
+    if isinstance(geo, str):
+        if isfile(geo):
+            # add new gmsh model in case api is called multiple times:
+            gmsh_api.model.add(extendedInfo["modelName"])
+            # import the segment surface list from the json file:
+            try:
+                with open(geo, encoding="utf-8") as jsonFile:
+                    machineGeoList = json.load(jsonFile)
+                    # create dict with surface api (segment) objects from the surface list
+                    segmentSurfDict = modelJSON.importMachineGeometry(machineGeoList)
+            except FileNotFoundError as fnfe:
+                raise fnfe
+            except Exception as exept:
+                raise exept
+        else:
+            raise FileNotFoundError(f"Given file path {geo} was not a file.")
+    elif isinstance(geo, dict):
+        # Make sure all given surfaces have the correct type:
+        if not all(type(surf) == MachineSegmentSurface for surf in geo.values()):
+            raise ValueError(
+                "Invalid geometry dict provided! "
+                "Make sure that the geometry values are of type MachineSegmentSurface!"
+            )
+        # TODO: I think this can be skipped now!
+        # Assert that the given surfaces are created in the current gmsh model
+        gmsh_api.model.occ.synchronize()
+        surf_dim_tags = gmsh_api.model.get_entities(2)
+        surf_tags = [dim_tag[1] for dim_tag in surf_dim_tags]
+        for surf in geo.values():
+            if surf.id not in surf_tags:
+                raise RuntimeError(
+                    f"Segment surface {surf.name} with ID {surf.id} not in current gmsh model!"
+                )
+        segmentSurfDict = geo
+    else:
+        raise TypeError(
+            f"Geometry file has to be type 'File' or 'dict', not {type(geo)}"
+        )
+    # check if the symmetry factor from the segment surf dict matches the externally
+    # given symmetry factor in extendedInfo:
+    _check_symmetry(segmentSurfDict, extendedInfo)
+
+    if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+        # update gmsh fltk GUI config
+        gmsh_api.option.setNumber("Geometry.Surfaces", 1)  # show surface indications
+        gmsh_api.option.setNumber("Geometry.Light", 0)  # deactivate 3D light
+
+        t1 = timeit.default_timer()
+        logger.debug("Time for loading geometry: %.2fs", t1 - t0)
     # generate the machine geometry
     machine, machineSurfDict = createMachine(segmentSurfDict, extendedInfo)
+    if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+        t2 = timeit.default_timer()
+        logger.info("Time for creating machine object: %.2fs", t2 - t1)
 
     # set function mesh
     if "useFunctionMesh" in extendedInfo.keys():
@@ -456,10 +509,16 @@ def main(
         resultsPath=results,
         # factory="OpenCascade",
     )
+    if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+        t3 = timeit.default_timer()
+        logger.debug("Time for creating script object: %.2fs", t3 - t2)
     addPostOperations(apiScript, extendedInfo)
     meshSizeSetCode = createMeshSizeGUICode(machineSurfDict)
     # generate geo and pro files:
     apiScript.generateScript(UD_MeshCode=meshSizeSetCode)
+    if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+        t4 = timeit.default_timer()
+        logger.debug("Time for generating script files: %.2fs", t4 - t3)
 
     if importJSON.getFlagOpenGui(extendedInfo) is True:
         _open_onelab(apiScript, extendedInfo, gmsh, getdp)
@@ -467,6 +526,35 @@ def main(
     logger.removeHandler(jsonLogFileHandler)
     jsonLogFileHandler.close()  # close log file handler!
     return apiScript
+
+
+def _check_symmetry(
+    segmentSurfDict: dict[str, MachineSegmentSurface], extendedInfo: dict
+) -> bool:
+    """Private function to check if the symmetry factor given in the extendedInfo is
+    valid.
+
+    Args:
+        segmentSurfDict (dict[str, MachineSegmentSurface]): Dictionary with segment
+            surfaces as values and their part ids as keys.
+        extendedInfo (dict): Extended information dict with the symmetry factor.
+
+    Raises:
+        ValueError: If the symmetry factor is not compatible with the minimal symmetry
+        of the machine.
+    """
+    # Check if the symmetry factor given from extendedInfo is valid:
+    reqested_sym = importJSON.getSymFactor(extendedInfo)
+    # get number of segments of the first surface to init symmetry check
+    highest_sym = list(segmentSurfDict.values())[0].nbr_segments
+    # get maximal symmetry for all segment surface:
+    for seg_surf in segmentSurfDict.values():
+        highest_sym = np.gcd(highest_sym, seg_surf.nbr_segments)
+    # symFactor must be a multiple of the highest symmetry (sym)
+    if (highest_sym / reqested_sym) % 1 != 0:
+        raise ValueError(
+            f"Given symmetry factor {reqested_sym} is not compatible with the minimal symmetry {highest_sym}."
+        )
 
 
 def _open_onelab(

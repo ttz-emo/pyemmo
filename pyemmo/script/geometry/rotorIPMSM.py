@@ -179,19 +179,19 @@ class RotorIPMSM(Rotor):
                 OldLamCenterL.name + "_1"
             )  # untere Linie muss dupliziert werden wegen Reihenfolge der Linien in der LineList der Fläche
             LamCenterL_top = OldLamCenterL
-            LamCenterL_top.endPoint = MagCenterLList[
+            LamCenterL_top.end_point = MagCenterLList[
                 0
-            ].startPoint  # P1 in  MagCenterL ist immer Punkt nahe Rotoroberfläche!!!
+            ].start_point  # P1 in  MagCenterL ist immer Punkt nahe Rotoroberfläche!!!
             # P2 in LamCenterL ist immer Punkt nach der Welle
 
-            LamCenterL_bottom.startPoint = MagCenterLList[
+            LamCenterL_bottom.start_point = MagCenterLList[
                 0
-            ].endPoint  # P2 in MagCenterL ist immer Punkt nahe Welle!
+            ].end_point  # P2 in MagCenterL ist immer Punkt nahe Welle!
             # P1 in LamCenterL ist immer Punkt nach der Rotoroberfläche
 
             ## Neue Linien und Magnetlinien zu RotorlinienListe hinzufügen:
             # alle Rotorlinien kopieren (ID behalten!):
-            LamLList = Rotorsheet.geometricalElement[0].curve
+            LamLList = Rotorsheet.geo_list[0].curve
 
             # Rotoroberflächen-nahe Linie ist bereits in LamLList enthalten
             # Magnetlinien hinzufügen
@@ -242,9 +242,9 @@ class RotorIPMSM(Rotor):
         Symmetrie (_nbrGeoParts)
         """
         ## duplicate Rotorsheet ##
-        allGeo = self._physicalRaw[0].geometricalElement
+        allGeo = self._physicalRaw[0].geo_list
         PCentre = self._laminationDict["machineCentrePoint"].duplicate()
-        pH1 = self._physicalRaw[0].betweenLinePart[0].startPoint.duplicate()
+        pH1 = self._physicalRaw[0].betweenLinePart[0].start_point.duplicate()
         hilfsLinie1 = Line("L_hilf1", PCentre, pH1)
         ez = Point("p_Z", PCentre._x, PCentre._y, PCentre._z + 1, 1)
         hilfsLinie2 = Line("L_hilf2", PCentre, ez)
@@ -269,7 +269,7 @@ class RotorIPMSM(Rotor):
 
         ## duplicate Magnet ##
         # Mirror magnet surface to get full magnet (segment)
-        allGeo2 = self._physicalRaw[1].geometricalElement
+        allGeo2 = self._physicalRaw[1].geo_list
         surfaceMag2 = allGeo2[0].mirror(
             PCentre, hilfsLinie1, hilfsLinie2, name=allGeo[0].name + "_mirror"
         )
@@ -299,7 +299,7 @@ class RotorIPMSM(Rotor):
         # find Airgap Element in _physicalRaw
         for physical in self._physicalRaw:
             if type(physical) is AirGap:
-                AirGapGeo = physical.geometricalElement.copy()
+                AirGapGeo = physical.geo_list.copy()
                 break  # break for loop if airgap is found
         if AirGapGeo is None:
             raise ValueError("No physical element of type AirGap found")
@@ -358,17 +358,14 @@ class RotorIPMSM(Rotor):
         ## Movingband Rotor ##
         mbRotor1 = []
         mbNegDirection = (
-            self._physicalRaw[2]
-            .geometricalElement[0]
-            .curve[1]
-            .duplicate(name="lAirGap")
+            self._physicalRaw[2].geo_list[0].curve[1].duplicate(name="lAirGap")
         )  # duplicate the outer airgap line (movingband line)
         mbNegDirection.rotateZ(
             self._laminationDict["machineCentrePoint"], -angle
         )  # Rückdrehung wegen Startposition
 
         # mbRotor1.append(mbNegDirection)
-        # mbRotor1.append(self._physicalRaw[2].geometricalElement[0].getCurve()[1])
+        # mbRotor1.append(self._physicalRaw[2].geo_list[0].getCurve()[1])
 
         # Rotate and Duplicate
         for i in range(0, self._nbrGeoParts):
@@ -399,7 +396,7 @@ class RotorIPMSM(Rotor):
             # create MovinBand and add to allMBAux
             mbAux = MovingBand(
                 name="",
-                geometricalElement=mbRotor_aux,
+                geo_list=mbRotor_aux,
                 material=self._airGapDict["material"],
                 auxiliary=True,
             )
@@ -416,7 +413,7 @@ class RotorIPMSM(Rotor):
 
         lAirGapprimary = (
             self._physicalRaw[2]
-            .geometricalElement[0]
+            .geo_list[0]
             .curve[0]
             .duplicate(name="lAirgapprimary")  # duplicate part of airgap on x-axis
         )
@@ -430,7 +427,7 @@ class RotorIPMSM(Rotor):
 
         ## Slavelines ##
         SlaveLineList = []
-        for l in primaryLine1.geometricalElement:
+        for l in primaryLine1.geo_list:
             l1 = l.duplicate()  # duplicate primarylines
             l1.rotateZ(
                 self._laminationDict["machineCentrePoint"],
@@ -508,7 +505,7 @@ class RotorIPMSM(Rotor):
     #         except AttributeError:
     #             pass
 
-    #         geoElem = s.geometricalElement
+    #         geoElem = s.geo_list
     #         if geoElem[0].getType() == "Surface":
     #             phy_domain.append(s)
     #             mat = s.getMaterial()

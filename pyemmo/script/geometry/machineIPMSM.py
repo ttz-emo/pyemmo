@@ -284,6 +284,6 @@ class MachineIPMSM(MachineAllType):
         mbHeigth = abs(mbRadiusStator - mbRadiusRotor)
         # set the movingband mesh to mbHeigth
         for mb in rotor.movingBand + stator.movingBand:
-            for mbLine in mb.geometricalElement:
+            for mbLine in mb.geo_list:
                 mbLine.setMeshLength(mbHeigth)
         return None

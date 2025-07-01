@@ -35,9 +35,9 @@ Functions:
 
 from __future__ import annotations
 
+import logging
 import math
 
-from pyleecan.Classes.Machine import Machine as PyleecanMachine
 from pyleecan.Classes.MachineIPMSM import MachineIPMSM
 from pyleecan.Classes.MachineSCIM import MachineSCIM
 from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
@@ -46,9 +46,11 @@ from pyleecan.Classes.MachineSyRM import MachineSyRM
 from ...script.geometry.circleArc import CircleArc
 from ...script.geometry.line import Line
 from ...script.geometry.point import Point
+from ...script.geometry.segment_surface import SegmentSurface
 from .. import air
+from ..json import ROTOR_AIRGAP_IDEXT, STATOR_AIRGAP_IDEXT
 from ..json.modelJSON import createSurfaceDict
-from ..json.SurfaceJSON import SurfaceAPI
+from . import PyleecanMachine
 from .create_geo_dict import create_geo_dict
 from .get_coords_for_point import get_x_for_point, get_y_for_point
 
@@ -59,7 +61,7 @@ def build_bands_rotor(
     r_point_rotor_cont: Point,
     l_point_rotor_cont: Point,
     rotor_cont_line_list: list,
-) -> tuple[SurfaceAPI, SurfaceAPI, float]:
+) -> tuple[SegmentSurface, SegmentSurface, float]:
     """
     Builds the air gap segments at the rotor side.
 
@@ -113,28 +115,31 @@ def build_bands_rotor(
     rotor_air_gap1_curves.append(
         Line(
             name="lowerLine1",
-            startPoint=r_point_rotor_cont,
-            endPoint=point_m11,
+            start_point=r_point_rotor_cont,
+            end_point=point_m11,
         )
     )
     rotor_air_gap1_curves.append(
         Line(
             name="upperLine1",
-            startPoint=l_point_rotor_cont,
-            endPoint=point_m12,
+            start_point=l_point_rotor_cont,
+            end_point=point_m12,
         )
     )
 
     # Assginment of rotorBand1 as surface:
-    rotor_air_gap1 = SurfaceAPI(
-        name="rotorAirGap1",
-        idExt="LuR1",
+    # band closing the rotor contour and providing smooth interface for second airgap.
+    rotor_air_gap1 = SegmentSurface(
+        name="rotor air - airgap 1",
+        idExt="rotor air",
         curves=rotor_air_gap1_curves,
         material=air,
-        nbrSegments=nbr_rotor_seg,
+        nbr_segments=nbr_rotor_seg,
         angle=angle_rotor,
         meshSize=1.0,
     )
+    assert rotor_air_gap1.idExt != ROTOR_AIRGAP_IDEXT
+
     # plot(rotor_air_gap1_curves, linewidth=1, markersize=3, tag=True)
 
     # ------------------------------------
@@ -197,19 +202,19 @@ def build_bands_rotor(
     rotor_air_gap2_curves.append(rotor_circle1)
     rotor_air_gap2_curves.extend(rotor_mb_arcs)
     rotor_air_gap2_curves.append(
-        Line(name="lowerLine2", startPoint=point_m11, endPoint=point_m21)
+        Line(name="lowerLine2", start_point=point_m11, end_point=point_m21)
     )
     rotor_air_gap2_curves.append(
-        Line(name="upperLine2", startPoint=point_m12, endPoint=point_m22)
+        Line(name="upperLine2", start_point=point_m12, end_point=point_m22)
     )
 
     # Assginment of rotorBand2 as surface:
-    rotor_air_gap2 = SurfaceAPI(
-        name="rotorAirGap2",
-        idExt="LuR2",
+    rotor_air_gap2 = SegmentSurface(
+        name="rotor airgap 2",
+        idExt=ROTOR_AIRGAP_IDEXT,
         curves=rotor_air_gap2_curves,
         material=air,
-        nbrSegments=nbr_rotor_seg,
+        nbr_segments=nbr_rotor_seg,
         angle=angle_rotor,
         meshSize=1.0,
     )
@@ -233,7 +238,7 @@ def build_bands_stator(
     machine: PyleecanMachine,
     stator_cont_line_list: list,
     band_radius_list: list,
-) -> tuple[SurfaceAPI, SurfaceAPI]:
+) -> tuple[SegmentSurface, SegmentSurface]:
     """
     Builds the air gap segments at the stator side.
 
@@ -254,6 +259,9 @@ def build_bands_stator(
     # Stator outer band:
     # ------------------
     biggest_previous_y_stator = 0
+    biggest_y_point_stator: Point | None = None
+    lowest_y_point_stator: Point | None = None
+
     for curve in stator_cont_line_list:
         for point in curve.points:
             if point.coordinate[1] > biggest_previous_y_stator:
@@ -290,13 +298,13 @@ def build_bands_stator(
     )
 
     lower_line4 = Line(
-        name="lowerLine4", startPoint=lowest_y_point_stator, endPoint=point_m41
+        name="lowerLine4", start_point=lowest_y_point_stator, end_point=point_m41
     )
 
     upper_line4 = Line(
         name="upperLine4",
-        startPoint=biggest_y_point_stator,
-        endPoint=point_m42,
+        start_point=biggest_y_point_stator,
+        end_point=point_m42,
     )
 
     # Adding curves to list:
@@ -306,20 +314,23 @@ def build_bands_stator(
     curves_stlu1.append(lower_line4)
     curves_stlu1.append(upper_line4)
 
+    if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+        from ...functions.plot import plot
+
+        fig, ax = plot(curves_stlu1, linewidth=1, markersize=3, tag=True)
     # Assginment of statorAirGap1 as surface:
-    stator_air_gap1 = SurfaceAPI(
-        name="statorAirGap1",
-        idExt="StLu1",
+    stator_air_gap1 = SegmentSurface(
+        name="stator air - airgap 1",
+        idExt="stator air",
         curves=curves_stlu1,
         material=air,
-        nbrSegments=nbr_stator_seg,
+        nbr_segments=nbr_stator_seg,
         angle=angle_stator,
         meshSize=1.0,
     )
-
-    # plot(curves_stlu1, linewidth=1, markersize=3, tag=True)
-    # stator_air_gap1.plot()
-    # print("---")
+    assert stator_air_gap1.idExt != STATOR_AIRGAP_IDEXT
+    if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+        stator_air_gap1.plot(fig=fig)
 
     # ------------------
     # Stator inner band:
@@ -349,9 +360,9 @@ def build_bands_stator(
         centerPoint=center_point,
     )
 
-    lower_line3 = Line(name="lowerLine3", startPoint=point_m31, endPoint=point_m41)
+    lower_line3 = Line(name="lowerLine3", start_point=point_m31, end_point=point_m41)
 
-    upper_line3 = Line(name="upperLine3", startPoint=point_m32, endPoint=point_m42)
+    upper_line3 = Line(name="upperLine3", start_point=point_m32, end_point=point_m42)
 
     # Adding curves to list 'curvesStLu2':
     curves_stlu2 = []
@@ -361,15 +372,17 @@ def build_bands_stator(
     curves_stlu2.append(upper_line3)
 
     # Assginment of statorBand3 as surface:
-    stator_air_gap2 = SurfaceAPI(
-        name="statorAirGap2",
-        idExt="StLu2",
+    stator_air_gap2 = SegmentSurface(
+        name="stator airgap 2",
+        idExt=STATOR_AIRGAP_IDEXT,
         curves=curves_stlu2,
         material=air,
-        nbrSegments=nbr_stator_seg,
+        nbr_segments=nbr_stator_seg,
         angle=angle_stator,
         meshSize=1.0,
     )
+    if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+        stator_air_gap2.plot(fig=fig)
 
     return stator_air_gap1, stator_air_gap2
 
@@ -436,7 +449,7 @@ def calcs_radii(
 
 def translate_machine(
     machine: PyleecanMachine,
-) -> tuple[list[SurfaceAPI], list[SurfaceAPI], float, dict, dict]:
+) -> tuple[list[SegmentSurface], list[SegmentSurface], float, dict, dict]:
     """_summary_
 
     Args:
@@ -495,16 +508,6 @@ def translate_machine(
             band_radius_list=band_radius_list,
         )
     )
-
-    # OLD CODE:
-    # geo_translation_dict = {}
-    # for surf in geometry_list:
-    #     if surf.idExt not in geo_translation_dict:
-    #         geo_translation_dict[surf.idExt] = surf
-    #     else:
-    #         raise RuntimeError(
-    #             f"Surface ID '{surf.idExt}' already in geometry dict!"
-    #         )
 
     # Try to reuse function from json api:
     geo_translation_dict = createSurfaceDict(geometry_list)

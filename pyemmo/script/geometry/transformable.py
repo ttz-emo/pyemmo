@@ -31,39 +31,18 @@ class Transformable(ABC):
         abc (_type_): _description_
     """
 
-    ###Mit getNewID() wird eine neue eindeutige ID für jede Transformable erzeugt.
-    @classmethod
-    # @abstractclassmethod
-    def _getNewID(cls):
-        pass
-
-    # pylint: disable=locally-disabled, invalid-name
-    @property
-    @abstractmethod
-    # @abstractproperty
-    def id(self) -> int:
-        """Property id of geo classes"""
-        # pass
-
-    @id.setter
-    @abstractmethod
-    def id(self, newID) -> None:
-        """Setter for ID"""
-        pass
-
     ###Gibt den Namen einer Transformable zurück.
     @property
-    @abstractmethod
-    # @abstractproperty
     def name(self):
         """Entity name"""
-        # pass
+        return self._name
 
-    ###Überschreibt den aktuellen Namen mit einem neuen Namen.
     @name.setter
-    @abstractmethod
-    def name(self, name: str) -> None:
-        pass
+    def name(self, new_name: str) -> None:
+        if isinstance(new_name, str):
+            self._name = new_name
+        else:
+            raise TypeError("Name must be a string.")
 
     ###translate() verschiebt Transformables um die Faktoren dx, dy und dz.
     @abstractmethod

@@ -192,7 +192,7 @@ def createRotorPMSM():
 
     # Definition der PhysicalElements
     rotorBlech = RotorLamination(
-        name="rotorBlech", geometricalElement=s_RotorBlech, material=steel_1010
+        name="rotorBlech", geo_list=s_RotorBlech, material=steel_1010
     )
     magnet1 = Magnet(
         name="magnet_Nord",
@@ -205,7 +205,7 @@ def createRotorPMSM():
     magnet2 = Magnet(
         "magnet_Sued", s_Magnet[2:4], ndFe35, -1, "radial", magVectorAngle=0.0
     )
-    luft = AirArea(name="luft", geometricalElement=s_Container, material=air)
+    luft = AirArea(name="luft", geo_list=s_Container, material=air)
     luftspalt = AirGap("luftspalt", s_Luftspalt, air)
     masterR = PrimaryLine("masterR", [dLR2, dLdB3, dLdC3])
     # Prime-Linien duplizieren und Rotieren
@@ -213,7 +213,8 @@ def createRotorPMSM():
     for sR in slave_R:
         sR.rotateZ(mRotor, math.pi / 2)
     slaveR = SlaveLine("slaveR", slave_R)
-    mbRotor = MovingBand(name="mbRotor", geometricalElement=mbR_all, material=air)
+
+    mbRotor = MovingBand(name="mbRotor", geo_list=mbR_all, material=air)
     phy_innerLimit = LimitLine("innerLimitRotor", innerLimit)
 
     return Rotor(
@@ -349,7 +350,7 @@ def createStatorPMSM():
     phy_Nutschlitz = AirArea("Nutschlitz", s_Nutschlitz, air)
     allSlot: list[Slot] = []
     for i2 in range(0, len(s_Nut)):
-        allSlot.append(Slot(name="", geometricalElement=[s_Nut[i2]], material=copper))
+        allSlot.append(Slot(name="", geo_list=[s_Nut[i2]], material=copper))
         allSlot[len(allSlot) - 1].name = "slot_" + str(allSlot[len(allSlot) - 1].id)
         # allSlot[len(allSlot) - 1].addExcitation(windingInstruction[i2])
     phy_airGap = AirGap("luftspalt_stator", s_Luftspalt, air)

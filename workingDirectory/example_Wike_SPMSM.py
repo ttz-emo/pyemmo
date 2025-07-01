@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -105,7 +106,7 @@ rotor.addAirGapParameter({"width": lAirgap, "material": air})
 rotor.createRotor()
 # rHole = 0.5e-3
 # for physical in rotor._domainNL.physicals:
-#     for surface in physical.geometricalElement:
+#     for surface in physical.geo_list:
 #         cog = surface.calcCOG()
 #         p1 = cog.duplicate()
 #         p1.translate(-rHole,0,0)

@@ -19,7 +19,6 @@
 #
 from typing import List
 
-from .. import colorDict
 from .circleArc import CircleArc
 from .line import Line
 from .point import Point
@@ -58,7 +57,7 @@ class RotorLamination_Sheet01_Standard(RotorLamination):
         super().__init__(
             name="RotorLamination_Sheet01_Standard",
             material=machineDict["material"],
-            geometricalElement=[],
+            geo_list=[],
         )
         ###Alle Parameter zur Beschreibung des Rotorblechs.
         self._machineDict = machineDict
@@ -82,7 +81,7 @@ class RotorLamination_Sheet01_Standard(RotorLamination):
             coordCentre[0] + r_We,
             coordCentre[1],
             coordCentre[2],
-            self._machineDict["meshLength"],
+            # self._machineDict["meshLength"],
         )
         pWelle2 = pWelle1.duplicate()
         pWelle2.name = "pWelle2"
@@ -109,11 +108,11 @@ class RotorLamination_Sheet01_Standard(RotorLamination):
         # Flächenerzeugen
         surfaceRotor = Surface("surfaceRotor", [lWelle, lBlech1, lRotorAussen, lBlech2])
 
-        surfaceRotor.setMeshColor(colorDict["SteelBlue"])
+        # surfaceRotor.setMeshColor(colorDict["SteelBlue"])
 
         # Bei jedem Baukausten müssen diese Attribute vorkommen
         ###Fläche des Bleches (halber Pol) in einer Liste.
-        self._geometricalElement = [surfaceRotor]
+        self._geo_list = [surfaceRotor]
         ###Außenkante des Bleches.
         # \image html outerLinePart.png
         self._outerLinePart = [lRotorAussen]

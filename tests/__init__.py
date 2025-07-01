@@ -50,7 +50,7 @@ if platform.system() == "Windows":
     # Download and install the newest ONELAB installation for testing
     try:
         p = subprocess.run(
-            ["powershell", f"{TEST_DIR}\\install_onelab.ps1"],
+            ["powershell", os.path.join(TEST_DIR, "install_onelab.ps1")],
             check=True,
             capture_output=True,
         )

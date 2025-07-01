@@ -66,6 +66,8 @@ from . import LOGGER
 
 # from .testUtils import make_test_cases
 
+curr_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
+
 test_params = {
     "api\\pyleecan": {
         "id": -10,
@@ -255,7 +257,7 @@ def pyleecanPrepTuple(
 
     """
     # rootLogger.setLevel(logging.DEBUG)
-    curr_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
+    # curr_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     header_flg = True
     param_tuples = []
@@ -311,6 +313,8 @@ def pyleecanPrepTuple(
                     test_params[test_type],
                     result_path=result_path,
                     test_data_path=source_path,
+                    test_case=test_case,
+                    test_id=test_id,
                 )
                 LOGGER.info(f"Simulation successful for {test_case}.json\n")
 

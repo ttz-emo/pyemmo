@@ -36,6 +36,7 @@ workingDirectory/test_asm/*.html
 tests/data/*onelab/
 tests/GETDP_TEST_PATH
 tests/GMSH_TEST_PATH
+
 # Exclude private tests
 tests/private
 workingDirectory/private

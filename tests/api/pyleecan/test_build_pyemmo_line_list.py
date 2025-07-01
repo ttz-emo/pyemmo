@@ -19,18 +19,17 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module to test the function build_pyemmo_line_list of pyleecan api"""
-from math import pi, isclose
-import pytest
+from math import isclose, pi
 
-from pyleecan.Classes.Segment import Segment
+import pytest
 from pyleecan.Classes.Arc1 import Arc1
 from pyleecan.Classes.Arc2 import Arc2
 from pyleecan.Classes.Arc3 import Arc3
-
-from pyemmo.script.geometry.line import Line
-from pyemmo.script.geometry.circleArc import CircleArc
+from pyleecan.Classes.Segment import Segment
 
 from pyemmo.api.pyleecan.build_pyemmo_line_list import build_pyemmo_line_list
+from pyemmo.script.geometry.circleArc import CircleArc
+from pyemmo.script.geometry.line import Line
 
 # pylint: disable=locally-disabled, redefined-outer-name
 
@@ -132,8 +131,8 @@ def test_build_pyemmo_line_list_with_segment(sample_segment: Segment) -> None:
     """
     pyemmo_line_list = build_pyemmo_line_list([sample_segment])
 
-    assert pyemmo_line_list[0].startPoint.coordinate == (0, 0, 0)
-    assert pyemmo_line_list[0].endPoint.coordinate == (1, 1, 0)
+    assert pyemmo_line_list[0].start_point.coordinate == (0, 0, 0)
+    assert pyemmo_line_list[0].end_point.coordinate == (1, 1, 0)
     assert len(pyemmo_line_list) == 1
     assert isinstance(pyemmo_line_list, list)
     assert isinstance(pyemmo_line_list[0], Line)
@@ -159,8 +158,8 @@ def test_build_pyemmo_line_list_arc1_under_180(
     """
     pyemmo_line_list = build_pyemmo_line_list([sample_arc1_under_180_deg])
 
-    assert pyemmo_line_list[0].startPoint.coordinate == (0, 0, 0)
-    assert pyemmo_line_list[0].endPoint.coordinate == (1, 1, 0)
+    assert pyemmo_line_list[0].start_point.coordinate == (0, 0, 0)
+    assert pyemmo_line_list[0].end_point.coordinate == (1, 1, 0)
     assert len(pyemmo_line_list) == 1
     assert isinstance(pyemmo_line_list, list)
     assert isinstance(pyemmo_line_list[0], Line)
@@ -210,12 +209,10 @@ def test_build_pyemmo_line_list_arc2_under_180(
     """
     pyemmo_line_list = build_pyemmo_line_list([sample_arc2_under_180_deg])
 
-    assert pyemmo_line_list[0].startPoint.coordinate == (0, 0, 0)
+    assert pyemmo_line_list[0].start_point.coordinate == (0, 0, 0)
     assert pyemmo_line_list[0].center.coordinate == (1, 0, 0)
-    assert isclose(pyemmo_line_list[0].endPoint.coordinate[0], 1, abs_tol=1e-6)
-    assert isclose(
-        pyemmo_line_list[0].endPoint.coordinate[1], -1, abs_tol=1e-6
-    )
+    assert isclose(pyemmo_line_list[0].end_point.coordinate[0], 1, abs_tol=1e-6)
+    assert isclose(pyemmo_line_list[0].end_point.coordinate[1], -1, abs_tol=1e-6)
     assert pyemmo_line_list[0].getAngle(inDeg=90) == 90
     assert len(pyemmo_line_list) == 1
     assert isinstance(pyemmo_line_list, list)
@@ -289,6 +286,4 @@ def test_build_pyemmo_line_list_with_mixed_elements(
     )
     assert len(pyemmo_line_list) == 9
     assert isinstance(pyemmo_line_list, list)
-    assert all(
-        isinstance(item, (Line, CircleArc)) for item in pyemmo_line_list
-    )
+    assert all(isinstance(item, (Line, CircleArc)) for item in pyemmo_line_list)

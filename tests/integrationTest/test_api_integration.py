@@ -32,17 +32,18 @@ syntax: pytest <path_to_module>
 """
 
 import glob
+import logging
 import os
 import shutil
 
 import pytest
 from pytest_check import check  # to allow multiple failures per test
 
-from pyemmo.definitions import ROOT_DIR
+from pyemmo.definitions import ROOT_DIR, TEST_DIR
 from pyemmo.functions.import_results import read_timetable_dat
 
 from . import LOGGER
-from .pyleecan_test_base import pyleecanPrepTuple, test_params
+from .pyleecan_test_base import curr_datetime, pyleecanPrepTuple, test_params
 from .testUtils import (
     check_folder_type,
     count_files,
@@ -54,6 +55,15 @@ from .testUtils import (
 # Vars for using in tests
 test_types = ["api\\pyleecan"]
 test_cases = {}
+
+fileHandler = logging.FileHandler(
+    filename=os.path.join(
+        TEST_DIR, "results", test_types[0], f"test_result_{curr_datetime}.log"
+    ),
+    mode="w",
+    encoding="utf-8",
+)
+LOGGER.addHandler(fileHandler)
 
 ## Auto generate test cases from machine files in tests\data\api\pyleecan dir:
 # for t in test_types:
@@ -86,11 +96,20 @@ def cleanup(request):
                 for dir in os.listdir(test_result_dir)
                 if os.path.isdir(os.path.join(test_result_dir, dir))
             ]
+            log_files = [
+                os.path.join(test_result_dir, fn)
+                for fn in os.listdir(test_result_dir)
+                if ".log" in fn
+            ]
             no_to_keep = 2  # decide how many test results should be kept
-            no_to_remove = 0
-            while no_to_remove < len(timestamped_result_dirs) - no_to_keep:
-                shutil.rmtree(timestamped_result_dirs[no_to_remove])
-                no_to_remove += 1
+            no_to_remove_dir = 0
+            no_to_remove_fn = 0
+            while no_to_remove_dir < len(timestamped_result_dirs) - no_to_keep:
+                shutil.rmtree(timestamped_result_dirs[no_to_remove_dir])
+                no_to_remove_dir += 1
+            while no_to_remove_fn < len(log_files) - no_to_keep:
+                os.remove(log_files[no_to_remove_fn])
+                no_to_remove_fn += 1
 
     request.addfinalizer(finisher)
 
@@ -152,11 +171,10 @@ class TestCasesIntegration:
         base_simul_path,
         base_simul_subfolder_path,
     ):
-        """ "
-        This test checks that simulation has been run successfully and corresponding result folders have been created.
-        It also serves as dependency point for other tests i.e. if this test fails
-            (meaning simulation failed), the other tests will be skipped.
-
+        """
+        Check if simulation result folders were generated (meaning simulation was successful)
+        All folders that exists in base data should also be in generated data.
+        Test will fail if a folder does not exist.
         """
         # ) = test_tuple
         if result_path == "":
@@ -250,9 +268,11 @@ class TestCasesIntegration:
         base_simul_subfolder_path,
     ):
         """
-        This test checks that the data in the simulation result files is as expected,
-            using a pre-generated base data as comparison base.
-        If either test_api_simul_folder_exist or test_simul_data_gen fails, this test will be skipped.
+        Compares data in generated .dat files with base data.
+        Runs for a test case only if test_simul_data_gen succeeded for that test case.
+        Output comparison for all test cases to dat_check.log file within the test folder.
+        Test will fail in case absolute difference (for values < 1e-6) or relative difference (for values >= 1e-6) is larger than 0.01.
+
         """
         # (
         #     test_id,
@@ -278,22 +298,69 @@ class TestCasesIntegration:
         else:
             dat_targets = glob.glob(os.path.join(simul_subfolder_path, "*.dat"))
             dat_bases = glob.glob(os.path.join(base_simul_subfolder_path, "*.dat"))
-            for target_file, base_file in zip(dat_targets, dat_bases):
-                target_dat = read_timetable_dat(target_file)
-                base_dat = read_timetable_dat(base_file)
-                check_flag = True
-                with check:
-                    for i in range(len(base_dat[0])):
-                        diff = abs(target_dat[1][i] - base_dat[1][i])
-                        assert (
-                            diff < 0.01
-                        ), f"Mismatch! Base data: {base_dat}; Target data:{target_dat}"
-                        if diff >= 0.01:
-                            check_flag = False
+            with open(
+                os.path.join(
+                    TEST_DIR, "results", test_types[0], f"{curr_datetime}/dat_check.log"
+                ),
+                "a",
+            ) as f:  # write dat file check to file
+                f.write(f"{test_id}_{test_case} result: \n")
+                for target_file, base_file in zip(dat_targets, dat_bases):
+                    # target_time, target_dat = read_timetable_dat(target_file)
+                    # time_base, base_dat = read_timetable_dat(base_file)
+                    target_dat = read_timetable_dat(target_file)
+                    base_dat = read_timetable_dat(base_file)
+                    check_flag = True
+                    with check:
+                        _, filename = os.path.split(target_file)
+                        for i in range(len(base_dat[0])):
+                            diff = abs(target_dat[1][i] - base_dat[1][i])
+                            rel_diff = diff / abs(base_dat[1][i])
+                            f.write(
+                                f"{filename} | "
+                                f"Base data: {base_dat}; Target data:{target_dat} | "
+                                f"Difference - abs.:{diff} - rel.:{rel_diff}\n"
+                            )
+                            if (
+                                abs(target_dat[1][i]) < 1e-6
+                                and abs(base_dat[1][i]) < 1e-6
+                            ):
+                                # compare abs. difference
+                                if diff >= 0.01:
+                                    LOGGER.error(
+                                        f"ERROR: Mismatch for file {filename}; "
+                                        f"Base data: {base_dat}; Target data:{target_dat}; "
+                                        f"Difference - abs.:{diff}"
+                                    )
+                                    check_flag = False
 
-                    assert check_flag and messagePrinter(
-                        f"SUCCESS: all data in {target_file} ok."
-                    ), f"ERROR: mismatch detected between base ({base_file}) and target ({target_file})."
+                                assert diff < 0.01, (
+                                    f"Mismatch for file {filename}; "
+                                    f"Base data: {base_dat}; Target data:{target_dat}; "
+                                    f"Difference - abs.:{diff}"
+                                )
+                            else:
+                                # compare relative difference
+                                # rel_diff = diff / abs(base_dat[1][i])
+                                if rel_diff >= 0.01:
+                                    LOGGER.error(
+                                        f"ERROR: Mismatch for file {filename}; "
+                                        f"Base data: {base_dat}; Target data:{target_dat}; "
+                                        f"Difference - abs.:{diff} - rel.:{rel_diff}"
+                                    )
+                                    check_flag = False
+                                assert rel_diff < 0.01, (
+                                    f"Mismatch for file {filename}; "
+                                    f"Base data: {base_dat}; Target data:{target_dat}; "
+                                    f"Difference - abs.:{diff} - rel.:{rel_diff}"
+                                )
+                            # if base_dat[1][i] >= 0.01:
+                            #     check_flag = False
+
+                        assert check_flag and messagePrinter(
+                            f"SUCCESS: all data in {target_file} ok."
+                        ), f"ERROR: mismatch detected between base ({base_file}) and target ({target_file})."
+                f.write("\n")
 
     def check_file_counts(
         self,
@@ -302,7 +369,7 @@ class TestCasesIntegration:
         check_from_base: bool = True,
     ):
         """
-        Compare count of files per type between base data and result data
+        Helper function to compare count of files per type between base data and result data
         """
         base_count_fixed = {
             "result": {

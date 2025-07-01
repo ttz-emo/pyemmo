@@ -40,20 +40,20 @@ class SlaveLine(PhysicalElement):
     #       ID : Integer
     #       name : String
     #       material : Material
-    #       geometricalElement : [Line]
+    #       geo_list : [Line]
     #
     ###
     def __init__(
         self,
         name: str,
-        geometricalElement: List[Union[Line, CircleArc, Spline]],
+        geo_list: List[Union[Line, CircleArc, Spline]],
         material: Material = None,
     ):
         PhysicalElement.__init__(
             self,
             name=name,
             material=material,
-            geometricalElement=geometricalElement,
+            geo_list=geo_list,
         )
 
         self.physicalElementType = "SlaveLine"  # the physical element type can be used to identify physical elements

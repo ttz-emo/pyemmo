@@ -40,7 +40,7 @@ def get_min_coilspan(wind_layout: List[List[int]], nbrSlots: int) -> int:
         # get array with slot distance to first slot side
         a = wind_array[0, 1:] + first_coil_side
     is_positive_coil_side = first_coil_side > 0
-    # filter oppvosit (positive/negative) winding directions
+    # filter opposit (positive/negative) winding directions
     a = -a[a < 0] if is_positive_coil_side else a[a > 0]
     for i in range(1, nbrSlots):
         # loop through distance to first slot and check if that slot is in a

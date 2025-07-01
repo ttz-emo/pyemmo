@@ -32,28 +32,26 @@ class Bar(PhysicalElement):
     def __init__(
         self,
         name: str,
-        geometricalElement: Union[Surface, List[Surface]],
+        geo_list: Union[Surface, List[Surface]],
         material: Material,
     ):
         """Bar defines a rotor bar for a induction machine
 
         Args:
             - name (str): Bar name
-            - geometricalElement (Union[Surface, List[Surface]]):
+            - geo_list (Union[Surface, List[Surface]]):
                 List of geometry objects
             - material (Material): Material of . Should be "air". Defaults to None.
         """
         # convert Surface to list of Surface for PhysicalElement init
-        if isinstance(geometricalElement, Surface):
-            geometricalElement = [geometricalElement]
+        if isinstance(geo_list, Surface):
+            geo_list = [geo_list]
         # make sure conductivity is defined for induced currents
         if not material.conductivity:
             raise ValueError(
                 f"Material of Bar ({name}) must have electrical conductivity!"
             )
-        super().__init__(
-            name=name, material=material, geometricalElement=geometricalElement
-        )
+        super().__init__(name=name, material=material, geo_list=geo_list)
         # the physical element type can be used to identify physical elements
         self.physicalElementType = "Bar"
         self.setColor("Orange")

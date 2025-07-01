@@ -126,7 +126,7 @@ def phase2color(
         if phaseChar.lower() == "u":
             return "Magenta"
         if phaseChar.lower() == "v":
-            return "Yellow4"
+            return "Yellow"
         if phaseChar.lower() == "w":
             return "Cyan"
         raise ValueError(

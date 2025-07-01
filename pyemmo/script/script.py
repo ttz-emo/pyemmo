@@ -32,14 +32,15 @@ from math import pi
 from os.path import abspath, join
 from typing import TYPE_CHECKING, Literal
 
-from numpy import rad2deg, where
+import gmsh
+from numpy import array, cos, rad2deg, sin, where
 from pygetdp import Function as FunctionGetDP
 from pygetdp import Group as GroupGetDP
 from pygetdp import PostOperation
 from pygetdp.postoperation import PostopItem
 
 from ..definitions import DEFAULT_GEO_TOL, MAIN_DIR
-from ..functions.cleanName import cleanName, isValidFilename
+from ..functions.clean_name import clean_name, is_valid_filename
 from . import (
     DOMAIN_AIRGAP,
     DOMAIN_BAR,
@@ -142,7 +143,7 @@ class Script:
             }
         """
         # Name des Skriptes
-        if isValidFilename(name):
+        if is_valid_filename(name):
             self.name = name
         else:
             raise ValueError(
@@ -486,7 +487,6 @@ class Script:
             if not identicalPoint:
                 # add point to pointArray
                 self.pointArray.append(point)
-                point._todesmerker = True
                 return None  # -> Punkt wird mit _printPoint() regulär erzeugt
             # return identicalPoint -> identischer Punkt gefunden
             self.nbrIdedentPoints += 1
@@ -541,15 +541,15 @@ class Script:
         existingLines: list[Line] = []
         # getting all existing lines from _curveList
         for savedCurve in curveList:
-            if savedCurve.type == "Line":
+            if type(savedCurve) == Line:
                 existingLines.append(savedCurve)
         # getting points of tested line
-        testPointDict = {"p1": line2Test.startPoint, "p2": line2Test.endPoint}
+        testPointDict = {"p1": line2Test.start_point, "p2": line2Test.end_point}
         # compare all points to the two test points
         for existingLine in existingLines:
             compareP = {
-                "p1": existingLine.startPoint,
-                "p2": existingLine.endPoint,
+                "p1": existingLine.start_point,
+                "p2": existingLine.end_point,
             }
             #!!! Testing for absolute identical points (name, id, ...)
             if (
@@ -559,20 +559,10 @@ class Script:
                 testPointDict["p2"] == compareP["p1"]
                 or testPointDict["p2"] == compareP["p2"]
             ):
-                # Return identical Line, if one was found, exept for if the
-                # line is forced:
-                if line2Test.force:
-                    # append the line even if it allready exists due to "force"
-                    return None
-                # return the in script existing curve
+                # Return identical Line, if one was found
                 ### For debugging ###
                 self.nbrIdedentLines += 1
-                # print(
-                #     f"Found similar Line '{testArray[i].name}'"
-                #     + f"to tested line '{curvename}' in testCurve"
-                # )
                 self.idedentLines.append(line2Test)
-                ######
                 return existingLine
         # If no identical line was found, return None to add the line to the
         # curve list.
@@ -595,17 +585,17 @@ class Script:
         curveList = self.curveList
         existingArcs: list[CircleArc] = list()
         for savedCurve in curveList:
-            if savedCurve.type == "CircleArc":
+            if type(savedCurve) == CircleArc:
                 existingArcs.append(savedCurve)
         testPointDict = {
-            "p1": curve.startPoint,
-            "p2": curve.endPoint,
+            "p1": curve.start_point,
+            "p2": curve.end_point,
             "c": curve.center,
         }
         for arc in existingArcs:
             comparePointDict = {
-                "p1": arc.startPoint,
-                "p2": arc.endPoint,
+                "p1": arc.start_point,
+                "p2": arc.end_point,
                 "c": arc.center,
             }
             if (
@@ -619,15 +609,9 @@ class Script:
                 )
                 and (testPointDict["c"] == comparePointDict["c"])
             ):
-                if curve.force:
-                    # if flag 'force' is set add the curve anyway
-                    return None
                 ### For debugging ###
                 self.nbrIdedentLines += 1
-                # print(
-                #     f"Found similar CircleArc '{testArray[i].name}'"
-                #     + f" to tested line {curve.name}' in testCurve"
-                # )
+
                 self.idedentLines.append(curve)
                 ######
                 # return identical CircleArc
@@ -653,20 +637,20 @@ class Script:
         curveList = self.curveList
         existingSplines: list[Spline] = []
         for savedCurve in curveList:
-            if savedCurve.type == "Spline":
+            if type(savedCurve) == Spline:
                 existingSplines.append(savedCurve)
 
         testPointDict = {
-            "p1": curve.startPoint,
-            "p2": curve.endPoint,
-            "controlP": curve.controlPoints,
+            "p1": curve.start_point,
+            "p2": curve.end_point,
+            "controlP": curve.control_points,
         }
 
         for spline in existingSplines:
             comparePointDict = {
-                "p1": spline.startPoint,
-                "p2": spline.endPoint,
-                "controlP": spline.controlPoints,
+                "p1": spline.start_point,
+                "p2": spline.end_point,
+                "controlP": spline.control_points,
             }
             if len(testPointDict["controlP"]) == len(comparePointDict["controlP"]):
                 # only continue if control point list length is equal
@@ -705,12 +689,11 @@ class Script:
                 found, or None.
         """
         # test line
-        curveType = curve.type
-        if curveType == "Line":
+        if type(curve) == Line:
             testResult = self._testLine(curve)
-        elif curveType == "CircleArc":
+        elif type(curve) == CircleArc:
             testResult = self._testCircleArc(curve)
-        elif curveType == "Spline":
+        elif type(curve) == Spline:
             testResult = self._testSpline(curve)
         else:
             msg = f"Curve type of {curve} is unknown."
@@ -735,24 +718,24 @@ class Script:
                 the function returns None.
         """
         # Punkte prüfen und erzeugen
-        startPoint = curve.startPoint
-        endPoint = curve.endPoint
+        startPoint = curve.start_point
+        endPoint = curve.end_point
         # Try to add the points
         addP1 = self._addPoint(startPoint)
         addP2 = self._addPoint(endPoint)
 
         # If one or both points are allready existing: set them in curve
         if addP1:
-            curve.startPoint = addP1
+            curve.start_point = addP1
         if addP2:
-            curve.endPoint = addP2
-        if curve.type == "CircleArc":
+            curve.end_point = addP2
+        if type(curve) == CircleArc:
             centerPoint = curve.center
             addC = self._addPoint(centerPoint)
             if addC is not None:
                 curve.center = addC
-        elif curve.type == "Spline":
-            controlPointList = curve.controlPoints.copy()
+        elif type(curve) == Spline:
+            controlPointList = curve.control_points.copy()
             for controlPoint in controlPointList:
                 newP = self._addPoint(controlPoint)
                 if newP is not None:
@@ -766,17 +749,16 @@ class Script:
         # Wenn identicalCurve = None -> no identical curve found in list
         if not identicalCurve:
             # create the geometrical curve Code
-            curveName = cleanName(curve.name)
+            curveName = clean_name(curve.name)
             curveID = curve.id
-            curveType = curve.type
-            startPointID = curve.startPoint.id
-            endPointID = curve.endPoint.id
-            if curveType == "Line":
+            startPointID = curve.start_point.id
+            endPointID = curve.end_point.id
+            if type(curve) == Line:
                 code = (
                     f"{curveName} = {curveID};"
                     f"Line({curveName}) = {{{startPointID}, {endPointID}}};\n"
                 )
-            elif curveType == "CircleArc":
+            elif type(curve) == CircleArc:
                 curve: CircleArc = curve
                 centerPointID = curve.center.id
                 code = (
@@ -791,29 +773,28 @@ class Script:
                 # nbrMeshPoints = round(arcLen*1e3) # 1mm distance
                 # code += f"Transfinite Curve {{{curve.id}}} = {nbrMeshPoints};"
                 ###
-            elif curveType == "Spline":
-                if curve.splineType == 0:
+            elif type(curve) == Spline:
+                if curve.spline_type == 0:
                     splineType = "Spline"
-                elif curve.splineType == 1:
+                elif curve.spline_type == 1:
                     splineType = "Bezier"
-                elif curve.splineType == 2:
+                elif curve.spline_type == 2:
                     splineType = "BSpline"
                 else:
                     raise ValueError(
-                        f"Invalid Spline type with index {curve.splineType}"
+                        f"Invalid Spline type with index {curve.spline_type}"
                     )
 
                 code = (
                     f"{curveName} = {curveID}; \n"
                     f"{splineType}({curveName}) = {{{startPointID}, "
                 )
-                controlPoints = curve.controlPoints
-                for controlPoint in controlPoints:
+                control_points = curve.control_points
+                for controlPoint in control_points:
                     code += f"{controlPoint.id}, "
                 code += f"{endPointID}}};\n"
 
             self.curveCode += code
-            curve._todesmerker = True
             return None
         return identicalCurve
 
@@ -855,20 +836,20 @@ class Script:
             # remove it from oldLoop
             for curveIndex, curve in enumerate(oldLoop):
                 if direction[-1] == 1:
-                    if curve.startPoint.isEqual(newLoop[-1].endPoint):
+                    if curve.start_point.isEqual(newLoop[-1].end_point):
                         direction.append(1)
                         newLoop.append(oldLoop.pop(curveIndex))
                         break
-                    if curve.endPoint.isEqual(newLoop[-1].endPoint):
+                    if curve.end_point.isEqual(newLoop[-1].end_point):
                         direction.append(-1)
                         newLoop.append(oldLoop.pop(curveIndex))
                         break
                 else:
-                    if curve.startPoint.isEqual(newLoop[-1].startPoint):
+                    if curve.start_point.isEqual(newLoop[-1].start_point):
                         direction.append(1)
                         newLoop.append(oldLoop.pop(curveIndex))
                         break
-                    if curve.endPoint.isEqual(newLoop[-1].startPoint):
+                    if curve.end_point.isEqual(newLoop[-1].start_point):
                         direction.append(-1)
                         newLoop.append(oldLoop.pop(curveIndex))
                         break
@@ -930,7 +911,7 @@ class Script:
             code: str = "\n"
             toolIDCode: str = ", "  # string for tool surfaces that should be subtracted
             for toolSurf in surface.tools:  # if _cut list is not empty
-                toolSurfName = cleanName(toolSurf.name)
+                toolSurfName = clean_name(toolSurf.name)
                 toolSurfID = toolSurf.id
                 # if toolSurf not in self._areaArray:
                 if not toolSurf.isDrawn():  # if the surface is not in script
@@ -952,7 +933,7 @@ class Script:
 
             # Add CurveLoop code for parent surface
             code += self._addLoopCode(surface)
-            surfName = cleanName(surface.name)
+            surfName = clean_name(surface.name)
             surfID = surface.id
             ## Add surface code:
             # Generate name for ID; adding Surface name for better
@@ -969,16 +950,16 @@ class Script:
             self.areaCode += code
             self.areaArray.append(surface)
 
-            cCode = ""
-            if surface.getMeshColor():
-                cCode = f"Color {surface.getMeshColor()} {{Surface {{{surfID}}}; }}\n"
-            for toolSurf in surface.tools:
-                if toolSurf.getMeshColor():
-                    cCode += (
-                        f"Color {toolSurf.getMeshColor()} "
-                        f"{{Surface {{{toolSurf.id}}}; }}\n"
-                    )
-            self.colorCode += cCode
+            # cCode = ""
+            # if surface.getMeshColor():
+            #     cCode = f"Color {surface.getMeshColor()} {{Surface {{{surfID}}}; }}\n"
+            # for toolSurf in surface.tools:
+            #     if toolSurf.getMeshColor():
+            #         cCode += (
+            #             f"Color {toolSurf.getMeshColor()} "
+            #             f"{{Surface {{{toolSurf.id}}}; }}\n"
+            #         )
+            # self.colorCode += cCode
 
     def _resetGeometry(self) -> None:
         """Reset all geometry attributes of the script (point, line and surface
@@ -986,20 +967,14 @@ class Script:
         # reset all lists and code strings
         # points
         self.pointCode: str = ""
-        for point in self.pointArray:
-            point._todesmerker = False
         self.pointArray: list[Point] = []
 
         # lines
         self.curveCode: str = ""
-        for curve in self.curveList:
-            curve._todesmerker = False
         self._setCurveList([])
 
         # surfaces
         self.areaCode: str = ""
-        for area in self.areaArray:
-            area._todesmerker = False
         self.areaArray: list[Surface] = []
 
         # physical surfaces
@@ -1266,7 +1241,7 @@ class Script:
         # (PostOperation) has a list of PostOperations ("items") which can have
         # several "Operations" (eg. Prints, Echos,...) defined
 
-        name = cleanName(name)
+        name = clean_name(name)
         if name in postOperationNames:
             # if that PostOperation allready exists, get the PostOperationItem
             # with that name
@@ -1318,7 +1293,7 @@ class Script:
                 + elementType
                 + f'("{physicalElement.name}", {physicalElement.id}) = {{'
             )
-            for geo in physicalElement.geometricalElement:
+            for geo in physicalElement.geo_list:
                 if elementType == "Surface":
                     self._addSurface(geo)
                     code += f"{geo.id},"
@@ -1331,7 +1306,6 @@ class Script:
                     else:
                         # add the id of the new line (= geo)
                         code += f"{geo.id},"
-                geo._todesmerker = True
             # replace the last unnecessary "," with "};\n"
             code = code.rstrip(",") + "};\n"
             return code
@@ -1354,18 +1328,21 @@ class Script:
                 Script.
 
         """
-        if physicalElement.geometricalElement:
-            # if the geo list is not empty
-            # remember there can be domains without geometrical elements,
-            # like the "MovingBand_PhysicalNb" domain
-            code = self._createPhysicalElementCode(physicalElement)
-            self.physicalElementCode += code
+        # if physicalElement.geo_list:
+        #     # if the geo list is not empty
+        #     # remember there can be domains without geometrical elements,
+        #     # like the "MovingBand_PhysicalNb" domain
+        #     code = self._createPhysicalElementCode(physicalElement)
+        #     self.physicalElementCode += code
 
         if physicalElement not in self.physicalElementArray:
             # add physical element to array
             self.physicalElementArray.append(physicalElement)
             # add material if existing
-            if physicalElement.material:
+            if (
+                physicalElement.material
+            ):  # TODO: Verify if this is really needed because
+                # physical element should allways have material
                 self._addMaterial(physicalElement)
             # add magnetization if specified
             if isinstance(physicalElement, Magnet):
@@ -1431,7 +1408,7 @@ class Script:
 
     def _addMagnetisationRadial(self, magnet: Magnet):
         magDir = magnet.magDir
-        matName = cleanName(magnet.material.name)
+        matName = clean_name(magnet.material.name)
         self.functionMagnetisation.add(
             name="br",
             expression=f"{magDir}*br_{matName} * XYZ[]/Norm[XYZ[]]",
@@ -1439,7 +1416,7 @@ class Script:
         )
 
     def _addMagnetisationParallel(self, physicalElement: Magnet):
-        matName = cleanName(physicalElement.material.name)
+        matName = clean_name(physicalElement.material.name)
         magAngle = physicalElement.magAngle
         magDir = physicalElement.magDir
         magFunction = (
@@ -1456,7 +1433,7 @@ class Script:
     def _addMagnetisationTangential(self, magnet: Magnet):
         magAngle = magnet.magAngle
         magDir = magnet.magDir
-        matName = cleanName(magnet.material.name)
+        matName = clean_name(magnet.material.name)
         magFunction = (
             f"{magDir}*br_{matName} * Vector["
             f"-Sin[{magAngle} + RotorPosition[]], "
@@ -1477,7 +1454,7 @@ class Script:
             self._addPhysicalElement(physicalElement)
             physIDs.append(physicalElement.id)
             # allPhysicalName.append(pE.getName())
-        self.group.add(cleanName(domain.name), physIDs)
+        self.group.add(clean_name(domain.name), physIDs)
 
     def _printAllMaterial(self):
         """Generate the GetDP function code for all materials in the material
@@ -1494,8 +1471,9 @@ class Script:
             for physicalElementID in self.materialDict["physicalElemID"][i]:
                 physElemIDstr.append(str(physicalElementID))
             # add group for material
-            matName = cleanName(mat.name)
-            # Group Add fails if mat name exists twice: workaround by adding _dup id
+            matName = clean_name(mat.name)
+            # FIXME: Group Add fails if mat name exists twice
+            # added workaround by adding _dup id
             try:
                 self.group.add(id="group_" + matName, glist=physElemIDstr)
             except ValueError as val_err:
@@ -1634,7 +1612,7 @@ class Script:
         point could not be recognized
         """
         for point in self.pointArray:
-            pName = cleanName(point.name)
+            pName = clean_name(point.name)
             pID = point.id
             coord = point.coordinate
             pMeshSize = point.meshLength
@@ -1739,8 +1717,8 @@ class Script:
             for physical in physList:
                 if physical.material == physList[0].material:
                     if physical.geoElementType is Surface:
-                        if len(physical.geometricalElement) > 1:
-                            for geoElem in physical.geometricalElement:
+                        if len(physical.geo_list) > 1:
+                            for geoElem in physical.geo_list:
                                 meshCompCode += str(geoElem.id) + ","
                         else:
                             logging.warning(
@@ -1889,18 +1867,34 @@ class Script:
             if primeLines and secondaryLines:
                 meshModCode += "// Add Periodic Mesh to model symmetry boundary-lines\n"
                 primeLineIDs = ""
+                primary_tags = []
                 for line in primeLines:
+                    primary_tags.append(line.id)
                     primeLineIDs += f"{line.id},"
                 # set primary lines without last comma
                 meshModCode += f"primaryLines = {{{primeLineIDs[0:-1]}}};\n"
                 secondIDs = ""
+                secondary_tags = []
                 for line in secondaryLines:
+                    secondary_tags.append(line.id)
                     secondIDs += f"{line.id},"
                 # set primary lines without last comma
                 meshModCode += f"secondaryLines = {{{secondIDs[0:-1]}}};\n"
                 # The following assumes, that the prime lines are located on
                 # the x-axis. Rotation from prime to secondary occure in math.
                 # positive direction!
+                phi = 2 * pi / symFactor
+                transformation_matrix = array(
+                    [
+                        [cos(phi), -sin(phi), 0, 0],
+                        [sin(phi), cos(phi), 0, 0],
+                        [0, 0, 1, 0],
+                        [0, 0, 0, 1],
+                    ]
+                )
+                gmsh.model.mesh.setPeriodic(
+                    1, secondary_tags, primary_tags, transformation_matrix.flatten()
+                )
                 meshModCode += (
                     r"Periodic Curve{secondaryLines[]} = {primaryLines[]} "
                     r"Rotate {{0,0,1}, {0,0,0}, "
@@ -1919,14 +1913,17 @@ class Script:
                 ):
                     # if the mobingband object is type movingband and its
                     # geo-elements are lines
-                    for mbLine in physicalMovingband.geometricalElement:
+                    for mbLine in physicalMovingband.geo_list:
                         # mbLine.setMeshLength()
                         # BUG, FIXME: Only add movingband line if the
                         # arc has realy been added to the script!
                         mbLineIDs += f"{mbLine.id},"  # add the line id
             # get approx. the min mesh length of the rotor movingband
             # (only checking first line of first movingband physical)
-            mbMeshSize = movingbandPhysicals[0].geometricalElement[0].getMinMeshLength()
+            _, p_tags = gmsh.model.getAdjacencies(
+                1, movingbandPhysicals[0].geo_list[0].id
+            )
+            mbMeshSize = min(gmsh.model.mesh.getSizes([(0, tag) for tag in p_tags]))
             if mbLineIDs:
                 rRotorMB = rotor.movingBandRadius
                 nbrSeg0 = (2 * pi * rRotorMB / mbMeshSize) - (
@@ -1970,7 +1967,7 @@ class Script:
                 ):
                     # if the mobingband object is type movingband and its
                     # geo-elements are lines
-                    for mbLine in physicalMovingband.geometricalElement:
+                    for mbLine in physicalMovingband.geo_list:
                         # mbLine.setMeshLength()
                         mbLineIDs += f"{mbLine.id},"  # add the line id
             if mbLineIDs:
@@ -1996,9 +1993,6 @@ class Script:
             otherwise Movingsband-Mesh could be overwritten. Must be conformal
             with the gmsh syntax!
         """
-        geoFilePath = os.path.join(self.scriptPath, self.name + ".geo")
-        # add all the geo Code
-        self._createPointCode()
         # add the code for the mesh settings and mesh modification
         meshSettingsCode = 'INPUT_MESH = "Input/03Mesh/";\n'
         meshSettingsCode += (
@@ -2027,38 +2021,57 @@ class Script:
         meshSettingsCode += "Mesh.MshFileVersion = 4.0; // Fix bug in mesh file creation for GetDP Version 3.6.0\n"
         meshSettingsCode += "\n"
 
+        # # Set mesh algorithm in Gmsh:
+        # for surf_tag in [dimTag[1] for dimTag in gmsh.model.get_entities(2)]:
+        #     gmsh.model.mesh.set_algorithm(2,surf_tag,6) # Frontal-Delaunay for 2D
         meshModCode = ""
         movingGeoCode = ""
         if self.machine:
+            # TODO: Check that the geometry in PyEMMO is still up to date with gmsh.
+            #       Probably the ID of surfaces changed due to boolean operations
             # add the code for mesh modifications
             meshModCode = self._createMeshModCode()
             # add the code for plotting the moving boundary in post processing
             movingGeoCode = self._createMovingGeoCode()
 
-        with open(geoFilePath, "w", encoding="utf-8") as geoScript:
+        # write out all the geometry and physicals code to .geo_unrolled file
+        geo_unrolled_path = self.geoFilePath + "_unrolled"
+        gmsh.write(geo_unrolled_path)
+        # read in the file content
+        with open(geo_unrolled_path, "r+") as fd:
+            geo_code = fd.readlines()
+            # contents.insert(0, new_string)  # new_string should end in a newline
+            fd.seek(0)  # readlines consumes the iterator, so we need to start over
+            # fd.writelines(contents)  # No need to truncate as we are increasing
+        os.remove(geo_unrolled_path)
+
+        with open(self.geoFilePath, "w", encoding="utf-8") as geoScript:
             geoScript.write(versionStr)  # write the pyemmo version number
-            # set the geometry kernel
-            if self.factory == "OpenCASCADE":
-                geoScript.write('SetFactory("OpenCASCADE");\n')
             # create Expert Mode Flag
             geoScript.write(
                 """DefineConstant[\n Flag_ExpertMode = {1,"""
                 + """Name '01View/Expert Mode', Choices {0, 1}}\n];\n\n"""
             )
             geoScript.write(meshSettingsCode)  # write code for mesh variables
-            geoScript.write(self.pointCode)
-            geoScript.write(self.curveCode)
-            geoScript.write(self.areaCode)
-            geoScript.write(
-                "\n// Color code\n"
-                + """If (!Flag_individualColoring)\n"""
-                + self.colorCode
-                + """EndIf\n"""
-            )
-            # geoScript.write(self._colorCode)
-            geoScript.write(self.physicalElementCode)
+            geoScript.writelines(geo_code)
+            if self.colorCode:
+                # TODO: Update to create color code from physical elements,
+                # because the colors set by the gmsh api are not exported to
+                # the geo_unrolled file.
+                geoScript.write(
+                    "\n// Color code\n"
+                    + """If (!Flag_individualColoring)\n"""
+                    + self.colorCode
+                    + """EndIf\n"""
+                )
             geoScript.write(UD_MeshCode)
             geoScript.write(meshModCode)
+            # write code to only show physicals
+            geoScript.write(
+                "Hide {:}\nRecursive Show { Physical Surface{:}; }\n"
+                "Recursive Show { Physical Curve{:}; }\n"
+                "Geometry.PointSize = 3.0;\n\n"
+            )
             geoScript.write(movingGeoCode)
 
         logging.debug(
@@ -2323,6 +2336,14 @@ class Script:
         proFilePath = join(self.scriptPath, self.name + ".pro")
         with open(proFilePath, "w", encoding="utf-8") as proScript:
             proScript.write(machineFileCode)
+
+        # If logging is set to debug, save the winding to a file
+        if logging.root.level <= logging.DEBUG:
+            if not os.path.exists(self.scriptPath):
+                os.mkdir(self.scriptPath)
+            self.machine.stator.winding.save_to_file(
+                os.path.join(self.scriptPath, f"winding_{self.name}.wdg")
+            )
 
     def generateScript(self, mode: int = 0, UD_MeshCode: str = ""):
         """
