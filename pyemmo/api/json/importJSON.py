@@ -27,7 +27,7 @@ import json
 import numbers
 from typing import Any, Literal
 
-from numpy import pi, zeros
+import numpy as np
 from numpy.linalg import norm
 
 from ...functions.clean_name import clean_name
@@ -197,7 +197,7 @@ def getRotFreq(extendedInfo: dict, unit: str = "Hz") -> float:
         if unit.lower() == "hz":
             return rotFreq
         if unit.lower() == "rad/s":
-            return rotFreq * 2 * pi
+            return rotFreq * 2 * np.pi
         if unit in ("rpm", "1/min", "min^-1"):
             return rotFreq * 60
         raise AttributeError(f"Frequency unit not valid! Unit was '{unit}'")
@@ -450,31 +450,37 @@ def createMaterial(matDict: dict[str, dict[Literal["wert"], Any]]) -> Material:
         magMatDict: dict = matDict["elektromagnetik"]
         conductivity = magMatDict.get("el_lw", {}).get("wert")
         if not isinstance(conductivity, (int, float)):
-            conductivity = None
+            conductivity = 0
         # linear magnetic permerability
         permeability = magMatDict.get("mue_r", {}).get("wert")
         if not isinstance(permeability, (int, float)):
-            permeability = None
+            if permeability is not None:
+                logger.warning(
+                    "Bad value for permeability of Material %s: %s. Resetting to 1.0!",
+                    name,
+                    permeability,
+                )
+            permeability = 1  # default value
         # remanent flux density [T]
         remanence = magMatDict.get("b_rem", {}).get("wert")
         if not isinstance(remanence, (int, float)):
-            remanence = None
-            remanenceTempCoef = None
+            remanence = 0
+            remanenceTempCoef = 0
         else:
             if "tk_rem_100" in magMatDict.keys():
                 remanenceTempCoef = magMatDict["tk_rem_100"]["wert"]
                 if not isinstance(remanenceTempCoef, (int, float)):
                     # if not valid value for temperature coefficient of remanence
-                    remanenceTempCoef = None  # set to None
+                    remanenceTempCoef = 0  # set to None
         # BH Curve
-        bhCurve = None
+        bhCurve = np.empty(0)
         if "bh_kl" in magMatDict.keys():
             bhDict: dict = magMatDict["bh_kl"]
             if isinstance(bhDict["wert"], list):
                 # one BH-curve
                 nbrBasePoints = len(bhDict["wert"])
                 if nbrBasePoints > 0:
-                    bhCurve = zeros((nbrBasePoints, 2))
+                    bhCurve = np.zeros((nbrBasePoints, 2))
                     for i, hbArray in enumerate(bhDict["wert"]):
                         bhCurve[i] = [hbArray[1], hbArray[0]]
                 # else:
@@ -485,7 +491,7 @@ def createMaterial(matDict: dict[str, dict[Literal["wert"], Any]]) -> Material:
                 bhDict["wert"] = bhDict["wert"].tolist()  # convert memoryview to list
                 nbrBasePoints = len(bhDict["wert"])
                 if nbrBasePoints > 0:
-                    bhCurve = zeros((nbrBasePoints, 2))
+                    bhCurve = np.zeros((nbrBasePoints, 2))
                     for i, hbArray in enumerate(bhDict["wert"]):
                         bhCurve[i] = [hbArray[1], hbArray[0]]
 
@@ -497,7 +503,7 @@ def createMaterial(matDict: dict[str, dict[Literal["wert"], Any]]) -> Material:
                     f"Keys are {bhDict.keys()}"
                 )
                 raise KeyError(msg)
-        if bhCurve is None:
+        if bhCurve.size == 0:
             # check that there is a magnetic property
             if not permeability:
                 msg = (
@@ -505,7 +511,7 @@ def createMaterial(matDict: dict[str, dict[Literal["wert"], Any]]) -> Material:
                     "(neither relative permeability nor BH-Curve)"
                 )
                 raise AttributeError(msg)
-            elif permeability < 1:
+            if permeability < 1:
                 # pylint: disable=locally-disabled,  line-too-long
                 logger.warning(
                     "Permeability of material '%s' is smaller than 1! Resetting it to 1 for model.",
