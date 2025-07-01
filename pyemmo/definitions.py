@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -36,9 +37,11 @@ try:
 except ImportError:
     # Add root dir to python path
     sys.path.insert(0, ROOT_DIR)
-    # fixed per Issue: [B102:exec_used] in workingDirectory\Vu\bandit_log\bandit_log_20240809_105713.log line 51 and 61
+
+    # fixed per Issue: [B102:exec_used]
     # exec("from pyemmo.functions.init_environment import get_config_dict")
     # exec("from pyemmo import PACKAGE_NAME, USER_DIR")
+
     from pyemmo import USER_DIR
     from pyemmo.functions.init_environment import get_config_dict
 

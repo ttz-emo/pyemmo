@@ -93,6 +93,10 @@ def create_material_json(json_folder: str, mat_dbPath: str, mode="sep"):
 
 
 if __name__ == "__main__":
-    db_path = os.path.join(ROOT_DIR, "workingDirectory/Vu/material_new.db")
+    db_path = os.path.join(ROOT_DIR, "material_new.db")
+    if not os.path.isfile(db_path):
+        raise FileNotFoundError(
+            f"Please use path to correct database! {db_path} does not exist!"
+        )
     # create_material_json("material_json", "Material_new.db")
     create_material_json("material_json", db_path)

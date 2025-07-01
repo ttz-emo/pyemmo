@@ -19,16 +19,15 @@
 #
 from __future__ import annotations
 
-import subprocess
 from math import pi
 
 # import xml.etree.ElementTree as ET # fixed per Issue: [B314:blacklist] in workingDirectory\Vu\bandit_log\bandit_log_20240809_105713.log line 139
 
 try:
     import defusedxml.ElementTree as ET
-except ImportError:
-    subprocess.run("pip install defusedxml")
-    import defusedxml.ElementTree as ET
+except ImportError as exce:
+    exce.msg += "Please use 'pip install defusedxml' to install missing package"
+    raise exce
 
 
 ###

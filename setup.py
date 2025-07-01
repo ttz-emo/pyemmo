@@ -31,8 +31,7 @@ except ImportError:  # Install setuptools if needed
     from sys import executable
 
     # run 'pip install setuptools'
-    # system(f"{executable} -m pip install setuptools") #fixed per Issue: [B605:start_process_with_a_shell] in workingDirectory\Vu\bandit_log\bandit_log_20240809_093824.log
-    subprocess.run(f"{executable} -m pip install setuptools")
+    subprocess.run(f"{executable} -m pip install setuptools", check=True)
 
     import setuptools
 
@@ -49,8 +48,12 @@ except ImportError:  # Install setuptools if needed
 
 # get version from version.py file in package,
 #  because we need to access the version number from pyemmo.script
+
+# fixed per Issue: [B102:exec_used]
+
 # with open("pyemmo/version.py", encoding="utf-8") as versionFile:
-# exec(versionFile.read()) # fixed per Issue: [B102:exec_used] in workingDirectory\Vu\bandit_log\bandit_log_20240809_105713.log line 360
+#   exec(versionFile.read())
+
 with open("pyemmo/version.py", encoding="utf-8") as versionFile:
     file_content = versionFile.read()
     version = [x for x in file_content.split("\n") if "__version__" in x][0].split("=")[

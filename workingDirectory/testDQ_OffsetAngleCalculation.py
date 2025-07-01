@@ -194,13 +194,5 @@ subprocess.run(
         paramDict={"Flag_ClearResults": 1},
     )
 )
-# fixed per Issue: [B605:start_process_with_a_shell] in workingDirectory\Vu\bandit_log\bandit_log_20240809_093824.log line 2596
-# os.system(
-#     createCmdCommand(
-#         onelabFile=myScript.proFilePath,
-#         useGUI=True,
-#         paramDict={"Flag_ClearResults": 1},
-#     )
-# )
 plot_all_dat(myScript.resultsPath)
 # %%

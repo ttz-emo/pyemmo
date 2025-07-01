@@ -401,7 +401,6 @@ if __name__ == "__main__":
     # test_cases = make_test_cases(test_type)
     curr_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    # ROOT_DIR, f"workingDirectory\\Vu\\for_testing\\{curr_datetime}"
     result_path = os.path.join(
         ROOT_DIR,
         test_params[test_type]["test_data_folder"],

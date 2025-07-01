@@ -276,8 +276,7 @@ cmd = createCmdCommand(
 print(cmd)
 
 # %%
-# os.system(cmd) # fixed per Issue: [B605:start_process_with_a_shell] in workingDirectory\Vu\bandit_log\bandit_log_20240809_093824.log line 2807
-subprocess.run(cmd)
+subprocess.run(cmd, check=True)
 plot_all_dat(myScript.resultsPath)
 print("I am done!")
 

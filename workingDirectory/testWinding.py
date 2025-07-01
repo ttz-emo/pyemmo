@@ -168,16 +168,10 @@ subprocess.run(
         onelabFile=myScript.proFilePath,
         useGUI=True,
         paramDict={"Flag_ClearResults": 1},
-    )
+    ),
+    check=True,
 )
-# fixed per Issue: [B605:start_process_with_a_shell] in workingDirectory\Vu\bandit_log\bandit_log_20240809_093824.log line 2833
-# os.system(
-#     createCmdCommand(
-#         onelabFile=myScript.proFilePath,
-#         useGUI=True,
-#         paramDict={"Flag_ClearResults": 1},
-#     )
-# )
+
 # plotAllDat(myScript.getResultsPath())
 print("I am done!")
 
