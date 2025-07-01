@@ -36,9 +36,7 @@ except ImportError:
     try:
         rootname = path.abspath(path.join(path.dirname(__file__), ".."))
     except:
-        rootname = (
-            "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\pyemmo"
-        )
+        rootname = "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\pyemmo"
         print(f"Could not determine root. Setting it manually to '{rootname}'")
     print(f'rootname is "{rootname}"')
     sys.path.append(rootname)
@@ -48,27 +46,17 @@ from pyemmo.definitions import ROOT_DIR
 from pyemmo.functions.runOnelab import createCmdCommand
 from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
 from pyemmo.script.geometry.point import Point
-from pyemmo.script.material.electricalSteel import ElectricalSteel, Material
+from pyemmo.script.material.electricalSteel import Material
 
 # %%
 PBohrung = Point("mittelPunktBohrung", 0, 0, 0, 5e-3)
 
 # Material aus Datenbank laden
-steel_1010 = ElectricalSteel(
-    sheetThickness=1e-3,
-    lossParams=None,
-    referenceFrequency=0,
-    referenceFluxDensity=0,
-    density=1,
-)
-steel_1010.loadMatFromDataBase("Material_new.db", "steel_1010")
-ndFe35 = Material()
-ndFe35.loadMatFromDataBase("Material_new.db", "NdFe35")
+steel_1010 = Material.load("steel_1010")
+ndFe35 = Material.load("NdFe35")
 # ndFe35.setRemanence(0.01) # switch "off" remanence
-air = Material()
-air.loadMatFromDataBase("Material_new.db", "air")
-copper = Material()
-copper.loadMatFromDataBase("Material_new.db", "copper")
+air = Material.load("air")
+copper = Material.load("copper")
 
 # Motor- und Simulationsparameter festlegen
 nbrSlots = 12

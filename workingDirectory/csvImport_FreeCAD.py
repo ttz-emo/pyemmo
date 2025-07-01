@@ -18,39 +18,39 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import subprocess
+from os.path import abspath, join
+
 # %% Imports
 from random import random
 from typing import Dict, List, Union
 
-from numpy import equal
-from pyemmo.definitions import RESULT_DIR
-from pyemmo.script.script import Script
-from pyemmo.script.geometry.point import Point
-from pyemmo.script.geometry.line import Line
+import pandas
+
+from pyemmo.definitions import RESULT_DIR, ROOT_DIR
 from pyemmo.script.geometry.circleArc import CircleArc
+from pyemmo.script.geometry.line import Line
+from pyemmo.script.geometry.point import Point
 from pyemmo.script.geometry.surface import Surface
 from pyemmo.script.material.material import Material
-import pandas
-import math
-from os.path import join, abspath
-import subprocess
+from pyemmo.script.script import Script
 
 # %% data import
 defSimParamDict = {
-    "init_rotor_pos": 0,
-    "angle_increment": 1,
-    "final_rotor_pos": 90,
-    "Id_eff": 0,
-    "Iq_eff": 0,
-    "rot_speed": 1000,
-    "park_angle_offset": 0,
-    "analysis_type": 1,
-    "magTemp": 20,
+    "SYM": {
+        "INIT_ROTOR_POS": 0.0,
+        "ANGLE_INCREMENT": 1,
+        "FINAL_ROTOR_POS": 90.0,
+        "Id_eff": 0,
+        "Iq_eff": 0,
+        "SPEED_RPM": 1000,
+        "ParkAngOffset": None,  # optional
+        "ANALYSIS_TYPE": 1,  # optional; 0: static, 1: transient
+    }
 }
-myScript = Script(
-    name="csv_Geo", scriptPath=RESULT_DIR, simuParams=defSimParamDict
-)
-fc_dir = r"C:\Users\ganser\AppData\Local\Programs\pyemmo\workingDirectory\freecad"  # FreeCAD folder
+
+myScript = Script(name="csv_Geo", scriptPath=RESULT_DIR, simuParams=defSimParamDict)
+fc_dir = join(ROOT_DIR, "workingDirectory", "freecad")  # FreeCAD folder
 csvFilename = "lineTable.csv"
 myDataFrame = pandas.read_csv(abspath(join(fc_dir, csvFilename)))
 mL = 1
@@ -60,12 +60,9 @@ mLLuft = 0.7e-2
 mLLuftspalt = 3e-3
 
 # %% Material aus Datenbank laden
-steel_1010 = Material()
-steel_1010.loadMatFromDataBase("Material_new.db", "steel_1010")
-ndFe35 = Material()
-ndFe35.loadMatFromDataBase("Material_new.db", "NdFe35")
-air = Material()
-air.loadMatFromDataBase("Material_new.db", "air")
+steel_1010 = Material.load("steel_1010")
+ndFe35 = Material.load("NdFe35")
+air = Material.load("air")
 
 # %% Alle Rohdaten auslesen und pyemmo-Objekte erzeugen
 surfDict: Dict[str, List[Union[Line, CircleArc]]] = {}
@@ -112,9 +109,10 @@ for i in range(0, len(myDataFrame)):
         surfDict[surfName].append(actLine)
     else:
         surfDict[surfName] = [actLine]
+from matplotlib import pyplot
+
 # %% Line plot
 from pyemmo.functions.plot import plot
-from matplotlib import pyplot
 
 fig, ax = pyplot.subplots()
 for surfName, lineList in surfDict.items():
@@ -135,7 +133,7 @@ fig, ax = pyplot.subplots()
 for surf in surfList:
     color = [random() for i in range(3)]
     surf.plot(fig, color=color)
-    centercoords = surf.calcCOG().getCoordinate()
+    centercoords = surf.calcCOG().coordinate
     text(
         centercoords[0],
         centercoords[1],
@@ -161,13 +159,14 @@ for surf in surfList:
     else:
         print("Unknown surface name to set mesh length")
 
+from pyemmo.functions import runOnelab
+from pyemmo.script.geometry.airArea import AirArea
+from pyemmo.script.geometry.airGap import AirGap
+from pyemmo.script.geometry.domain import Domain
+from pyemmo.script.geometry.magnet import Magnet
+
 # %% Dummy Objekte zum befüllen
 from pyemmo.script.geometry.rotorLamination import RotorLamination
-from pyemmo.script.geometry.magnet import Magnet
-from pyemmo.script.geometry.airGap import AirGap
-from pyemmo.script.geometry.airArea import AirArea
-from pyemmo.script.geometry.domain import Domain
-from pyemmo.functions import runOnelab
 
 allPhysical = []
 for surf in surfList:
@@ -175,11 +174,17 @@ for surf in surfList:
         phyObject = RotorLamination(surf.name, [surf], steel_1010)
     elif "Magnet" in surf.name:
         if "North" in surf.name:
-            phyObject = Magnet(surf.name, [surf], ndFe35, 1, "radial")
+            phyObject = Magnet(
+                surf.name, [surf], ndFe35, 1, "radial", surf.calcCOG().getAngleToX()
+            )
         elif "South" in surf.name:
-            phyObject = Magnet(surf.name, [surf], ndFe35, -1, "radial")
+            phyObject = Magnet(
+                surf.name, [surf], ndFe35, -1, "radial", surf.calcCOG().getAngleToX()
+            )
         else:
-            phyObject = Magnet(surf.name, [surf], ndFe35, 1, "radial")
+            phyObject = Magnet(
+                surf.name, [surf], ndFe35, 1, "radial", surf.calcCOG().getAngleToX()
+            )
     elif "Luftspalt" in surf.name:
         phyObject = AirGap(surf.name, [surf], air)
     elif "Luft" in surf.name:
@@ -190,7 +195,7 @@ domTest = Domain("domTest", allPhysical)
 domTest.addToScript(myScript)
 myScript.generateScript(mode=1)
 # %% Run gmsh
-command = runOnelab.createCmdCommand(myScript.getGeoFilePath(), useGUI=True)
+command = runOnelab.createCmdCommand(myScript.geoFilePath, useGUI=True)
 subprocess.run(command)
 
 # %%

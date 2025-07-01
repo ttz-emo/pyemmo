@@ -20,16 +20,15 @@
 
 import math
 import subprocess
+from genericpath import isdir
 
 # %%
 from os import mkdir, path
 
-from genericpath import isdir
-
 from pyemmo.definitions import RESULT_DIR
 from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
 from pyemmo.script.geometry.point import Point
-from pyemmo.script.material.electricalSteel import ElectricalSteel, Material
+from pyemmo.script.material.electricalSteel import Material
 from pyemmo.script.script import Script
 
 # %%
@@ -37,21 +36,11 @@ from pyemmo.script.script import Script
 PBohrung = Point("mittelPunktBohrung", 0, 0, 0, 5e-3)
 
 # Material aus Datenbank laden
-steel_1010 = ElectricalSteel(
-    sheetThickness=1e-3,
-    lossParams=None,
-    referenceFrequency=0,
-    referenceFluxDensity=0,
-    density=1,
-)
-steel_1010.loadMatFromDataBase("Material_new.db", "steel_1010")
-ndFe35 = Material()
-ndFe35.loadMatFromDataBase("Material_new.db", "NdFe35")
+steel_1010 = Material.load("steel_1010")
+ndFe35 = Material.load("NdFe35")
 # ndFe35.setRemanence(0.01)
-air = Material()
-air.loadMatFromDataBase("Material_new.db", "air")
-copper = Material()
-copper.loadMatFromDataBase("Material_new.db", "copper")
+air = Material.load("air")
+copper = Material.load("copper")
 
 nbrSlots = 12
 nbrPoles = 8
@@ -154,15 +143,17 @@ myScript = Script(
     name="Test_SPMSM_Baukasten",
     scriptPath=modelDir,
     simuParams={
-        "init_rotor_pos": 0,
-        "angle_increment": 5,
-        "final_rotor_pos": 90,
-        "Id_eff": 0,
-        "Iq_eff": 10,
-        "rot_speed": drehzahl,
-        "park_angle_offset": 360 / nbrSlots,
-        "analysis_type": 1,
-        "magTemp": 20,
+        "SYM": {
+            "init_rotor_pos": 0,
+            "angle_increment": 5,
+            "final_rotor_pos": 90,
+            "Id_eff": 0,
+            "Iq_eff": 10,
+            "rot_speed": drehzahl,
+            "park_angle_offset": 360 / nbrSlots,
+            "analysis_type": 1,
+            "magTemp": 20,
+        }
     },
     machine=SPMSM,
 )

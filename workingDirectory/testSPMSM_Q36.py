@@ -38,7 +38,7 @@ from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
 from pyemmo.script.geometry.point import Point
 
 # from pyemmo.script.geometry.line import Line
-from pyemmo.script.material.electricalSteel import ElectricalSteel, Material
+from pyemmo.script.material.electricalSteel import Material
 from pyemmo.script.script import Script
 
 # %%
@@ -46,21 +46,11 @@ from pyemmo.script.script import Script
 PBohrung = Point("mittelPunktBohrung", 0, 0, 0, 5e-3)
 
 # Material aus Datenbank laden
-steel_1010 = ElectricalSteel(
-    sheetThickness=1e-3,
-    lossParams=None,
-    referenceFrequency=0,
-    referenceFluxDensity=0,
-    density=1,
-)
-steel_1010.loadMatFromDataBase("Material_new.db", "steel_1010")
-ndFe35 = Material()
-ndFe35.loadMatFromDataBase("Material_new.db", "NdFe35")
+steel_1010 = Material.load("steel_1010")
+ndFe35 = Material.load("NdFe35")
 # ndFe35.setRemanence(0.01) # switch "off" remanence
-air = Material()
-air.loadMatFromDataBase("Material_new.db", "air")
-copper = Material()
-copper.loadMatFromDataBase("Material_new.db", "copper")
+air = Material.load("air")
+copper = Material.load("copper")
 
 NBR_SLOTS = 36
 NBR_POLES = 4
@@ -183,9 +173,7 @@ winding = datamodel()
 winding.genwdg(Q=NBR_SLOTS, P=NBR_POLES, m=3, layers=2, turns=23)
 SLOT_TYPE = 0
 if SLOT_TYPE == 0:
-    stator = SPMSM.addStatorToMachine(
-        "sheet01_standard", "slotForm_01", winding
-    )
+    stator = SPMSM.addStatorToMachine("sheet01_standard", "slotForm_01", winding)
     stator.addLaminationParameter(
         {
             "r_S_i": 65e-3,
@@ -315,9 +303,7 @@ try:
         time, data = read_timetable_dat(os.path.join(resPath, datFile))
         _, datFileName = os.path.split(datFile)
         resQuantity, _ = os.path.splitext(datFileName)
-        timeData = Data1D(
-            values=time, symmetries=-1, name="time", symbol="t", unit="s"
-        )
+        timeData = Data1D(values=time, symmetries=-1, name="time", symbol="t", unit="s")
         valData = DataTime(axes=[timeData], values=data, name=resQuantity)
         resultsList.append(valData)
 except FileNotFoundError:
