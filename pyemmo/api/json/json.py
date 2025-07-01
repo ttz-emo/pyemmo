@@ -41,7 +41,7 @@ from ...functions import calcIronLoss, clean_name, import_results, runOnelab
 from ...script.geometry.machineAllType import MachineAllType
 from ...script.geometry.rotor import Rotor
 from ...script.geometry.stator import Stator
-from ...script.material import ElectricalSteel
+from ...script.material.electricalSteel import ElectricalSteel
 from ...script.script import Script
 from .. import logger
 from ..machine_segment_surface import MachineSegmentSurface
