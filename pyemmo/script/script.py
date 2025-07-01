@@ -2066,6 +2066,12 @@ class Script:
                 )
             geoScript.write(UD_MeshCode)
             geoScript.write(meshModCode)
+            # write code to only show physicals
+            geoScript.write(
+                "Hide {:}\nRecursive Show { Physical Surface{:}; }\n"
+                "Recursive Show { Physical Curve{:}; }\n"
+                "Geometry.PointSize = 3.0;\n\n"
+            )
             geoScript.write(movingGeoCode)
 
         logging.debug(
