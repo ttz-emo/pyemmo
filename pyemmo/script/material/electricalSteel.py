@@ -179,8 +179,11 @@ class ElectricalSteel(Material):
         # remove unsetable properties of Material in ElectricalSteel
         # These are automatically added as we call super().as_dict in
         # ElectricalSteel.as_dict() from Material.save()
-        mat_dict.pop("remanence")
-        mat_dict.pop("tempCoefRem")
+        for removal_key in ("remanence", "tempCoefRem", "linear"):
+            if removal_key in mat_dict:
+                mat_dict.pop(removal_key)
+        if not "sheetThickness" in mat_dict:
+            raise AttributeError("Missing parameter 'sheetThickness' from init dict!")
         return cls(**mat_dict)
 
     def as_dict(self) -> dict:
