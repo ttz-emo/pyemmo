@@ -396,11 +396,6 @@ class Material:
         """
         # ("br_" = f"{br20} * (1 + ({tempCoef} * (tempMag - 20)))", "Reference temperatur is 20°C",
         if isinstance(new_temp_coef, (int, float)):
-            if new_temp_coef < 0:
-                raise ValueError(
-                    "Remanence flux density temperature coefficient must be a positive number, "
-                    f"but is '{new_temp_coef}'"
-                )
             self._tempCoefRem = new_temp_coef
         else:
             raise ValueError(
