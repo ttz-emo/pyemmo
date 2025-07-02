@@ -1590,15 +1590,23 @@ PostOperation Get_GlobalQuantities UsingPost MagStaDyn_a_2D {
           StoreInVariable $Flux_c, SendToServer StrCat[poF,"2C"]{0}, Color "LightGreen"];
 
   // d and q-axis flux linkage
-  Print[ Flux_d, OnRegion DomainDummy, Format Table,
-    File > StrCat[ResDir,"Flux_d",ExtGnuplot], LastTimeStepOnly,StoreInVariable $Phi_d,
-    SendToServer StrCat[poF,"4 d"]{0}, Color "LightYellow" ];
-  Print[ Flux_q, OnRegion DomainDummy, Format Table,
-    File > StrCat[ResDir,"Flux_q",ExtGnuplot], LastTimeStepOnly,StoreInVariable $Phi_q,
-    SendToServer StrCat[poF,"5 q"]{0}, Color "LightYellow" ];
-  Print[ Flux_0, OnRegion DomainDummy, Format Table,
-    File > StrCat[ResDir,"Flux_0",ExtGnuplot], LastTimeStepOnly,StoreInVariable $Phi_0,
-    SendToServer StrCat[poF,"3 0"]{0}, Color "LightYellow" ];
+  If (MachineType == SYNCHRONOUS)
+    Print[
+      Flux_d, OnRegion DomainDummy, Format Table,
+      File > StrCat[ResDir,"Flux_d",ExtGnuplot], LastTimeStepOnly,StoreInVariable $Phi_d,
+      SendToServer StrCat[poF,"4 d"]{0}, Color "LightYellow"
+    ];
+    Print[
+      Flux_q, OnRegion DomainDummy, Format Table,
+      File > StrCat[ResDir,"Flux_q",ExtGnuplot], LastTimeStepOnly,StoreInVariable $Phi_q,
+      SendToServer StrCat[poF,"5 q"]{0}, Color "LightYellow"
+    ];
+    Print[
+      Flux_0, OnRegion DomainDummy, Format Table,
+      File > StrCat[ResDir,"Flux_0",ExtGnuplot], LastTimeStepOnly,StoreInVariable $Phi_0,
+      SendToServer StrCat[poF,"3 0"]{0}, Color "LightYellow"
+    ];
+  EndIf
 }
 
 PostOperation Get_EC_LossesMagnets UsingPost MagStaDyn_a_2D {
