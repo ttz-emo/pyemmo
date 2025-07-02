@@ -103,14 +103,11 @@ Function {
       NbrPolesInModel
     ];
   EndIf
-  // The values must be twice as large as the real ring section replacement
-  // values, as the resistors are only installed on the A side and the
-  // inductors only on the B side.
-  Resistance[All_EndRingResistancesRotor] = R_endring_segment;
-  Inductance[All_EndRingInductancesRotor] = L_endring_segment;
-  For k In {1:nbrRotorBars}
-    Resistance[Rbar~{k}] = $R_Bar~{k};
-  EndFor
+  // The values for the endring segments must scaled to 1 meter because in
+  // the electromagnetic formulation from the machine_magstdyn_a.pro the
+  // resulting voltage drop given to the circuit is in V/m!
+  Resistance[All_EndRingResistancesRotor] = R_endring_segment/AxialLength_R;
+  Inductance[All_EndRingInductancesRotor] = L_endring_segment/AxialLength_R;
 }
 
 
