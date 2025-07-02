@@ -1361,34 +1361,58 @@ PostOperation Get_LocalFields UsingPost MagStaDyn_a_2D {
   // Print[ jz, OnElementsOf DomainC, File StrCat[ResDir,"jz",ExtGmsh], LastTimeStepOnly,
 	//  AppendTimeStepToFileName Flag_SaveAllSteps ] ;
 
-  Print[ js, OnElementsOf DomainS, File StrCat[ResDir,"js",ExtGmsh], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps ] ;
+  Print[
+    js, OnElementsOf DomainS, File StrCat[ResDir,"js",ExtGmsh], LastTimeStepOnly,
+    AppendTimeStepToFileName Flag_SaveAllSteps
+  ] ;
 
-  Print[ b,  OnElementsOf Domain, File StrCat[ResDir,"b",ExtGmsh], Format Gmsh, LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps] ;
+  Print[
+    b,  OnElementsOf Domain, File StrCat[ResDir,"b",ExtGmsh], Format Gmsh,
+    LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps
+  ] ;
 
-  Print[ bn,  OnElementsOf Domain, File StrCat[ResDir,"bn",ExtGmsh], Format Gmsh, LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps] ;
+  Print[
+    bn,  OnElementsOf Domain, File StrCat[ResDir,"bn",ExtGmsh], Format Gmsh,
+    LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps
+  ] ;
 
-  Print[ mu, OnElementsOf Domain, File StrCat[ResDir,"mu_r",ExtGmsh], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps] ;
+  Print[
+    mu, OnElementsOf Domain, File StrCat[ResDir,"mu_r",ExtGmsh], LastTimeStepOnly,
+    AppendTimeStepToFileName Flag_SaveAllSteps
+  ] ;
 
-  Print[ az, OnElementsOf Domain, File StrCat[ResDir,"az",ExtGmsh], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps ] ;
-  Echo[ Str["l=PostProcessing.NbViews-1;", "View[l].IntervalsType = 1;", "View[l].NbIso = 30;", "View[l].Light = 0;", "View[l].LineWidth = 2;"], File StrCat[ResDir,"tmp.geo"], LastTimeStepOnly] ;
+  Print[
+    az, OnElementsOf Domain, File StrCat[ResDir,"az",ExtGmsh], LastTimeStepOnly,
+    AppendTimeStepToFileName Flag_SaveAllSteps
+  ] ;
+  Echo[ Str["l=PostProcessing.NbViews-1;", "View[l].IntervalsType = 1;", "View[l].NbIso = 30;", "View[l].Light = 0;", "View[l].LineWidth = 2;"],
+    File StrCat[ResDir,"tmp.geo"], LastTimeStepOnly
+  ] ;
 
   If (Flag_Lam)
-    Print[ p_Lam, OnElementsOf Domain_Lam, File StrCat[ResDir,"p_Lam.pos"], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps ] ;
+    Print[
+      p_Lam, OnElementsOf Domain_Lam, File StrCat[ResDir,"p_Lam.pos"],
+      LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps
+    ];
   EndIf
   If (Flag_EC_Magnets)
-    Print[ p_Joule, OnElementsOf Rotor_Magnets, File StrCat[ResDir,"p_EC_Mag.pos"],
-      LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps ] ;
+    Print[
+      p_Joule, OnElementsOf Rotor_Magnets, File StrCat[ResDir,"p_EC_Mag.pos"],
+      LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps
+    ];
   EndIf
   If (Flag_Cir_RotorCage)
     Print[
-      jz, OnElementsOf Rotor_Bars, File StrCat[ResDir, "jz", ExtGmsh],
+      jz, OnElementsOf Rotor_Bars, File StrCat[ResDir, "jz_bars", ExtGmsh],
       LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps
     ];
   EndIf
 }
 
 PostOperation GetInertia UsingPost MagStaDyn_a_2D {
-	Print[ Inertia[Rotor], OnGlobal, Format Table, StoreInVariable $Inertia, LastTimeStepOnly, SendToServer StrCat[po_mec,"/000Inertia (kg*m^2)"]
+	Print[
+    Inertia[Rotor], OnGlobal, Format Table, StoreInVariable $Inertia,
+    LastTimeStepOnly, SendToServer StrCat[po_mec,"/000Inertia (kg*m^2)"]
 	];
 }
 
@@ -1403,26 +1427,15 @@ PostOperation GetInducedCurrentDensity UsingPost MagStaDyn_a_2D {
 // PostOperation for getting the tangential and the radial components of the magnetic flux density:
 PostOperation GetBRadTanAirGap UsingPost MagStaDyn_a_2D {
   // print the radial flux density on a circle close to the stator tooth over the complete model (this is why we devide by the SymmetryFactor) by steps of 1deg
-  Print[ b_radial, OnGrid{(r_AG*(1-0.0001))*Cos[$A*Pi/180],(r_AG*(1-0.0001))*Sin[$A*Pi/180],0 }{0:360/SymmetryFactor:0.5,0,0}, File StrCat[ResDir,"brad",ExtGmsh], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps];
-  Print[ b_tangent, OnGrid{(r_AG*(1-0.0001))*Cos[$A*Pi/180],(r_AG*(1-0.0001))*Sin[$A*Pi/180],0 }{0:360/SymmetryFactor:0.5,0,0}, File StrCat[ResDir,"btan",ExtGmsh], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps];
+  Print[
+    b_radial, OnGrid{(r_AG*(1-0.0001))*Cos[$A*Pi/180],(r_AG*(1-0.0001))*Sin[$A*Pi/180],0 }{0:360/SymmetryFactor:0.5,0,0},
+    File StrCat[ResDir,"brad",ExtGmsh], LastTimeStepOnly,
+    AppendTimeStepToFileName Flag_SaveAllSteps];
+  Print[
+    b_tangent, OnGrid{(r_AG*(1-0.0001))*Cos[$A*Pi/180],(r_AG*(1-0.0001))*Sin[$A*Pi/180],0 }{0:360/SymmetryFactor:0.5,0,0},
+    File StrCat[ResDir,"btan",ExtGmsh], LastTimeStepOnly,
+    AppendTimeStepToFileName Flag_SaveAllSteps];
 }
-
-// // PostOperation for getting the tangential and the radial components of the
-// // magnetic flux density in the middle of the tooth, yoke and tooth tip
-// PostOperation GetBLocusStator UsingPost MagStaDyn_a_2D {
-
-//   // Middle of the tooth
-//   Print[ b_radial, OnGrid{-(Rad3-YT+(Rad1+Gap))/2*Sin[$A*2*Pi/nbrSlots],(Rad3-YT+(Rad1+Gap))/2*Cos[$A*2*Pi/nbrSlots],0 }{0:nbrSlots/SymmetryFactor-1,0,0}, File StrCat[ResDir,"brad_tooth_center",ExtGnuplot], Format Table ];
-//   Print[ b_tangent, OnGrid{-(Rad3-YT+(Rad1+Gap))/2*Sin[$A*2*Pi/nbrSlots],(Rad3-YT+(Rad1+Gap))/2*Cos[$A*2*Pi/nbrSlots],0 }{0:nbrSlots/SymmetryFactor-1,0,0}, File StrCat[ResDir,"btan_tooth_center",ExtGnuplot], Format Table ];
-
-//   // Middle of yoke, middle slot
-//   Print[ b_radial, OnGrid{-(Rad3-YT/2)*Sin[-Pi/nbrSlots + $A*2*Pi/nbrSlots],(Rad3-YT/2)*Cos[-Pi/nbrSlots +$A*2*Pi/nbrSlots],0 }{0:nbrSlots/SymmetryFactor-1,0,0}, File StrCat[ResDir,"brad_tooth_yoke",ExtGnuplot], Format Table ];
-//   Print[ b_tangent, OnGrid{-(Rad3-YT/2)*Sin[-Pi/nbrSlots +$A*2*Pi/nbrSlots],(Rad3-YT/2)*Cos[-Pi/nbrSlots +$A*2*Pi/nbrSlots],0 }{0:nbrSlots/SymmetryFactor-1,0,0}, File StrCat[ResDir,"btan_tooth_yoke",ExtGnuplot], Format Table ];
-
-//   // Tooth tip
-//   Print[ b_radial, OnGrid{-(Rad1+Gap+TTH)*Sin[-Pi/nbrSlots/2 + $A*2*Pi/nbrSlots],(Rad1+Gap+TTH)*Cos[-Pi/nbrSlots/2 +$A*2*Pi/nbrSlots],0 }{0:nbrSlots/SymmetryFactor-1,0,0}, File StrCat[ResDir,"brad_tooth_tip",ExtGnuplot], Format Table];
-//   Print[ b_tangent, OnGrid{-(Rad1+Gap+TTH)*Sin[-Pi/nbrSlots/2 +$A*2*Pi/nbrSlots],(Rad1+Gap+TTH)*Cos[-Pi/nbrSlots/2 +$A*2*Pi/nbrSlots],0 }{0:nbrSlots/SymmetryFactor-1,0,0}, File StrCat[ResDir,"btan_tooth_tip",ExtGnuplot], Format Table];
-// }
 
 PostOperation GetShortCircuitCurrent UsingPost MagStaDyn_a_2D {
   Print[ I, OnRegion PhaseA_pos, Format Table,
@@ -1444,9 +1457,11 @@ PostOperation Get_GlobalQuantities UsingPost MagStaDyn_a_2D {
   ];
 
   If (Flag_Lam)
-    Print[ P_Lam[Domain_Lam], OnGlobal, Format TimeTable, LastTimeStepOnly,
+    Print[
+      P_Lam[Domain_Lam], OnGlobal, Format TimeTable, LastTimeStepOnly,
       File > StrCat[ResDir,Sprintf("Pec_Lam.dat")],
-      SendToServer StrCat["Results/EDC/",  Sprintf("43stat lam. losses (W)")] ];
+      SendToServer StrCat["Results/EDC/",  Sprintf("43stat lam. losses (W)")]
+    ];
   EndIf
 
   // If(!Flag_Cir)
@@ -1518,15 +1533,18 @@ PostOperation Get_GlobalQuantities UsingPost MagStaDyn_a_2D {
   Else
     // If there is no circuit the current is given by IA[], IB[], IC[]
     Print[
-      IA, OnRegion DomainDummy, Format Table, File>StrCat[ResDir,"Ia",ExtGnuplot], LastTimeStepOnly,
+      IA, OnRegion DomainDummy, Format Table,
+      File>StrCat[ResDir,"Ia",ExtGnuplot], LastTimeStepOnly,
       SendToServer StrCat[poI,"A"]{0}, Color "Pink"
     ];
     Print[
-      IB, OnRegion DomainDummy, Format Table, File>StrCat[ResDir,"Ib",ExtGnuplot], LastTimeStepOnly,
+      IB, OnRegion DomainDummy, Format Table,
+      File>StrCat[ResDir,"Ib",ExtGnuplot], LastTimeStepOnly,
       SendToServer StrCat[poI,"B"]{0}, Color "Yellow"
     ];
     Print[
-      IC, OnRegion DomainDummy, Format Table, File>StrCat[ResDir,"Ic",ExtGnuplot], LastTimeStepOnly,
+      IC, OnRegion DomainDummy, Format Table,
+      File>StrCat[ResDir,"Ic",ExtGnuplot], LastTimeStepOnly,
       SendToServer StrCat[poI,"C"]{0}, Color "LightGreen"
     ];
   EndIf
@@ -1556,7 +1574,6 @@ PostOperation Get_GlobalQuantities UsingPost MagStaDyn_a_2D {
     //   File>StrCat[ResDir,"Ic",ExtGnuplot],
     //   SendToServer StrCat[poI,"C"]{0}, Color "LightGreen"
     // ];
-
   EndIf
 
   // Calculate the Flux linkage
