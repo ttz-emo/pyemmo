@@ -103,6 +103,7 @@ DefineConstant[
   C_ = {"-solve Analysis -v 99 -v2", Name "GetDP/9ComputeCommand", Visible Flag_Debug},
   P_ = {"", Name "GetDP/2PostOperationChoices", Visible Flag_Debug}
 ];
+
 Printf("Results Directory is %s", ResDir());
 
 //-------------------------------------------------------------------------------------
@@ -792,14 +793,7 @@ Resolution {
       InitSolution[A];
       Evaluate[$RPos=RotorPosition_deg[]];
       Evaluate[$PAng=Theta_Park_deg[]];
-      If (Flag_Cir_RotorCage)
-        For k In {1:nbrRotorBars}
-          // FIXME: check bar material copper/alu/?
-          Evaluate[$R_Bar~{k}=AxialLength_R / sigma_cu / SurfBar[]]; // l / sigma / A
-          // Evaluate[R_Bar~{k}=AxialLength_R * sigma_Kupfer_Leiter / SurfBar[]]; // l / sigma / A
-          Print[{k, $R_Bar~{k}}, Format "R Bar %.0f = %.3e"];
-        EndFor
-      EndIf
+
       // PostOperation[GetInertia];   // declares the variable $Inertia
 
       // //Evaluate Some motor parameters and write them to a file
@@ -914,20 +908,6 @@ Resolution {
           If (Flag_Cir)
             If (Rterminal < 1 )
               PostOperation[GetShortCircuitCurrent];
-            EndIf
-          EndIf
-          // Dynamic evaluation of rotor bar resistance for circuit:
-          // R_Bar = P_Cu_Bar / I_Bar^2
-          // Needed to split up PostOperation (PO) for Current and Restistance,
-          // because you cannot set runtime variable and directly use them in
-          // same PO
-          If (Flag_Cir_RotorCage)
-            PostOperation[Get_I_Bar] ;
-            PostOperation[Get_R_Bar] ;
-            If (Flag_Debug)
-              For k In {1:nbrRotorBars}
-                Print[{k, $R_Bar~{k}}, Format "R Bar %.0f = %.3e"];
-              EndFor
             EndIf
           EndIf
           If (Flag_Inductance)
@@ -1247,7 +1227,6 @@ PostProcessing {
      {
       Name R ; Value {
         Term { Type Global; [ Rb[] ] ; In DomainDummy; }
-        // Integral { [ axialLength[] / sigma[] / SurfBar[]^2]; In Rotor_Bars; Jacobian Vol; Integration I1; }
       }
     }
     {
@@ -1259,29 +1238,23 @@ PostProcessing {
           // Calculation of DC bar resistance in case ASM
           Integral { [ axialLength[] / sigma[] / SurfBar[]^2]; In Rotor_Bars; Jacobian Vol; Integration I1; }
         EndIf
-        Integral {
-          [ Resistance[] ]; In Resistance_Cir; Jacobian Vol; Integration I1;
-        }
       }
     }
-    For ibar In {1:nbrRotorBars}
-      // Needed to implement single PP for each bar, because can't use dynamic
-      // bar current evaluation ($I_Bar~{ibar}) otherwise!
-      { Name R_Bar~{ibar}; Value{
+    { Name R_Bar; Value{
         Integral { [
           // = P_el / I_bar^2
-          axialLength[]*sigma[]*SquNorm[(Dt[{a}]+{ur})] / SquNorm[$I_Bar~{ibar}]
-        ]; In Rotor_Bar~{ibar}; Jacobian Vol; Integration I1; }
-        }
+          axialLength[]*sigma[]*SquNorm[(Dt[{a}]+{ur})]
+        ]; In Rotor_Bars; Jacobian Vol; Integration I1; }
+        Term { [ 1 / SquNorm[{I}] ]   ; In Rotor_Bars ; }
       }
-    EndFor
-     { Name Theta_Park_deg ; Value { Term { Type Global; [ $PAng ] ; In DomainDummy ; } } }
-     { Name IA  ; Value { Term { Type Global; [ II*IA[] ] ; In DomainDummy ; } } }
-     { Name IB  ; Value { Term { Type Global; [ II*IB[] ] ; In DomainDummy ; } } }
-     { Name IC  ; Value { Term { Type Global; [ II*IC[] ] ; In DomainDummy ; } } }
-     { Name Flux_d  ; Value { Term { Type Global; [ CompX[Flux_dq0[]] ] ; In DomainDummy ; } } }
-     { Name Flux_q  ; Value { Term { Type Global; [ CompY[Flux_dq0[]] ] ; In DomainDummy ; } } }
-     { Name Flux_0  ; Value { Term { Type Global; [ CompZ[Flux_dq0[]] ] ; In DomainDummy ; } } }
+    }
+    { Name Theta_Park_deg ; Value { Term { Type Global; [ $PAng ] ; In DomainDummy ; } } }
+    { Name IA  ; Value { Term { Type Global; [ II*IA[] ] ; In DomainDummy ; } } }
+    { Name IB  ; Value { Term { Type Global; [ II*IB[] ] ; In DomainDummy ; } } }
+    { Name IC  ; Value { Term { Type Global; [ II*IC[] ] ; In DomainDummy ; } } }
+    { Name Flux_d  ; Value { Term { Type Global; [ CompX[Flux_dq0[]] ] ; In DomainDummy ; } } }
+    { Name Flux_q  ; Value { Term { Type Global; [ CompY[Flux_dq0[]] ] ; In DomainDummy ; } } }
+    { Name Flux_0  ; Value { Term { Type Global; [ CompZ[Flux_dq0[]] ] ; In DomainDummy ; } } }
    }
  }
 
@@ -1378,28 +1351,6 @@ PostOperation Debug UsingPost MagStaDyn_a_2D{
       ];
     EndIf
   EndIf
-}
-
-PostOperation Get_I_Bar UsingPost MagStaDyn_a_2D{
-    For iBar In {1:nbrRotorBars}
-      Print[
-        I, OnRegion Rotor_Bar~{iBar}, Format Table,
-        File > StrCat[ResDir,"I_bar_", Sprintf["%.0f",iBar], ExtGnuplot], LastTimeStepOnly,
-        SendToServer StrCat[poI,"I (Bar ",Sprintf["%.0f",iBar], ")"]{0}, Color "LightYellow",
-        StoreInVariable $I_Bar~{iBar}
-      ];
-    EndFor
-}
-
-PostOperation Get_R_Bar UsingPost MagStaDyn_a_2D{
-  For iBar In {1:nbrRotorBars}
-    Print[
-      R_Bar~{iBar}[Rotor_Bar~{iBar}], OnGlobal, Format Table,
-      File > StrCat[ResDir,"R_bar_", Sprintf["%.0f",iBar],ExtGnuplot], LastTimeStepOnly,
-      SendToServer StrCat[poI,"R (Bar ",Sprintf["%.0f",iBar], ")"]{0}, Color "LightRed",
-      StoreInVariable $R_Bar~{iBar}
-    ];
-  EndFor
 }
 
 PostOperation Get_LocalFields UsingPost MagStaDyn_a_2D {
