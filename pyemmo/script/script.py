@@ -2309,22 +2309,16 @@ class Script:
             # add the code for the compute command including the postoperations
             # TODO: Add option for "-bin" case (user setting)
             # TODO: adapt output verbosity based on internal verbosity
-            # TODO: add post processing as extra under "P_":
-            # DefineConstant[
-            # R_ = {"Analysis", Name "GetDP/1ResolutionChoices", Visible 0},
-            # C_ = {"-solve -v2", Name "GetDP/9ComputeCommand", Visible 0},
-            # P_ = {"", Name "GetDP/2PostOperationChoices", Visible 0}
-            # ];
 
             computeCommandCode = (
-                """DefineConstant[\n\tC_ = {"-solve Analysis -v 99 -v2 -pos"""  # -bin
+                "DefineConstant[\n\t"
+                """R_ = {"Analysis", Name "GetDP/1ResolutionChoices", Visible Flag_Debug || Flag_ExpertMode},\n\t"""
+                """C_ = {"-solve -v 99 -v2 -pos", Name "GetDP/9ComputeCommand", Visible Flag_Debug || Flag_ExpertMode}\n\t"""
+                """P_ = {\""""
+                + ",".join(self.postOperationNames)
+                + """", Name "GetDP/2PostOperationChoices", Visible Flag_Debug || Flag_ExpertMode}\n"""
+                "];\n"
             )
-            for postOpName in self.postOperationNames:
-                computeCommandCode += " " + postOpName
-            computeCommandCode += (
-                """ ", Name "GetDP/9ComputeCommand", Visible Flag_Debug}\n];\n"""
-            )
-
             machineFileCode += computeCommandCode
 
         #   5. import magstatdyn file in machine file
