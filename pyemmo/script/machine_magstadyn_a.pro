@@ -771,6 +771,7 @@ Resolution {
         EndIf
     }
     Operation {
+      // Bar resistance node-group IDs in circuit only in range 400-500
       If (nbrRotorBars>99)
         Error["Max. number of rotor bars is 99!"];
       EndIf
@@ -834,9 +835,9 @@ Resolution {
         IterativeLoop[Nb_max_iter, stop_criterion, relaxation_factor]{
           GenerateJac[A] ; SolveJac[A] ;}
       EndIf
-      SaveSolution[A] ;
       // PostOperations
       If(Flag_Debug)
+        SaveSolution[A] ; // only create .res file in debug mode
         PostOperation[Debug] ;
       EndIf
       If(Flag_PrintFields)
@@ -890,15 +891,19 @@ Resolution {
             IterativeLoop[Nb_max_iter, stop_criterion, relaxation_factor] {
               GenerateJac[A] ; SolveJac[A] ; }
           EndIf
-          SaveSolution[A];
           // PostOperations:
           If(Flag_ParkTransformation && Flag_SrcType_Stator==1)
-            // Had to shift PostOperation ThetaPark_IABC here, because if you evaluate it before the solution process, you don't get the right time step for the first iteration (= first rotational step). Time for first rotational step would still be 0, but should be "delta_time"
+            // Had to shift PostOperation ThetaPark_IABC here, because if you
+            // evaluate it before the solution process, you don't get the right
+            // time step for the first iteration (= first rotational step).
+            // Time for first rotational step would still be 0, but should be
+            // "delta_time"
             PostOperation[ThetaPark_IABC] ;
           EndIf
 
           If(Flag_Debug)
-            PostOperation[Debug] ;
+            SaveSolution[A]; // save solution to .res file in debug mode
+            PostOperation[Debug];
           EndIf
           If(Flag_PrintFields)
             PostOperation[Get_LocalFields] ;
