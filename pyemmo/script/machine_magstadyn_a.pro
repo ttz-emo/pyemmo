@@ -100,9 +100,20 @@ DefineConstant[
   //  -order(real)      Specifies the maximum interpolation order.
   //  -setnumber (name value)   Sets constant number name to value.
   //  -setstring (name value)   Sets constant string name to value.
-  C_ = {"-solve Analysis -v 99 -v2", Name "GetDP/9ComputeCommand", Visible Flag_Debug},
+  If (Flag_Debug)
+    C_ = {
+      "-solve Analysis -v 99 -v2", Name "GetDP/9ComputeCommand",
+      Visible Flag_Debug || Flag_ExpertMode
+    },
+  Else
+    C_ = {
+      "-solve Analysis -v 3 -v2", Name "GetDP/9ComputeCommand",
+      Visible Flag_Debug || Flag_ExpertMode
+    },
+  EndIf
   P_ = {"", Name "GetDP/2PostOperationChoices", Visible Flag_Debug}
 ];
+
 Printf("Results Directory is %s", ResDir());
 
 //-------------------------------------------------------------------------------------
@@ -760,6 +771,7 @@ Resolution {
         EndIf
     }
     Operation {
+      // Bar resistance node-group IDs in circuit only in range 400-500
       If (nbrRotorBars>99)
         Error["Max. number of rotor bars is 99!"];
       EndIf
@@ -792,14 +804,7 @@ Resolution {
       InitSolution[A];
       Evaluate[$RPos=RotorPosition_deg[]];
       Evaluate[$PAng=Theta_Park_deg[]];
-      If (Flag_Cir_RotorCage)
-        For k In {1:nbrRotorBars}
-          // FIXME: check bar material copper/alu/?
-          Evaluate[$R_Bar~{k}=AxialLength_R / sigma_cu / SurfBar[]]; // l / sigma / A
-          // Evaluate[R_Bar~{k}=AxialLength_R * sigma_Kupfer_Leiter / SurfBar[]]; // l / sigma / A
-          Print[{k, $R_Bar~{k}}, Format "R Bar %.0f = %.3e"];
-        EndFor
-      EndIf
+
       // PostOperation[GetInertia];   // declares the variable $Inertia
 
       // //Evaluate Some motor parameters and write them to a file
@@ -830,9 +835,9 @@ Resolution {
         IterativeLoop[Nb_max_iter, stop_criterion, relaxation_factor]{
           GenerateJac[A] ; SolveJac[A] ;}
       EndIf
-      SaveSolution[A] ;
       // PostOperations
       If(Flag_Debug)
+        SaveSolution[A] ; // only create .res file in debug mode
         PostOperation[Debug] ;
       EndIf
       If(Flag_PrintFields)
@@ -886,15 +891,19 @@ Resolution {
             IterativeLoop[Nb_max_iter, stop_criterion, relaxation_factor] {
               GenerateJac[A] ; SolveJac[A] ; }
           EndIf
-          SaveSolution[A];
           // PostOperations:
           If(Flag_ParkTransformation && Flag_SrcType_Stator==1)
-            // Had to shift PostOperation ThetaPark_IABC here, because if you evaluate it before the solution process, you don't get the right time step for the first iteration (= first rotational step). Time for first rotational step would still be 0, but should be "delta_time"
+            // Had to shift PostOperation ThetaPark_IABC here, because if you
+            // evaluate it before the solution process, you don't get the right
+            // time step for the first iteration (= first rotational step).
+            // Time for first rotational step would still be 0, but should be
+            // "delta_time"
             PostOperation[ThetaPark_IABC] ;
           EndIf
 
           If(Flag_Debug)
-            PostOperation[Debug] ;
+            SaveSolution[A]; // save solution to .res file in debug mode
+            PostOperation[Debug];
           EndIf
           If(Flag_PrintFields)
             PostOperation[Get_LocalFields] ;
@@ -914,20 +923,6 @@ Resolution {
           If (Flag_Cir)
             If (Rterminal < 1 )
               PostOperation[GetShortCircuitCurrent];
-            EndIf
-          EndIf
-          // Dynamic evaluation of rotor bar resistance for circuit:
-          // R_Bar = P_Cu_Bar / I_Bar^2
-          // Needed to split up PostOperation (PO) for Current and Restistance,
-          // because you cannot set runtime variable and directly use them in
-          // same PO
-          If (Flag_Cir_RotorCage)
-            PostOperation[Get_I_Bar] ;
-            PostOperation[Get_R_Bar] ;
-            If (Flag_Debug)
-              For k In {1:nbrRotorBars}
-                Print[{k, $R_Bar~{k}}, Format "R Bar %.0f = %.3e"];
-              EndFor
             EndIf
           EndIf
           If (Flag_Inductance)
@@ -1247,7 +1242,6 @@ PostProcessing {
      {
       Name R ; Value {
         Term { Type Global; [ Rb[] ] ; In DomainDummy; }
-        // Integral { [ axialLength[] / sigma[] / SurfBar[]^2]; In Rotor_Bars; Jacobian Vol; Integration I1; }
       }
     }
     {
@@ -1259,29 +1253,23 @@ PostProcessing {
           // Calculation of DC bar resistance in case ASM
           Integral { [ axialLength[] / sigma[] / SurfBar[]^2]; In Rotor_Bars; Jacobian Vol; Integration I1; }
         EndIf
-        Integral {
-          [ Resistance[] ]; In Resistance_Cir; Jacobian Vol; Integration I1;
-        }
       }
     }
-    For ibar In {1:nbrRotorBars}
-      // Needed to implement single PP for each bar, because can't use dynamic
-      // bar current evaluation ($I_Bar~{ibar}) otherwise!
-      { Name R_Bar~{ibar}; Value{
+    { Name R_Bar; Value{
         Integral { [
           // = P_el / I_bar^2
-          axialLength[]*sigma[]*SquNorm[(Dt[{a}]+{ur})] / SquNorm[$I_Bar~{ibar}]
-        ]; In Rotor_Bar~{ibar}; Jacobian Vol; Integration I1; }
-        }
+          axialLength[]*sigma[]*SquNorm[(Dt[{a}]+{ur})]
+        ]; In Rotor_Bars; Jacobian Vol; Integration I1; }
+        Term { [ 1 / SquNorm[{I}] ]   ; In Rotor_Bars ; }
       }
-    EndFor
-     { Name Theta_Park_deg ; Value { Term { Type Global; [ $PAng ] ; In DomainDummy ; } } }
-     { Name IA  ; Value { Term { Type Global; [ II*IA[] ] ; In DomainDummy ; } } }
-     { Name IB  ; Value { Term { Type Global; [ II*IB[] ] ; In DomainDummy ; } } }
-     { Name IC  ; Value { Term { Type Global; [ II*IC[] ] ; In DomainDummy ; } } }
-     { Name Flux_d  ; Value { Term { Type Global; [ CompX[Flux_dq0[]] ] ; In DomainDummy ; } } }
-     { Name Flux_q  ; Value { Term { Type Global; [ CompY[Flux_dq0[]] ] ; In DomainDummy ; } } }
-     { Name Flux_0  ; Value { Term { Type Global; [ CompZ[Flux_dq0[]] ] ; In DomainDummy ; } } }
+    }
+    { Name Theta_Park_deg ; Value { Term { Type Global; [ $PAng ] ; In DomainDummy ; } } }
+    { Name IA  ; Value { Term { Type Global; [ II*IA[] ] ; In DomainDummy ; } } }
+    { Name IB  ; Value { Term { Type Global; [ II*IB[] ] ; In DomainDummy ; } } }
+    { Name IC  ; Value { Term { Type Global; [ II*IC[] ] ; In DomainDummy ; } } }
+    { Name Flux_d  ; Value { Term { Type Global; [ CompX[Flux_dq0[]] ] ; In DomainDummy ; } } }
+    { Name Flux_q  ; Value { Term { Type Global; [ CompY[Flux_dq0[]] ] ; In DomainDummy ; } } }
+    { Name Flux_0  ; Value { Term { Type Global; [ CompZ[Flux_dq0[]] ] ; In DomainDummy ; } } }
    }
  }
 
@@ -1380,28 +1368,6 @@ PostOperation Debug UsingPost MagStaDyn_a_2D{
   EndIf
 }
 
-PostOperation Get_I_Bar UsingPost MagStaDyn_a_2D{
-    For iBar In {1:nbrRotorBars}
-      Print[
-        I, OnRegion Rotor_Bar~{iBar}, Format Table,
-        File > StrCat[ResDir,"I_bar_", Sprintf["%.0f",iBar], ExtGnuplot], LastTimeStepOnly,
-        SendToServer StrCat[poI,"I (Bar ",Sprintf["%.0f",iBar], ")"]{0}, Color "LightYellow",
-        StoreInVariable $I_Bar~{iBar}
-      ];
-    EndFor
-}
-
-PostOperation Get_R_Bar UsingPost MagStaDyn_a_2D{
-  For iBar In {1:nbrRotorBars}
-    Print[
-      R_Bar~{iBar}[Rotor_Bar~{iBar}], OnGlobal, Format Table,
-      File > StrCat[ResDir,"R_bar_", Sprintf["%.0f",iBar],ExtGnuplot], LastTimeStepOnly,
-      SendToServer StrCat[poI,"R (Bar ",Sprintf["%.0f",iBar], ")"]{0}, Color "LightRed",
-      StoreInVariable $R_Bar~{iBar}
-    ];
-  EndFor
-}
-
 PostOperation Get_LocalFields UsingPost MagStaDyn_a_2D {
   // If we read the statement below, we would have:
   // Print the PostProcessing Quantity "jz" on the elements of the Region "DomainC" and save the Results (but only the results of the last time step) to the file "StrCat[ResDir,"jz",ExtGmsh]" (variables were defined before!) and append to the extension of the file the number of the timestep if Flag_SaveAllSteps > 0.
@@ -1410,34 +1376,58 @@ PostOperation Get_LocalFields UsingPost MagStaDyn_a_2D {
   // Print[ jz, OnElementsOf DomainC, File StrCat[ResDir,"jz",ExtGmsh], LastTimeStepOnly,
 	//  AppendTimeStepToFileName Flag_SaveAllSteps ] ;
 
-  Print[ js, OnElementsOf DomainS, File StrCat[ResDir,"js",ExtGmsh], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps ] ;
+  Print[
+    js, OnElementsOf DomainS, File StrCat[ResDir,"js",ExtGmsh], LastTimeStepOnly,
+    AppendTimeStepToFileName Flag_SaveAllSteps
+  ] ;
 
-  Print[ b,  OnElementsOf Domain, File StrCat[ResDir,"b",ExtGmsh], Format Gmsh, LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps] ;
+  Print[
+    b,  OnElementsOf Domain, File StrCat[ResDir,"b",ExtGmsh], Format Gmsh,
+    LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps
+  ] ;
 
-  Print[ bn,  OnElementsOf Domain, File StrCat[ResDir,"bn",ExtGmsh], Format Gmsh, LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps] ;
+  Print[
+    bn,  OnElementsOf Domain, File StrCat[ResDir,"bn",ExtGmsh], Format Gmsh,
+    LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps
+  ] ;
 
-  Print[ mu, OnElementsOf Domain, File StrCat[ResDir,"mu_r",ExtGmsh], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps] ;
+  Print[
+    mu, OnElementsOf Domain, File StrCat[ResDir,"mu_r",ExtGmsh], LastTimeStepOnly,
+    AppendTimeStepToFileName Flag_SaveAllSteps
+  ] ;
 
-  Print[ az, OnElementsOf Domain, File StrCat[ResDir,"az",ExtGmsh], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps ] ;
-  Echo[ Str["l=PostProcessing.NbViews-1;", "View[l].IntervalsType = 1;", "View[l].NbIso = 30;", "View[l].Light = 0;", "View[l].LineWidth = 2;"], File StrCat[ResDir,"tmp.geo"], LastTimeStepOnly] ;
+  Print[
+    az, OnElementsOf Domain, File StrCat[ResDir,"az",ExtGmsh], LastTimeStepOnly,
+    AppendTimeStepToFileName Flag_SaveAllSteps
+  ] ;
+  Echo[ Str["l=PostProcessing.NbViews-1;", "View[l].IntervalsType = 1;", "View[l].NbIso = 30;", "View[l].Light = 0;", "View[l].LineWidth = 2;"],
+    File StrCat[ResDir,"tmp.geo"], LastTimeStepOnly
+  ] ;
 
   If (Flag_Lam)
-    Print[ p_Lam, OnElementsOf Domain_Lam, File StrCat[ResDir,"p_Lam.pos"], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps ] ;
+    Print[
+      p_Lam, OnElementsOf Domain_Lam, File StrCat[ResDir,"p_Lam.pos"],
+      LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps
+    ];
   EndIf
   If (Flag_EC_Magnets)
-    Print[ p_Joule, OnElementsOf Rotor_Magnets, File StrCat[ResDir,"p_EC_Mag.pos"],
-      LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps ] ;
+    Print[
+      p_Joule, OnElementsOf Rotor_Magnets, File StrCat[ResDir,"p_EC_Mag.pos"],
+      LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps
+    ];
   EndIf
   If (Flag_Cir_RotorCage)
     Print[
-      jz, OnElementsOf Rotor_Bars, File StrCat[ResDir, "jz", ExtGmsh],
+      jz, OnElementsOf Rotor_Bars, File StrCat[ResDir, "jz_bars", ExtGmsh],
       LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps
     ];
   EndIf
 }
 
 PostOperation GetInertia UsingPost MagStaDyn_a_2D {
-	Print[ Inertia[Rotor], OnGlobal, Format Table, StoreInVariable $Inertia, LastTimeStepOnly, SendToServer StrCat[po_mec,"/000Inertia (kg*m^2)"]
+	Print[
+    Inertia[Rotor], OnGlobal, Format Table, StoreInVariable $Inertia,
+    LastTimeStepOnly, SendToServer StrCat[po_mec,"/000Inertia (kg*m^2)"]
 	];
 }
 
@@ -1452,26 +1442,15 @@ PostOperation GetInducedCurrentDensity UsingPost MagStaDyn_a_2D {
 // PostOperation for getting the tangential and the radial components of the magnetic flux density:
 PostOperation GetBRadTanAirGap UsingPost MagStaDyn_a_2D {
   // print the radial flux density on a circle close to the stator tooth over the complete model (this is why we devide by the SymmetryFactor) by steps of 1deg
-  Print[ b_radial, OnGrid{(r_AG*(1-0.0001))*Cos[$A*Pi/180],(r_AG*(1-0.0001))*Sin[$A*Pi/180],0 }{0:360/SymmetryFactor:0.5,0,0}, File StrCat[ResDir,"brad",ExtGmsh], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps];
-  Print[ b_tangent, OnGrid{(r_AG*(1-0.0001))*Cos[$A*Pi/180],(r_AG*(1-0.0001))*Sin[$A*Pi/180],0 }{0:360/SymmetryFactor:0.5,0,0}, File StrCat[ResDir,"btan",ExtGmsh], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps];
+  Print[
+    b_radial, OnGrid{(r_AG*(1-0.0001))*Cos[$A*Pi/180],(r_AG*(1-0.0001))*Sin[$A*Pi/180],0 }{0:360/SymmetryFactor:0.5,0,0},
+    File StrCat[ResDir,"brad",ExtGmsh], LastTimeStepOnly,
+    AppendTimeStepToFileName Flag_SaveAllSteps];
+  Print[
+    b_tangent, OnGrid{(r_AG*(1-0.0001))*Cos[$A*Pi/180],(r_AG*(1-0.0001))*Sin[$A*Pi/180],0 }{0:360/SymmetryFactor:0.5,0,0},
+    File StrCat[ResDir,"btan",ExtGmsh], LastTimeStepOnly,
+    AppendTimeStepToFileName Flag_SaveAllSteps];
 }
-
-// // PostOperation for getting the tangential and the radial components of the
-// // magnetic flux density in the middle of the tooth, yoke and tooth tip
-// PostOperation GetBLocusStator UsingPost MagStaDyn_a_2D {
-
-//   // Middle of the tooth
-//   Print[ b_radial, OnGrid{-(Rad3-YT+(Rad1+Gap))/2*Sin[$A*2*Pi/nbrSlots],(Rad3-YT+(Rad1+Gap))/2*Cos[$A*2*Pi/nbrSlots],0 }{0:nbrSlots/SymmetryFactor-1,0,0}, File StrCat[ResDir,"brad_tooth_center",ExtGnuplot], Format Table ];
-//   Print[ b_tangent, OnGrid{-(Rad3-YT+(Rad1+Gap))/2*Sin[$A*2*Pi/nbrSlots],(Rad3-YT+(Rad1+Gap))/2*Cos[$A*2*Pi/nbrSlots],0 }{0:nbrSlots/SymmetryFactor-1,0,0}, File StrCat[ResDir,"btan_tooth_center",ExtGnuplot], Format Table ];
-
-//   // Middle of yoke, middle slot
-//   Print[ b_radial, OnGrid{-(Rad3-YT/2)*Sin[-Pi/nbrSlots + $A*2*Pi/nbrSlots],(Rad3-YT/2)*Cos[-Pi/nbrSlots +$A*2*Pi/nbrSlots],0 }{0:nbrSlots/SymmetryFactor-1,0,0}, File StrCat[ResDir,"brad_tooth_yoke",ExtGnuplot], Format Table ];
-//   Print[ b_tangent, OnGrid{-(Rad3-YT/2)*Sin[-Pi/nbrSlots +$A*2*Pi/nbrSlots],(Rad3-YT/2)*Cos[-Pi/nbrSlots +$A*2*Pi/nbrSlots],0 }{0:nbrSlots/SymmetryFactor-1,0,0}, File StrCat[ResDir,"btan_tooth_yoke",ExtGnuplot], Format Table ];
-
-//   // Tooth tip
-//   Print[ b_radial, OnGrid{-(Rad1+Gap+TTH)*Sin[-Pi/nbrSlots/2 + $A*2*Pi/nbrSlots],(Rad1+Gap+TTH)*Cos[-Pi/nbrSlots/2 +$A*2*Pi/nbrSlots],0 }{0:nbrSlots/SymmetryFactor-1,0,0}, File StrCat[ResDir,"brad_tooth_tip",ExtGnuplot], Format Table];
-//   Print[ b_tangent, OnGrid{-(Rad1+Gap+TTH)*Sin[-Pi/nbrSlots/2 +$A*2*Pi/nbrSlots],(Rad1+Gap+TTH)*Cos[-Pi/nbrSlots/2 +$A*2*Pi/nbrSlots],0 }{0:nbrSlots/SymmetryFactor-1,0,0}, File StrCat[ResDir,"btan_tooth_tip",ExtGnuplot], Format Table];
-// }
 
 PostOperation GetShortCircuitCurrent UsingPost MagStaDyn_a_2D {
   Print[ I, OnRegion PhaseA_pos, Format Table,
@@ -1493,9 +1472,11 @@ PostOperation Get_GlobalQuantities UsingPost MagStaDyn_a_2D {
   ];
 
   If (Flag_Lam)
-    Print[ P_Lam[Domain_Lam], OnGlobal, Format TimeTable, LastTimeStepOnly,
+    Print[
+      P_Lam[Domain_Lam], OnGlobal, Format TimeTable, LastTimeStepOnly,
       File > StrCat[ResDir,Sprintf("Pec_Lam.dat")],
-      SendToServer StrCat["Results/EDC/",  Sprintf("43stat lam. losses (W)")] ];
+      SendToServer StrCat["Results/EDC/",  Sprintf("43stat lam. losses (W)")]
+    ];
   EndIf
 
   // If(!Flag_Cir)
@@ -1567,15 +1548,18 @@ PostOperation Get_GlobalQuantities UsingPost MagStaDyn_a_2D {
   Else
     // If there is no circuit the current is given by IA[], IB[], IC[]
     Print[
-      IA, OnRegion DomainDummy, Format Table, File>StrCat[ResDir,"Ia",ExtGnuplot], LastTimeStepOnly,
+      IA, OnRegion DomainDummy, Format Table,
+      File>StrCat[ResDir,"Ia",ExtGnuplot], LastTimeStepOnly,
       SendToServer StrCat[poI,"A"]{0}, Color "Pink"
     ];
     Print[
-      IB, OnRegion DomainDummy, Format Table, File>StrCat[ResDir,"Ib",ExtGnuplot], LastTimeStepOnly,
+      IB, OnRegion DomainDummy, Format Table,
+      File>StrCat[ResDir,"Ib",ExtGnuplot], LastTimeStepOnly,
       SendToServer StrCat[poI,"B"]{0}, Color "Yellow"
     ];
     Print[
-      IC, OnRegion DomainDummy, Format Table, File>StrCat[ResDir,"Ic",ExtGnuplot], LastTimeStepOnly,
+      IC, OnRegion DomainDummy, Format Table,
+      File>StrCat[ResDir,"Ic",ExtGnuplot], LastTimeStepOnly,
       SendToServer StrCat[poI,"C"]{0}, Color "LightGreen"
     ];
   EndIf
@@ -1605,7 +1589,6 @@ PostOperation Get_GlobalQuantities UsingPost MagStaDyn_a_2D {
     //   File>StrCat[ResDir,"Ic",ExtGnuplot],
     //   SendToServer StrCat[poI,"C"]{0}, Color "LightGreen"
     // ];
-
   EndIf
 
   // Calculate the Flux linkage
@@ -1622,15 +1605,23 @@ PostOperation Get_GlobalQuantities UsingPost MagStaDyn_a_2D {
           StoreInVariable $Flux_c, SendToServer StrCat[poF,"2C"]{0}, Color "LightGreen"];
 
   // d and q-axis flux linkage
-  Print[ Flux_d, OnRegion DomainDummy, Format Table,
-    File > StrCat[ResDir,"Flux_d",ExtGnuplot], LastTimeStepOnly,StoreInVariable $Phi_d,
-    SendToServer StrCat[poF,"4 d"]{0}, Color "LightYellow" ];
-  Print[ Flux_q, OnRegion DomainDummy, Format Table,
-    File > StrCat[ResDir,"Flux_q",ExtGnuplot], LastTimeStepOnly,StoreInVariable $Phi_q,
-    SendToServer StrCat[poF,"5 q"]{0}, Color "LightYellow" ];
-  Print[ Flux_0, OnRegion DomainDummy, Format Table,
-    File > StrCat[ResDir,"Flux_0",ExtGnuplot], LastTimeStepOnly,StoreInVariable $Phi_0,
-    SendToServer StrCat[poF,"3 0"]{0}, Color "LightYellow" ];
+  If (MachineType == SYNCHRONOUS)
+    Print[
+      Flux_d, OnRegion DomainDummy, Format Table,
+      File > StrCat[ResDir,"Flux_d",ExtGnuplot], LastTimeStepOnly,StoreInVariable $Phi_d,
+      SendToServer StrCat[poF,"4 d"]{0}, Color "LightYellow"
+    ];
+    Print[
+      Flux_q, OnRegion DomainDummy, Format Table,
+      File > StrCat[ResDir,"Flux_q",ExtGnuplot], LastTimeStepOnly,StoreInVariable $Phi_q,
+      SendToServer StrCat[poF,"5 q"]{0}, Color "LightYellow"
+    ];
+    Print[
+      Flux_0, OnRegion DomainDummy, Format Table,
+      File > StrCat[ResDir,"Flux_0",ExtGnuplot], LastTimeStepOnly,StoreInVariable $Phi_0,
+      SendToServer StrCat[poF,"3 0"]{0}, Color "LightYellow"
+    ];
+  EndIf
 }
 
 PostOperation Get_EC_LossesMagnets UsingPost MagStaDyn_a_2D {

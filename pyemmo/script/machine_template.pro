@@ -520,6 +520,10 @@ DefineConstant[
             "Circuit/11Resistance of endring segment [Ohm]"
         ],
         ReadOnly !Flag_Cir_RotorCage,
+        Help "This must be given for a single endring segment!
+        During processing the value is scaled to 1 meter because in
+        the electromagnetic formulation the resulting voltage drop given to the
+        circuit is in V/m!",
         Visible (nbrRotorBars>0)
     },
     L_endring_segment = {4.8e-9,
@@ -528,6 +532,13 @@ DefineConstant[
             "Circuit/12Inductance of endring segment [H]"
         ],
         ReadOnly !Flag_Cir_RotorCage,
+        Help "This must be given for a single endring segment!
+        During processing the value is scaled to 1 meter because in
+        the electromagnetic formulation the resulting voltage drop given to the
+        circuit is in V/m!",
+        Help The values for the endring segments must scaled to 1 meter because in
+  // the electromagnetic formulation from the machine_magstdyn_a.pro the
+  // resulting voltage drop given to the circuit is in V/m!
         Visible (nbrRotorBars>0)
     }
 ];

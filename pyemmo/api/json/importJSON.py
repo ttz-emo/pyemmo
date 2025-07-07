@@ -270,7 +270,7 @@ def getAxialLength(extendedInfo: dict) -> dict[str, float]:
     raise KeyError(msg)
 
 
-def getMagTemperature(extendedInfo: dict) -> float | None:
+def getMagTemperature(extendedInfo: dict) -> float:
     """get the magnet temperature from the extended info dict. Key is "tempMag".
 
     Args:
@@ -278,7 +278,7 @@ def getMagTemperature(extendedInfo: dict) -> float | None:
 
     Returns:
 
-        Union[float, None]: returns the value from the dict as float or None,
+        Union[float]: returns the value from the dict as float or 20.0,
         if "tempMag" is missing from the dict.
     """
     if "tempMag" in extendedInfo.keys():
@@ -287,7 +287,7 @@ def getMagTemperature(extendedInfo: dict) -> float | None:
         raise ValueError(
             f"Magnet temperature ('tempMag') is not type float: {extendedInfo['tempMag']}"
         )
-    return None
+    return 20.0
 
 
 def getSimuParams(extendedInfo: dict) -> dict[str, dict[str, float]]:

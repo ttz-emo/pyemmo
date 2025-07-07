@@ -2308,6 +2308,13 @@ class Script:
         if postOperation.items:  # if there are Items in PostOperation
             # add the code for the compute command including the postoperations
             # TODO: Add option for "-bin" case (user setting)
+            # TODO: adapt output verbosity based on internal verbosity
+            # TODO: add post processing as extra under "P_":
+            # DefineConstant[
+            # R_ = {"Analysis", Name "GetDP/1ResolutionChoices", Visible 0},
+            # C_ = {"-solve -v2", Name "GetDP/9ComputeCommand", Visible 0},
+            # P_ = {"", Name "GetDP/2PostOperationChoices", Visible 0}
+            # ];
 
             computeCommandCode = (
                 """DefineConstant[\n\tC_ = {"-solve Analysis -v 99 -v2 -pos"""  # -bin
