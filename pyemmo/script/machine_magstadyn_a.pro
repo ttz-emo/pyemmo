@@ -100,7 +100,17 @@ DefineConstant[
   //  -order(real)      Specifies the maximum interpolation order.
   //  -setnumber (name value)   Sets constant number name to value.
   //  -setstring (name value)   Sets constant string name to value.
-  C_ = {"-solve Analysis -v 99 -v2", Name "GetDP/9ComputeCommand", Visible Flag_Debug},
+  If (Flag_Debug)
+    C_ = {
+      "-solve Analysis -v 99 -v2", Name "GetDP/9ComputeCommand",
+      Visible Flag_Debug || Flag_ExpertMode
+    },
+  Else
+    C_ = {
+      "-solve Analysis -v 3 -v2", Name "GetDP/9ComputeCommand",
+      Visible Flag_Debug || Flag_ExpertMode
+    },
+  EndIf
   P_ = {"", Name "GetDP/2PostOperationChoices", Visible Flag_Debug}
 ];
 
