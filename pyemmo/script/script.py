@@ -33,7 +33,7 @@ from os.path import abspath, join
 from typing import TYPE_CHECKING, Literal
 
 import gmsh
-from numpy import array, cos, rad2deg, sin, where
+from numpy import rad2deg, where
 from pygetdp import Function as FunctionGetDP
 from pygetdp import Group as GroupGetDP
 from pygetdp import PostOperation
@@ -1883,18 +1883,22 @@ class Script:
                 # The following assumes, that the prime lines are located on
                 # the x-axis. Rotation from prime to secondary occure in math.
                 # positive direction!
-                phi = 2 * pi / symFactor
-                transformation_matrix = array(
-                    [
-                        [cos(phi), -sin(phi), 0, 0],
-                        [sin(phi), cos(phi), 0, 0],
-                        [0, 0, 1, 0],
-                        [0, 0, 0, 1],
-                    ]
-                )
-                gmsh.model.mesh.setPeriodic(
-                    1, secondary_tags, primary_tags, transformation_matrix.flatten()
-                )
+
+                # Skip setting of periodic meshing condition in gmsh model since
+                # its not automatically exported to any gmsh output file.
+                # phi = 2 * pi / symFactor
+                # transformation_matrix = array(
+                #     [
+                #         [cos(phi), -sin(phi), 0, 0],
+                #         [sin(phi), cos(phi), 0, 0],
+                #         [0, 0, 1, 0],
+                #         [0, 0, 0, 1],
+                #     ]
+                # )
+                # gmsh.model.mesh.setPeriodic(
+                #     1, secondary_tags, primary_tags, transformation_matrix.flatten()
+                # )
+
                 meshModCode += (
                     r"Periodic Curve{secondaryLines[]} = {primaryLines[]} "
                     r"Rotate {{0,0,1}, {0,0,0}, "
