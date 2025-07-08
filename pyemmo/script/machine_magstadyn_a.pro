@@ -1207,6 +1207,8 @@ PostProcessing {
       }
 
      { Name ComplexPower ;
+        // TODO: Check if implementation of power is valid for nonlinear definition
+        // in DomainC!
        // S = P + i*Q
        Value {
          Integral { [ Complex[ sigma[]*SquNorm[Dt[{a}]+{ur}], nu[]*SquNorm[{d a}] ] ] ;
@@ -1347,11 +1349,11 @@ PostOperation Debug UsingPost MagStaDyn_a_2D{
           File > StrCat[ResDir,"U_bar_", Sprintf["%.0f",iBar], ExtGnuplot], LastTimeStepOnly,
           SendToServer StrCat[poI,"U (Bar ",Sprintf["%.0f",iBar], ")"]{0}, Color "LightYellow"
         ];
-        Print[
-          ComplexPower[Rotor_Bar~{iBar}], OnGlobal, Format Table,
-          File > StrCat[ResDir,"P_bar_", Sprintf["%.0f",iBar],ExtGnuplot], LastTimeStepOnly,
-          SendToServer StrCat[poI,"P_complex (Bar ",Sprintf["%.0f",iBar], ")"]{0}, Color "LightRed"
-        ];
+        // Print[
+        //   ComplexPower[Rotor_Bar~{iBar}], OnGlobal, Format Table,
+        //   File > StrCat[ResDir,"P_bar_", Sprintf["%.0f",iBar],ExtGnuplot], LastTimeStepOnly,
+        //   SendToServer StrCat[poI,"P_complex (Bar ",Sprintf["%.0f",iBar], ")"]{0}, Color "LightRed"
+        // ];
       EndFor
       Print[
         intJz[Rotor_Bar_1], OnGlobal, Format Table,
