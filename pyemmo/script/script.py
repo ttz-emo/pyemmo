@@ -2039,6 +2039,19 @@ class Script:
             movingGeoCode = self._createMovingGeoCode()
 
         # write out all the geometry and physicals code to .geo_unrolled file
+
+        # NOTE: add default point in geo (internal gmsh) kernel to force geo_unrolled
+        # output instead of .xao format (new in gmsh 4.14.0). See issue
+        # https://gitlab.onelab.info/gmsh/gmsh/-/issues/3214 and comment
+        # https://gitlab.onelab.info/gmsh/gmsh/-/blob/master/src/geo/GModelIO_GEO.cpp?ref_type=heads#L1840
+        # for more info
+
+        # FIXME: This should trigger gmsh to export the geometry as real
+        # geo_unrolled according to the above links, but doesn't work with
+        # gmsh==4.14.0 ...
+        # tmp_point_tag = gmsh.model.geo.addPoint(0, 0, 0, 1.0)
+        # gmsh.model.geo.addPhysicalGroup(0, [tmp_point_tag], name="dummy point")
+
         geo_unrolled_path = self.geoFilePath + "_unrolled"
         gmsh.write(geo_unrolled_path)
         # read in the file content
