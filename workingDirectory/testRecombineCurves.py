@@ -20,16 +20,17 @@
 
 # %%
 from math import pi
+from subprocess import run
+
 from pyemmo.definitions import RESULT_DIR
-from pyemmo.script.script import Script
-from pyemmo.script.geometry.point import Point
-from pyemmo.script.geometry.line import Line
+from pyemmo.functions.runOnelab import createCmdCommand
 from pyemmo.script.geometry.circleArc import CircleArc
+from pyemmo.script.geometry.line import Line
+from pyemmo.script.geometry.point import Point
 
 # from pyemmo.script.geometry.spline import Spline
 from pyemmo.script.geometry.surface import Surface
-from pyemmo.functions.runOnelab import createCmdCommand
-from subprocess import run
+from pyemmo.script.script import Script
 
 pm = Point("p1", 0, 0, 0, 0.1)
 # %% Airgap Band Surface recombination
@@ -95,9 +96,7 @@ surfSeg.recombineCurves()
 surfSeg.setMeshLength(5e-3)
 surfSeg.plot()
 # %%
-recombineScript = Script(
-    "testRecombineSurfs", scriptPath=RESULT_DIR, simuParams={}
-)
+recombineScript = Script("testRecombineSurfs", scriptPath=RESULT_DIR, simuParams={})
 surfSeg.addToScript(recombineScript)
 recombineScript.generateScript(mode=1)  # only geo file
 run(

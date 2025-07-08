@@ -17,9 +17,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-from setPath import pathRes
-import pyemmo as emmo
 import math
+
+from setPath import pathRes
+
+import pyemmo as emmo
 
 myScript = emmo.Script("pmsm", pathRes)
 

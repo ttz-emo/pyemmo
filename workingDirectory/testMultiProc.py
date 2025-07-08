@@ -18,10 +18,11 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Script for tutorial by Corey Schafer: https://www.youtube.com/watch?v=fKl2JW_qrso"""
+import concurrent.futures
+import multiprocessing
+
 # %%
 import time
-import multiprocessing
-import concurrent.futures
 
 
 def do_something(sec):

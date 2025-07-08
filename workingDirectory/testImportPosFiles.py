@@ -18,13 +18,16 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import math
+
 # %%
 from os import path
-import math
+
 import gmsh
 import numpy as np
-from numpy.linalg import norm
 from matplotlib import pyplot as plt
+from numpy.linalg import norm
+
 from pyemmo.functions.import_results import importPos
 
 POS_FILE_PATH = r"C:\Users\ganser\AppData\Local\Programs\pyemmo\workingDirectory\testPosImport\brad.pos"

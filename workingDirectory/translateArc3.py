@@ -20,7 +20,7 @@
 import sys
 
 try:
-    from pyemmo.script.script import Script
+    pass
 except:
     rootname = "C:\\Users\\k49976\\Desktop\\repositoryGibLab\\pyemmo"
     print(f"Could not determine root. Setting it manually to '{rootname}'")
@@ -28,6 +28,7 @@ except:
     sys.path.append(rootname)
 
 import pyleecan.Classes.Arc3
+
 from .build_pyemmo_point import build_pyemmo_point
 
 

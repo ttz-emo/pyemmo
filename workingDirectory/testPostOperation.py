@@ -21,12 +21,11 @@
 # %%
 import os
 from os import path
-import shutil
+
 from pygetdp import PostOperation
-from pygetdp.postoperation import PostopItem
+
 from pyemmo.definitions import ROOT_DIR
-from pyemmo.script.script import Script
-from pyemmo.script.script import default_param_dict
+from pyemmo.script.script import Script, default_param_dict
 
 # %% copy testfile
 # TODO: Test Überarbeiten!

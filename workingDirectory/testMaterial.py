@@ -17,13 +17,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+from copy import deepcopy
+
 import numpy as np
 from matplotlib import pyplot as plt
-from pyemmo.script.material.material import Material
-from copy import copy, deepcopy
 
 # from pyemmo.definitions import RESULT_DIR, MAIN_DIR
 from pyemmo.script.material.electricalSteel import ElectricalSteel
+from pyemmo.script.material.material import Material
 
 air = Material(
     name="Air",

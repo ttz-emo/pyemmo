@@ -19,14 +19,16 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import os
+
+import matplotlib.pyplot as plt
+import numpy as np
+
 # %%
 # Imports
 import pandas
-import numpy as np
-import os
-import matplotlib.pyplot as plt
-from matplotlib import cm
 import scipy.io as sio
+from matplotlib import cm
 
 # %% import ansys data
 ansysResPath = r"H:\Workstation (Austausch)\EisenverlustberechnungVergleich\230223_EisenverlustkennfeldAnsys.csv"
@@ -35,9 +37,7 @@ for key in ansysResults.keys():
     if "offset_deg" in key:
         phiDQ = ansysResults[key]  # angle for dq offset in deg
     elif "I [A]" in key:
-        iAnsys = ansysResults[
-            key
-        ]  # current amplitude (effective value) in A_eff
+        iAnsys = ansysResults[key]  # current amplitude (effective value) in A_eff
     elif "AvgCoreLoss" in key:
         coreLossAnsys = ansysResults[key]  # core loss results
     elif "AvgTorque" in key and not "AvgTorqueRipple" in key:
@@ -61,7 +61,9 @@ sio.savemat(
 )
 # %%
 # Load onelab results
-RES_DIR = r"C:\Users\ganser\AppData\Roaming\pyemmo\Results\res_Test_1FE1051-4HF11_TherCom"
+RES_DIR = (
+    r"C:\Users\ganser\AppData\Roaming\pyemmo\Results\res_Test_1FE1051-4HF11_TherCom"
+)
 coreLossOnelab = np.load(os.path.join(RES_DIR, "ironLossData.npy"))
 # coreLossOnelabMatFile = os.path.join(RES_DIR, "230301_ironLossDataOnelab.mat")
 # sio.savemat(

@@ -18,10 +18,11 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import json
+from os.path import abspath, dirname, isfile, join
+
 # %% Imports
 from sys import path
-from os.path import abspath, dirname, isfile, join
-import json
 
 # Add Software_V2 to Path so pyemmo can be found
 # This must be done since this is a script (not really a module) and we cannot guarante where it will run from
@@ -30,9 +31,7 @@ import json
 try:
     rootname = abspath(join(dirname(__file__), ".."))
 except:
-    rootname = (
-        "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\Software_V2"
-    )
+    rootname = "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\Software_V2"
     print(f"Could not determine root. Setting it manually to '{rootname}'")
 print(f'rootname is "{rootname}"')
 path.append(rootname)

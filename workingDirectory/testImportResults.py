@@ -18,22 +18,21 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-# %%
-from os.path import join
-from typing import Tuple, List
 from cmath import atan
 from genericpath import isfile
-import numpy as np
+
+# %%
+from os.path import join
+
 from matplotlib import pyplot as plt
+
 from pyemmo.definitions import ROOT_DIR
 from pyemmo.functions import import_results as resimport
 from pyemmo.functions.import_results import (
+    importSP,
     plot_timetable_dat,
     read_timetable_dat,
     split_data,
-    plot_all_dat,
-    importSP,
-    get_result_files,
 )
 
 # %% single simulation in time table formated file:
@@ -84,8 +83,7 @@ for sim in range(nbrSims):
     # show()
     # ax.set_aspect("equal", adjustable="box")
     fig.axes[0].set_ylim(
-        bottom=min(torqueArray[sim])
-        * (1.1 if min(torqueArray[sim]) < 0 else 0.9),
+        bottom=min(torqueArray[sim]) * (1.1 if min(torqueArray[sim]) < 0 else 0.9),
         top=max(torqueArray[sim]) * 1.1,
     )
     # ax.autoscale()
@@ -112,9 +110,7 @@ Brad = {}
 for machineSide in ["stator", "rotor"]:
     posFile = join(resDir, f"b_radial_airgap_{machineSide}.pos")
     if isfile(posFile):
-        name, time[machineSide], pos[machineSide], Brad[machineSide] = (
-            importSP(posFile)
-        )
+        name, time[machineSide], pos[machineSide], Brad[machineSide] = importSP(posFile)
         angle[machineSide] = []
         for pNbr in range(len(pos[machineSide])):
             px = pos[machineSide][pNbr][0]

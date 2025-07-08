@@ -19,27 +19,27 @@
 #
 """Module to test iron loss calculation"""
 
+# import logging
+import concurrent.futures
+
 # %%
 import os
+
+# import gmsh
 import sys
 
 # import time as clockTime
 import numpy as np
-
-# import gmsh
-import subprocess
-
-# import logging
-import concurrent.futures
 from matplotlib import pyplot as plt
-from pyemmo.definitions import ROOT_DIR, RESULT_DIR
+
+from pyemmo.definitions import ROOT_DIR
 
 if ROOT_DIR not in sys.path:
     sys.path.append(ROOT_DIR)
 
+
 # from pyemmo.functions import importResults as imp
-from pyemmo.functions import runOnelab, calcIronLoss, importResults
-from pyemmo.api import json
+from pyemmo.functions import runOnelab
 
 if __name__ == "__main__":
     # set result directory
@@ -73,9 +73,7 @@ if __name__ == "__main__":
     # %
     for i in range(iMap.size):
         # %
-        idq = iMap.flat[i] * np.array(
-            [-np.sin(phiMap.flat[i]), np.cos(phiMap.flat[i])]
-        )
+        idq = iMap.flat[i] * np.array([-np.sin(phiMap.flat[i]), np.cos(phiMap.flat[i])])
         resId = (
             f"id_{np.round(idq[0],1)}A"
             + f"_iq_{np.round(idq[1],1)}A"
@@ -128,7 +126,9 @@ if __name__ == "__main__":
     # ax.plot_surface(t, e, np.linalg.norm(bData, axis=2))
 
     # load loss data
-    RES_DIR = r"C:\Users\ganser\AppData\Roaming\pyemmo\Results\res_Test_1FE1051_4HF11_TherCom"
+    RES_DIR = (
+        r"C:\Users\ganser\AppData\Roaming\pyemmo\Results\res_Test_1FE1051_4HF11_TherCom"
+    )
     ironLossResFile = os.path.join(RES_DIR, "ironLossData.npy")
     ironLossArray = np.load(ironLossResFile)
     currentAngleFile = os.path.join(RES_DIR, "currentAngle.npy")

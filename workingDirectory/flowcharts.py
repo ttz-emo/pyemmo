@@ -20,6 +20,7 @@
 """Print flowcharts for python files"""
 # %%
 import os
+
 from pyflowchart import Flowchart
 
 # %%
