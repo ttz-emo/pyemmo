@@ -18,6 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 from os.path import join
+
 from tests.api import TEST_API_DATA_DIR
 
 TEST_API_PYLCN_DATA_DIR = join(TEST_API_DATA_DIR, "pyleecan")

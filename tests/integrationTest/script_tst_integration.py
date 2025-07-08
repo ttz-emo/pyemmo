@@ -20,9 +20,9 @@
 #
 """TODO: Module docstring"""
 
+import os
 import subprocess
 from datetime import datetime
-import os
 
 """
 Script to run pytest in powershell and save summary to date-marked log

@@ -47,12 +47,8 @@ def test_get_translated_machine():
     # check movingband radius
     assert math.isclose(movingband_r, 0.0797, abs_tol=1e-16)
     # check magnetization directions
-    assert math.isclose(
-        magnetization_dict["Mag0"], 0.5462703245568578, rel_tol=1e-12
-    )
-    assert math.isclose(
-        magnetization_dict["Mag1"], 0.2391278388405909, rel_tol=1e-12
-    )
+    assert math.isclose(magnetization_dict["Mag0"], 0.5462703245568578, rel_tol=1e-12)
+    assert math.isclose(magnetization_dict["Mag1"], 0.2391278388405909, rel_tol=1e-12)
     for key in (
         "Pol",
         "Lpl0",

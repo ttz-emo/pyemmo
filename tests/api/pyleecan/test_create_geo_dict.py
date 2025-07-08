@@ -19,15 +19,16 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module to test the creation of the api geo dict."""
-from os.path import join, abspath
 import math
+from os.path import abspath, join
+
 from pyleecan.Classes.Machine import Machine
 
 # pylint: disable=locally-disabled, no-name-in-module
 from pyleecan.Functions.load import load
 
-from tests.api.pyleecan import TEST_API_PYLCN_DATA_DIR
 import pyemmo.api.pyleecan.create_geo_dict
+from tests.api.pyleecan import TEST_API_PYLCN_DATA_DIR
 
 
 def test_create_geo_dict():
@@ -72,9 +73,5 @@ def test_create_geo_dict():
     assert l_point_rotor_cont.meshLength == 0.001
 
     # asserts magnetization_dict
-    assert math.isclose(
-        magnetization_dict["Mag0"], 0.5462703245568578, rel_tol=1e-12
-    )
-    assert math.isclose(
-        magnetization_dict["Mag1"], 0.2391278388405909, rel_tol=1e-12
-    )
+    assert math.isclose(magnetization_dict["Mag0"], 0.5462703245568578, rel_tol=1e-12)
+    assert math.isclose(magnetization_dict["Mag1"], 0.2391278388405909, rel_tol=1e-12)

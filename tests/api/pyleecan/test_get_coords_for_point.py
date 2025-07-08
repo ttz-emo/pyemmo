@@ -20,8 +20,10 @@
 #
 """Module to test the module pyemmo.api.pyleecan.get_coords_for_point"""
 import math
-from hypothesis import given
+
 import hypothesis.strategies as st
+from hypothesis import given
+
 from pyemmo.api.pyleecan.get_coords_for_point import (
     get_x_for_point,
     get_y_for_point,

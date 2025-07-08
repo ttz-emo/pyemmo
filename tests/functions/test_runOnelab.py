@@ -64,7 +64,8 @@ class TestRunOnelab(unittest.TestCase):
                 cls.model_dir = model_dir
             else:
                 raise FileExistsError(
-                    f"Model directory {model_dir} already exists but does not contain the expected files (Toyota_Prius.pro)."
+                    f"Model directory {model_dir} already exists but does not "
+                    "contain the expected files (Toyota_Prius.pro)."
                 )
 
     @classmethod
