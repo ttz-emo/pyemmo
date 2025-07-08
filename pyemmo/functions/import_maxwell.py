@@ -19,10 +19,8 @@
 #
 """Module to import data from Ansys Maxwell"""
 import csv
-from typing import List, Tuple
-
-from typing import Tuple
 import os
+from typing import List, Tuple
 
 
 def import_tab_maxwell(filepath: str) -> Tuple[list[str], list[list[str]]]:
