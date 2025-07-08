@@ -6,7 +6,7 @@ pygetdp>=1.0.0
 swat_em>=0.6.3
 # -> pyleecan friendly version of swat:
 # git+https://gitlab.com/CedMrnl/swat-em.git
-gmsh>=4.10.3
+gmsh>=4.10.3,<4.14
 GitPython
 splines
 

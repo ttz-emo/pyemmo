@@ -1,3 +1,4 @@
+# Standard modules
 matplotlib>=3.3.4
 numpy>=1.23.1
 pandas>=1.2.4
@@ -6,20 +7,26 @@ pygetdp>=1.0.0
 swat_em>=0.6.3
 # pyleecan friendly version of swat:
 # git+https://gitlab.com/CedMrnl/swat-em.git
-gmsh>=4.10.3
+gmsh>=4.10.3,<4.14
 GitPython
 splines
 
+# for doc
 Sphinx>=7.2.6 # for doc
 sphinx-rtd-theme
 
+# for tests
 pytest-check # for integration tests
 pytest-dependency
 hypothesis>=6.98.17
 tox
-tox-pyenv
+virtualenv-pyenv
+
+# for build
 wheel
 setuptools>=42
+
+# for formatting
 black
 
 ## PYLEECAN DEPS...

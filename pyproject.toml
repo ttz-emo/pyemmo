@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=42", "wheel"]
+requires = ["setuptools>=77.0.3", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -13,8 +13,9 @@ maintainers = [{ name = "Max Schuler", email = "agem.ttz-emo@thws.de" }]
 readme = "README.md"
 description = "PyEMMO is a interface for modeling electrical machines in the open-source FEA software Onelab"
 urls = { Repository = "https://gitlab.ttz-emo.thws.de/ag-em/pyemmo" }
-requires-python = ">=3.8"
-license = { file = "LICENSE" }
+requires-python = ">= 3.6"
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
 keywords = [
     "electrical machine",
     "simulation",
@@ -25,16 +26,35 @@ keywords = [
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Operating System :: OS Independent",
 ]
-# dependencies = []
-# try to find version and dependencies automatically
-dynamic = ["version", "dependencies"]
+
+dependencies = [
+    "swat_em>=0.6.3",
+    "pygetdp>=1.0.0",
+    "gmsh>=4.10.3,<4.14",
+    "matplotlib>=3.3.4",
+    "numpy>=1.23.1",
+    "parse>=1.19.0",
+    "splines>=0.3.2",
+]
+
+# get version from setup.py via pyemmo/version.py
+dynamic = ["version"]
 
 # Optional dependencies
 [project.optional-dependencies]
-GIT = ['GitPython; python_version>="3.7"'] # requires python>=3.7 since 3.1.23!
+PYLEECAN = ['pyleecan>=1.5.1; python_version<"3.10"']
+
+[tool.setuptools]
+include-package-data = true
 
 # find packages in source directory
 [tool.setuptools.packages.find]
@@ -56,7 +76,7 @@ split_on_trailing_comma = true
 line-length = 88
 
 [tool.pytest.ini_options]
-testpaths = ["tests/functions","tests/script"]
+testpaths = ["tests/functions", "tests/script"]
 log_cli = true
 log_cli_level = "INFO"
 # log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)"
@@ -99,15 +119,31 @@ skips = ["B311", "B404", "B603"]
 #           but not available in Python 3.11).
 legacy_tox_ini = """
 [tox]
-envlist = py38, py39
-; skipsdist = true
+envlist = py38, py39, py310, py311, py312
 
 [testenv]
 deps =
-        pytest
-        pytest_check
-        hypothesis
-commands = pytest tests
+    pytest
+    pytest_check
+    hypothesis
+commands =
+    # python -m build -o .tox/dist
+    # pip install .tox/dist/*.whl
+    pytest
 setenv =
-        PATH = {env:PATH}{:}/.
+    PATH = {env:PATH}{:}/.
+    VIRTUALENV_DISCOVERY=pyenv
+
+[testenv:py38]
+skip_install = true
+deps =
+    pytest
+    pytest_check
+    hypothesis
+
+commands =
+    pytest
+setenv =
+    PATH = {env:PATH}{:}/.
+    VIRTUALENV_DISCOVERY=pyenv
 """
