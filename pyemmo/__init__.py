@@ -27,7 +27,6 @@ from os.path import isdir
 from typing import List, Literal
 
 import numpy as np
-from matplotlib import pyplot as plt
 from swat_em import analyse
 
 from .version import __version__

@@ -26,7 +26,6 @@
 import logging
 
 logging.getLogger().setLevel(logging.DEBUG)
-from PySide2.QtWidgets import *
 from datetime import date
 
 print("Running date:", date.today().strftime("%B %d, %Y"))
@@ -56,9 +55,10 @@ print("SciDataTool version:" + SciDataTool.__version__)
 # Load the machine
 from os.path import join
 
+from pyleecan.definitions import DATA_DIR
+
 # pylint: disable=locally-disabled, no-name-in-module
 from pyleecan.Functions.load import load
-from pyleecan.definitions import DATA_DIR
 
 IPMSM_A = load(join(DATA_DIR, "Machine", "Toyota_Prius.json"))
 # In Jupyter notebook, we set is_show_fig=False to skip call to fig.show() to avoid a warning message
@@ -95,12 +95,11 @@ fig, ax = IPMSM_A.plot(is_show_fig=False)
 # %%
 from os.path import join
 
-from numpy import ones, pi, array, linspace, cos, sqrt
-
-from pyleecan.Classes.Simu1 import Simu1
+from numpy import array, cos, linspace, pi, sqrt
 from pyleecan.Classes.InputCurrent import InputCurrent
-from pyleecan.Classes.OPdq import OPdq
 from pyleecan.Classes.MagFEMM import MagFEMM
+from pyleecan.Classes.OPdq import OPdq
+from pyleecan.Classes.Simu1 import Simu1
 
 # Create the Simulation
 simu_femm = Simu1(name="FEMM_simulation", machine=IPMSM_A)
@@ -116,9 +115,7 @@ N0 = 3000
 simu_femm.input.OP = OPdq(N0=N0)
 
 # time discretization [s]
-time = linspace(
-    start=0, stop=60 / N0, num=32 * p, endpoint=False
-)  # 32*p timesteps
+time = linspace(start=0, stop=60 / N0, num=32 * p, endpoint=False)  # 32*p timesteps
 simu_femm.input.time = time
 
 # Angular discretization along the airgap circonference for flux density calculation
@@ -132,21 +129,9 @@ felec = p * N0 / 60  # [Hz]
 rot_dir = simu_femm.machine.stator.comp_mmf_dir()
 Phi0 = 140 * pi / 180  # Maximum Torque Per Amp
 
-Ia = (
-    I0_rms
-    * sqrt(2)
-    * cos(2 * pi * felec * time + 0 * rot_dir * 2 * pi / qs + Phi0)
-)
-Ib = (
-    I0_rms
-    * sqrt(2)
-    * cos(2 * pi * felec * time + 1 * rot_dir * 2 * pi / qs + Phi0)
-)
-Ic = (
-    I0_rms
-    * sqrt(2)
-    * cos(2 * pi * felec * time + 2 * rot_dir * 2 * pi / qs + Phi0)
-)
+Ia = I0_rms * sqrt(2) * cos(2 * pi * felec * time + 0 * rot_dir * 2 * pi / qs + Phi0)
+Ib = I0_rms * sqrt(2) * cos(2 * pi * felec * time + 1 * rot_dir * 2 * pi / qs + Phi0)
+Ic = I0_rms * sqrt(2) * cos(2 * pi * felec * time + 2 * rot_dir * 2 * pi / qs + Phi0)
 simu_femm.input.Is = array([Ia, Ib, Ic]).transpose()
 
 # %% [markdown]
@@ -206,12 +191,8 @@ simu_femm.mag.nb_worker = (
 # At the end of the simulation, the mesh and the solution can be saved in the **Output** object with:
 
 # %%
-simu_femm.mag.is_get_meshsolution = (
-    True  # To get FEA mesh for latter post-procesing
-)
-simu_femm.mag.is_save_meshsolution_as_file = (
-    False  # To save FEA results in a dat file
-)
+simu_femm.mag.is_get_meshsolution = True  # To get FEA mesh for latter post-procesing
+simu_femm.mag.is_save_meshsolution_as_file = False  # To save FEA results in a dat file
 
 # %% [markdown]
 # ## Run simulation
@@ -312,9 +293,7 @@ fig.update_layout()
 fig.update_layout(
     title="Radial flux density in the airgap over time and angle",
     autosize=True,
-    scene=dict(
-        xaxis_title="Angle [°]", yaxis_title="Time [s]", zaxis_title="Flux [T]"
-    ),
+    scene=dict(xaxis_title="Angle [°]", yaxis_title="Time [s]", zaxis_title="Flux [T]"),
     width=700,
     margin=dict(r=20, b=100, l=10, t=100),
 )
