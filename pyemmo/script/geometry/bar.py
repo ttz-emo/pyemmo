@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -19,6 +20,7 @@
 #
 """Module for Bar Physical Element"""
 
+import logging
 from typing import List, Union
 
 from .physicalElement import Material, PhysicalElement, Surface
@@ -49,7 +51,11 @@ class Bar(PhysicalElement):
         # make sure conductivity is defined for induced currents
         if not material.conductivity:
             raise ValueError(
-                f"Material of Bar ({name}) must have electrical conductivity!"
+                f"Material of bar ({name}) must have electrical conductivity!"
+            )
+        if not material.linear:
+            logging.warning(
+                "Material %s of rotor bar %s is non-linear!", material.name, name
             )
         super().__init__(name=name, material=material, geo_list=geo_list)
         # the physical element type can be used to identify physical elements
