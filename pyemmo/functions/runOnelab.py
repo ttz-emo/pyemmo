@@ -458,27 +458,6 @@ def runCalcforCurrent(param: dict) -> dict:
         logging.debug("cmd command is: %s", cmdCommand)
         logging.info("Running simulation for result-ID '%s'", param["getdp"]["ResId"])
 
-        # calcInfo = subprocess.run(
-        #     cmdCommand,
-        #     capture_output=True,  # not importJSON.getFlagOpenGui(extendedInfo),
-        #     text=True,
-        #     check=False,
-        # )
-        # # print(f"StdOut:\n{calcInfo.stdout}")
-        # if calcInfo.stderr:
-        #     for textLine in calcInfo.stderr.split("\n"):
-        #         if "error" in textLine.lower():
-        #             logging.error(
-        #                 "Onelab call issued the following error: \n\t%s",
-        #                 textLine.replace("\n", "\n\t"),
-        #             )
-        #         else:
-        #             if textLine:  # if textline is not empty
-        #                 logging.warning(
-        #                     "Onelab call issued the following warning: \n\t%s",
-        #                     textLine.replace("\n", "\n\t"),
-        #                 )
-
         ## TRY TO LOG OUTPUT OF FUNCTION CALL:
         # TODO: Add log file option and stream simulation to log file
         process = Popen(
@@ -493,9 +472,6 @@ def runCalcforCurrent(param: dict) -> dict:
 
     else:
         # Simulation with this resId has allready been done!
-        # raise RuntimeError(
-        #     f"Result directory {simulation_res_dir} allready exists!"
-        # )
         logging.warning(
             "Result directory %s allready exists! Importing results...",
             simulation_res_dir,
