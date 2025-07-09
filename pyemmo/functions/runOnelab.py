@@ -510,92 +510,6 @@ def runCalcforCurrent(param: dict):
             simulation_res_dir,
         )
 
-    # logging.info("Import results for result-ID '%s'", param["getdp"]["ResId"])
-    # results_dict = {}
-    # # try to import getdp parameters from param dict
-    # # TODO: Add start and stop angle, angle and time step, ...
-    # # OTHER OPTION: Just add input param dict to result dict...
-    # for key, getdp_param in {
-    #     "id": "ID_RMS",
-    #     "iq": "IQ_RMS",
-    #     "speed": "RPM",
-    # }.items():
-    #     try:
-    #         results_dict[key] = param["getdp"][getdp_param]
-    #     except KeyError:
-    #         pass
-    #     except Exception as exce:
-    #         raise exce
-    # # 1. Phase currents
-    # results_dict["current"] = {}
-    # for index in "abc":
-    #     res_file = os.path.join(simulation_res_dir, f"I{index}.dat")
-    #     if os.path.isfile(res_file):
-    #         # get first char in machine side to index rotor and stator results
-    #         results_dict["time"], results_dict["current"][index] = read_timetable_dat(
-    #             res_file
-    #         )
-    #     else:
-    #         # Error because we need to import time here!
-    #         raise FileNotFoundError(
-    #             f"Could not find result file for phase current I{index}"
-    #         )
-    # # optional import bar currents
-    # res_file = os.path.join(simulation_res_dir, "I_bars.dat")
-    # if isfile(res_file):
-    #     results_dict["time"], results_dict["current"]["bars"] = read_timetable_dat(
-    #         res_file
-    #     )
-
-    # # 2. Torque Results
-    # results_dict["torque"] = {}
-    # results_dict["torque_vw"] = {}
-    # for side in ["rotor", "stator"]:
-    #     res_file = os.path.join(simulation_res_dir, f"T{side[0]}.dat")
-    #     if os.path.isfile(res_file):
-    #         # get first char in machine side to index rotor and stator results
-    #         _, results_dict["torque"][side] = read_timetable_dat(res_file)
-    #     # Virtual Work results
-    #     res_file = os.path.join(simulation_res_dir, f"T{side[0]}_vw.dat")
-    #     if os.path.isfile(res_file):
-    #         # get first char in machine side to index rotor and stator results
-    #         _, results_dict["torque_vw"][side] = read_timetable_dat(res_file)
-    # if {"rotor", "stator"} <= results_dict["torque"].keys():
-    #     # calc mean torque
-    #     results_dict["rotor torque"] = results_dict["torque"]["rotor"]
-    #     results_dict["stator torque"] = results_dict["torque"]["stator"]
-    #     results_dict["torque"] = np.mean(
-    #         [
-    #             results_dict["rotor torque"],
-    #             results_dict["stator torque"],
-    #         ],
-    #         axis=0,
-    #     )
-
-    # # 3. Flux results
-    # results_dict["flux"] = {}
-    # for index in "abcdq0":
-    #     res_file = os.path.join(simulation_res_dir, f"Flux_{index}.dat")
-    #     if os.path.isfile(res_file):
-    #         # get first char in machine side to index rotor and stator results
-    #         time, results_dict["flux"][index] = read_timetable_dat(res_file)
-
-    # # 4. Induced voltage
-    # results_dict["inducedVoltage"] = {}
-    # for index in "ABC":
-    #     res_file = os.path.join(simulation_res_dir, f"InducedVoltage{index}.dat")
-    #     if os.path.isfile(res_file):
-    #         # get first char in machine side to index rotor and stator results
-    #         _, results_dict["inducedVoltage"][index.lower()] = read_timetable_dat(
-    #             res_file
-    #         )
-
-    # # 5. Rotor position
-    # res_file = os.path.join(simulation_res_dir, "RotorPos_deg.dat")
-    # if os.path.isfile(res_file):
-    #     # get first char in machine side to index rotor and stator results
-    #     _, results_dict["rotorPos"] = read_timetable_dat(res_file)
-
     # Calculate core loss
     # Check if file hystLoss_rotor.dat allready exists -> loss allready calculated
     # core_loss_dict = {}
@@ -629,40 +543,6 @@ def runCalcforCurrent(param: dict):
                     #     lossDataJSON = json.dumps(ironLossDictList, indent=3)
                     #     file.write(lossDataJSON)
                 # core_loss_dict[side] = lossDict
-    # else:
-    #     logging.warning(
-    #         "Iron losses for %s have allready been calculated.\nImporting values...",
-    #         param["getdp"]["ResId"],
-    #     )
-    #     for side in ["rotor", "stator"]:
-    #         core_loss_dict[side] = {}
-    #         for loss_type in ("hyst", "eddy", "exc"):
-    #             time, core_loss_dict[side][loss_type] = read_timetable_dat(
-    #                 os.path.join(
-    #                     simulation_res_dir,
-    #                     str(loss_type) + f"Loss_{side}" + ".dat",
-    #                 )
-    #             )
-    # if core_loss_dict:
-    #     results_dict["coreLoss"] = core_loss_dict
-    #     # pylint: disable=locally-disabled, logging-not-lazy, logging-fstring-interpolation, line-too-long
-    #     logging.debug("Iron loss for '" + param["getdp"]["ResId"] + "'")
-    #     logging.debug(f"{'Rotor':>24} {'Stator':>11} {'Gesamt':>11}")
-    #     logging.debug(
-    #         f"{'Hysteresis:':<14} {np.mean(core_loss_dict['rotor']['hyst']) : 8.3f} W {np.mean(core_loss_dict['stator']['hyst']) : 9.3f} W {np.mean(core_loss_dict['stator']['hyst']+core_loss_dict['rotor']['hyst']) : 9.3f} W"
-    #     )
-    #     logging.debug(
-    #         f"{'Eddy Current:':<14} {np.mean(core_loss_dict['rotor']['eddy']) : 8.3f} W {np.mean(core_loss_dict['stator']['eddy']) : 9.3f} W {np.mean(core_loss_dict['stator']['eddy']+core_loss_dict['rotor']['eddy']) : 9.3f} W"
-    #     )
-    #     logging.debug(
-    #         f"{'Excess:':<14} {np.mean(core_loss_dict['rotor']['exc']) : 8.3f} W {np.mean(core_loss_dict['stator']['exc']) : 9.3f} W {np.mean(core_loss_dict['stator']['exc']+core_loss_dict['rotor']['exc']) : 9.3f} W"
-    #     )
-    #     logging.debug(
-    #         "---------------------------------------------------------------------"
-    #     )
-    #     logging.debug(
-    #         f"{'Summe:':<14} {np.mean(core_loss_dict['rotor']['exc']+core_loss_dict['rotor']['eddy']+core_loss_dict['rotor']['hyst']) : 8.3f} W {np.mean(core_loss_dict['stator']['exc']+core_loss_dict['stator']['eddy']+core_loss_dict['stator']['hyst']) : 9.3f} W {np.mean(core_loss_dict['rotor']['exc']+core_loss_dict['rotor']['eddy']+core_loss_dict['rotor']['hyst']+core_loss_dict['stator']['exc']+core_loss_dict['stator']['eddy']+core_loss_dict['stator']['hyst']) : 9.3f} W"
-    #     )
     results_dict = import_results.main(param)
     return results_dict
 
