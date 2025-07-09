@@ -26,7 +26,7 @@ import logging
 import os
 import platform
 from os.path import isdir
-from typing import List, Literal
+from typing import Literal
 
 import numpy as np
 from swat_em import analyse
