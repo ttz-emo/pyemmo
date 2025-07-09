@@ -404,6 +404,46 @@ def createGMSHCommand(
 
 
 def runCalcforCurrent(param: dict) -> dict:
+    """Function to run a getdp calculation based on parameter from param dict
+
+    Args:
+        param (dict): Parameter dict that looks like
+
+    TODO: Show which parameter are not-optional and give hints for setting machine model
+    parameters
+
+    .. code-block:: python
+        {
+            "getdp": {
+                "exe": findGetDP(), ##
+                "ResId": res_id, ##
+                "verbosity level": 3, #
+                "res": self.test_sim_dir, ##
+            },
+            "gmsh": {"exe": findGmsh()}, # gmsh exe and params ##
+            "pro": join(self.model_dir, "Toyota_Prius.pro"), # pro file ##
+            "info": "", #
+            "PostOp": [],  # "GetBOnRadius" - "Get_LocalFields_Post" #
+            "hyst": 102, # in combination with 'GetBIron' PostOp entry #
+            "eddy": 1.5, #
+            "datetime": time.ctime(), #
+        }
+
+                "IQ_RMS": 10.0,
+                "ID_RMS": 0.0,
+                "RPM": 1000,
+                "initrotor_pos": 0.0,
+                "d_theta": 5,
+                "finalrotor_pos": 15,
+                "Flag_AnalysisType": 1,
+                "Flag_PrintFields": 0,
+                "Flag_Debug": 1,
+                "Flag_ClearResults": 1,
+                "stop_criterion": 1e-7,
+
+    Returns:
+        dict: Simulation results dict created from ``pyemmo.functions.import_results.main``
+    """
     # adding additional results path to GetDP parameters (only then GetDP knows where to
     # put the results) because its initally set in the parameter geo
     # file. But if the files are moved the results folder might not exist any more!
