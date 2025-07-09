@@ -454,7 +454,7 @@ def main(sim_param: dict | str | bytes | os.PathLike):
     # TODO: Add start and stop angle, angle and time step, ...
     # OTHER OPTION: Just add input param dict to result dict...
 
-    simulation_res_dir = os.path.join(sim_param["res"], sim_param["ResId"])
+    simulation_res_dir = os.path.join(sim_param["res"], sim_param["getdp"]["ResId"])
     dat_files, geo_files = get_result_files(simulation_res_dir)
 
     # for key, getdp_param in {
