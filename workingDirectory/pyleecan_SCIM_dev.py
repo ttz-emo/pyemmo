@@ -102,12 +102,12 @@ if False:
             "ResId": resid,
             "Flag_PrintFields": 0,
             "Flag_Debug": 0,
+            "exe": findGetDP(),
         },
         "ResId": resid,
         "pro": pro_file,
         "res": sim_res_dir,
-        "exe": findGetDP(),
-        "gmsh": findGmsh(),
+        "gmsh": {"exe": findGmsh()},
         # "hyst": 0, # loss coefficient
         # "eddy": 0, # loss coefficient
         # "exc": 0, # loss coefficient

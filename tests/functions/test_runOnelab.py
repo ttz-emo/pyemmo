@@ -112,6 +112,7 @@ class TestRunOnelab(unittest.TestCase):
         runCalcforCurrent(
             {
                 "getdp": {
+                    "exe": findGetDP(),
                     "IQ_RMS": 10.0,
                     "ID_RMS": 0.0,
                     "RPM": 1000,
@@ -128,12 +129,10 @@ class TestRunOnelab(unittest.TestCase):
                     # "msh": os.path.join(MODEL_DIR, "mesh_veryFine.msh"),
                     # "Flag_SecondOrder": 0,
                     "stop_criterion": 1e-8,
+                    "res": self.test_sim_dir,  # result folder
                 },
-                "ResId": res_id,
-                "pro": join(self.model_dir, "Toyota_Prius.pro"),
-                "res": self.test_sim_dir,
-                "exe": findGetDP(),
-                "gmsh": findGmsh(),
+                "pro": join(self.model_dir, "Toyota_Prius.pro"),  # pro file
+                "gmsh": {"exe": findGmsh()},  # gmsh exe and params
                 "info": "",
                 "PostOp": [],  # "GetBOnRadius" - "Get_LocalFields_Post"
             }

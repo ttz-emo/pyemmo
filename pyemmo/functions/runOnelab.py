@@ -449,8 +449,8 @@ def runCalcforCurrent(param: dict) -> dict:
         cmdCommand = createCmdCommand(
             pro_file,
             useGUI=False,
-            gmshPath=param["gmsh"],
-            getdpPath=param["exe"],
+            gmshPath=param["gmsh"]["exe"],
+            getdpPath=param["getdp"]["exe"],
             paramDict=param["getdp"],
             postOperations=post_operations,
         )
