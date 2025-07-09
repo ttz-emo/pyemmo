@@ -175,6 +175,7 @@ def mergeAllGeoFiles(folderPath, gmshExe):
     return None
 
 
+# pylint: disable=locally-disabled, dangerous-default-value
 def createCmdCommand(
     onelabFile: str,
     useGUI: bool,
@@ -280,7 +281,8 @@ def createCmdCommand(
                             else:
                                 raise (
                                     ValueError(
-                                        f"Given Post Operation name was not a string: {type(postOp)}, {postOp}"
+                                        "Given Post Operation name was not a string: "
+                                        f"{type(postOp)}, {postOp}"
                                     )
                                 )
                 else:
