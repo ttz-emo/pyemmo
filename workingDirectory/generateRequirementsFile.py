@@ -18,6 +18,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module to return requirements of pyemmo via pipreqs"""
+from __future__ import annotations
+
 import os
 import subprocess
 from os.path import join

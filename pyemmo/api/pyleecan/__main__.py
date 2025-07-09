@@ -19,6 +19,8 @@
 #
 """Main module of pyleecan api"""
 
+from __future__ import annotations
+
 import argparse
 import logging
 import os

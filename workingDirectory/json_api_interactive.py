@@ -20,6 +20,8 @@
 #
 # %%
 """This module allows an easy invoke of the json api by a tkinter file dialog!"""
+from __future__ import annotations
+
 import os
 import tkinter as tk
 from tkinter import filedialog

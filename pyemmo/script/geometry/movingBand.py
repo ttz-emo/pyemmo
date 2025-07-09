@@ -18,7 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for class MovingBand"""
-from typing import List
+from __future__ import annotations
 
 from ..material.material import Material
 from ..script import DEFAULT_GEO_TOL
@@ -53,7 +53,7 @@ class MovingBand(PhysicalElement):
     def __init__(
         self,
         name: str,
-        geo_list: List[CircleArc],
+        geo_list: list[CircleArc],
         material: Material = None,
         auxiliary: bool = False,
     ):
@@ -68,7 +68,7 @@ class MovingBand(PhysicalElement):
         """
         super().__init__(name=name, geo_list=geo_list, material=material)
         # make sure geo elements are circle arcs
-        self.geo_list: List[CircleArc] = geo_list
+        self.geo_list: list[CircleArc] = geo_list
         self.radius = geo_list[0].radius
         # the physical element type can be used to identify physical elements
         self.physicalElementType = "MovingBand"

@@ -19,6 +19,8 @@
 #
 """Module to test iron loss calculation"""
 
+from __future__ import annotations
+
 import logging
 
 # %%
@@ -26,7 +28,6 @@ import os
 import subprocess
 import sys
 from os import path
-from typing import List
 
 import numpy as np
 
@@ -89,7 +90,7 @@ logging.basicConfig(
     level=logging.DEBUG,
 )
 # %% run simulations
-processList: List[subprocess.Popen] = []
+processList: list[subprocess.Popen] = []
 for iStrom, stromdq in enumerate(idq.transpose()):
     # gmsh.initialize()
     # gmsh.option.setNumber("General.Verbosity", 5)

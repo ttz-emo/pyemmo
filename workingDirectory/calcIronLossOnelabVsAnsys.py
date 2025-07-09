@@ -19,6 +19,8 @@
 #
 """Module to test iron loss calculation"""
 
+from __future__ import annotations
+
 # import logging
 import concurrent.futures
 

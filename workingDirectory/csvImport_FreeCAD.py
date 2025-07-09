@@ -18,12 +18,13 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import annotations
+
 import subprocess
 from os.path import abspath, join
 
 # %% Imports
 from random import random
-from typing import Dict, List, Union
 
 import pandas
 
@@ -65,7 +66,7 @@ ndFe35 = Material.load("NdFe35")
 air = Material.load("air")
 
 # %% Alle Rohdaten auslesen und pyemmo-Objekte erzeugen
-surfDict: Dict[str, List[Union[Line, CircleArc]]] = {}
+surfDict: dict[str, list[Line | CircleArc]] = {}
 for i in range(0, len(myDataFrame)):
     startPoint = Point(
         "",
@@ -121,7 +122,7 @@ ax.set_aspect("equal")
 fig.suptitle("Lineplot")
 
 # %% Surfaces erzeugen
-surfList: List[Surface] = list()
+surfList: list[Surface] = list()
 for surfname, lineList in surfDict.items():
     actSurf = Surface(surfname, lineList)
     surfList.append(actSurf)

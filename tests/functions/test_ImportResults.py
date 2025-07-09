@@ -19,6 +19,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for testing the import_results module"""
+from __future__ import annotations
+
 import os
 
 import numpy as np

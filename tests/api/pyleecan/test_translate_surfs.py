@@ -22,8 +22,9 @@
 Module to test translate surface function of api
 import pyemmo.api.pyleecan.translate_surfs
 """
+from __future__ import annotations
+
 from os.path import abspath, join
-from typing import List
 
 from pyleecan.Classes.Machine import Machine
 
@@ -39,7 +40,7 @@ def test_translate_surfs():
     """Function to test ``pyemmo.api.pyleecan.translate_surfs``"""
     all_surfs_labels = []
     all_surfs_labels_split2 = []
-    geometry_list: List[SegmentSurface] = []
+    geometry_list: list[SegmentSurface] = []
     angle_point_ref_list = []
     machine: Machine = load(
         abspath(join(TEST_API_PYLCN_DATA_DIR, "00_prius_machine.json"))

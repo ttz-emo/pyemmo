@@ -19,9 +19,10 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module to test the rotor and stator contour function of the pyleecan api."""
+from __future__ import annotations
+
 import math
 from os.path import abspath, join
-from typing import List
 
 import pytest
 from pyleecan.Classes.Machine import Machine
@@ -46,7 +47,7 @@ def get_translated_machine(machine: Machine):
     """Local functionto get api geometry list."""
     all_surfs_labels = []
     all_surfs_labels_split2 = []
-    geometry_list: List[SegmentSurface] = []
+    geometry_list: list[SegmentSurface] = []
     angle_point_ref_list = []
 
     all_surfaces: list = machine.rotor.build_geometry(

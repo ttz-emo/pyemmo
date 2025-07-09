@@ -18,6 +18,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """This module only contains the pyemmo package version"""
+from __future__ import annotations
+
 # /!\ Increase the number before a release
 # See https://www.python.org/dev/peps/pep-0440/
 # Examples :

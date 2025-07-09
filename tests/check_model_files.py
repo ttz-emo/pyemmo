@@ -19,6 +19,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for test function to check existance of model files"""
+from __future__ import annotations
+
 import os
 from os.path import isdir, join
 

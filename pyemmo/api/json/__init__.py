@@ -19,6 +19,8 @@
 #
 """init module of json api"""
 
+from __future__ import annotations
+
 from ...script.geometry import defaultCenterPoint
 
 # TODO: Clean up unused definitions here!

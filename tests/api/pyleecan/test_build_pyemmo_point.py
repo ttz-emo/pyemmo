@@ -24,6 +24,8 @@ Following functions are included in this module:
 * test_center_point()
 """
 
+from __future__ import annotations
+
 import numpy
 from hypothesis import given, settings
 from hypothesis import strategies as st

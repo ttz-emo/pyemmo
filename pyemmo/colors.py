@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 Colors = {
     "Snow": [255, 250, 250, 255],
     "GhostWhite": [248, 248, 255, 255],

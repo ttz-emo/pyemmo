@@ -18,6 +18,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Material Package"""
+from __future__ import annotations
+
 import os
 
 from ...definitions import ROOT_DIR

@@ -20,8 +20,9 @@
 #
 """Module for Bar Physical Element"""
 
+from __future__ import annotations
+
 import logging
-from typing import List, Union
 
 from .physicalElement import Material, PhysicalElement, Surface
 
@@ -34,7 +35,7 @@ class Bar(PhysicalElement):
     def __init__(
         self,
         name: str,
-        geo_list: Union[Surface, List[Surface]],
+        geo_list: Surface | list[Surface],
         material: Material,
     ):
         """Bar defines a rotor bar for a induction machine

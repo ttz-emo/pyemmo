@@ -19,6 +19,8 @@
 #
 """This script creates a mind map of the pyemmo package structure"""
 
+from __future__ import annotations
+
 import io
 
 # %%

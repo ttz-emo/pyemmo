@@ -21,12 +21,12 @@
 """Module for Material-class"""
 
 
-# pylint: disable=line-too-long
+from __future__ import annotations
 
+# pylint: disable=line-too-long
 import json
 import os
 import warnings
-from typing import Union
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -141,7 +141,7 @@ class Material:
         return cls.from_dict(mat_dict)
 
     @classmethod
-    def from_dict(cls, mat_dict: dict) -> "Material":
+    def from_dict(cls, mat_dict: dict) -> Material:
         """Create a instance of Material from a data dictionary, which contains
         all relevant material properties"""
         if mat_dict["BHCurve"] == {}:
@@ -289,7 +289,7 @@ class Material:
             raise ValueError("Material name must be type str.")
 
     @property
-    def conductivity(self) -> Union[float, int]:
+    def conductivity(self) -> float | int:
         """get electrical conductivity
 
         Returns:
@@ -299,7 +299,7 @@ class Material:
         return self._conductivity
 
     @conductivity.setter
-    def conductivity(self, conductivity: Union[float, int]):
+    def conductivity(self, conductivity: float | int):
         """set the electrical conductivity of the material
 
         Args:
@@ -317,7 +317,7 @@ class Material:
             raise TypeError("Conductivity must be numeric.")
 
     @property
-    def relPermeability(self) -> Union[float, int]:
+    def relPermeability(self) -> float | int:
         """get linear relative magnetic permeability
 
         Returns:
@@ -326,7 +326,7 @@ class Material:
         return self._relPermeability
 
     @relPermeability.setter
-    def relPermeability(self, relPermeability: Union[float, int]):
+    def relPermeability(self, relPermeability: float | int):
         """set the relative permeability of the material
 
         Args:
@@ -344,7 +344,7 @@ class Material:
             raise ValueError("Relative permeability must be numeric.")
 
     @property
-    def remanence(self) -> Union[float, int]:
+    def remanence(self) -> float | int:
         """get remanent flux density at 20°C
 
         Returns:
@@ -353,7 +353,7 @@ class Material:
         return self._remanence
 
     @remanence.setter
-    def remanence(self, remanence: Union[float, int]):
+    def remanence(self, remanence: float | int):
         """Set the remanence flux density in T of permanent magnet material of
         the material. Must be a positive number or zero (no remanence).
 
@@ -372,7 +372,7 @@ class Material:
             raise ValueError("Remanent flux density must be numeric.")
 
     @property
-    def tempCoefRem(self) -> Union[float, int]:
+    def tempCoefRem(self) -> float | int:
         """Get the temperature coefficient of the remanent flux density.
         Formula for remanent flux density at temperature `tempMag` in °C is:
 
@@ -385,7 +385,7 @@ class Material:
         return self._tempCoefRem
 
     @tempCoefRem.setter
-    def tempCoefRem(self, new_temp_coef: Union[int, float]):
+    def tempCoefRem(self, new_temp_coef: int | float):
         """setter for temperature coefficient of Br
 
         Args:
@@ -687,7 +687,7 @@ class Material:
         return self._thermalCapacity
 
     @thermalCapacity.setter
-    def thermalCapacity(self, thermalCapacity: Union[int, float]):
+    def thermalCapacity(self, thermalCapacity: int | float):
         """set the thermalCapacity of the material in J/(kg*K)
 
         Args:

@@ -19,6 +19,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for testing building of band areas in pyleecan api"""
+from __future__ import annotations
+
 import math
 import os
 from os.path import join

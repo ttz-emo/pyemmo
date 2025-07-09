@@ -18,10 +18,11 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import annotations
+
 # %%
 import os
 from math import ceil
-from typing import List
 
 import swat_em
 from numpy import sign
@@ -33,8 +34,8 @@ TEST_RES_DIR = os.path.join(RESULT_DIR, "swat-em")
 
 # %%
 def genWindLayout_swat(
-    windingList: List[str], Qs: int, onePole=False
-) -> List[List[int]]:
+    windingList: list[str], Qs: int, onePole=False
+) -> list[list[int]]:
     windType = "integer" if windingList[0::2] == windingList[1::2] else "fractional"
     nbrSlotsInList = len(windingList) / 2
     nbrRepeat = Qs / nbrSlotsInList

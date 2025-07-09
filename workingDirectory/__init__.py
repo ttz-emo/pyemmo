@@ -19,6 +19,8 @@
 #
 # %%
 
+from __future__ import annotations
+
 from os.path import abspath, dirname, join
 from sys import path
 

@@ -45,7 +45,9 @@ Author:
 Note:
     This docstring was created by OpenAI GPT-4o.
 """
-from typing import Literal, Union
+from __future__ import annotations
+
+from typing import Literal
 
 import gmsh
 import numpy as np
@@ -61,7 +63,7 @@ from .gmsh_line import GmshLine
 # TODO: add tests for misc functions!!
 
 
-def get_dim_tags(geo_list: list[Union[Line, Surface, PhysicalElement]]) -> list[DimTag]:
+def get_dim_tags(geo_list: list[Line | Surface | PhysicalElement]) -> list[DimTag]:
     """
     Extracts dimension tag value pairs from a list of geometric elements.
 

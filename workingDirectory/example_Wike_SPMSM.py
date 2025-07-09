@@ -19,6 +19,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Example module for SPMSM toolkit machine model for Wike³ 2023"""
+from __future__ import annotations
+
 import math
 
 # %%

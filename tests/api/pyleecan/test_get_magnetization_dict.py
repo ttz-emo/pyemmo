@@ -19,9 +19,10 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module to test the module pyemmo.api.pyleecan.get_magnetization_dict"""
+from __future__ import annotations
+
 import logging
 from os.path import abspath, join
-from typing import List
 
 from pyleecan.Classes.Machine import Machine
 
@@ -49,7 +50,7 @@ def test_get_magnetization_dict():
 
     all_surfs_labels = []
     all_surfs_labels_split2 = []
-    geometry_list: List[SegmentSurface] = []
+    geometry_list: list[SegmentSurface] = []
     angle_point_ref_list = []
 
     logging.debug("Geometry translation started")

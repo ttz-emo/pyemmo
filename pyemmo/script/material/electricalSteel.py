@@ -19,10 +19,11 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """This module holds the electrical steel lamination Material-class definition"""
+from __future__ import annotations
+
 import json
 import operator
 import os
-from typing import Tuple, Union
 
 import numpy as np
 
@@ -46,7 +47,7 @@ class ElectricalSteel(Material):
         density: float = 0.0,
         thermalConductivity: float = 0.0,
         thermalCapacity: float = 0.0,
-        lossParams: Tuple[float, float, float] = None,
+        lossParams: tuple[float, float, float] = None,
         referenceFrequency: float = None,
         referenceFluxDensity: float = None,
     ):
@@ -144,7 +145,7 @@ class ElectricalSteel(Material):
     # TODO: Add overwrite of Material load class method
 
     @classmethod
-    def load(cls, mat_name: str) -> "ElectricalSteel":
+    def load(cls, mat_name: str) -> ElectricalSteel:
         """Load object of type ElectricalSteel from json file by name
 
         Args:
@@ -167,7 +168,7 @@ class ElectricalSteel(Material):
         return cls.from_dict(mat_dict)
 
     @classmethod
-    def from_dict(cls, mat_dict: dict) -> "ElectricalSteel":
+    def from_dict(cls, mat_dict: dict) -> ElectricalSteel:
         """Create a ElectricalSteel object from a data dict"""
         if mat_dict["BHCurve"] == {}:
             bh_curve = np.empty(0)  # default value for empty
@@ -234,7 +235,7 @@ class ElectricalSteel(Material):
             )
 
     @property
-    def lossParams(self) -> Tuple[float, float, float]:
+    def lossParams(self) -> tuple[float, float, float]:
         """
         Iron loss parameters for electircal steel sheet material in W/m³.
         If the values are given in a range for W/kg (hysteresis value < 20 AND
@@ -262,9 +263,7 @@ class ElectricalSteel(Material):
         return self._lossParams
 
     @lossParams.setter
-    def lossParams(
-        self, newLossParams: Union[Tuple[float, float, float], None]
-    ) -> None:
+    def lossParams(self, newLossParams: tuple[float, float, float] | None) -> None:
         """Setter of iron loss parameters in W/m³.
 
         Args:
@@ -301,8 +300,8 @@ class ElectricalSteel(Material):
             self._lossParams = tuple(newLossParams)  # make sure its a tuple
 
     def _adapt_loss_params(
-        self, lossParams: Tuple[float, float, float]
-    ) -> Tuple[float, float, float]:
+        self, lossParams: tuple[float, float, float]
+    ) -> tuple[float, float, float]:
         """"""
         freq = self.referenceFrequency  # frequency in Hz
         if not freq:
@@ -330,7 +329,7 @@ class ElectricalSteel(Material):
         return lossParams
 
     @property
-    def referenceFrequency(self) -> Union[float, int]:
+    def referenceFrequency(self) -> float | int:
         """Reference frequency for given loss parameters in Hz. See
         :attr:`lossParams <pyemmo.script.material.electricalSteel.ElectricalSteel.lossParams>`
 
@@ -340,7 +339,7 @@ class ElectricalSteel(Material):
         return self._referenceFrequency
 
     @referenceFrequency.setter
-    def referenceFrequency(self, newReferenceFrequency: Union[int, float, None]):
+    def referenceFrequency(self, newReferenceFrequency: int | float | None):
         """Setter of reference frequency in Hz
 
         Args:
@@ -358,7 +357,7 @@ class ElectricalSteel(Material):
         self._referenceFrequency = newReferenceFrequency
 
     @property
-    def referenceFluxDensity(self) -> Union[float, int]:
+    def referenceFluxDensity(self) -> float | int:
         """Reference flux density for given loss parameters in T. See
         :attr:`lossParams <pyemmo.script.material.electricalSteel.ElectricalSteel.lossParams>`
         for more details.
@@ -369,7 +368,7 @@ class ElectricalSteel(Material):
         return self._referenceFluxDensity
 
     @referenceFluxDensity.setter
-    def referenceFluxDensity(self, newReferenceFluxDensity: Union[int, float, None]):
+    def referenceFluxDensity(self, newReferenceFluxDensity: int | float | None):
         """Setter of reference flux density in T
 
         Args:

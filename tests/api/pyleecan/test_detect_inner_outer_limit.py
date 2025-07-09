@@ -19,8 +19,9 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module to test the detection of the model boundaries in the api."""
+from __future__ import annotations
+
 from os.path import abspath, join
-from typing import List
 
 import pytest
 from pyleecan.Classes.Machine import Machine
@@ -58,7 +59,7 @@ def test_detect_inner_outer_limit(machine_sample):
 
     all_surfs_labels = []
     all_surfs_labels_split2 = []
-    geometry_list: List[SegmentSurface] = []
+    geometry_list: list[SegmentSurface] = []
     angle_point_ref_list = []
 
     for i, surf in enumerate(all_surfaces):

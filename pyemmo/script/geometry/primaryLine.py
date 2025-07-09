@@ -18,7 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for primary boundary Line"""
-from typing import List
+from __future__ import annotations
 
 from .physicalElement import Material, PhysicalElement
 from .transformable import Transformable
@@ -34,7 +34,7 @@ class PrimaryLine(PhysicalElement):
     def __init__(
         self,
         name: str,
-        geo_list: List[Transformable],
+        geo_list: list[Transformable],
         material: Material = None,
     ):
         """init of PrimaryLine boundary PhysicalElement

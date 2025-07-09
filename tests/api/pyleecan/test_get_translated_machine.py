@@ -19,6 +19,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module to test pyemmo.api.pyleecan.get_translated_machine"""
+from __future__ import annotations
+
 import math
 from os.path import abspath, join
 

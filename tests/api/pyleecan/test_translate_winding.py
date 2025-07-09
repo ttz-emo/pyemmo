@@ -19,6 +19,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module to test winding translation"""
+from __future__ import annotations
+
 from os.path import abspath, join
 
 import pytest

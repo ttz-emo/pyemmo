@@ -17,8 +17,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import annotations
+
 from os.path import join
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import pyemmo as emmo
 from pyemmo.script.geometry.stepToArea import (
@@ -471,7 +473,7 @@ def getAdaptedPath(pathStepDir):
     return pathList
 
 
-def changeToEmmoObjects(objStepPath, unit=1) -> dict[str, list[Union[Surface, Line]]]:
+def changeToEmmoObjects(objStepPath, unit=1) -> dict[str, list[Surface | Line]]:
     mesh_big = 2e-3 * unit
     mesh_middle = 5e-4 * unit
     mesh_small = 2e-4 * unit

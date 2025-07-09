@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-from typing import List, Union
+from __future__ import annotations
 
 from ..material.material import Material
 from .circleArc import CircleArc
@@ -46,7 +46,7 @@ class SlaveLine(PhysicalElement):
     def __init__(
         self,
         name: str,
-        geo_list: List[Union[Line, CircleArc, Spline]],
+        geo_list: list[Line | CircleArc | Spline],
         material: Material = None,
     ):
         PhysicalElement.__init__(

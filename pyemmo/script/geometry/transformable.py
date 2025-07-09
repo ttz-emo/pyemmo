@@ -18,6 +18,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for abstract class Transformable"""
+from __future__ import annotations
+
 # import abstrac base class (abc)
 from abc import ABC, abstractmethod
 

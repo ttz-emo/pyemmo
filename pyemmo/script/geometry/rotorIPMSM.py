@@ -17,8 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import annotations
+
 import math
-from typing import List
 
 from .airGap import AirGap
 from .circleArc import CircleArc
@@ -572,8 +573,8 @@ class RotorIPMSM(Rotor):
         self._domainSlave.addToScript(script)
         self._domainInnerLimit.addToScript(script)
 
-    def getAllMagnet(self) -> List[Magnet]:
-        MagList: List[Magnet] = list()
+    def getAllMagnet(self) -> list[Magnet]:
+        MagList: list[Magnet] = list()
         for physElem in self._physicalElements:
             if physElem.type == "Magnet":
                 MagList.append(physElem)

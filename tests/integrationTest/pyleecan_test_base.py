@@ -27,15 +27,14 @@ comparison in the actual tests. Use:
 to run this module.
 """
 
-# from __future__ import absolute_import
-
+from __future__ import annotations
 
 import logging
 import os
 import sys
 from datetime import datetime
 from subprocess import PIPE, Popen
-from typing import List, Mapping, Tuple
+from typing import Mapping
 
 import pytest
 from pyleecan.Classes.Machine import Machine
@@ -47,6 +46,9 @@ from pyemmo.api.pyleecan import main as pyleecanAPI
 from pyemmo.definitions import ROOT_DIR
 from pyemmo.functions.runOnelab import createCmdCommand, log_subprocess_output
 from pyemmo.script.script import Script
+
+# from __future__ import absolute_import
+
 
 # logic to add local path to beginning of sys path
 path_temp = []
@@ -230,7 +232,7 @@ def pyleecan_test_base(
 
 
 def pyleecanPrepTuple(
-    test_cases: Mapping[str, List[Tuple[str, str, bool]]], test_type: str
+    test_cases: Mapping[str, list[tuple[str, str, bool]]], test_type: str
 ):
     """
     This function generates test paramemters for Pyleecan API testing.

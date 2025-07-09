@@ -67,6 +67,8 @@ Note:
     This docstring was created by ChatGPT.
 """
 
+from __future__ import annotations
+
 from typing import Literal
 
 import gmsh

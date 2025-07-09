@@ -19,6 +19,8 @@
 #
 """This module loads all the available pyleecan machines and trys to run the pyemmo api"""
 
+from __future__ import annotations
+
 import json
 import logging
 

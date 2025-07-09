@@ -18,6 +18,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Init for API subpackage"""
+from __future__ import annotations
+
 import logging
 
 from .. import logFmt, rootLogger

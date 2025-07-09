@@ -31,6 +31,8 @@ syntax: pytest <path_to_module>
 
 """
 
+from __future__ import annotations
+
 import glob
 import logging
 import os

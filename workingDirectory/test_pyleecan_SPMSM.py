@@ -20,6 +20,8 @@
 #
 """This tutorial script shows how to use the pyemmo api to create a ONELAB
 model of a pyleecan machine."""
+from __future__ import annotations
+
 import logging
 
 # %%

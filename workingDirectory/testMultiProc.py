@@ -18,6 +18,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Script for tutorial by Corey Schafer: https://www.youtube.com/watch?v=fKl2JW_qrso"""
+from __future__ import annotations
+
 import concurrent.futures
 import multiprocessing
 

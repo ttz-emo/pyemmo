@@ -51,8 +51,10 @@ Author:
 Note:
     This docstring was created by ChatGPT.
 """
+from __future__ import annotations
+
 import numbers
-from typing import Literal, Tuple, Union
+from typing import Literal
 
 import gmsh
 import numpy as np
@@ -122,10 +124,10 @@ class GmshPoint(GmshGeometry, Point):
     @classmethod
     def from_coordinates(
         cls,
-        coords: Union[np.ndarray, list, tuple],
+        coords: np.ndarray | list | tuple,
         meshLength: float = 1e-3,
         name: str = "",
-    ) -> "GmshPoint":
+    ) -> GmshPoint:
         """
         Create a GmshPoint instance from given coordinates.
         This method initializes a GmshPoint object using the provided coordinates,
@@ -209,7 +211,7 @@ class GmshPoint(GmshGeometry, Point):
             raise ValueError("meshLength must be a number!")
 
     @property
-    def coordinate(self) -> Tuple[float, float, float]:
+    def coordinate(self) -> tuple[float, float, float]:
         """
         Getter for the coordinate property.
 
@@ -228,7 +230,7 @@ class GmshPoint(GmshGeometry, Point):
         return (coords[0], coords[1], coords[2])
 
     @coordinate.setter
-    def coordinate(self, coords: Tuple[float, float, float]):
+    def coordinate(self, coords: tuple[float, float, float]):
         raise AttributeError(
             "You can't set coordinates of a GmshPoint! Use the translate method!"
         )
@@ -294,7 +296,7 @@ class GmshPoint(GmshGeometry, Point):
         """
         gmsh.model.occ.translate([(0, self.id)], dx, dy, dz)
 
-    def rotateZ(self, rotationPoint: "Point" = defaultCenterPoint, angle: float = 0.0):
+    def rotateZ(self, rotationPoint: Point = defaultCenterPoint, angle: float = 0.0):
         """Rotate the point around a rotation point and the Z-axis by a given angle.
 
         Args:
@@ -305,7 +307,7 @@ class GmshPoint(GmshGeometry, Point):
         # rotate point in gmsh
         gmsh.model.occ.rotate([(0, self.id)], x, y, z, 0, 0, 1, angle)
 
-    def duplicate(self, name="") -> "GmshPoint":
+    def duplicate(self, name="") -> GmshPoint:
         dimTags: list[DimTag] = gmsh.model.occ.copy([(0, self.id)])
         assert len(dimTags) == 1, "Error while duplicating point!"
         new_point = GmshPoint(tag=dimTags[0][1])
@@ -323,11 +325,11 @@ class GmshPoint(GmshGeometry, Point):
 
     def mirror(
         self,
-        planePoint: "Point",
-        planeVector1: "Line",
-        planeVector2: "Line",
+        planePoint: Point,
+        planeVector1: Line,
+        planeVector2: Line,
         name: str = None,
-    ) -> "Point":
+    ) -> Point:
         """TODO"""
         raise NotImplementedError("mirror is not implemented for GmshPoint!")
         # gmsh.model.occ.mirror(...)

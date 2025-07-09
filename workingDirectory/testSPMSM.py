@@ -18,6 +18,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Test module for spmsm toolkit machine model"""
+from __future__ import annotations
+
 # from numpy import rad2deg, where
 import math
 

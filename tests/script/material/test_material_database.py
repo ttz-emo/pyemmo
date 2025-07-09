@@ -20,6 +20,8 @@
 #
 
 """Module to test all materials can be loaded from the material database."""
+from __future__ import annotations
+
 import os
 
 import numpy as np

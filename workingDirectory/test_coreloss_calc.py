@@ -19,6 +19,8 @@
 #
 """Module to test the core loss calculation functions"""
 
+from __future__ import annotations
+
 # %% imports
 # import gmsh
 import os

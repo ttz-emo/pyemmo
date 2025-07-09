@@ -18,6 +18,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """MagnetParameter Beschreibung"""
+from __future__ import annotations
+
 import math
 
 from ..material.material import Material

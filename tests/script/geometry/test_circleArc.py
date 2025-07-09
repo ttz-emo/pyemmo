@@ -19,6 +19,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 # import logging
+from __future__ import annotations
+
 from math import isclose, pi, radians, sqrt
 
 import pytest

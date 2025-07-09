@@ -19,6 +19,8 @@
 #
 """Init of pyemmo package. Overloads the function calc_phaseangle_starvoltageV2
 of site-package swat-em, because there is a mistake in the original implementation."""
+from __future__ import annotations
+
 import datetime
 import logging
 import os
@@ -97,8 +99,8 @@ def calcPhaseangleStarvoltageCorr(volVecList):
     return seqeunce:   list
                        sequence of the flux wave: 1 or -1
     """
-    sequence: List[Literal[-1, 1]] = []
-    phaseangle: List[List[float]] = []
+    sequence: list[Literal[-1, 1]] = []
+    phaseangle: list[list[float]] = []
     for knu in volVecList:  # for every nu
         phaseangle.append([])
         km_sum = [sum(km) for km in knu]  # get the sum phasor for every phase

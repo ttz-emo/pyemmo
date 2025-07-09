@@ -19,6 +19,8 @@
 #
 """Module for Class Rotor"""
 
+from __future__ import annotations
+
 import copy
 import logging
 from math import pi

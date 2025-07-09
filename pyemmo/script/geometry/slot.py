@@ -18,8 +18,10 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for class Slot"""
+from __future__ import annotations
+
 from math import degrees, isclose, pi
-from typing import List, Literal, Tuple, Union
+from typing import Literal
 
 from numpy import mean
 
@@ -42,7 +44,7 @@ class Slot(PhysicalElement):
     def __init__(
         self,
         name: str,
-        geo_list: List[Surface],
+        geo_list: list[Surface],
         material: Material,
         windingDir: Literal[-1, 1] = 1,
         phase: float = 0,
@@ -138,7 +140,7 @@ class Slot(PhysicalElement):
         return self._nbrTurns
 
     @nbrTurns.setter
-    def nbrTurns(self, nbrTurnsInFace: Union[int, float]) -> None:
+    def nbrTurns(self, nbrTurnsInFace: int | float) -> None:
         """Setter of number of wires in face attribute
 
         Args:
@@ -157,7 +159,7 @@ class Slot(PhysicalElement):
                 ValueError(f"Number of turns in face is not a number: {nbrTurnsInFace}")
             )
 
-    def getPhase(self, phaseStr: str = None) -> Union[float, str]:
+    def getPhase(self, phaseStr: str = None) -> float | str:
         """
         Getter of phase angle attribute. With the parameter phaseStr, the output of the function can be modified.
         For example if the result should the phase as character in 'UVW', the phaseStr must be 'UVW'. Otherwise the angle of the phase in rad will be given.
@@ -182,20 +184,20 @@ class Slot(PhysicalElement):
             phase = phaseStr[phaseIndex]
             return phase
 
-    def get_radial_position(self) -> Tuple[float, float]:
+    def get_radial_position(self) -> tuple[float, float]:
         """get the radial position of the slot.\n
         This is useful when sorting the slots in radial direction
 
         Returns:
             float: Radius of the center of the slots surface(s) in m
         """
-        radList: List[float] = []
+        radList: list[float] = []
         for surf in self.geo_list:
             centerPoint = surf.calcCOG()
             radList.append(centerPoint.radius)
         return mean(radList)
 
-    def get_circumferential_position(self) -> Tuple[float, float]:
+    def get_circumferential_position(self) -> tuple[float, float]:
         """get the circumferential position of the slot.\n
         This is useful when sorting the slots in circumfederal direction
 
@@ -204,7 +206,7 @@ class Slot(PhysicalElement):
         """
         if not self.geo_list:
             raise RuntimeError("No geometry to determine slot position.")
-        phiList: List[float] = []
+        phiList: list[float] = []
         for surf in self.geo_list:
             centerPoint = surf.calcCOG()
             phiList.append(centerPoint.getAngleToX())

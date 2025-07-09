@@ -18,8 +18,10 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for toolkit magnet Surface03"""
+from __future__ import annotations
+
 import math
-from typing import Any, Dict
+from typing import Any
 
 from .line import Line
 from .magnet import Magnet
@@ -62,7 +64,7 @@ class Magnet_Surface03(Magnet):
     #
     ###
     def __init__(self, machineDict, magnetisationDirection, magnetisationType):
-        self._machineDict: Dict[str, Any] = machineDict
+        self._machineDict: dict[str, Any] = machineDict
         self.id = self._getNewID()
         magName = "Magnet_Surface03_" + str(self.id)
         super().__init__(

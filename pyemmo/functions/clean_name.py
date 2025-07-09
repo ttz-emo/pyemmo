@@ -20,6 +20,8 @@
 #
 """This module defines a function to clean strings for variable names in Onelab
 (C-programming style)"""
+from __future__ import annotations
+
 import re
 
 
