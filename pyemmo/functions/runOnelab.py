@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -227,114 +228,106 @@ def createCmdCommand(
         FileNotFoundError: If onelabFile does not exist or is not a file.
     """
     # check if the onelab file is valid:
-    if isfile(onelabFile):
-        (filePath, ext) = splitext(onelabFile)
-        # first part of the cmd command: open the geo or pro-file
-        if not gmshPath:
-            gmshPath = findGmsh()
-        gmsh_command = f'{gmshPath} "{onelabFile}"'  # the command is: 'gmsh "FILE.xxx"'
-        if ext.lower() == ".geo":
-            # if its a geo file
-            if not useGUI:
-                # run onelab server in command line if gui is False
-                #   this does the meshing and database generation
-                gmsh_command += " -run"  # the command is: "gmsh FILE.geo -run"
-                if logFileName:
-                    gmsh_command += f" -log {logFileName} "
-            # else:
-            #   just leave the command as it is: "gmsh FILE.geo" to open gmsh GUI
-        elif ext.lower() == ".pro":
-            getdp_command = ""
-            if not useGUI:
-                if getdpPath:
-                    # if command line and getdp specified
-                    # run the simulation with specific getdp exe
-                    getdp_command += f"{getdpPath} {onelabFile} -solve Analysis "
-                    # the command is: "getdp FILE.pro -solve Analysis"
-                    if "msh" in paramDict:
-                        if paramDict["msh"]:
-                            if isfile(paramDict["msh"]):
-                                # make sure file exists -> skip meshing
-                                getdp_command += f"-msh {paramDict['msh']} "
-                                gmsh_command = ""
-                            else:
-                                raise FileNotFoundError(
-                                    f"""Given msh file was not found: {paramDict["msh"]}"""
-                                )
-                        else:
-                            gmsh_command = f"{gmshPath} {filePath}.geo -run "
-                        # allways remove "msh" field for getdp param setting later
-                        paramDict.pop("msh")
-                    else:
-                        # no "msh" key -> create mesh command
-                        gmsh_command = f"{gmshPath} {filePath}.geo -run "
-                    # # If log file name is given, add file logging flag:
-                    # if logFileName:
-                    #     gmsh_command += f" -log {logFileName} "
-                    # add post operations
-                    if postOperations:
-                        getdp_command += " -pos "
-                        # Using set() because it removes string duplicates automatically
-                        for postOp in set(postOperations):
-                            if isinstance(postOp, str):
-                                getdp_command += postOp + " "
-                            else:
-                                raise (
-                                    ValueError(
-                                        "Given Post Operation name was not a string: "
-                                        f"{type(postOp)}, {postOp}"
-                                    )
-                                )
-                else:
-                    # only command line specified
-                    gmsh_command += " -run"  # just run "gmsh FILE.pro -run",
-                    # which auto-selects a getdp installation
-            # else:
-            # if gui was specified, just leave the command as it is:
-            #   "gmsh FILE.pro" to open gui
-        else:
-            raise (
-                ValueError(
-                    f"File '{onelabFile}' has wrong file extension (not '.geo'"
-                    " or '.pro') or is missing file extension: {ext}"
-                )
-            )
-        if paramDict:
-            # if the paramDict is not empty or None
-            if not isinstance(paramDict, dict):
-                raise TypeError(
-                    f"Parameter dict was not a dict, but type '{type(paramDict)}.'"
-                )
-            else:
-                # add verbosity if given
-                if "verbosity level" in paramDict:
-                    if gmsh_command:
-                        gmsh_command += f" -v {paramDict['verbosity level']} "
-                    getdp_command += f" -v {paramDict.pop('verbosity level')} "
-                for paramName, paramValue in paramDict.items():
-                    if isinstance(paramValue, str):
-                        getdp_command += f" -setstring {paramName} {paramValue}"
-                    elif isinstance(paramValue, bool):
-                        # convert bool to int!
-                        getdp_command += f" -setnumber {paramName} {int(paramValue)}"
-                    elif isinstance(paramValue, (float, int)):
-                        getdp_command += f" -setnumber {paramName} {paramValue}"
-                    else:
-                        raise (
-                            TypeError(
-                                "Parameter value was not string, float or "
-                                f"int! -> {type(paramValue)}"
-                            )
-                        )
-
-    else:
+    if not isfile(onelabFile):
         raise FileNotFoundError(f"Provided Onelab file was not found: {onelabFile}")
+    (filePath, ext) = splitext(onelabFile)
+    # first part of the cmd command: open the geo or pro-file
+    if not gmshPath:
+        gmshPath = findGmsh()
+    gmsh_command = f'{gmshPath} "{onelabFile}"'  # the command is: 'gmsh "FILE.xxx"'
+    if ext.lower() == ".geo":
+        # if its a geo file
+        if not useGUI:
+            # run onelab server in command line if gui is False
+            #   this does the meshing and database generation
+            gmsh_command += " -run"  # the command is: "gmsh FILE.geo -run"
+            if logFileName:
+                gmsh_command += f" -log {logFileName} "
+        # else:
+        #   just leave the command as it is: "gmsh FILE.geo" to open gmsh GUI
+    elif ext.lower() == ".pro":
+        getdp_command = ""
+        if not useGUI:
+            if getdpPath:
+                # if command line and getdp specified
+                # run the simulation with specific getdp exe
+                getdp_command += f"{getdpPath} {onelabFile} -solve Analysis "
+                # the command is: "getdp FILE.pro -solve Analysis"
+                if "msh" in paramDict:
+                    if paramDict["msh"] and not isfile(paramDict["msh"]):
+                        raise FileNotFoundError(
+                            f"""Given msh file was not found: {paramDict["msh"]}"""
+                        )
+                    # make sure file exists -> skip meshing
+                    getdp_command += f"-msh {paramDict['msh']} "
+                    gmsh_command = ""  # reset gmsh command
+                    # allways remove "msh" field for getdp param setting later
+                    paramDict.pop("msh")
+                else:
+                    # no "msh" key -> create mesh command
+                    gmsh_command = f"{gmshPath} {filePath}.geo -run "
+                # # If log file name is given, add file logging flag:
+                # if logFileName:
+                #     gmsh_command += f" -log {logFileName} "
+                # add post operations
+                if postOperations:
+                    getdp_command += " -pos "
+                    # Using set() because it removes string duplicates automatically
+                    for postOp in set(postOperations):
+                        if not isinstance(postOp, str):
+                            raise (
+                                ValueError(
+                                    "Given Post Operation name was not a string: "
+                                    f"{type(postOp)}, {postOp}"
+                                )
+                            )
+                        getdp_command += postOp + " "
+            else:
+                # only command line specified
+                gmsh_command += " -run"  # just run "gmsh FILE.pro -run",
+                # which auto-selects a getdp installation
+        # else:
+        # if gui was specified, just leave the command as it is:
+        #   "gmsh FILE.pro" to open gui
+    else:
+        raise (
+            ValueError(
+                f"File '{onelabFile}' has wrong file extension (not '.geo'"
+                " or '.pro') or is missing file extension: {ext}"
+            )
+        )
+    if paramDict:
+        # if the paramDict is not empty or None
+        if not isinstance(paramDict, dict):
+            raise TypeError(
+                f"Parameter dict was not a dict, but type '{type(paramDict)}.'"
+            )
+        # add verbosity if given
+        if "verbosity level" in paramDict:
+            if gmsh_command:
+                gmsh_command += f" -v {paramDict['verbosity level']} "
+            getdp_command += f" -v {paramDict.pop('verbosity level')} "
+        for paramName, paramValue in paramDict.items():
+            if isinstance(paramValue, str):
+                getdp_command += f" -setstring {paramName} {paramValue}"
+            elif isinstance(paramValue, bool):
+                # convert bool to int!
+                getdp_command += f" -setnumber {paramName} {int(paramValue)}"
+            elif isinstance(paramValue, (float, int)):
+                getdp_command += f" -setnumber {paramName} {paramValue}"
+            else:
+                raise (
+                    TypeError(
+                        "Parameter value was not string, float or "
+                        f"int! -> {type(paramValue)}"
+                    )
+                )
+
     if gmsh_command and getdp_command:
         return gmsh_command + " && " + getdp_command
-    elif gmsh_command:
+    if gmsh_command:
         return gmsh_command
-    else:
-        return getdp_command
+    return getdp_command
 
 
 def createGMSHCommand(
@@ -377,37 +370,36 @@ def createGMSHCommand(
     if not gmshPath:
         gmshPath = findGmsh()
     # check if the onelab file is valid:
-    if isfile(gmshFile):
-        (filePath, ext) = splitext(gmshFile)
-        # first part of the cmd command: open the geo or pro-file
-        command = f'{gmshPath} "{gmshFile}"'  # the command is: 'gmsh "FILE.xxx"'
-        if ext.lower() == ".geo":
-            # if its a geo file
-            if not useGUI:
-                # run onelab server in command line if gui is False
-                #   this does the meshing and database generation
-                command += " -run"  # the command is: "gmsh FILE.geo -run"
-                if logFileName:
-                    command += f" -log {logFileName} "
-            # else:
-            #   just leave the command as it is: "gmsh FILE.geo" to open gmsh GUI
-        elif ext.lower() == ".pro":
-            if not useGUI:
-                # only command line specified
-                command += " -run"  # just run "gmsh FILE.pro -run", which
-                # auto-selects a getdp installation
-            # else:
-            # if gui was specified, just leave the command as it is:
-            #   "gmsh FILE.pro" to open gui
-        else:
-            raise (
-                ValueError(
-                    f"File '{gmshFile}' has wrong file extension (not '.geo' "
-                    f"or '.pro') or is missing file extension: {ext}"
-                )
-            )
-    else:
+    if not isfile(gmshFile):
         raise FileNotFoundError(f"Provided Onelab file was not found: {gmshFile}")
+    (_, ext) = splitext(gmshFile)
+    # first part of the cmd command: open the geo or pro-file
+    command = f'{gmshPath} "{gmshFile}"'  # the command is: 'gmsh "FILE.xxx"'
+    if ext.lower() == ".geo":
+        # if its a geo file
+        if not useGUI:
+            # run onelab server in command line if gui is False
+            #   this does the meshing and database generation
+            command += " -run"  # the command is: "gmsh FILE.geo -run"
+            if logFileName:
+                command += f" -log {logFileName} "
+        # else:
+        #   just leave the command as it is: "gmsh FILE.geo" to open gmsh GUI
+    elif ext.lower() == ".pro":
+        if not useGUI:
+            # only command line specified
+            command += " -run"  # just run "gmsh FILE.pro -run", which
+            # auto-selects a getdp installation
+        # else:
+        # if gui was specified, just leave the command as it is:
+        #   "gmsh FILE.pro" to open gui
+    else:
+        raise (
+            ValueError(
+                f"File '{gmshFile}' has wrong file extension (not '.geo' "
+                f"or '.pro') or is missing file extension: {ext}"
+            )
+        )
     return command
 
 
