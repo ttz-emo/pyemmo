@@ -411,8 +411,11 @@ def createGMSHCommand(
     return command
 
 
-def runCalcforCurrent(param: dict):
-    RES_DIR = param["res"]
+def runCalcforCurrent(param: dict) -> dict:
+    # adding additional results path to GetDP parameters (only then GetDP knows where to
+    # put the results) because its initally set in the parameter geo
+    # file. But if the files are moved the results folder might not exist any more!
+    RES_DIR = param["getdp"]["res"]
     if not os.path.isdir(RES_DIR):
         if os.path.isdir(os.path.dirname(RES_DIR)):
             logging.info(f"Creating results directory: {RES_DIR}")
@@ -421,10 +424,6 @@ def runCalcforCurrent(param: dict):
             raise RuntimeError(
                 "Result directory does not exist and can not be created: " + RES_DIR
             )
-    # adding additional results path to GetDP parameters (only then GetDP knows where to
-    # put the results) because its initally set in the parameter geo
-    # file. But if the files are moved the results folder might not exist any more!
-    param["getdp"]["res"] = RES_DIR
     pro_file = param["pro"]
     # simulation_res_dir is the actual res folder joined from the global RES_DIR and
     # ResId (which is the folder name).
