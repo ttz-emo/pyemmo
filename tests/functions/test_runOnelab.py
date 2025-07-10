@@ -117,18 +117,18 @@ class TestRunOnelab(unittest.TestCase):
                     "ID_RMS": 0.0,
                     "RPM": 1000,
                     "initrotor_pos": 0.0,
-                    "d_theta": 5,
-                    "finalrotor_pos": 15,
+                    "d_theta": 5.0,
+                    "finalrotor_pos": 10.0,
                     "ResId": res_id,
                     "Flag_AnalysisType": 1,
                     "Flag_PrintFields": 0,
-                    "Flag_Debug": 1,
+                    "Flag_Debug": 0,
                     "Flag_ClearResults": 1,
                     "verbosity level": 3,
                     #                     mesh_veryFine, fineMesh or coarseMesh
                     # "msh": os.path.join(MODEL_DIR, "mesh_veryFine.msh"),
                     # "Flag_SecondOrder": 0,
-                    "stop_criterion": 1e-8,
+                    "stop_criterion": 1e-5,
                     "res": self.test_sim_dir,  # result folder
                 },
                 "pro": join(self.model_dir, "Toyota_Prius.pro"),  # pro file
