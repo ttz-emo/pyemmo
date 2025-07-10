@@ -82,6 +82,7 @@ log_cli = true
 log_cli_level = "WARNING"
 # log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)"
 # log_cli_date_format = "%Y-%m-%d %H:%M:%S"
+addopts = "--cov=pyemmo --cov=tests"
 
 [tool.bandit]
 skips = ["B311", "B404", "B603"]
