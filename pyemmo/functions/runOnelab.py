@@ -238,8 +238,10 @@ def createCmdCommand(
     if ext.lower() == ".geo":
         # if its a geo file
         if not useGUI:
-            # run onelab server in command line if gui is False
-            #   this does the meshing and database generation
+            # run onelab server in command line if gui is False. This does the meshing
+            # and database generation.
+            # TODO: Add general gmsh paramter to mesh generation call via gmsh parameter
+            # dict
             gmsh_command += " -run"  # the command is: "gmsh FILE.geo -run"
             if logFileName:
                 gmsh_command += f" -log {logFileName} "
@@ -265,6 +267,7 @@ def createCmdCommand(
                     paramDict.pop("msh")
                 else:
                     # no "msh" key -> create mesh command
+                    # TODO: Add gmsh paramter to mesh generation call
                     gmsh_command = f"{gmshPath} {filePath}.geo -run "
                 # # If log file name is given, add file logging flag:
                 # if logFileName:
