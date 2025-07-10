@@ -25,7 +25,6 @@ from __future__ import annotations
 import json
 import logging
 import os
-import warnings
 from cmath import isclose
 from os import path
 
@@ -384,7 +383,7 @@ def importPos(
         if not cdata:
             gmsh.finalize()
             raise ValueError(f"No data found in {pos_file}!")
-        warnings.warn(f"Import file '{pos_file}' did only contain last timestep!")
+        logging.warning("Import file '%s' did only contain last timestep!", pos_file)
         # Only last time step happens if PostProcessing is called at runtime
         # (in 'Resolution').
         # Return only that timestep
