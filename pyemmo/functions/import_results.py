@@ -423,19 +423,19 @@ def get_result_files(
         Tuple[list[Union[str, bytes, os.PathLike]], list[Union[str, bytes, os.PathLike]]]: List of .dat and list of .pos
             files in the given folder.
     """
-    if os.path.isdir(result_folder):
-        dat_file_list = []
-        pos_file_list = []
-        for results_file in os.listdir(result_folder):
-            _, ext = os.path.splitext(results_file)
-            if ext == ".dat":
-                dat_file_list.append(results_file)
-            elif ext == ".pos":
-                pos_file_list.append(results_file)
-        if len(dat_file_list) == 0:
-            logger.warning("No result files found in '%s'", result_folder)
-        return dat_file_list, pos_file_list
-    raise FileNotFoundError(f"Results folder {result_folder} does not exist.")
+    if not os.path.isdir(result_folder):
+        raise FileNotFoundError(f"Results folder {result_folder} does not exist.")
+    dat_file_list = []
+    pos_file_list = []
+    for results_file in os.listdir(result_folder):
+        _, ext = os.path.splitext(results_file)
+        if ext == ".dat":
+            dat_file_list.append(results_file)
+        elif ext == ".pos":
+            pos_file_list.append(results_file)
+    if len(dat_file_list) == 0:
+        logger.warning("No result files found in '%s'", result_folder)
+    return dat_file_list, pos_file_list
 
 
 def load_param_file(setup_file: str | bytes | os.PathLike) -> dict:
