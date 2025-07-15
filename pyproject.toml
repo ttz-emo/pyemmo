@@ -129,6 +129,8 @@ deps =
     pytest
     pytest_check
     hypothesis
+    pytest-cov
+
 commands =
     # python -m build -o .tox/dist
     # pip install .tox/dist/*.whl
