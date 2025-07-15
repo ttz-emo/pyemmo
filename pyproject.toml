@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=77.0.3", "wheel"]
+requires = ["setuptools>=75.3.2", "wheel"] # setuptools==75.3.2 is the latest version that support python 3.8
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -13,9 +13,13 @@ maintainers = [{ name = "Max Schuler", email = "agem.ttz-emo@thws.de" }]
 readme = "README.md"
 description = "PyEMMO is a interface for modeling electrical machines in the open-source FEA software Onelab"
 urls = { Repository = "https://gitlab.ttz-emo.thws.de/ag-em/pyemmo" }
-requires-python = ">= 3.6"
-license = "GPL-3.0-or-later"
-license-files = ["LICENSE"]
+requires-python = ">= 3.8"
+license = { file = "LICENSE" } # license keyword: Newer setuptool versions expect only
+# the license string here, not a dict type! But to make it testable with py38 we need to
+# stick to the former expression since the actual setuptools verisions are not available
+# for 3.8
+# license = { text = "GPL-3.0-or-later" }
+# license-files = ["LICENSE"] # skip the license-files keyword due to the expl. given above!
 keywords = [
     "electrical machine",
     "simulation",
@@ -26,8 +30,6 @@ keywords = [
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.6",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -111,13 +113,8 @@ skips = ["B311", "B404", "B603"]
 # commands = ["pytest tests"]
 # setenv = ["PATH = {env:PATH}{:}/."]
 [tool.tox]
-# py3.6 : Fails to get interpreter info when invoked from python3.12 due to
-#           virtualenv.discovery using __future__.annotations which is not
-#           available for python 3.6...
-# py3.7 : Pyleecan (>=1.5.1) does not work for 3.7 due to dependency conflicts
-#           with pyvista and SciDataTool. Pyvista max. version on 3.7 is 0.38.6
-#           SciDataTool (2.5.0) only works with Python >=3.8.
-#         Further latest numpy version for python 3.7 is 1.21.6!
+# Everything < Python 3.9 is outdated by now, so we don't try to keep is stable below
+# this version!
 # py3.10: Not working with PYLEECAN yet. Fails to install matplotlib 3.3.4 with
 #           build and setup.cfg due to freetype missing MS C++ compilers
 # py3.11: Not working with PYLEECAN yet. Not ompatcible with pyleecan yet due
@@ -136,22 +133,6 @@ commands =
     # python -m build -o .tox/dist
     # pip install .tox/dist/*.whl
     pytest
-setenv =
-    PATH = {env:PATH}{:}/.
-    VIRTUALENV_DISCOVERY=pyenv
-
-[testenv:py38]
-skip_install = true
-base_python = python3.8
-
-deps =
-    pytest
-    pytest_check
-    hypothesis
-
-commands =
-    pytest
-
 setenv =
     PATH = {env:PATH}{:}/.
     VIRTUALENV_DISCOVERY=pyenv
