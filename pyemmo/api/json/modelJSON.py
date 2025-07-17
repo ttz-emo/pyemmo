@@ -44,6 +44,7 @@ from ...script.geometry.surface import Point
 from ...script.gmsh.gmsh_arc import GmshArc
 from ...script.gmsh.gmsh_line import GmshLine
 from ...script.gmsh.gmsh_point import GmshPoint
+from ...script.gmsh.gmsh_spline import GmshSpline
 from ...script.material.material import Material
 from .. import logger
 from ..machine_segment_surface import MachineSegmentSurface
@@ -110,29 +111,24 @@ def createLine(
             name=lineName, start_point=startPoint, end_point=endPoint
         )
     elif lineType == "Bezier":
-        raise NotImplementedError(
-            "Line type Spline not implemented in pyemmo GmshAPI yet."
-        )
         # in json api Bezier curves can only have one control point yet!
-        controlPointName = lineDict["MpName"]
+        cp_name = lineDict["MpName"]
         # import control point coordinates
-        controlPointCoords = (
+        cp_coords = (
             lineDict["MpX"],
             lineDict["MpY"],
             lineDict["MpZ"],
         )
-        controlPoint = Point(
-            controlPointName,
-            controlPointCoords[0],
-            controlPointCoords[1],
-            controlPointCoords[2],
+        # create control point of spline
+        # NOTE: We don't need to specify a mesh length since the point will not be part
+        # of the model
+        controlPoint = GmshPoint.from_coordinates(
+            coords=cp_coords,
+            name=cp_name,
         )
-        line = Spline(
+        line = GmshSpline.from_points(
+            points=[startPoint, controlPoint, endPoint],
             name=lineName,
-            start_point=startPoint,
-            end_point=endPoint,
-            control_points=[controlPoint],
-            spline_type=1,  # FIXME: Set spline type depended on 'lineType' key!
         )
     # else invalid linetype
     else:
@@ -245,21 +241,21 @@ def createAPISurf(areaDict: dict) -> MachineSegmentSurface:
     - Angle
     - Meshsize
     """
-    try:
-        surf = MachineSegmentSurface.from_curve_loop(
-            name=areaDict["Name"],
-            part_id=areaDict["IdExt"],  # get short area name ("IdExt") as dict key
-            curve_loop=getSurfaceLineList(
-                lineDictList=areaDict["Lines"], meshLen=areaDict["Meshsize"]
-            ),
-            material=importJSON.createMaterial(areaDict["Material"]),
-            nbr_segments=areaDict["Quantity"],
-        )
-    except Exception as exce:
-        raise RuntimeError(
-            f"""Failed to generate API surface for '{areaDict["Name"]}' """
-            f"due to following error: {exce.args[0]}"
-        ) from exce
+    # try:
+    surf = MachineSegmentSurface.from_curve_loop(
+        name=areaDict["Name"],
+        part_id=areaDict["IdExt"],  # get short area name ("IdExt") as dict key
+        curve_loop=getSurfaceLineList(
+            lineDictList=areaDict["Lines"], meshLen=areaDict["Meshsize"]
+        ),
+        material=importJSON.createMaterial(areaDict["Material"]),
+        nbr_segments=areaDict["Quantity"],
+    )
+    # except Exception as exce:
+    # raise RuntimeError(
+    #     f"""Failed to generate API surface for '{areaDict["Name"]}' """
+    #     f"due to following error: {exce.args[0]}"
+    # ) from exce
     return surf
 
 
