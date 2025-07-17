@@ -246,6 +246,8 @@ def filter_lines_at_angle(line_list: list[Line], angle: float) -> list[Line]:
     for line in straight_lines:
         # we need to check start and end point angle here because there could be a line
         # on the boundary that has the same vector-angle, but is no secondary line!
+        # FIXME: This does not work for curves that contain the center point (like the
+        # edges of a shaft surface).
         if all(
             np.isclose(
                 [
