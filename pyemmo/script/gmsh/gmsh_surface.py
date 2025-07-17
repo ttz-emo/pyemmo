@@ -37,6 +37,7 @@ from .gmsh_arc import GmshArc
 from .gmsh_geometry import GmshGeometry
 from .gmsh_line import GmshLine
 from .gmsh_point import GmshPoint
+from .gmsh_spline import GmshSpline
 
 
 def create_curve(id: int) -> GmshLine | GmshArc:
@@ -56,6 +57,8 @@ def create_curve(id: int) -> GmshLine | GmshArc:
         return GmshLine(tag=id)
     if gmsh.model.getType(1, id) == "Circle":
         return GmshArc(tag=id)
+    if gmsh.model.getType(1, id) in ("BSpline", "Bezier", "Spline"):
+        return GmshSpline(tag=id)
     raise ValueError(f"Line with tag {id} is not of type Line or Circle!")
 
 
