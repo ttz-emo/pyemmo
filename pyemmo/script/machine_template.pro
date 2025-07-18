@@ -87,7 +87,7 @@ DefineConstant[
 
     Flag_ExpertMode = {1, Name "01View/Expert Mode", Choices {0, 1}},
 
-    Flag_Debug = {1, Name "01View/Debug", Choices {0,1}},
+    Flag_Debug = {0, Name "01View/Debug", Choices {0,1}},
 
     MachineType = {
         (nbrRotorBars > 0), Name StrCat[INPUT_ANA_SETTINGS, "00Machine Type"],
@@ -204,8 +204,11 @@ DefineConstant[
         Name StrCat[
             INPUT_ANA_SETTINGS_OUTPUT, "02Results folder path"
         ],
-        Visible Flag_Debug
+        Help "Main results folder path where the results of the simulation
+            will be stored. This folder will be created by GetDP if it does not
+            exist yet. Use 'Results folder name' to create a result subfolder."
     }
+
     ResId = {
         "/", Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "03Results folder name"],
         Help "Name of the directory inside the results folder, where the result
@@ -221,7 +224,7 @@ DefineConstant[
     },
 
     Flag_PrintFields = {
-        1, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "05Show Local Fields"],
+        0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "05Show Local Fields"],
         Choices{0, 1}
     },
 
@@ -548,9 +551,11 @@ DefineConstant[
 //=============================================================================
 
 DefineConstant[ //Material definitions
-    tempMag = {TEMP_MAG,
+    tempMag = {
+        TEMP_MAG,
         Name StrCat[INPUT_MAT_PROPERTIES_MAGNET, "Magnet temperature [°C]"],
-        Visible Flag_ExpertMode}
+        Visible Flag_ExpertMode && NbrRegions[Rotor_Magnets] > 0
+    }
 ];
 
 //=============================================================================
