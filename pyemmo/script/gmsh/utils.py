@@ -53,6 +53,7 @@ import gmsh
 import numpy as np
 
 from ...definitions import DEFAULT_GEO_TOL
+from ..geometry import defaultCenterPoint
 from ..geometry.circleArc import CircleArc
 from ..geometry.line import Line
 from ..geometry.physicalElement import PhysicalElement
@@ -246,19 +247,22 @@ def filter_lines_at_angle(line_list: list[Line], angle: float) -> list[Line]:
     for line in straight_lines:
         # we need to check start and end point angle here because there could be a line
         # on the boundary that has the same vector-angle, but is no secondary line!
-        # FIXME: This does not work for curves that contain the center point (like the
-        # edges of a shaft surface).
-        if all(
-            np.isclose(
-                [
-                    line.start_point.getAngleToX() % (2 * np.pi),
-                    line.end_point.getAngleToX() % (2 * np.pi),
-                ],
-                [angle, angle],
-                atol=1e-6,
-            )
+        # Additionally we need to check for the center point because its on every angle.
+        if line.start_point.isEqual(defaultCenterPoint, DEFAULT_GEO_TOL) or np.isclose(
+            line.start_point.getAngleToX() % (2 * np.pi),
+            angle,
+            atol=1e-6,
         ):
-            lines_at_angle.append(line)
+            # start point is center or on angle
+            if line.end_point.isEqual(
+                defaultCenterPoint, DEFAULT_GEO_TOL
+            ) or np.isclose(
+                line.end_point.getAngleToX() % (2 * np.pi),
+                angle,
+                atol=1e-6,
+            ):
+                # end point is center or at angle aswell
+                lines_at_angle.append(line)
     return lines_at_angle
 
 
