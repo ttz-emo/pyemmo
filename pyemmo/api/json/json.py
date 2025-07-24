@@ -41,6 +41,7 @@ from ...functions import calcIronLoss, clean_name, import_results, runOnelab
 from ...script.geometry.machineAllType import MachineAllType
 from ...script.geometry.rotor import Rotor
 from ...script.geometry.stator import Stator
+from ...script.gmsh.utils import fix_missing_mesh_sizes
 from ...script.material.electricalSteel import ElectricalSteel
 from ...script.script import Script
 from .. import logger
@@ -83,6 +84,11 @@ def createMachine(
     )
     gmsh_api.model.occ.remove_all_duplicates()
     gmsh_api.model.occ.synchronize()
+
+    # check mesh sizes after import! Due to issues with OCC it can happen that points
+    # lose their mesh size and get mesh size = 0. In this case, search for the closest
+    # point and set the mesh size to its mesh size.
+    fix_missing_mesh_sizes()
 
     rotorPhysicals, statorPhysicals = boundary.get_boundaries(
         maschineSurfDict, symFactor, rotorMovingBandRadius
