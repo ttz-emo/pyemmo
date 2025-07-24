@@ -70,7 +70,7 @@ class TestGmshSpline:
         # assert spline.control_points[0].id == center.id
         assert spline.end_point.id == end.id
         assert spline.name == "Test Spline"
-        assert gmsh.model.getType(1, spline.id) == "BSpline"
+        assert gmsh.model.getType(1, spline.id) == "Bezier"
 
     def test_gmsh_spline_creation_with_tag(self):
         """Test init of GmshSpline with gmsh curve tag"""
@@ -129,8 +129,8 @@ class TestGmshSpline:
 
     def test_length(self, gmsh_spline: GmshSpline):
         """Test length method of class GmshSpline"""
-        spline_length = 2.090593975002873
-        assert np.isclose(gmsh_spline.length, spline_length, atol=TOLERANCE)
+        expected_length = 1.6232135
+        assert np.isclose(gmsh_spline.length, expected_length, atol=TOLERANCE)
 
     def test_duplicate(self, gmsh_spline: GmshSpline):
         """Test duplicate method of class GmshGeometry"""
