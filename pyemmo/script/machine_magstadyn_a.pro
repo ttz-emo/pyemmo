@@ -1100,25 +1100,27 @@ PostProcessing {
 
       { Name a  ; Value { Term { [ {a} ] ; In Domain ; Jacobian Vol ; } } }
       { Name az ; Value { Term { [ CompZ[{a}] ] ; In Domain ; Jacobian Vol ; } } }
-      // Here we  plot the b field on a per element basis (local quantity) since  b is defined as b=curl a. We state that the Term is {d a}. We could also have written {Curl a}. In GetDP the d operator takes the correct differential operator (div, curl, rot) depending on the differential form on which it is applied. (See function space above, or search for Tonti diagram):
+      // Here we plot the b field on a per element basis (local quantity) since  b is defined as b=curl a. We state that the Term is {d a}. We could also have written {Curl a}. In GetDP the d operator takes the correct differential operator (div, curl, rot) depending on the differential form on which it is applied. (See function space above, or search for Tonti diagram):
       { Name b  ; Value { Term { [ {d a} ] ; In Domain ; Jacobian Vol ; } } }
       { Name bn  ; Value { Term { [ Norm[{d a}] ] ; In Domain ; Jacobian Vol ; } } }
       { Name hn  ; Value { Term { [ Norm[nu[{d a}]*{d a}] ] ; In Domain ; Jacobian Vol ; } } }
       {
         Name b_radial ;
-        Value { Term { [ {d a}* Vector[  Cos[AngularPosition[]#4], Sin[#4], 0.] ] ; In Domain ; Jacobian Vol ; } }
-      }
-      {
-        Name b_radial_sur ;
         Value {
-          Term {
-            [ {d a}* Vector[  Cos[AngularPosition[]#4], Sin[#4], 0.] ] ;
-            In Region[{Rotor_Bnd_MBaux, Stator_Bnd_MB, Rotor_Bnd_MB_1}] ;
-            Jacobian Sur ;
-          }
+          Term { [ {d a}* Vector[  Cos[AngularPosition[]#4], Sin[#4], 0.] ] ;
+            In Domain ; Jacobian Vol ; }
+          Term { [ {d a}* Vector[  Cos[AngularPosition[]#4], Sin[#4], 0.] ] ;
+            In Region[{Rotor_Bnd_MB,Stator_Bnd_MB}] ; Jacobian Sur ; }
         }
       }
-      { Name b_tangent ; Value { Term { [ {d a}* Vector[ -Sin[AngularPosition[]#4], Cos[#4], 0.] ] ; In Domain ; Jacobian Vol ; } } }
+      { Name b_tangent ;
+        Value {
+          Term { [ {d a}* Vector[ -Sin[AngularPosition[]#4], Cos[#4], 0.] ] ;
+            In Domain ; Jacobian Vol ; }
+          Term { [ {d a}* Vector[ -Sin[AngularPosition[]#4], Cos[#4], 0.] ] ;
+            In Region[{Rotor_Bnd_MB, Stator_Bnd_MB}] ; Jacobian Sur ; }
+        }
+      }
       { Name br ; Value { Term { [ br[] ] ;      In DomainM ; Jacobian Vol ; } } }
       { Name mu ; Value { Term { [ 1/nu[{d a}]/(mu0) ] ; In Domain ; Jacobian Vol ; } } }
       { Name ur  ; Value { Term { [ {ur} ]; In DomainC ; Jacobian Vol ; } } }
