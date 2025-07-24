@@ -2011,10 +2011,11 @@ class Script:
             + "},\n"
         )
         meshSettingsCode += (
-            "\nFlag_individualColoring = {0,"
+            "\tFlag_individualColoring = {0,"
             + 'Name StrCat[INPUT_MESH, "09Individual Mesh Coloring"], '
             + "Choices {0, 1}}\n];\n"
         )
+        meshSettingsCode += "Mesh.MeshSizeFactor = gmsf;\n"
         # show mesh Lines without lighting
         meshSettingsCode += (
             "Mesh.SurfaceEdges = 1;\nMesh.Light = 0;\nMesh.SurfaceFaces = 1;\n"
