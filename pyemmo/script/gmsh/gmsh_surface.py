@@ -265,7 +265,7 @@ class GmshSurface(GmshGeometry, Surface):
             float: mean of mesh length of all points in meter
         """
         points: list[GmshPoint] = self.points
-        mesh_lenght_list = [p.meshLength for p in points]
+        mesh_lenght_list = [p.meshLength for p in points if p.meshLength > 0]
         return np.mean(mesh_lenght_list)
 
     @property
