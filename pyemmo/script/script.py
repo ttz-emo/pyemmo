@@ -28,12 +28,12 @@ import logging
 import os
 import re
 import shutil
-from math import pi
+from math import isclose, pi
 from os.path import abspath, join
 from typing import TYPE_CHECKING, Literal
 
 import gmsh
-from numpy import rad2deg, where
+from numpy import mean, rad2deg, where
 from pygetdp import Function as FunctionGetDP
 from pygetdp import Group as GroupGetDP
 from pygetdp import PostOperation
@@ -65,7 +65,7 @@ from .material.electricalSteel import ElectricalSteel
 
 if TYPE_CHECKING:
     from .geometry.circleArc import CircleArc
-    from .geometry.machineAllType import MachineAllType
+    from .geometry.machineAllType import MachineAllType, Rotor, Stator
     from .geometry.point import Point
     from .geometry.spline import Spline
     from .material.material import Material
@@ -2119,6 +2119,28 @@ class Script:
 
         # update machine parameters:
         simuParamDict["GEO"] = {**simuParamDict["GEO"], **geometryParams}
+
+        # Create default parameters for rotor and stator airgap field post processing
+        for side in ("rotor", "stator"):
+            mside: Rotor | Stator = getattr(machine, side)
+            for phys in mside._domainAirGap.physicals:
+                airgap_radii = []
+                for geo in phys.geo_list:
+                    # calc mean radius
+                    geo: Surface = geo
+                    for p in geo.points:
+                        if isclose(p.y, 0, abs_tol=DEFAULT_GEO_TOL):
+                            airgap_radii.append(p.x)
+                if not airgap_radii:
+                    logging.warning(
+                        "No points near x-axis found in %s airgap physical element '%s'. "
+                        "Cannot calculate mean radius for airgap field post processing.",
+                        side,
+                        phys.name,
+                    )
+                    airgap_radii = [0.0]  # set to zero if no points found
+                # set mean radius default value
+                simuParamDict["GEO"][f"R_{side.upper()}_AIRGAP"] = mean(airgap_radii)
 
         # 2. Set simulation parameters
         #   INIT_ROTOR_POS  -> Allready set in __init__

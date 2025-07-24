@@ -56,7 +56,7 @@ DefineConstant[
     NbrPolesTot = NBR_POLE_PAIRS * 2,
     NbrPolePairs = NbrPolesTot / 2,
     Flag_MB = 1, // Allways use Movingband!
-    r_AG = R_AIRGAP
+    r_AG = R_AIRGAP // Rotor airgap radius at the interface of the moving band
     //Flag_Link = 0 			// Use Link Constraint - is not used in magstatdyn...
 ];
 //=============================================================================
@@ -265,6 +265,20 @@ DefineConstant[
             "step will be saved to a .res file. This is time consuming! For faster ",
             "calculation, it is recommended to deactivate."
         ]
+    },
+
+    r_rotor_airgap = {
+        R_ROTOR_AIRGAP, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "/Airgap Field/Rotor Radius"],
+        Min 0,
+        Visible Flag_PrintFields,
+        Help "Define the radius of the rotor airgap for the post-processing of B_rad and B_tan."
+    },
+
+    r_stator_airgap = {
+        R_STATOR_AIRGAP, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "/Airgap Field/Stator Radius"],
+        Min 0,
+        Visible Flag_PrintFields,
+        Help "Define the radius of the stator airgap for the post-processing of B_rad and B_tan."
     },
 
     Flag_Lam = 0, // FIXME: Not using lamination eddy current calculation yet!
@@ -833,6 +847,7 @@ Function
     // variable containing the current rotor position => required to calculate the
     // magnetization direction of the magnets in rad. $Time is an internal variable
     // containing the current time
+    // the $dtheta value is only used when generating the ec lamination tables!
     RotorPosition[] = initrotor_pos * deg2rad + $Time * wr + $dtheta * deg2rad;
     // current position in deg
     RotorPosition_deg[] = RotorPosition[] * rad2deg;
