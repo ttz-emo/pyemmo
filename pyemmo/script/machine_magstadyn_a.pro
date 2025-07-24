@@ -1450,14 +1450,31 @@ PostOperation GetInducedCurrentDensity UsingPost MagStaDyn_a_2D {
 
 // PostOperation for getting the tangential and the radial components of the magnetic flux density:
 PostOperation GetBRadTanAirGap UsingPost MagStaDyn_a_2D {
-  // print the radial flux density on a circle close to the stator tooth over the complete model (this is why we devide by the SymmetryFactor) by steps of 1deg
+  // FIXME: The evaluation of results with 'OnGrid' leads to a individual post-processing
+  // view in the Gmsh GUI for each time step. As a workaround we use the 'OnElementsOf'
+  // option to get a single PP view for all time steps. Unfortunately the results cannot
+  // be shown as a 2D space plot then.
+
+  // Print the radial flux density on a curve in the stator airgap by steps of 0.5 deg
+  // We did not manage to evaluate the results this way for the rotor airgap at runtime
+  // since, due to the movement of the rotor, the grid must not be static and it seems
+  // like the OnGrid option does not allow parametric attributes.
+  // Print[
+  //   b_radial, OnGrid{r_stator_airgap*Cos[$A*Pi/180],r_stator_airgap*Sin[$A*Pi/180],0 }{0:360/SymmetryFactor:0.5,0,0},
+  //   Format Gmsh, File StrCat[ResDir,"b_rad_stator",ExtGmsh], LastTimeStepOnly,
+  //   AppendTimeStepToFileName Flag_SaveAllSteps];
+  // Print[
+  //   b_tangent, OnGrid{r_stator_airgap*Cos[$A*Pi/180],r_stator_airgap*Sin[$A*Pi/180],0 }{0:360/SymmetryFactor:0.5,0,0},
+  //   Format Gmsh, File StrCat[ResDir,"b_tan_stator",ExtGmsh], LastTimeStepOnly,
+  //   AppendTimeStepToFileName Flag_SaveAllSteps];
+
   Print[
-    b_radial, OnGrid{(r_AG*(1-0.0001))*Cos[$A*Pi/180],(r_AG*(1-0.0001))*Sin[$A*Pi/180],0 }{0:360/SymmetryFactor:0.5,0,0},
-    File StrCat[ResDir,"brad",ExtGmsh], LastTimeStepOnly,
+    b_radial, OnElementsOf Stator_Bnd_MB, Name "b radial (stator)",
+    Format Gmsh, File StrCat[ResDir,"b_rad_stator",ExtGmsh], LastTimeStepOnly,
     AppendTimeStepToFileName Flag_SaveAllSteps];
   Print[
-    b_tangent, OnGrid{(r_AG*(1-0.0001))*Cos[$A*Pi/180],(r_AG*(1-0.0001))*Sin[$A*Pi/180],0 }{0:360/SymmetryFactor:0.5,0,0},
-    File StrCat[ResDir,"btan",ExtGmsh], LastTimeStepOnly,
+    b_tangent, OnElementsOf Stator_Bnd_MB, Name "b tangential (stator)",
+    Format Gmsh, File StrCat[ResDir,"b_tan_stator",ExtGmsh], LastTimeStepOnly,
     AppendTimeStepToFileName Flag_SaveAllSteps];
 }
 
