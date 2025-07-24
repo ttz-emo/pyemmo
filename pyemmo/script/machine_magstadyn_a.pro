@@ -830,8 +830,10 @@ Resolution {
           GenerateJac[A] ; SolveJac[A] ;}
       EndIf
       // PostOperations
+      If (Flag_SaveSolution)
+        SaveSolution[A] ;
+      EndIf
       If(Flag_Debug)
-        SaveSolution[A] ; // only create .res file in debug mode
         PostOperation[Debug] ;
       EndIf
       If(Flag_PrintFields)
@@ -849,12 +851,16 @@ Resolution {
       If (Flag_Inductance)
         InitSolution[A_PM];
         Generate[A_PM]; Solve[A_PM];
-        SaveSolution[A_PM];
+        If (Flag_SaveSolution)
+          SaveSolution[A_PM];
+        EndIf
         PostOperation[GetPMFlux];
         For k In {0:1}
           InitSolution[A_I~{k}];
           Generate[A_I~{k}]; Solve[A_I~{k}];
-          SaveSolution[A_I~{k}];
+          If (Flag_SaveSolution)
+            SaveSolution[A_I~{k}];
+          EndIf
           PostOperation[GetFluxWithoutPM~{k}];
         EndFor
       EndIf
@@ -894,9 +900,10 @@ Resolution {
             // "delta_time"
             PostOperation[ThetaPark_IABC] ;
           EndIf
-
+          If (Flag_SaveSolution)
+            SaveSolution[A];
+          EndIf
           If(Flag_Debug)
-            SaveSolution[A]; // save solution to .res file in debug mode
             PostOperation[Debug];
           EndIf
           If(Flag_PrintFields)
@@ -922,12 +929,16 @@ Resolution {
           If (Flag_Inductance)
             InitSolution[A_PM];
             Generate[A_PM]; Solve[A_PM];
-            SaveSolution[A_PM];
+            If (Flag_SaveSolution)
+              SaveSolution[A_PM];
+            EndIf
             PostOperation[GetPMFlux];
             For k In {0:1}
               InitSolution[A_I~{k}];
               Generate[A_I~{k}]; Solve[A_I~{k}];
-              SaveSolution[A_I~{k}];
+              If (Flag_SaveSolution)
+                SaveSolution[A_I~{k}];
+              EndIf
               PostOperation[GetFluxWithoutPM~{k}];
             EndFor
           EndIf

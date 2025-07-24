@@ -254,7 +254,18 @@ DefineConstant[
         1, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "09Inductance Computation Type"],
         Choices{0 = "Apparent", 1 = "Incremental"},
         Visible Flag_Inductance
-    }
+    },
+
+    Flag_SaveSolution = {
+        0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "10Save Solution"],
+        Choices{0, 1},
+        Visible Flag_ExpertMode,
+        Help StrCat[
+            "If Save Solution is active, the vector potential solution for each time ",
+            "step will be saved to a .res file. This is time consuming! For faster ",
+            "calculation, it is recommended to deactivate."
+        ]
+    },
 
     Flag_Lam = 0, // FIXME: Not using lamination eddy current calculation yet!
     // Flag_Lam = {
