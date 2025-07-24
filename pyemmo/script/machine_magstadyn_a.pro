@@ -64,6 +64,8 @@ EndIf
 Printf("ResId is %s", ResId());
 
 DefineConstant[
+  NbrMbSegments = GetNumber["Input/03Mesh/Number of Rotor Movingband Segments", 360],
+
   sigma_al = 3.72e7, // conductivity of aluminum [S/m]
   sigma_cu = 5.8e7  // conductivity of copper [S/m]
   sigma_fe = 1.0e7, // conductivity of iron [S/m]
@@ -1459,14 +1461,55 @@ PostOperation GetBRadTanAirGap UsingPost MagStaDyn_a_2D {
   // We did not manage to evaluate the results this way for the rotor airgap at runtime
   // since, due to the movement of the rotor, the grid must not be static and it seems
   // like the OnGrid option does not allow parametric attributes.
+  //
   // Print[
-  //   b_radial, OnGrid{r_stator_airgap*Cos[$A*Pi/180],r_stator_airgap*Sin[$A*Pi/180],0 }{0:360/SymmetryFactor:0.5,0,0},
-  //   Format Gmsh, File StrCat[ResDir,"b_rad_stator",ExtGmsh], LastTimeStepOnly,
-  //   AppendTimeStepToFileName Flag_SaveAllSteps];
+  //   b_radial, OnGrid{r_stator_airgap*Cos[$A*Pi/180],r_stator_airgap*Sin[$A*Pi/180],0 }{0:360/SymmetryFactor:360/NbrMbSegments,0,0},
+  //   Name "b radial (stator)", Format Gmsh, File StrCat[ResDir,"b_rad_stator",ExtGmsh],
+  //   LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps];
   // Print[
-  //   b_tangent, OnGrid{r_stator_airgap*Cos[$A*Pi/180],r_stator_airgap*Sin[$A*Pi/180],0 }{0:360/SymmetryFactor:0.5,0,0},
-  //   Format Gmsh, File StrCat[ResDir,"b_tan_stator",ExtGmsh], LastTimeStepOnly,
-  //   AppendTimeStepToFileName Flag_SaveAllSteps];
+  //   b_tangent, OnGrid{r_stator_airgap*Cos[$A*Pi/180],r_stator_airgap*Sin[$A*Pi/180],0 }{0:360/SymmetryFactor:360/NbrMbSegments,0,0},
+  //   Name "b tangential (stator)", Format Gmsh, File StrCat[ResDir,"b_tan_stator",ExtGmsh],
+  //   LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps];
+  //
+  // // The evaluation of results with 'OnGrid' interpolates results and leads to a
+  // // individual post-processing view in the Gmsh GUI for each time step.
+  // // The following code combines the views of each time step into one view, renames
+  // // it back to "b radial (stator)" and sets the properties so that its a 2D space plot.
+  // // But this only works once. If we run a second simulation in the same GUI session,
+  // // the other views of the previous simulation (that have the same name like 'a' or
+  // // 'b') are combined as well.
+  // Echo[
+  //   Str[
+  //     "Combine TimeStepsByViewName ;",
+  //     "nbViews=PostProcessing.NbViews; ",
+  //     "For l In {nbViews-1:0:-1}",
+  //     "   If (StrFind[View[l].Name, 'b radial (stator)_Combine'])",
+  //     "       View[l].Name = StrReplace(View[l].Name,'_Combine','');",
+  //     "       View[l].Visible = 1;",
+  //     "       View[l].Type = 2;",
+  //     "       View[l].IntervalsType = 3;",
+  //     "       View[l].Axes = 3;",
+  //     "       View[l].AutoPosition = 2;",
+  //     "       View[l].LineWidth = 1;",
+  //     "       // l = 0; // stop the loop",
+  //     "   EndIf",
+  //     "   If (StrFind[View[l].Name, 'b tangential (stator)_Combine'])",
+  //     "       View[l].Name = StrReplace(View[l].Name,'_Combine','');",
+  //     "       View[l].Visible = 1;",
+  //     "       View[l].Type = 2;",
+  //     "       View[l].IntervalsType = 3;",
+  //     "       View[l].Axes = 3;",
+  //     "       View[l].AutoPosition = 4;",
+  //     "       View[l].LineWidth = 1;",
+  //     "       // l = 0; // stop the loop",
+  //     "   EndIf",
+  //     "   Printf('l = %.1f', l);",
+  //     "   Printf(StrCat['View name: ',View[l].Name]);",
+  //     "EndFor"
+  //   ],
+  //   File StrCat[ResDir,"tmp_combine.geo"],
+  //   LastTimeStepOnly
+  // ];
 
   Print[
     b_radial, OnElementsOf Stator_Bnd_MB, Name "b radial (stator)",
