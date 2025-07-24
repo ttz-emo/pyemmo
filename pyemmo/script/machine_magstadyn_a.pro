@@ -838,8 +838,8 @@ Resolution {
       EndIf
       If(Flag_PrintFields)
         PostOperation[Get_LocalFields] ;
+        PostOperation[GetBRadTanAirGap];
       EndIf
-      PostOperation[GetBRadTanAirGap];
       PostOperation[Get_GlobalQuantities] ;
       If(Flag_Calculate_ONELAB)
         PostOperation[Get_Torque] ;
@@ -908,9 +908,9 @@ Resolution {
           EndIf
           If(Flag_PrintFields)
             PostOperation[Get_LocalFields] ;
+            PostOperation[GetBRadTanAirGap];
           EndIf
           PostOperation[Get_GlobalQuantities];
-          // PostOperation[GetBRadTanAirGap];
           If(Flag_Calculate_ONELAB)
             PostOperation[Get_Torque] ;
           EndIf
