@@ -18,16 +18,20 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module to return requirements of pyemmo via pipreqs"""
-from os.path import join
-import os
+from __future__ import annotations
 
-pyemmo_DIR = r"C:\Users\ganser\AppData\Local\Programs\pyemmo_git\pyemmo\pyemmo"
-os.system(f"pipreqs {pyemmo_DIR} --force")
+import os
+import subprocess
+from os.path import join
+
+from pyemmo.definitions import ROOT_DIR
+
+pyemmo_DIR = os.path.join(ROOT_DIR, "pyemmo")
+
+subprocess.run(f"pipreqs {pyemmo_DIR} --force")
 
 try:
-    with open(
-        join(pyemmo_DIR, "requirements.txt"), encoding="utf-8"
-    ) as reqFile:
+    with open(join(pyemmo_DIR, "requirements.txt"), encoding="utf-8") as reqFile:
         reqs = reqFile.readlines()
     print("\nRequired packages are:\n")
     for req in reqs:

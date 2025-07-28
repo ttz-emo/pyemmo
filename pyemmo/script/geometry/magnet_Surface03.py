@@ -18,10 +18,11 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for toolkit magnet Surface03"""
-import math
-from typing import Any, Dict
+from __future__ import annotations
 
-from .. import colorDict
+import math
+from typing import Any
+
 from .line import Line
 from .magnet import Magnet
 from .point import Point
@@ -63,7 +64,7 @@ class Magnet_Surface03(Magnet):
     #
     ###
     def __init__(self, machineDict, magnetisationDirection, magnetisationType):
-        self._machineDict: Dict[str, Any] = machineDict
+        self._machineDict: dict[str, Any] = machineDict
         self.id = self._getNewID()
         magName = "Magnet_Surface03_" + str(self.id)
         super().__init__(
@@ -90,7 +91,7 @@ class Magnet_Surface03(Magnet):
             centerCoords[0] + dockingLength,
             centerCoords[1],
             centerCoords[2],
-            self._machineDict["meshLength"],
+            # self._machineDict["meshLength"],
         )
         alpha1 = math.asin(magnetWidth / 2 / dockingLength)
         pMagnet1.rotateZ(globalCenter, alpha1)
@@ -121,7 +122,7 @@ class Magnet_Surface03(Magnet):
 
         # Bei jedem Baukasten muss diese Definition identisch sein
         ###Fläche des halben Magneten in einer Liste.
-        self.geometricalElement = [surfaceMagnet]
+        self.geo_list = [surfaceMagnet]
         ###Schnittkante des halben Magneten.
         # \image html innerLinePart03.png
         self._innerLinePart = [lMagnet1]
@@ -135,11 +136,11 @@ class Magnet_Surface03(Magnet):
         # \image html laminationDockingPoint03.png
         self._laminationDockingPoint = [pMagnet2]
 
-        for surf in self.geometricalElement:
-            if self.magDir() == 1:
-                surf.setMeshColor(colorDict["Red"])
-            elif self.magDir() == -1:
-                surf.setMeshColor(colorDict["Green"])
+        # for surf in self.geo_list:
+        #     if self.magDir() == 1:
+        #         surf.setMeshColor(colorDict["Red"])
+        #     elif self.magDir() == -1:
+        #         surf.setMeshColor(colorDict["Green"])
 
     ###Gibt eine Liste mit der Schnittkante im Magneten zurück (siehe _innerLinePart).
     @property

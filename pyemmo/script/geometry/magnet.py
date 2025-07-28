@@ -18,7 +18,9 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for class Magnet"""
-from typing import List, Literal, Union
+from __future__ import annotations
+
+from typing import Literal
 
 from ..material.material import Material
 from .circleArc import CircleArc
@@ -40,7 +42,7 @@ class Magnet(PhysicalElement):
     def __init__(
         self,
         name: str,
-        geoElements: List[Union[Surface, Union[Line, CircleArc, Spline]]],
+        geoElements: list[Surface | Line | CircleArc | Spline],
         material: Material,
         magDirection: Literal[-1, 1],
         magType: str,

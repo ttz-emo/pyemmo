@@ -18,38 +18,33 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import annotations
+
+import math
+
 # %%
 import os
-from os import path
-import math
 import subprocess
+from os import path
+
 from swat_em import datamodel
-from pyemmo.script.script import Script
-from pyemmo.script.geometry.point import Point
-from pyemmo.script.material import ElectricalSteel, Material
-from pyemmo.script.geometry.machineIPMSM import MachineIPMSM
-from pyemmo.functions import runOnelab
+
 from pyemmo.definitions import ROOT_DIR
+from pyemmo.functions import runOnelab
+from pyemmo.script.geometry.machineIPMSM import MachineIPMSM
+from pyemmo.script.geometry.point import Point
+from pyemmo.script.material.material import Material
+from pyemmo.script.script import Script
 
 ####################################################
 #       Rotorparameter (ausgedacht!)
 PBohrung = Point("mittelPunktBohrung", 0, 0, 0, 5e-3)
 
 # Material aus Datenbank laden
-steel_1010 = ElectricalSteel(
-    sheetThickness=1e-3,
-    lossParams=None,
-    referenceFrequency=0,
-    referenceFluxDensity=0,
-    density=1,
-)
-steel_1010.loadMatFromDataBase("Material_new.db", "steel_1010")
-ndFe35 = Material()
-ndFe35.loadMatFromDataBase("Material_new.db", "NdFe35")
-air = Material()
-air.loadMatFromDataBase("Material_new.db", "air")
-copper = Material()
-copper.loadMatFromDataBase("Material_new.db", "copper")
+steel_1010 = Material.load("steel_1010")
+ndFe35 = Material.load("NdFe35")
+air = Material.load("air")
+copper = Material.load("copper")
 # %% Simulationsparameter
 DEG2RAD = math.pi / 180
 nbrSlots = 12
@@ -77,9 +72,7 @@ simuIPMSMDict = {
 # Maschine aus dem Baukasten parametrisieren
 pmsm1 = MachineIPMSM(simuIPMSMDict)
 ## ROTOR ##
-rotor1 = pmsm1.addRotorToMachine(
-    "sheet01_standard", "magnet_Slot01", axLen=axialLength
-)
+rotor1 = pmsm1.addRotorToMachine("sheet01_standard", "magnet_Slot01", axLen=axialLength)
 rotor1.addLaminationParameter(
     {
         "r_We": 7e-3,
@@ -138,14 +131,10 @@ stator1.addAirGapParameter({"width": 1e-3, "material": air})
 stator1.createStator()
 stator1.plot()
 # %%
-pmsm1.setFunctionMesh(
-    functionType="quad", meshGainFactor=2, basisMeshsize=0.5e-3
-)
+pmsm1.setFunctionMesh(functionType="quad", meshGainFactor=2, basisMeshsize=0.5e-3)
 pmsm1.createMachineDomains()
 
-modelDir = path.abspath(
-    path.join(ROOT_DIR, "Results", "Baukasten", "Test_IPMSM")
-)
+modelDir = path.abspath(path.join(ROOT_DIR, "Results", "Baukasten", "Test_IPMSM"))
 if not path.isdir(modelDir):
     os.makedirs(modelDir)
 
@@ -171,9 +160,7 @@ testIPMSM_Script.addPostOperation(
     name="User Defined PostOperation",
     OnGrid="{(r_AG)*Sin[$A*Pi/180],(r_AG)*Cos[$A*Pi/180],0}{0:360/SymmetryFactor,0,0}",
     # OnGrid="{(r_AG)*Sin[Pi/nbSlots-$A*Pi/180],(r_AG)*Cos[Pi/nbSlots-$A*Pi/180],0}{0:360/SymmetryFactor,0,0}",
-    File=path.abspath(
-        path.join(testIPMSM_Script.resultsPath, "b_OnRadius.pos")
-    ),
+    File=path.abspath(path.join(testIPMSM_Script.resultsPath, "b_OnRadius.pos")),
 )
 import time
 
@@ -184,9 +171,7 @@ print("I am done!")
 print(f"\n Generation of script took {stopTime-startTime} seconds.")
 
 # %%
-proFilePath = path.join(
-    testIPMSM_Script.scriptPath, testIPMSM_Script.name + ".pro"
-)
+proFilePath = path.join(testIPMSM_Script.scriptPath, testIPMSM_Script.name + ".pro")
 command = runOnelab.createCmdCommand(
     onelabFile=path.abspath(proFilePath),
     gmshPath=runOnelab.findGmsh(),

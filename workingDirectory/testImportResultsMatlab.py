@@ -17,17 +17,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import annotations
+
+from os.path import abspath, dirname, join
 from sys import path
-from os.path import abspath, join, dirname
-from matplotlib.pyplot import plot, show
+
 from matplotlib import pyplot as plt
+from matplotlib.pyplot import show
 
 try:
     rootname = abspath(join(dirname(__file__), ".."))
 except:
-    rootname = (
-        "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\Software_V2"
-    )
+    rootname = "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\Software_V2"
     print(f"Could not determine root. Setting it manually to '{rootname}'")
 print(f'rootname is "{rootname}"')
 path.append(rootname)
@@ -35,9 +36,7 @@ path.append(rootname)
 from pyemmo.functions.import_results import (
     plot_timetable_dat,
     read_timetable_dat,
-    split_data,
 )
-from pyemmo.definitions import RESULT_DIR, MAIN_DIR
 
 simDir = join(
     r"C:\Users\ganser\AppData\Local\Programs\pyemmo\Results\matlab", ...

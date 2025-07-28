@@ -19,45 +19,40 @@
 #
 """Test module for spmsm toolkit machine model"""
 
-# %%
-import os
-from os import mkdir, path
+from __future__ import annotations
 
 # from pyemmo.functions.importResults import plotAllDat
 # from numpy import rad2deg, where
 import math
+
+# %%
+import os
+import subprocess
+from os import mkdir, path
+
 from swat_em import datamodel
+
+from pyemmo.definitions import ROOT_DIR
+from pyemmo.functions.runOnelab import createCmdCommand
+from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
 
 # from pyemmo.definitions import RESULT_DIR, MAIN_DIR
 from pyemmo.script.geometry.point import Point
 
 # from pyemmo.script.geometry.line import Line
-from pyemmo.script.material.electricalSteel import Material, ElectricalSteel
-from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
+from pyemmo.script.material.electricalSteel import Material
 from pyemmo.script.script import Script
-from pyemmo.functions.runOnelab import createCmdCommand
-from pyemmo.definitions import ROOT_DIR
 
 # %%
 
 PBohrung = Point("mittelPunktBohrung", 0, 0, 0, 5e-3)
 
 # Material aus Datenbank laden
-steel_1010 = ElectricalSteel(
-    sheetThickness=1e-3,
-    lossParams=None,
-    referenceFrequency=0,
-    referenceFluxDensity=0,
-    density=1,
-)
-steel_1010.loadMatFromDataBase("Material_new.db", "steel_1010")
-ndFe35 = Material()
-ndFe35.loadMatFromDataBase("Material_new.db", "NdFe35")
+steel_1010 = Material.load("steel_1010")
+ndFe35 = Material.load("NdFe35")
 # ndFe35.setRemanence(0.01) # switch "off" remanence
-air = Material()
-air.loadMatFromDataBase("Material_new.db", "air")
-copper = Material()
-copper.loadMatFromDataBase("Material_new.db", "copper")
+air = Material.load("air")
+copper = Material.load("copper")
 
 NBR_SLOTS = 36
 NBR_POLES = 4
@@ -180,9 +175,7 @@ winding = datamodel()
 winding.genwdg(Q=NBR_SLOTS, P=NBR_POLES, m=3, layers=2, turns=23)
 SLOT_TYPE = 0
 if SLOT_TYPE == 0:
-    stator = SPMSM.addStatorToMachine(
-        "sheet01_standard", "slotForm_01", winding
-    )
+    stator = SPMSM.addStatorToMachine("sheet01_standard", "slotForm_01", winding)
     stator.addLaminationParameter(
         {
             "r_S_i": 65e-3,
@@ -277,27 +270,21 @@ myScript = Script(
 )
 myScript.generateScript()
 
-os.system(
+subprocess.run(
     createCmdCommand(
         onelabFile=myScript.proFilePath,
         useGUI=True,
         paramDict={"Flag_ClearResults": 1},
     )
 )
-# plotAllDat(myScript.getResultsPath())
+
 print("I am done!")
 
 
+from SciDataTool import Data1D, DataTime
+
 # %%
-from pyemmo.functions.import_results import (
-    get_result_files,
-    read_timetable_dat,
-)
-from pyemmo.functions.import_results import (
-    get_result_files,
-    read_timetable_dat,
-)
-from SciDataTool import DataTime, Data1D
+from pyemmo.functions.import_results import get_result_files, read_timetable_dat
 
 resPath = (
     myScript.resultsPath
@@ -310,9 +297,7 @@ try:
         time, data = read_timetable_dat(os.path.join(resPath, datFile))
         _, datFileName = os.path.split(datFile)
         resQuantity, _ = os.path.splitext(datFileName)
-        timeData = Data1D(
-            values=time, symmetries=-1, name="time", symbol="t", unit="s"
-        )
+        timeData = Data1D(values=time, symmetries=-1, name="time", symbol="t", unit="s")
         valData = DataTime(axes=[timeData], values=data, name=resQuantity)
         resultsList.append(valData)
 except FileNotFoundError:
@@ -320,9 +305,9 @@ except FileNotFoundError:
 except Exception as exce:
     raise exce
 
-# %%
-from SciDataTool.Functions.Plot.plot_2D import plot_2D
 import matplotlib.pyplot as plt
+
+# %%
 
 plt.plot(resultsList[00].values, resultsList[00].axes[0].values)
 plt.show()

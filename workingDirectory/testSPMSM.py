@@ -18,46 +18,40 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Test module for spmsm toolkit machine model"""
-# %%
-import os
-from os import mkdir, path
-
-from pyemmo.functions.import_results import plot_all_dat
+from __future__ import annotations
 
 # from numpy import rad2deg, where
 import math
+
+# %%
+import os
+import subprocess
+from os import path
+
 from swat_em import datamodel
+
+from pyemmo.definitions import ROOT_DIR
+from pyemmo.functions.import_results import plot_all_dat
+from pyemmo.functions.runOnelab import createCmdCommand, findGetDP, findGmsh
+from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
 
 # from pyemmo.definitions import RESULT_DIR, MAIN_DIR
 from pyemmo.script.geometry.point import Point
 
 # from pyemmo.script.geometry.line import Line
-from pyemmo.script.material.electricalSteel import Material, ElectricalSteel
-from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
+from pyemmo.script.material.electricalSteel import Material
 from pyemmo.script.script import Script
-from pyemmo.functions.runOnelab import createCmdCommand
-from pyemmo.definitions import ROOT_DIR
 
 # %%
 
 PBohrung = Point("mittelPunktBohrung", 0, 0, 0, 5e-3)
 
 # Material aus Datenbank laden
-steel_1010 = ElectricalSteel(
-    sheetThickness=1e-3,
-    lossParams=None,
-    referenceFrequency=0,
-    referenceFluxDensity=0,
-    density=1,
-)
-steel_1010.loadMatFromDataBase("Material_new.db", "steel_1010")
-ndFe35 = Material()
-ndFe35.loadMatFromDataBase("Material_new.db", "NdFe35")
+steel_1010 = Material.load("steel_1010")
+ndFe35 = Material.load("NdFe35")
 # ndFe35.setRemanence(0.01) # switch "off" remanence
-air = Material()
-air.loadMatFromDataBase("Material_new.db", "air")
-copper = Material()
-copper.loadMatFromDataBase("Material_new.db", "copper")
+air = Material.load("air")
+copper = Material.load("copper")
 
 nbrSlots = 12
 nbrPoles = 8
@@ -179,9 +173,7 @@ winding = datamodel()
 winding.genwdg(Q=nbrSlots, P=nbrPoles, m=3, layers=2, turns=23)
 SLOT_TYPE = 1
 if SLOT_TYPE == 0:  # trapezoidal slot
-    stator = SPMSM.addStatorToMachine(
-        "sheet01_standard", "slotForm_01", winding
-    )
+    stator = SPMSM.addStatorToMachine("sheet01_standard", "slotForm_01", winding)
     stator.addLaminationParameter(
         {
             "r_S_i": 65e-3,
@@ -205,9 +197,7 @@ if SLOT_TYPE == 0:  # trapezoidal slot
         }
     )
 elif SLOT_TYPE == 1:  # round slot bottom
-    stator = SPMSM.addStatorToMachine(
-        "sheet01_standard", "slotForm_03", winding
-    )
+    stator = SPMSM.addStatorToMachine("sheet01_standard", "slotForm_03", winding)
     stator.addLaminationParameter(
         {
             "r_S_i": 65e-3,
@@ -280,15 +270,15 @@ myScript.generateScript()
 
 cmd = createCmdCommand(
     onelabFile=myScript.proFilePath,
-    gmshPath=r"C:\Software\onelab\gmsh.exe",
-    getdpPath=r"C:\Software\onelab\getdp.exe",
+    gmshPath=findGmsh(),
+    getdpPath=findGetDP(),
     useGUI=False,
     paramDict={"Flag_ClearResults": 1},
 )
 print(cmd)
 
 # %%
-os.system(cmd)
+subprocess.run(cmd, check=True)
 plot_all_dat(myScript.resultsPath)
 print("I am done!")
 

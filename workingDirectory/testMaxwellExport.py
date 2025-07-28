@@ -17,13 +17,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import annotations
+
 from os import remove
+
 from pyemmo.functions.exportMaxwell import exportTabMaxwell
 
 data = [[1, 2, 3], [4, 5, 6]]
 ids = ["H (A_per_meter)", "otherVal (W)"]
 
-file = r"C:\Users\ganser\AppData\Local\Programs\pyemmo\Results\testExportMaxwellData.tab"
+file = (
+    r"C:\Users\ganser\AppData\Local\Programs\pyemmo\Results\testExportMaxwellData.tab"
+)
 try:
     exportTabMaxwell(data, ids, file)
 except AssertionError as assErr:

@@ -18,6 +18,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import annotations
+
 ###Noch nicht in die Doku. Funktioniert zunächst eingeschränkt für einzelne Linien wie beim Luis.
 # def loadFromStep(self, stepFiles, unit, meshLength):
 try:

@@ -22,11 +22,11 @@ from __future__ import annotations
 from pyleecan.Classes.LamHole import LamHole
 from pyleecan.Classes.Lamination import Lamination
 from pyleecan.Classes.LamSlotMag import LamSlotMag
-from pyleecan.Classes.Machine import Machine as PyleecanMachine
 from pyleecan.Classes.OPdq import OPdq
 from pyleecan.Classes.Simulation import Simulation as PyleecanSimulation
 
 from .. import logger
+from . import PyleecanMachine
 from .translate_winding import translate_winding
 
 

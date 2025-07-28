@@ -20,6 +20,8 @@
 #
 """init of script module"""
 
+from __future__ import annotations
+
 import json
 import logging
 from os.path import dirname, join
@@ -27,7 +29,7 @@ from typing import Dict
 
 from ..version import __version__, sha
 
-colorDict: Dict[str, str] = {}
+colorDict: dict[str, str] = {}
 try:
     with open(
         join(dirname(__file__), "default_color_dict.json"),
@@ -56,7 +58,7 @@ DOMAIN_NON_LINEAR = "domainNL"
 DOMAIN_LINEAR = "domainL"
 
 # define default parameters in parameter dict
-default_param_dict: Dict[str, dict] = {"GEO": {}, "SYM": {}, "MAT": {}}
+default_param_dict: dict[str, dict] = {"GEO": {}, "SYM": {}, "MAT": {}}
 """Default Script parameters dict, looks like:
     {\n
         "GEO": {\n

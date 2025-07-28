@@ -20,6 +20,8 @@
 #
 """TODO: Module docstring"""
 
+from __future__ import annotations
+
 import glob
 import os
 import re
@@ -45,9 +47,7 @@ def updateConfig(test_type: str = "", test_id: int = "", test_case: str = ""):
     if test_type == "":
         dest_name = ""
     else:
-        dest_name = (
-            f"logs/{test_type}/{curr_datetime}/test_{test_id}_{test_case}/.log"
-        )
+        dest_name = f"logs/{test_type}/{curr_datetime}/test_{test_id}_{test_case}/.log"
     parser.set("pytest", "log_file", dest_name)
 
     with open(config_path, "w+") as config_file:
@@ -73,12 +73,10 @@ def count_files(folder_path: str) -> dict:
     """
     file_type_list_raw = glob.glob(os.path.join(folder_path, "*.*"))
     file_type_list = [
-        x.split(".")[1]
-        for x in [x.split("\\")[-1] for x in file_type_list_raw]
+        x.split(".")[1] for x in [x.split("\\")[-1] for x in file_type_list_raw]
     ]
     file_type_list = [
-        x.split(".")[1]
-        for x in [x.split("\\")[-1] for x in file_type_list_raw]
+        x.split(".")[1] for x in [x.split("\\")[-1] for x in file_type_list_raw]
     ]
     file_type_counter = defaultdict(list)
     file_type_counter["dir"] = folder_path

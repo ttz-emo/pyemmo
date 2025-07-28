@@ -1,0 +1,9 @@
+{
+	"ID": 88,
+	"name": "NdFe30",
+	"conductivity": 625000.0,
+	"relPermeability": 1.0445730167132,
+	"remanence": 0.0,
+	"linear": true,
+	"BHCurve": {}
+}

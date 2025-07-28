@@ -17,8 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import annotations
+
 from math import pi
-from typing import Dict
 
 import swat_em
 
@@ -135,7 +136,7 @@ class MachineIPMSM(MachineAllType):
         return paramDict
 
     @property
-    def _simuParamDict(self) -> Dict:
+    def _simuParamDict(self) -> dict:
         """return the simulation parameter dict
 
         Returns:
@@ -284,6 +285,6 @@ class MachineIPMSM(MachineAllType):
         mbHeigth = abs(mbRadiusStator - mbRadiusRotor)
         # set the movingband mesh to mbHeigth
         for mb in rotor.movingBand + stator.movingBand:
-            for mbLine in mb.geometricalElement:
+            for mbLine in mb.geo_list:
                 mbLine.setMeshLength(mbHeigth)
         return None

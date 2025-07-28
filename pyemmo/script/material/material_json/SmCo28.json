@@ -1,0 +1,9 @@
+{
+	"ID": 91,
+	"name": "SmCo28",
+	"conductivity": 1111111.0,
+	"relPermeability": 1.03838895916414,
+	"remanence": 0.0,
+	"linear": true,
+	"BHCurve": {}
+}

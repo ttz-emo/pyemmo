@@ -19,9 +19,13 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module to test the module pyemmo.api.pyleecan.get_coords_for_point"""
+from __future__ import annotations
+
 import math
-from hypothesis import given
+
 import hypothesis.strategies as st
+from hypothesis import given
+
 from pyemmo.api.pyleecan.get_coords_for_point import (
     get_x_for_point,
     get_y_for_point,

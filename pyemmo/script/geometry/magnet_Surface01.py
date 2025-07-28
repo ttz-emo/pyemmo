@@ -17,7 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-from .. import colorDict
+from __future__ import annotations
+
 from .circleArc import CircleArc
 from .line import Line
 from .magnet import Magnet
@@ -117,7 +118,7 @@ class Magnet_Surface01(Magnet):
             coordCentre[0] + dockingLength,
             coordCentre[1],
             coordCentre[2],
-            self._machineDict["meshLength"],
+            # self._machineDict["meshLength"],
         )
         pMagnet2 = pMagnet1.duplicate()
         pMagnet2.name = "pMagnet2"
@@ -126,7 +127,7 @@ class Magnet_Surface01(Magnet):
             x=coordCentre[0] + dockingLength + h_M,
             y=coordCentre[1],
             z=coordCentre[2],
-            meshLength=self._machineDict["meshLength"],
+            # meshLength=self._machineDict["meshLength"],
         )
         pMagnet4 = pMagnet3.duplicate()
         pMagnet4.name = "pMagnet4"
@@ -152,7 +153,7 @@ class Magnet_Surface01(Magnet):
 
         # Bei jedem Baukasten muss diese Definition identisch sein
         ###Fläche des halben Magneten in einer Liste.
-        self._geometricalElement = [surfaceMagnet]
+        self._geo_list = [surfaceMagnet]
         ###Schnittkante des halben Magneten.
         # \image html innerLinePart01.png
         self._innerLinePart = [lMagnet1]
@@ -166,11 +167,11 @@ class Magnet_Surface01(Magnet):
         # \image html laminationDockingPoint01.png
         self._laminationDockingPoint = [pMagnet1]
 
-        for s in self._geometricalElement:
-            if self.magDir == 1:
-                s.setMeshColor(colorDict["Red"])
-            elif self.magDir == -1:
-                s.setMeshColor(colorDict["Green"])
+        # for s in self._geo_list:
+        #     if self.magDir == 1:
+        #         s.setMeshColor(colorDict["Red"])
+        #     elif self.magDir == -1:
+        #         s.setMeshColor(colorDict["Green"])
 
     ###Gibt eine Liste mit der Schnittkante im Magneten zurück (siehe _innerLinePart).
     @property

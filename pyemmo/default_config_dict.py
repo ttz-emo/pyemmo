@@ -19,6 +19,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for default config dict. Copied from Pyleecan project!"""
+from __future__ import annotations
+
 # Default config_dict
 default_config_dict: dict = {"MAIN": {}, "GUI": {}, "PLOT": {}}
 

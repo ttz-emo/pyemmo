@@ -17,13 +17,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-import logging
-from typing import Dict, List, Literal, Union
+from __future__ import annotations
 
+import logging
+from typing import List, Literal
+
+import gmsh
 import numpy as np
 from matplotlib import pyplot as plt
 from swat_em import datamodel
 
+from ..gmsh.gmsh_point import GmshPoint
+from ..gmsh.utils import get_dim_tags, get_point_tags
 from ..material.electricalSteel import ElectricalSteel
 from .airGap import AirGap
 from .domain import Domain
@@ -31,7 +36,7 @@ from .line import Line
 from .movingBand import MovingBand
 from .physicalElement import PhysicalElement
 from .slot import Slot
-from .surface import Point, Surface
+from .surface import Surface
 
 # from ... import calc_phaseangle_starvoltageV2
 
@@ -49,7 +54,7 @@ class Stator:
     def __init__(
         self,
         nbrSlots: int,
-        physicalElements: List[PhysicalElement] = list(),
+        physicalElements: list[PhysicalElement] = list(),
         name: str = "",
         axLen: float = 1.0,
         winding: datamodel = None,
@@ -125,7 +130,7 @@ class Stator:
         return self._axLen
 
     @axialLength.setter
-    def axialLength(self, axLen: Union[float, int]) -> None:
+    def axialLength(self, axLen: float | int) -> None:
         """Setter for axLen [m]
 
         Args:
@@ -142,12 +147,12 @@ class Stator:
             )
 
     @property
-    def physicalElements(self) -> List[PhysicalElement]:
+    def physicalElements(self) -> list[PhysicalElement]:
         """Getter of PhysicalElements-list"""
         return self._physicalElements
 
     @physicalElements.setter
-    def physicalElements(self, physicalElementsList: List[PhysicalElement]) -> None:
+    def physicalElements(self, physicalElementsList: list[PhysicalElement]) -> None:
         """Setter of PhysicalElement-List
 
         Args:
@@ -172,7 +177,7 @@ class Stator:
                 f"Given attribute physicalElementList was not type List or PhysicalElement but {type(physicalElementsList)}."
             )
 
-    def addPhysicalElements(self, physicalElementList: List[PhysicalElement]):
+    def addPhysicalElements(self, physicalElementList: list[PhysicalElement]):
         """Append PhysicalElements to the stator and recreate domains"""
         if type(physicalElementList) == list:
             for physicalElem in physicalElementList:
@@ -183,7 +188,7 @@ class Stator:
             raise ValueError(f"Argument 'physicalElementList' was not type list!")
 
     @property
-    def slots(self) -> List[Slot]:
+    def slots(self) -> list[Slot]:
         """getSlots returns a list of physical elements of type slot in stator.physicalElementList.
         The List is sortet in circumferderal (mathematically positive) and radial direction so the
         first slot in the list is the one closest to the x-axis
@@ -192,7 +197,7 @@ class Stator:
             List[Slot]: List of slots
         """
         physicalElements = self.physicalElements
-        slotList: List[Slot] = []
+        slotList: list[Slot] = []
         for physElem in physicalElements:
             if physElem.type == "Slot":
                 slotList.append(physElem)
@@ -217,7 +222,7 @@ class Stator:
         return slotList
 
     @property
-    def movingBand(self) -> List[MovingBand]:
+    def movingBand(self) -> list[MovingBand]:
         """get the MovingBand physical elements"""
         domainMB = self._mb
         return domainMB.physicals
@@ -262,7 +267,7 @@ class Stator:
             )
         outer_radius = 0.0
         for phys in self._domainOuterLimit.physicals:
-            for geo in phys.geometricalElement:
+            for geo in phys.geo_list:
                 if isinstance(geo, Line):
                     for p in geo.points:
                         if p.radius > outer_radius:
@@ -383,7 +388,7 @@ class Stator:
         self._domainLam = Domain("DomainLam_Stator", allPhy["domainLam"])
 
     ###Sortierfunktion der PhysicalElements.
-    def sortPhysicals(self) -> Dict[str, List[PhysicalElement]]:
+    def sortPhysicals(self) -> dict[str, list[PhysicalElement]]:
         """Create a dict with the physical elements sorted into different domains with domain names as keys
             The dict will look like
 
@@ -410,15 +415,15 @@ class Stator:
         Returns:
             Dict[str, List[PhysicalElement]]: dict with sorted physical elements
         """
-        phy_domainS: List[Slot] = []  # Eingeprägte Ströme
+        phy_domainS: list[Slot] = []  # Eingeprägte Ströme
         phy_domainLam = []  # lamination
         phy_domainC = []  # Leitende Flächen z. B. Stäbe ASM
         phy_domainCC = []  # alle elektrisch nicht leitenden Flächen
-        mb_all: List[MovingBand] = []  # Moving Band
+        mb_all: list[MovingBand] = []  # Moving Band
         phy_domain = []  # Alle Flächen
         phy_domainNL = []  # Alle nicht linearen Flächen
         phy_domainL = []  # Alle linearen Flächen
-        phy_airgap: List[AirGap] = []  # Luftspalt im Rotor
+        phy_airgap: list[AirGap] = []  # Luftspalt im Rotor
 
         phy_primaryLine = []  # Teilmodell primarykante
         phy_slaveLine = []  # Teilmodell Slavekante
@@ -511,7 +516,7 @@ class Stator:
             ax.set_aspect("equal")
             # ax.set_aspect("equal", adjustable="box")
         for phys in self.physicalElements:
-            for geoElem in phys.geometricalElement:
+            for geoElem in phys.geo_list:
                 geoElem.plot(
                     fig=fig,
                     linewidth=linewidth,
@@ -571,30 +576,28 @@ class Stator:
             self._set_linear_mesh(meshGainFactor, basisMeshsize)
         else:
             self._set_quad_mesh(meshGainFactor, basisMeshsize)
+        gmsh.model.occ.synchronize()
+
+    def _get_points(self) -> list[GmshPoint]:
+        """Get a list of currently available gmsh points from gmsh model belonging to a
+        stator physical element geometry.
+
+        Returns:
+            list[GmshPoint]: List of points belonging to stator physicals
+        """
+        phys_dim_tags = get_dim_tags(self.physicalElements)
+        p_tags = get_point_tags(phys_dim_tags)
+        return [GmshPoint(tag=p_tag) for p_tag in p_tags]
 
     def _set_linear_mesh(self, meshGainFactor: float, basisMeshsize: float):
         logging.debug("Setting linear mesh on stator.")
         # calculate linear mesh size functions (ax+b)
         a = (meshGainFactor - 1) / (self.outer_radius - self.movingBandRadius)
         b = meshGainFactor - a * self.outer_radius
-
-        for physical in self.physicalElements:
-            for geo in physical.geometricalElement:
-                points: List[Point] = []
-                if isinstance(geo, Surface):
-                    for curve in geo.curve:
-                        points.extend(curve.points)
-                elif isinstance(geo, Line):
-                    points.extend(geo.points)
-                # All curves should belong to a surface...
-                # else:
-                #     points.extend(geo.getPoints())
-                for point in points:
-                    rP = point.radius
-                    # if rP < rMb: # == rotor is allways true
-                    # meshSizeFaktor = (a1*rP+b1)
-                    pMeshSize = (a * rP + b) * basisMeshsize
-                    point.meshLength = pMeshSize
+        for point in self._get_points():
+            rP = point.radius
+            pMeshSize = (a * rP + b) * basisMeshsize
+            point.meshLength = pMeshSize
 
     def _set_quad_mesh(self, meshGainFactor: float, basisMeshsize: float):
         """set mesh by parabolic function.
@@ -609,23 +612,12 @@ class Stator:
         c = meshGainFactor
         b = -2 * c / r_mb
         a = -b / 2 / r_mb
-        for physical in self.physicalElements:
-            for geo in physical.geometricalElement:
-                points: List[Point] = []
-                if isinstance(geo, Surface):
-                    for curve in geo.curve:
-                        points.extend(curve.points)
-                elif isinstance(geo, Line):
-                    points.extend(geo.points)
-                # All curves should belong to a surface...
-                # else:
-                #     points.extend(geo.getPoints())
-                for point in points:
-                    rP = point.radius
-                    # faktor = 4770*rP**2 - 430 * rP + 10 # poly 2 fit
-                    gain_factor = (a * rP**2 + b * rP + c) + 1
-                    gain_factor = 1 if gain_factor < 1 else gain_factor
-                    point.meshLength = gain_factor * basisMeshsize
+        for point in self._get_points():
+            rP = point.radius
+            # faktor = 4770*rP**2 - 430 * rP + 10 # poly 2 fit
+            gain_factor = (a * rP**2 + b * rP + c) + 1
+            gain_factor = 1 if gain_factor < 1 else gain_factor
+            point.meshLength = gain_factor * basisMeshsize
 
     ###
     # Mit addToScript wird der Stator zum Skriptobjekt übergeben und in gmsh-Syntax übersetzt.

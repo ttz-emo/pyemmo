@@ -24,11 +24,14 @@ Following functions are included in this module:
 * test_center_point()
 """
 
-import numpy
-from hypothesis import given, settings, strategies as st
+from __future__ import annotations
 
-from pyemmo.script.geometry.point import Point
+import numpy
+from hypothesis import given, settings
+from hypothesis import strategies as st
+
 from pyemmo.api.pyleecan.build_pyemmo_point import build_pyemmo_point
+from pyemmo.script.geometry.point import Point
 
 
 @settings(max_examples=50, derandomize=True)

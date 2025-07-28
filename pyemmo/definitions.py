@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -17,6 +18,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import annotations
+
 import logging
 import sys
 from os import mkdir
@@ -36,8 +39,13 @@ try:
 except ImportError:
     # Add root dir to python path
     sys.path.insert(0, ROOT_DIR)
-    exec("from pyemmo.functions.init_environment import get_config_dict")
-    exec("from pyemmo import PACKAGE_NAME, USER_DIR")
+
+    # fixed per Issue: [B102:exec_used]
+    # exec("from pyemmo.functions.init_environment import get_config_dict")
+    # exec("from pyemmo import PACKAGE_NAME, USER_DIR")
+
+    from pyemmo import USER_DIR
+    from pyemmo.functions.init_environment import get_config_dict
 
 MAIN_DIR = dirname(realpath(__file__)).replace("\\", "/")  # main dir is pyemmo
 """Path: MAIN_DIR is "pyemmo" main package directory with "script", "functions" and

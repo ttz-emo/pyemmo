@@ -17,9 +17,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import annotations
+
 import logging
 from math import gcd
-from typing import List, Literal, Union
+from typing import Literal
 
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
@@ -40,7 +42,7 @@ class MachineAllType:
         rotor: Rotor,
         stator: Stator,
         name: str = "",
-        symmetryFactor: Union[int, None] = None,
+        symmetryFactor: int | None = None,
     ):
         """
         Constructor of class Machine
@@ -233,7 +235,7 @@ class MachineAllType:
         return self._nbrPolePairs
 
     @nbrPolePairs.setter
-    def nbrPolePairs(self, nbrPolePairs: Union[int, float]) -> None:
+    def nbrPolePairs(self, nbrPolePairs: int | float) -> None:
         """Setter of number of pole pairs
 
         Args:
@@ -288,9 +290,9 @@ class MachineAllType:
             raise TypeError(f"Wrong type for stator: {type(newStator)}")
 
     @property
-    def domains(self) -> List[Domain]:
+    def domains(self) -> list[Domain]:
         """Return all Domains of the machine as list"""
-        domainList: List[Domain] = []
+        domainList: list[Domain] = []
         # Add primary and slave lines first!
         if self._domainPrimary != None:
             domainList.append(self._domainPrimary)
@@ -316,7 +318,7 @@ class MachineAllType:
         return domainList
 
     @property
-    def primaryLines(self) -> List[Line]:
+    def primaryLines(self) -> list[Line]:
         """get a list of primary lines of rotor and stator
 
         Returns:
@@ -325,19 +327,20 @@ class MachineAllType:
         rotorDict = self.rotor.sortPhysicals()
         statorDict = self.stator.sortPhysicals()
         physicalPrimeLines = rotorDict["primary"] + statorDict["primary"]
-        primeLines: List[Line] = list()
+        primeLines: list[Line] = list()
         for physicalPrimeLine in physicalPrimeLines:
             if physicalPrimeLine.geoElementType == Line:
-                primeLines.extend(physicalPrimeLine.geometricalElement)
+                primeLines.extend(physicalPrimeLine.geo_list)
             else:
                 raise (
                     TypeError(
                         f"Physical Element (Primary Line) must only contain Line objects!"
                     )
                 )
+        primeLines.sort(key=_get_line_middle_raidus)
         return primeLines
 
-    def getSecondaryLines(self) -> List[Line]:
+    def getSecondaryLines(self) -> list[Line]:
         """get a list of secondary lines of rotor and stator
 
         Returns:
@@ -346,20 +349,22 @@ class MachineAllType:
         rotorDict = self.rotor.sortPhysicals()
         statorDict = self.stator.sortPhysicals()
         physicalSecLines = rotorDict["slave"] + statorDict["slave"]
-        secondaryLines: List[Line] = list()
+        secondaryLines: list[Line] = list()
         for physicalSecLine in physicalSecLines:
             if physicalSecLine.geoElementType == Line:
-                secondaryLines.extend(physicalSecLine.geometricalElement)
+                secondaryLines.extend(physicalSecLine.geo_list)
             else:
                 raise (
                     TypeError(
                         f"Physical Element (Primary Line) must only contain Line objects!"
                     )
                 )
+        secondaryLines.sort(key=_get_line_middle_raidus)
+
         return secondaryLines
 
     @property
-    def physicalElements(self) -> List[PhysicalElement]:
+    def physicalElements(self) -> list[PhysicalElement]:
         """Get a list of all physical elements
 
         Returns:
@@ -412,7 +417,7 @@ class MachineAllType:
         # # get max. stator radius:
         # rS = 0
         # for phys in self.stator._domainOuterLimit.physicals:
-        #     for geo in phys.geometricalElement:
+        #     for geo in phys.geo_list:
         #         if isinstance(geo, Line):
         #             for p in geo.points:
         #                 if p.radius > rS:
@@ -433,7 +438,7 @@ class MachineAllType:
         #     mssg = f"Unknown function specifier '{functionType}' for functional mesh."
         #     raise ValueError(mssg)
         # for physical in self.physicalElements:
-        #     for geo in physical.geometricalElement:
+        #     for geo in physical.geo_list:
         #         points: List[Point] = []
         #         if isinstance(geo, Surface):
         #             for curve in geo.curve:
@@ -460,7 +465,7 @@ class MachineAllType:
 
     def plot(
         self,
-        fig: Union[Figure, None] = None,
+        fig: Figure | None = None,
         linewidth=0.5,
         marker=".",
         markersize=1,
@@ -481,7 +486,7 @@ class MachineAllType:
                 if not plot_mb:
                     if isinstance(phys, MovingBand):
                         break
-                for geoElem in phys.geometricalElement:
+                for geoElem in phys.geo_list:
                     geoElem.plot(
                         fig=fig,
                         linewidth=linewidth,
@@ -513,3 +518,15 @@ class MachineAllType:
             if self.symmetryFactor > 2:
                 ax.set_xlim(left=0)
         return fig
+
+
+def _get_line_middle_raidus(line: Line) -> float:
+    """Get the radius of the middlepoint of a Line object
+
+    Args:
+        line (Line): Line object
+
+    Returns:
+        float: Radius of ``Line.middle_point``
+    """
+    return line.middle_point.radius

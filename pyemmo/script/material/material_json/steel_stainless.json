@@ -1,0 +1,9 @@
+{
+	"ID": 395,
+	"name": "steel_stainless",
+	"conductivity": 1100000.0,
+	"relPermeability": 1.0,
+	"remanence": 0.0,
+	"linear": true,
+	"BHCurve": {}
+}

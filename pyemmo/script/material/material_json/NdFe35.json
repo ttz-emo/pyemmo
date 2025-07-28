@@ -1,0 +1,9 @@
+{
+	"ID": 89,
+	"name": "NdFe35",
+	"conductivity": 625000.0,
+	"relPermeability": 1.0997785406,
+	"remanence": 1.23000000140598,
+	"linear": true,
+	"BHCurve": {}
+}

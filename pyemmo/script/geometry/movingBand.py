@@ -18,7 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for class MovingBand"""
-from typing import List
+from __future__ import annotations
 
 from ..material.material import Material
 from ..script import DEFAULT_GEO_TOL
@@ -46,14 +46,14 @@ class MovingBand(PhysicalElement):
     #       ID : Integer
     #       name : String
     #       material : Material
-    #       geometricalElement : [CircleArc]
+    #       geo_list : [CircleArc]
     #       auxiliary : Boolean
     #
     ###
     def __init__(
         self,
         name: str,
-        geometricalElement: List[CircleArc],
+        geo_list: list[CircleArc],
         material: Material = None,
         auxiliary: bool = False,
     ):
@@ -61,17 +61,15 @@ class MovingBand(PhysicalElement):
 
         Args:
             name (str): Moving band segment name
-            geometricalElement (List[CircleArc]): List of arc segments to build the mb segment.
+            geo_list (List[CircleArc]): List of arc segments to build the mb segment.
             material (Material, optional): Airgap material. Defaults to None.
             auxiliary (bool, optional): Flag to determine if given moving band segment is auxillar.
             Defaults to False.
         """
-        super().__init__(
-            name=name, geometricalElement=geometricalElement, material=material
-        )
+        super().__init__(name=name, geo_list=geo_list, material=material)
         # make sure geo elements are circle arcs
-        self.geometricalElement: List[CircleArc] = geometricalElement
-        self.radius = geometricalElement[0].radius
+        self.geo_list: list[CircleArc] = geo_list
+        self.radius = geo_list[0].radius
         # the physical element type can be used to identify physical elements
         self.physicalElementType = "MovingBand"
         ###Hilfslinien des Movingbands zur Ergänzung zum Vollkreis, bei einem Teilmodell.
@@ -102,7 +100,7 @@ class MovingBand(PhysicalElement):
         Raises:
             ValueError: If the given radius does not match the radius of the given circle arcs.
         """
-        for arc in self.geometricalElement:
+        for arc in self.geo_list:
             if abs(arc.radius - mbRadius) > DEFAULT_GEO_TOL:
                 raise (
                     ValueError(

@@ -18,15 +18,18 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import annotations
+
 # %%
 import subprocess
+
 from pyemmo.definitions import RESULT_DIR
-from pyemmo.script.script import Script
-from pyemmo.script.geometry.point import Point
+from pyemmo.functions.runOnelab import createCmdCommand
 from pyemmo.script.geometry.line import Line
+from pyemmo.script.geometry.point import Point
 from pyemmo.script.geometry.spline import Spline
 from pyemmo.script.geometry.surface import Surface
-from pyemmo.functions.runOnelab import createCmdCommand
+from pyemmo.script.script import Script
 
 # %%
 myScript = Script("testGEO", scriptPath=RESULT_DIR, simuParams={})
@@ -60,13 +63,13 @@ s2.addToScript(myScript)
 curveList = s1.curve.copy()
 curveDict = {}
 for c in curveList:
-    print(c.middlePoint().radius, c.name)
+    print(c.middle_point().radius, c.name)
 # print(curveDict)
 for key in sorted(curveDict):
     print(key, curveDict[key])
 # %%
 # add spline
-spline = Spline("spline", p1, p3, [p2, p4], SplineType=0)
+spline = Spline("spline", p1, p3, [p2, p4], spline_type=0)
 spline.addControlPoint(p8, 1)
 
 # %%

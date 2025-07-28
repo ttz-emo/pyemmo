@@ -18,12 +18,12 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Function to get coil span from winding layout"""
-from typing import List
+from __future__ import annotations
 
 import numpy as np
 
 
-def get_min_coilspan(wind_layout: List[List[int]], nbrSlots: int) -> int:
+def get_min_coilspan(wind_layout: list[list[int]], nbrSlots: int) -> int:
     """Calculate the minimal coil span from a winding layout"""
     if wind_layout[0][1]:
         # if second slot side list is NOT empty -> 2 layer winding
@@ -40,7 +40,7 @@ def get_min_coilspan(wind_layout: List[List[int]], nbrSlots: int) -> int:
         # get array with slot distance to first slot side
         a = wind_array[0, 1:] + first_coil_side
     is_positive_coil_side = first_coil_side > 0
-    # filter oppvosit (positive/negative) winding directions
+    # filter opposit (positive/negative) winding directions
     a = -a[a < 0] if is_positive_coil_side else a[a > 0]
     for i in range(1, nbrSlots):
         # loop through distance to first slot and check if that slot is in a

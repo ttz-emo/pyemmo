@@ -1,0 +1,6 @@
+pytest-check # for integration tests
+pytest-cov # for test coverage report
+pytest-dependency
+hypothesis>=6.98.17
+tox
+virtualenv-pyenv

@@ -18,14 +18,13 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module to import data from Ansys Maxwell"""
-import csv
-from typing import List, Tuple
+from __future__ import annotations
 
-from typing import Tuple
+import csv
 import os
 
 
-def import_tab_maxwell(filepath: str) -> Tuple[list[str], list[list[str]]]:
+def import_tab_maxwell(filepath: str) -> tuple[list[str], list[list[str]]]:
     """Function to import data from an ANSYS Maxwell tab delimited file.
 
     Args:
@@ -74,7 +73,7 @@ def import_tab_maxwell(filepath: str) -> Tuple[list[str], list[list[str]]]:
     return identifiers, data
 
 
-def import_csv_data(filepath: str) -> Tuple[List[str], List[List[str]]]:
+def import_csv_data(filepath: str) -> tuple[list[str], list[list[str]]]:
     """Function to import data from a CSV file.
 
     Args:

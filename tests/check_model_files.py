@@ -19,8 +19,10 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for test function to check existance of model files"""
+from __future__ import annotations
+
 import os
-from os.path import join, isdir
+from os.path import isdir, join
 
 
 def check_model_files(model_dir: os.PathLike, model_name: str):
@@ -37,14 +39,10 @@ def check_model_files(model_dir: os.PathLike, model_name: str):
         model_name (str): Model name to identify the model files.
     """
     model_file = join(model_dir, model_name + "_param.geo")
-    assert os.path.isfile(
-        model_file
-    ), f"Model file {model_file} did not exist."
+    assert os.path.isfile(model_file), f"Model file {model_file} did not exist."
     for ext in ("geo", "pro"):
         model_file = join(model_dir, model_name + "." + ext)
-        assert os.path.isfile(
-            model_file
-        ), f"Model file {model_file} did not exist."
+        assert os.path.isfile(model_file), f"Model file {model_file} did not exist."
     model_file = join(model_dir, "machine_magstadyn_a.pro")
     assert os.path.isfile(model_file)
 
@@ -69,9 +67,7 @@ def check_model_result_files(
     """
     for ext in ("msh", "pre", "res"):
         model_file = join(model_dir, model_name + "." + ext)
-        assert os.path.isfile(
-            model_file
-        ), f"ONELAB file {model_file} did not exist."
+        assert os.path.isfile(model_file), f"ONELAB file {model_file} did not exist."
     if not result_dir_name:
         result_dir_name = "res_" + model_name
     assert isdir(

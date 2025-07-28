@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-from typing import List
+from __future__ import annotations
 
 from pyemmo.script.material.material import Material
 
@@ -38,14 +38,14 @@ class RotorLamination(PhysicalElement):
     def __init__(
         self,
         name: str,
-        geometricalElement: List[Surface],
+        geo_list: list[Surface],
         material: Material,
         phyID: int = None,
     ):
         super().__init__(
             name=name,
             material=material,
-            geometricalElement=geometricalElement,
+            geo_list=geo_list,
             phyID=phyID,
         )
         # the physical element type can be used to identify physical elements

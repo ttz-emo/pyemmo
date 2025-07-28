@@ -25,7 +25,6 @@ from __future__ import annotations
 import json
 import logging
 import os
-import warnings
 from cmath import isclose
 from os import path
 
@@ -384,7 +383,7 @@ def importPos(
         if not cdata:
             gmsh.finalize()
             raise ValueError(f"No data found in {pos_file}!")
-        warnings.warn(f"Import file '{pos_file}' did only contain last timestep!")
+        logging.warning("Import file '%s' did only contain last timestep!", pos_file)
         # Only last time step happens if PostProcessing is called at runtime
         # (in 'Resolution').
         # Return only that timestep
@@ -424,19 +423,19 @@ def get_result_files(
         Tuple[list[Union[str, bytes, os.PathLike]], list[Union[str, bytes, os.PathLike]]]: List of .dat and list of .pos
             files in the given folder.
     """
-    if os.path.isdir(result_folder):
-        dat_file_list = []
-        pos_file_list = []
-        for results_file in os.listdir(result_folder):
-            _, ext = os.path.splitext(results_file)
-            if ext == ".dat":
-                dat_file_list.append(results_file)
-            elif ext == ".pos":
-                pos_file_list.append(results_file)
-        if len(dat_file_list) == 0:
-            logger.warning("No result files found in '%s'", result_folder)
-        return dat_file_list, pos_file_list
-    raise FileNotFoundError(f"Results folder {result_folder} does not exist.")
+    if not os.path.isdir(result_folder):
+        raise FileNotFoundError(f"Results folder {result_folder} does not exist.")
+    dat_file_list = []
+    pos_file_list = []
+    for results_file in os.listdir(result_folder):
+        _, ext = os.path.splitext(results_file)
+        if ext == ".dat":
+            dat_file_list.append(results_file)
+        elif ext == ".pos":
+            pos_file_list.append(results_file)
+    if len(dat_file_list) == 0:
+        logger.warning("No result files found in '%s'", result_folder)
+    return dat_file_list, pos_file_list
 
 
 def load_param_file(setup_file: str | bytes | os.PathLike) -> dict:
@@ -454,7 +453,9 @@ def main(sim_param: dict | str | bytes | os.PathLike):
     # TODO: Add start and stop angle, angle and time step, ...
     # OTHER OPTION: Just add input param dict to result dict...
 
-    simulation_res_dir = os.path.join(sim_param["res"], sim_param["ResId"])
+    simulation_res_dir = os.path.join(
+        sim_param["getdp"]["res"], sim_param["getdp"]["ResId"]
+    )
     dat_files, geo_files = get_result_files(simulation_res_dir)
 
     # for key, getdp_param in {

@@ -18,7 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for Class LimitLine"""
-from typing import List, Union
+from __future__ import annotations
 
 from .physicalElement import CircleArc, Line, Material, PhysicalElement, Spline
 
@@ -33,21 +33,21 @@ class LimitLine(PhysicalElement):
     def __init__(
         self,
         name: str,
-        geometricalElement: List[Union[Line, CircleArc, Spline]],
+        geo_list: list[Line | CircleArc | Spline],
         material: Material = None,
     ):
         """Create a boundary line
 
         Args:
             name (str): Name of boundary line. E.g. "OuterLimitLine"
-            geometricalElement (List[Union[Line, CircleArc, Spline]]): List of geo curves
+            geo_list (List[Union[Line, CircleArc, Spline]]): List of geo curves
             material (Material, optional): Material of boundary. Defaults to None.
         """
         PhysicalElement.__init__(
             self,
             name=name,
             material=material,
-            geometricalElement=geometricalElement,
+            geo_list=geo_list,
         )
         # the physical element type can be used to identify physical elements
         self.physicalElementType = "LimitLine"

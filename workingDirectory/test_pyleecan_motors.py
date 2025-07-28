@@ -19,24 +19,22 @@
 #
 """This module loads all the available pyleecan machines and trys to run the pyemmo api"""
 
+from __future__ import annotations
+
+import json
+import logging
+
 # %%
 import os
-from os.path import join
-import logging
-from typing import Union
-import json
 import traceback
-from subprocess import CalledProcessError
+from os.path import join
 
+from pyleecan.Classes.Machine import Machine
 from pyleecan.definitions import DATA_DIR
 from pyleecan.Functions import load
 
-from pyleecan.Classes.Machine import Machine
-from pyleecan.Classes.MachineAsync import MachineAsync
-from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM, MachineSync
-
-from pyemmo.definitions import ROOT_DIR
 from pyemmo.api.pyleecan.main import main
+from pyemmo.definitions import ROOT_DIR
 from pyemmo.functions.runOnelab import main as run_onelab
 
 logging.getLogger().setLevel(logging.INFO)
@@ -67,9 +65,7 @@ for num, machineFile in enumerate(os.listdir(MACHINE_FILE_DIR)):
         except Exception as exce:
             raise exce
     except Exception as exce:
-        machine_test_dict[machineFile] = (
-            f"Could not load machine. Error: {exce}"
-        )
+        machine_test_dict[machineFile] = f"Could not load machine. Error: {exce}"
     else:
         try:
             machine_model_dir = join(MODEL_RES_DIR, machine.name)

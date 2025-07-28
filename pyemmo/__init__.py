@@ -19,12 +19,14 @@
 #
 """Init of pyemmo package. Overloads the function calc_phaseangle_starvoltageV2
 of site-package swat-em, because there is a mistake in the original implementation."""
+from __future__ import annotations
+
 import datetime
 import logging
 import os
 import platform
 from os.path import isdir
-from typing import List, Literal
+from typing import Literal
 
 import numpy as np
 from swat_em import analyse
@@ -61,6 +63,22 @@ logging.info(
     datetime.date.today(),
     datetime.datetime.now().strftime("%H:%M:%S"),
 )
+# Update matplotlib logging level in case debugging because creates a lot of debugging
+# outputs...
+logging.getLogger("matplotlib.font_manager").setLevel(logging.WARNING)
+
+# check if pyleecan is available
+try_pyleecan = True  # set this to False to never use pyleecan
+use_pyleecan = False
+if try_pyleecan:
+    try:
+        import pyleecan
+
+        use_pyleecan = True
+    except ImportError:
+        use_pyleecan = False
+    except Exception as exce:
+        raise exce
 
 
 def calcPhaseangleStarvoltageCorr(volVecList):
@@ -81,8 +99,8 @@ def calcPhaseangleStarvoltageCorr(volVecList):
     return seqeunce:   list
                        sequence of the flux wave: 1 or -1
     """
-    sequence: List[Literal[-1, 1]] = []
-    phaseangle: List[List[float]] = []
+    sequence: list[Literal[-1, 1]] = []
+    phaseangle: list[list[float]] = []
     for knu in volVecList:  # for every nu
         phaseangle.append([])
         km_sum = [sum(km) for km in knu]  # get the sum phasor for every phase

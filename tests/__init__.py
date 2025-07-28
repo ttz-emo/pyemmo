@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import annotations
+
 import logging
 import os
 import platform
@@ -39,9 +41,10 @@ TEST_DATA_DIR = os.path.join(TEST_DIR, "data")
 # if test_root not in sys.path:
 #     sys.path.append(test_root)
 
-save_path = os.path.join(TEST_DIR, "Results").replace("\\", "/")
+TEST_TEMP_DIR = os.path.join(TEST_DIR, "Results").replace("\\", "/")
 """save_path is the path where the test resutls should be stored temporarily"""
-
+if not os.path.isdir(TEST_TEMP_DIR):
+    os.makedirs(TEST_TEMP_DIR)
 
 GMSH_EXE = ""
 GETDP_EXE = ""
@@ -49,7 +52,7 @@ if platform.system() == "Windows":
     # Download and install the newest ONELAB installation for testing
     try:
         p = subprocess.run(
-            ["powershell", f"{TEST_DIR}\\install_onelab.ps1"],
+            ["powershell", os.path.join(TEST_DIR, "install_onelab.ps1")],
             check=True,
             capture_output=True,
         )

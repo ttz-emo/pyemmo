@@ -17,51 +17,41 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-from typing import List, Literal
+from __future__ import annotations
+
+from typing import Literal
 
 import matplotlib.pyplot as plt
 import numpy as np
 from splines import Bernstein, CatmullRom, Natural
 
 from ...definitions import LINE_COLOR, POINT_COLOR
+from . import defaultCenterPoint
 from .line import Line
 from .point import Point
 
 NBR_INTERPOLATION_POINTS = 100
 
-###
-# Eine Instanz der Unterklasse Spilne ist ein Polynomzug, zwischen beliebig vielen Punkten (Objekte der Klasse Point) im dreidimensionalen Raum.
-# Spline-Befehl aus Gmsh erzeugt einie Linie, die durch all gegebenen Punkte laufen.
-#
-#   Beispiel:
-#
-#       import pyemmo as pyd
-#       P0 = pyd.Point('p0', 0, 0, 0, 0.3)
-#       P1 = pyd.Point('p1', 1, 0, 0, 0.3)
-#       P2 = pyd.Point('p2', 1, 1, 0, 0.3)
-#       P3 = pyd.Point('p3', 0, 1, 0, 0.3)
-#       SP1 = pyd.Spline('sp1', P0, P3, [P1, P2])
-#
-###
-
 
 class Spline(Line):
+    """Class Spline Child of class line"""
+
     def __init__(
         self,
         name: str,
-        startPoint: Point,
-        endPoint: Point,
-        controlPoints: List[Point],
-        SplineType: Literal[0, 1, 2] = 0,
+        start_point: Point,
+        end_point: Point,
+        control_points: list[Point],
+        spline_type: Literal[0, 1, 2] = 0,
     ):
         """Konstruktor der Klasse Spline
 
         Args:
             name (str): Name of the Spline
-            p1 (Point): Startpoint
-            p2 (Point): Endpoint
-            controlPoints (List[Point]): List of controll points
-            SplineType (Literal[0, 1, 2], optional): There are 3 different types of Splines
+            p1 (Point): start_point
+            p2 (Point): end_point
+            control_points (List[Point]): List of controll points
+            spline_type (Literal[0, 1, 2], optional): There are 3 different types of Splines
              that can be generated with Gmsh. Defaults to 0 (Spline):
 
                 0 : Catmull-Rom Spline (Build-in Kernel) or C2 BSpline (OpenCASCADE Kernel)
@@ -69,150 +59,147 @@ class Spline(Line):
                 2 : Basis-Spline
 
         """
-        super().__init__(name=name, startPoint=startPoint, endPoint=endPoint)
+        super().__init__(name=name, start_point=start_point, end_point=end_point)
         ###Zwischenpunkte vom Polynomzug in der richtigen durchzulaufenden Reihenfolge.
-        self.controlPoints = controlPoints
+        self.control_points = control_points
         # 0: Catmull-Rom Spline, 1: Bezierkurve, 2: Basis-Spline
-        self._splineType = SplineType
+        self._spline_type = spline_type
 
     @property
-    def type(self) -> Literal["Spline"]:
-        """Mit type wird ein Identifier der Klasse als String zurück gegeben.
+    def spline_type(self) -> Literal[0, 1, 2]:
+        """get Spline type.
+        There are 3 different types of Splines that can be generated with Gmsh:
+
+            0 : Catmull-Rom Spline (Build-in Kernel) or C2 BSpline (OpenCASCADE Kernel)
+            1 : Bezierkurve
+            2 : Basis-Spline
 
         Returns:
-            Literal["Spline"]: Class identifier
-        """
-        return "Spline"
 
-    @property
-    def splineType(self) -> Literal[0, 1, 2]:
-        """get Spline type. There are 3 different types of Splines that can be generated with Gmsh:
-                0 : Catmull-Rom Spline (Build-in Kernel) or C2 BSpline (OpenCASCADE Kernel)
-                1 : Bezierkurve
-                2 : Basis-Spline
-
-        Returns:
             Literal[0,1,2]: Spline type
         """
-        return self._splineType
+        return self._spline_type
 
     @property
-    def controlPoints(self) -> List[Point]:
+    def control_points(self) -> list[Point]:
         """Get the controll point list of a Spline
 
         Returns:
             List[Point]: controll point list
         """
-        return self._controlPoints
+        return self._control_points
 
-    @controlPoints.setter
-    def controlPoints(self, newControlPointList: List[Point]):
+    @control_points.setter
+    def control_points(self, new_control_points: list[Point]):
         """Mit setControlPoints können neue Kontrollpunkte der Spline definiert werden.
 
         Args:
             newControlPointList (List[Point]): List of new controll points
         """
-        self._controlPoints = newControlPointList
+        self._control_points = new_control_points
 
-    def addControlPoint(self, newControllPoint: Point, position: int = None):
-        """Mit addControlPoint() kann an einer definierten Postion ein weitere Kontrollpunkt in die Liste der Kontrollpunkte ergänzt werden.
+    def addControlPoint(self, new_control_point: Point, position: int | None = None):
+        """Mit addControlPoint() kann an einer definierten Postion ein weitere
+        Kontrollpunkt in die Liste der Kontrollpunkte ergänzt werden.
 
         Args:
-            newP (Point): New controll point
-            position (int): Position in controll point list Defaults to None. If None, controll point is appended to the controll point list.
+            new_control_point (Point): New controll point
+            position (int): Position in controll point list Defaults to None. If None,
+                controll point is appended to the controll point list.
         """
         if isinstance(position, int):
-            self.controlPoints.insert(position, newControllPoint)
+            self.control_points.insert(position, new_control_point)
         else:
-            self.controlPoints.append(newControllPoint)
+            self.control_points.append(new_control_point)
 
     def removeControlPoint(self, point: Point):
-        """Mit removeControlPoint() kann ein definierter Punkt aus der Liste der Kontrollpunkte entfernt werden.
+        """Mit removeControlPoint() kann ein definierter Punkt aus der Liste der
+        Kontrollpunkte entfernt werden.
 
         Args:
             point (Point): Controll point that should be removed.
         """
-        cpList = self.controlPoints
+        cpList = self.control_points
         if point in cpList:
             cpList.remove(point)
         else:
             raise (
-                UserWarning(
-                    f"Tried to remove Point '{point.name}' from controll points of Spline '{self.name}', but point was not found in controll point list."
+                ValueError(
+                    f"Tried to remove Point '{point.name}' from controll points of "
+                    f"Spline '{self.name}', but point was not found in controll point list."
                 )
             )
 
-    def getPoints(self) -> List["Point"]:
-        points = []
-        points.extend(super().points)
-        points.extend(self.controlPoints)
+    @property
+    def points(self) -> list[Point]:
+        """get the start and end point of a line
+
+        Returns:
+            list[Point]: List of all points, starting with start point, then control
+            points and ends with end point.
+        """
+        points = [self.start_point]
+        points.extend(self.control_points)
+        points.append(self.end_point)
         return points
 
     def translate(self, dx: float, dy: float, dz: float):
-        """Mit translate() wird das Objekt linear verschoben. Die Inputvariablen dx, dy und dz beschreiben die Verschiebungsfaktoren in der x-, y- und z- Richtung.
+        """Mit translate() wird das Objekt linear verschoben. Die Inputvariablen dx, dy
+        und dz beschreiben die Verschiebungsfaktoren in der x-, y- und z- Richtung.
 
         Args:
             dx (float): x offset
             dy (float): y offset
             dz (float): z offset
         """
-        if self._todesmerker == True:
-            return None
-        else:
-            self.startPoint.translate(dx, dy, dz)
-            self.endPoint.translate(dx, dy, dz)
-            for p in self.controlPoints:
-                p.translate(dx, dy, dz)
+        self.start_point.translate(dx, dy, dz)
+        self.end_point.translate(dx, dy, dz)
+        for p in self.control_points:
+            p.translate(dx, dy, dz)
 
     def rotateX(self, rotationPoint: Point, angle):
-        """Mit rotateX() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die X-Achse mit einem definierten Winkel rotiert.
+        """Mit rotateX() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die
+        X-Achse mit einem definierten Winkel rotiert.
 
         Args:
             rotationPoint (Point): Centerpoint of rotation.
             angle (float): Rotational angle in radians.
         """
-        if self._todesmerker == True:
-            return None
-        else:
-            self.startPoint.rotateX(rotationPoint, angle)
-            self.endPoint.rotateX(rotationPoint, angle)
-            for p in self._controlPoints:
-                p.rotateX(rotationPoint, angle)
+        self.start_point.rotateX(rotationPoint, angle)
+        self.end_point.rotateX(rotationPoint, angle)
+        for p in self._control_points:
+            p.rotateX(rotationPoint, angle)
 
     def rotateY(self, rotationPoint, angle):
-        """Mit rotateY() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die Y-Achse mit einem definierten Winkel rotiert.
+        """Mit rotateY() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die
+        Y-Achse mit einem definierten Winkel rotiert.
 
         Args:
             rotationPoint (Point): Centerpoint of rotation.
             angle (float): Rotational angle in radians.
 
         """
-        if self._todesmerker == True:
-            return None
-        else:
-            self.startPoint.rotateY(rotationPoint, angle)
-            self.endPoint.rotateY(rotationPoint, angle)
-            for p in self._controlPoints:
-                p.rotateY(rotationPoint, angle)
+        self.start_point.rotateY(rotationPoint, angle)
+        self.end_point.rotateY(rotationPoint, angle)
+        for p in self._control_points:
+            p.rotateY(rotationPoint, angle)
 
-    def rotateZ(self, rotationPoint, angle):
-        """Mit rotateZ() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die Z-Achse mit einem definierten Winkel rotiert.
+    def rotateZ(self, rotationPoint: Point = defaultCenterPoint, angle: float = 0.0):
+        """Mit rotateZ() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die
+        Z-Achse mit einem definierten Winkel rotiert.
 
         Args:
             rotationPoint (Point): Centerpoint of rotation.
             angle (float): Rotational angle.
         """
-        if self._todesmerker == True:
-            return None
-        else:
-            self.startPoint.rotateZ(rotationPoint, angle)
-            self.endPoint.rotateZ(rotationPoint, angle)
-            for p in self._controlPoints:
-                p.rotateZ(rotationPoint, angle)
+        self.start_point.rotateZ(rotationPoint, angle)
+        self.end_point.rotateZ(rotationPoint, angle)
+        for p in self._control_points:
+            p.rotateZ(rotationPoint, angle)
 
-    def duplicate(self, name="") -> "Spline":
-        """
-        Mit duplicate() wird eine Spline mit gleichen Eigenschaften zur Originalen erzeugt. Diese Spline hat jedoch eine unterschiedliche ID.
+    def duplicate(self, name="") -> Spline:
+        """Mit duplicate() wird eine Spline mit gleichen Eigenschaften zur Originalen
+        erzeugt. Diese Spline hat jedoch eine unterschiedliche ID.
                 Beispiel:
                     SP1 = Spline('sp1', P1, P2, [P3, P4, P5])
                     SP2 = SP1.duplicate()
@@ -224,18 +211,18 @@ class Spline(Line):
             Spline: Duplicate of the current Spline
 
         """
-        newP1 = self.startPoint.duplicate()
-        newP2 = self.endPoint.duplicate()
-        controlPoints: List[Point] = []
-        for controllPoint in self.controlPoints:
-            controlPoints.append(controllPoint.duplicate())
+        newP1 = self.start_point.duplicate()
+        newP2 = self.end_point.duplicate()
+        control_points: list[Point] = []
+        for controllPoint in self.control_points:
+            control_points.append(controllPoint.duplicate())
 
         dupSpline = Spline(
             name=self._name,
-            startPoint=newP1,
-            endPoint=newP2,
-            controlPoints=controlPoints,
-            SplineType=self.splineType,
+            start_point=newP1,
+            end_point=newP2,
+            control_points=control_points,
+            spline_type=self.spline_type,
         )
         if name == "":
             parentName = self.name
@@ -246,7 +233,9 @@ class Spline(Line):
         return dupSpline
 
     def mirror(self, planePoint, planeVector1, planeVector2, name=""):
-        """Mit mirror() kann ein Punkt an einer definierten Ebene gespiegelt werden. Ein Bildpunkt wird hierbei erzeugt. Die Spiegelebene wird durch einen Aufpunkt (planePoint) und 2 Vektoren (planeVector1 und planeVector2) beschrieben.
+        """Mit mirror() kann ein Punkt an einer definierten Ebene gespiegelt werden. Ein
+        Bildpunkt wird hierbei erzeugt. Die Spiegelebene wird durch einen Aufpunkt
+        (planePoint) und 2 Vektoren (planeVector1 und planeVector2) beschrieben.
 
         Args:
             planePoint (Point): _description_
@@ -266,17 +255,17 @@ class Spline(Line):
             P1 = Point('P1', 1, 0, 0, 0.3) \n
             P2 = P1.mirror(P0, yAxis, zAxis) \n
         """
-        p1 = self.startPoint.mirror(planePoint, planeVector1, planeVector2)
-        p2 = self.endPoint.mirror(planePoint, planeVector1, planeVector2)
+        p1 = self.start_point.mirror(planePoint, planeVector1, planeVector2)
+        p2 = self.end_point.mirror(planePoint, planeVector1, planeVector2)
         cp = []
-        for p in self._controlPoints:
+        for p in self._control_points:
             pmirror = p.mirror(planePoint, planeVector1, planeVector2)
             cp.append(pmirror)
 
         cp.reverse()
         SP = Spline(self._name, p2, p1, cp)
         if name == "":
-            SP.name = "SP_" + str(abs(SP.id))
+            SP.name = f"mirrored spline {self.name}"
         else:
             SP.name = name
         return SP
@@ -284,11 +273,11 @@ class Spline(Line):
     def plot(
         self,
         fig=None,
-        linewidth=0.5,
+        linewidth: float = 0.5,
         color=LINE_COLOR,
         marker=None,
-        markersize=1,
-        tag=False,
+        markersize: float = 1,
+        tag: bool = False,
     ):
         """TODO
 
@@ -312,13 +301,13 @@ class Spline(Line):
             marker (_type_, optional): _description_. Defaults to None.
             markersize (int, optional): _description_. Defaults to 1.
         """
-        all_points = self.getPoints()
+        all_points = self.points
         xy_list = []
         for p in all_points:
             xy_list.append((p.coordinate[0], p.coordinate[1]))
-        if self.splineType == 0:
+        if self.spline_type == 0:
             spline = CatmullRom(xy_list)
-        elif self.splineType == 1:
+        elif self.spline_type == 1:
             spline = Bernstein([xy_list])
         else:
             spline = Natural(xy_list)
@@ -341,7 +330,7 @@ class Spline(Line):
         if tag:
             # add tag to line
             ax.annotate(
-                f"""Spline {self.id} ("{self.name}")""",
+                f"""Spline ("{self.name}")""",
                 spline.evaluate(0.5),
                 textcoords="offset points",
                 xytext=(1, 1),

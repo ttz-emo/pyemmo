@@ -17,17 +17,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-import pyemmo as emmo
-from typing import Union, TYPE_CHECKING
-from pyemmo.script.geometry.stepToArea import (
-    getSurfaceFromStep,
-    getCurveFromStep,
-)
+from __future__ import annotations
+
 from os.path import join
+from typing import TYPE_CHECKING
+
+import pyemmo as emmo
+from pyemmo.script.geometry.stepToArea import (
+    getCurveFromStep,
+    getSurfaceFromStep,
+)
 
 if TYPE_CHECKING:
-    from pyemmo.script.geometry.surface import Surface
     from pyemmo.script.geometry.line import Line
+    from pyemmo.script.geometry.surface import Surface
 
 
 # Verknüpft Ordnerpfad von Stepdatei mit dem Dateienamen und ergänzt diese mit der Endung .step
@@ -470,9 +473,7 @@ def getAdaptedPath(pathStepDir):
     return pathList
 
 
-def changeToEmmoObjects(
-    objStepPath, unit=1
-) -> dict[str, list[Union[Surface, Line]]]:
+def changeToEmmoObjects(objStepPath, unit=1) -> dict[str, list[Surface | Line]]:
     mesh_big = 2e-3 * unit
     mesh_middle = 5e-4 * unit
     mesh_small = 2e-4 * unit
@@ -565,9 +566,7 @@ def changeToEmmoObjects(
         elif "MBRotor" in p[0]:
             l = getCurveFromStep(p[1], mesh_big, unit)
             curve_rotorMB1 = l
-            MB2 = emmo.CircleArc(
-                "", l[0].getP2(), l[0].getC(), l[0].getP1(), True
-            )
+            MB2 = emmo.CircleArc("", l[0].getP2(), l[0].getC(), l[0].getP1(), True)
             MB2.setName("Curve_" + str(MB2.getID()))
             curve_rotorMB2.append(MB2)
         elif "Contour" in p[0]:

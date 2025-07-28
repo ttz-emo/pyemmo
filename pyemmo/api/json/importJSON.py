@@ -27,10 +27,10 @@ import json
 import numbers
 from typing import Any, Literal
 
-from numpy import pi, zeros
+import numpy as np
 from numpy.linalg import norm
 
-from ...functions.cleanName import cleanName
+from ...functions.clean_name import clean_name
 from ...script.material.electricalSteel import ElectricalSteel
 from ...script.material.material import Material
 from .. import air, logger
@@ -39,13 +39,13 @@ from .. import air, logger
 # ================================ START EXTENDED INFO FUNCTIONS ===================================
 class InvalidSheetThicknessError(Exception):
     """
-    .. todo::
-
-        write descriptions
-
+    Exception raised for errors in the sheet thickness input.
     Attributes:
-        input -- input that caused the error
-        message -- explanation of the error
+        sheet_thickness (any): The invalid sheet thickness value that caused the error.
+        message (str): Explanation of the error. Defaults to "Invalid sheet thickness provided".
+    Methods:
+        __str__(): Returns a string representation of the error, including the message
+        and the invalid input value.
     """
 
     def __init__(self, sheet_thickness, message="Invalid sheet thickness provided"):
@@ -77,6 +77,7 @@ def importExtInfo(extInfoPath: str) -> dict:
     return extInfo
 
 
+# FIXME: Rename this to get_mag_TYPE!
 def getMagDir(extendedInfo: dict) -> str:
     """Retrun the magnetization direction (parallel, radial, ...) from the extendedInfo dict"""
     magDirKey = "magType"
@@ -196,7 +197,7 @@ def getRotFreq(extendedInfo: dict, unit: str = "Hz") -> float:
         if unit.lower() == "hz":
             return rotFreq
         if unit.lower() == "rad/s":
-            return rotFreq * 2 * pi
+            return rotFreq * 2 * np.pi
         if unit in ("rpm", "1/min", "min^-1"):
             return rotFreq * 60
         raise AttributeError(f"Frequency unit not valid! Unit was '{unit}'")
@@ -269,7 +270,7 @@ def getAxialLength(extendedInfo: dict) -> dict[str, float]:
     raise KeyError(msg)
 
 
-def getMagTemperature(extendedInfo: dict) -> float | None:
+def getMagTemperature(extendedInfo: dict) -> float:
     """get the magnet temperature from the extended info dict. Key is "tempMag".
 
     Args:
@@ -277,12 +278,16 @@ def getMagTemperature(extendedInfo: dict) -> float | None:
 
     Returns:
 
-        Union[float, None]: returns the value from the dict as float or None,
+        Union[float]: returns the value from the dict as float or 20.0,
         if "tempMag" is missing from the dict.
     """
     if "tempMag" in extendedInfo.keys():
-        return float(extendedInfo["tempMag"])
-    return None
+        if isinstance(extendedInfo["tempMag"], numbers.Number):
+            return float(extendedInfo["tempMag"])
+        raise ValueError(
+            f"Magnet temperature ('tempMag') is not type float: {extendedInfo['tempMag']}"
+        )
+    return 20.0
 
 
 def getSimuParams(extendedInfo: dict) -> dict[str, dict[str, float]]:
@@ -327,7 +332,7 @@ def getModelName(extendedInfo: dict) -> str:
     """
     mNKey = "modelName"
     if mNKey in extendedInfo.keys():
-        correctScriptName = cleanName(extendedInfo[mNKey])
+        correctScriptName = clean_name(extendedInfo[mNKey])
         return correctScriptName
     raise KeyError(f"Name of model files ('{mNKey}') missing from extended info dict!")
 
@@ -445,32 +450,51 @@ def createMaterial(matDict: dict[str, dict[Literal["wert"], Any]]) -> Material:
         magMatDict: dict = matDict["elektromagnetik"]
         conductivity = magMatDict.get("el_lw", {}).get("wert")
         if not isinstance(conductivity, (int, float)):
-            conductivity = None
+            conductivity = 0
         # linear magnetic permerability
         permeability = magMatDict.get("mue_r", {}).get("wert")
         if not isinstance(permeability, (int, float)):
-            permeability = None
+            if permeability is not None:
+                logger.warning(
+                    "Bad value for permeability of Material %s: %s. Resetting to 1.0!",
+                    name,
+                    permeability,
+                )
+            permeability = 1  # default value
         # remanent flux density [T]
         remanence = magMatDict.get("b_rem", {}).get("wert")
         if not isinstance(remanence, (int, float)):
-            remanence = None
-            remanenceTempCoef = None
+            remanence = 0
+            remanenceTempCoef = 0
         else:
             if "tk_rem_100" in magMatDict.keys():
                 remanenceTempCoef = magMatDict["tk_rem_100"]["wert"]
+                if not isinstance(remanenceTempCoef, (int, float)):
+                    # if not valid value for temperature coefficient of remanence
+                    remanenceTempCoef = 0  # set to None
         # BH Curve
-        bhCurve = None
+        bhCurve = np.empty(0)
         if "bh_kl" in magMatDict.keys():
             bhDict: dict = magMatDict["bh_kl"]
             if isinstance(bhDict["wert"], list):
                 # one BH-curve
                 nbrBasePoints = len(bhDict["wert"])
                 if nbrBasePoints > 0:
-                    bhCurve = zeros((nbrBasePoints, 2))
+                    bhCurve = np.zeros((nbrBasePoints, 2))
                     for i, hbArray in enumerate(bhDict["wert"]):
                         bhCurve[i] = [hbArray[1], hbArray[0]]
                 # else:
                 # raise ValueError(f"BH-Curve of Material '{name}' is empty!")
+            elif isinstance(bhDict["wert"], memoryview):
+                # workaround from coupling with matlab. class memoryview is only used
+                # for matrices (not vectors).
+                bhDict["wert"] = bhDict["wert"].tolist()  # convert memoryview to list
+                nbrBasePoints = len(bhDict["wert"])
+                if nbrBasePoints > 0:
+                    bhCurve = np.zeros((nbrBasePoints, 2))
+                    for i, hbArray in enumerate(bhDict["wert"]):
+                        bhCurve[i] = [hbArray[1], hbArray[0]]
+
             elif "kl_1" in bhDict.keys():
                 ...  # TODO: add temperatur depended BH curve to material
             else:
@@ -479,7 +503,7 @@ def createMaterial(matDict: dict[str, dict[Literal["wert"], Any]]) -> Material:
                     f"Keys are {bhDict.keys()}"
                 )
                 raise KeyError(msg)
-        if bhCurve is None:
+        if bhCurve.size == 0:
             # check that there is a magnetic property
             if not permeability:
                 msg = (
@@ -487,7 +511,7 @@ def createMaterial(matDict: dict[str, dict[Literal["wert"], Any]]) -> Material:
                     "(neither relative permeability nor BH-Curve)"
                 )
                 raise AttributeError(msg)
-            elif permeability < 1:
+            if permeability < 1:
                 # pylint: disable=locally-disabled,  line-too-long
                 logger.warning(
                     "Permeability of material '%s' is smaller than 1! Resetting it to 1 for model.",

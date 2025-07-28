@@ -19,20 +19,21 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module to test the detection of the model boundaries in the api."""
-from os.path import abspath, join
-from typing import List
-import pytest
+from __future__ import annotations
 
+from os.path import abspath, join
+
+import pytest
 from pyleecan.Classes.Machine import Machine
 
 # pylint: disable=locally-disabled, no-name-in-module
 from pyleecan.Functions.load import load
 
-from pyemmo.api.json.SurfaceJSON import SurfaceAPI
-from pyemmo.api.pyleecan.translate_surfs import translate_surface
 from pyemmo.api.pyleecan.detect_inner_outer_limit import (
     detect_inner_outer_limit,
 )
+from pyemmo.api.pyleecan.translate_surfs import translate_surface
+from pyemmo.script.geometry.segment_surface import SegmentSurface
 from tests.api.pyleecan import TEST_API_PYLCN_DATA_DIR
 
 
@@ -46,9 +47,7 @@ from tests.api.pyleecan import TEST_API_PYLCN_DATA_DIR
 )
 def test_detect_inner_outer_limit(machine_sample):
     """Function to test the detection of the model boundaries in the api."""
-    machine: Machine = load(
-        abspath(join(TEST_API_PYLCN_DATA_DIR, machine_sample))
-    )
+    machine: Machine = load(abspath(join(TEST_API_PYLCN_DATA_DIR, machine_sample)))
 
     all_surfaces: list = machine.rotor.build_geometry(
         sym=machine.rotor.comp_periodicity_geo()[0], alpha=0
@@ -60,7 +59,7 @@ def test_detect_inner_outer_limit(machine_sample):
 
     all_surfs_labels = []
     all_surfs_labels_split2 = []
-    geometry_list: List[SurfaceAPI] = []
+    geometry_list: list[SegmentSurface] = []
     angle_point_ref_list = []
 
     for i, surf in enumerate(all_surfaces):

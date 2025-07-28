@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -17,16 +18,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-import unittest
+from __future__ import annotations
 
-from pyemmo.functions.runOnelab import findGmsh, runCalcforCurrent
+import fnmatch
+import unittest
+from os import listdir, makedirs
+from os.path import isdir, isfile, join
+from shutil import copytree, ignore_patterns, rmtree
+
+from pyemmo.functions.runOnelab import findGetDP, findGmsh, runCalcforCurrent
+from tests import TEST_DATA_DIR
+from tests import TEST_TEMP_DIR as TESTS_RESULTS_DIR
 
 
 class TestRunOnelab(unittest.TestCase):
     """
     Testing the module runOnelab
     Based on tutorial: https://youtu.be/6tNS--WetLI
-    Author: Max Ganser
+    Author: Max Schuler
     """
 
     @classmethod
@@ -36,7 +45,30 @@ class TestRunOnelab(unittest.TestCase):
         Nützlich für beispielsweise zeitintensives Setup von Dingen die nicht verändert werden.
         Konkret z.B. Laden von vordefinierter, verifizierter Testgeometrie
         """
-        pass
+        # copy model data and set actual model directory
+        original_model_dir = join(
+            TEST_DATA_DIR, "api", "pyleecan", "comparison_base", "Toyota_Prius"
+        )
+        # folder to store temporary model data and simulation results
+        cls.test_sim_dir = join(TESTS_RESULTS_DIR, "TestRunOnelab")
+        if not isdir(cls.test_sim_dir):
+            makedirs(cls.test_sim_dir)
+        # copy model data to test simulation results directory
+        model_dir = join(cls.test_sim_dir, "Toyota_Prius")
+        if not isdir(model_dir):
+            cls.model_dir = copytree(
+                original_model_dir,
+                model_dir,
+                ignore=ignore_patterns("res*", "*.msh", "*.db", "*.res", "*.pre"),
+            )
+        else:
+            if isfile(join(model_dir, "Toyota_Prius.pro")):
+                cls.model_dir = model_dir
+            else:
+                raise FileExistsError(
+                    f"Model directory {model_dir} already exists but does not "
+                    "contain the expected files (Toyota_Prius.pro)."
+                )
 
     @classmethod
     def tearDownClass(cls):
@@ -45,7 +77,11 @@ class TestRunOnelab(unittest.TestCase):
         Nützlich für beispielsweise Löschen von in Test erzeugten Datein und Ordnern.
         Konkret z.B. Löschen von abgespeicherten Geometrien
         """
-        pass
+        rmtree(cls.model_dir)
+        # remove any results folders that match the test res_id pattern
+        for folder in listdir(cls.test_sim_dir):
+            if fnmatch.fnmatch(folder, "test_*"):
+                rmtree(join(cls.test_sim_dir, folder))
 
     def setUp(self):
         """
@@ -71,31 +107,32 @@ class TestRunOnelab(unittest.TestCase):
         ...
 
     def test_run_ONELAB(self):
+
+        res_id = "test_runOnelab"
         runCalcforCurrent(
             {
                 "getdp": {
+                    "exe": findGetDP(),
                     "IQ_RMS": 10.0,
                     "ID_RMS": 0.0,
                     "RPM": 1000,
                     "initrotor_pos": 0.0,
-                    "d_theta": 5,
-                    "finalrotor_pos": 90,
-                    "ResId": "test01",
+                    "d_theta": 5.0,
+                    "finalrotor_pos": 10.0,
+                    "ResId": res_id,
                     "Flag_AnalysisType": 1,
                     "Flag_PrintFields": 0,
-                    "Flag_Debug": 1,
+                    "Flag_Debug": 0,
                     "Flag_ClearResults": 1,
-                    "verbosity level": 5,
+                    "verbosity level": 3,
                     #                     mesh_veryFine, fineMesh or coarseMesh
                     # "msh": os.path.join(MODEL_DIR, "mesh_veryFine.msh"),
                     # "Flag_SecondOrder": 0,
-                    "stop_criterion": 1e-8,
+                    "stop_criterion": 1e-5,
+                    "res": self.test_sim_dir,  # result folder
                 },
-                "ResId": "test01",
-                "pro": r"D:\pyemmo\Results\Baukasten\Test_SPMSM\Test_SPMSM_Baukasten.pro",
-                "res": r"D:\pyemmo\Results\Baukasten\Test_SPMSM\res_Test_SPMSM_Baukasten",
-                "exe": r"C:\Software\onelab\getdp.exe",
-                "gmsh": r"C:\Software\onelab\gmsh.exe",
+                "pro": join(self.model_dir, "Toyota_Prius.pro"),  # pro file
+                "gmsh": {"exe": findGmsh()},  # gmsh exe and params
                 "info": "",
                 "PostOp": [],  # "GetBOnRadius" - "Get_LocalFields_Post"
             }

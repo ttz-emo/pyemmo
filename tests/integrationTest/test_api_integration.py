@@ -31,18 +31,21 @@ syntax: pytest <path_to_module>
 
 """
 
+from __future__ import annotations
+
 import glob
+import logging
 import os
 import shutil
 
 import pytest
 from pytest_check import check  # to allow multiple failures per test
 
-from pyemmo.definitions import ROOT_DIR
+from pyemmo.definitions import ROOT_DIR, TEST_DIR
 from pyemmo.functions.import_results import read_timetable_dat
 
 from . import LOGGER
-from .pyleecan_test_base import pyleecanPrepTuple, test_params
+from .pyleecan_test_base import curr_datetime, pyleecanPrepTuple, test_params
 from .testUtils import (
     check_folder_type,
     count_files,
@@ -55,13 +58,22 @@ from .testUtils import (
 test_types = ["api\\pyleecan"]
 test_cases = {}
 
+fileHandler = logging.FileHandler(
+    filename=os.path.join(
+        TEST_DIR, "results", test_types[0], f"test_result_{curr_datetime}.log"
+    ),
+    mode="w",
+    encoding="utf-8",
+)
+LOGGER.addHandler(fileHandler)
+
 ## Auto generate test cases from machine files in tests\data\api\pyleecan dir:
 # for t in test_types:
 #     test_cases[t] = make_test_cases(t, fixed_test_flg=True)
 
 # Fix test cases for acutal machines to be testes from data folder:
 test_cases["api\\pyleecan"] = [
-    ("test_id", "test_case"),
+    ("test_id", "test_case", "test_run_flag"),
     (0, "IPMSM_B", False),  # TODO: mark as failing instead of skipping!
     (1, "SPMSM_002", True),
     (2, "SPMSM_003", True),
@@ -72,6 +84,9 @@ test_cases["api\\pyleecan"] = [
 # Fixture for cleaning up test data
 @pytest.fixture(scope="session", autouse=True)
 def cleanup(request):
+    """
+    fixture for cleaning up data after tests.
+    """
     from . import LOGGER
 
     def finisher():
@@ -83,11 +98,20 @@ def cleanup(request):
                 for dir in os.listdir(test_result_dir)
                 if os.path.isdir(os.path.join(test_result_dir, dir))
             ]
+            log_files = [
+                os.path.join(test_result_dir, fn)
+                for fn in os.listdir(test_result_dir)
+                if ".log" in fn
+            ]
             no_to_keep = 2  # decide how many test results should be kept
-            no_to_remove = 0
-            while no_to_remove < len(timestamped_result_dirs) - no_to_keep:
-                shutil.rmtree(timestamped_result_dirs[no_to_remove])
-                no_to_remove += 1
+            no_to_remove_dir = 0
+            no_to_remove_fn = 0
+            while no_to_remove_dir < len(timestamped_result_dirs) - no_to_keep:
+                shutil.rmtree(timestamped_result_dirs[no_to_remove_dir])
+                no_to_remove_dir += 1
+            while no_to_remove_fn < len(log_files) - no_to_keep:
+                os.remove(log_files[no_to_remove_fn])
+                no_to_remove_fn += 1
 
     request.addfinalizer(finisher)
 
@@ -113,15 +137,27 @@ class TestCasesIntegration:
     """
     Class containing test cases for Pyleecan API
     Prerequisites
-    - Pytest should be installed
-    - Pytest-progress should be installed (pip install pytest-progress)
-    - test data should be available locally
+
+        - Pytest should be installed
+        - Pytest-progress should be installed (pip install pytest-progress)
+        - test data should be available locally
 
     Test content:
-    1. Test Pyleecan API to create Pyleecan machine and generate simulations in Onelab
-    2. Check that GMSH and getDP files are generated
-    3. Check that simulation files are generated
-    4. Check dat files content are the same as base comparison
+
+        1. Test Pyleecan API to create Pyleecan machine and generate simulations in Onelab
+        2. Check that GMSH and getDP files are generated
+        3. Check that simulation files are generated
+        4. Check dat files content are the same as base comparison
+
+    How to run:
+
+        - Use pytest <integration_test_folder> on command line
+        - Use pytest <path_to_this_file> on command line
+
+    .. note::
+
+        The integration tests is currently limited to 4 machine models: ISPMS_B, SPMSM_002, SPMSM_003, Toyota_Prius.
+        Machines whose simulation fails will have their tests skipped.
     """
 
     @pytest.mark.dependency(name="simul_folder_exist")
@@ -137,11 +173,19 @@ class TestCasesIntegration:
         base_simul_path,
         base_simul_subfolder_path,
     ):
+        """
+        Check if simulation result folders were generated (meaning simulation was successful)
+        All folders that exists in base data should also be in generated data.
+        Test will fail if a folder does not exist.
+        """
         # ) = test_tuple
-        LOGGER.info(f"TEST CASE {test_id}: {test_case}")
-        LOGGER.info(
-            "Test point 1: Check that simulation result folders are properly generated:"
-        )
+        if result_path == "":
+            LOGGER.info(f"TEST CASE {test_id}: {test_case}: SKIPPED")
+        else:
+            LOGGER.info(f"TEST CASE {test_id}: {test_case}:")
+            LOGGER.info(
+                "Test point 1: Check that simulation result folders are properly generated:"
+            )
         with check("check simulation folder existence"):
             assert os.path.isdir(simul_path) and messagePrinter(
                 "SUCCESS: Simulation result folder exist"
@@ -151,6 +195,7 @@ class TestCasesIntegration:
                 "SUCCESS: Simulation result subfolder exists!"
             ), "ERROR: Simulation result subfolder does not exist"
 
+    @pytest.mark.dependency(name="simul_data_gen", depends=["simul_folder_exist"])
     def test_gmsh_base_files(
         self,
         # test_tuple
@@ -164,7 +209,10 @@ class TestCasesIntegration:
         base_simul_path,
         base_simul_subfolder_path,
     ):
-
+        """
+        This test checks if the correct gmsh and getdp files have been generated correctly.
+        This will be skipped if test_api_simul_folder_exist fails.
+        """
         # (test_id, test_case, _, result_path, _, _, base_result_path, _, _) = (
         #     test_tuple
         # )
@@ -187,6 +235,10 @@ class TestCasesIntegration:
         base_simul_path,
         base_simul_subfolder_path,
     ):
+        """
+        This test checks that the simulation result files have been generated correctly.
+        If test_api_simul_folder_exist fails, this will be skipped.
+        """
         # (
         #     test_id,
         #     test_case,
@@ -217,6 +269,13 @@ class TestCasesIntegration:
         base_simul_path,
         base_simul_subfolder_path,
     ):
+        """
+        Compares data in generated .dat files with base data.
+        Runs for a test case only if test_simul_data_gen succeeded for that test case.
+        Output comparison for all test cases to dat_check.log file within the test folder.
+        Test will fail in case absolute difference (for values < 1e-6) or relative difference (for values >= 1e-6) is larger than 0.01.
+
+        """
         # (
         #     test_id,
         #     test_case,
@@ -241,22 +300,69 @@ class TestCasesIntegration:
         else:
             dat_targets = glob.glob(os.path.join(simul_subfolder_path, "*.dat"))
             dat_bases = glob.glob(os.path.join(base_simul_subfolder_path, "*.dat"))
-            for target_file, base_file in zip(dat_targets, dat_bases):
-                target_dat = read_timetable_dat(target_file)
-                base_dat = read_timetable_dat(base_file)
-                check_flag = True
-                with check:
-                    for i in range(len(base_dat[0])):
-                        diff = abs(target_dat[1][i] - base_dat[1][i])
-                        assert (
-                            diff < 0.01
-                        ), f"Mismatch! Base data: {base_dat}; Target data:{target_dat}"
-                        if diff >= 0.01:
-                            check_flag = False
+            with open(
+                os.path.join(
+                    TEST_DIR, "results", test_types[0], f"{curr_datetime}/dat_check.log"
+                ),
+                "a",
+            ) as f:  # write dat file check to file
+                f.write(f"{test_id}_{test_case} result: \n")
+                for target_file, base_file in zip(dat_targets, dat_bases):
+                    # target_time, target_dat = read_timetable_dat(target_file)
+                    # time_base, base_dat = read_timetable_dat(base_file)
+                    target_dat = read_timetable_dat(target_file)
+                    base_dat = read_timetable_dat(base_file)
+                    check_flag = True
+                    with check:
+                        _, filename = os.path.split(target_file)
+                        for i in range(len(base_dat[0])):
+                            diff = abs(target_dat[1][i] - base_dat[1][i])
+                            rel_diff = diff / abs(base_dat[1][i])
+                            f.write(
+                                f"{filename} | "
+                                f"Base data: {base_dat}; Target data:{target_dat} | "
+                                f"Difference - abs.:{diff} - rel.:{rel_diff}\n"
+                            )
+                            if (
+                                abs(target_dat[1][i]) < 1e-6
+                                and abs(base_dat[1][i]) < 1e-6
+                            ):
+                                # compare abs. difference
+                                if diff >= 0.01:
+                                    LOGGER.error(
+                                        f"ERROR: Mismatch for file {filename}; "
+                                        f"Base data: {base_dat}; Target data:{target_dat}; "
+                                        f"Difference - abs.:{diff}"
+                                    )
+                                    check_flag = False
 
-                    assert check_flag and messagePrinter(
-                        f"SUCCESS: all data in {target_file} ok."
-                    ), f"ERROR: mismatch detected between base ({base_file}) and target ({target_file})."
+                                assert diff < 0.01, (
+                                    f"Mismatch for file {filename}; "
+                                    f"Base data: {base_dat}; Target data:{target_dat}; "
+                                    f"Difference - abs.:{diff}"
+                                )
+                            else:
+                                # compare relative difference
+                                # rel_diff = diff / abs(base_dat[1][i])
+                                if rel_diff >= 0.01:
+                                    LOGGER.error(
+                                        f"ERROR: Mismatch for file {filename}; "
+                                        f"Base data: {base_dat}; Target data:{target_dat}; "
+                                        f"Difference - abs.:{diff} - rel.:{rel_diff}"
+                                    )
+                                    check_flag = False
+                                assert rel_diff < 0.01, (
+                                    f"Mismatch for file {filename}; "
+                                    f"Base data: {base_dat}; Target data:{target_dat}; "
+                                    f"Difference - abs.:{diff} - rel.:{rel_diff}"
+                                )
+                            # if base_dat[1][i] >= 0.01:
+                            #     check_flag = False
+
+                        assert check_flag and messagePrinter(
+                            f"SUCCESS: all data in {target_file} ok."
+                        ), f"ERROR: mismatch detected between base ({base_file}) and target ({target_file})."
+                f.write("\n")
 
     def check_file_counts(
         self,
@@ -265,7 +371,7 @@ class TestCasesIntegration:
         check_from_base: bool = True,
     ):
         """
-        Compare count of files per type between base data and result data
+        Helper function to compare count of files per type between base data and result data
         """
         base_count_fixed = {
             "result": {

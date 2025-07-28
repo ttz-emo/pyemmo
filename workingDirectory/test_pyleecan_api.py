@@ -16,15 +16,16 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 
-# %%
+from __future__ import annotations
 
 import json
 import logging
 import os
 
 from pyleecan.Classes.Machine import Machine
-from pyleecan.definitions import DATA_DIR
+from pyleecan.definitions import DATA_DIR as PYLEECAN_DATA_DIR
 from pyleecan.Functions import load
 
 from pyemmo.api.pyleecan import main as pyleecanAPI
@@ -39,10 +40,9 @@ logging.getLogger().setLevel(logging.INFO)
 # Determination of the machine to be calculated:
 # ==============================================
 # machine folder pyemmo
-# machineFolder = os.path.join(ROOT_DIR, r"tests\data\api\pyleecan")
+# machineFolder = os.path.join(TEST_DIR, "data", "api", "pyleecan")
 # machine folder pyleecan:
-machineFolder = os.path.join(DATA_DIR, "Machine")
-
+machineFolder = os.path.join(PYLEECAN_DATA_DIR, "Machine")
 resFolder = os.path.join(ROOT_DIR, r"Results\pyleecanAPI")
 if not os.path.isdir(resFolder):
     os.makedirs(resFolder)
@@ -71,6 +71,7 @@ if os.path.isfile(pylcn_machine_testfile):
         filter(filter_success, pyleecan_machine_results_dict.items())
     )
     # get list IDs and print them
+    print(f"Translateable machines from {machineFolder}")
     for machineName in workingMachineDict.keys():
         if machineName in machineList:
             print(f"{machineList.index(machineName)}: " + machineName)
@@ -88,7 +89,7 @@ pyleecan_machine: Machine = load.load(  # pylint: disable=locally-disabled, no-m
     os.path.abspath(os.path.join(machineFolder, fileName))
 )
 # Workaround for wrong material
-CuMat = load.load(os.path.join(DATA_DIR, "Material", "Copper2.json"))
+CuMat = load.load(os.path.join(PYLEECAN_DATA_DIR, "Material", "Copper2.json"))
 try:
     if pyleecan_machine.rotor.winding.conductor.cond_mat.name == "Copper1":
         pyleecan_machine.rotor.winding.conductor.cond_mat = CuMat

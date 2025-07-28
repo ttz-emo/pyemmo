@@ -19,7 +19,6 @@
 #
 from __future__ import annotations
 
-from .. import colorDict
 from .circleArc import CircleArc
 from .line import Line
 from .point import Point
@@ -61,7 +60,7 @@ class StatorLamination_Sheet01_Standard(StatorLamination):
         self.machineDict = machineDict
         super().__init__(
             name="StatorLamination_Sheet01_Standard",
-            geometricalElement=list(),
+            geo_list=list(),
             material=None,
         )
         ###Name des Statorblechs
@@ -84,7 +83,7 @@ class StatorLamination_Sheet01_Standard(StatorLamination):
             coordCentre[0] + r_S_i,
             coordCentre[1],
             coordCentre[2],
-            self.machineDict["meshLength"],
+            # self.machineDict["meshLength"],
         )
         pSi2 = pSi1.duplicate()
         pSi2.name = "pSi2"
@@ -110,11 +109,11 @@ class StatorLamination_Sheet01_Standard(StatorLamination):
 
         # Flächenerzeugen
         surfaceStator = Surface("surfaceStator", [lSi, lBlech1, lSa, lBlech2])
-        surfaceStator.setMeshColor(colorDict["SteelBlue"])
+        # surfaceStator.setMeshColor(colorDict["SteelBlue"])
 
         # Bei jedem Baukausten müssen diese Attribute vorkommen
         ###Fläche des Bleches (halbe Nut bzw. Zahn) in einer Liste.
-        self._geometricalElement = [surfaceStator]
+        self._geo_list = [surfaceStator]
         ###Material des Bleches.
         self._material = self.machineDict["material"]
         ###Innenkante des Bleches.

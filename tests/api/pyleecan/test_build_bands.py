@@ -19,6 +19,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for testing building of band areas in pyleecan api"""
+from __future__ import annotations
+
 import math
 import os
 from os.path import join
@@ -107,12 +109,8 @@ def test_build_bands():
     assert math.isclose(diff_radius, 0.0005, abs_tol=1e-6)
     assert len(geometry_list) == 12
     assert is_internal_rotor is True
-    assert math.isclose(
-        magnetization_dict["Mag0"], 0.5462703245568578, rel_tol=1e-6
-    )
-    assert math.isclose(
-        magnetization_dict["Mag1"], 0.2391278388405909, rel_tol=1e-6
-    )
+    assert math.isclose(magnetization_dict["Mag0"], 0.5462703245568578, rel_tol=1e-6)
+    assert math.isclose(magnetization_dict["Mag1"], 0.2391278388405909, rel_tol=1e-6)
     assert math.isclose(max_radius, 0.0795, abs_tol=1e-6)
     assert math.isclose(movingband_r, 0.07970000000000001, abs_tol=1e-6)
     assert rotor_air_gap1.idExt == "LuR1"

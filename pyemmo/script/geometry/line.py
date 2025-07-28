@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied
+# Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -19,9 +20,12 @@
 #
 """Module of geometry class Line"""
 
-from typing import TYPE_CHECKING, Literal, Tuple
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
+import numpy as np
 from numpy import array
 from numpy.linalg import norm
 
@@ -36,189 +40,152 @@ if TYPE_CHECKING:
 
 class Line(Transformable):
     """
-    Eine Instanz der Klasse Line ist eine Gerade zwischen zwei Punkten (Objekte der
-    Klasse Point) im dreidimensionalen Raum.
+    An instance of the class Line is a straight line between two points (objects of the
+    class Point) in three-dimensional space.
 
-    Beispiel:
-        import pyemmo as pyd\n
-        P1 = pyd.Point('p1', 0, 0, 0, 0.3)\n
-        P2 = pyd.Point('p2', 1, 0, 0, 0.3)\n
-        L1 = pyd.Line('l1', P1, P2)\n
+    Example:
+
+    .. python
+
+        from pyemmo.script.geometry.point import Point
+        from pyemmo.script.geometry.line import Line
+
+        P1 = pyd.Point('p1', 0, 0, 0, 0.3)
+        P2 = pyd.Point('p2', 1, 0, 0, 0.3)
+        L1 = pyd.Line('l1', P1, P2)
     """
-
-    # Die statische Variable ID wird durch die Methode getNewID() hochgezählt. Diese
-    # Variable wird für die automatische ID-Vergabe der Geraden bzw. Kurven verwendet!
-    ID: int = 0
 
     def __init__(
         self,
         name: str,
-        startPoint: Point,
-        endPoint: Point,
-        force: bool = False,
+        start_point: Point,
+        end_point: Point,
     ):
-        ###Name der Linie.
-        self.name = name
-        if not startPoint.isEqual(endPoint):
+        if not start_point.isEqual(end_point):
             ###Startpunkt des Kreisbogens.
-            self.startPoint = startPoint
+            self.start_point = start_point
             ###Endpunkt des Kreisbogens.
-            self.endPoint = endPoint
+            self.end_point = end_point
         else:
             raise (
                 ValueError(
                     f"The coordinates of start and end point of Line '{name}' are equal: "
-                    f"{startPoint.coordinate} - {endPoint.coordinate}."
+                    f"{start_point.coordinate} - {end_point.coordinate}."
                 )
             )
-        ###ID der Linie.
-        self.id = self._getNewID()
-        ###Todesmerker wird nur gesetzt, wenn das Objekt im Skript erzeugt wurde
-        # (Aufruf von addToScript())!
-        self._todesmerker = False
-        self._force: bool = force
+        ###Name der Linie.
+        self.name = name
 
-    def __eq__(self, other: "Line") -> bool:
+    def __eq__(self, other: Line) -> bool:
         # check type:
         if isinstance(other, self.__class__):
             # check that all points are equal
-            if self.arePointsEqual(other):
-                return True
-            else:
-                return False
-        else:
-            return False
-
-    @classmethod
-    def _getNewID(cls) -> int:
-        """
-        Class method: Can not access self!
-        Wird eine Linie erzeugt, bekommt sie automatisch eine eindeutige ID zugewiesen.
-        Mit _getNewID() wird eine neue ID erzeugt.
-
-        Returns:
-            int: New unique line ID
-        """
-        Line.ID = Line.ID + 1
-        return Line.ID
+            return self.arePointsEqual(other)
+        return False
 
     @property
-    def force(self) -> bool:
-        """return false flag
-
-        Returns:
-            bool: Flag to determine if line generation in Script should be forced
-        """
-        return self._force
-
-    # pylint: disable=locally-disabled, invalid-name
-    @property
-    def id(self) -> int:
-        """get global line ID
-
-        Returns:
-            int: ID of line
-        """
-        return self._id
-
-    @id.setter
-    def id(self, newID: int) -> None:
-        """setter of line ID
-
-        Args:
-            newID (int): New ID of Line
-        """
-        if newID < self.ID:
-            raise ValueError(
-                "New ID of line is smaller than global ID count."
-                "New ID mus be existing!"
-            )
-        Line.ID = newID
-        self._id = newID
-
-    @property
-    def name(self) -> str:
-        """Get name of line.
-
-        Returns:
-            str: name
-        """
-        return self._name
-
-    @name.setter
-    def name(self, name: str):
-        """Set name of line .
-
-        Args:
-            name (str): New line name
-        """
-        self._name = name
-
-    @property
-    def startPoint(self) -> Point:
+    def start_point(self) -> Point:
         """Start point of line
 
         Returns:
             Point: Start points
         """
-        return self._startPoint
+        return self._start_point
 
-    @startPoint.setter
-    def startPoint(self, newStartPoint: Point) -> None:
+    @start_point.setter
+    def start_point(self, new_start_point: Point) -> None:
         """setter of start point
 
         Args:
-            newStartPoint (Point)
+            new_start_point (Point)
         """
-        if not isinstance(newStartPoint, Point):
-            raise TypeError(f"Given start point has wrong type {type(newStartPoint)}!")
-        self._startPoint = newStartPoint
+        if not isinstance(new_start_point, Point):
+            raise TypeError(
+                f"Given start point has wrong type {type(new_start_point)}!"
+            )
+        self._start_point = new_start_point
 
     @property
-    def endPoint(self) -> Point:
+    def end_point(self) -> Point:
         """end point of curve
 
         Returns:
             Point: End point
         """
-        return self._endPoint
+        return self._end_point
 
-    @endPoint.setter
-    def endPoint(self, newEndPoint: Point) -> None:
+    @end_point.setter
+    def end_point(self, new_end_point: Point) -> None:
         """setter of end point
 
         Args:
-            newEndPoint (Point)
+            new_end_point (Point)
         """
-        if not isinstance(newEndPoint, Point):
-            raise TypeError(f"Given end point has wrong type ({type(newEndPoint)})")
-        self._endPoint = newEndPoint
+        if not isinstance(new_end_point, Point):
+            raise TypeError(f"Given end point has wrong type ({type(new_end_point)})")
+        self._end_point = new_end_point
 
     @property
-    def points(self) -> Tuple["Point", "Point"]:
+    def points(self) -> tuple[Point, Point]:
         """get the start and end point of a line
 
         Returns:
             Tuple[Point, Point]: start and end point of the line
         """
-        startPoint = self.startPoint
-        endPoint = self.endPoint
-        return (startPoint, endPoint)
+        start_point = self.start_point
+        end_point = self.end_point
+        return (start_point, end_point)
 
     @property
-    def middlePoint(self) -> Point:
+    def middle_point(self) -> Point:
         """Get the center point between start and end point.
+
+        Its not named 'center_point' because we have allready defined center_point in
+        ``CircleArc``
 
         Returns:
             Point: Center point in the middle between start and end point.
         """
         return Point(
             name=f"Middle point of {self.name}",
-            x=(self.startPoint.coordinate[0] + self.endPoint.coordinate[0]) / 2,
-            y=(self.startPoint.coordinate[1] + self.endPoint.coordinate[1]) / 2,
-            z=(self.startPoint.coordinate[2] + self.endPoint.coordinate[2]) / 2,
-            meshLength=(self.startPoint.meshLength + self.endPoint.meshLength) / 2,
+            x=(self.start_point.coordinate[0] + self.end_point.coordinate[0]) / 2,
+            y=(self.start_point.coordinate[1] + self.end_point.coordinate[1]) / 2,
+            z=(self.start_point.coordinate[2] + self.end_point.coordinate[2]) / 2,
         )
+
+    @property
+    def vector(self) -> np.ndarray:
+        """Get the vector between end and start point.
+
+        Returns:
+            np.ndarray: 3D-Vector (x,y,z)
+        """
+        return array(self.end_point.coordinate) - array(self.start_point.coordinate)
+
+    @property
+    def complex(self) -> complex:
+        """Get the complex value of the (2D) line vector.
+
+        Returns:
+            complex: Complex vector of line vector.
+
+        Raises:
+            RuntimeError: If z-component of self.vector is not 0.
+        """
+        if self.vector[2] != 0:
+            raise RuntimeError(
+                "Can not return complex representation of vector with z-component!"
+            )
+        return complex(self.vector[0], self.vector[1])
+
+    @property
+    def length(self) -> float:
+        """Get the length of the line
+
+        Returns:
+            float: Length of the line.
+        """
+        return self.getPointDist()
 
     def switchPoints(self) -> None:
         """switch start and end point of curve (revert direction)
@@ -226,19 +193,10 @@ class Line(Transformable):
         Returns:
             nothing
         """
-        oldP1 = self.startPoint
-        oldP2 = self.endPoint
-        self.startPoint = oldP2
-        self.endPoint = oldP1
-
-    @property
-    def type(self) -> Literal["Line"]:
-        """Get geometric element type
-
-        Returns:
-            Literial: "Line"
-        """
-        return "Line"
+        oldP1 = self.start_point
+        oldP2 = self.end_point
+        self.start_point = oldP2
+        self.end_point = oldP1
 
     def translate(self, dx: float, dy: float, dz: float):
         """Translate line
@@ -246,9 +204,8 @@ class Line(Transformable):
         Args:
             dx, dy, dz (float): offset in meter
         """
-        if not self._todesmerker:
-            self.startPoint.translate(dx, dy, dz)
-            self.endPoint.translate(dx, dy, dz)
+        self.start_point.translate(dx, dy, dz, flag_gmsh=False)
+        self.end_point.translate(dx, dy, dz, flag_gmsh=False)
 
     def rotateZ(self, rotationPoint=defaultCenterPoint, angle=0.0):
         """Mit rotateZ() wird eine Gerade um einen Rotationspunkt (rotationPoint) und die
@@ -264,9 +221,12 @@ class Line(Transformable):
             L1 = Line('l1', P1, P2)\n
             L1.rotateZ(P0, pi)\n
         """
-        if not self._todesmerker:
-            self.startPoint.rotateZ(rotationPoint, angle)
-            self.endPoint.rotateZ(rotationPoint, angle)
+        if not isinstance(rotationPoint, Point):
+            raise TypeError("Rotation point must be a Point object!")
+        if not isinstance(angle, (int, float)):
+            raise TypeError("Angle must be a number!")
+        self.start_point.rotateZ(rotationPoint, angle)
+        self.end_point.rotateZ(rotationPoint, angle)
 
     def rotateY(self, rotationPoint: Point, angle: float):
         """
@@ -283,11 +243,14 @@ class Line(Transformable):
             L1.rotateY(P0, pi)\n
 
         """
-        if not self._todesmerker:
-            self.startPoint.rotateY(rotationPoint, angle)
-            self.endPoint.rotateY(rotationPoint, angle)
+        if not isinstance(rotationPoint, Point):
+            raise TypeError("Rotation point must be a Point object!")
+        if not isinstance(angle, (int, float)):
+            raise TypeError("Angle must be a number!")
+        self.start_point.rotateY(rotationPoint, angle)
+        self.end_point.rotateY(rotationPoint, angle)
 
-    def rotateX(self, rotationPoint, angle):
+    def rotateX(self, rotationPoint: Point, angle: float):
         """
         Mit rotateX() wird eine Gerade um einen Rotationspunkt (rotationPoint) und die
         X-Achse mit einem definierten Winkel rotiert.
@@ -302,9 +265,12 @@ class Line(Transformable):
             L1.rotateX(P0, pi)\n
 
         """
-        if not self._todesmerker:
-            self.startPoint.rotateX(rotationPoint, angle)
-            self.endPoint.rotateX(rotationPoint, angle)
+        if not isinstance(rotationPoint, Point):
+            raise TypeError("Rotation point must be a Point object!")
+        if not isinstance(angle, (int, float)):
+            raise TypeError("Angle must be a number!")
+        self.start_point.rotateX(rotationPoint, angle)
+        self.end_point.rotateX(rotationPoint, angle)
 
     def duplicate(self, name=""):
         """Mit duplicate() wird eine Kurve mit gleichen Eigenschaften zum Originalen
@@ -317,8 +283,8 @@ class Line(Transformable):
             CA1 = Point('ca1', P1, C, P2)\n
             CA2 = CA1.duplicate()\n
         """
-        newP1 = self.startPoint.duplicate()
-        newP2 = self.endPoint.duplicate()
+        newP1 = self.start_point.duplicate()
+        newP2 = self.end_point.duplicate()
         dupLine = Line(name, newP1, newP2)
         # set new line name
         if name == "":
@@ -354,56 +320,24 @@ class Line(Transformable):
             L2 = L1.mirror(P0, yAxis, zAxis)\n
 
         """
-        p1 = self.startPoint.mirror(planePoint, planeVector1, planeVector2)
-        p2 = self.endPoint.mirror(planePoint, planeVector1, planeVector2)
+        p1 = self.start_point.mirror(planePoint, planeVector1, planeVector2)
+        p2 = self.end_point.mirror(planePoint, planeVector1, planeVector2)
         mirLine = Line(self._name, p2, p1)
         if name == "":
-            mirLine.name = "L_" + str(abs(mirLine.id))
+            mirLine.name = f"mirrored line ({self.name})"
         else:
             mirLine.name = name
         return mirLine
 
-    ###
-    # Mit addToScript wird die Gerade zum Skriptobjekt übergeben und in gmsh-Syntax übersetzt.
-    # Transformationen von Geraden sind nach dem Aufruf nicht mehr erlaubt, da die neuen
-    # Koordinaten der Punkte nicht mehr erfasst werden.
-    # Diese Methode sollte stets nur in Kombination mit generateScript (Klassenmethode
-    # von Script) verwendet werden.
-    #
-    #   Input:
-    #
-    #       script : Script
-    #
-    #   Output:
-    #
-    #       None
-    #
-    #   Beispiel:
-    #
-    #       myScript = Script(...)
-    #       L1.addToScript(myScript)
-    #
-    ###
-    def addToScript(self, script: "Script"):
-        """old function add to script
-
-        Args:
-            script (Script)
-        """
-        for p in self.points:
-            script._addPoint(p)
-        self._todesmerker = True
-        script._addCurve(self)
-
     def getPointDist(self) -> float:
         """calculate the distance between start and end point"""
-        StartPoint = array(self.startPoint.coordinate)
-        EndPoint = array(self.endPoint.coordinate)
-        return norm(StartPoint - EndPoint)
+        start_point = array(self.start_point.coordinate)
+        end_point = array(self.end_point.coordinate)
+        return norm(start_point - end_point)
 
     def plot(
         self,
-        fig: "Figure" = None,
+        fig: Figure = None,
         marker=None,
         markersize=1.0,
         linewidth=0.5,
@@ -421,10 +355,10 @@ class Line(Transformable):
             tag (bool): Flag to print line id and name like "L `L_ID` ("`L_Name`")"
             and point tags if `marker` is given.
         """
-        startPoint = self.startPoint
-        endPoint = self.endPoint
-        startCoords = startPoint.coordinate
-        endCoords = endPoint.coordinate
+        start_point = self.start_point
+        end_point = self.end_point
+        startCoords = start_point.coordinate
+        endCoords = end_point.coordinate
         if fig is None:
             fig, ax = plt.subplots()
             ax.set_aspect("equal", adjustable="box")
@@ -440,7 +374,7 @@ class Line(Transformable):
         if tag:
             # add tag to line
             ax.annotate(
-                f"""L {self.id} ("{self.name}")""",
+                f"""L ("{self.name}")""",
                 (
                     sum([startCoords[0], endCoords[0]]) / 2,
                     sum([startCoords[1], endCoords[1]]) / 2,
@@ -450,14 +384,14 @@ class Line(Transformable):
                 ha="left",
             )
         if marker is not None:
-            startPoint.plot(
+            start_point.plot(
                 fig=fig,
                 marker=marker,
                 markersize=markersize,
                 color=color if color != LINE_COLOR else POINT_COLOR,
                 tag=tag,
             )
-            endPoint.plot(
+            end_point.plot(
                 fig=fig,
                 marker=marker,
                 markersize=markersize,
@@ -465,15 +399,15 @@ class Line(Transformable):
                 tag=tag,
             )
 
-    def arePointsEqual(self, compLine: "Line", tol=DEFAULT_GEO_TOL) -> bool:
+    def arePointsEqual(self, compLine: Line, tol=DEFAULT_GEO_TOL) -> bool:
         """
         Checks if start and end point of two lines are identical.
         The result is regardless of the direction.
         """
-        originP1 = array(self.startPoint.coordinate)
-        originP2 = array(self.endPoint.coordinate)
-        compP1 = array(compLine.startPoint.coordinate)
-        compP2 = array(compLine.endPoint.coordinate)
+        originP1 = array(self.start_point.coordinate)
+        originP2 = array(self.end_point.coordinate)
+        compP1 = array(compLine.start_point.coordinate)
+        compP2 = array(compLine.end_point.coordinate)
         # FIXME: Does not respect the type of line yet!
         if norm(originP1 - compP1) < tol:
             # oP1 and cP1 are identical
@@ -489,7 +423,7 @@ class Line(Transformable):
         return False
 
     def setMeshLength(self, meshLength: float) -> None:
-        """set mesh length of start and endpoint
+        """set mesh length of start and end_point
 
         Args:
             meshLength (float): Mesh length in meter
@@ -507,7 +441,7 @@ class Line(Transformable):
         pStart, pEnd = self.points
         return min(pStart.meshLength, pEnd.meshLength)
 
-    def combine(self, addLine: "Line", touchPoint: Point = None) -> "Line":
+    def combine(self, addLine: Line, touchPoint: Point | None = None) -> Line:
         """combine two lines and return them as new line
 
         Args:
@@ -523,42 +457,49 @@ class Line(Transformable):
                     f"{type(self)} != {type(addLine)}"
                 )
             )
+        # TODO: Remove touchpoint from arguments since its unnessecary in gmsh representation
         if not touchPoint:
             for p in self.points:
                 for addP in addLine.points:
                     if p.isEqual(addP):
                         touchPoint: Point = p
                         break
-        if touchPoint:
-            # get the two points excluding the docking point
-            newPoints = [
-                point
-                for point in self.points + addLine.points
-                if not point.isEqual(touchPoint)
-            ]
-            if len(newPoints) == 2:
-                # replace the combined line pattern in the old names if they contained
-                lName = self.name.replace("combinedLine_", "")
-                addName = addLine.name.replace("combinedLine_", "")
-                return Line(
-                    f"combinedLine_{lName}_{addName}",
-                    startPoint=newPoints[0],
-                    endPoint=newPoints[1],
-                )
-            else:
-                raise (
-                    RuntimeError(
-                        f"Combination of lines ({self.name} and {addLine.name}) failed."
-                        f"{len(newPoints)} points to create a new line; should be 2!"
-                    )
-                )
-        else:
+        if not touchPoint:
             raise (
                 RuntimeError(
                     f"Combination of lines ({self.name} and {addLine.name}) failed."
                     "Could not find touchpoint."
                 )
             )
+
+        if (np.angle(self.complex) != np.angle(addLine.complex)) and (
+            np.angle(self.complex) != np.angle(-addLine.complex)
+        ):
+            # angle of vectors are not matching in any direction...
+            raise RuntimeError("Lines do not have same direction.")
+
+        # get the two points excluding the docking point
+        newPoints = [
+            point
+            for point in self.points + addLine.points
+            if not point.isEqual(touchPoint)
+        ]
+        if len(newPoints) != 2:
+            raise (
+                RuntimeError(
+                    f"Combination of lines ({self.name} and {addLine.name}) failed."
+                    f"{len(newPoints)} points to create a new line; should be 2!"
+                )
+            )
+        # replace the combined line pattern in the old names if they contained
+        lName = self.name.replace("combinedLine_", "")
+        addName = addLine.name.replace("combinedLine_", "")
+        combined_line = Line(
+            f"combinedLine_{lName}_{addName}",
+            start_point=newPoints[0],
+            end_point=newPoints[1],
+        )
+        return combined_line
 
     def containsPoint(self, refPoint: Point, tol: float = DEFAULT_GEO_TOL) -> bool:
         """This function checks if start or end point coordinates are equal to the given reference

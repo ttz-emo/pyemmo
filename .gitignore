@@ -10,16 +10,13 @@
 *.res
 *.msh
 *.db
-*.asv
 *.zip
 *.7z
-PathSettings_*.m
 Area*.csv
 test*.pro
 test*.geo
 test*.json
 *.log
-test.ipynb
 .tox
 
 # Dont track doc build
@@ -32,10 +29,12 @@ doc/UML_Diagrams/*
 # Exclude testPosImport content
 workingDirectory/testPosImport/*
 workingDirectory/test_asm/*.html
+
 # Exclude onelab test installation
 tests/data/*onelab/
 tests/GETDP_TEST_PATH
 tests/GMSH_TEST_PATH
+
 # Exclude private tests
 tests/private
 workingDirectory/private
@@ -44,6 +43,8 @@ workingDirectory/private
 tests/GMSH_TEST_PATH
 tests/GETDP_TEST_PATH
 .python-version
+.coverage
+
 
 # specific files to not ignore
 !tests/data/functions/import_results/SP_fomatted_res_file.pos

@@ -19,17 +19,21 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for testing the import_results module"""
+from __future__ import annotations
+
 import os
+
 import numpy as np
 import pytest
+
 from pyemmo.functions.import_results import (
-    read_timetable_dat,
-    importPos,
-    read_RegionValue_dat,
-    split_data,
-    plot_timetable_dat,
-    importSP,
     get_result_files,
+    importPos,
+    importSP,
+    plot_timetable_dat,
+    read_RegionValue_dat,
+    read_timetable_dat,
+    split_data,
 )
 
 try:
@@ -41,9 +45,7 @@ except ImportError:
 except Exception as exce:
     raise exce
 
-IMP_RES_TEST_DATA_DIR = os.path.join(
-    TEST_DATA_DIR, "functions", "import_results"
-)
+IMP_RES_TEST_DATA_DIR = os.path.join(TEST_DATA_DIR, "functions", "import_results")
 
 
 # @pytest.mark.parametrize(
@@ -53,9 +55,7 @@ IMP_RES_TEST_DATA_DIR = os.path.join(
 def test_read_timetable_dat():
     """Tests the function read_timetable_dat. Tests if the size and values of
     the data array are correct."""
-    time, data = read_timetable_dat(
-        os.path.join(IMP_RES_TEST_DATA_DIR, "Ib_test.dat")
-    )
+    time, data = read_timetable_dat(os.path.join(IMP_RES_TEST_DATA_DIR, "Ib_test.dat"))
     assert data.size == 4, "Wrong data array size."
     assert time.size == 4, "Wrong time array size."
     assert_time_array = [0, 0, 0.01, 0.02]
@@ -91,9 +91,7 @@ def test_split_data():
     test_nbr_sims, test_time_list, test_data_list = split_data(time, values)
     for x in range(time.size):
         if time[x] == 0:
-            assert (
-                time[x + 1] != 0
-            ), "There is a same time step, twice in a row!"
+            assert time[x + 1] != 0, "There is a same time step, twice in a row!"
     target_nbr_sims = 2
     target_time_1 = [
         np.array([0.0, 1.0, 2.0], dtype=float),
@@ -193,9 +191,7 @@ def test_import_pos():
     Tests if the imported values (gmsh mesh element tags, time, data array)
     from a POS file are correct.
     """
-    test_posFile_path = os.path.join(
-        IMP_RES_TEST_DATA_DIR, "AxialeLaenge_test.pos"
-    )
+    test_posFile_path = os.path.join(IMP_RES_TEST_DATA_DIR, "AxialeLaenge_test.pos")
     mesh_elemt_ids = np.load(
         (os.path.join(IMP_RES_TEST_DATA_DIR, "import_pos_mesh_elem_ids.npy")),
         allow_pickle=True,

@@ -19,18 +19,19 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module to test the module pyemmo.api.pyleecan.get_magnetization_dict"""
-from os.path import abspath, join
+from __future__ import annotations
+
 import logging
-from typing import List
+from os.path import abspath, join
 
 from pyleecan.Classes.Machine import Machine
 
 # pylint: disable=locally-disabled, no-name-in-module
 from pyleecan.Functions.load import load
 
-from pyemmo.api.json.modelJSON import SurfaceAPI
-import pyemmo.api.pyleecan.translate_surfs
 import pyemmo.api.pyleecan.get_magnetization_dict
+import pyemmo.api.pyleecan.translate_surfs
+from pyemmo.api.json.modelJSON import SegmentSurface
 from tests.api.pyleecan import TEST_API_PYLCN_DATA_DIR
 
 
@@ -49,7 +50,7 @@ def test_get_magnetization_dict():
 
     all_surfs_labels = []
     all_surfs_labels_split2 = []
-    geometry_list: List[SurfaceAPI] = []
+    geometry_list: list[SegmentSurface] = []
     angle_point_ref_list = []
 
     logging.debug("Geometry translation started")
@@ -64,9 +65,7 @@ def test_get_magnetization_dict():
             save_space_temp.extend(split1.split("-"))
         all_surfs_labels_split2.append(save_space_temp)
 
-        logging.debug(
-            "Geometry translation of %s started:", all_surfs_labels[i]
-        )
+        logging.debug("Geometry translation of %s started:", all_surfs_labels[i])
 
         # translating the surface
         (

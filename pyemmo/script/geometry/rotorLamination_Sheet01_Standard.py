@@ -17,9 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-from typing import List
+from __future__ import annotations
 
-from .. import colorDict
 from .circleArc import CircleArc
 from .line import Line
 from .point import Point
@@ -58,7 +57,7 @@ class RotorLamination_Sheet01_Standard(RotorLamination):
         super().__init__(
             name="RotorLamination_Sheet01_Standard",
             material=machineDict["material"],
-            geometricalElement=[],
+            geo_list=[],
         )
         ###Alle Parameter zur Beschreibung des Rotorblechs.
         self._machineDict = machineDict
@@ -82,7 +81,7 @@ class RotorLamination_Sheet01_Standard(RotorLamination):
             coordCentre[0] + r_We,
             coordCentre[1],
             coordCentre[2],
-            self._machineDict["meshLength"],
+            # self._machineDict["meshLength"],
         )
         pWelle2 = pWelle1.duplicate()
         pWelle2.name = "pWelle2"
@@ -109,11 +108,11 @@ class RotorLamination_Sheet01_Standard(RotorLamination):
         # Flächenerzeugen
         surfaceRotor = Surface("surfaceRotor", [lWelle, lBlech1, lRotorAussen, lBlech2])
 
-        surfaceRotor.setMeshColor(colorDict["SteelBlue"])
+        # surfaceRotor.setMeshColor(colorDict["SteelBlue"])
 
         # Bei jedem Baukausten müssen diese Attribute vorkommen
         ###Fläche des Bleches (halber Pol) in einer Liste.
-        self._geometricalElement = [surfaceRotor]
+        self._geo_list = [surfaceRotor]
         ###Außenkante des Bleches.
         # \image html outerLinePart.png
         self._outerLinePart = [lRotorAussen]
@@ -129,7 +128,7 @@ class RotorLamination_Sheet01_Standard(RotorLamination):
 
     ###Gibt eine Liste mit der Außenkante des Bleches zurück (siehe _outerLinePart).
     @property
-    def outerLinePart(self) -> List[CircleArc]:
+    def outerLinePart(self) -> list[CircleArc]:
         """Get the boundary line(s) of the rotor lamination towards the airgap
 
         Returns:
@@ -139,7 +138,7 @@ class RotorLamination_Sheet01_Standard(RotorLamination):
 
     ###Gibt eine Liste mit der Schnittkante zurück (siehe _betweenLinePart).
     @property
-    def betweenLinePart(self) -> List[Line]:
+    def betweenLinePart(self) -> list[Line]:
         """Gibt eine Liste mit der Schnittkante zurück. Schnittkante zwischen 2 Blechen.
 
         Returns:
@@ -149,7 +148,7 @@ class RotorLamination_Sheet01_Standard(RotorLamination):
 
     ###Gibt eine Liste mit dem airDockingPoint1 zurück (siehe _airDockingPoint1).
     @property
-    def airDockingPoint1(self) -> List[Point]:
+    def airDockingPoint1(self) -> list[Point]:
         """Get point of lamination segment at airgap interface near x-Axis
 
         Returns:
@@ -159,7 +158,7 @@ class RotorLamination_Sheet01_Standard(RotorLamination):
 
     ###Gibt eine Liste mit dem airDockingPoint2 zurück (siehe _airDockingPoint2).
     @property
-    def airDockingPoint2(self) -> List[Point]:
+    def airDockingPoint2(self) -> list[Point]:
         """Get point of lamination segment at airgap interface on interface line to next segment in math. positive direction.
 
         Returns:

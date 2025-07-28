@@ -40,12 +40,14 @@ Test Functions:
 
 """
 
-import pytest
+from __future__ import annotations
+
 import numpy as np
-from pyleecan.Classes.Material import Material as pyleecanMat
-from pyleecan.Classes.MatStructural import MatStructural
-from pyleecan.Classes.MatMagnetics import MatMagnetics
+import pytest
 from pyleecan.Classes.MatElectrical import MatElectrical
+from pyleecan.Classes.Material import Material as pyleecanMat
+from pyleecan.Classes.MatMagnetics import MatMagnetics
+from pyleecan.Classes.MatStructural import MatStructural
 
 from pyemmo.api.pyleecan.build_pyemmo_material import build_pyemmo_material
 

@@ -19,6 +19,8 @@
 #
 """Module to test the core loss calculation functions"""
 
+from __future__ import annotations
+
 # %% imports
 # import gmsh
 import os
@@ -27,13 +29,14 @@ import time as clockTime
 import numpy as np
 from matplotlib import pyplot as plt
 
+from pyemmo.definitions import TEST_DIR
+
+# from pyemmo.definitions import ROOT_DIR
+from pyemmo.functions import calcIronLoss, import_results
+
 # import tkinter as tk
 # from tkinter import filedialog
 
-# from pyemmo.definitions import ROOT_DIR
-from pyemmo.functions import calcIronLoss
-from pyemmo.functions import import_results
-from pyemmo.definitions import TEST_DIR
 
 TIME_DOMAIN = True
 FREQ_DOMAIN = False
@@ -100,9 +103,7 @@ if TIME_DOMAIN:
 # Print results
 # pylint: disable=locally-disabled, line-too-long
 if FREQ_DOMAIN:
-    print(
-        "---------------------------------------------------------------------"
-    )
+    print("---------------------------------------------------------------------")
     print("Frequency domain results:")
     print(f"{'Rotor':>24} {'Stator':>11} {'Sum':>9}")
     print(
@@ -114,9 +115,7 @@ if FREQ_DOMAIN:
     print(
         f"{'Excess:':<14} {np.sum(lossesFreq['rotor']['exc']) : 8.3f} W {np.sum(lossesFreq['stator']['exc']) : 9.3f} W {np.sum(lossesFreq['stator']['exc']+lossesFreq['rotor']['exc']) : 9.3f} W"
     )
-    print(
-        "---------------------------------------------------------------------"
-    )
+    print("---------------------------------------------------------------------")
 if TIME_DOMAIN:
     print("Time domain results:")
     print(
@@ -128,9 +127,7 @@ if TIME_DOMAIN:
     print(
         f"{'Excess:':<14} {np.mean(losses['rotor']['exc']) : 8.3f} W {np.mean(losses['stator']['exc']) : 9.3f} W {np.mean(losses['stator']['exc']+losses['rotor']['exc']) : 9.3f} W"
     )
-    print(
-        "---------------------------------------------------------------------"
-    )
+    print("---------------------------------------------------------------------")
 
 # %%
 lossGetdpFile = os.path.join(RES_DIR, "Pec_Lam.dat")
@@ -150,9 +147,7 @@ if FREQ_DOMAIN:
     WIDTH = 0.3
     orders = freqs / freqs[1]
     ax.bar(orders, lossesFreq["stator"]["eddy"], WIDTH, label="eddy current")
-    ax.bar(
-        orders + WIDTH, lossesFreq["stator"]["hyst"], WIDTH, label="hysteresis"
-    )
+    ax.bar(orders + WIDTH, lossesFreq["stator"]["hyst"], WIDTH, label="hysteresis")
     plt.xticks(orders + WIDTH / 2, orders.astype(int))
     ax.set_xlim((0, 16))
     ax.set_xlabel("elec Order")

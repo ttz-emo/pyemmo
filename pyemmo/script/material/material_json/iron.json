@@ -1,0 +1,9 @@
+{
+	"ID": 379,
+	"name": "iron",
+	"conductivity": 10300000.0,
+	"relPermeability": 4000.0,
+	"remanence": 0.0,
+	"linear": true,
+	"BHCurve": {}
+}
