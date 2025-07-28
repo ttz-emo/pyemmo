@@ -42,6 +42,7 @@ workingDirectory/private
 
 # specific files to ignore
 .coverage
+.python-version
 
 # specific files to not ignore
 !tests/data/functions/import_results/SP_fomatted_res_file.pos
