@@ -43,6 +43,7 @@ workingDirectory/private
 # specific files to ignore
 tests/GMSH_TEST_PATH
 tests/GETDP_TEST_PATH
+.python-version
 
 # specific files to not ignore
 !tests/data/functions/import_results/SP_fomatted_res_file.pos
