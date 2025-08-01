@@ -22,10 +22,13 @@
 from __future__ import annotations
 
 from os import path
+from typing import TYPE_CHECKING
 
 from ..definitions import RESULT_DIR
-from ..script.material.material import Material
 from . import clean_name
+
+if TYPE_CHECKING:
+    from ..script.material.material import Material
 
 
 def exportBH2Maxwell(material: Material, filepath: str = None) -> None:
