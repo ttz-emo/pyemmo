@@ -277,19 +277,19 @@ DefineConstant[
         ]
     },
 
-    r_rotor_airgap = {
-        R_ROTOR_AIRGAP, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "/Airgap Field/Rotor Radius"],
-        Min 0,
-        Visible Flag_PrintFields,
-        Help "Define the radius of the rotor airgap for the post-processing of B_rad and B_tan."
-    },
+    // r_rotor_airgap = {
+    //     R_ROTOR_AIRGAP, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "/Airgap Field/Rotor Radius"],
+    //     Min 0,
+    //     Visible Flag_PrintFields,
+    //     Help "Define the radius of the rotor airgap for the post-processing of B_rad and B_tan."
+    // },
 
-    r_stator_airgap = {
-        R_STATOR_AIRGAP, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "/Airgap Field/Stator Radius"],
-        Min 0,
-        Visible Flag_PrintFields,
-        Help "Define the radius of the stator airgap for the post-processing of B_rad and B_tan."
-    },
+    // r_stator_airgap = {
+    //     R_STATOR_AIRGAP, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "/Airgap Field/Stator Radius"],
+    //     Min 0,
+    //     Visible Flag_PrintFields,
+    //     Help "Define the radius of the stator airgap for the post-processing of B_rad and B_tan."
+    // },
 
     Flag_Lam = 0, // FIXME: Not using lamination eddy current calculation yet!
     // Flag_Lam = {
