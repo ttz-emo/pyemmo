@@ -41,6 +41,7 @@ from pygetdp.postoperation import PostopItem
 
 from ..definitions import DEFAULT_GEO_TOL, MAIN_DIR
 from ..functions.clean_name import clean_name, is_valid_filename
+from ..functions.phase import angle2phase
 from . import (
     DOMAIN_AIRGAP,
     DOMAIN_BAR,
@@ -1213,7 +1214,7 @@ class Script:
                 # winding direction
                 slot_surfs = []
                 for slot in slots:
-                    slot_surfs.extend(slot.geometricalElement)
+                    slot_surfs.extend(slot.geo_list)
                 new_slot = Slot(
                     (
                         "Stator Inds "
