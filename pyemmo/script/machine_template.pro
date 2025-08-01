@@ -495,7 +495,7 @@ DefineConstant[
             INPUT_ELEC_EXCITATION, "01Rotor Frquency"
         ],
         Units "Hz",
-        Visible Flag_SrcType_Stator == 1 && MachineType==ASYNCHRONOUS
+        Visible MachineType==ASYNCHRONOUS
     },
 
 
@@ -544,8 +544,8 @@ DefineConstant[
     CircuitConnection = {
         0, Name StrCat[INPUT_ELEC, "Winding Type"],
         Choices{
-            STAR_CONNECTION = "Star Connection",
-            DELTA_CONNECTION = "Delta Connection"
+            STAR_CONNECTION = "Star Connection", // 0
+            DELTA_CONNECTION = "Delta Connection" // 1
         },
         Visible Flag_Cir
     },
