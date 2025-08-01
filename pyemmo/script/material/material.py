@@ -33,6 +33,9 @@ from matplotlib import pyplot as plt
 from numpy.typing import NDArray
 
 from ... import rootLogger as logger
+from ...definitions import RESULT_DIR
+from ...functions.clean_name import clean_name
+from ...functions.exportMaxwell import exportTabMaxwell
 from . import DATABASE_PATH
 
 
@@ -743,3 +746,23 @@ class Material:
     def print(self) -> None:
         """print the material information to console"""
         print(str(self))
+
+    def export_BH_tab(self, filepath: str = ""):
+        """function to export the BH-Curve in ANSYS Maxwell readable format.
+
+        Args:
+            filepath (str, optional): File path to write the results to. File
+                extension must be ".tab"! Defaults to
+                PYEMMO_RESULTS_FOLDER/MATERIAL_NAME_BH.tab .
+        """
+        if self.linear:
+            raise ValueError(
+                f"Material {self.name} is linear! Can not export BH curve!"
+            )
+        bh = self.BH
+        b = bh[:, 0]
+        h = bh[:, 1]
+        header = ["H (A_per_meter)", "B (tesla)"]
+        if not filepath:
+            filepath = os.path.join(RESULT_DIR, clean_name(self.name) + "_BH.tab")
+        exportTabMaxwell([h, b], header, filepath)
