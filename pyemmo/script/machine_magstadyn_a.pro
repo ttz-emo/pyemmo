@@ -470,7 +470,7 @@ Constraint {
   // The relaxiation function (Frelax) is used to continously increase the voltage at simulation start until max voltage. This improves the convergence of the model.
   { Name Voltage_Cir ;
     Case {
-      If(Flag_Cir && Flag_SrcType_Stator==2)
+      If(Flag_Cir && Flag_SrcType_Stator == VOLTAGE_SOURCE) // == 2
         { Region Input1  ; Value Va  ; TimeFunction IA[]*Frelax[]; }
         { Region Input2  ; Value Vb  ; TimeFunction IB[]*Frelax[]; }
         { Region Input3  ; Value Vc  ; TimeFunction IC[]*Frelax[]; }
@@ -819,7 +819,7 @@ Resolution {
       // Evaluate[$Temp=Volume_RotorBridge[]];
       // Print[{$Temp}, Format "V_BRI=%e", File  StrCat[ResDir,'MotorParameters.txt']];
 
-      If(Flag_ParkTransformation && Flag_SrcType_Stator==1)
+      If(Flag_ParkTransformation && Flag_SrcType_Stator == CURRENT_SOURCE)
         PostOperation[ThetaPark_IABC] ;
       EndIf
 
@@ -895,7 +895,7 @@ Resolution {
               GenerateJac[A] ; SolveJac[A] ; }
           EndIf
           // PostOperations:
-          If(Flag_ParkTransformation && Flag_SrcType_Stator==1)
+          If(Flag_ParkTransformation && Flag_SrcType_Stator == CURRENT_SOURCE)
             // Had to shift PostOperation ThetaPark_IABC here, because if you
             // evaluate it before the solution process, you don't get the right
             // time step for the first iteration (= first rotational step).
