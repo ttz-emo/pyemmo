@@ -19,178 +19,184 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import annotations
+
+import fnmatch
 import logging
-import os
+import unittest
+from os import listdir, makedirs
+from os.path import isdir, isfile, join
+from shutil import copytree, ignore_patterns, rmtree
 
 import numpy as np
-from pyleecan.definitions import USER_DIR
-from pyleecan.Functions import load
+from matplotlib import pyplot as plt
 
-from pyemmo.api.pyleecan import main as pyleecanAPI
-from pyemmo.definitions import ROOT_DIR
+from pyemmo.api.json.json import main
 from pyemmo.functions.runOnelab import runCalcforCurrent
-
-# import subprocess
-
-
-# from tests import TEST_DATA_DIR, GETDP_EXE, GMSH_EXE
-GETDP_EXE = ""
-GMSH_EXE = ""
+from tests import GETDP_EXE, GMSH_EXE, TEST_DATA_DIR
+from tests import TEST_TEMP_DIR as TESTS_RESULTS_DIR
 
 # # disable messages of matplotlib
 # logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
 # logging.getLogger().setLevel(logging.INFO)
 
 
-def test_simulation_with_stator_circuit():
-    # refernce data from Maxwell Simulation
-    Br_magnets = 1.16  # Tesla
-    l_axial = 84 * 1e-3  # milli meter
-    R_ext_stator = 269.24 / 2 * 1e-3  # meter
-    R_int_stator = 161.9 / 2 * 1e-3  # meter
-    R_ext_rotor = 160.4 / 2 * 1e-3  # meter
-    R_int_stator = 110.64 / 2 * 1e-3  # meter
-    lamination_stacking_factor = 0.96
-    # BH curve for rotor and stator core
-    BH_curve = np.array(
-        [
-            [
-                0,
-                22.280000000000001,
-                25.460000000000001,
-                31.829999999999998,
-                47.740000000000002,
-                63.659999999999997,
-                79.569999999999993,
-                159.15000000000001,
-                318.30000000000001,
-                477.45999999999998,
-                636.61000000000001,
-                795.76999999999998,
-                1591.5,
-                3183,
-                4774.6000000000004,
-                6366.1000000000004,
-                7957.6999999999998,
-                15915,
-                31830,
-                111407,
-                190984,
-                350138,
-                509252,
-                560177.19999999995,
-                1527756,
-            ],
-            [
-                0,
-                0.050000000000000003,
-                0.10000000000000001,
-                0.14999999999999999,
-                0.35999999999999999,
-                0.54000000000000004,
-                0.65000000000000002,
-                0.98999999999999999,
-                1.2,
-                1.28,
-                1.3300000000000001,
-                1.3600000000000001,
-                1.4399999999999999,
-                1.52,
-                1.5800000000000001,
-                1.6299999999999999,
-                1.6699999999999999,
-                1.8,
-                1.8999999999999999,
-                2.0,
-                2.1000000000000001,
-                2.2999999999999998,
-                2.5,
-                2.5639944940000001,
-                3.7798898740000002,
-            ],
-        ]
-    )
-    N_coil = 9  # turns per coil
-    R_strand = 500e-3  # Ohm
+class TestCircuitSimulation(unittest.TestCase):
+    """
+    Testing the module runOnelab
+    Based on tutorial: https://youtu.be/6tNS--WetLI
+    Author: Max Schuler
+    """
 
-    # simulation parameters
-    connection_type = "star"  # star connection via circuit
-    V_in_pk = 100  # volt
-    f = 50  # Hz
-    n = 750  # rpm
-    t_end = 0.06  # seconds -> 3 periods
-    t_step = 0.005  # seconds
-    initial_offset = -22.5  # degrees mech.
+    @classmethod
+    def setUpClass(cls):
+        """
+        Vordefinierte Setup Funktion die einmalig am Anfang der Testprozedur ausgeführt wird.
+        Nützlich für beispielsweise zeitintensives Setup von Dingen die nicht verändert werden.
+        Konkret z.B. Laden von vordefinierter, verifizierter Testgeometrie
+        """
+        # copy model data and set actual model directory
+        original_model_dir = join(TEST_DATA_DIR, "api", "json", "im")
+        # folder to store temporary model data and simulation results
+        cls.test_sim_dir = join(TESTS_RESULTS_DIR, "TestCircuitSimulation")
+        if not isdir(cls.test_sim_dir):
+            makedirs(cls.test_sim_dir)
+        # copy model data to test simulation results directory
+        model_dir = join(cls.test_sim_dir, "induction_machine")
+        if isdir(model_dir):
+            # remove old data before creating new model
+            rmtree(model_dir)
+        cls.model_dir = copytree(
+            original_model_dir,
+            model_dir,
+            ignore=ignore_patterns("res*", "*.msh", "*.db", "*.res", "*.pre"),
+        )
+        # create model
+        model_json_file = join(cls.model_dir, "im.json")
+        info_json_file = join(cls.model_dir, "simu_info.json")
+        cls.script = main(model_json_file, info_json_file, cls.model_dir)
+        if not isfile(cls.script.proFilePath):
+            raise FileExistsError(
+                f"Model directory {model_dir} already exists but does not "
+                f"contain the expected files ({cls.script.proFilePath})."
+            )
+        logging.getLogger().setLevel(logging.DEBUG)
 
-    # simulation results of last period (rough)
-    I_out_rms = 82.4  # ampere
-    I_out_pk2pk = 252  # ampere
-    torque = 78.45  # newton meter
+    @classmethod
+    def tearDownClass(cls):
+        """
+        Vordefinierte teardown Funktion die einmalig am Ende der Testprozedur ausgeführt wird.
+        Nützlich für beispielsweise Löschen von in Test erzeugten Datein und Ordnern.
+        Konkret z.B. Löschen von abgespeicherten Geometrien
+        """
+        rmtree(cls.model_dir)
+        # remove any results folders that match the test res_id pattern
+        for folder in listdir(cls.test_sim_dir):
+            if fnmatch.fnmatch(folder, "test_*"):
+                rmtree(join(cls.test_sim_dir, folder))
 
-    ## CREATE MODEL FOR PRIUS MOTOR IN ONELAB
+    def setUp(self):
+        """
+        Vordefinierte Setup Funktion von Unittest
+        Die Schreibweise "setUp" muss beachtet werden.
+        Setup wird vor jeder Testmethode der Klasse TestRotorIPMSM ausgeführt
+        """
 
-    machine_file_path = os.path.join(USER_DIR, "Machine", "Toyota_Prius.json")
-
-    if not os.path.isfile(machine_file_path):  # make sure file exists
-        raise FileNotFoundError(machine_file_path)
-
-    # Default development results folder
-    resFolder = os.path.join(ROOT_DIR, r"Results\pyleecanAPI")
-    if not os.path.isdir(resFolder):
-        os.makedirs(resFolder)  # create res dir if necessary
-
-    # Load pyleecan machine object and call pyemmo-pyleecan-api
-    # pylint: disable=locally-disabled, no-member
-    pyleecan_machine = load.load(machine_file_path)  # load machine obj
-    # %%
-    # FIX: rotor bar material
-    CuMat = load.load(os.path.join(USER_DIR, "Material", "Copper2.json"))
-    pyleecan_machine.stator.winding.conductor.cond_mat = CuMat
-    try:
-        pyleecan_machine.rotor.winding.conductor.cond_mat = CuMat
-    except AttributeError:
+    def tearDown(self):
+        """
+        Vordefinierte Reset Funktion von Unittest
+        Die Schreibweise "tearDown" muss beachtet werden!
+        teardown wird nach jeder Testmethode der Klasse TestRotorIPMSM ausgeführt
+        """
         pass
-    except Exception as exce:
-        raise exce
 
-    # Call pyleecan api main function
-    # This triggers the translation process via the pyemmo json api, creates the
-    # model file for Gmsh and GetDP + opens the model in the Gmsh GUI.
-    # This behaviour should be changed to e.g. return the model file path or the
-    # whole pyemmo Script object so the user can open the GUI or run the simulation
-    # directly...
-    model_folder = os.path.join(resFolder, pyleecan_machine.name)
-    pyemmo_script = pyleecanAPI.main(
-        pyleecan_machine, model_dir=model_folder, use_gui=False
-    )
-    # %%
+    def test_simulation_with_stator_circuit(self):
+        # refernce data
+        stator_resistance = 325.409e-3  # mOhm
+        k_cu = 0.426479830954041  # fill factor winding
+        # calc Rb[] = Factor_R_3DEffects*L_ax * k_cu * NbWires[]^2/SurfCoil[]/sigma[]
+        k_endwinding = 1  # end winding correction factor
+        endring_resistance = 1.872971747498273e-06  # Ohm
+        endring_inductance = 4.924650607446416e-09  # Henry
 
-    # folder where simulation results will be stored
-    sim_res_dir = os.path.join(model_folder, f"res_{pyleecan_machine.name}")
+        # simulation parameters
+        connection_type = "star"  # star connection via circuit
+        U_input_pk = 153  # volt
+        n = 1500  # rpm
+        f_s = 52.478867971949249  # Hz
+        f_r = f_s - n / 60 * 2  # 2.601763700396361 Hz
+        s = f_r / f_s  # slip
+        t_end = 2 / f_s  # seconds -> 3 stator period
+        t_step = 1 / f_s / 30  # 30 steps per stator period
+        nbr_time_steps = np.rint(t_end / t_step).astype(int) + 1
+        initial_offset = 0  # degrees mech.
 
-    # define simulation params
-    i_d = -10
-    i_q = 50
-    n = 1000
-    resid = f"id_{i_d}_iq_{i_q}_n_{n}rpm"
-    param_dict = {
-        "getdp": {
-            "ID_RMS": i_d,  # d current in A
-            "IQ_RMS": i_q,  # q current in A
-            "RPM": n,  # speed in rpm
-            "d_theta": 0.25,
-            "ResId": resid,
-            "Flag_PrintFields": 0,
-            "Flag_Debug": 0,
-        },
-        "ResId": resid,
-        "pro": pyemmo_script.proFilePath,
-        "res": sim_res_dir,
-        "exe": GETDP_EXE,
-        "gmsh": GMSH_EXE,
-        "verbosity level": 3,
-        # "hyst": 0, # loss coefficient
-        # "eddy": 0, # loss coefficient
-        # "exc": 0, # loss coefficient
-    }
-    runCalcforCurrent(param_dict)
+        # define simulation params
+        resid = "star_connection"
+        param_dict = {
+            "getdp": {
+                "Flag_AnalysisType": 1,  # transient
+                "Flag_NL": 0,  # linear to speed up simulation
+                # machine parameters
+                "FillFactor_Winding": k_cu,
+                "Factor_R_3DEffects": k_endwinding,
+                # analysis parameters
+                "initrotor_pos": initial_offset,  # initial rotor position in degrees
+                "RPM": n,  # speed in rpm
+                "d_theta": n / 60 * 360 * t_step,
+                "finalrotor_pos": initial_offset + n / 60 * 360 * t_end,
+                # excitation parameters
+                "Flag_SrcType_Stator": 2,  # voltage source
+                "freq_rotor": f_r,
+                "VV": U_input_pk,  # amplitude of voltage
+                "R_wire": 1e-12,  # connection resistance (None)
+                "CircuitConnection": 0,  # 0: star, 1:delta
+                "pA_deg": initial_offset,
+                "R_endring_segment": endring_resistance,
+                "L_endring_segment": endring_inductance,
+                # results parameter
+                "res": join(self.test_sim_dir, "res"),  # result folder
+                "ResId": resid,
+                "Flag_ClearResults": True,
+                "Flag_PrintFields": 0,
+                "Flag_Debug": 0,
+                "exe": GETDP_EXE,
+                "verbosity level": 5,
+            },
+            "gmsh": {"exe": GMSH_EXE},
+            "pro": self.script.proFilePath,
+            # "res": self.script.resultsPath,
+            # "hyst": 0, # loss coefficient
+            # "eddy": 0, # loss coefficient
+            # "exc": 0, # loss coefficient
+        }
+        results = runCalcforCurrent(param_dict)
+
+        # check if voltages and other results are correct:
+        time_ref = np.linspace(0, t_end, nbr_time_steps, endpoint=True)
+        U_a_ref = U_input_pk * np.sin(
+            2 * np.pi * f_s * time_ref + np.rad2deg(initial_offset)
+        )
+        U_a_sim = results["voltage"]["a"]
+
+        fig, ax = plt.subplots()
+        ax.plot(time_ref, U_a_ref, "o-")
+        ax.plot(results["time"], U_a_sim, "x-")
+        ax.grid(True)
+        fig.show()
+
+        fig, ax = plt.subplots()
+        ax.plot(U_a_ref.reshape(U_a_sim.shape) - U_a_sim, "x-")
+        ax.grid(True)
+        fig.show()
+
+        assert nbr_time_steps in U_a_sim.shape
+        assert all(np.isclose(results["time"], time_ref, atol=t_step / 100))
+        assert all(
+            np.isclose(U_a_sim, U_a_ref.reshape(U_a_sim.shape), atol=U_input_pk / 100)
+        )
+
+
+# Dieser Abschnitt ermöglicht das direkte Starten der Testmethoden beim ausführen der Datei
+if __name__ == "__main__":
+    unittest.main()
