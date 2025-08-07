@@ -22,6 +22,7 @@
 """This module allows an easy invoke of the json api by a tkinter file dialog!"""
 from __future__ import annotations
 
+import logging
 import os
 import tkinter as tk
 from tkinter import filedialog
@@ -30,9 +31,15 @@ from pyemmo.api.json import json
 
 root = tk.Tk()
 root.withdraw()
-model_folder = r""
+model_folder = ""
+# uncomment to use test induction machine model:
+# from tests import TEST_DATA_DIR
+# model_folder = os.path.join(TEST_DATA_DIR, "api", "json", "im")
 if not model_folder:
     model_folder = filedialog.askdirectory()
+
+logging.getLogger().setLevel(logging.DEBUG)
+logging.info("Log level is: %f", logging.getLogger().getEffectiveLevel())
 
 if os.path.isdir(model_folder):
     # resDir = os.path.dirname(model_folder)
