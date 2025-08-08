@@ -21,7 +21,7 @@
 
 from __future__ import annotations
 
-from numpy import Inf
+from numpy import inf
 from pyleecan.Classes.Material import Material as PyleecanMaterial
 from pyleecan.Classes.MatMagnetics import MatMagnetics
 
@@ -49,7 +49,7 @@ def build_pyemmo_material(pyleecan_material: PyleecanMaterial) -> Material:
     # elec props
     try:
         conductivity = pyleecan_material.elec.get_conductivity()
-        if conductivity is Inf:
+        if not isinstance(conductivity, (int, float)) or conductivity == inf:
             # case when rho = 0
             conductivity = None
     except AttributeError:
