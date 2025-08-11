@@ -392,13 +392,19 @@ def getFlagCalcIronLoss(extendedInfo: dict) -> bool:
     if mbKey in extendedInfo.keys():
         if isinstance(extendedInfo[mbKey], bool):
             return extendedInfo[mbKey]
+        if isinstance(extendedInfo[mbKey], (int, float)):
+            # typecast from number to bool
+            return bool(extendedInfo[mbKey])
         msg = (
             "The parameter 'calcIronLoss' was not a bool!"
             f"But type {type(extendedInfo[mbKey])}"
         )
         raise TypeError(msg)
-    msg = f"Iron loss calculation flag ('{mbKey}') missing from extended info dict!"
-    raise KeyError(msg)
+    # core loss calculation flag not in info
+    logger.warning(
+        "Iron loss calculation flag ('%s') missing from extended info dict!", mbKey
+    )
+    return False
 
 
 def getMagAngle(extendedInfo: dict) -> dict:
