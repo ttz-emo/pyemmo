@@ -72,6 +72,7 @@ from .. import logger
 from ..json import ROTOR_BAR_IDEXT, ROTOR_LAM_IDEXT, STATOR_LAM_IDEXT, STATOR_SLOT_IDEXT
 from ..json.modelJSON import createSurfaceDict
 from . import PyleecanMachine
+from .build_pyemmo_material import build_pyemmo_material
 from .calcs_rotor_spmsm_cont import get_lr_points
 from .create_gmsh_surf import create_gmsh_surface
 from .detect_inner_outer_limit import detect_inner_outer_limit
@@ -81,6 +82,7 @@ from .get_rotor_stator_cont import (
     get_spmsm_rotor_cont,
     get_winding_cont,
 )
+from .label2part_id import label2part_id
 
 
 def create_geo_dict(
@@ -146,12 +148,14 @@ def create_geo_dict(
             all_surfs_labels[i],
             " - ".join(all_surfs_labels_split2[i]),
         )
+        lam = machine.get_lam_by_label(all_surfs_labels_split1[0])
+
         # translating the surface
-        pyemmo_surf, angle_point_ref_list = create_gmsh_surface(
-            name_split_list=all_surfs_labels_split2[i],
-            machine=machine,
+        pyemmo_surf = create_gmsh_surface(
             surface=surf,
-            angle_point_ref_list=angle_point_ref_list,
+            nbr_segments=lam.get_Zs(),
+            part_id=label2part_id(surf.label),
+            material=build_pyemmo_material(lam.mat_type),
         )
         geometry_list.append(pyemmo_surf)
 
@@ -226,7 +230,7 @@ def create_geo_dict(
             f"Unable to generate contours of rotor lamination type {type(machine.rotor)}!"
         )
     lam_surf = geo_dict[STATOR_LAM_IDEXT]
-    slot_surfs = [geo_dict[STATOR_SLOT_IDEXT + "0"]]
+    slot_surfs = [geo_dict[STATOR_SLOT_IDEXT]]
     if (STATOR_SLOT_IDEXT + "1") in geo_dict:
         slot_surfs.append(geo_dict[STATOR_SLOT_IDEXT + "1"])
     stator_contour_line_list = get_winding_cont(

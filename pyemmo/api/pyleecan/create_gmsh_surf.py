@@ -32,12 +32,19 @@ from __future__ import annotations
 
 from pyleecan.Classes.SurfLine import SurfLine
 
+from ...api.machine_segment_surface import MachineSegmentSurface
 from ...script.gmsh.gmsh_line import GmshLine
-from ...script.gmsh.gmsh_surface import GmshSurface
+from ...script.material import Material
 from .create_gmsh_lines import create_gmsh_lines
 
 
-def create_gmsh_surface(surface: SurfLine) -> GmshSurface:
+def create_gmsh_surface(
+    surface: SurfLine,
+    nbr_segments: int,
+    part_id: str,
+    material: Material,
+    name: str = "",
+) -> MachineSegmentSurface:
     """
     Translates Pyleecan SurfLine surfaces into pyemmo GmshSurface objects.
 
@@ -55,5 +62,7 @@ def create_gmsh_surface(surface: SurfLine) -> GmshSurface:
     # FIXME: The line list of a pyleecan surface does not have to be closed. This
     # happens for example in case of holes on the boundary of a surface. In this case,
     # the curve loop is open at the part where the hole intersects.
-    pyemmo_surf = GmshSurface.from_curve_loop(curve_loop=curves, name=surface.label)
+    pyemmo_surf = MachineSegmentSurface.from_curve_loop(
+        curves, nbr_segments, part_id, material, name=name
+    )
     return pyemmo_surf

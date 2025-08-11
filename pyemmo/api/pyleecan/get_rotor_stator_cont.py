@@ -41,6 +41,7 @@ from ...script.geometry.line import Line
 from ...script.geometry.point import Point
 from ...script.geometry.segment_surface import SegmentSurface
 from ..json import ROTOR_LAM_IDEXT
+from ..machine_segment_surface import MachineSegmentSurface
 from . import PyleecanMachine
 from .calc_wind_cont import calc_wind_contour
 from .calcs_even_rotor_cont import calc_even_rotor_cont
@@ -101,7 +102,7 @@ def get_spmsm_rotor_cont(
 
 
 def get_even_rotor_cont(
-    geometry_list: list,
+    geometry_list: list[MachineSegmentSurface],
     machine: PyleecanMachine,
     is_internal_rotor: bool = True,
 ) -> tuple[list[Line | CircleArc], Point, Point]:
@@ -123,7 +124,7 @@ def get_even_rotor_cont(
 
     rotor_lam_surf_list = []
     for surf in geometry_list:
-        if surf.idExt == ROTOR_LAM_IDEXT:
+        if surf.part_id == ROTOR_LAM_IDEXT:
             rotor_lam_surf_list.append(surf)
 
     if is_internal_rotor:

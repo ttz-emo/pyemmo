@@ -63,15 +63,15 @@ from pyleecan.Classes.MachineIPMSM import MachineIPMSM
 from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
 from pyleecan.Classes.Magnet import Magnet
 
-from ...script.geometry.segment_surface import SegmentSurface
 from ..json import ROTOR_MAG_IDEXT
+from ..machine_segment_surface import MachineSegmentSurface
 from . import POLE_HOLE_IDEXT
 
 
 def get_magnetization_dict(
     machine: Machine,
     angle_point_ref_list: list[float],
-    geometry_list: list[SegmentSurface],
+    geometry_list: list[MachineSegmentSurface],
 ) -> dict:
     """Generate a dictionary mapping magnets to their respective magnetization
     angles.
@@ -115,18 +115,18 @@ def get_magnetization_dict(
     # Filling the magnetization dict if surface is magnet:
     magnetization_dict = {}
 
-    # Changing the 'idExt' of the SurfaceAPI to 'Mag0', 'Mag1', 'Mag2', ...
-    # if the 'idExt' is 'Mag'
+    # Changing the 'part_id' of the SurfaceAPI to 'Mag0', 'Mag1', 'Mag2', ...
+    # if the 'part_id' is 'Mag'
     hole_counter = 0
     mag_counter = 0
 
     for surf_api in geometry_list:
-        if surf_api.idExt == POLE_HOLE_IDEXT:
-            surf_api.setIdExt(POLE_HOLE_IDEXT + str(hole_counter))
+        if surf_api.part_id == POLE_HOLE_IDEXT:
+            surf_api.part_id = POLE_HOLE_IDEXT + str(hole_counter)
             hole_counter += 1
 
-    for mag_surf in [surf for surf in geometry_list if surf.idExt == ROTOR_MAG_IDEXT]:
-        mag_surf.setIdExt(ROTOR_MAG_IDEXT + str(mag_counter))
+    for mag_surf in [surf for surf in geometry_list if surf.part_id == ROTOR_MAG_IDEXT]:
+        mag_surf.part_id = ROTOR_MAG_IDEXT + str(mag_counter)
         mag_counter += 1
 
     if isinstance(machine, MachineSIPMSM):
@@ -152,9 +152,9 @@ def get_magnetization_dict(
         else:
             # multiple magnets per pole
             for mag_surf in [
-                surf for surf in geometry_list if ROTOR_MAG_IDEXT in surf.idExt
+                surf for surf in geometry_list if ROTOR_MAG_IDEXT in surf.part_id
             ]:
-                if "0" in mag_surf.idExt:
+                if "0" in mag_surf.name:
                     if magnetization_type in (0, 1):  # radial & parallel
                         magnetization_angle = angle_point_ref_list[0]
 
@@ -162,7 +162,7 @@ def get_magnetization_dict(
                         magnetization_angle = angle_point_ref_list[0] - 90 / pi
                     magnetization_dict[ROTOR_MAG_IDEXT + "0"] = magnetization_angle
 
-                elif "1" in mag_surf.idExt:
+                elif "1" in mag_surf.name:
                     if magnetization_type in (0, 1):  # radial & parallel
                         magnetization_angle = angle_point_ref_list[1]
 
@@ -171,7 +171,7 @@ def get_magnetization_dict(
                     magnetization_dict[ROTOR_MAG_IDEXT + "1"] = -magnetization_angle
                 else:
                     raise RuntimeError(
-                        f"Magnet surface (idExt:{mag_surf.idExt}) '{mag_surf.name}' is "
+                        f"Magnet surface (part_id:{mag_surf.part_id}) '{mag_surf.name}' is "
                         "not index 0 or 1!"
                     )
 
@@ -190,22 +190,22 @@ def get_magnetization_dict(
             magnetization_dict[ROTOR_MAG_IDEXT + "0"] = magnetization_angle
         else:
             for mag_surf in geometry_list:
-                if mag_surf.idExt == ROTOR_MAG_IDEXT + "0":
+                if mag_surf.part_id == ROTOR_MAG_IDEXT + "0":
                     magnetization_angle = (
                         angle_point_ref_list[0] + mag_angle_dict["magnet_0"]
                     )
-                    magnetization_dict[mag_surf.idExt] = magnetization_angle
+                    magnetization_dict[mag_surf.part_id] = magnetization_angle
 
-                elif mag_surf.idExt == ROTOR_MAG_IDEXT + "1":
+                elif mag_surf.part_id == ROTOR_MAG_IDEXT + "1":
                     magnetization_angle = (
                         angle_point_ref_list[1] + mag_angle_dict["magnet_1"]
                     )
-                    magnetization_dict[mag_surf.idExt] = magnetization_angle
+                    magnetization_dict[mag_surf.part_id] = magnetization_angle
 
-                elif mag_surf.idExt == ROTOR_MAG_IDEXT + "2":
+                elif mag_surf.part_id == ROTOR_MAG_IDEXT + "2":
                     magnetization_angle = (
                         angle_point_ref_list[2] + mag_angle_dict["magnet_2"]
                     )
-                    magnetization_dict[mag_surf.idExt] = magnetization_angle
+                    magnetization_dict[mag_surf.part_id] = magnetization_angle
 
     return magnetization_dict

@@ -51,7 +51,6 @@ def create_LamSlot_segment(
     # with part_id as key
     segment_dict: dict[str, MachineSegmentSurface] = {}
     for surf in surfs:
-        gmsh_surf = create_gmsh_surface(surf)  # create surface in Gmsh
         machine_part = get_obj_from_label(machine, surf.label)  # get machine part
         # get material from machine part. Material attribute can be mat_type or mat_void
         try:
@@ -83,10 +82,10 @@ def create_LamSlot_segment(
         except Exception as e:
             raise e
 
-        segment_dict[part_id] = MachineSegmentSurface(
+        segment_dict[part_id] = create_gmsh_surface(
+            surface=surf,
             part_id=part_id,
             material=build_pyemmo_material(material),
-            tag=gmsh_surf.id,
             nbr_segments=part_sym,
             name=surf.label,
         )
