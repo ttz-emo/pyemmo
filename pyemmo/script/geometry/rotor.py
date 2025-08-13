@@ -198,6 +198,11 @@ class Rotor:
 
         ###DomainAirGap beinhaltet alle Physical Elements, die einen Luftspalt auf der
         # Rotorseite (Luftspalt bis zum Moving Band) beschreiben.
+        if not allPhy["airGap"]:
+            logging.warning(
+                "No physical elements for rotor airgap domain. "
+                "Make sure your airgap physical surface is defined as AirGap object!"
+            )
         self._domainAirGap = Domain("Rotor_Airgap", allPhy["airGap"])
 
         ###DomainM beinhaltet alle Physical Elements, die magnetisiert sind.
