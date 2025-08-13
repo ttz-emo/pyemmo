@@ -210,13 +210,13 @@ def plot_timetable_dat(
         # ax.set_aspect("equal", adjustable="box")
         # check that max or min is not too close to zero to apply the y_lim
         if 1 in sim_data.shape:
-            maxVal = np.max(sim_data)
-            minVal = np.min(sim_data)
+            maxVal = np.nanmax(sim_data)
+            minVal = np.nanmin(sim_data)
         else:
             # multi data array
             # FIXME: Make sure second axis is really data axis
-            maxVal = np.max(sim_data[:, 0])
-            minVal = np.min(sim_data[:, 0])
+            maxVal = np.nanmax(sim_data[:, 0])
+            minVal = np.nanmin(sim_data[:, 0])
         if not (isclose(maxVal, 0, abs_tol=0.1) or isclose(minVal, 0, abs_tol=0.1)):
             fig.axes[0].set_ylim(
                 bottom=minVal * (1.1 if minVal < 0 else 0.9),
