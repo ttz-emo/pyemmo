@@ -431,6 +431,22 @@ DefineConstant[
         ReadOnly !Flag_ExpertMode
     },
 
+    FillFactor_Winding = {
+        1, Name StrCat[
+            INPUT_ELEC_WINDINGS, "03Fill factor"
+        ],
+        Help "Winding fill factor from (0,1]",
+        Max 1,
+        Visible Flag_SrcType_Stator == VOLTAGE_SOURCE
+    },
+    Factor_R_3DEffects = {
+        1, Name StrCat[
+            INPUT_ELEC_WINDINGS, "04End winding factor"
+        ],
+        Help "Factor from [0, inf) to scale stator winding resistance due to end winding region",
+        Visible Flag_SrcType_Stator == VOLTAGE_SOURCE
+    },
+
     //======================== EXCITATION PARAMETERS =========================
 
     Flag_invertRotDir = {
