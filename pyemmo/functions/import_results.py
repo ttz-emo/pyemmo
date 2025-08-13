@@ -589,10 +589,10 @@ def main(sim_param: dict | str | bytes | os.PathLike):
         else:
             # Error because we need to import time here!
             logger.warning("Could not find result file for input Voltage U%s", index)
-        res_file_name = f"U{index}_w"
+        res_file_name = f"U{index}_w.dat"
         if res_file_name in dat_files:
-            results_dict["time"], results_dict["voltage"][index] = read_timetable_dat(
-                os.path.join(simulation_res_dir, res_file_name)
+            results_dict["time"], results_dict["voltage"][index + "w"] = (
+                read_timetable_dat(os.path.join(simulation_res_dir, res_file_name))
             )
             dat_files.remove(res_file_name)
         else:
