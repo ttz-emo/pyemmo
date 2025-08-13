@@ -32,6 +32,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from pyemmo.api.json.json import main
+from pyemmo.functions.import_results import get_result_files, read_timetable_dat
 from pyemmo.functions.runOnelab import runCalcforCurrent
 from tests import GETDP_EXE, GMSH_EXE, TEST_DATA_DIR
 from tests import TEST_TEMP_DIR as TESTS_RESULTS_DIR
@@ -114,8 +115,8 @@ class TestCircuitSimulation(unittest.TestCase):
         # refernce data
         stator_resistance = 325.409e-3  # mOhm
         k_cu = 0.426479830954041  # fill factor winding
-        # calc Rb[] = Factor_R_3DEffects*L_ax * k_cu * NbWires[]^2/SurfCoil[]/sigma[]
-        k_endwinding = 1  # end winding correction factor
+        # calc Rb[] = Factor_R_3DEffects * L_ax * k_cu * NbWires[]^2/SurfCoil[]/sigma[]
+        k_endwinding = 2.787131 * 140  # end winding correction factor
         endring_resistance = 1.872971747498273e-06  # Ohm
         endring_inductance = 4.924650607446416e-09  # Henry
 
@@ -126,8 +127,9 @@ class TestCircuitSimulation(unittest.TestCase):
         f_s = 52.478867971949249  # Hz
         f_r = f_s - n / 60 * 2  # 2.601763700396361 Hz
         s = f_r / f_s  # slip
-        t_end = 2 / f_s  # seconds -> 3 stator period
-        t_step = 1 / f_s / 30  # 30 steps per stator period
+        nbr_stator_periods = 24
+        t_end = 24 / f_s  # seconds -> 3 stator period
+        t_step = 1 / f_s / 16  #  steps per stator period
         nbr_time_steps = np.rint(t_end / t_step).astype(int) + 1
         initial_offset = 0  # degrees mech.
 
@@ -136,7 +138,7 @@ class TestCircuitSimulation(unittest.TestCase):
         param_dict = {
             "getdp": {
                 "Flag_AnalysisType": 1,  # transient
-                "Flag_NL": 0,  # linear to speed up simulation
+                "Flag_NL": 1,  # 0: linear to speed up simulation
                 # machine parameters
                 "FillFactor_Winding": k_cu,
                 "Factor_R_3DEffects": k_endwinding,
@@ -159,9 +161,9 @@ class TestCircuitSimulation(unittest.TestCase):
                 "ResId": resid,
                 "Flag_ClearResults": True,
                 "Flag_PrintFields": 0,
-                "Flag_Debug": 0,
+                "Flag_Debug": 1,
                 "exe": GETDP_EXE,
-                "verbosity level": 5,
+                "verbosity level": 3,
             },
             "gmsh": {"exe": GMSH_EXE},
             "pro": self.script.proFilePath,
@@ -171,29 +173,75 @@ class TestCircuitSimulation(unittest.TestCase):
             # "exc": 0, # loss coefficient
         }
         results = runCalcforCurrent(param_dict)
+        sim_res_folder = join(self.test_sim_dir, "res", resid)
+        if ("R_A.dat") in get_result_files(sim_res_folder)[0]:
+            read_timetable_dat(join(sim_res_folder, "R_A.dat"))
 
         # check if voltages and other results are correct:
         time_ref = np.linspace(0, t_end, nbr_time_steps, endpoint=True)
-        U_a_ref = U_input_pk * np.sin(
-            2 * np.pi * f_s * time_ref + np.rad2deg(initial_offset)
+        if param_dict["getdp"]["Flag_NL"]:
+            f_relax = np.where(
+                time_ref < (2 / f_s),
+                0.5 * (1 - np.cos(np.pi * time_ref / (2 / f_s))),
+                1,
+            )
+        else:
+            f_relax = 1
+        U_a_ref = (
+            f_relax
+            * U_input_pk
+            * np.sin(2 * np.pi * f_s * time_ref + np.rad2deg(initial_offset))
         )
         U_a_sim = results["voltage"]["a"]
 
+        fig, ax = plt.subplots(1, 2)
+        ax[0].plot(results["time"], results["voltage"]["a"], ".-", label="U_{a,sim}")
+        ax[0].plot(results["time"], results["voltage"]["b"], ".-", label="U_{b,sim}")
+        ax[0].plot(results["time"], results["voltage"]["c"], ".-", label="U_{c,sim}")
+        ax[0].set_title("Stator Voltage")
+        ax[0].grid(True)
+        ax[0].legend()
+        ax[1].plot(results["time"], results["voltage"]["aw"], ".-", label="U_{i,a,sim}")
+        ax[1].plot(results["time"], results["voltage"]["bw"], ".-", label="U_{i,b,sim}")
+        ax[1].plot(results["time"], results["voltage"]["cw"], ".-", label="U_{i,c,sim}")
+        ax[1].set_title("Stator Induced Voltage")
+        ax[1].grid(True)
+        ax[1].legend()
+        fig.show()
+
         fig, ax = plt.subplots()
-        ax.plot(time_ref, U_a_ref, "o-")
-        ax.plot(results["time"], U_a_sim, "x-")
+        ax.plot(time_ref, U_a_ref, "o-", label="U_{a,ref}")
+        ax.plot(results["time"], U_a_sim, "x-", label="U_{a,sim}")
+        ax.plot(results["time"], results["voltage"]["aw"], "x-", label="U_{i,a,sim}")
+        ax.set_title("Stator Voltage")
         ax.grid(True)
+        ax.legend()
         fig.show()
 
         fig, ax = plt.subplots()
         ax.plot(U_a_ref.reshape(U_a_sim.shape) - U_a_sim, "x-")
         ax.grid(True)
+        ax.set_title("Diviation in Stator Voltage")
+        fig.show()
+
+        fig, ax = plt.subplots()
+        ax.plot(results["current"]["a"], ".-", label="I_{a}")
+        ax.plot(results["current"]["b"], ".-", label="I_{b}")
+        ax.plot(results["current"]["c"], ".-", label="I_{c}")
+        ax.grid(True)
+        ax.set_title("Stator Current")
+        fig.show()
+
+        fig, ax = plt.subplots()
+        ax.plot(results["current"]["bars"], ".-")
+        ax.grid(True)
+        ax.set_title("Rotor Current")
         fig.show()
 
         assert nbr_time_steps in U_a_sim.shape
-        assert all(np.isclose(results["time"], time_ref, atol=t_step / 100))
+        assert all(np.isclose(results["time"], time_ref, atol=t_step / 1e6))
         assert all(
-            np.isclose(U_a_sim, U_a_ref.reshape(U_a_sim.shape), atol=U_input_pk / 100)
+            np.isclose(U_a_sim, U_a_ref.reshape(U_a_sim.shape), atol=U_input_pk / 1e6)
         )
 
 
