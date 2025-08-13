@@ -378,7 +378,13 @@ class Stator:
         ###domainNL beinhaltet alle Physical Elements, die ein nicht lineares Material besitzen.
         self._domainNL = Domain("DomainNL_Stator", allPhy["domainNL"])
 
-        ###DomainAirGap beinhaltet alle Physical Elements, die einen Luftspalt auf der Statorseite (Luftspalt bis zum Moving Band) beschreiben.
+        ### DomainAirGap contains all physicals, that create the airgap are containing
+        # the stator movingband.
+        if not allPhy["airGap"]:
+            logging.warning(
+                "No physical elements for stator airgap domain. "
+                "Make sure your airgap physical surface is defined as AirGap object!"
+            )
         self._domainAirGap = Domain("Stator_Airgap", allPhy["airGap"])
         ###primarykante vom Stator.
         self._domainPrimary = Domain("PrimaryRegion_Stator", allPhy["primary"])
