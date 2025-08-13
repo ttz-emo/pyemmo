@@ -212,10 +212,10 @@ Constraint {
 					{Region Stator_Ind_Am;	Branch {5,32};}
 				ElseIf (NbrRegions[Stator_Ind_Am] == 1)
 					// Only negative wound stator winding region
-					{Region Stator_Ind_Am;	Branch {5,31};}
+					{Region Stator_Ind_Am;	Branch {31,5};}
 				ElseIf (NbrRegions[Stator_Ind_Ap] == 1)
 					// Only positive stator winding region
-					{Region Stator_Ind_Ap;	Branch {31,5};}
+					{Region Stator_Ind_Ap;	Branch {5,31};}
 				EndIf
 
 				// for phase B
@@ -230,10 +230,10 @@ Constraint {
 
 				ElseIf (NbrRegions[Stator_Ind_Bm] == 1)
 					// Only negative wound stator winding region
-					{Region Stator_Ind_Bm;	Branch {5,41};}
+					{Region Stator_Ind_Bm;	Branch {41,5};}
 				ElseIf (NbrRegions[Stator_Ind_Bp] == 1)
 					// Only positive stator winding region
-					{Region Stator_Ind_Bp;	Branch {41,5};}
+					{Region Stator_Ind_Bp;	Branch {5,41};}
 				EndIf
 
 				// for phase C
@@ -246,10 +246,10 @@ Constraint {
 					{Region Stator_Ind_Cm;	Branch {5,22};}
 				ElseIf (NbrRegions[Stator_Ind_Cm] == 1)
 					// Only negative wound stator winding region
-					{Region Stator_Ind_Cm;	Branch {5,21};}
+					{Region Stator_Ind_Cm;	Branch {21,5};}
 				ElseIf (NbrRegions[Stator_Ind_Cp] == 1)
 					// Only positive stator winding region
-					{Region Stator_Ind_Cp;	Branch {21,5};}
+					{Region Stator_Ind_Cp;	Branch {5,21};}
 				EndIf
 
 			Else
