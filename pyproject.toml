@@ -1,5 +1,8 @@
 [build-system]
-requires = ["setuptools>=75.3.2", "wheel"] # setuptools==75.3.2 is the latest version that support python 3.8
+requires = [
+    "setuptools>=75.3.2",
+    "wheel",
+] # setuptools==75.3.2 is the latest version that support python 3.8
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -94,48 +97,3 @@ skips = ["B311", "B404", "B603"]
 # B603: subprocess mit "shell = False" - Dies minimiert das Risiko von
 # Shell-Injection-Angriffen und sollte bevorzugt verwendet werden (gegenüber
 # "shell = True").
-
-## tox config
-# Using legacy_tox_ini for now since there is no pure TOML parser in tox for
-# now. See https://tox.wiki/en/3.24.5/config.html#configuration-discovery for
-# details.
-
-# [tool.tox]
-# envlist = ["py37", "py38", "py39", "py310"]
-# [tool.tox.envlist]
-# envs = [
-#     "py38",
-#     "py39",
-#     "py310",
-# ] # "py311" not compatible with pyleecan yet
-# [tool.tox.testenv]
-# deps = ["pytest", "pytest_check", "hypothesis"]
-# commands = ["pytest tests"]
-# setenv = ["PATH = {env:PATH}{:}/."]
-[tool.tox]
-# Everything < Python 3.9 is outdated by now, so we don't try to keep is stable below
-# this version!
-# py3.10: Not working with PYLEECAN yet. Fails to install matplotlib 3.3.4 with
-#           build and setup.cfg due to freetype missing MS C++ compilers
-# py3.11: Not working with PYLEECAN yet. Not ompatcible with pyleecan yet due
-#           to PyQt5 (needed by pyleecan, but not available in Python 3.11).
-legacy_tox_ini = """
-[tox]
-envlist = py38, py39, py310, py311, py312
-skip_missing_interpreters = False
-
-[testenv]
-deps =
-    pytest
-    pytest_check
-    hypothesis
-    pytest-cov
-
-commands =
-    # python -m build -o .tox/dist
-    # pip install .tox/dist/*.whl
-    pytest
-setenv =
-    PATH = {env:PATH}{:}/.
-    VIRTUALENV_DISCOVERY=pyenv
-"""
