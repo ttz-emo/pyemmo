@@ -4,6 +4,7 @@
 **__pycache__/
 **.*cache*/
 /dist
+/build
 **/pyemmo.egg-info
 *.pos
 *.pre
@@ -44,6 +45,7 @@ tests/GMSH_TEST_PATH
 tests/GETDP_TEST_PATH
 .python-version
 .coverage
+.python-version
 
 
 # specific files to not ignore

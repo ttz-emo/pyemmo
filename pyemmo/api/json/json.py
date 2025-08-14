@@ -82,7 +82,9 @@ def createMachine(
     maschineSurfDict = modelJSON.createMachineGeometryFromSegment(
         segmentSurfDict, symFactor
     )
+    logging.debug("Calling gmsh.model.occ.remove_all_duplicates()")
     gmsh_api.model.occ.remove_all_duplicates()
+    logging.debug("Calling gmsh_api.model.occ.synchronize()")
     gmsh_api.model.occ.synchronize()
 
     # check mesh sizes after import! Due to issues with OCC it can happen that points
