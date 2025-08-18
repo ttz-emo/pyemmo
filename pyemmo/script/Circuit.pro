@@ -19,7 +19,6 @@ Group {
 	// 	segement (resistance + inductance) and bar (axial) resistance
 	All_EndRingResistancesRotor += Region[ { } ] ;
 	All_EndRingInductancesRotor += Region[ { } ] ;
-	All_BarResistancesRotor += Region[ { } ] ;
 	For k In {1:nbrRotorBars}
 		Ruers~{k} = Region[{(60000+k)}]; // resistance per endring segment
 		Rlers~{k} = Region[{(70000+k)}]; // resistance per endring segment
@@ -35,7 +34,7 @@ Group {
 	Resistance_Cir  = Region[{ }]; // All resistances in the circuit
 	Inductance_Cir  = Region[{ }]; // All inductances in the circuit
 
-	Resistance_Cir  += Region[{ All_EndRingResistancesRotor, All_BarResistancesRotor }];
+	Resistance_Cir  += Region[{ All_EndRingResistancesRotor }];
 	Inductance_Cir  += Region[{ All_EndRingInductancesRotor }];
 
 	// Why do we need to define Source_Cir and Z_Cir separately?
