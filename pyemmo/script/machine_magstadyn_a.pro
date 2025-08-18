@@ -729,7 +729,7 @@ Formulation {
       // if we have an estimation of the resistance of DomainB, via e.g. measurements
       // which is better to account for the end windings...
 
-      If(Flag_Cir)
+      If(Flag_Cir || Flag_Cir_RotorCage)
 	      GlobalTerm { NeverDt[ Dof{Uz}                , {Iz} ] ; In Resistance_Cir ; }
         GlobalTerm { NeverDt[ Resistance[] * Dof{Iz} , {Iz} ] ; In Resistance_Cir ; }
 

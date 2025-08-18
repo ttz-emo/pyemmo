@@ -39,11 +39,13 @@ Group {
 
 	// Why do we need to define Source_Cir and Z_Cir separately?
 	DomainSource_Cir = Region[ { } ] ;
-	If (Flag_SrcType_Stator != CEMF_SOURCE)
-		Resistance_Cir += #{R1,R2,R3,Rp1,Rp2,Rp3};
-		DomainSource_Cir += #{Input1,Input2,Input3};
-	Else
-		Resistance_Cir += #{Rp1,Rp2,Rp3};
+	If (Flag_Cir)
+		If (Flag_SrcType_Stator != CEMF_SOURCE)
+			Resistance_Cir += #{R1,R2,R3,Rp1,Rp2,Rp3};
+			DomainSource_Cir += #{Input1,Input2,Input3};
+		Else
+			Resistance_Cir += #{Rp1,Rp2,Rp3};
+		EndIf
 	EndIf
 	// Why do we need to define Source_Cir and Z_Cir separately?
 	DomainZ_Cir = Region[ {Resistance_Cir, Inductance_Cir} ];
@@ -56,13 +58,15 @@ Group {
 // =====================================================================================
 
 Function {
-	If (Flag_SrcType_Stator != CEMF_SOURCE)
-		// If source type is not back-emf in circuit
-		// Set resistance of phase resistance domain to R_wire parameter
-		Resistance[#{R1,R2,R3}] = R_wire;
+	If (Flag_Cir)
+		If (Flag_SrcType_Stator != CEMF_SOURCE)
+			// If source type is not back-emf in circuit
+			// Set resistance of phase resistance domain to R_wire parameter
+			Resistance[#{R1,R2,R3}] = R_wire;
+		EndIf
+		// Set terminal resistance to R_terminal parameter
+		Resistance[#{Rp1,Rp2,Rp3}] = R_terminal;
 	EndIf
-	// Set terminal resistance to R_terminal parameter
-	Resistance[#{Rp1,Rp2,Rp3}] = R_terminal;
 }
 
 // =====================================================================================
@@ -70,85 +74,87 @@ Function {
 // =====================================================================================
 
 Function {
-  For k In {1:nbrRotorBars} //existing numbers of rotor Bars in the model
-	NB1~{k} =  400+k; // first node number for each rotor bar
-	NB2~{k} =  500+k; // second node number for extra rotor bar resistance
-  // Each rotor bar has Node NB1 -> NB2 for the coupling with the bar voltage
-	NIM1~{k} = 700+k; // upper intermediate node number for each rotor bar connection
-	NIM2~{k} = 800+k; // lower intermediate node number for each rotor bar connection
-  EndFor
+  If (Flag_Cir_RotorCage)
+	For k In {1:nbrRotorBars} //existing numbers of rotor Bars in the model
+		NB1~{k} =  400+k; // first node number for each rotor bar
+		NB2~{k} =  500+k; // second node number for extra rotor bar resistance
+	// Each rotor bar has Node NB1 -> NB2 for the coupling with the bar voltage
+		NIM1~{k} = 700+k; // upper intermediate node number for each rotor bar connection
+		NIM2~{k} = 800+k; // lower intermediate node number for each rotor bar connection
+	EndFor
 
-  // If only one pole is simulated in the model, the end rings of the A and B
-  // sides must be crossed. If one or more pole pairs are simulated, they do not.
-  If (NbrPolesInModel == 1)
-    For k In {1:nbrRotorBars}
-      // Upper Branch
-      NRu1~{k} = NB1~{k}; // first node number for upper endring resistance
-      // second node number for each endring resistance:
-      NRu2~{k} = NIM1~{k}; // = intermediate node
+	// If only one pole is simulated in the model, the end rings of the A and B
+	// sides must be crossed. If one or more pole pairs are simulated, they do not.
+	If (NbrPolesInModel == 1)
+		For k In {1:nbrRotorBars}
+		// Upper Branch
+		NRu1~{k} = NB1~{k}; // first node number for upper endring resistance
+		// second node number for each endring resistance:
+		NRu2~{k} = NIM1~{k}; // = intermediate node
 
-      NLu1~{k} = NRu2~{k}; // first node number for each endring inductance (= output of resistance)
-      // second node number for each endring inductance:
-      k2 = (k<nbrRotorBars) ? k+1 : 1.; // We need this since in the next inline
-      // if statement, the first and second option will both be evaluated at
-      // runtime, even if only one of the option is used (like in a real if-case).
-      NLu2~{k} = (k<nbrRotorBars) ? NB1~{k2} : NB2~{1} ;
+		NLu1~{k} = NRu2~{k}; // first node number for each endring inductance (= output of resistance)
+		// second node number for each endring inductance:
+		k2 = (k<nbrRotorBars) ? k+1 : 1.; // We need this since in the next inline
+		// if statement, the first and second option will both be evaluated at
+		// runtime, even if only one of the option is used (like in a real if-case).
+		NLu2~{k} = (k<nbrRotorBars) ? NB1~{k2} : NB2~{1} ;
 
-      // Lower Branch
-      NRl1~{k} = NB2~{k}; // first node number for lower endring resistance
-      // second node number for lower endring resistance:
-      NRl2~{k} = NIM2~{k}; // = lower intermediate node
+		// Lower Branch
+		NRl1~{k} = NB2~{k}; // first node number for lower endring resistance
+		// second node number for lower endring resistance:
+		NRl2~{k} = NIM2~{k}; // = lower intermediate node
 
-      NLl1~{k} = NRl2~{k}; // first node number for lower endring inductance (= output of lower resistance)
-      // second node number for lower endring inductance:
-      NLl2~{k} = (k<nbrRotorBars) ? NB2~{k2} : NB1~{1} ;
-    EndFor
+		NLl1~{k} = NRl2~{k}; // first node number for lower endring inductance (= output of lower resistance)
+		// second node number for lower endring inductance:
+		NLl2~{k} = (k<nbrRotorBars) ? NB2~{k2} : NB1~{1} ;
+		EndFor
 
-    ElseIf (NbrPolesInModel>1 && !(NbrPolesInModel%2))
-      For k In {1:nbrRotorBars}
-        // NR1~{k} = NB1~{k}; // first node number for each endring resistance
-        // k2 = (k<nbrRotorBars) ? k+1 : 1.;
-        // // second node number for each endring resistance:
-        // NR2~{k} = (k<nbrRotorBars) ? NB1~{k2} : NB1~{1} ;
-        // NL1~{k} = NB2~{k}; // first node number for each endring inductance
-        // // second node number for each endring inductance:
-        // NL2~{k} = (k<nbrRotorBars) ? NB2~{k2} : NB2~{1} ;
+		ElseIf (NbrPolesInModel>1 && !(NbrPolesInModel%2))
+		For k In {1:nbrRotorBars}
+			// NR1~{k} = NB1~{k}; // first node number for each endring resistance
+			// k2 = (k<nbrRotorBars) ? k+1 : 1.;
+			// // second node number for each endring resistance:
+			// NR2~{k} = (k<nbrRotorBars) ? NB1~{k2} : NB1~{1} ;
+			// NL1~{k} = NB2~{k}; // first node number for each endring inductance
+			// // second node number for each endring inductance:
+			// NL2~{k} = (k<nbrRotorBars) ? NB2~{k2} : NB2~{1} ;
 
-        // Upper Branch
-        NRu1~{k} = NB1~{k}; // first node number for upper endring resistance
-        // second node number for each endring resistance:
-        NRu2~{k} = NIM1~{k}; // = intermediate node
+			// Upper Branch
+			NRu1~{k} = NB1~{k}; // first node number for upper endring resistance
+			// second node number for each endring resistance:
+			NRu2~{k} = NIM1~{k}; // = intermediate node
 
-        NLu1~{k} = NRu2~{k}; // first node number for each endring inductance (=
-        // output of resistance)
-        // second node number for each endring inductance:
-        k2 = (k<nbrRotorBars) ? k+1 : 1.; // We need this since in the next
-        // inline if statement, the first and second option will both be
-        // evaluated at runtime, even if only one of the option is used (like in
-        // a real if-case).
-        NLu2~{k} = (k<nbrRotorBars) ? NB1~{k2} : NB1~{1} ;
+			NLu1~{k} = NRu2~{k}; // first node number for each endring inductance (=
+			// output of resistance)
+			// second node number for each endring inductance:
+			k2 = (k<nbrRotorBars) ? k+1 : 1.; // We need this since in the next
+			// inline if statement, the first and second option will both be
+			// evaluated at runtime, even if only one of the option is used (like in
+			// a real if-case).
+			NLu2~{k} = (k<nbrRotorBars) ? NB1~{k2} : NB1~{1} ;
 
-        // Lower Branch
-        NRl1~{k} = NB2~{k}; // first node number for lower endring resistance
-        // second node number for lower endring resistance:
-        NRl2~{k} = NIM2~{k}; // = lower intermediate node
+			// Lower Branch
+			NRl1~{k} = NB2~{k}; // first node number for lower endring resistance
+			// second node number for lower endring resistance:
+			NRl2~{k} = NIM2~{k}; // = lower intermediate node
 
-        NLl1~{k} = NRl2~{k}; // first node number for lower endring inductance (=
-        // output of lower resistance)
-        // second node number for lower endring inductance:
-        NLl2~{k} = (k<nbrRotorBars) ? NB2~{k2} : NB2~{1} ;
-    EndFor
-  Else
-    Printf[
-      "Unbalanced number of poles (%.0f) for ASM Cage Circuit",
-      NbrPolesInModel
-    ];
-  EndIf
-  // The values for the endring segments must scaled to 1 meter because in
-  // the electromagnetic formulation from the machine_magstdyn_a.pro the
-  // resulting voltage drop given to the circuit is in V/m!
-  Resistance[All_EndRingResistancesRotor] = R_endring_segment/AxialLength_R;
-  Inductance[All_EndRingInductancesRotor] = L_endring_segment/AxialLength_R;
+			NLl1~{k} = NRl2~{k}; // first node number for lower endring inductance (=
+			// output of lower resistance)
+			// second node number for lower endring inductance:
+			NLl2~{k} = (k<nbrRotorBars) ? NB2~{k2} : NB2~{1} ;
+		EndFor
+	Else
+		Printf[
+		"Unbalanced number of poles (%.0f) for ASM Cage Circuit",
+		NbrPolesInModel
+		];
+	EndIf
+	// The values for the endring segments must scaled to 1 meter because in
+	// the electromagnetic formulation from the machine_magstdyn_a.pro the
+	// resulting voltage drop given to the circuit is in V/m!
+	Resistance[All_EndRingResistancesRotor] = R_endring_segment/AxialLength_R;
+	Inductance[All_EndRingInductancesRotor] = L_endring_segment/AxialLength_R;
+  EndIf// Flag_Cir_RotorCage
 }
 
 Constraint {
@@ -173,6 +179,7 @@ Constraint {
           { Region R3            ; Branch {303,300} ; }
         }
       }*/
+  If (Flag_Cir)
 	If (
 		(NbrRegions[Stator_Ind_Ap] > 1 || NbrRegions[Stator_Ind_Am] > 1) ||
 		(NbrRegions[Stator_Ind_Bp] > 1 || NbrRegions[Stator_Ind_Bm] > 1) ||
@@ -194,128 +201,131 @@ Constraint {
 			]
 		];
 	EndIf
+  EndIf
 {
 	Name ElectricalCircuit;
 	Type Network;
-	If(CircuitConnection == STAR_CONNECTION)
-		Case Circuit1 {
-			If (Flag_SrcType_Stator != CEMF_SOURCE) // not back-emf
-				// for phase A
-				{Region Input1; 		Branch {1,3};}
-				{Region Rp1;			Branch {1,3};}
-				{Region R1; 			Branch {3,31};}
+	If (Flag_Cir)
+		If(CircuitConnection == STAR_CONNECTION)
+			Case Circuit1 {
+				If (Flag_SrcType_Stator != CEMF_SOURCE) // not back-emf
+					// for phase A
+					{Region Input1; 		Branch {1,3};}
+					{Region Rp1;			Branch {1,3};}
+					{Region R1; 			Branch {3,31};}
 
-				If (NbrRegions[Stator_Ind_Ap] == 1 && NbrRegions[Stator_Ind_Am] == 1)
-					// There are positive and negative stator winding regions
-					{Region Stator_Ind_Ap;	Branch {31,32};}
-					{Region Stator_Ind_Am;	Branch {5,32};}
-				ElseIf (NbrRegions[Stator_Ind_Am] == 1)
-					// Only negative wound stator winding region
-					{Region Stator_Ind_Am;	Branch {31,5};}
-				ElseIf (NbrRegions[Stator_Ind_Ap] == 1)
-					// Only positive stator winding region
-					{Region Stator_Ind_Ap;	Branch {5,31};}
+					If (NbrRegions[Stator_Ind_Ap] == 1 && NbrRegions[Stator_Ind_Am] == 1)
+						// There are positive and negative stator winding regions
+						{Region Stator_Ind_Ap;	Branch {31,32};}
+						{Region Stator_Ind_Am;	Branch {5,32};}
+					ElseIf (NbrRegions[Stator_Ind_Am] == 1)
+						// Only negative wound stator winding region
+						{Region Stator_Ind_Am;	Branch {31,5};}
+					ElseIf (NbrRegions[Stator_Ind_Ap] == 1)
+						// Only positive stator winding region
+						{Region Stator_Ind_Ap;	Branch {5,31};}
+					EndIf
+
+					// for phase B
+					{Region Input2; 		Branch {1,4};}
+					{Region Rp2;			Branch {1,4};}
+					{Region R2; 			Branch {4,41};}
+
+					If (NbrRegions[Stator_Ind_Bp] == 1 && NbrRegions[Stator_Ind_Bm] == 1)
+						// There are positive and negative stator winding regions
+						{Region Stator_Ind_Bp;	Branch {41,42};}
+						{Region Stator_Ind_Bm;	Branch {5,42};}
+
+					ElseIf (NbrRegions[Stator_Ind_Bm] == 1)
+						// Only negative wound stator winding region
+						{Region Stator_Ind_Bm;	Branch {41,5};}
+					ElseIf (NbrRegions[Stator_Ind_Bp] == 1)
+						// Only positive stator winding region
+						{Region Stator_Ind_Bp;	Branch {5,41};}
+					EndIf
+
+					// for phase C
+					{Region Input3; 		Branch {1,2};}
+					{Region Rp3;			Branch {1,2};}
+					{Region R3; 			Branch {2,21};}
+					If (NbrRegions[Stator_Ind_Cp] == 1 && NbrRegions[Stator_Ind_Cm] == 1)
+						// There are positive and negative stator winding regions
+						{Region Stator_Ind_Cp;	Branch {21,22};}
+						{Region Stator_Ind_Cm;	Branch {5,22};}
+					ElseIf (NbrRegions[Stator_Ind_Cm] == 1)
+						// Only negative wound stator winding region
+						{Region Stator_Ind_Cm;	Branch {21,5};}
+					ElseIf (NbrRegions[Stator_Ind_Cp] == 1)
+						// Only positive stator winding region
+						{Region Stator_Ind_Cp;	Branch {5,21};}
+					EndIf
+
+				Else
+					// If source type is back-emf, skip soure and phase resistances
+					{Region Stator_Ind_Ap;	Branch {1,2};}
+					{Region Stator_Ind_Am;	Branch {3,2};}
+					{Region Rp1;	Branch {3,1}; }
+
+					{Region Stator_Ind_Bp;	Branch {1,4};}
+					{Region Stator_Ind_Bm;	Branch {5,4};}
+					{Region Rp2;	Branch {5,1}; }
+
+					{Region Stator_Ind_Cp;	Branch {1,6};}
+					{Region Stator_Ind_Cm;	Branch {7,6};}
+					{Region Rp3;	Branch {7,1}; }
 				EndIf
+			}
+		// } // End Star connection
+		ElseIf (CircuitConnection == DELTA_CONNECTION)
+			// {
+			// Name ElectricalCircuit;
+			// Type Network;
+			Case Circuit1 {
+				If (Flag_SrcType_Stator != CEMF_SOURCE) // not back-emf
+					{Region Input1; 		Branch {1,3};}
+					{Region Rp1;			Branch {1,3};}
+					{Region R1; 			Branch {3,7};}
+					{Region Stator_Ind_Ap;	Branch {7,8};}
+					{Region Stator_Ind_Am;	Branch {9,8};}
+					{Region Input2; 		Branch {1,4};}
+					{Region Rp2;			Branch {1,4};}
+					{Region R2; 			Branch {4,5};}
+					{Region Stator_Ind_Bp;	Branch {5,6};}
+					{Region Stator_Ind_Bm;	Branch {7,6};}
+					{Region Input3; 		Branch {1,2};}
+					{Region Rp3;			Branch {1,2};}
+					{Region R3; 			Branch {2,9};}
+					{Region Stator_Ind_Cp;	Branch {9,10};}
+					{Region Stator_Ind_Cm;	Branch {5,10};}
+				Else // back EMF in circuit
+					{Region Stator_Ind_Ap;	Branch {7,8};}
+					{Region Stator_Ind_Am;	Branch {9,8};}
+					{Region Rp1;	Branch {9,7}; }
 
-				// for phase B
-				{Region Input2; 		Branch {1,4};}
-				{Region Rp2;			Branch {1,4};}
-				{Region R2; 			Branch {4,41};}
+					{Region Stator_Ind_Bp;	Branch {5,6};}
+					{Region Stator_Ind_Bm;	Branch {7,6};}
+					{Region Rp2;	Branch {7,5}; }
 
-				If (NbrRegions[Stator_Ind_Bp] == 1 && NbrRegions[Stator_Ind_Bm] == 1)
-					// There are positive and negative stator winding regions
-					{Region Stator_Ind_Bp;	Branch {41,42};}
-					{Region Stator_Ind_Bm;	Branch {5,42};}
-
-				ElseIf (NbrRegions[Stator_Ind_Bm] == 1)
-					// Only negative wound stator winding region
-					{Region Stator_Ind_Bm;	Branch {41,5};}
-				ElseIf (NbrRegions[Stator_Ind_Bp] == 1)
-					// Only positive stator winding region
-					{Region Stator_Ind_Bp;	Branch {5,41};}
+					{Region Stator_Ind_Cp;	Branch {9,10};}
+					{Region Stator_Ind_Cm;	Branch {5,10};}
+					{Region Rp3;	Branch {5,9}; }
 				EndIf
-
-				// for phase C
-				{Region Input3; 		Branch {1,2};}
-				{Region Rp3;			Branch {1,2};}
-				{Region R3; 			Branch {2,21};}
-				If (NbrRegions[Stator_Ind_Cp] == 1 && NbrRegions[Stator_Ind_Cm] == 1)
-					// There are positive and negative stator winding regions
-					{Region Stator_Ind_Cp;	Branch {21,22};}
-					{Region Stator_Ind_Cm;	Branch {5,22};}
-				ElseIf (NbrRegions[Stator_Ind_Cm] == 1)
-					// Only negative wound stator winding region
-					{Region Stator_Ind_Cm;	Branch {21,5};}
-				ElseIf (NbrRegions[Stator_Ind_Cp] == 1)
-					// Only positive stator winding region
-					{Region Stator_Ind_Cp;	Branch {5,21};}
-				EndIf
-
-			Else
-				// If source type is back-emf, skip soure and phase resistances
-				{Region Stator_Ind_Ap;	Branch {1,2};}
-				{Region Stator_Ind_Am;	Branch {3,2};}
-				{Region Rp1;	Branch {3,1}; }
-
-				{Region Stator_Ind_Bp;	Branch {1,4};}
-				{Region Stator_Ind_Bm;	Branch {5,4};}
-				{Region Rp2;	Branch {5,1}; }
-
-				{Region Stator_Ind_Cp;	Branch {1,6};}
-				{Region Stator_Ind_Cm;	Branch {7,6};}
-				{Region Rp3;	Branch {7,1}; }
+			}
+		// } // End Delta connection
+		Else
+			// Pass since there just is no stator circuit!
+			If Flag_SrcType_Stator != CURRENT_SOURCE
+				// Make sure source type does not include circuit (=Current source),
+				// otherwise raise an error!
+				Error[
+					Sprintf[
+						"Invalid circuit connection type: %d. Use %d for star or %d for delta.",
+						CircuitConnection, STAR_CONNECTION, DELTA_CONNECTION
+					]
+				];
 			EndIf
-		}
-	// } // End Star connection
-	ElseIf (CircuitConnection == DELTA_CONNECTION)
-		// {
-		// Name ElectricalCircuit;
-		// Type Network;
-		Case Circuit1 {
-			If (Flag_SrcType_Stator != CEMF_SOURCE) // not back-emf
-				{Region Input1; 		Branch {1,3};}
-				{Region Rp1;			Branch {1,3};}
-				{Region R1; 			Branch {3,7};}
-				{Region Stator_Ind_Ap;	Branch {7,8};}
-				{Region Stator_Ind_Am;	Branch {9,8};}
-				{Region Input2; 		Branch {1,4};}
-				{Region Rp2;			Branch {1,4};}
-				{Region R2; 			Branch {4,5};}
-				{Region Stator_Ind_Bp;	Branch {5,6};}
-				{Region Stator_Ind_Bm;	Branch {7,6};}
-				{Region Input3; 		Branch {1,2};}
-				{Region Rp3;			Branch {1,2};}
-				{Region R3; 			Branch {2,9};}
-				{Region Stator_Ind_Cp;	Branch {9,10};}
-				{Region Stator_Ind_Cm;	Branch {5,10};}
-			Else // back EMF in circuit
-				{Region Stator_Ind_Ap;	Branch {7,8};}
-				{Region Stator_Ind_Am;	Branch {9,8};}
-				{Region Rp1;	Branch {9,7}; }
-
-				{Region Stator_Ind_Bp;	Branch {5,6};}
-				{Region Stator_Ind_Bm;	Branch {7,6};}
-				{Region Rp2;	Branch {7,5}; }
-
-				{Region Stator_Ind_Cp;	Branch {9,10};}
-				{Region Stator_Ind_Cm;	Branch {5,10};}
-				{Region Rp3;	Branch {5,9}; }
-			EndIf
-		}
-	// } // End Delta connection
-	Else
-		// Pass since there just is no stator circuit!
-		If Flag_SrcType_Stator != CURRENT_SOURCE
-			// Make sure source type does not include circuit (=Current source),
-			// otherwise raise an error!
-			Error[
-				Sprintf[
-					"Invalid circuit connection type: %d. Use %d for star or %d for delta.",
-					CircuitConnection, STAR_CONNECTION, DELTA_CONNECTION
-				]
-			];
-		EndIf
-	EndIf
+		EndIf // CircuitConnection
+	EndIf // Flag_Cir
 	If (Flag_Cir_RotorCage)
 		Case Circuit4 {
 		For k In {1:nbrRotorBars}

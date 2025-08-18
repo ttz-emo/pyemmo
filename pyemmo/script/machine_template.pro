@@ -938,7 +938,7 @@ Function
 
 FUNCTION_CODE
 
-If(Flag_Cir)
+If(Flag_Cir || Flag_Cir_RotorCage)
     // include circuit constraints for the stator and rotor circuit
     Include "Circuit.pro";
 EndIf
