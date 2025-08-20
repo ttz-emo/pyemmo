@@ -463,15 +463,25 @@ def runCalcforCurrent(param: dict) -> dict:
     # simulation_res_dir is the actual res folder joined from the global RES_DIR and
     # ResId (which is the folder name).
     simulation_res_dir = os.path.join(RES_DIR, param["getdp"]["ResId"])
-    if "Flag_ClearResults" in param["getdp"] and os.path.isdir(simulation_res_dir):
-        if param["getdp"]["Flag_ClearResults"]:
-            logging.warning(
-                "Removing previous results from folder: %s",
-                simulation_res_dir,
-            )
-            for res_file in os.listdir(simulation_res_dir):
-                os.remove(os.path.join(simulation_res_dir, res_file))
-            os.rmdir(simulation_res_dir)
+    # check if there are already result files in it
+    dat, pos = ([], [])
+    try:
+        dat, pos = import_results.get_result_files(simulation_res_dir)
+    # pylint: disable=locally-disabled, bare-except
+    except:
+        pass
+
+    if os.path.isdir(simulation_res_dir) and (
+        ("Flag_ClearResults" in param["getdp"] and param["getdp"]["Flag_ClearResults"])
+        or (not dat and not pos)  # folder exists but not results in it!
+    ):
+        logging.warning(
+            "Removing previous results from folder: %s",
+            simulation_res_dir,
+        )
+        for res_file in os.listdir(simulation_res_dir):
+            os.remove(os.path.join(simulation_res_dir, res_file))
+        os.rmdir(simulation_res_dir)
 
     post_operations = param["PostOp"] if "PostOp" in param else []
 
