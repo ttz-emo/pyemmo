@@ -1155,7 +1155,12 @@ PostProcessing {
       //   // Actual Phase current = int {Jz dA} / nbrOfSurfaces / nbrWires * nbrParallelPaths
       //   Integral { [ CompZ[ js[] ] * Idir[] / nbrSlotSurfsPerPhase / NbWires[] * NbrParallelPaths]; In DomainS ; Jacobian Vol ; Integration I1 ;}
       // } } //
-      { Name ir ; Value { Term { [ {ir} ] ; In Inds ; Jacobian Vol ; } } }
+      // PP for DomainB
+      { Name ir ; Value { Term { [ {ir} ] ; In DomainB ; Jacobian Vol ; } } }
+      // Voltage density over stator winding
+      { Name u_R; Value{ Term{ [ Resistance[] * CompZ[{ir}]];                  In DomainB; Jacobian Vol;}}}
+      // Actual voltage drop over winding resistance on stator Winding
+      { Name U_R; Value{ Term {[  Resistance[] * {Ib}]; In DomainB; }}}
       // eddy currents in laminations:
       { Name p_Lam ; Value { Term { [ 1/density[]*Fac_Lam[]*SquNorm[Dt[{d a}]] ] ; In Domain_Lam ; Jacobian Vol ; } } }
       { Name P_Lam ; Value { Integral { [ SymmetryFactor*axialLength[]*Fac_Lam[]*SquNorm[Dt[{d a}]] ]; In Domain_Lam ; Jacobian Vol ; Integration I1 ; } } }
@@ -1408,6 +1413,18 @@ PostOperation Debug UsingPost MagStaDyn_a_2D{
     Print[
       Resistance[PhaseC], OnGlobal, Format Table, LastTimeStepOnly,
       File > StrCat[ResDir,"R_C",ExtGnuplot], SendToServer StrCat[poV,"R_C"]{0}
+    ];
+    Print[
+      ir, OnElementsOf DomainB, File StrCat[ResDir, "ir", ExtGmsh], LastTimeStepOnly,
+      Name "ir on DomainB"
+    ];
+    Print[
+      u_R, OnElementsOf DomainB, File StrCat[ResDir, "u_R", ExtGmsh], LastTimeStepOnly,
+      Name "u_R on DomainB"
+    ];
+    Print[
+      U_R, OnRegion PhaseA, Format Table, LastTimeStepOnly,
+      File > StrCat[ResDir,"U_RA",ExtGnuplot], SendToServer StrCat[poV,"U_RA"]{0}
     ];
 
   EndIf
