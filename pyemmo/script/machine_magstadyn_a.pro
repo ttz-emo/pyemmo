@@ -1134,16 +1134,20 @@ PostProcessing {
       { Name dta  ; Value { Term { [ Dt[{a}] ]; In DomainC ; Jacobian Vol ; } } }
       { Name dta_ur  ; Value { Term { [ Dt[{a}]+{ur} ]; In DomainC ; Jacobian Vol ; } } }
       { Name j  ; Value {
-          Term { [ -sigma[]*(Dt[{a}]+{ur}) ]; In DomainC ; Jacobian Vol ; }
-          Term { [ js[] ] ;                   In DomainS ; Jacobian Vol ; }
-          Term {
-            [ axialLength[] * NbWires[]/SurfCoil[] * Dt[ {a} ] - NbWires[]/SurfCoil[] * {ir} ];
-            In DomainB ; Jacobian Vol ;
+          Term { [ -sigma[]*(Dt[{a}]+{ur}) ];       In DomainC ; Jacobian Vol ; }
+          Term { [ js[] ] ;                         In DomainS ; Jacobian Vol ; }
+          Term { [ -NbWires[]/SurfCoil[] * {ir} ];  In DomainB ; Jacobian Vol ; }
         }
-      } }
+      }
       { Name js ; Value { Term { [ js[] ] ;      In DomainS ; Jacobian Vol ; } } }
       { Name jz ; Value { Term { [ CompZ[-sigma[]*(Dt[{a}]+{ur})] ]; In DomainC ; Jacobian Vol ; } } }
-      { Name intJz ; Value { Integral { [ CompZ[-sigma[]*(Dt[{a}]+{ur})] ]; In DomainC ; Jacobian Vol ; Integration I1; } } }
+      // Integral over current density results in Ampere-Turns for wound areas (DomainS and DomainB)
+      { Name intJz ; Value {
+        Integral { [ CompZ[-sigma[]*(Dt[{a}]+{ur})] ];      In DomainC ; Jacobian Vol ; Integration I1; }
+        Integral { [ CompZ[ js[] ] ];                       In DomainS ; Jacobian Vol ; Integration I1; }
+        Integral { [ CompZ[-NbWires[]/SurfCoil[] * {ir}] ]; In DomainB ; Jacobian Vol ; Integration I1; }
+        }
+      }
       // { Name intSigma ; Value { Integral { [ sigma[] ]; In DomainC ; Jacobian Vol ; } } }
       { Name Vmag ; Value { Term { [ CompZ[js[]] * SurfaceArea[]  ]; In DomainS ; Jacobian Vol ; } } } // magnetic voltage (magentische Durchflutung /Theta der Wicklung) [A Turns]
       { Name I_n ; Value { Term { [ CompZ[js[]] * SurfaceArea[] / NbWires[]  ]; In DomainS ; Jacobian Vol ; } } } // Shows the actual current in the specified coil region [A]
