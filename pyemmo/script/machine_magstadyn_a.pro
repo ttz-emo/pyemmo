@@ -571,6 +571,7 @@ FunctionSpace {
 
   { Name Hregion_i_Mag_2D ; Type Vector ;
     BasisFunction {
+      // Single Value of ir over each slot surface, ir (local) = Ib (global)
       { Name sr ; NameOfCoef ir ; Function BF_RegionZ ;
         Support DomainB ; Entity DomainB ; }
     }
@@ -721,6 +722,8 @@ Formulation {
       Galerkin { DtDof [ axialLength[] * NbWires[]/SurfCoil[] * Dof{a} , {ir} ] ;
         In DomainB ; Jacobian Vol ; Integration I1 ; }
       GlobalTerm { [ Dof{Ub}/SymmetryFactor , {Ib} ] ; In DomainB ; }
+      // Rb[] = Factor_R_3DEffects*axialLength[]*FillFactor_Winding*NbWires[]^2/SurfCoil[]/sigma[] ;
+      // Rb = f_3D * l_ax * k_cu * N^2 / A_Coil / sigma_Cu
       Galerkin { [ Rb[]/SurfCoil[]* Dof{ir} , {ir} ] ;
         In DomainB ; Jacobian Vol ; Integration I1 ; } // Resistance term
 
@@ -869,7 +872,7 @@ Resolution {
       EndIf
 
       If (Flag_AnalysisType == 1)
-        Printf["Time loop from t_0 = %fs to t_max = %fs with dt = %es", time0, timemax, delta_time];
+        Printf["Time loop from t_0 = %es to t_max = %es with dt = %es", time0, timemax, delta_time];
         Printf["Executing %.1f steps", Ceil[(timemax-time0)/delta_time]];
         TimeLoopTheta[time0, timemax, delta_time, 1.]{
           // Euler implicit (1) -- Crank-Nicolson (0.5)
