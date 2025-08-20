@@ -1314,8 +1314,8 @@ poV     = StrCat[po,"1Voltage [V]/"];
 poF     = StrCat[po,"2Flux linkage [Vs]/"];
 poJL    = StrCat[po,"3Joule Losses [W]/"];
 po_mec  = StrCat["Output - Mechanics/", ResId];
-po_mecT = StrCat[po_mec,"0Torque [Nm] "];
-po_mecS = StrCat[po_mec,"1Surface [m²] "];
+po_mecT = StrCat[po_mec,"0Torque [Nm]/"];
+po_mecS = StrCat[po_mec,"1Surface [m²]/"];
 
 //-------------------------------------------------------------------------------------------
 // The post Operation block defines the Calculations to be actually calcuated (before we simply defined the formulas on how  to calculate it). Each PostOperation has a Name and is linked to a PostProcessing defined before, the name of this PostProcessing is given after the UsingPost statement below.
@@ -1331,26 +1331,26 @@ PostOperation Debug UsingPost MagStaDyn_a_2D{
   //   "   EndIf",
   //   "EndFor"], File StrCat[ResDir, "tmp.geo"], LastTimeStepOnly] ;
 
-// #######################################################
+  // #######################################################
   // Axial length with function definition works fine...
   // Integral over axial length function divided by SurfaceArea[] results in mean axial length of integration surface:
   Print[
     intAxLen[Stator_Airgap], OnGlobal, Format Table, LastTimeStepOnly,
     File StrCat[ResDir,"Integral_axLen_AirgapStator",ExtGnuplot],
-    SendToServer StrCat[po_mec,"Int axLen[StLu2] over SurfaceArea[]"]{0}, Color "LightYellow"
+    SendToServer StrCat[po_mec,"Axial Length Stator Airgap [m]"]{0}, Color "LightYellow"
   ];
   // Show surface area of stator airgap
   Print[
     surf[Stator_Airgap], OnGlobal, Format Table, LastTimeStepOnly,
     File StrCat[ResDir,"Surf_StLu2",ExtGnuplot],
-    SendToServer StrCat[po_mecS,"Surf StLu2"]{0}, Color "LightYellow"
+    SendToServer StrCat[po_mecS,"Stator Airgap"]{0}, Color "LightYellow"
   ];
   // Print axial length on domain
   Print[
     axLen, OnElementsOf Domain, LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps,
     File StrCat[ResDir,"AxialeLaenge",ExtGmsh]
   ] ;
-// #######################################################
+  // #######################################################
 
   // Print[ Vmag, OnElementsOf DomainS, File StrCat[ResDir,"magDurchflutung",ExtGmsh], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps ] ;
   // Print[ I_n, OnElementsOf DomainS, File StrCat[ResDir,"Current",ExtGmsh], LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps ] ;
@@ -1365,6 +1365,12 @@ PostOperation Debug UsingPost MagStaDyn_a_2D{
   //   File StrCat[ResDir,"brad",ExtGmsh] ];
   // Print[ b_tangent, OnGrid{(r_AG)*Sin[Pi/nbrSlots-$A*Pi/180],(r_AG)*Cos[Pi/nbrSlots-$A*Pi/180],0 }{0:360/SymmetryFactor,0,0},
   //   File StrCat[ResDir,"btan",ExtGmsh] ];
+  // Print[
+  //   I_S[PhaseA], OnGlobal, Format TimeTable, LastTimeStepOnly,
+  //   File>StrCat[ResDir,"Ia",ExtGnuplot],
+  //   SendToServer StrCat[poI,"A"]{0}, Color "Pink"
+  // ];
+
   If (nbrRotorBars>0)
     Print[
       j, OnElementsOf Rotor_Bars, File StrCat[ResDir, "j_bars", ExtGmsh],
@@ -1372,24 +1378,24 @@ PostOperation Debug UsingPost MagStaDyn_a_2D{
     ];
 
     If (Flag_Cir_RotorCage)
-      For iBar In {1:nbrRotorBars}
+    //   For iBar In {1:nbrRotorBars}
         // Print[
         //   I, OnRegion Rotor_Bar~{iBar}, Format Table,
         //   File > StrCat[ResDir,"I_bar_", Sprintf["%.0f",iBar], ExtGnuplot], LastTimeStepOnly,
         //   SendToServer StrCat[poI,"I (Bar ",Sprintf["%.0f",iBar], ")"]{0}, Color "LightYellow",
         //   StoreInVariable $I_Bar~{iBar}
         // ];
-        Print[
-          U, OnRegion Rotor_Bar~{iBar}, Format Table,
-          File > StrCat[ResDir,"U_bar_", Sprintf["%.0f",iBar], ExtGnuplot], LastTimeStepOnly,
-          SendToServer StrCat[poI,"U (Bar ",Sprintf["%.0f",iBar], ")"]{0}, Color "LightYellow"
-        ];
+        // Print[
+        //   U, OnRegion Rotor_Bar~{iBar}, Format Table,
+        //   File > StrCat[ResDir,"U_bar_", Sprintf["%.0f",iBar], ExtGnuplot], LastTimeStepOnly,
+        //   SendToServer StrCat[poV,Sprintf["Rotor Bars/Bar %.0f",iBar]]{0}, Color "LightYellow"
+        // ];
         // Print[
         //   ComplexPower[Rotor_Bar~{iBar}], OnGlobal, Format Table,
         //   File > StrCat[ResDir,"P_bar_", Sprintf["%.0f",iBar],ExtGnuplot], LastTimeStepOnly,
         //   SendToServer StrCat[poI,"P_complex (Bar ",Sprintf["%.0f",iBar], ")"]{0}, Color "LightRed"
         // ];
-      EndFor
+      // EndFor
       Print[
         intJz[Rotor_Bar_1], OnGlobal, Format Table,
         File > StrCat[ResDir,"intJz_bar_1",ExtGnuplot], LastTimeStepOnly,
@@ -1404,15 +1410,15 @@ PostOperation Debug UsingPost MagStaDyn_a_2D{
     ];
     Print[
       Resistance[PhaseA], OnGlobal, Format Table, LastTimeStepOnly,
-      File > StrCat[ResDir,"R_A",ExtGnuplot], SendToServer StrCat[poV,"R_A"]{0}
+      File > StrCat[ResDir,"R_A",ExtGnuplot], SendToServer StrCat[po,"/Reistance/A"]{0}
     ];
     Print[
       Resistance[PhaseB], OnGlobal, Format Table, LastTimeStepOnly,
-      File > StrCat[ResDir,"R_B",ExtGnuplot], SendToServer StrCat[poV,"R_B"]{0}
+      File > StrCat[ResDir,"R_B",ExtGnuplot], SendToServer StrCat[po,"/Reistance/B"]{0}
     ];
     Print[
       Resistance[PhaseC], OnGlobal, Format Table, LastTimeStepOnly,
-      File > StrCat[ResDir,"R_C",ExtGnuplot], SendToServer StrCat[poV,"R_C"]{0}
+      File > StrCat[ResDir,"R_C",ExtGnuplot], SendToServer StrCat[po,"/Reistance/C"]{0}
     ];
     Print[
       ir, OnElementsOf DomainB, File StrCat[ResDir, "ir", ExtGmsh], LastTimeStepOnly,
@@ -1588,7 +1594,7 @@ PostOperation Get_GlobalQuantities UsingPost MagStaDyn_a_2D {
   Print[
     RotorPosition_deg, OnRegion DomainDummy, Format Table, LastTimeStepOnly,
     File>StrCat[ResDir, "RotorPos_deg",ExtGnuplot],
-    SendToServer StrCat[po,"10Rotor position"]{0}, Color "LightYellow"
+    SendToServer StrCat[po_mec,"9Rotor position [deg]"]{0}, Color "LightYellow"
   ];
 
   If (Flag_Lam)
@@ -1726,30 +1732,21 @@ PostOperation Get_GlobalQuantities UsingPost MagStaDyn_a_2D {
   // Get global values for induction machine rotor circuit
   If (Flag_Cir_RotorCage)
     Print[
-      I, OnRegion Rotor_Bars, Format Table,
-      File > StrCat[ResDir,"I_bars",ExtGnuplot], LastTimeStepOnly,
-      SendToServer StrCat[poI,"ROTOR"]{0}, Color "LightYellow"
+      I, OnRegion Rotor_Bars, Format Table, File > StrCat[ResDir,"I_bars",ExtGnuplot],
+      LastTimeStepOnly
     ];
     Print[
-      U, OnRegion Rotor_Bars, Format Table,
-      File > StrCat[ResDir,"U_bars",ExtGnuplot], LastTimeStepOnly,
-      SendToServer StrCat[poV,"ROTOR"]{0}, Color "LightYellow"
+      I, OnRegion Rotor_Bar_1, Format ValueOnly, LastTimeStepOnly,
+      SendToServer StrCat[poI,"0Rotor Bar 1"]{0}, Color "LightYellow"
     ];
-    // Print[
-    //   I_S[PhaseA], OnGlobal, Format TimeTable, LastTimeStepOnly,
-    //   File>StrCat[ResDir,"Ia",ExtGnuplot],
-    //   SendToServer StrCat[poI,"A"]{0}, Color "Pink"
-    // ];
-    // Print[
-    //   I_S[PhaseB], OnRegion DomainDummy, Format Table, LastTimeStepOnly,
-    //   File>StrCat[ResDir,"Ib",ExtGnuplot],
-    //   SendToServer StrCat[poI,"B"]{0}, Color "Yellow"
-    // ];
-    // Print[
-    //   I_S[PhaseC], OnRegion DomainDummy, Format Table, LastTimeStepOnly,
-    //   File>StrCat[ResDir,"Ic",ExtGnuplot],
-    //   SendToServer StrCat[poI,"C"]{0}, Color "LightGreen"
-    // ];
+    Print[
+      U, OnRegion Rotor_Bars, Format Table, File > StrCat[ResDir,"U_bars",ExtGnuplot],
+      LastTimeStepOnly
+    ];
+    Print[
+      U, OnRegion Rotor_Bar_1, Format ValueOnly, LastTimeStepOnly,
+      SendToServer StrCat[poV,"0Rotor Bar 1"]{0}, Color "LightYellow"
+    ];
   EndIf
 
   // Calculate the Flux linkage
@@ -1817,23 +1814,23 @@ PostOperation Get_Torque_VW UsingPost MagStaDyn_a_2D {
 PostOperation GetInducedVoltages UsingPost MagStaDyn_a_2D {
   If (Flag_SrcType_Stator != CEMF_SOURCE)
     Print[ InducedVoltage[PhaseA], OnGlobal, Format Table,
-      LastTimeStepOnly, SendToServer StrCat[po,"Induced Voltage","A"]{0},
+      LastTimeStepOnly, SendToServer StrCat[poV,"Induced Voltage","A"]{0},
       File>StrCat[ResDir,"InducedVoltageA",ExtGnuplot], Color "Pink"];
     Print[ InducedVoltage[PhaseB], OnGlobal, Format Table,
-      LastTimeStepOnly, SendToServer StrCat[po,"Induced Voltage","B"]{0},
+      LastTimeStepOnly, SendToServer StrCat[poV,"Induced Voltage","B"]{0},
       File>StrCat[ResDir,"InducedVoltageB",ExtGnuplot], Color "Yellow"];
     Print[ InducedVoltage[PhaseC], OnGlobal, Format Table,
-      LastTimeStepOnly, SendToServer StrCat[po,"Induced Voltage","C"]{0},
+      LastTimeStepOnly, SendToServer StrCat[poV,"Induced Voltage","C"]{0},
       File>StrCat[ResDir,"InducedVoltageC",ExtGnuplot], Color "LightGreen"];
   Else
     Print[ U, OnRegion Rp1, Format Table,
-      LastTimeStepOnly, SendToServer StrCat[po,"Induced Voltage","A"]{0},
+      LastTimeStepOnly, SendToServer StrCat[poV,"Winding/Induced Voltage","A"]{0},
       File>StrCat[ResDir,"InducedVoltageA",ExtGnuplot], Color "Pink"];
     Print[ U, OnRegion Rp2, Format Table,
-      LastTimeStepOnly, SendToServer StrCat[po,"Induced Voltage","B"]{0},
+      LastTimeStepOnly, SendToServer StrCat[poV,"Winding/Induced Voltage","B"]{0},
       File>StrCat[ResDir,"InducedVoltageB",ExtGnuplot], Color "Yellow"];
     Print[ U, OnRegion Rp3, Format Table,
-      LastTimeStepOnly, SendToServer StrCat[po,"Induced Voltage","C"]{0},
+      LastTimeStepOnly, SendToServer StrCat[poV,"Winding/Induced Voltage","C"]{0},
       File>StrCat[ResDir,"InducedVoltageC",ExtGnuplot], Color "LightGreen"];
   EndIf
 }
