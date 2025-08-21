@@ -1087,18 +1087,16 @@ class Script:
         domainList.extend(self._createWindingDomains(statorPhysicalsDict).values())
 
         # append domains to identify linear and non-linear surfaces
-        nonLinearDomainID = DOMAIN_NON_LINEAR
         nonLinearDomain = Domain(
             "DomainNL",
-            rotorPhysicalsDict[nonLinearDomainID]
-            + statorPhysicalsDict[nonLinearDomainID],
+            rotorPhysicalsDict[DOMAIN_NON_LINEAR]
+            + statorPhysicalsDict[DOMAIN_NON_LINEAR],
         )
         domainList.append(nonLinearDomain)
 
-        linearDomainID = DOMAIN_LINEAR
         linearDomain = Domain(
             "DomainL",
-            rotorPhysicalsDict[linearDomainID] + statorPhysicalsDict[linearDomainID],
+            rotorPhysicalsDict[DOMAIN_LINEAR] + statorPhysicalsDict[DOMAIN_LINEAR],
         )
         domainList.append(linearDomain)
 
