@@ -773,6 +773,8 @@ Resolution {
       // Bar resistance node-group IDs in circuit only in range 400-500
       If (nbrRotorBars>99)
         Error["Max. number of rotor bars is 99!"];
+      ElseIf (!Exists[SurfCoil])
+        Error["Missing value for single coil surface (Function SurfCoil). Make sure Domain_SurfCoil is set correctly."];
       EndIf
       Evaluate[$ID=ID]; // set the runtime variables
       Evaluate[$IQ=IQ];

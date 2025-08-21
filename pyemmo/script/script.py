@@ -23,11 +23,11 @@
 # make all annotations strings, to avoid import errors in type checking case
 from __future__ import annotations
 
-# import warnings
 import logging
 import os
 import re
 import shutil
+from collections import defaultdict
 from math import isclose, pi
 from os.path import abspath, join
 from typing import TYPE_CHECKING, Literal
@@ -1020,9 +1020,6 @@ class Script:
         """
         domainList: list[Domain] = []
 
-        # Workaround for stator circuit:
-        self._fix_winding_physicals()
-
         statorPhysicalsDict = self.machine.stator.sortPhysicals()
         rotor = self.machine.rotor
         rotorPhysicalsDict = rotor.sortPhysicals()
@@ -1080,11 +1077,28 @@ class Script:
         )
         statorPhysicalsDict[DOMAIN_CONDUCTING].clear()
 
+        # create additional slot domains for excitations
+        # create slot domains "Stator_Ind_Ap" ... and Domain_SurfCoil
+        slot_domains, domain_SurfCoil = self._createWindingDomains()
+        # add domains to domain list
+        domainList.extend(slot_domains)
+        domainList.append(domain_SurfCoil)
+        # fix stator domains since old slot physicals are still in them
+        # remove old slot physicals from stator domains
+        all_slots = self.machine.stator.slots
+        slot_linear_domain = (
+            DOMAIN_LINEAR if all_slots[0].material.linear else DOMAIN_NON_LINEAR
+        )
+        for slot in all_slots:
+            statorPhysicalsDict[DOMAIN_NON_CONDUCTING].remove(slot)
+            statorPhysicalsDict[slot_linear_domain].remove(slot)
+        # add new slot physicals to stator domains
+        new_slots = [slot for domain in slot_domains for slot in domain.physicals]
+        statorPhysicalsDict[DOMAIN_NON_CONDUCTING].extend(new_slots)
+        statorPhysicalsDict[slot_linear_domain].extend(new_slots)
+
         # add stator domains to domain list
         domainList.extend(self._createDomains(statorPhysicalsDict, statorDomainDict))
-
-        # create additional slot domains for excitations
-        domainList.extend(self._createWindingDomains(statorPhysicalsDict).values())
 
         # append domains to identify linear and non-linear surfaces
         nonLinearDomain = Domain(
@@ -1229,42 +1243,83 @@ class Script:
                 [self.machine.stator.physicalElements.remove(slot) for slot in slots]
                 self.machine.stator.physicalElements.append(new_slot)
 
-    def _createWindingDomains(
-        self, domainDict: dict[str, list[PhysicalElement]]
-    ) -> dict[str, Domain]:
+    def _createWindingDomains(self) -> tuple[list[Domain], Domain]:
         """
-        This function creates the winding domains for a 3-phase stator:
-        Domain names are: Stator_Ind{A,B,C}{p,n}
+        This function creates new winding domains for a 3-phase stator:
+        Domain names are: Stator_Ind{A,B,C}{p,n} (GetDP template) and Domain_SlotSurf
+        for a single slot surface used to calculate the current density.
+
+        Create new slot physicals to ensure that each winding phase and direction is
+        represented by a single physical surface.
+        This is necessary for the use of the stator winding ciruit in GetDP.
+        This method organizes the stator slots into groups based on their phase angle
+        and winding direction.
+        If multiple slots belong to the same phase and direction, they are combined into
+        a single physical element.
+        The new physical element is created with the combined geometrical elements and
+        properties of the grouped slots.
+
+        Steps:
+        1. Group slots by their phase angle and winding direction.
+        2. For each group with more than one slot:
+           - Create a new physical element combining the geometrical elements of the slots.
         """
-        # create dict of slots
-        slotDomainDict: dict[str, Domain] = {}
-        # FIXME: use try-except statment instead of for loop!
-        for domain, physicalsList in domainDict.items():
-            # for i, (domain, physicalsList) in enumerate(domainDict.items()):
-            if domain == "domainS":
-                # TODO: This implies that all slots are in domainS
-                for slot in physicalsList:
-                    if slot.type == "Slot":
-                        slot: Slot = slot
-                        phaseName = slot.getPhase("ABC")
-                        slotDomainName = (
-                            "Stator_Ind_"
-                            + phaseName
-                            + ("p" if slot.windDirection == 1 else "m")
-                        )
-                        if slotDomainName not in slotDomainDict:
-                            # add domain to slot dict
-                            slotDomainDict[slotDomainName] = Domain(
-                                slotDomainName, slot
-                            )
-                        else:
-                            # add slot to existing domain
-                            slotDomainDict[slotDomainName].addPhysicalElements([slot])
-                    # else:
-                    # FIXME: if physical element in domainS is not type Slot:
-                    # should there be an Error or Warning?
-                return slotDomainDict
-        return None
+        all_slots = self.machine.stator.slots
+        if not all_slots:
+            raise ValueError(
+                "Can not create winding domains since there are not slot physicals in "
+                "Script.machine.stator!"
+            )
+        # For the use of the stator circuit we need to provide a single physical surface
+        # for each winding phase + direction (so one physical for phase U+, one for U-,
+        # one for V+, ...). So we need to sort the individual slots into their phase and
+        # winding direction.
+        # Create a dict with phase angle and winding direction as key
+        slot_dict: dict[float, list[Slot]] = defaultdict(list)
+        for slot in all_slots:
+            slot_dict[(slot.phase, slot.windDirection)].append(slot)
+        if len(slot_dict) not in (3, 6):
+            raise ValueError(
+                "Number of winding domains must be 3 (one pole) or 6 (two or more poles)"
+            )
+
+        # for each phase angle and winding direction
+        # create a new physical element combining the slots of phase and direction and
+        # create a separate Domain calles Stator_Ind_<phase><direction>
+        slot_domains: list[Domain] = []  # init slot domain list
+        for (phase, direction), slots in slot_dict.items():
+            logging.debug(
+                "Creating new Physical for slots of phase %s",
+                angle2phase(phase),
+            )
+            # create new physical element (Slot) for the slots of the same phase and
+            # winding direction
+            slot_surtfaces = [surface for slot in slots for surface in slot.geo_list]
+            combined_physical = Slot(
+                (
+                    "Stator_Ind_"
+                    + angle2phase(phase, "ABC")
+                    + ("p" if direction == 1 else "m")
+                ),
+                slot_surtfaces,
+                material=slots[0].material,
+                windingDir=direction,
+                phase=phase,
+                nbrTurns=slots[0].nbrTurns,
+            )
+            if combined_physical.name in (domain.name for domain in slot_domains):
+                raise ValueError(
+                    "Stator_Ind domains for stator windings must be unique!"
+                )
+            # add domain to slot dict
+            slot_domains.append(Domain(combined_physical.name, combined_physical))
+            # add new slot physical to other domains
+
+        # add the unique domain "Domain_SurfCoil" only for the first
+        # slot physical that is found. This will be used to calculate
+        # the current density in the slots in GetDP!
+        domain_surfcoil = Domain("Domain_SurfCoil", all_slots[0])
+        return slot_domains, domain_surfcoil
 
     def addPostOperation(self, quantityName: str, name: str, **kwargs) -> None:
         r"""Add a new PostOperation (Print) statement

@@ -80,7 +80,8 @@ Group
         Rotor_Magnets,
         Stator_Ind_Am, Stator_Ind_Bm, Stator_Ind_Cm,
         Stator_Ind_Ap, Stator_Ind_Bp, Stator_Ind_Cp,
-        Rotor_Bars
+        Rotor_Bars,
+        Domain_SurfCoil // Domain for single slot surface area calculation
     ];
 }
 
@@ -142,7 +143,7 @@ DefineConstant[
         Name StrCat[INPUT_ANA_SETTINGS, "05Angle Increment"],
         Visible Flag_ExpertMode && Flag_AnalysisType == TRANSIENT,
         ReadOnly RPM==0,
-        Units "deg mech",
+        Units "deg mech"
     },
 
 
@@ -818,10 +819,21 @@ Function
         // Surf_Airgap_r[] = SurfaceArea[]{MBR_AIR_SURF};
         // Surf_Airgap_s[] = SurfaceArea[]{MBS_AIR_SURF};
     Else
-        RegionListAp() = GetRegions[Stator_Ind_Ap]; // found new function GetRegions[] which retruns the group-list
+        RegionListAp() = GetRegions[Domain_SurfCoil]; // found new function GetRegions[] which retruns the group-list
         //                         RegionListAp(0): accesses the first element of the list which is a region number
-        SurfCoil[] = SurfaceArea[]{RegionListAp(0)}; // save the area of on coil(side) in SurfCoil for current density calculation
-        // Surf_Airgap_r[] = SurfaceArea[]{Region[Rotor_Airgap]}; // seems to be unused
+        If (#RegionListAp()==0)
+            // If Domain_SurfCoil is empty
+            Printf(
+                StrCat(
+                    "WARNING: The Group 'Domain_SurfCoil' was empty! ",
+                    "We need at least one single slot surface physical in Domain_SurfCoil ",
+                    "to determine the slot surface for current density calculation!"
+                )
+            );
+        Else
+            SurfCoil[] = SurfaceArea[]{RegionListAp(0)}; // save the area of on coil(side) in SurfCoil for current density calculation
+            // Surf_Airgap_r[] = SurfaceArea[]{Region[Rotor_Airgap]}; // seems to be unused
+        EndIf
         If (MachineType==ASYNCHRONOUS) // && nbrRotorBars > 0
             RegionListBars() = GetRegions[Rotor_Bars];
             SurfBar[] = SurfaceArea[]{RegionListBars(0)};
