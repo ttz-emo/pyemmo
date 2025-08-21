@@ -104,7 +104,8 @@ DefineConstant[
         (nbrRotorBars > 0), Name StrCat[INPUT_ANA_SETTINGS, "00Machine Type"],
         Choices {SYNCHRONOUS = "Synchronous", ASYNCHRONOUS = "Asynchronous"},
         Visible Flag_Debug,
-        ReadOnly 1
+        ReadOnly 1,
+        Highlight "LightGray"
     },
 
     Flag_AnalysisType = {
@@ -138,9 +139,10 @@ DefineConstant[
 
     d_theta = {
         (RPM!=0) ? ANGLE_INCREMENT : 0. ,
-        Name StrCat[INPUT_ANA_SETTINGS, "05Angle Increment [mech deg]"],
+        Name StrCat[INPUT_ANA_SETTINGS, "05Angle Increment"],
         Visible Flag_ExpertMode && Flag_AnalysisType == TRANSIENT,
-        ReadOnly RPM==0
+        ReadOnly RPM==0,
+        Units "deg mech",
     },
 
 
@@ -169,6 +171,7 @@ DefineConstant[
         Name StrCat[INPUT_ANA_SETTINGS, "06Final rotor position"],
         Visible Flag_ExpertMode && Flag_AnalysisType == TRANSIENT,
         ReadOnly MachineType==ASYNCHRONOUS,
+        Highlight StrChoice[MachineType==ASYNCHRONOUS, "LightGray", "White"],
         Help "Final rotor position",
         Units "deg mech"
     },
@@ -180,22 +183,18 @@ DefineConstant[
             : (nbrStatorPeriods*nbrStepsPerPeriod + 1),
         Name StrCat[INPUT_ANA_SETTINGS, "10Number of Time Steps"],
         Visible Flag_ExpertMode && Flag_AnalysisType == TRANSIENT,
-        ReadOnly 1
+        ReadOnly 1,
+        Highlight "LightGray"
     },
 
     SymmetryFactor = {
         SYMMETRY_FACTOR, Name StrCat[INPUT_ANA_SETTINGS, "Symmetry Factor"],
         ReadOnly 1,
+        Highlight "LightGray",
         Visible Flag_Debug
     },
 
     Flag_Symmetry = SymmetryFactor > 1,
-    // Flag_Symmetry = {SymmetryFactor > 1,
-    //             Choices{0, 1},
-    //             Name StrCat[INPUT_ANA_SETTINGS, "91Use symmetry"],
-    //             ReadOnly 1,
-    //             Visible Flag_ExpertMode},
-
     NbrPolesInModel = (Flag_Symmetry) ? NbrPolesTot / SymmetryFactor : NbrPolesTot,
 
     // -------------------------------------------------------------------------
@@ -467,7 +466,8 @@ DefineConstant[
         ID_RMS * Sqrt[2], Name StrCat[INPUT_ELEC_EXCITATION, "02ID"],
         Units "A",
         Visible Flag_Debug && Flag_SrcType_Stator == 1 && MachineType==SYNCHRONOUS,
-        ReadOnly 1
+        ReadOnly 1,
+        Highlight "LightGray"
     },
 
     IQ_RMS = {
@@ -480,7 +480,8 @@ DefineConstant[
         IQ_RMS * Sqrt[2],Name StrCat[INPUT_ELEC_EXCITATION, "03IQ"],
         Units "A",
         Visible Flag_Debug && Flag_SrcType_Stator == 1 && MachineType==SYNCHRONOUS,
-        ReadOnly 1
+        ReadOnly 1,
+        Highlight "LightGray"
     },
 
     I0 = {
@@ -530,25 +531,26 @@ DefineConstant[
         Flag_SrcType_Stator == TRANSIENT && MachineType==SYNCHRONOUS,
         Name StrCat[INPUT_ELEC_EXCITATION, "Use Clark-Park-Transformation"],
         Choices {0,1},
-        ReadOnly 1
+        ReadOnly 1,
+        Highlight "LightGray"
     },
 
     VV = {
-        12, Name StrCat[INPUT_ELEC, "Input Voltage Amplitude"],
+        12, Name StrCat[INPUT_ELEC_EXCITATION, "Input Voltage Amplitude"],
         Units "V",
         Visible Flag_SrcType_Stator == VOLTAGE_SOURCE,
         Help "Amplitude of the input voltage (in case of voltage input)"
     },
 
     R_wire = {
-        500e-3, Name StrCat[INPUT_ELEC, "Connection (Wire-)Resistance"],
+        500e-3, Name StrCat[INPUT_ELEC_EXCITATION, "Connection (Wire-)Resistance"],
         Units "Ohm",
         Visible Flag_Cir
     },
 
     R_terminal = {
         1e12, // Default value is very high so its like open circuit if not set
-        Name StrCat[INPUT_ELEC, "Terminal Connection Resistance"],
+        Name StrCat[INPUT_ELEC_EXCITATION, "Terminal Connection Resistance"],
         Units "Ohm",
         Help StrCat[
             "Terminal connection resistance to account for in short circuit case. ",
@@ -558,7 +560,7 @@ DefineConstant[
     }
 
     CircuitConnection = {
-        0, Name StrCat[INPUT_ELEC, "Winding Type"],
+        0, Name StrCat[INPUT_ELEC_WINDINGS, "Winding Type"],
         Choices{
             STAR_CONNECTION = "Star Connection", // 0
             DELTA_CONNECTION = "Delta Connection" // 1
@@ -568,7 +570,7 @@ DefineConstant[
 
     // Phase angle of the voltage
     pA_deg = {
-        0, Name StrCat[INPUT_ELEC, "Current System Offset"],
+        0, Name StrCat[INPUT_ELEC_EXCITATION, "Current System Offset"],
         Units "deg",
         Help "Offset angle for (sinusoidal) stator phase currents/voltages",
         Visible !Flag_ParkTransformation
@@ -834,19 +836,22 @@ Function
             (MachineType==SYNCHRONOUS)?(n * NbrPolePairs):freq_rotor + NbrPolePairs * n,
             Name StrCat[INPUT_ELEC_EXCITATION, "Stator Frequency"],
             Units "Hz",
-            ReadOnly 1
+            ReadOnly 1,
+            Highlight "LightGray"
         },
         n_sync = {
             freq_stator / NbrPolePairs,
             Name StrCat[INPUT_ELEC_EXCITATION, "Synchronous Speed"],
             Units "Hz",
             ReadOnly 1,
+            Highlight "LightGray",
             Visible MachineType == ASYNCHRONOUS
         },
         slip = {
             1 - n/n_sync,
             Name StrCat[INPUT_ELEC_EXCITATION, "Slip"],
             ReadOnly 1,
+            Highlight "LightGray",
             Visible MachineType == ASYNCHRONOUS
         }
         asm_finalrotor_pos = 360*(nbrStatorPeriods/freq_stator)*n
