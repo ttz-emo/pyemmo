@@ -1530,7 +1530,7 @@
     ],
     "Material": {
       "name": {
-        "wert": "Copper"
+        "wert": "copper"
       },
       "dichte": {
         "wert": 8920
