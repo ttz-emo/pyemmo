@@ -863,6 +863,8 @@ Function
             Ceil[(asm_finalrotor_pos - initrotor_pos) / (d_theta) + 1]
         ];
     EndIf
+    // Update value to calculate correct parameters when loading script!
+    finalrotor_pos = GetNumber[StrCat[INPUT_ANA_SETTINGS, "06Final rotor position"]];
     // electrical period
     T = 1 / freq_stator;
     // electrical pulsation
