@@ -1184,65 +1184,6 @@ class Script:
                     )
         return domainList
 
-    def _fix_winding_physicals(self) -> None:
-        """
-        Adjusts the winding physical elements (Slot objects) of the stator to ensure
-        that each winding phase and direction is represented by a single physical
-        surface. This is necessary for the use of the stator winding ciruit in GetDP.
-        This method organizes the stator slots into groups based on their phase angle
-        and winding direction. If multiple slots belong to the same phase and direction,
-        they are combined into a single physical element. The new physical element is
-        created with the combined geometrical elements and properties of the grouped slots.
-        Steps:
-        1. Group slots by their phase angle and winding direction.
-        2. For each group with more than one slot:
-           - Create a new physical element combining the geometrical elements of the slots.
-           - Replace the individual slots in the stator's physical elements with the new
-             combined physical element.
-
-        Returns:
-        - None
-        """
-        # For the use of the stator circuit we need to provide a single physical surface
-        # for each winding phase + direction (so one physical for phase U+, one for U-,
-        # one for V+, ...). So we need to sort the individual slots into their phase and
-        # winding direction.
-        # Create a dict with phase angle and winding direction as key
-        slot_dict: dict[float, list[Slot]] = {}
-        for slot in self.machine.stator.slots:
-            if (slot.phase, slot.windDirection) not in slot_dict:
-                slot_dict[(slot.phase, slot.windDirection)] = [slot]
-            else:
-                slot_dict[(slot.phase, slot.windDirection)].append(slot)
-        # for each phase angle and winding direction
-        for phase_dir, slots in slot_dict.items():
-            # if there is more than one Slot:
-            if len(slots) > 1:
-                logging.debug(
-                    "Creating new physical for slots of phase %s",
-                    angle2phase(phase_dir[0]),
-                )
-                # create new physical element (Slot) for the slots of the same phase and
-                # winding direction
-                slot_surfs = []
-                for slot in slots:
-                    slot_surfs.extend(slot.geo_list)
-                new_slot = Slot(
-                    (
-                        "Stator Inds "
-                        + angle2phase(phase_dir[0])
-                        + ("p" if phase_dir[1] == 1 else "m")
-                    ),
-                    slot_surfs,
-                    material=slots[0].material,
-                    windingDir=phase_dir[1],
-                    phase=phase_dir[0],
-                    nbrTurns=slots[0].nbrTurns,
-                )
-                # remove current slots for physicals and replace them with new slot:
-                [self.machine.stator.physicalElements.remove(slot) for slot in slots]
-                self.machine.stator.physicalElements.append(new_slot)
-
     def _createWindingDomains(self) -> tuple[list[Domain], Domain]:
         """
         This function creates new winding domains for a 3-phase stator:
