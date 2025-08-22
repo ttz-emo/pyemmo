@@ -247,8 +247,18 @@ Function {
   // density[DomainM]  	    = dens_mag;
 
   // Calculation of the phase resistance (approximation)
-  Rb[] = Factor_R_3DEffects*axialLength[]*FillFactor_Winding*NbWires[]^2/SurfCoil[]/sigma[] ;
-  Resistance[Region[{Stator_Inds}]] = Rb[] ;
+  // Rb[] = Factor_R_3DEffects * axialLength[] * FillFactor_Winding * NbWires[]^2 / SurfCoil[] / sigma[] ;
+  // Resistance[Region[{Stator_Inds}]] = Rb[] ;
+  // Use pre-defined Resistance for stranded conductors in winding domains
+  DefineConstant[
+    R_S = {
+      2 * L_AX_S * 0.4 * (nbrTurns*nbrSlots/3)^2 / (0.25/3*(1.6^2+1)*r_AG^2*Pi) / sigma_cu,
+      Name StrCat[INPUT_ELEC_WINDINGS, "03Resistance"],
+      Units "Ohm",
+      Visible (Flag_SrcType_Stator==VOLTAGE_SOURCE)
+    }
+  ];
+  Resistance[Region[{Stator_Inds}]] = R_S ;
 
   // definition of the current direction (1=positive z, -1=negative z)
   Idir[Region[{Stator_IndsP, Rotor_IndsP}]] =  1 ;
@@ -724,10 +734,10 @@ Formulation {
       GlobalTerm { [ Dof{Ub}/SymmetryFactor , {Ib} ] ; In DomainB ; }
       // Rb[] = Factor_R_3DEffects*axialLength[]*FillFactor_Winding*NbWires[]^2/SurfCoil[]/sigma[] ;
       // Rb = f_3D * l_ax * k_cu * N^2 / A_Coil / sigma_Cu
-      Galerkin { [ Rb[]/SurfCoil[]* Dof{ir} , {ir} ] ;
-        In DomainB ; Jacobian Vol ; Integration I1 ; } // Resistance term
+      // Galerkin { [ Rb[]/SurfCoil[]* Dof{ir} , {ir} ] ;
+      //   In DomainB ; Jacobian Vol ; Integration I1 ; } // Resistance term
 
-      // GlobalTerm { [ Resistance[]  * Dof{Ib} , {Ib} ] ; In DomainB ; }
+      GlobalTerm { [ Resistance[] / SymmetryFactor  * Dof{Ib} , {Ib} ] ; In DomainB ; }
       // The above term can replace the resistance term:
       // if we have an estimation of the resistance of DomainB, via e.g. measurements
       // which is better to account for the end windings...
