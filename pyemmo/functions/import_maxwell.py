@@ -23,8 +23,10 @@ from __future__ import annotations
 import csv
 import os
 
+import numpy as np
 
-def import_tab_maxwell(filepath: str) -> tuple[list[str], list[list[str]]]:
+
+def import_tab_maxwell(filepath: str) -> tuple[list[str], np.ndarray]:
     """Function to import data from an ANSYS Maxwell tab delimited file.
 
     Args:
@@ -34,8 +36,8 @@ def import_tab_maxwell(filepath: str) -> tuple[list[str], list[list[str]]]:
         ValueError: If extension is not .tab or file does not exist.
 
     Returns:
-        Tuple[list[str], list[list[str]]]: A tuple containing a list of identifiers and
-                                            a list of data vectors.
+        Tuple[list[str], numpy.ndarray]]: A tuple containing a list of identifiers and
+            a corresponding array of data.
 
     Example usage:
 
@@ -44,7 +46,7 @@ def import_tab_maxwell(filepath: str) -> tuple[list[str], list[list[str]]]:
         file = f"{RES_DIR}/testExportMaxwellData.tab"
         ids, data = importTabMaxwell(file)
         print(ids)  # Should print the list of identifiers
-        print(data)  # Should print the list of data vectors
+        print(data)  # Should print the data array
     """
     # Check file path
     if not os.path.isfile(filepath):
@@ -54,26 +56,18 @@ def import_tab_maxwell(filepath: str) -> tuple[list[str], list[list[str]]]:
     if ext != ".tab":
         raise ValueError("Wrong extension for Maxwell data import: " + ext)
 
-    # Read the content of the file
+    # Read the first line of the file
     with open(filepath, encoding="utf-8") as tabFile:
-        lines = tabFile.readlines()
-
+        line = tabFile.readline()
     # Extract identifiers from the first line
-    identifiers = [id.strip('"\n') for id in lines[0].split("\t")]
+    identifiers = [id.strip('"\n') for id in line.split("\t")]
 
-    # Extract data from the remaining lines
-    data = []
-    for line in lines[1:]:
-        values = line.strip().split("\t")
-        data.append(values)
-
-    # Transpose the data to match the format
-    data = list(map(list, zip(*data)))
+    data = np.loadtxt(filepath, dtype=float, skiprows=1, delimiter="\t")
 
     return identifiers, data
 
 
-def import_csv_data(filepath: str) -> tuple[list[str], list[list[str]]]:
+def import_csv_data(filepath: str) -> tuple[list[str], np.ndarray]:
     """Function to import data from a CSV file.
 
     Args:
@@ -83,8 +77,8 @@ def import_csv_data(filepath: str) -> tuple[list[str], list[list[str]]]:
         FileNotFoundError: If the file at the given filepath does not exist.
 
     Returns:
-        Tuple[List[str], List[List[str]]]: A tuple containing a list of headers
-                                           and a list of rows.
+        Tuple[List[str], np.ndarray]: A tuple containing a list of headers
+            and a array of data values.
 
     Example usage:
 
@@ -104,6 +98,8 @@ def import_csv_data(filepath: str) -> tuple[list[str], list[list[str]]]:
     with open(filepath, encoding="utf-8") as file:
         csv_reader = csv.reader(file)
         headers = next(csv_reader)  # Read the first line as headers
-        rows = [row for row in csv_reader]  # Read the remaining rows
+        rows = list(csv_reader)  # Read the remaining rows
 
+    # convert string array to numpy
+    rows = np.array(rows, dtype=float)
     return headers, rows
