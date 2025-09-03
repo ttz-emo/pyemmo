@@ -22,39 +22,6 @@
 from __future__ import annotations
 
 from os import path
-from typing import TYPE_CHECKING
-
-from ..definitions import RESULT_DIR
-from . import clean_name
-
-if TYPE_CHECKING:
-    from ..script.material.material import Material
-
-
-def exportBH2Maxwell(material: Material, filepath: str = None) -> None:
-    """function to export the BH-Curve in ANSYS Maxwell readable format.
-
-    Args:
-        data (list): List of data vectors.
-        identifier (list[str]): List of data identifier for Maxwell like
-            "H (A_per_meter)" or "B (tesla)".
-        filepath (str, optional): File path to write the results to. File
-            extension must be ".tab"! Defaults to
-            PYEMMO_RESULTS_FOLDER/MATERIAL_NAME_BH.tab .
-    """
-    if material.linear:
-        raise ValueError(
-            f"Material {material.name} is linear! Can not export BH curve!"
-        )
-    bh = material.BH
-    b = bh[:, 0]
-    h = bh[:, 1]
-    header = ["H (A_per_meter)", "B (tesla)"]
-    if not filepath:
-        filepath = path.join(
-            RESULT_DIR, clean_name.clean_name(material.getName()) + "_BH.tab"
-        )
-    exportTabMaxwell([h, b], header, filepath)
 
 
 def exportTabMaxwell(data: list, identifier: list[str], filepath: str) -> None:

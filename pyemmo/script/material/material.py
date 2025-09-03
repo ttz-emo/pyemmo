@@ -747,13 +747,16 @@ class Material:
         """print the material information to console"""
         print(str(self))
 
-    def export_BH_tab(self, filepath: str = ""):
+    def export_BH_tab(self, filepath: str = "", interp: bool = False):
         """function to export the BH-Curve in ANSYS Maxwell readable format.
 
         Args:
             filepath (str, optional): File path to write the results to. File
                 extension must be ".tab"! Defaults to
                 PYEMMO_RESULTS_FOLDER/MATERIAL_NAME_BH.tab .
+            interp (bool, optional): If True, additional data points will be added
+                between the existing ones to avoid the interpolation done by Ansys
+                Maxwell internally.
         """
         if self.linear:
             raise ValueError(
@@ -762,6 +765,11 @@ class Material:
         bh = self.BH
         b = bh[:, 0]
         h = bh[:, 1]
+        if interp:
+            # squared distribution of H points for finer interpolation
+            Hinterp = np.linspace(0, 1, b.size * 100, endpoint=True) ** 2 * max(h)
+            b = np.interp(x=Hinterp, xp=h, fp=b)
+            h = Hinterp
         header = ["H (A_per_meter)", "B (tesla)"]
         if not filepath:
             filepath = os.path.join(RESULT_DIR, clean_name(self.name) + "_BH.tab")
