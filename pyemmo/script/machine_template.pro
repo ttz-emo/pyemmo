@@ -632,7 +632,7 @@ DefineConstant[ //Material definitions
     tempMag = {
         TEMP_MAG,
         Name StrCat[INPUT_MAT_PROPERTIES_MAGNET, "Magnet temperature [°C]"],
-        Visible Flag_ExpertMode && NbrRegions[Rotor_Magnets] > 0
+        Visible NbrRegions[Rotor_Magnets] > 0
     }
 ];
 
@@ -810,8 +810,7 @@ Function
     ];
 }
 
-Function
-{
+Function{
     NbWires[] = nbrTurns;                                          // number of turns
     If(Flag_3D)
         // // unused for now!
