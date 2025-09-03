@@ -884,7 +884,22 @@ Resolution {
       EndIf
 
       If (Flag_AnalysisType == 1)
-        Printf["Time loop from t_0 = %es to t_max = %es with dt = %es", time0, timemax, delta_time];
+        If (timemax>1)
+          Printf[
+            "Time loop from t_0 = %es to t_max = %fs with dt = %es",
+            time0, timemax, delta_time
+          ];
+        ElseIf (timemax>1e-3)
+          Printf[
+            "Time loop from t_0 = %fms to t_max = %fms with dt = %fms",
+            time0*1e3, timemax*1e3, delta_time*1e3
+          ];
+        Else
+          Printf[
+            "Time loop from t_0 = %fus to t_max = %fus with dt = %fus",
+            time0*1e6, timemax*1e6, delta_time*1e6
+          ];
+        EndIf
         Printf["Executing %.1f steps", Ceil[(timemax-time0)/delta_time]];
         TimeLoopTheta[time0, timemax, delta_time, 1.]{
           // Euler implicit (1) -- Crank-Nicolson (0.5)
@@ -896,7 +911,7 @@ Resolution {
               Ceil[(timemax-time0)/delta_time],
               ((Floor[$Time/delta_time]+1) / Ceil[(timemax-time0)/delta_time])*100
             },
-            Format "Step %.0f / %.0f  -  %.1f %%"];
+            Format "Step %.0f / %.0f  -  %.1f percent"];
           // Print[{$Time}, Format "Time: %f"];
           MeshMovingBand2D[MB];
           Evaluate[$RPos=RotorPosition_deg[]];
@@ -1101,7 +1116,8 @@ PostProcessing {
   EndIf // (Flag_Inductance)
 
   // New PostProcessing: MagStaDyn_a_2D
-  { Name MagStaDyn_a_2D;
+  {
+    Name MagStaDyn_a_2D;
     NameOfFormulation MagStaDyn_a_2D;
     NameOfSystem A;
     PostQuantity {
