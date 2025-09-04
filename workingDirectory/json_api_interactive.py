@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 import tkinter as tk
 from tkinter import filedialog
 
@@ -46,8 +47,14 @@ if os.path.isdir(model_folder):
     # get list of file from that folder that end with .json:
     file_list = [file for file in os.listdir(model_folder) if file.endswith(".json")]
     # extract parameter file path:
-    param_file_name = file_list.pop(file_list.index("simuInfo.json"))
-    param_file_path = os.path.join(model_folder, param_file_name)
+    param_file_path = ""
+    for file in file_list:
+        if re.match(r".*([sS]imu).*([iI]nfo).*(\.json)", file):
+            param_file_name = file_list.pop(file_list.index(file))
+            param_file_path = os.path.join(model_folder, param_file_name)
+            break
+    if not param_file_path:
+        raise FileNotFoundError("No parameter file found in model folder!")
     # there should only be one json file left which is the model file
     assert len(file_list) == 1, "There are multiple or no model file in the folder!"
     model_file_name = file_list[0]
