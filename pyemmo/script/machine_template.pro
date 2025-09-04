@@ -51,6 +51,12 @@ CURRENT_SOURCE = 1; // standard current source (no circuit)
 VOLTAGE_SOURCE = 2; // voltage source (with circuit)
 CEMF_SOURCE = 0; // back EMF in circuit
 
+// If the model is moved to a different folder and the default res folder does not exist
+// anymore, update the result folder to be the current folder:
+If (! FileExists[Str[PATH_RES]])
+    PATH_RES = AbsolutePath[StrCat[CurrentDir, "res"]];
+EndIf
+
 // Some script constants which are currently unused:
 DefineConstant[
     Flag_EW = 0,
