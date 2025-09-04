@@ -727,9 +727,12 @@ Formulation {
       //     Galerkin { DtDof [ Fac_Lam[] * Dof{d a} , {d a} ] ; In Domain_Lam ; Jacobian Vol ; Integration I1 ; }
       // EndIf
 
-      Galerkin { [ -NbWires[]/SurfCoil[] * Dof{ir} , {a} ] ;
-        In DomainB ; Jacobian Vol ; Integration I1 ; }
-      Galerkin { DtDof [ axialLength[] * NbWires[]/SurfCoil[] * Dof{a} , {ir} ] ;
+      // Current Density j = - N / S_Coil * I / a
+      Galerkin { [ -NbWires[]/SurfCoil[] * Dof{ir} / NbrParallelPaths, {a} ] ;
+      In DomainB ; Jacobian Vol ; Integration I1 ; }
+      // Induced Voltage =
+      //   SymmetryFactor * axialLength[] * NbWires[] / SurfCoil[] / NbrParallelPaths * Dt[CompZ[{a}]]
+      Galerkin { DtDof [ axialLength[] * NbWires[]/SurfCoil[] / NbrParallelPaths * Dof{a} , {ir} ] ;
         In DomainB ; Jacobian Vol ; Integration I1 ; }
       GlobalTerm { [ Dof{Ub}/SymmetryFactor , {Ib} ] ; In DomainB ; }
       // Rb[] = Factor_R_3DEffects*axialLength[]*FillFactor_Winding*NbWires[]^2/SurfCoil[]/sigma[] ;
