@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -67,9 +68,8 @@ class MovingBand(PhysicalElement):
             Defaults to False.
         """
         super().__init__(name=name, geo_list=geo_list, material=material)
-        # make sure geo elements are circle arcs
-        self.geo_list: list[CircleArc] = geo_list
-        self.radius = geo_list[0].radius
+        # call radius to make sure all geo elements are circle arcs with the same radius
+        self.radius
         # the physical element type can be used to identify physical elements
         self.physicalElementType = "MovingBand"
         ###Hilfslinien des Movingbands zur Ergänzung zum Vollkreis, bei einem Teilmodell.
@@ -88,25 +88,26 @@ class MovingBand(PhysicalElement):
     @property
     def radius(self) -> float:
         """Get the moving band radius"""
-        return self._radius
-
-    @radius.setter
-    def radius(self, mbRadius: float):
-        """setter of movingband radius
-
-        Args:
-            mbRadius (float): Movingband Radius
-
-        Raises:
-            ValueError: If the given radius does not match the radius of the given circle arcs.
-        """
-        for arc in self.geo_list:
-            if abs(arc.radius - mbRadius) > DEFAULT_GEO_TOL:
+        radius = self.geo_list[0].radius
+        for curve in self.geo_list:
+            if abs(curve.radius - radius) > DEFAULT_GEO_TOL:
                 raise (
                     ValueError(
-                        "Rotor Movingband domain got Circle Arc objects with different Radius:\n"
-                        + f"Movingband radius: {mbRadius}\n"
-                        + f"Radius of {arc.name}: {arc.radius}\n"
+                        f"Movingband '{self.name}' got arc objects with different radius:\n"
+                        + f"Radius curve 0: {radius}\n"
+                        + f"Radius curve {self.geo_list.index(curve)}: {curve.radius}\n"
                     )
                 )
-        self._radius = mbRadius
+        return radius
+
+    @radius.setter
+    def radius(self):
+        """
+        Raises:
+            AttributeError: MovingBand radius cannot be set!
+                It is determined by the radius of the curve in geo_list.
+        """
+        raise AttributeError(
+            "MovingBand radius cannot be set! "
+            "It is determined by the radius of the curves in geo_list."
+        )
