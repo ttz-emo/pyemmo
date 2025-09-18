@@ -195,6 +195,9 @@ class PhysicalElement:
         Args:
             geo_list (Union[List[Surface], List[Line]]): Geometrical elements
         """
+        # FIXME: PhysicalElement.geo_list can not be updated in Gmsh once the physical
+        # is created! This should probably raise an error or delete and recreate the
+        # physical group in Gmsh!
         # FIXME: No type checking implemented!
         self._geo_list = geo_list
         # run element type funtion to ensure there are not lines AND surfaces at the same time
