@@ -341,15 +341,26 @@ class GmshSurface(GmshGeometry, Surface):
             rgba = color
         # we need to test if the surface exists in the current model, because
         # gmsh.model.setColor() will not raise an error if the surface does not exist!
-        if (self.dim, self.id) not in gmsh.model.getEntities(self.dim):
-            raise RuntimeError(f"Surface {self.id=} does not exist!")
-        gmsh.model.setColor(
-            [(self.dim, self.id)],
-            int(rgba[0] * 255),
-            int(rgba[1] * 255),
-            int(rgba[2] * 255),
-            int(rgba[3] * 255),
-        )
+        try:
+            gmsh.model.setColor(
+                [(self.dim, self.id)],
+                int(rgba[0] * 255),
+                int(rgba[1] * 255),
+                int(rgba[2] * 255),
+                int(rgba[3] * 255),
+            )
+        except Exception as exce:
+            if "does not exist" in exce.args[0]:
+                gmsh.model.occ.synchronize()
+                gmsh.model.setColor(
+                    [(self.dim, self.id)],
+                    int(rgba[0] * 255),
+                    int(rgba[1] * 255),
+                    int(rgba[2] * 255),
+                    int(rgba[3] * 255),
+                )
+            else:
+                raise exce
 
     def setMeshLength(self, meshLength: float) -> None:
         """set the meshLength of all points of a surface.
@@ -433,8 +444,33 @@ class GmshSurface(GmshGeometry, Surface):
             dup_surf.setTool()
         return dup_surf
 
-    def mirror(self, planePoint, planeVector1, planeVector2, name=""):
-        raise NotImplementedError("Method not implemented yet!")
+    def mirror(self, plane_normal: tuple[float, float, float], offset=0.0, name=""):
+        """Mirror a surface across a plane defined by a normal vector and an offset.
+
+        The general equation of a plane is ax + by + cz + d = 0, where (a, b, c) are the
+        components of the normal vector (a vector perpendicular to the plane), and at
+        least one of a, b, or c must be non-zero. The offset d moves the plane along its
+        normal vector.
+
+        Be aware that the mirror function in Gmsh creates TrimmedCurve objects for the
+        boundary lines of the new surface!
+
+        Args:
+            plane_normal (tuple[float, float, float]): The normal vector of the plane
+            offset (float, optional): Plane offset along the normal. Defaults to 0.0.
+            name (str, optional): Name of the mirrored surface. Defaults to "".
+        """
+        mirror_surf = self.duplicate(name=name)  # duplicate surface and tools
+        a, b, c = plane_normal  # unpack normal vector
+        # mirror surface and tools
+        gmsh.model.occ.mirror(
+            [(2, mirror_surf.id)] + [(2, tool.id) for tool in mirror_surf.tools],
+            a,
+            b,
+            c,
+            offset,
+        )
+        return mirror_surf
 
     def combine(
         self,

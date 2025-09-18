@@ -27,7 +27,6 @@ import gmsh
 import numpy as np
 import pytest
 
-from pyemmo.script.geometry.line import Line
 from pyemmo.script.geometry.point import Point
 from pyemmo.script.gmsh.gmsh_surface import GmshArc, GmshLine, GmshPoint, GmshSurface
 
@@ -98,7 +97,9 @@ def create_rectangle():
     points: list[GmshPoint] = []
     for i, xy in enumerate([(0, 0), (0, 1), (1, 1), (1, 0)]):
         points.append(
-            GmshPoint.from_coordinates(name=f"P{i}", coords=np.array([xy[0], xy[1], 0]))
+            GmshPoint.from_coordinates(
+                name=f"P{i}", coords=np.array([xy[0], xy[1], 0]), meshLength=1e-1
+            )
         )
     lines: list[GmshLine] = []
     for i, point in enumerate(points):
@@ -267,17 +268,50 @@ def test_deepcopy(gmsh_surface: GmshSurface):
     assert len(gs_copy.curve) == len(gmsh_surface.curve)
 
 
-@pytest.mark.xfail(reason="not implemented mirror yet")
 def test_mirror(gmsh_surface: GmshSurface):
-    """Test mirror() method. NOT IMPLEMENTED YET"""
-    plane_point = Point("center point", 0, 0, 0)
-    x_point = Point("x point", 1, 0, 0)
-    y_point = Point("y point", 0, 1, 0)
-    x_vector = Line(name="x vector", start_point=plane_point, end_point=x_point)
-    y_vector = Line(name="y vector", start_point=plane_point, end_point=y_point)
-    gmsh_surface.mirror(
-        planePoint=plane_point, planeVector1=x_vector, planeVector2=y_vector
-    )
+    """Test mirror() method."""
+    # mirror on the y-axis
+    # to mirror along the y-axis the normal vector must point into x-direction
+    plane_normal = (1, 0, 0)
+    new_name = "mirrored surface"
+    new_surf = gmsh_surface.mirror(plane_normal, offset=0, name=new_name)
+    # make sure name is set
+    new_surf.name == new_name
+
+    # check new points
+    new_points = ((0, 0, 0), (0, 1, 0), (-1, 1, 0), (-1, 0, 0))
+    for point in new_surf.points:
+        assert any(
+            all(np.isclose(point.coordinate, coords, atol=1e-6))
+            for coords in new_points
+        )
+
+
+def test_mirror_with_tool(gmsh_surface: GmshSurface):
+    """Test mirror() method where the surface has a tool object. The tool must be
+    mirrored aswell"""
+    # create tool surface and cut it
+    center = GmshPoint.from_coordinates(name="Center", coords=[0.5, 0.5, 0])
+    circ = add_circle(center, radius=0.4)
+    gmsh_surface.cutOut(circ)
+
+    # mirror on the y-axis
+    # to mirror along the y-axis the normal vector must point into x-direction
+    plane_normal = (1, 0, 0)
+    new_name = "mirrored surface"
+    new_surf = gmsh_surface.mirror(plane_normal, offset=0, name=new_name)
+    # make sure name is set
+    new_surf.name == new_name
+
+    # check new points
+    new_points = ((0, 0, 0), (0, 1, 0), (-1, 1, 0), (-1, 0, 0))
+    for point in new_surf.points:
+        assert any(
+            all(np.isclose(point.coordinate, coords, atol=1e-6))
+            for coords in new_points
+        )
+    # check that the number of tools is the same
+    assert len(new_surf.tools) == len(gmsh_surface.tools)
 
 
 def test_combine(gmsh_surface: GmshSurface):
