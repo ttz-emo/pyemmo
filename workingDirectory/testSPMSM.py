@@ -28,6 +28,7 @@ import os
 import subprocess
 from os import path
 
+import gmsh
 from swat_em import datamodel
 
 from pyemmo.definitions import ROOT_DIR
@@ -36,15 +37,17 @@ from pyemmo.functions.runOnelab import createCmdCommand, findGetDP, findGmsh
 from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
 
 # from pyemmo.definitions import RESULT_DIR, MAIN_DIR
-from pyemmo.script.geometry.point import Point
+from pyemmo.script.gmsh.gmsh_point import GmshPoint
 
 # from pyemmo.script.geometry.line import Line
 from pyemmo.script.material.electricalSteel import Material
 from pyemmo.script.script import Script
 
+gmsh.initialize()
+gmsh.model.add("SPMSM toolkit test")
 # %%
 
-PBohrung = Point("mittelPunktBohrung", 0, 0, 0, 5e-3)
+PBohrung = GmshPoint.from_coordinates((0, 0, 0), 5e-3, "mittelPunktBohrung")
 
 # Material aus Datenbank laden
 steel_1010 = Material.load("steel_1010")
