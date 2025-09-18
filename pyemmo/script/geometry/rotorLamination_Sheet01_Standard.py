@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -19,54 +20,38 @@
 #
 from __future__ import annotations
 
-from .circleArc import CircleArc
-from .line import Line
-from .point import Point
+from ..gmsh.gmsh_arc import GmshArc
+from ..gmsh.gmsh_line import GmshLine
+from ..gmsh.gmsh_point import GmshPoint, Point
+from ..gmsh.gmsh_surface import GmshSurface
 from .rotorLamination import RotorLamination
-from .surface import Surface
 
 
-###
-# Ein Objekt der Klasse RotorLamination_Sheet01_Standard:
-# \image html rotorBlech.png
-# Das Blechpaket wird mit addRotorToMachine() ausgewählt und mit addLaminationParameter() parametrisiert. Abschließend verknüpft die Funktion createRotor() das Blech am Rotorobjekt.
-#
-#   Beispiel:
-#
-#       pmsm1 = pyd.MachineSPMSM({...})
-#       rotor1 = pmsm1.addRotorToMachine('sheet01_standard', 'magnet01_surface')
-#       rotor1.addLaminationParameter({
-#           "r_We": 20e-3,
-#           "r_R": 55e-3,
-#           "meshLength": 3e-3,
-#           "material": steel_1010,
-#           "machineCentrePoint": PBohrung
-#           })
-#       rotor1.addMagnetParameter({...})
-#       rotor1.addAirGapParameter({...})
-#       rotor1.createRotor()
-#
-###
 class RotorLamination_Sheet01_Standard(RotorLamination):
-    def __init__(self, machineDict: dict):
+    """Class RotorLamination_Sheet01_Standard"""
+
+    def __init__(self, parameters: dict):
         """Konstruktor der Klasse RotorLamination Type Sheet01_Standard
 
         Args:
-            machineDict (dict): Machine parameter dict
+            parameters (dict): Machine parameter dict. Must contain the following values:
+                - material
+                - r_We
+                - r_R
+                - meshLength
+                - startPosition
+                - machineCentrePoint
+                - angleGeoParts
         """
+        self._machineDict = parameters
         super().__init__(
             name="RotorLamination_Sheet01_Standard",
-            material=machineDict["material"],
-            geo_list=[],
+            material=parameters["material"],
+            geo_list=self._createGeometry(),  # creates the lamination surface
         )
-        ###Alle Parameter zur Beschreibung des Rotorblechs.
-        self._machineDict = machineDict
-        ###Name des Rotorsblech
-        self.name = "RotorLamination_Sheet01_Standard_" + str(self.id)
-        self._createGeometry()
 
-    ###_createGeometry() erzeugt die Blechgeometrie und definiert alle Attribute der Klasse.
     def _createGeometry(self):
+        """Create the geometry of the half a lamination segment in Gmsh"""
         r_We = self._machineDict["r_We"]
         r_R = self._machineDict["r_R"]
 
@@ -76,21 +61,20 @@ class RotorLamination_Sheet01_Standard(RotorLamination):
         alpha = self._machineDict["angleGeoParts"]
 
         # Konstuktion der Punkte an der x-Achse
-        pWelle1 = Point(
+        # point inner curve on x-axis
+        pWelle1 = GmshPoint.from_coordinates(
+            (coordCentre[0] + r_We, coordCentre[1], coordCentre[2]),
+            self._machineDict["meshLength"],
             "pWelle1",
-            coordCentre[0] + r_We,
-            coordCentre[1],
-            coordCentre[2],
-            # self._machineDict["meshLength"],
         )
-        pWelle2 = pWelle1.duplicate()
-        pWelle2.name = "pWelle2"
-        pRotor1 = pWelle1.duplicate()
-        pRotor1.translate(r_R - r_We, 0, 0)
-        pRotor1.name = "pRotor1"
-        pRotor2 = pRotor1.duplicate()
-        pRotor2.name = "pRotor2"
+        # inner curve on symmetry axis
+        pWelle2 = pWelle1.duplicate("pWelle2")
         pWelle2.rotateZ(PCentre, alpha)
+        # outer curve on x-axis
+        pRotor1 = pWelle1.duplicate("pRotor1")
+        pRotor1.translate(r_R - r_We, 0, 0)
+        # outer curve on symmetry axis
+        pRotor2 = pRotor1.duplicate("pRotor2")
         pRotor2.rotateZ(PCentre, alpha)
 
         # Startposition berücksichtigen
@@ -100,68 +84,51 @@ class RotorLamination_Sheet01_Standard(RotorLamination):
         pRotor2.rotateZ(PCentre, self._machineDict["startPosition"])
 
         # Konstuktion der Linien
-        lWelle = CircleArc("lWelle", pWelle1, PCentre, pWelle2)
-        lBlech1 = Line("lBlech1", pWelle2, pRotor2)
-        lRotorAussen = CircleArc("lRotorAussen", pRotor2, PCentre, pRotor1)
-        lBlech2 = Line("lBlech2", pRotor1, pWelle1)
+        lWelle = GmshArc.from_points(pWelle1, PCentre, pWelle2, "lWelle")
+        lBlech1 = GmshLine.from_points(pWelle2, pRotor2, "lBlech1")
+        lRotorAussen = GmshArc.from_points(pRotor2, PCentre, pRotor1, "lRotorAussen")
+        lBlech2 = GmshLine.from_points(pRotor1, pWelle1, "lBlech2")
 
         # Flächenerzeugen
-        surfaceRotor = Surface("surfaceRotor", [lWelle, lBlech1, lRotorAussen, lBlech2])
+        surfaceRotor = GmshSurface.from_curve_loop(
+            name="surfaceRotor", curve_loop=[lWelle, lBlech1, lRotorAussen, lBlech2]
+        )
 
         # surfaceRotor.setMeshColor(colorDict["SteelBlue"])
 
-        # Bei jedem Baukausten müssen diese Attribute vorkommen
-        ###Fläche des Bleches (halber Pol) in einer Liste.
-        self._geo_list = [surfaceRotor]
-        ###Außenkante des Bleches.
-        # \image html outerLinePart.png
+        # every toolkit object needs the following attributes
+        # outer limit lines towards the airgap:
         self._outerLinePart = [lRotorAussen]
-        ###Schnittkante zwischen 2 Blechen.
-        # \image html betweenLinePart.png
+        # Interface line on symmetry axis:
         self._betweenLinePart = [lBlech2]
-        ###Erster Punkt auf der Außenkante des Bleches.
-        # \image html airDockingPoint1.png
+        # outer curve lamination center point:
         self._airDockingPoint1 = [pRotor1]
-        ###Zweiter Punkt auf der Außenkante des Bleches.
-        # \image html airDockingPoint2.png
+        # outer lamination curve the symmetry axis:
         self._airDockingPoint2 = [pRotor2]
 
-    ###Gibt eine Liste mit der Außenkante des Bleches zurück (siehe _outerLinePart).
+        # geo_list = [surfaceRotor] will be set in super().__init__()
+        return [surfaceRotor]
+
     @property
-    def outerLinePart(self) -> list[CircleArc]:
+    def outerLinePart(self) -> list[GmshArc | GmshLine]:
         """Get the boundary line(s) of the rotor lamination towards the airgap
 
         Returns:
-            List[CircleArc]: ...
+            List[GmshLine | GmshArc]: outer boundary lines towards the airgap
         """
         return self._outerLinePart
 
-    ###Gibt eine Liste mit der Schnittkante zurück (siehe _betweenLinePart).
     @property
-    def betweenLinePart(self) -> list[Line]:
-        """Gibt eine Liste mit der Schnittkante zurück. Schnittkante zwischen 2 Blechen.
-
-        Returns:
-            List[Line]: list of line between to lamination segments?
-        """
+    def betweenLinePart(self) -> list[GmshLine]:
+        """Interface line(s) on the symmmetry axis of a lamination segment"""
         return self._betweenLinePart
 
-    ###Gibt eine Liste mit dem airDockingPoint1 zurück (siehe _airDockingPoint1).
     @property
     def airDockingPoint1(self) -> list[Point]:
-        """Get point of lamination segment at airgap interface near x-Axis
-
-        Returns:
-            List[Point]: interface point to airgap near x-axis
-        """
+        """Get point of lamination segment at airgap interface on the x-axis."""
         return self._airDockingPoint1
 
-    ###Gibt eine Liste mit dem airDockingPoint2 zurück (siehe _airDockingPoint2).
     @property
     def airDockingPoint2(self) -> list[Point]:
-        """Get point of lamination segment at airgap interface on interface line to next segment in math. positive direction.
-
-        Returns:
-            List[Point]: interface point to airgap near next lamination (CCW direction)
-        """
+        """Get point of lamination segment at airgap interface on symmetry axis."""
         return self._airDockingPoint2

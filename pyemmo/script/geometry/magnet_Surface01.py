@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -19,34 +20,15 @@
 #
 from __future__ import annotations
 
-from .circleArc import CircleArc
-from .line import Line
+from typing import Literal
+
+from ..gmsh.gmsh_arc import GmshArc
+from ..gmsh.gmsh_line import GmshLine
+from ..gmsh.gmsh_point import GmshPoint
+from ..gmsh.gmsh_surface import GmshSurface
 from .magnet import Magnet
-from .point import Point
-from .surface import Surface
 
 
-###
-# Ein Objekt der Klasse Magnet_Surface01:
-# \image html magnet_Surface01.png
-# Der Magnettype wird mit addRotorToMachine() ausgewählt und mit addMagnetParameter() parametrisiert. Abschließend verknüpft die Funktion createRotor() den Magnet am Rotorobjekt.
-#
-#   Beispiel:
-#
-#       pmsm1 = pyd.MachineSPMSM({...})
-#       rotor1 = pmsm1.addRotorToMachine('sheet01_standard', 'magnet01_surface')
-#       rotor1.addLaminationParameter({...})
-#       rotor1.addMagnetParameter({'h_M' : 7e-3,
-#           'angularWidth_i' : math.pi/10,
-#           'angularWidth_a' : math.pi/12,
-#           'magnetisationDirection' : [1, -1, 1, -1, 1, -1, 1, -1],
-#           'magnetisationType' : 'radial',
-#           'material' : ndFe35,
-#           'meshLength' : 3e-3})
-#       rotor1.addAirGapParameter({...})
-#       rotor1.createRotor()
-#
-###
 class Magnet_Surface01(Magnet):
     """Class Magnet_Surface01
 
@@ -55,8 +37,8 @@ class Magnet_Surface01(Magnet):
     Parameters:
         rA_Rotor (float): Rotor outer radius
         h_M (float): Magnet hight
-        angularWidth_i (float): Inner angular width
-        angularWidth_a (float): Outer angular width
+        angularWidth_i (float): Inner angular width in radians.
+        angularWidth_a (float): Outer angular width in radians.
         magnetisationDirection (Literial[-1,1]): see definition in Class
             :class:`~pyemmo.script.geometry.magnet.Magnet`
         magnetisationType (str): see definition in Class
@@ -70,35 +52,41 @@ class Magnet_Surface01(Magnet):
         Parameter description for Magnet_Surface01
     """
 
-    ###
-    # Konstuktor der Klasse Magnet_Surface01.
-    #
-    #   Input:
-    #
-    #       machineDict : Dict
-    #       magnetisationDirection : Integer
-    #       magnetisationType : String
-    #
-    ###
-    def __init__(self, machineDict, magnetisationDirection, magnetisationType):
-        ###Dictionary mit allen Magnet-Parametern.
-        self._machineDict = machineDict
+    def __init__(
+        self,
+        properties: dict,
+        magnetisationDirection: Literal[1, -1],
+        magnetisationType: str,
+    ):
+        """Magnet Surface01
+
+        Args:
+            machineDict (dict): Dict with machine parameters. Must contain values for
+                - material (Material): Material of magnet.
+                - rA_Rotor (float): Rotor outer radius.
+                - h_M (float): Magnet height.
+                - angularWidth_i (float): Inner angular width of the magnet in radians.
+                - angularWidth_a (float): Outer angular width of the magnet in radians.
+            magnetisationDirection (Literal[-1, 1]): magnetization direction (north or
+                south pole)
+            magnetisationType (str): magnetization type ("parallel", "radial",
+                "tangential")
+        """
+        self._machineDict = properties
 
         self.id = self._getNewID()
         magName = "Magnet_Surface01_" + str(self.id)
         super().__init__(
             magName,
-            [],
-            machineDict["material"],
+            self._createGeometry(),
+            properties["material"],
             magnetisationDirection,
             magnetisationType,
             0.0,
         )
 
-        self._createGeometry()
-
-    ###_createGeometry() erzeugt die Magnetgeometrie und definiert alle Attribute der Klasse.
     def _createGeometry(self):
+        """Create the magnet geometry"""
         dockingLength = self._machineDict["rA_Rotor"]
         h_M = self._machineDict["h_M"]
         angle_ri = (
@@ -111,23 +99,24 @@ class Magnet_Surface01(Magnet):
 
         PCentre = magnet_centre.duplicate()
         coordCentre = PCentre.coordinate
+        mesh_size = (
+            self._machineDict["meshLength"]
+            if "meshLength" in self._machineDict
+            else h_M / 4
+        )
 
         # Konstuktion der Punkte an der x-Achse
-        pMagnet1 = Point(
-            "pMagnet1",
-            coordCentre[0] + dockingLength,
-            coordCentre[1],
-            coordCentre[2],
-            # self._machineDict["meshLength"],
+        pMagnet1 = GmshPoint.from_coordinates(
+            (coordCentre[0] + dockingLength, coordCentre[1], coordCentre[2]),
+            meshLength=mesh_size,
+            name="pMagnet1",
         )
         pMagnet2 = pMagnet1.duplicate()
         pMagnet2.name = "pMagnet2"
-        pMagnet3 = Point(
+        pMagnet3 = GmshPoint.from_coordinates(
+            (coordCentre[0] + dockingLength + h_M, coordCentre[1], coordCentre[2]),
+            meshLength=mesh_size,
             name="pMagnet3",
-            x=coordCentre[0] + dockingLength + h_M,
-            y=coordCentre[1],
-            z=coordCentre[2],
-            # meshLength=self._machineDict["meshLength"],
         )
         pMagnet4 = pMagnet3.duplicate()
         pMagnet4.name = "pMagnet4"
@@ -141,31 +130,28 @@ class Magnet_Surface01(Magnet):
         pMagnet4.rotateZ(PCentre, self._machineDict["startPosition"])
 
         # Konstuktion der Linien
-        lMagnet1 = CircleArc("lMagnet1", pMagnet1, PCentre, pMagnet2)
-        lMagnet2 = Line("lMagnet2", pMagnet2, pMagnet4)
-        lMagnet3 = CircleArc("lMagnet3", pMagnet4, PCentre, pMagnet3)
-        lMagnet4 = Line("lMagnet4", pMagnet3, pMagnet1)
+        lMagnet1 = GmshArc.from_points(pMagnet1, PCentre, pMagnet2, "lMagnet1")
+        lMagnet2 = GmshLine.from_points(pMagnet2, pMagnet4, "lMagnet2")
+        lMagnet3 = GmshArc.from_points(pMagnet4, PCentre, pMagnet3, "lMagnet3")
+        lMagnet4 = GmshLine.from_points(pMagnet3, pMagnet1, "lMagnet4")
 
         # Flächenerzeugen
-        surfaceMagnet = Surface(
-            "surfaceMagnet", [lMagnet1, lMagnet2, lMagnet3, lMagnet4]
+        surfaceMagnet = GmshSurface.from_curve_loop(
+            name="surfaceMagnet", curve_loop=[lMagnet1, lMagnet2, lMagnet3, lMagnet4]
         )
 
         # Bei jedem Baukasten muss diese Definition identisch sein
         ###Fläche des halben Magneten in einer Liste.
-        self._geo_list = [surfaceMagnet]
         ###Schnittkante des halben Magneten.
-        # \image html innerLinePart01.png
         self._innerLinePart = [lMagnet1]
         ###Punkt zwischen Magnet und Luft an der Schnittkante.
-        # \image html airDockingPoint01.png
         self._airDockingPoint = [pMagnet3]
         ###Alle Linien in einer Liste, die den Luftraum schneiden.
-        # \image html airLinePart01.png
         self._airLinePart = [lMagnet3, lMagnet2]
         ###Punkt zwischen Blechpaket und Magneten an der Schnittkante.
-        # \image html laminationDockingPoint01.png
         self._laminationDockingPoint = [pMagnet1]
+
+        return [surfaceMagnet]
 
         # for s in self._geo_list:
         #     if self.magDir == 1:
@@ -173,46 +159,22 @@ class Magnet_Surface01(Magnet):
         #     elif self.magDir == -1:
         #         s.setMeshColor(colorDict["Green"])
 
-    ###Gibt eine Liste mit der Schnittkante im Magneten zurück (siehe _innerLinePart).
     @property
-    def innerLinePart(self) -> list:
-        """get innerLinePart \n
-        Gibt eine Liste mit der Schnittkante im Magneten zurück (siehe _innerLinePart).
-
-        Returns:
-            list: _innerLinePart
-        """
+    def innerLinePart(self) -> list[GmshArc]:
+        """curve(s) on the boundary between magnet and lamination"""
         return self._innerLinePart
 
-    ###Gibt eine Liste mit dem airDockingPoint zurück (siehe _airDockingPoint).
     @property
-    def airDockingPoint(self) -> list:
-        """get airDockingPoint \n
-        Gibt eine Liste mit dem airDockingPoint zurück (siehe _airDockingPoint)
-
-        Returns:
-            list: _airDockingPoint
-        """
+    def airDockingPoint(self) -> list[GmshPoint]:
+        """Outer point of magnet on the symmetry axis."""
         return self._airDockingPoint
 
-    ###Gibt eine Liste mit airLinePart zurück (siehe _airLinePart).
     @property
-    def airLinePart(self) -> list:
-        """get airLinePart \n
-        Gibt eine Liste mit airLinePart zurück (siehe _airLinePart).
-
-        Returns:
-            list: _airLinePart
-        """
+    def airLinePart(self) -> list[GmshLine | GmshArc]:
+        """curves on the boundary between magnet and airgap"""
         return self._airLinePart
 
-    ###Gibt eine Liste mit dem laminationDockingPoint zurück (siehe _laminationDockingPoint).
     @property
-    def laminationDockingPoint(self) -> list:
-        """get laminationDockingPoint \n
-        Gibt eine Liste mit dem laminationDockingPoint zurück (siehe _laminationDockingPoint).
-
-        Returns:
-            list: _laminationDockingPoint
-        """
+    def laminationDockingPoint(self) -> list[GmshPoint]:
+        """Boundary point of magnet and lamination on the symmetry axis."""
         return self._laminationDockingPoint
