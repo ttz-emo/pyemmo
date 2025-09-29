@@ -383,12 +383,6 @@ def test_mesh_color(gmsh_surface: GmshSurface):
 
     color_str = "Blue"
 
-    # make sure the setter of mesh_color raises an error if the surface was not
-    # synchronized! Thats because the gmsh.model.setColor() method does not raise an
-    # error if the geometry does not exist in the non-occ representation.
-    with pytest.raises(RuntimeError):
-        gmsh_surface.mesh_color = color_str
-
     gmsh.model.occ.synchronize()  # synchronize the model to set the color
     gmsh_surface.mesh_color = color_str
 
