@@ -30,6 +30,8 @@ import pytest
 from pyemmo.script.geometry.point import Point
 from pyemmo.script.gmsh.gmsh_surface import GmshArc, GmshLine, GmshPoint, GmshSurface
 
+GMSH_SURF_MESH_LEN = 1e-1
+
 
 @pytest.fixture(scope="module", autouse=True)
 def initialize_gmsh():
@@ -98,7 +100,9 @@ def create_rectangle():
     for i, xy in enumerate([(0, 0), (0, 1), (1, 1), (1, 0)]):
         points.append(
             GmshPoint.from_coordinates(
-                name=f"P{i}", coords=np.array([xy[0], xy[1], 0]), meshLength=1e-1
+                name=f"P{i}",
+                coords=np.array([xy[0], xy[1], 0]),
+                meshLength=GMSH_SURF_MESH_LEN,
             )
         )
     lines: list[GmshLine] = []
@@ -146,7 +150,7 @@ def test_init_with_curveloop(gmsh_surface: GmshSurface):
     assert new_gmsh_surface.curve == gmsh_surface.curve
     assert new_gmsh_surface.dim == 2
     assert new_gmsh_surface.name == "new name"
-    assert np.isclose(new_gmsh_surface.meanMeshLength, 1e-3, rtol=1e-3)
+    assert np.isclose(new_gmsh_surface.meanMeshLength, GMSH_SURF_MESH_LEN, rtol=1e-3)
 
 
 def test_init_with_id(gmsh_surface: GmshSurface):
@@ -173,9 +177,9 @@ def test_init_with_id_newName(gmsh_surface: GmshSurface):
 
 def test_set_mesh_length(gmsh_surface: GmshSurface):
     """Test setMeshLength() method"""
-    # initial mesh length is 1e-3
-    gmsh_surface.setMeshLength(0.1)
-    assert np.isclose(gmsh_surface.meanMeshLength, 0.1, rtol=1e-3)
+    # initial mesh length is 1e-1
+    gmsh_surface.setMeshLength(0.05)
+    assert np.isclose(gmsh_surface.meanMeshLength, 0.05, rtol=1e-3)
 
 
 def test_get_min_mesh_length(gmsh_surface: GmshSurface):
