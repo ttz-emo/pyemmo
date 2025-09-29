@@ -11,6 +11,7 @@
 *.res
 *.msh
 *.db
+*.db.json
 *.zip
 *.7z
 Area*.csv
