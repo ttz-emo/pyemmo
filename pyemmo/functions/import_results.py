@@ -441,7 +441,8 @@ def get_result_files(
 def load_param_file(setup_file: str | bytes | os.PathLike) -> dict:
     if not os.path.isfile(setup_file):
         raise FileNotFoundError(f"Could not find setup.json file: {setup_file}")
-    return json.loads(setup_file)
+    with open(setup_file, encoding="utf-8") as file:
+        return json.load(file)
 
 
 def main(sim_param: dict | str | bytes | os.PathLike):
