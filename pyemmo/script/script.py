@@ -2204,7 +2204,7 @@ class Script:
             # Stator angle for I_U = 1 p.u., I_V = -1/2, I_W = -1/2 in rad elec
             systemOffset = float(angle[where(mmfOrder == nbrPolePairs)])
             logging.debug(
-                "Stator north pole angle (elec): %.1f°", rad2deg(systemOffset)
+                "Stator north pole angle (elec): %.4f°", rad2deg(systemOffset)
             )
 
             # dq-offset (electrical) is:

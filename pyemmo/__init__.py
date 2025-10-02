@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -29,7 +30,7 @@ from os.path import isdir
 from typing import Literal
 
 import numpy as np
-from swat_em import analyse
+from swat_em import analyse, config
 
 from .version import __version__
 
@@ -79,6 +80,10 @@ if try_pyleecan:
         use_pyleecan = False
     except Exception as exce:
         raise exce
+
+# set the number of datapoints in the MMF calculation in SWAT-EM so offset angle
+# calculation is done correctly
+config.config["num_MMF_points"] = 36000
 
 
 def calcPhaseangleStarvoltageCorr(volVecList):
