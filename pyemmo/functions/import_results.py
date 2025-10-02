@@ -516,6 +516,31 @@ def main(sim_param: dict | str | bytes | os.PathLike):
             ],
             axis=0,
         )
+        if np.isclose(
+            np.mean(results_dict["torque"]["rotor"]),
+            np.mean(results_dict["torque"]["stator"]),
+            rtol=0.1,
+        ):
+            # mean diviation is smaller 10%
+            # need to check this because if one of the results is misscalulated and just
+            # returns 0 the mean result will give wrong results...
+            # calc mean torque
+            results_dict["rotor torque"] = results_dict["torque"]["rotor"]
+            results_dict["stator torque"] = results_dict["torque"]["stator"]
+            results_dict["torque"] = np.mean(
+                [
+                    results_dict["rotor torque"],
+                    results_dict["stator torque"],
+                ],
+                axis=0,
+            )
+        else:
+            logging.warning(
+                (
+                    "MST Torque for rotor and stator diviates more than 10%! "
+                    "Check results carefully!"
+                )
+            )
 
     # 3. Flux results
     results_dict["flux"] = {}
