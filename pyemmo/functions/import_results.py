@@ -506,16 +506,7 @@ def main(sim_param: dict | str | bytes | os.PathLike):
             # get first char in machine side to index rotor and stator results
             _, results_dict["torque_vw"][side] = read_timetable_dat(res_file)
     if {"rotor", "stator"} <= results_dict["torque"].keys():
-        # calc mean torque
-        results_dict["rotor torque"] = results_dict["torque"]["rotor"]
-        results_dict["stator torque"] = results_dict["torque"]["stator"]
-        results_dict["torque"] = np.mean(
-            [
-                results_dict["rotor torque"],
-                results_dict["stator torque"],
-            ],
-            axis=0,
-        )
+        # try to calc mean torque
         if np.isclose(
             np.mean(results_dict["torque"]["rotor"]),
             np.mean(results_dict["torque"]["stator"]),
