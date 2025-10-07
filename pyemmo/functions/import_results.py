@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO, Technical University of Applied
 # Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -30,16 +30,14 @@ from os import path
 
 import gmsh
 import numpy as np
+import parse
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
-from parse import parse
 
 from .. import rootLogger as logger
 
 
-def read_timetable_dat(
-    file_path: str | bytes | str | bytes | os.PathLike,
-) -> tuple[np.ndarray, np.ndarray]:
+def read_timetable_dat(file_path: str | os.PathLike) -> tuple[np.ndarray, np.ndarray]:
     """
     returns the Data from the the .*dat file witten in the TimeTable Format
     and returns the time and the corresponding data.
@@ -86,9 +84,7 @@ def read_timetable_dat(
 
 
 # pylint: disable=locally-disabled, invalid-name
-def read_RegionValue_dat(
-    file_path: str | bytes | os.PathLike,
-) -> tuple[np.ndarray, np.ndarray]:
+def read_RegionValue_dat(file_path: str | os.PathLike) -> tuple[np.ndarray, np.ndarray]:
     """
     Import data from 'RegionValue' formatted .dat-file (GetDP resutl file).
     This usually only applies to torque results computed with the virtual works
@@ -98,7 +94,7 @@ def read_RegionValue_dat(
         'time0 val0 time1 val1 ...'
 
     Args:
-        file_path (Union[str, bytes, os.PathLike]): Path to results file.
+        file_path (Union[str, os.PathLike]): Path to results file.
 
     Returns:
         Tuple[np.ndarray, np.ndarray]: time and data vector with shape:
@@ -169,7 +165,7 @@ def plot_timetable_dat(
     title: str = "",
     savefig: bool = False,
     showfig: bool = True,
-    savePath: str = None,
+    savePath: str = "",
 ) -> list[Figure]:
     """Plot the data in the filePath .dat-file and save the figure optionally.
 
@@ -237,11 +233,11 @@ def plot_timetable_dat(
     return figureList
 
 
-def plot_all_dat(dir_path: str | bytes | os.PathLike) -> None:
+def plot_all_dat(dir_path: str | os.PathLike) -> None:
     """Plot all .dat files as png in the folder dirPath
 
     Args:
-        dirPath (Union[str, bytes, os.PathLike]): Path to the folder containing the .dat files.
+        dirPath (Union[str, os.PathLike]): Path to the folder containing the .dat files.
     """
     if path.isdir(dir_path):
         # if the folder for results exists
@@ -283,8 +279,8 @@ def importSP(
         raise ValueError(f"Given filepath '{posFilePath}' is not a POS-file!")
     with open(posFilePath, encoding="utf-8") as dataFile:
         dataLines = dataFile.readlines()
-    parsedName = parse('View "{}" {\n', dataLines.pop(0))
-    if not parsedName:
+    parsedName = parse.parse('View "{}" {\n', dataLines.pop(0))
+    if not isinstance(parsedName, parse.Result):
         raise (
             RuntimeError(
                 f"Given file '{posFilePath}' did not contain correct first "
@@ -294,19 +290,26 @@ def importSP(
         )
     dataLines.pop(-1)  # remove last line (no information)
     # read time values
-    time: list[float] = []
-    timeStr = parse("TIME{{{}}};\n", dataLines[-1])
-    if timeStr:  # if time values could be parsed
+    timeStr = parse.parse("TIME{{{}}};\n", dataLines[-1])
+    if isinstance(timeStr, parse.Result):  # if time values could be parsed
+        time: list[float] = []
         dataLines.pop()  # remove time line from dataLines
         for timeVal in timeStr[0].split(","):
             time.append(float(timeVal))
+    elif timeStr is None:
+        # no time step given in results file. Only single time step evaluated!
+        time = []
+    else:
+        raise TypeError(
+            "Parsing of TIME line in SP formatted file did not return parse.Result object."
+        )
 
     # read node values
     pos: list[tuple[float, float, float]] = []  # position
     values: list[list[float]] = []  # result values
     for line in dataLines:
-        parsedValues = parse("SP({:g},{:g},{:g}){{{}}};\n", line)
-        if parsedValues:
+        parsedValues = parse.parse("SP({:g},{:g},{:g}){{{}}};\n", line)
+        if isinstance(parsedValues, parse.Result):
             # first 3 elements are the coordinate values
             pos.append(parsedValues[0:3])
             valueList = []  # empty list for values of one point
@@ -316,18 +319,13 @@ def importSP(
             # valueList.clear()
         else:
             # if the parse function did not return values, the format was wrong
-            raise (
-                RuntimeError(
-                    f"Given file '{posFilePath}' did not contain "
-                    "SP formatted values!"
-                )
+            raise RuntimeError(
+                f"Given file '{posFilePath}' did not contain SP formatted values!"
             )
     return parsedName[0], time, pos, values
 
 
-def importPos(
-    pos_file: str | str | bytes | os.PathLike,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+def importPos(pos_file: str | os.PathLike) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Import POS file via gmsh api.
 
     .. todo::
@@ -336,7 +334,7 @@ def importPos(
             -> Use function getListData()
 
     Args:
-        pos_file (Union[str, Union[str, bytes, os.PathLike]]): _description_
+        pos_file (Union[str, Union[str, os.PathLike]]): _description_
 
     Returns:
         Tuple[np.ndarray, List[float], np.ndarray]:
@@ -345,9 +343,9 @@ def importPos(
             - data array
     """
     # check file extension
-    _, filename = path.split(pos_file)
-    filename, ext = filename.split(".")
-    if ext != "pos":
+    _, filename = os.path.split(pos_file)
+    filename, ext = os.path.splitext(filename)
+    if ext != ".pos":
         raise ValueError(f"Given filepath '{pos_file}' is not a POS-file!")
 
     finalize_gmsh = False
@@ -359,7 +357,7 @@ def importPos(
 
     # check that view was loaded:
     view_tags = gmsh.view.getTags()
-    if view_tags.size == 0:
+    if isinstance(view_tags, np.ndarray) and view_tags.size == 0:
         gmsh.finalize()
         raise ValueError(
             f"Given file '{pos_file}' did not result in a Gmsh view. Is file "
@@ -373,6 +371,9 @@ def importPos(
     _, element_tags, cdata, ctime, nbr_components = gmsh.view.getModelData(
         tag=view_tags[-1], step=0
     )
+    # check type of element tags and convert to numpy
+    if not isinstance(element_tags, np.ndarray):
+        element_tags = np.array(element_tags)
     # data format of 'cdata':
     #   vector: number of components = 3
     #   scalar: number of components = 1
@@ -389,6 +390,9 @@ def importPos(
         # Return only that timestep
         if finalize_gmsh:
             gmsh.finalize()
+        # check type of element tags and convert to numpy
+        if not isinstance(element_tags, np.ndarray):
+            element_tags = np.array(element_tags)
         return (
             element_tags,
             np.array(ctime),
@@ -411,17 +415,17 @@ def importPos(
 
 
 def get_result_files(
-    result_folder: str | bytes | os.PathLike,
-) -> tuple[list[str | bytes | os.PathLike], list[str | bytes | os.PathLike]]:
+    result_folder: str | os.PathLike,
+) -> tuple[list[str | os.PathLike], list[str | os.PathLike]]:
     """Return a list of GetDP result files from the folder ``resDir``.
     GetDP results can be .pos or .dat files.
 
     Args:
-        result_folder (Union[str, bytes, os.PathLike]): Path to GetDP results.
+        result_folder (Union[str, os.PathLike]): Path to GetDP results.
 
     Returns:
-        Tuple[list[Union[str, bytes, os.PathLike]], list[Union[str, bytes, os.PathLike]]]: List of .dat and list of .pos
-            files in the given folder.
+        Tuple[list[Union[str, os.PathLike]], list[Union[str, os.PathLike]]]: List of .dat
+            and list of .pos files in the given folder.
     """
     if not os.path.isdir(result_folder):
         raise FileNotFoundError(f"Results folder {result_folder} does not exist.")
@@ -438,14 +442,32 @@ def get_result_files(
     return dat_file_list, pos_file_list
 
 
-def load_param_file(setup_file: str | bytes | os.PathLike) -> dict:
+def load_param_file(setup_file: str | os.PathLike) -> dict:
+    """load the parameter json file create in
+    ``pyemmo.functions.runOnelab.runCalcForCurrent`` function"""
     if not os.path.isfile(setup_file):
         raise FileNotFoundError(f"Could not find setup.json file: {setup_file}")
     with open(setup_file, encoding="utf-8") as file:
         return json.load(file)
 
 
-def main(sim_param: dict | str | bytes | os.PathLike):
+def main(
+    sim_param: dict | str | os.PathLike,
+) -> dict[str, np.ndarray | dict[str, np.ndarray]]:
+    """Import results for standard GetDP simulation of a model created with PyEMMO.
+
+    You can easily run simulations with the ``pyemmo.functions.runOnelab`` module!
+
+    Args:
+        sim_param (dict | str | os.PathLike): simulation parameter dict or path to saved
+            parameter dict as json file.
+
+    Raises:
+        FileNotFoundError: If parameter file is path but given json file is not found.
+
+    Returns:
+        dict[str, np.ndarray |dict[str, np.ndarray]]: results for given simulation
+    """
     if not isinstance(sim_param, dict):
         sim_param = load_param_file(sim_param)
     logging.info("Import results for result-ID '%s'", sim_param["getdp"]["ResId"])
@@ -457,7 +479,7 @@ def main(sim_param: dict | str | bytes | os.PathLike):
     simulation_res_dir = os.path.join(
         sim_param["getdp"]["res"], sim_param["getdp"]["ResId"]
     )
-    dat_files, geo_files = get_result_files(simulation_res_dir)
+    dat_files, _ = get_result_files(simulation_res_dir)
 
     # for key, getdp_param in {
     #     "id": "ID_RMS",
@@ -546,7 +568,7 @@ def main(sim_param: dict | str | bytes | os.PathLike):
         res_file = os.path.join(simulation_res_dir, f"Flux_{index}.dat")
         if os.path.isfile(res_file):
             # get first char in machine side to index rotor and stator results
-            time, results_dict["flux"][index] = read_timetable_dat(res_file)
+            _, results_dict["flux"][index] = read_timetable_dat(res_file)
 
     # 4. Induced voltage
     results_dict["inducedVoltage"] = {}
