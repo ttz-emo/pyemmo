@@ -471,27 +471,12 @@ def main(
     if not isinstance(sim_param, dict):
         sim_param = load_param_file(sim_param)
     logging.info("Import results for result-ID '%s'", sim_param["getdp"]["ResId"])
-    results_dict = {}
-    # try to import getdp parameters from param dict
-    # TODO: Add start and stop angle, angle and time step, ...
-    # OTHER OPTION: Just add input param dict to result dict...
-
+    results_dict = {}  # init results
+    # get results folder from parameters
     simulation_res_dir = os.path.join(
         sim_param["getdp"]["res"], sim_param["getdp"]["ResId"]
     )
-    dat_files, _ = get_result_files(simulation_res_dir)
-
-    # for key, getdp_param in {
-    #     "id": "ID_RMS",
-    #     "iq": "IQ_RMS",
-    #     "speed": "RPM",
-    # }.items():
-    #     try:
-    #         results_dict[key] = sim_param["getdp"][getdp_param]
-    #     except KeyError:
-    #         pass
-    #     except Exception as exce:
-    #         raise exce
+    dat_files, _ = get_result_files(simulation_res_dir)  # get result files
 
     # 1. Phase currents
     results_dict["current"] = {}
