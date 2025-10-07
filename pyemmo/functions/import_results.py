@@ -491,6 +491,13 @@ def main(sim_param: dict | str | bytes | os.PathLike):
         results_dict["time"], results_dict["current"]["bars"] = read_timetable_dat(
             res_file
         )
+    # import bar voltages
+    results_dict["voltage"] = {}
+    res_file = os.path.join(simulation_res_dir, "U_bars.dat")
+    if os.path.isfile(res_file):
+        results_dict["time"], results_dict["voltage"]["bars"] = read_timetable_dat(
+            res_file
+        )
 
     # 2. Torque Results
     results_dict["torque"] = {}
