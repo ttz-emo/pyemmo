@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler & V. Patil, TTZ-EMO,
+# Copyright (c) 2018-2025 M. Schuler & V. Patil, TTZ-EMO,
 # Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -133,7 +133,7 @@ def test_plot_timetable_dat():
         title="Graph",
         savefig=False,
         showfig=False,
-        savePath=None,
+        savePath="",
     )
     number_of_figures = 2
     assert (
@@ -220,12 +220,11 @@ def test_get_result_files():
     """Test the function get_result_files"""
     file_path = IMP_RES_TEST_DATA_DIR
     dat_file_list, pos_file_list = get_result_files(file_path)
-
     assert np.array_equal(
-        dat_file_list, ["Ib_test.dat", "region_value_data.dat"]
+        np.array(dat_file_list), ["Ib_test.dat", "region_value_data.dat"]
     ), "Incorrect list of .dat files!"
     assert np.array_equal(
-        pos_file_list,
+        np.array(pos_file_list),
         [
             "AxialeLaenge_test.pos",
             "btan_test.pos",
