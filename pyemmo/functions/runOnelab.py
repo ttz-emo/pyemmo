@@ -503,6 +503,11 @@ def runCalcforCurrent(param: dict) -> dict:
 
         ## TRY TO LOG OUTPUT OF FUNCTION CALL:
         # TODO: Add log file option and stream simulation to log file
+        sim_log_file_handler = logging.FileHandler(
+            os.path.join(simulation_res_dir, param["getdp"]["ResId"] + ".log"),
+            encoding="utf-8",
+        )
+        logging.getLogger().addHandler(sim_log_file_handler)
         process = Popen(
             cmdCommand,
             stdout=PIPE,
@@ -512,6 +517,7 @@ def runCalcforCurrent(param: dict) -> dict:
         with process.stdout:
             log_subprocess_output(process.stdout)
         exitcode = process.wait()  # 0 means success
+        logging.getLogger().removeHandler(sim_log_file_handler)
 
     else:
         # Simulation with this resId has allready been done!
