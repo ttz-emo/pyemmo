@@ -471,24 +471,56 @@ def main(sim_param: dict | str | bytes | os.PathLike):
     #     except Exception as exce:
     #         raise exce
 
-    # 1. Phase currents
+    # 1. Phase currents and voltages
     results_dict["current"] = {}
+    results_dict["voltage"] = {}
     for index in "abc":
+        # For case Current_Source OR Voltage_Source & Stator Circuit -> I_{a,b,c}
         res_file_name = f"I{index}.dat"
         if res_file_name in dat_files:
             results_dict["time"], results_dict["current"][index] = read_timetable_dat(
                 os.path.join(simulation_res_dir, res_file_name)
             )
             dat_files.remove(res_file_name)
-        else:
-            # Error because we need to import time here!
-            raise FileNotFoundError(
-                f"Could not find result file for phase current I{index}"
+        # In case of Voltage_Source
+        res_file_name = f"I{index}_w.dat"
+        if res_file_name in dat_files:
+            _, results_dict["current"][index + "w"] = read_timetable_dat(
+                os.path.join(simulation_res_dir, res_file_name)
             )
-    # optional import bar currents
+            dat_files.remove(res_file_name)
+
+        # For case Current_Source OR Voltage_Source & Stator Circuit -> I_{a,b,c}
+        res_file_name = f"U{index}.dat"
+        if res_file_name in dat_files:
+            _, results_dict["voltage"][index] = read_timetable_dat(
+                os.path.join(simulation_res_dir, res_file_name)
+            )
+            dat_files.remove(res_file_name)
+        # In case of Voltage_Source
+        res_file_name = f"U{index}_w.dat"
+        if res_file_name in dat_files:
+            _, results_dict["voltage"][index + "w"] = read_timetable_dat(
+                os.path.join(simulation_res_dir, res_file_name)
+            )
+            dat_files.remove(res_file_name)
+
+    if not results_dict["current"]:
+        # Error because we need to import time here!
+        raise FileNotFoundError(
+            "Could not find any result file for stator phase current I_{a,b,c} or I_{a,b,c}w"
+        )
+    # We dont check for voltage imports because in case of current source there is no global voltage
+
+    # optional import bar currents and voltages
     res_file = os.path.join(simulation_res_dir, "I_bars.dat")
     if os.path.isfile(res_file):
         results_dict["time"], results_dict["current"]["bars"] = read_timetable_dat(
+            res_file
+        )
+    res_file = os.path.join(simulation_res_dir, "U_bars.dat")
+    if os.path.isfile(res_file):
+        results_dict["time"], results_dict["voltage"]["bars"] = read_timetable_dat(
             res_file
         )
 
@@ -506,27 +538,24 @@ def main(sim_param: dict | str | bytes | os.PathLike):
             # get first char in machine side to index rotor and stator results
             _, results_dict["torque_vw"][side] = read_timetable_dat(res_file)
     if {"rotor", "stator"} <= results_dict["torque"].keys():
-        # calc mean torque
         results_dict["rotor torque"] = results_dict["torque"]["rotor"]
         results_dict["stator torque"] = results_dict["torque"]["stator"]
-        results_dict["torque"] = np.mean(
-            [
-                results_dict["rotor torque"],
-                results_dict["stator torque"],
-            ],
-            axis=0,
-        )
+        # results_dict["torque"] = np.mean(
+        #     [
+        #         results_dict["rotor torque"],
+        #         results_dict["stator torque"],
+        #     ],
+        #     axis=0,
+        # )
         if np.isclose(
-            np.mean(results_dict["torque"]["rotor"]),
-            np.mean(results_dict["torque"]["stator"]),
+            np.mean(results_dict["rotor torque"]),
+            np.mean(results_dict["stator torque"]),
             rtol=0.1,
         ):
             # mean diviation is smaller 10%
             # need to check this because if one of the results is misscalulated and just
             # returns 0 the mean result will give wrong results...
             # calc mean torque
-            results_dict["rotor torque"] = results_dict["torque"]["rotor"]
-            results_dict["stator torque"] = results_dict["torque"]["stator"]
             results_dict["torque"] = np.mean(
                 [
                     results_dict["rotor torque"],
