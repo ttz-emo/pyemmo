@@ -1,6 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences
-# Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-20254 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -80,7 +80,7 @@ class Script:
         name: str,
         scriptPath: str,
         simuParams: dict,
-        machine: MachineAllType = None,
+        machine: MachineAllType | None = None,
         resultsPath: str = "",
         factory: str = "Build-in",
     ):
@@ -253,7 +253,7 @@ class Script:
         self._name = newName
 
     @property
-    def scriptPath(self) -> str:
+    def scriptPath(self) -> str | os.PathLike:
         """Get the path, where the model files (.geo & .pro) should be stored
 
         Returns:
@@ -262,7 +262,7 @@ class Script:
         return self._scriptPath
 
     @scriptPath.setter
-    def scriptPath(self, newScriptPath: os.PathLike):
+    def scriptPath(self, newScriptPath: str | os.PathLike):
         """setter of Script Path
 
         Args:

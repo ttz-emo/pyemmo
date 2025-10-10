@@ -72,8 +72,8 @@ class PhysicalElement:
     def __init__(
         self,
         name: str,
-        geo_list: list[Surface | Line | CircleArc | Spline],
-        material: Material = None,
+        geo_list: list[Surface] | list[Line],
+        material: Material | None = None,
         phyID: int | None = None,
     ):
         # the physical element type can be used to identify physical elements
@@ -129,7 +129,7 @@ class PhysicalElement:
         return self._name
 
     @name.setter
-    def name(self, newName) -> str:
+    def name(self, newName):
         "Setter for name"
         if isinstance(newName, (str)):
             self._name = newName
@@ -137,7 +137,7 @@ class PhysicalElement:
             raise TypeError("Type of name must be a string.")
 
     @property
-    def material(self) -> Material:
+    def material(self) -> Material | None:
         """Material of phyiscal element
 
         Returns:

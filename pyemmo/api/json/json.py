@@ -377,7 +377,7 @@ def main(
     gmsh: str | os.PathLike = "",
     getdp: str | os.PathLike = "",
     results: str | os.PathLike = "",
-):
+) -> Script:
     """The main function reads the JSON files (if given) and creates the .geo
     and .pro scripts for a onelab simulation.
 

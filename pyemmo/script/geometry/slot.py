@@ -184,7 +184,7 @@ class Slot(PhysicalElement):
             phase = phaseStr[phaseIndex]
             return phase
 
-    def get_radial_position(self) -> tuple[float, float]:
+    def get_radial_position(self) -> float:
         """get the radial position of the slot.\n
         This is useful when sorting the slots in radial direction
 
@@ -197,7 +197,7 @@ class Slot(PhysicalElement):
             radList.append(centerPoint.radius)
         return mean(radList)
 
-    def get_circumferential_position(self) -> tuple[float, float]:
+    def get_circumferential_position(self) -> float:
         """get the circumferential position of the slot.\n
         This is useful when sorting the slots in circumfederal direction
 
