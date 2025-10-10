@@ -545,6 +545,8 @@ def main(
             # get first char in machine side to index rotor and stator results
             _, results_dict["torque_vw"][side] = read_timetable_dat(res_file)
     if {"rotor", "stator"} <= results_dict["torque"].keys():
+        results_dict["rotor torque"] = results_dict["torque"]["rotor"]
+        results_dict["stator torque"] = results_dict["torque"]["stator"]
         # try to calc mean torque
         if np.isclose(
             np.mean(results_dict["rotor torque"]),
