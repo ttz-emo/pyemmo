@@ -818,7 +818,7 @@ Resolution {
       // Evaluate[$Temp=Volume_RotorBridge[]];
       // Print[{$Temp}, Format "V_BRI=%e", File  StrCat[ResDir,'MotorParameters.txt']];
 
-      If(Flag_ParkTransformation && Flag_SrcType_Stator==1)
+      If(Flag_ParkTransformation)
         PostOperation[ThetaPark_IABC] ;
       EndIf
 
@@ -894,7 +894,7 @@ Resolution {
               GenerateJac[A] ; SolveJac[A] ; }
           EndIf
           // PostOperations:
-          If(Flag_ParkTransformation && Flag_SrcType_Stator==1)
+          If(Flag_ParkTransformation)
             // Had to shift PostOperation ThetaPark_IABC here, because if you
             // evaluate it before the solution process, you don't get the right
             // time step for the first iteration (= first rotational step).

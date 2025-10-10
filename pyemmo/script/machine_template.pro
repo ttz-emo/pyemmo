@@ -494,6 +494,7 @@ DefineConstant[
 
     // Use the Park transformation
     Flag_ParkTransformation = {
+        // current source and synchronous machine
         Flag_SrcType_Stator == TRANSIENT && MachineType==SYNCHRONOUS,
         Name StrCat[INPUT_ELEC_EXCITATION, "Use Clark-Park-Transformation"],
         Choices {0,1},
