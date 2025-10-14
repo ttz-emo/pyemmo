@@ -50,6 +50,7 @@ from ...script.geometry.segment_surface import SegmentSurface
 from .. import air
 from ..json import ROTOR_AIRGAP_IDEXT, STATOR_AIRGAP_IDEXT
 from ..json.modelJSON import createSurfaceDict
+from ..machine_segment_surface import MachineSegmentSurface
 from . import PyleecanMachine
 from .create_geo_dict import create_geo_dict
 from .get_coords_for_point import get_x_for_point, get_y_for_point
@@ -449,7 +450,7 @@ def calcs_radii(
 
 def translate_machine(
     machine: PyleecanMachine,
-) -> tuple[list[SegmentSurface], list[SegmentSurface], float, dict, dict]:
+) -> dict[str, MachineSegmentSurface]:
     """_summary_
 
     Args:
@@ -478,5 +479,27 @@ def translate_machine(
 
     for i in range(1, 5 + 1):
         band_radius_list.append(max_radius + wp * i)
+
+    # (
+    #     rotor_air_gap1,
+    #     rotor_air_gap2,
+    #     movingband_r,
+    # ) = build_bands_rotor(
+    #     machine=machine,
+    #     band_radius_list=band_radius_list,
+    #     r_point_rotor_cont=r_point_rotor_cont,
+    #     l_point_rotor_cont=l_point_rotor_cont,
+    #     rotor_cont_line_list=rotor_cont_line_list,
+    # )
+    # # add rotor airgaps to geo-list:
+    # geo_dict.extend([rotor_air_gap1, rotor_air_gap2])
+    # # add stator airgaps to geo-list:
+    # geo_dict.extend(
+    #     build_bands_stator(
+    #         machine=machine,
+    #         stator_cont_line_list=stator_cont_line_list,
+    #         band_radius_list=band_radius_list,
+    #     )
+    # )
 
     return geo_dict

@@ -82,14 +82,14 @@ def main(
     ):
         # create new gmsh model in case api is called multiple times:
         gmsh_api.model.add(pyleecan_machine.name)
-        (
-            movingband_r,
-            magnetizationDict,
-            geo_translation_dict,
-        ) = translate_machine(pyleecan_machine)
+        geo_translation_dict = translate_machine(pyleecan_machine)
     else:
         raise ValueError("Machine type is not translatable!")
 
+    # TODO: create function to calc mean airgap radius (or implement airgap function in json api)
+    # and function to get magnetization dict
+    movingband_r = 0
+    magnetizationDict = {}
     paramDict = create_param_dict(
         pyleecan_machine, simulation, movingband_r, magnetizationDict
     )
