@@ -64,16 +64,18 @@ def sample_pyleecan_material() -> pyleecanMat:
     sample_pyleecan_material = pyleecanMat(name="sample_pyleecan_material")
 
     sample_pyleecan_material.struct = MatStructural(
-        rho=7650,  # mechanische Dichte: mass per unit volume [kg/m3]
+        rho=7650,  # mechanische Dichte: mass per unit volume [kg/m3] # type: ignore
     )
     sample_pyleecan_material.elec = MatElectrical(
-        rho=0.01,  # Elektrischer Widerstand [Ohm]
+        rho=0.01,  # Elektrischer Widerstand [Ohm] # type: ignore
     )
     sample_pyleecan_material.mag = MatMagnetics(
-        mur_lin=0.000345,  # Relative magnetic permeability
-        alpha_Br=-0.001,  # Temperaturkoffezient für die Remanenzflussdichte /°C compared to 20°C
-        Brm20=1.5,  # magnet remanence induction at 20°C [T]
-        Wlam=0.35,  # lamination sheet width without insulation [m] (0 == not laminated)
+        mur_lin=0.000345,  # Relative magnetic permeability # type: ignore
+        # Temperaturkoffezient für die Remanenzflussdichte /°C compared to 20°C
+        alpha_Br=-0.001,  # type: ignore
+        Brm20=1.5,  # magnet remanence induction at 20°C [T] # type: ignore
+        # lamination sheet width without insulation [m] (0 == not laminated)
+        Wlam=0.35,  # type: ignore
     )
 
     sample_pyleecan_material.mag.BH_curve = [
