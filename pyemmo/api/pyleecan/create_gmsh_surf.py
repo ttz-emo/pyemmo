@@ -34,14 +34,14 @@ from pyleecan.Classes.SurfLine import SurfLine
 
 from ...api.machine_segment_surface import MachineSegmentSurface
 from ...script.gmsh.gmsh_line import GmshLine
-from ...script.material import Material
+from ...script.material.material import Material
 from .create_gmsh_lines import create_gmsh_lines
+from .label2part_id import label2part_id
 
 
 def create_gmsh_surface(
     surface: SurfLine,
     nbr_segments: int,
-    part_id: str,
     material: Material,
     name: str = "",
 ) -> MachineSegmentSurface:
@@ -56,6 +56,7 @@ def create_gmsh_surface(
     """
     if not isinstance(surface, SurfLine):
         raise TypeError(f"Surface must be of type SurfLine, got {type(surface)}")
+    assert isinstance(surface.label, str), "Surface label must be a string"
     # create line loop:
     curves: list[GmshLine] = create_gmsh_lines(surface.get_lines())
     # create gmsh surface
@@ -63,6 +64,6 @@ def create_gmsh_surface(
     # happens for example in case of holes on the boundary of a surface. In this case,
     # the curve loop is open at the part where the hole intersects.
     pyemmo_surf = MachineSegmentSurface.from_curve_loop(
-        curves, nbr_segments, part_id, material, name=name
+        curves, nbr_segments, label2part_id(surface.label), material, name=name
     )
     return pyemmo_surf
