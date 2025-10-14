@@ -171,7 +171,8 @@ def mergeAllGeoFiles(folderPath, gmshExe):
     for filename in allFiles:
         if ".geo" in filename:  # if its a geo file
             geoFilePath = join(folderPath, filename)
-            allCommands.append(geoFilePath)  # append the total filename to allCommands
+            # append the total filename to allCommands:
+            allCommands.append(geoFilePath)
     subprocess.run(allCommands, shell=False)
     return None
 
@@ -546,8 +547,6 @@ def runCalcforCurrent(param: dict) -> dict:
                     axial_length=param["axLen"],
                 )
                 totalLoss += sum(lossDict.values())
-                # print(f"Iron losses for {paramDict['ResId']} on {side} are: {lossDict}")
-
                 # save to file:
                 for loss_type, loss_data in lossDict.items():
                     core_loss_res_file = os.path.join(
