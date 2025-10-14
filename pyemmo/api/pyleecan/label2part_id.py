@@ -38,6 +38,7 @@ from pyleecan.Functions.labels import (
     ROTOR_LAB,
     STATOR_LAB,
     WIND_LAB,
+    HOLEM_LAB,
     decode_label,
 )
 
@@ -74,7 +75,7 @@ def label2part_id(label: str) -> str:
             return ROTOR_LAM_IDEXT
         if BAR_LAB in label_dict["surf_type"]:
             return ROTOR_BAR_IDEXT
-        if MAG_LAB in label_dict["surf_type"]:
+        if MAG_LAB in label_dict["surf_type"] or HOLEM_LAB in label_dict["surf_type"]:
             return ROTOR_MAG_IDEXT
         return label
     raise ValueError(
