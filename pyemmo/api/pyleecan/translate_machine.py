@@ -469,16 +469,8 @@ def translate_machine(
         machine=machine, is_internal_rotor=machine.rotor.is_internal
     )
     # Translation of geometry and creation of rotor and stator contour:
-    (
-        geometry_list,
-        rotor_cont_line_list,
-        stator_cont_line_list,
-        r_point_rotor_cont,
-        l_point_rotor_cont,
-        magnetization_dict,
-    ) = create_geo_dict(
+    geo_dict = create_geo_dict(
         machine,
-        machine.rotor.is_internal,
     )
     # Calculation of the MovingBand radii:
     wp = diff_radius / 5
@@ -487,33 +479,4 @@ def translate_machine(
     for i in range(1, 5 + 1):
         band_radius_list.append(max_radius + wp * i)
 
-    (
-        rotor_air_gap1,
-        rotor_air_gap2,
-        movingband_r,
-    ) = build_bands_rotor(
-        machine=machine,
-        band_radius_list=band_radius_list,
-        r_point_rotor_cont=r_point_rotor_cont,
-        l_point_rotor_cont=l_point_rotor_cont,
-        rotor_cont_line_list=rotor_cont_line_list,
-    )
-    # add rotor airgaps to geo-list:
-    geometry_list.extend([rotor_air_gap1, rotor_air_gap2])
-    # add stator airgaps to geo-list:
-    geometry_list.extend(
-        build_bands_stator(
-            machine=machine,
-            stator_cont_line_list=stator_cont_line_list,
-            band_radius_list=band_radius_list,
-        )
-    )
-
-    # Try to reuse function from json api:
-    geo_translation_dict = createSurfaceDict(geometry_list)
-
-    return (
-        movingband_r,
-        magnetization_dict,
-        geo_translation_dict,
-    )
+    return geo_dict
