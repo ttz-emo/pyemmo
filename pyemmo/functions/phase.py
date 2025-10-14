@@ -18,6 +18,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import annotations
+
 from typing import Literal
 
 import numpy as np
@@ -126,7 +128,7 @@ def phase2color(
         if phaseChar.lower() == "u":
             return "Magenta"
         if phaseChar.lower() == "v":
-            return "Yellow4"
+            return "Yellow"
         if phaseChar.lower() == "w":
             return "Cyan"
         raise ValueError(

@@ -18,12 +18,12 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Function to get coil span from winding layout"""
-from typing import List
+from __future__ import annotations
 
 import numpy as np
 
 
-def get_min_coilspan(wind_layout: List[List[int]], nbrSlots: int) -> int:
+def get_min_coilspan(wind_layout: list[list[int]], nbrSlots: int) -> int:
     """Calculate the minimal coil span from a winding layout"""
     if wind_layout[0][1]:
         # if second slot side list is NOT empty -> 2 layer winding

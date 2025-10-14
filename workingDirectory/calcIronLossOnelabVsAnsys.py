@@ -19,28 +19,30 @@
 #
 """Module to test iron loss calculation"""
 
-# %%
-import os
-import sys
-import numpy as np
-import subprocess
-import datetime
-import time
-import scipy.io as sio
+from __future__ import annotations
 
 # import logging
 import concurrent.futures
-from matplotlib import pyplot as plt
+
+# %%
+import os
+import subprocess
+import sys
+import time
+
+import numpy as np
 import pandas
-from pyemmo.definitions import ROOT_DIR, RESULT_DIR
+import scipy.io as sio
+
+from pyemmo.definitions import RESULT_DIR, ROOT_DIR
 
 if ROOT_DIR not in sys.path:
     sys.path.append(ROOT_DIR)
 
-# from pyemmo.functions import importResults as imp
-from pyemmo.functions import runOnelab
-from pyemmo.functions import calcIronLoss
 from pyemmo.api import json
+
+# from pyemmo.functions import importResults as imp
+from pyemmo.functions import calcIronLoss, runOnelab
 
 RES_DIR = (
     r"C:\Users\ganser\AppData\Roaming\pyemmo\Results\res_Test_1FE1051-4HF11_TherCom"
@@ -50,10 +52,8 @@ RES_DIR = (
 
 # %%
 def runCalcforCurrent(stromdq):
-    resId = (
-        f"id_{np.round(stromdq[0],1)}A_iq_{np.round(stromdq[1],1)}A".replace(
-            ".", "_"
-        )
+    resId = f"id_{np.round(stromdq[0],1)}A_iq_{np.round(stromdq[1],1)}A".replace(
+        ".", "_"
     )
     print(f"Running job: {resId}")
     paramDict = {
@@ -115,9 +115,7 @@ def runCalcforCurrent(stromdq):
                 totalLoss += lossVals.mean()
             # print(f"Iron losses for {resId} on {side} are: {ironLoss[side]}")
         except Exception as exce:
-            print(
-                f"Failed to calculate iron loss for '{resId}', because of: {exce}"
-            )
+            print(f"Failed to calculate iron loss for '{resId}', because of: {exce}")
     return totalLoss
 
 
@@ -127,9 +125,7 @@ if __name__ == "__main__":
     # RESULT_DIR = r"C:\Users\ganser\AppData\Roaming\pyemmo\Results"
     geoFile = os.path.join(RESULT_DIR, "Test_1FE1051-4HF11_TherCom.geo")
     mshFile = os.path.join(RESULT_DIR, "Test_1FE1051-4HF11_TherCom.msh")
-    paramFile = os.path.join(
-        RESULT_DIR, "Test_1FE1051-4HF11_TherCom_param.geo"
-    )
+    paramFile = os.path.join(RESULT_DIR, "Test_1FE1051-4HF11_TherCom_param.geo")
     calFile = os.path.join(RESULT_DIR, "machine_magstadyn_a.pro")
     proFile = os.path.join(RESULT_DIR, "Test_1FE1051-4HF11_TherCom.pro")
     if not os.path.exists(proFile):
@@ -195,9 +191,7 @@ if __name__ == "__main__":
     print("save iron losses...")
     np.save(ironLossResFile, ironLossArray)
 
-    coreLossOnelabMatFile = os.path.join(
-        RES_DIR, "230301_ironLossDataOnelab.mat"
-    )
+    coreLossOnelabMatFile = os.path.join(RES_DIR, "230301_ironLossDataOnelab.mat")
     sio.savemat(
         coreLossOnelabMatFile,
         {

@@ -19,7 +19,10 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module to test winding translation"""
+from __future__ import annotations
+
 from os.path import abspath, join
+
 import pytest
 from pyleecan.Classes.Machine import Machine
 
@@ -40,9 +43,7 @@ from tests.api.pyleecan import TEST_API_PYLCN_DATA_DIR
 )
 def test_translate_winding(machine_sample):
     """Function to test winding translation"""
-    machine: Machine = load(
-        abspath(join(TEST_API_PYLCN_DATA_DIR, machine_sample))
-    )
+    machine: Machine = load(abspath(join(TEST_API_PYLCN_DATA_DIR, machine_sample)))
     _, wind_swat = translate_winding(machine)
 
     if machine_sample == "03_synrm_muster_Bachelor.json":

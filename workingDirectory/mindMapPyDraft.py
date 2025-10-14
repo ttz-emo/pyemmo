@@ -19,12 +19,16 @@
 #
 """This script creates a mind map of the pyemmo package structure"""
 
+from __future__ import annotations
+
+import io
+
 # %%
 import os
-import io
-import pydot
-import matplotlib.pyplot as plt
+
 import matplotlib.image as mpimg
+import matplotlib.pyplot as plt
+import pydot
 
 # %%
 WORKING_DIR = os.path.dirname(__file__)

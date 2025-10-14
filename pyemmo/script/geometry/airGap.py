@@ -18,9 +18,9 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for AirArea Physical Element"""
-from typing import List, Union
+from __future__ import annotations
 
-from ..material import Material
+from ..material.material import Material
 from .circleArc import CircleArc, Line
 from .physicalElement import PhysicalElement
 from .spline import Spline
@@ -44,7 +44,7 @@ class AirGap(PhysicalElement):
     def __init__(
         self,
         name: str,
-        geo_list: List[Union[Surface, Line, CircleArc, Spline]],
+        geo_list: list[Surface | Line | CircleArc | Spline],
         material: Material = None,
     ):
         """AirGap

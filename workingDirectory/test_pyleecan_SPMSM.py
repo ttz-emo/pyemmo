@@ -20,6 +20,8 @@
 #
 """This tutorial script shows how to use the pyemmo api to create a ONELAB
 model of a pyleecan machine."""
+from __future__ import annotations
+
 import logging
 
 # %%
@@ -102,12 +104,12 @@ pro_file = os.path.join(model_folder, pyleecan_machine.name + ".pro")
 #         "ResId": resid,
 #         "Flag_PrintFields": 0,
 #         "Flag_Debug": 0,
+#     "exe": findGetDP(),
 #     },
 #     "ResId": resid,
 #     "pro": pro_file,
 #     "res": sim_res_dir,
-#     "exe": findGetDP(),
-#     "gmsh": findGmsh(),
+#     "gmsh": {"exe": findGmsh()},
 #     # "hyst": 0, # loss coefficient
 #     # "eddy": 0, # loss coefficient
 #     # "exc": 0, # loss coefficient

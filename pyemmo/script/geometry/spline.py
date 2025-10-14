@@ -17,7 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-from typing import List, Literal, Union
+from __future__ import annotations
+
+from typing import Literal
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -39,7 +41,7 @@ class Spline(Line):
         name: str,
         start_point: Point,
         end_point: Point,
-        control_points: List[Point],
+        control_points: list[Point],
         spline_type: Literal[0, 1, 2] = 0,
     ):
         """Konstruktor der Klasse Spline
@@ -79,7 +81,7 @@ class Spline(Line):
         return self._spline_type
 
     @property
-    def control_points(self) -> List[Point]:
+    def control_points(self) -> list[Point]:
         """Get the controll point list of a Spline
 
         Returns:
@@ -88,7 +90,7 @@ class Spline(Line):
         return self._control_points
 
     @control_points.setter
-    def control_points(self, new_control_points: List[Point]):
+    def control_points(self, new_control_points: list[Point]):
         """Mit setControlPoints können neue Kontrollpunkte der Spline definiert werden.
 
         Args:
@@ -96,9 +98,7 @@ class Spline(Line):
         """
         self._control_points = new_control_points
 
-    def addControlPoint(
-        self, new_control_point: Point, position: Union[int, None] = None
-    ):
+    def addControlPoint(self, new_control_point: Point, position: int | None = None):
         """Mit addControlPoint() kann an einer definierten Postion ein weitere
         Kontrollpunkt in die Liste der Kontrollpunkte ergänzt werden.
 
@@ -197,7 +197,7 @@ class Spline(Line):
         for p in self._control_points:
             p.rotateZ(rotationPoint, angle)
 
-    def duplicate(self, name="") -> "Spline":
+    def duplicate(self, name="") -> Spline:
         """Mit duplicate() wird eine Spline mit gleichen Eigenschaften zur Originalen
         erzeugt. Diese Spline hat jedoch eine unterschiedliche ID.
                 Beispiel:
@@ -213,7 +213,7 @@ class Spline(Line):
         """
         newP1 = self.start_point.duplicate()
         newP2 = self.end_point.duplicate()
-        control_points: List[Point] = []
+        control_points: list[Point] = []
         for controllPoint in self.control_points:
             control_points.append(controllPoint.duplicate())
 

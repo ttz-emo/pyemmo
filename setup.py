@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -17,24 +18,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Configuration file for setuptools (see
+"""
+Configuration file for setuptools (see
 https://setuptools.pypa.io/en/latest/index.html for more info on setup)
 
 Most of the metadata is defined by the pyproject.toml file.
 Still using setup.py file for depenencies and version instead of pyproject.toml
-because we want to access the version number in the script generation process"""
+because we want to access the version number in the script generation process
+"""
 
-try:
-    import setuptools
-except ImportError:  # Install setuptools if needed
-    from os import system
-    from sys import executable
-
-    # run 'pip install setuptools'
-    system(f"{executable} -m pip install setuptools")
-
-    import setuptools
-
+import setuptools
 
 # /!\ Increase the number before a release
 # See https://www.python.org/dev/peps/pep-0440/
@@ -45,64 +38,20 @@ except ImportError:  # Install setuptools if needed
 # Release 1.1.0 : 1.1.0
 # First post release of the release 1.1.0 : 1.1.0.post1
 
+
 # get version from version.py file in package,
 #  because we need to access the version number from pyemmo.script
+
 with open("pyemmo/version.py", encoding="utf-8") as versionFile:
-    exec(versionFile.read())
-# from .pyemmo.version import __version__
-# pylint: disable=locally-disabled, undefined-variable
-PYEMMO_VERSION = __version__
+    file_content = versionFile.read()
+    version = [x for x in file_content.split("\n") if "__version__" in x][0].split("=")[
+        1
+    ]
+    version = version.replace('"', "").replace(" ", "")
 
-# with open("README.md", "r", encoding="utf-8") as fh:
-#     long_description = fh.read()
+PYEMMO_VERSION = version  # # pylint: disable=locally-disabled, undefined-variable
 
-PYTHON_REQUIRES = ">= 3.6"
-
-# Pyleecan dependancies
-install_requires = [
-    "swat_em>=0.6.3",
-    "pygetdp>=1.0.0",
-    "gmsh>=4.10.3",
-    "matplotlib>=3.3.4",
-    "pandas>=1.2.4",  # TODO: remove pandas since its a big package and not used after change of material database to json.
-    "numpy>=1.23.1",
-    "parse>=1.19.0",
-    "splines>=0.3.2",
-]
 
 setuptools.setup(
-    # name="pyemmo",
     version=PYEMMO_VERSION,
-    # author="AG-EM TTZ-EMO",
-    # author_email="agem.ttz-emo@thws.de",
-    # description="PyEMMO is a interface for modeling electrical machines in the open-source FEA software Onelab",
-    # long_description=long_description,
-    # long_description_content_type="text/markdown",
-    # url=r"https://gitlab.ttz-emo.thws.de/ag-em/pyemmo",
-    # packages=setuptools.find_packages(
-    #     include=[r"\pyemmo*"]
-    #     # exclude=[r"\tests*", r"\workingDirectory*", r"\.vscode*", r"\egg-info*"]
-    # ),
-    # package data only works with binary packages!!!
-    #   see -> https://stackoverflow.com/questions/7522250
-    package_data={},
-    include_package_data=True,
-    # data_files=[
-    #     ("", ["pyemmo/script/default_color_dict.json"]),
-    #     (
-    #         "",
-    #         [
-    #             "pyemmo/script/material/Material_new.db",
-    #             "pyemmo/script/material/Material_old.db",
-    #         ],
-    #     ),
-    # ],
-    # classifiers=[
-    #     "Programming Language :: Python :: 3",
-    #     "License ::Other/Proprietary License",
-    #     "Operating System :: OS Independent",
-    # ],
-    # python_requires=PYTHON_REQUIRES,
-    install_requires=install_requires,
-    extras_require={"pyleecan": ["pyleecan>=1.5.1"]},
 )

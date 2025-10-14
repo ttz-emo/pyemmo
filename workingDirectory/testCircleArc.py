@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -18,15 +19,20 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-# %%
-import os
+from __future__ import annotations
+
 import logging
+
 import numpy as np
 from matplotlib import pyplot as plt
+
 from pyemmo.definitions import RESULT_DIR
-from pyemmo.script.script import Script
 from pyemmo.script.geometry.circleArc import CircleArc
 from pyemmo.script.geometry.point import Point
+from pyemmo.script.script import Script
+
+# %%
+
 
 logging.getLogger().setLevel(logging.DEBUG)
 

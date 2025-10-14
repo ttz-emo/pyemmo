@@ -19,6 +19,8 @@
 #
 """init of geometry package"""
 
+from __future__ import annotations
+
 from .. import (
     DOMAIN,
     DOMAIN_AIRGAP,

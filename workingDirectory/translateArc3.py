@@ -17,10 +17,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import annotations
+
 import sys
 
 try:
-    from pyemmo.script.script import Script
+    pass
 except:
     rootname = "C:\\Users\\k49976\\Desktop\\repositoryGibLab\\pyemmo"
     print(f"Could not determine root. Setting it manually to '{rootname}'")
@@ -28,6 +30,7 @@ except:
     sys.path.append(rootname)
 
 import pyleecan.Classes.Arc3
+
 from .build_pyemmo_point import build_pyemmo_point
 
 

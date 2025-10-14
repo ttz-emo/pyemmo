@@ -18,8 +18,9 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-# %%
+from __future__ import annotations
 
+# %%
 import math
 import os
 import subprocess
@@ -81,15 +82,12 @@ ez = Line("ez", P0, Pz)
 PBohrung = Point("mittelPunktBohrung", 0, 0, 0, 5e-3)
 
 # Material aus Datenbank laden
-steel_1010 = Material()
-# steel_1010.loadMatFromDataBase("Material_new.db", "M330_50AP_050Hz") # bug in material bh curve
-steel_1010.loadMatFromDataBase("Material_new.db", "steel_1010")
-ndFe35 = Material()
-ndFe35.loadMatFromDataBase("Material_new.db", "NdFe35")
-air = Material()
-air.loadMatFromDataBase("Material_new.db", "air")
-copper = Material()
-copper.loadMatFromDataBase("Material_new.db", "copper")
+steel_1010 = Material.load("steel_1010")
+# steel_1010.load("M330_50AP_050Hz") # bug in material bh curve
+
+ndFe35 = Material.load("NdFe35")
+air = Material.load("air")
+copper = Material.load("copper")
 
 # parameters
 nbrSlots = 12
@@ -216,6 +214,7 @@ def createRotorPMSM():
     for sR in slave_R:
         sR.rotateZ(mRotor, math.pi / 2)
     slaveR = SlaveLine("slaveR", slave_R)
+
     mbRotor = MovingBand(name="mbRotor", geo_list=mbR_all, material=air)
     phy_innerLimit = LimitLine("innerLimitRotor", innerLimit)
 

@@ -18,7 +18,9 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for Class Domain"""
-from typing import TYPE_CHECKING, List, Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from pyemmo.script.geometry.physicalElement import PhysicalElement
 
@@ -44,7 +46,7 @@ class Domain:
     def __init__(
         self,
         name: str,
-        physicalElements: Union[List[PhysicalElement], PhysicalElement],
+        physicalElements: list[PhysicalElement] | PhysicalElement,
     ):
         self.name = name
         self.physicals = physicalElements
@@ -68,7 +70,7 @@ class Domain:
         self._name = name
 
     @property
-    def physicals(self) -> List[PhysicalElement]:
+    def physicals(self) -> list[PhysicalElement]:
         """List of physical surfaces/lines (PhysicalElement objects) belonging to
         the domain.
 
@@ -78,9 +80,7 @@ class Domain:
         return self._physicals
 
     @physicals.setter
-    def physicals(
-        self, physicalElements: Union[PhysicalElement, List[PhysicalElement]]
-    ):
+    def physicals(self, physicalElements: PhysicalElement | list[PhysicalElement]):
         """setter of physical element list
 
         Args:
@@ -102,7 +102,7 @@ class Domain:
             f"Should be List[PhysicalElement] or PhysicalElement but is: {type(physicalElements)}"
         )
 
-    def addPhysicalElements(self, physicalElementList: List[PhysicalElement]):
+    def addPhysicalElements(self, physicalElementList: list[PhysicalElement]):
         """append PhysicalElements to the domain"""
         if isinstance(physicalElementList, list):
             self.physicals.extend(physicalElementList)
@@ -127,7 +127,7 @@ class Domain:
     #       Domain1.addToScript(myScript)
     #
     ###
-    def addToScript(self, script: "Script"):
+    def addToScript(self, script: Script):
         """call script._addDomain().
         Function is for development and testing reasons.
 

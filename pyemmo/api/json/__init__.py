@@ -19,10 +19,12 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """init module of json api"""
-import logging
+
+from __future__ import annotations
 
 from ...script.geometry import defaultCenterPoint
-from ...script.material.material import Material
+
+# TODO: Clean up unused definitions here!
 
 globalCenterPoint = defaultCenterPoint
 # Movingband line Identification dicts

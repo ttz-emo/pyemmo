@@ -17,9 +17,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import annotations
+
 import logging
 from math import gcd
-from typing import List, Literal, Union
+from typing import Literal
 
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
@@ -40,7 +42,7 @@ class MachineAllType:
         rotor: Rotor,
         stator: Stator,
         name: str = "",
-        symmetryFactor: Union[int, None] = None,
+        symmetryFactor: int | None = None,
     ):
         """
         Constructor of class Machine
@@ -233,7 +235,7 @@ class MachineAllType:
         return self._nbrPolePairs
 
     @nbrPolePairs.setter
-    def nbrPolePairs(self, nbrPolePairs: Union[int, float]) -> None:
+    def nbrPolePairs(self, nbrPolePairs: int | float) -> None:
         """Setter of number of pole pairs
 
         Args:
@@ -288,9 +290,9 @@ class MachineAllType:
             raise TypeError(f"Wrong type for stator: {type(newStator)}")
 
     @property
-    def domains(self) -> List[Domain]:
+    def domains(self) -> list[Domain]:
         """Return all Domains of the machine as list"""
-        domainList: List[Domain] = []
+        domainList: list[Domain] = []
         # Add primary and slave lines first!
         if self._domainPrimary != None:
             domainList.append(self._domainPrimary)
@@ -316,7 +318,7 @@ class MachineAllType:
         return domainList
 
     @property
-    def primaryLines(self) -> List[Line]:
+    def primaryLines(self) -> list[Line]:
         """get a list of primary lines of rotor and stator
 
         Returns:
@@ -325,7 +327,7 @@ class MachineAllType:
         rotorDict = self.rotor.sortPhysicals()
         statorDict = self.stator.sortPhysicals()
         physicalPrimeLines = rotorDict["primary"] + statorDict["primary"]
-        primeLines: List[Line] = list()
+        primeLines: list[Line] = list()
         for physicalPrimeLine in physicalPrimeLines:
             if physicalPrimeLine.geoElementType == Line:
                 primeLines.extend(physicalPrimeLine.geo_list)
@@ -338,7 +340,7 @@ class MachineAllType:
         primeLines.sort(key=_get_line_middle_raidus)
         return primeLines
 
-    def getSecondaryLines(self) -> List[Line]:
+    def getSecondaryLines(self) -> list[Line]:
         """get a list of secondary lines of rotor and stator
 
         Returns:
@@ -347,7 +349,7 @@ class MachineAllType:
         rotorDict = self.rotor.sortPhysicals()
         statorDict = self.stator.sortPhysicals()
         physicalSecLines = rotorDict["slave"] + statorDict["slave"]
-        secondaryLines: List[Line] = list()
+        secondaryLines: list[Line] = list()
         for physicalSecLine in physicalSecLines:
             if physicalSecLine.geoElementType == Line:
                 secondaryLines.extend(physicalSecLine.geo_list)
@@ -362,7 +364,7 @@ class MachineAllType:
         return secondaryLines
 
     @property
-    def physicalElements(self) -> List[PhysicalElement]:
+    def physicalElements(self) -> list[PhysicalElement]:
         """Get a list of all physical elements
 
         Returns:
@@ -463,7 +465,7 @@ class MachineAllType:
 
     def plot(
         self,
-        fig: Union[Figure, None] = None,
+        fig: Figure | None = None,
         linewidth=0.5,
         marker=".",
         markersize=1,

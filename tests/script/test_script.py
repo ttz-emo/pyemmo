@@ -17,9 +17,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import annotations
+
 import unittest
+
 from pyemmo.script.script import Script
-from .. import save_path
+
+from .. import TEST_TEMP_DIR
 
 
 class TestScript(unittest.TestCase):
@@ -71,7 +75,7 @@ class TestScript(unittest.TestCase):
         }
         self.scriptObj = Script(
             name="testScript",
-            scriptPath=save_path,
+            scriptPath=TEST_TEMP_DIR,
             factory="Built-in",
             simuParams=self.initParamDict,
         )
@@ -89,7 +93,7 @@ class TestScript(unittest.TestCase):
 
         # Sicherstellen, dass init Funktion Werte richtig setzt
         self.assertEqual(self.scriptObj.name, "testScript")
-        self.assertEqual(self.scriptObj.scriptPath, save_path)
+        self.assertEqual(self.scriptObj.scriptPath, TEST_TEMP_DIR)
         self.assertEqual(self.scriptObj.factory, "Build-in")
         # Test that the initial parameters are in the resulting param dict
         self.assertEqual(

@@ -18,44 +18,38 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import annotations
+
 # %%
-import os
-from os import mkdir, path
+import subprocess
 from cmath import pi
 from genericpath import isdir
-from numpy import rad2deg, where, gcd
-from swat_em import datamodel, analyse
-from pyemmo.functions.runOnelab import createCmdCommand
-from pyemmo.functions.import_results import plot_all_dat
-from pyemmo.script.script import Script
+from os import mkdir, path
+
+from numpy import gcd, rad2deg, where
+from swat_em import analyse, datamodel
+
 from pyemmo.definitions import RESULT_DIR
+from pyemmo.functions.import_results import plot_all_dat
+from pyemmo.functions.runOnelab import createCmdCommand
+from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
 from pyemmo.script.geometry.point import Point
 
 # from pyemmo.script.geometry.line import Line
-from pyemmo.script.material.electricalSteel import Material, ElectricalSteel
-from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
+from pyemmo.script.material.electricalSteel import Material
+from pyemmo.script.script import Script
 
 # %%
 
 PBohrung = Point("mittelPunktBohrung", 0, 0, 0, 5e-3)
 
 # Material aus Datenbank laden
-steel_1010 = ElectricalSteel(
-    sheetThickness=1e-3,
-    lossParams=None,
-    referenceFrequency=0,
-    referenceFluxDensity=0,
-    density=1,
-)
-steel_1010.loadMatFromDataBase("Material_new.db", "steel_1010")
-ndFe35 = Material()
-ndFe35.loadMatFromDataBase("Material_new.db", "NdFe35")
+steel_1010 = Material.load("steel_1010")
+ndFe35 = Material.load("NdFe35")
 # ndFe35.setRemanence(0.01) # switch "off" remanence
 # ndFe35.setRelPermeability(1000)
-air = Material()
-air.loadMatFromDataBase("Material_new.db", "air")
-copper = Material()
-copper.loadMatFromDataBase("Material_new.db", "copper")
+air = Material.load("air")
+copper = Material.load("copper")
 
 nbrSlots = 12
 nutteilung = 2 * pi / nbrSlots
@@ -149,9 +143,7 @@ SPMSM.setFunctionMesh("linear", 8)
 SPMSM.plot()
 # SPMSM.createMachineDomains -> MachineAllType function
 # %% calc angle offset
-dAxisAngle = (
-    polteilung / 2 * nbrPolePairs
-)  # center angle of north pole -> d-Axis
+dAxisAngle = polteilung / 2 * nbrPolePairs  # center angle of north pole -> d-Axis
 print(f"d-Axis (rotor north pole) angle (elec): {rad2deg(dAxisAngle)}°")
 nu, amp, angle = SPMSM.stator.winding.get_MMF_harmonics()
 # Stator Winkel für I_U = 1 p.u., I_V = -1/2, I_W = -1/2
@@ -197,12 +189,12 @@ myScript = Script(
 )
 myScript.generateScript()
 
-os.system(
+subprocess.run(
     createCmdCommand(
         onelabFile=myScript.proFilePath,
         useGUI=True,
         paramDict={"Flag_ClearResults": 1},
     )
 )
-plot_all_dat(myScript.getResultsPath())
+plot_all_dat(myScript.resultsPath)
 # %%

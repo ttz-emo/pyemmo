@@ -18,20 +18,22 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-# %%
-from sys import path
-from os.path import abspath, join, dirname
-from numpy import deg2rad
-import pyemmo as emmo
-from pyemmo.definitions import RESULT_DIR
-from pyemmo.script.script import Script
-from pyemmo.script.geometry.point import Point
-from pyemmo.script.geometry.line import Line
-from pyemmo.script.geometry.circleArc import CircleArc
-from pyemmo.script.geometry.spline import Spline
-from pyemmo.script.geometry.surface import Surface
-from pyemmo.functions.runOnelab import createCmdCommand
+from __future__ import annotations
+
 from subprocess import run
+
+from numpy import deg2rad
+
+from pyemmo.definitions import RESULT_DIR
+from pyemmo.functions.runOnelab import createCmdCommand
+from pyemmo.script.geometry.circleArc import CircleArc
+from pyemmo.script.geometry.line import Line
+from pyemmo.script.geometry.point import Point
+from pyemmo.script.geometry.surface import Surface
+from pyemmo.script.script import Script
+
+# %%
+
 
 # %%
 myScript = Script("testGEO", scriptPath=RESULT_DIR, simuParams={})

@@ -19,6 +19,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import annotations
+
 import gmsh
 import numpy as np
 import pytest
@@ -26,8 +28,9 @@ import pytest
 from pyemmo.script.geometry.physicalElement import PhysicalElement
 from pyemmo.script.gmsh.gmsh_line import GmshLine, GmshPoint
 from pyemmo.script.gmsh.gmsh_surface import GmshSurface
-from pyemmo.script.gmsh.utils import (  # filter_lines_at_angle,; is_straight,
+from pyemmo.script.gmsh.utils import (  # is_straigt
     filter_curves_on_radius,
+    filter_lines_at_angle,
     get_dim_tags,
     get_max_radius,
     get_min_radius,
@@ -61,6 +64,7 @@ def add_new_model():
 
 
 def test_get_dim_tags():
+    """Test the get_dim_tags function"""
     # create gmsh line with tag 1 (dim = 1)
     line = GmshLine.from_points(
         start_point=GmshPoint.from_coordinates(coords=(0, 0)),
@@ -87,6 +91,7 @@ def test_get_dim_tags():
 
 
 def test_get_point_tags():
+    """Test the get_point_tags function"""
     surf = GmshSurface(tag=gmsh.model.occ.addRectangle(0, 0, 0, 1, 0.5))
     line = GmshLine(
         tag=gmsh.model.occ.addLine(
@@ -101,6 +106,7 @@ def test_get_point_tags():
 
 
 def test_get_max_radius():
+    """Test the get_max_radius function"""
     dx = 1.0
     dy = 0.5
     surf = GmshSurface(tag=gmsh.model.occ.addRectangle(0, 0, 0, dx, dy))
@@ -111,6 +117,7 @@ def test_get_max_radius():
 
 
 def test_get_min_radius():
+    """Test the get_min_radius function"""
     dx = 1.0
     dy = 0.5
     surf = GmshSurface(tag=gmsh.model.occ.addRectangle(dx, dy, 0, dx, dy))
@@ -121,6 +128,7 @@ def test_get_min_radius():
 
 
 def test_filter_curves_on_radius():
+    """Test the filter_curves_on_radius function"""
     radius = 1.0
     gmsh_circle = add_circle(
         center=GmshPoint.from_coordinates(coords=(0, 0)), radius=radius
@@ -130,3 +138,67 @@ def test_filter_curves_on_radius():
 
     assert len(result) == 4
     assert result == gmsh_circle.curve
+
+
+def test_filter_lines_at_angle():
+    """Test the filter_lines_at_angle function"""
+    # Create a line with a 45° angle
+    lines = [
+        GmshLine.from_points(
+            start_point=GmshPoint.from_coordinates(coords=(0, 0)),
+            end_point=GmshPoint.from_coordinates(coords=(1, 1)),
+        )
+    ]
+    # Create another line with a 45° angle without origin
+    lines.append(
+        GmshLine.from_points(
+            start_point=GmshPoint.from_coordinates(coords=(0.5, 0.5)),
+            end_point=GmshPoint.from_coordinates(coords=(1.5, 1.5)),
+        )
+    )
+
+    # Create a line with a 90° angle
+    lines.append(
+        GmshLine.from_points(
+            start_point=GmshPoint.from_coordinates(coords=(0, 0)),
+            end_point=GmshPoint.from_coordinates(coords=(0, 1)),
+        )
+    )
+
+    # Create a second line at a 0° angle
+    lines.append(
+        GmshLine.from_points(
+            start_point=GmshPoint.from_coordinates(coords=(0, 0)),
+            end_point=GmshPoint.from_coordinates(coords=(1, 0)),
+        )
+    )
+
+    # Create a second line at a 180° angle
+    lines.append(
+        GmshLine.from_points(
+            start_point=GmshPoint.from_coordinates(coords=(0, 0)),
+            end_point=GmshPoint.from_coordinates(coords=(-1, 0)),
+        )
+    )
+
+    # Filter lines at an angle of 45 degrees
+    result = filter_lines_at_angle(lines, angle=np.pi / 4)
+
+    assert len(result) == 2
+    assert result[0] == lines[0]  # Should only return the first line
+    assert result[1] == lines[1]  # Should only return the first line
+
+    # filter lines at 90 deg
+    result = filter_lines_at_angle(lines, angle=np.pi / 2)
+    assert len(result) == 1
+    assert result[0] == lines[2]
+
+    # filter lines at 0 deg
+    result = filter_lines_at_angle(lines, angle=0)
+    assert len(result) == 1
+    assert result[0] == lines[3]
+
+    # filter lines at 180 deg
+    result = filter_lines_at_angle(lines, angle=np.pi)
+    assert len(result) == 1
+    assert result[0] == lines[4]

@@ -19,6 +19,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module to test pyemmo.api.pyleecan.get_translated_machine"""
+from __future__ import annotations
+
 import math
 from os.path import abspath, join
 
@@ -47,12 +49,8 @@ def test_get_translated_machine():
     # check movingband radius
     assert math.isclose(movingband_r, 0.0797, abs_tol=1e-16)
     # check magnetization directions
-    assert math.isclose(
-        magnetization_dict["Mag0"], 0.5462703245568578, rel_tol=1e-12
-    )
-    assert math.isclose(
-        magnetization_dict["Mag1"], 0.2391278388405909, rel_tol=1e-12
-    )
+    assert math.isclose(magnetization_dict["Mag0"], 0.5462703245568578, rel_tol=1e-12)
+    assert math.isclose(magnetization_dict["Mag1"], 0.2391278388405909, rel_tol=1e-12)
     for key in (
         "Pol",
         "Lpl0",

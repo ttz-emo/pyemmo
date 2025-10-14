@@ -1,0 +1,9 @@
+{
+	"ID": 362,
+	"name": "air",
+	"conductivity": 0.0,
+	"relPermeability": 1.0000004,
+	"remanence": 0.0,
+	"linear": true,
+	"BHCurve": {}
+}

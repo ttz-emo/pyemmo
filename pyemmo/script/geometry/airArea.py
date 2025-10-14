@@ -18,7 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for AirArea Physical Element"""
-from typing import List
+from __future__ import annotations
 
 from .physicalElement import Material, PhysicalElement, Surface
 
@@ -50,7 +50,7 @@ class AirArea(PhysicalElement):
     def __init__(
         self,
         name: str,
-        geo_list: List[Surface],
+        geo_list: list[Surface],
         material: Material = None,
     ):
         """AirArea is any area defined with material air except from the Airgap surface

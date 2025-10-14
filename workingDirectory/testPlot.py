@@ -18,8 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-# %%
-from typing import List
+from __future__ import annotations
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -30,6 +29,9 @@ from pyemmo.script.geometry.line import Line
 from pyemmo.script.geometry.point import Point
 from pyemmo.script.geometry.spline import Spline
 from pyemmo.script.geometry.surface import Surface
+
+# %%
+
 
 P1 = Point("P1", 0, 0, 0, 1)
 # make sure point is plotted even though no fig is given
@@ -67,8 +69,8 @@ for i in range(4):
 plt.show()
 # %%
 
-curves: List[Line] = S1.curve
-points: List[Point] = []
+curves: list[Line] = S1.curve
+points: list[Point] = []
 for curve in curves:
     startPoint = curve.start_point
     endPoint = curve.end_point

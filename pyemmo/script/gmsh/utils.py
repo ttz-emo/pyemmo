@@ -45,23 +45,28 @@ Author:
 Note:
     This docstring was created by OpenAI GPT-4o.
 """
-from typing import Literal, Union
+from __future__ import annotations
+
+import logging
+from typing import Literal
 
 import gmsh
 import numpy as np
 
 from ...definitions import DEFAULT_GEO_TOL
+from ..geometry import defaultCenterPoint
 from ..geometry.circleArc import CircleArc
 from ..geometry.line import Line
 from ..geometry.physicalElement import PhysicalElement
 from ..geometry.surface import Surface
 from . import DimTag
 from .gmsh_line import GmshLine
+from .gmsh_point import GmshPoint
 
 # TODO: add tests for misc functions!!
 
 
-def get_dim_tags(geo_list: list[Union[Line, Surface, PhysicalElement]]) -> list[DimTag]:
+def get_dim_tags(geo_list: list[Line | Surface | PhysicalElement]) -> list[DimTag]:
     """
     Extracts dimension tag value pairs from a list of geometric elements.
 
@@ -244,17 +249,22 @@ def filter_lines_at_angle(line_list: list[Line], angle: float) -> list[Line]:
     for line in straight_lines:
         # we need to check start and end point angle here because there could be a line
         # on the boundary that has the same vector-angle, but is no secondary line!
-        if all(
-            np.isclose(
-                [
-                    line.start_point.getAngleToX() % (2 * np.pi),
-                    line.end_point.getAngleToX() % (2 * np.pi),
-                ],
-                [angle, angle],
-                atol=1e-6,
-            )
+        # Additionally we need to check for the center point because its on every angle.
+        if line.start_point.isEqual(defaultCenterPoint, DEFAULT_GEO_TOL) or np.isclose(
+            line.start_point.getAngleToX() % (2 * np.pi),
+            angle,
+            atol=1e-6,
         ):
-            lines_at_angle.append(line)
+            # start point is center or on angle
+            if line.end_point.isEqual(
+                defaultCenterPoint, DEFAULT_GEO_TOL
+            ) or np.isclose(
+                line.end_point.getAngleToX() % (2 * np.pi),
+                angle,
+                atol=1e-6,
+            ):
+                # end point is center or at angle aswell
+                lines_at_angle.append(line)
     return lines_at_angle
 
 
@@ -277,3 +287,44 @@ def is_straight(curve_tag: int) -> bool:
     return np.isclose(
         distance, gmsh.model.occ.getMass(1, curve_tag), atol=DEFAULT_GEO_TOL
     )
+
+
+def fix_missing_mesh_sizes() -> None:
+    """
+    Check the mesh size of the all points in the current ``gmsh.model``.
+    Due to issues with OCC it can happen that points lose their mesh size and get
+    mesh size = 0. In this case, search for the closest point(s) using
+    ``gmsh.model.getEntitiesInBoundingBox`` and set the mesh size to the first found
+    point mesh size.
+    """
+    nbr_fixed = 0
+    all_points = gmsh.model.getEntities(0)
+    for dim_tag in all_points:
+        p = GmshPoint(dim_tag[1])
+        if p.meshLength == 0:
+            dim_tags = []
+            xmin, ymin, _, xmax, ymax, _ = gmsh.model.getBoundingBox(-1, -1)
+            # initial value is 1/1000 of whole bounding box
+            dl = np.mean([xmax - xmin, ymax - ymin]) / 1000
+            nbr_loops = 0
+            while not dim_tags:
+                dim_tags = gmsh.model.getEntitiesInBoundingBox(
+                    xmin=p.x - dl,
+                    ymin=p.y - dl,
+                    zmin=-1,
+                    xmax=p.x + dl,
+                    ymax=p.y + dl,
+                    zmax=1,
+                    dim=0,
+                )
+                dim_tags.remove(
+                    (0, p.id)
+                )  # remove point itself because its allways found
+                dl *= 2  # increase search radius
+                nbr_loops += 1
+            p.meshLength = gmsh.model.mesh.getSizes(dimTags=[dim_tags[0]])[0]
+            logging.debug(
+                f"Fixed mesh size of point {p.id} to {p.meshLength} after {nbr_loops} iterations."
+            )
+            nbr_fixed += 1
+    logging.debug(f"Fixed {nbr_fixed} points with missing mesh sizes.")

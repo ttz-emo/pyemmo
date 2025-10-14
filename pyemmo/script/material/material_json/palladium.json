@@ -1,0 +1,9 @@
+{
+	"ID": 385,
+	"name": "palladium",
+	"conductivity": 9300000.0,
+	"relPermeability": 1.00082,
+	"remanence": 0.0,
+	"linear": true,
+	"BHCurve": {}
+}

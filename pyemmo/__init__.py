@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -19,16 +20,17 @@
 #
 """Init of pyemmo package. Overloads the function calc_phaseangle_starvoltageV2
 of site-package swat-em, because there is a mistake in the original implementation."""
+from __future__ import annotations
+
 import datetime
 import logging
 import os
 import platform
 from os.path import isdir
-from typing import List, Literal
+from typing import Literal
 
 import numpy as np
-from matplotlib import pyplot as plt
-from swat_em import analyse
+from swat_em import analyse, config
 
 from .version import __version__
 
@@ -79,6 +81,10 @@ if try_pyleecan:
     except Exception as exce:
         raise exce
 
+# set the number of datapoints in the MMF calculation in SWAT-EM so offset angle
+# calculation is done correctly
+config.config["num_MMF_points"] = 36000
+
 
 def calcPhaseangleStarvoltageCorr(volVecList):
     """
@@ -98,8 +104,8 @@ def calcPhaseangleStarvoltageCorr(volVecList):
     return seqeunce:   list
                        sequence of the flux wave: 1 or -1
     """
-    sequence: List[Literal[-1, 1]] = []
-    phaseangle: List[List[float]] = []
+    sequence: list[Literal[-1, 1]] = []
+    phaseangle: list[list[float]] = []
     for knu in volVecList:  # for every nu
         phaseangle.append([])
         km_sum = [sum(km) for km in knu]  # get the sum phasor for every phase

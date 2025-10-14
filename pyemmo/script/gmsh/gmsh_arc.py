@@ -67,6 +67,8 @@ Note:
     This docstring was created by ChatGPT.
 """
 
+from __future__ import annotations
+
 from typing import Literal
 
 import gmsh
@@ -159,6 +161,12 @@ class GmshArc(GmshLine, CircleArc):
         #     )
         self._id = tag  # set tag
         self.name = name
+
+    def __eq__(self, other):
+        if type(self) == type(other):
+            if self.id == other.id:
+                return True
+        return False
 
     @classmethod
     def from_points(

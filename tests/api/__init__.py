@@ -17,7 +17,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import annotations
+
 from os.path import join
+
 from tests import TEST_DATA_DIR
 
 TEST_API_DATA_DIR = join(TEST_DATA_DIR, "api")

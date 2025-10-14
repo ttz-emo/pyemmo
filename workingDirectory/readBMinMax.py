@@ -18,14 +18,17 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import annotations
+
 # %% imports
-import json
+import os
+import sys
+
 import gmsh
-from typing import List, Union
-import sys, os
-from pyemmo.definitions import ROOT_DIR
 import numpy as np
 from matplotlib import pyplot as plt
+
+from pyemmo.definitions import ROOT_DIR
 from pyemmo.functions.calcIronLoss import write_simple
 
 # %%
@@ -92,9 +95,7 @@ for step in range(1, NBR_STEPS):
     bmax = np.maximum(bmax, B_Data[step])
     bmin = np.minimum(bmin, B_Data[step])
     time.append(ctime)
-    dBdt[step - 1] = (B_Data[step] - B_Data[step - 1]) / (
-        time[step] - time[step - 1]
-    )
+    dBdt[step - 1] = (B_Data[step] - B_Data[step - 1]) / (time[step] - time[step - 1])
 # %%
 # nodeTagDict = {}
 # # ELEM_TYPE = 2  # 2 = triangle
@@ -250,9 +251,7 @@ pFilePath = os.path.join(
     ROOT_DIR, "workingDirectory", "testPosImport", "res", "P_hyst.dat"
 )
 # gmsh.view.write(P_hystView, pFilePath)
-write_simple(
-    pFilePath, time, P_HystData[3:]
-)  # skip point coordinates in export
+write_simple(pFilePath, time, P_HystData[3:])  # skip point coordinates in export
 
 
 # %% Calculate EDDY CURRENT LOSSES
@@ -319,12 +318,7 @@ gmsh.view.write(integralView, pFilePath)
 # %% Calculate EXCESS LOSS
 ke = 0  # factor was 0 in model... used greater value for testing
 Ce = 8.763363  # constant factor (from paper)
-pe = (
-    1
-    / Ce
-    * ke
-    * np.power((np.square(dBdt[:, :, 0]) + np.square(dBdt[:, :, 1])), 0.75)
-)
+pe = 1 / Ce * ke * np.power((np.square(dBdt[:, :, 0]) + np.square(dBdt[:, :, 1])), 0.75)
 # % Export data to gmsh
 model = gmsh.model.getCurrent()  # get current model ID
 excessView = gmsh.view.add("Excess Loss")  # get tag of new view

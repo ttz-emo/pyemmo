@@ -20,18 +20,21 @@
 #
 """This tutorial script shows how to use the pyemmo api to create a ONELAB
 model of a pyleecan machine."""
-# %%
-import os
+from __future__ import annotations
+
 import logging
 
-from pyleecan.Functions import load
+# %%
+import os
+
+from numpy import deg2rad
 from pyleecan.Classes.MachineSCIM import MachineSCIM
 from pyleecan.definitions import DATA_DIR
+from pyleecan.Functions import load
 
-from pyemmo.definitions import ROOT_DIR
 from pyemmo.api.pyleecan import main as pyleecanAPI
-from pyemmo.functions.runOnelab import runCalcforCurrent, findGmsh, findGetDP
-from numpy import deg2rad
+from pyemmo.definitions import ROOT_DIR
+from pyemmo.functions.runOnelab import findGetDP, findGmsh, runCalcforCurrent
 
 # disable messages of matplotlib
 logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
@@ -44,9 +47,7 @@ logging.getLogger().setLevel(logging.INFO)
 # machine_file_path = os.path.join(
 #     ROOT_DIR, r"tests\data\api\pyleecan\Toyota_Prius.json"
 # )
-machine_file_path = os.path.join(
-    DATA_DIR, "Machine", "SCIM_5kw_Zaheer_no_skew.json"
-)
+machine_file_path = os.path.join(DATA_DIR, "Machine", "SCIM_5kw_Zaheer_no_skew.json")
 assert os.path.isfile(machine_file_path)  # make sure file exists
 
 # Default development results folder
@@ -56,9 +57,7 @@ if not os.path.isdir(resFolder):
 
 # Load pyleecan machine object and call pyemmo-pyleecan-api
 # pylint: disable=locally-disabled, no-member
-pyleecan_machine: MachineSCIM = load.load(
-    machine_file_path
-)  # load machine obj
+pyleecan_machine: MachineSCIM = load.load(machine_file_path)  # load machine obj
 
 # %%
 # FIX: rotor bar material
@@ -103,12 +102,12 @@ if False:
             "ResId": resid,
             "Flag_PrintFields": 0,
             "Flag_Debug": 0,
+            "exe": findGetDP(),
         },
         "ResId": resid,
         "pro": pro_file,
         "res": sim_res_dir,
-        "exe": findGetDP(),
-        "gmsh": findGmsh(),
+        "gmsh": {"exe": findGmsh()},
         # "hyst": 0, # loss coefficient
         # "eddy": 0, # loss coefficient
         # "exc": 0, # loss coefficient

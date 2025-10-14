@@ -20,8 +20,10 @@
 #
 """Module for class PhysicalElement"""
 
+from __future__ import annotations
+
 import logging
-from typing import TYPE_CHECKING, List, Union
+from typing import TYPE_CHECKING
 
 import gmsh
 import matplotlib.pyplot as plt
@@ -70,9 +72,9 @@ class PhysicalElement:
     def __init__(
         self,
         name: str,
-        geo_list: List[Union[Surface, Line, CircleArc, Spline]],
-        material: Material = None,
-        phyID: Union[int, None] = None,
+        geo_list: list[Surface] | list[Line],
+        material: Material | None = None,
+        phyID: int | None = None,
     ):
         # the physical element type can be used to identify physical elements
         self.physicalElementType = "PhysicalElement"
@@ -127,7 +129,7 @@ class PhysicalElement:
         return self._name
 
     @name.setter
-    def name(self, newName) -> str:
+    def name(self, newName):
         "Setter for name"
         if isinstance(newName, (str)):
             self._name = newName
@@ -135,7 +137,7 @@ class PhysicalElement:
             raise TypeError("Type of name must be a string.")
 
     @property
-    def material(self) -> Material:
+    def material(self) -> Material | None:
         """Material of phyiscal element
 
         Returns:
@@ -144,7 +146,7 @@ class PhysicalElement:
         return self._material
 
     @material.setter
-    def material(self, newMaterial: Union[Material, None]):
+    def material(self, newMaterial: Material | None):
         "Setter for material"
         if isinstance(newMaterial, Material) or newMaterial is None:
             self._material = newMaterial
@@ -178,7 +180,7 @@ class PhysicalElement:
         self._id = newID
 
     @property
-    def geo_list(self) -> Union[List[Surface], List[Line]]:
+    def geo_list(self) -> list[Surface] | list[Line]:
         """Geometrical enities of physical element.
 
         Returns:
@@ -187,12 +189,15 @@ class PhysicalElement:
         return self._geo_list
 
     @geo_list.setter
-    def geo_list(self, geo_list: Union[List[Surface], List[Line]]):
+    def geo_list(self, geo_list: list[Surface] | list[Line]):
         """Geometrical elements
 
         Args:
             geo_list (Union[List[Surface], List[Line]]): Geometrical elements
         """
+        # FIXME: PhysicalElement.geo_list can not be updated in Gmsh once the physical
+        # is created! This should probably raise an error or delete and recreate the
+        # physical group in Gmsh!
         # FIXME: No type checking implemented!
         self._geo_list = geo_list
         # run element type funtion to ensure there are not lines AND surfaces at the same time
@@ -200,7 +205,7 @@ class PhysicalElement:
 
     # FIXME: TODO Rename geoElementType -> geo_type like in init!
     @property
-    def geoElementType(self) -> Union[Line, Surface, None]:
+    def geoElementType(self) -> Line | Surface | None:
         """get type of geometry elements.
 
         Raises:
@@ -265,7 +270,7 @@ class PhysicalElement:
     #       PhysicalElement1.addToScript(myScript)
     #
     ###
-    def addToScript(self, script: "Script"):
+    def addToScript(self, script: Script):
         """old add to script method
 
         Args:

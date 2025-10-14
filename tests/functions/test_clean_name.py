@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pytest
 
 from pyemmo.functions.clean_name import clean_name, is_valid_filename

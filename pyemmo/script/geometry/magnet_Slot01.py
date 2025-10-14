@@ -19,6 +19,8 @@
 #
 """Module for class Magnet_Slot01"""
 
+from __future__ import annotations
+
 from .. import colorDict
 from ..gmsh.gmsh_surface import GmshSurface
 from .line import Line

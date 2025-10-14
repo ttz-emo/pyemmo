@@ -18,12 +18,15 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import annotations
+
 # %%
 import os
 from math import ceil
-from typing import List
-from numpy import sign
+
 import swat_em
+from numpy import sign
+
 from pyemmo.definitions import RESULT_DIR
 
 TEST_RES_DIR = os.path.join(RESULT_DIR, "swat-em")
@@ -31,11 +34,9 @@ TEST_RES_DIR = os.path.join(RESULT_DIR, "swat-em")
 
 # %%
 def genWindLayout_swat(
-    windingList: List[str], Qs: int, onePole=False
-) -> List[List[int]]:
-    windType = (
-        "integer" if windingList[0::2] == windingList[1::2] else "fractional"
-    )
+    windingList: list[str], Qs: int, onePole=False
+) -> list[list[int]]:
+    windType = "integer" if windingList[0::2] == windingList[1::2] else "fractional"
     nbrSlotsInList = len(windingList) / 2
     nbrRepeat = Qs / nbrSlotsInList
     if nbrRepeat.is_integer() and nbrSlotsInList.is_integer():
@@ -126,9 +127,7 @@ pp = 1
 
 wdg2 = swat_em.datamodel()
 wdg2.set_machinedata(Q=Qs, p=pp, m=3)
-windLayout = genWindLayoutSwatEM(
-    windingList=windList, nbrSlots=Qs, onePole=True
-)
+windLayout = genWindLayoutSwatEM(windingList=windList, nbrSlots=Qs, onePole=True)
 print("\nWinding layout for swat-em:\n", windLayout)
 wdg2.set_phases(S=windLayout)
 wdg2.analyse_wdg()
@@ -138,7 +137,7 @@ wdg2.analyse_wdg()
 kw1 = wdg2.get_windingfactor_el_by_nu(1)
 print("\nWinding factor of first electrical harmonic:\n", kw1)
 # %% Get phase angle of MMF fundamental
-from numpy import where, rad2deg
+from numpy import rad2deg, where
 
 (order, amp, phase) = wdg2.get_MMF_harmonics()
 FundPhase = round(float(rad2deg(phase[where(order == 1)])), 2)
@@ -151,7 +150,5 @@ pp = 1
 wdg3.genwdg(Q=Qs, P=pp * 2, m=3, layers=1, turns=1)
 wdg3.analyse_wdg()
 print(wdg3.get_layers())
-wdg3.plot_layout(
-    filename=os.path.join(TEST_RES_DIR, "layout_18_1.png"), show=True
-)
+wdg3.plot_layout(filename=os.path.join(TEST_RES_DIR, "layout_18_1.png"), show=True)
 wdg3.plot_MMK(filename=os.path.join(TEST_RES_DIR, "MMK_18_1.png"), show=True)

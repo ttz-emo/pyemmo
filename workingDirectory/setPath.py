@@ -17,9 +17,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-from os.path import abspath, dirname, join, normpath
-from sys import path
+from __future__ import annotations
 
+from os.path import abspath, dirname, join
+from sys import path
 
 # Add Software_V2 to Path so pyemmo can be found
 # This must be done since this is a script (not really a module) and we cannot guarante where it will run from
@@ -29,9 +30,7 @@ try:
     rootname = abspath(join(dirname(__file__), ".."))
 except:
     print("Could not determine root. Setting it manually:")
-    rootname = (
-        "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\Software_V2"
-    )
+    rootname = "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\Software_V2"
 print(f'rootname is "{rootname}"')
 path.append(rootname)
 

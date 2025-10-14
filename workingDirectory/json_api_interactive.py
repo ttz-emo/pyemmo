@@ -1,6 +1,6 @@
 #
-# Copyright (c) 2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences
-# Wuerzburg-Schweinfurt.
+# Copyright (c) 2025 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -20,7 +20,10 @@
 #
 # %%
 """This module allows an easy invoke of the json api by a tkinter file dialog!"""
+from __future__ import annotations
+
 import os
+import re
 import tkinter as tk
 from tkinter import filedialog
 
@@ -28,9 +31,7 @@ from pyemmo.api.json import json
 
 root = tk.Tk()
 root.withdraw()
-model_folder = (
-    r"D:\pyemmo\Results\matlab\TTZ_1FW6190-xxx10-2Jxx_Mod_var_1_2025-02-11_16-24-49"
-)
+model_folder = r""
 if not model_folder:
     model_folder = filedialog.askdirectory()
 
@@ -39,8 +40,14 @@ if os.path.isdir(model_folder):
     # get list of file from that folder that end with .json:
     file_list = [file for file in os.listdir(model_folder) if file.endswith(".json")]
     # extract parameter file path:
-    param_file_name = file_list.pop(file_list.index("simuInfo.json"))
-    param_file_path = os.path.join(model_folder, param_file_name)
+    param_file_path = ""
+    for file in file_list:
+        if re.match(r".*([sS]imu).*([iI]nfo).*(\.json)", file):
+            param_file_name = file_list.pop(file_list.index(file))
+            param_file_path = os.path.join(model_folder, param_file_name)
+            break
+    if not param_file_path:
+        raise FileNotFoundError("No parameter file found in model folder!")
     # there should only be one json file left which is the model file
     assert len(file_list) == 1, "There are multiple or no model file in the folder!"
     model_file_name = file_list[0]

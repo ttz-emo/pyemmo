@@ -19,8 +19,9 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for CircleArc Geometry"""
+from __future__ import annotations
+
 from math import atan2, cos, isclose, sin
-from typing import Tuple
 
 from matplotlib import pyplot as plt
 from matplotlib.patches import Arc
@@ -81,7 +82,7 @@ class CircleArc(Line):
         # to the center point:
         _ = self.radius  # raises error if not
 
-    def __eq__(self, other: "CircleArc") -> bool:
+    def __eq__(self, other: CircleArc) -> bool:
         # check type:
         if isinstance(other, self.__class__):
             # check that all points are equal
@@ -201,7 +202,7 @@ class CircleArc(Line):
         self.end_point.rotateZ(rotationPoint, angle)
         self._center.rotateZ(rotationPoint, angle)
 
-    def duplicate(self, name="") -> "CircleArc":
+    def duplicate(self, name="") -> CircleArc:
         """Mit duplicate() wird einer Kreisbogen mit gleichen Eigenschaften zum
         Originalen erzeugt. Diese Kurve hat jedoch eine unterschiedliche ID.
 
@@ -235,7 +236,7 @@ class CircleArc(Line):
         planeVector1: Line,
         planeVector2: Line,
         name: str = "",
-    ) -> "CircleArc":
+    ) -> CircleArc:
         """Mit mirror() kann ein Kreisbogen an einer definierten Ebene gespiegelt
         werden. Bildpunkte werden hierbei generiert und eine Kurve zwischen den Punkten
         erzeugt. Die Spiegelebene wird durch einen Aufpunkt (planePoint) und 2 Vektoren
@@ -275,7 +276,7 @@ class CircleArc(Line):
             mirArc.name = name
         return mirArc
 
-    def getAnglesToX(self, inDeg=False) -> Tuple[float, float]:
+    def getAnglesToX(self, inDeg=False) -> tuple[float, float]:
         """calculate the angles to the horizontal axis of the center point (x-axis)
         in rad or deg.
 
@@ -430,7 +431,7 @@ class CircleArc(Line):
                 tag=tag,
             )
 
-    def combine(self, addLine: "CircleArc", touchPoint: Point = None) -> "CircleArc":
+    def combine(self, addLine: CircleArc, touchPoint: Point = None) -> CircleArc:
         """combine two arcs and return them as new CircleArc
 
         Args:

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO, Technical University of Applied
 # Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -22,23 +22,22 @@
 
 from __future__ import annotations
 
+import json
+import logging
 import os
-import warnings
 from cmath import isclose
-from os import PathLike, path
+from os import path
 
 import gmsh
 import numpy as np
+import parse
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
-from parse import parse
 
 from .. import rootLogger as logger
 
 
-def read_timetable_dat(
-    file_path: PathLike,
-) -> tuple[np.ndarray, np.ndarray]:
+def read_timetable_dat(file_path: str | os.PathLike) -> tuple[np.ndarray, np.ndarray]:
     """
     returns the Data from the the .*dat file witten in the TimeTable Format
     and returns the time and the corresponding data.
@@ -85,9 +84,7 @@ def read_timetable_dat(
 
 
 # pylint: disable=locally-disabled, invalid-name
-def read_RegionValue_dat(
-    file_path: PathLike,
-) -> tuple[np.ndarray, np.ndarray]:
+def read_RegionValue_dat(file_path: str | os.PathLike) -> tuple[np.ndarray, np.ndarray]:
     """
     Import data from 'RegionValue' formatted .dat-file (GetDP resutl file).
     This usually only applies to torque results computed with the virtual works
@@ -97,7 +94,7 @@ def read_RegionValue_dat(
         'time0 val0 time1 val1 ...'
 
     Args:
-        file_path (PathLike): Path to results file.
+        file_path (Union[str, os.PathLike]): Path to results file.
 
     Returns:
         Tuple[np.ndarray, np.ndarray]: time and data vector with shape:
@@ -168,7 +165,7 @@ def plot_timetable_dat(
     title: str = "",
     savefig: bool = False,
     showfig: bool = True,
-    savePath: str = None,
+    savePath: str = "",
 ) -> list[Figure]:
     """Plot the data in the filePath .dat-file and save the figure optionally.
 
@@ -209,13 +206,13 @@ def plot_timetable_dat(
         # ax.set_aspect("equal", adjustable="box")
         # check that max or min is not too close to zero to apply the y_lim
         if 1 in sim_data.shape:
-            maxVal = np.max(sim_data)
-            minVal = np.min(sim_data)
+            maxVal = np.nanmax(sim_data)
+            minVal = np.nanmin(sim_data)
         else:
             # multi data array
             # FIXME: Make sure second axis is really data axis
-            maxVal = np.max(sim_data[:, 0])
-            minVal = np.min(sim_data[:, 0])
+            maxVal = np.nanmax(sim_data[:, 0])
+            minVal = np.nanmin(sim_data[:, 0])
         if not (isclose(maxVal, 0, abs_tol=0.1) or isclose(minVal, 0, abs_tol=0.1)):
             fig.axes[0].set_ylim(
                 bottom=minVal * (1.1 if minVal < 0 else 0.9),
@@ -236,11 +233,11 @@ def plot_timetable_dat(
     return figureList
 
 
-def plot_all_dat(dir_path: PathLike) -> None:
+def plot_all_dat(dir_path: str | os.PathLike) -> None:
     """Plot all .dat files as png in the folder dirPath
 
     Args:
-        dirPath (PathLike): Path to the folder containing the .dat files.
+        dirPath (Union[str, os.PathLike]): Path to the folder containing the .dat files.
     """
     if path.isdir(dir_path):
         # if the folder for results exists
@@ -282,8 +279,8 @@ def importSP(
         raise ValueError(f"Given filepath '{posFilePath}' is not a POS-file!")
     with open(posFilePath, encoding="utf-8") as dataFile:
         dataLines = dataFile.readlines()
-    parsedName = parse('View "{}" {\n', dataLines.pop(0))
-    if not parsedName:
+    parsedName = parse.parse('View "{}" {\n', dataLines.pop(0))
+    if not isinstance(parsedName, parse.Result):
         raise (
             RuntimeError(
                 f"Given file '{posFilePath}' did not contain correct first "
@@ -293,19 +290,26 @@ def importSP(
         )
     dataLines.pop(-1)  # remove last line (no information)
     # read time values
-    time: list[float] = []
-    timeStr = parse("TIME{{{}}};\n", dataLines[-1])
-    if timeStr:  # if time values could be parsed
+    timeStr = parse.parse("TIME{{{}}};\n", dataLines[-1])
+    if isinstance(timeStr, parse.Result):  # if time values could be parsed
+        time: list[float] = []
         dataLines.pop()  # remove time line from dataLines
         for timeVal in timeStr[0].split(","):
             time.append(float(timeVal))
+    elif timeStr is None:
+        # no time step given in results file. Only single time step evaluated!
+        time = []
+    else:
+        raise TypeError(
+            "Parsing of TIME line in SP formatted file did not return parse.Result object."
+        )
 
     # read node values
     pos: list[tuple[float, float, float]] = []  # position
     values: list[list[float]] = []  # result values
     for line in dataLines:
-        parsedValues = parse("SP({:g},{:g},{:g}){{{}}};\n", line)
-        if parsedValues:
+        parsedValues = parse.parse("SP({:g},{:g},{:g}){{{}}};\n", line)
+        if isinstance(parsedValues, parse.Result):
             # first 3 elements are the coordinate values
             pos.append(parsedValues[0:3])
             valueList = []  # empty list for values of one point
@@ -315,18 +319,13 @@ def importSP(
             # valueList.clear()
         else:
             # if the parse function did not return values, the format was wrong
-            raise (
-                RuntimeError(
-                    f"Given file '{posFilePath}' did not contain "
-                    "SP formatted values!"
-                )
+            raise RuntimeError(
+                f"Given file '{posFilePath}' did not contain SP formatted values!"
             )
     return parsedName[0], time, pos, values
 
 
-def importPos(
-    pos_file: str | PathLike,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+def importPos(pos_file: str | os.PathLike) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Import POS file via gmsh api.
 
     .. todo::
@@ -335,7 +334,7 @@ def importPos(
             -> Use function getListData()
 
     Args:
-        pos_file (Union[str, PathLike]): _description_
+        pos_file (Union[str, Union[str, os.PathLike]]): _description_
 
     Returns:
         Tuple[np.ndarray, List[float], np.ndarray]:
@@ -344,9 +343,9 @@ def importPos(
             - data array
     """
     # check file extension
-    _, filename = path.split(pos_file)
-    filename, ext = filename.split(".")
-    if ext != "pos":
+    _, filename = os.path.split(pos_file)
+    filename, ext = os.path.splitext(filename)
+    if ext != ".pos":
         raise ValueError(f"Given filepath '{pos_file}' is not a POS-file!")
 
     finalize_gmsh = False
@@ -358,7 +357,7 @@ def importPos(
 
     # check that view was loaded:
     view_tags = gmsh.view.getTags()
-    if view_tags.size == 0:
+    if isinstance(view_tags, np.ndarray) and view_tags.size == 0:
         gmsh.finalize()
         raise ValueError(
             f"Given file '{pos_file}' did not result in a Gmsh view. Is file "
@@ -372,6 +371,9 @@ def importPos(
     _, element_tags, cdata, ctime, nbr_components = gmsh.view.getModelData(
         tag=view_tags[-1], step=0
     )
+    # check type of element tags and convert to numpy
+    if not isinstance(element_tags, np.ndarray):
+        element_tags = np.array(element_tags)
     # data format of 'cdata':
     #   vector: number of components = 3
     #   scalar: number of components = 1
@@ -382,12 +384,15 @@ def importPos(
         if not cdata:
             gmsh.finalize()
             raise ValueError(f"No data found in {pos_file}!")
-        warnings.warn(f"Import file '{pos_file}' did only contain last timestep!")
+        logging.warning("Import file '%s' did only contain last timestep!", pos_file)
         # Only last time step happens if PostProcessing is called at runtime
         # (in 'Resolution').
         # Return only that timestep
         if finalize_gmsh:
             gmsh.finalize()
+        # check type of element tags and convert to numpy
+        if not isinstance(element_tags, np.ndarray):
+            element_tags = np.array(element_tags)
         return (
             element_tags,
             np.array(ctime),
@@ -410,28 +415,221 @@ def importPos(
 
 
 def get_result_files(
-    result_folder: PathLike,
-) -> tuple[list[PathLike], list[PathLike]]:
+    result_folder: str | os.PathLike,
+) -> tuple[list[str | os.PathLike], list[str | os.PathLike]]:
     """Return a list of GetDP result files from the folder ``resDir``.
     GetDP results can be .pos or .dat files.
 
     Args:
-        result_folder (PathLike): Path to GetDP results.
+        result_folder (Union[str, os.PathLike]): Path to GetDP results.
 
     Returns:
-        Tuple[list[PathLike], list[PathLike]]: List of .dat and list of .pos
-            files in the given folder.
+        Tuple[list[Union[str, os.PathLike]], list[Union[str, os.PathLike]]]: List of .dat
+            and list of .pos files in the given folder.
     """
-    if os.path.isdir(result_folder):
-        dat_file_list = []
-        pos_file_list = []
-        for results_file in os.listdir(result_folder):
-            _, ext = os.path.splitext(results_file)
-            if ext == ".dat":
-                dat_file_list.append(results_file)
-            elif ext == ".pos":
-                pos_file_list.append(results_file)
-        if len(dat_file_list) == 0:
-            logger.warning("No result files found in '%s'", result_folder)
-        return dat_file_list, pos_file_list
-    raise FileNotFoundError(f"Results folder {result_folder} does not exist.")
+    if not os.path.isdir(result_folder):
+        raise FileNotFoundError(f"Results folder {result_folder} does not exist.")
+    dat_file_list = []
+    pos_file_list = []
+    for results_file in os.listdir(result_folder):
+        _, ext = os.path.splitext(results_file)
+        if ext == ".dat":
+            dat_file_list.append(results_file)
+        elif ext == ".pos":
+            pos_file_list.append(results_file)
+    if len(dat_file_list) == 0:
+        logger.warning("No result files found in '%s'", result_folder)
+    return dat_file_list, pos_file_list
+
+
+def load_param_file(setup_file: str | os.PathLike) -> dict:
+    """load the parameter json file create in
+    ``pyemmo.functions.runOnelab.runCalcForCurrent`` function"""
+    if not os.path.isfile(setup_file):
+        raise FileNotFoundError(f"Could not find setup.json file: {setup_file}")
+    with open(setup_file, encoding="utf-8") as file:
+        return json.load(file)
+
+
+def main(
+    sim_param: dict | str | os.PathLike,
+) -> dict[str, np.ndarray | dict[str, np.ndarray]]:
+    """Import results for standard GetDP simulation of a model created with PyEMMO.
+
+    You can easily run simulations with the ``pyemmo.functions.runOnelab`` module!
+
+    Args:
+        sim_param (dict | str | os.PathLike): simulation parameter dict or path to saved
+            parameter dict as json file.
+
+    Raises:
+        FileNotFoundError: If parameter file is path but given json file is not found.
+
+    Returns:
+        dict[str, np.ndarray |dict[str, np.ndarray]]: results for given simulation
+    """
+    if not isinstance(sim_param, dict):
+        sim_param = load_param_file(sim_param)
+    logging.info("Import results for result-ID '%s'", sim_param["getdp"]["ResId"])
+    results_dict = {}  # init results
+    # get results folder from parameters
+    simulation_res_dir = os.path.join(
+        sim_param["getdp"]["res"], sim_param["getdp"]["ResId"]
+    )
+    dat_files, _ = get_result_files(simulation_res_dir)
+
+    # 1. Phase currents and voltages
+    results_dict["current"] = {}
+    results_dict["voltage"] = {}
+    for index in "abc":
+        # For case Current_Source OR Voltage_Source & Stator Circuit -> I_{a,b,c}
+        res_file_name = f"I{index}.dat"
+        if res_file_name in dat_files:
+            results_dict["time"], results_dict["current"][index] = read_timetable_dat(
+                os.path.join(simulation_res_dir, res_file_name)
+            )
+            dat_files.remove(res_file_name)
+        # In case of Voltage_Source
+        res_file_name = f"I{index}_w.dat"
+        if res_file_name in dat_files:
+            _, results_dict["current"][index + "w"] = read_timetable_dat(
+                os.path.join(simulation_res_dir, res_file_name)
+            )
+            dat_files.remove(res_file_name)
+
+        # For case Current_Source OR Voltage_Source & Stator Circuit -> I_{a,b,c}
+        res_file_name = f"U{index}.dat"
+        if res_file_name in dat_files:
+            _, results_dict["voltage"][index] = read_timetable_dat(
+                os.path.join(simulation_res_dir, res_file_name)
+            )
+            dat_files.remove(res_file_name)
+        # In case of Voltage_Source
+        res_file_name = f"U{index}_w.dat"
+        if res_file_name in dat_files:
+            _, results_dict["voltage"][index + "w"] = read_timetable_dat(
+                os.path.join(simulation_res_dir, res_file_name)
+            )
+            dat_files.remove(res_file_name)
+
+    if not results_dict["current"]:
+        # Error because we need to import time here!
+        raise FileNotFoundError(
+            "Could not find any result file for stator phase current I_{a,b,c} or I_{a,b,c}w"
+        )
+    # We dont check for voltage imports because in case of current source there is no global voltage
+
+    # optional import bar currents and voltages
+    res_file = os.path.join(simulation_res_dir, "I_bars.dat")
+    if os.path.isfile(res_file):
+        results_dict["time"], results_dict["current"]["bars"] = read_timetable_dat(
+            res_file
+        )
+    res_file = os.path.join(simulation_res_dir, "U_bars.dat")
+    if os.path.isfile(res_file):
+        results_dict["time"], results_dict["voltage"]["bars"] = read_timetable_dat(
+            res_file
+        )
+
+    # 2. Torque Results
+    results_dict["torque"] = {}
+    results_dict["torque_vw"] = {}
+    for side in ["rotor", "stator"]:
+        res_file = os.path.join(simulation_res_dir, f"T{side[0]}.dat")
+        if os.path.isfile(res_file):
+            # get first char in machine side to index rotor and stator results
+            _, results_dict["torque"][side] = read_timetable_dat(res_file)
+        # Virtual Work results
+        res_file = os.path.join(simulation_res_dir, f"T{side[0]}_vw.dat")
+        if os.path.isfile(res_file):
+            # get first char in machine side to index rotor and stator results
+            _, results_dict["torque_vw"][side] = read_timetable_dat(res_file)
+    if {"rotor", "stator"} <= results_dict["torque"].keys():
+        results_dict["rotor torque"] = results_dict["torque"]["rotor"]
+        results_dict["stator torque"] = results_dict["torque"]["stator"]
+        # try to calc mean torque
+        if np.isclose(
+            np.mean(results_dict["rotor torque"]),
+            np.mean(results_dict["stator torque"]),
+            rtol=0.1,
+        ):
+            # mean diviation is smaller 10%
+            # need to check this because if one of the results is misscalulated and just
+            # returns 0 the mean result will give wrong results...
+            # calc mean torque
+            results_dict["torque"] = np.mean(
+                [
+                    results_dict["rotor torque"],
+                    results_dict["stator torque"],
+                ],
+                axis=0,
+            )
+        else:
+            logging.warning(
+                (
+                    "MST Torque for rotor and stator diviates more than 10%! "
+                    "Check results carefully!"
+                )
+            )
+
+    # 3. Flux results
+    results_dict["flux"] = {}
+    for index in "abcdq0":
+        res_file = os.path.join(simulation_res_dir, f"Flux_{index}.dat")
+        if os.path.isfile(res_file):
+            # get first char in machine side to index rotor and stator results
+            _, results_dict["flux"][index] = read_timetable_dat(res_file)
+
+    # 4. Induced voltage
+    results_dict["inducedVoltage"] = {}
+    for index in "ABC":
+        res_file = os.path.join(simulation_res_dir, f"InducedVoltage{index}.dat")
+        if os.path.isfile(res_file):
+            # get first char in machine side to index rotor and stator results
+            _, results_dict["inducedVoltage"][index.lower()] = read_timetable_dat(
+                res_file
+            )
+
+    # 5. Rotor position
+    res_file = os.path.join(simulation_res_dir, "RotorPos_deg.dat")
+    if os.path.isfile(res_file):
+        # get first char in machine side to index rotor and stator results
+        _, results_dict["rotorPos"] = read_timetable_dat(res_file)
+
+    # 6. Core loss
+    # Check if file hystLoss_rotor.dat allready exists -> loss calculated
+    core_loss_dict = {}
+    if os.path.exists(os.path.join(simulation_res_dir, "hystLoss_rotor.dat")):
+        logging.info(
+            "Importing core loss values for %s...", sim_param["getdp"]["ResId"]
+        )
+        for side in ["rotor", "stator"]:
+            core_loss_dict[side] = {}
+            for loss_type in ("hyst", "eddy", "exc"):
+                _, core_loss_dict[side][loss_type] = read_timetable_dat(
+                    os.path.join(
+                        simulation_res_dir,
+                        str(loss_type) + f"Loss_{side}" + ".dat",
+                    )
+                )
+    if core_loss_dict:
+        results_dict["coreLoss"] = core_loss_dict
+        # pylint: disable=locally-disabled, logging-not-lazy, logging-fstring-interpolation, line-too-long
+        logging.debug("Iron loss for '" + sim_param["getdp"]["ResId"] + "'")
+        logging.debug(f"{'Rotor':>24} {'Stator':>11} {'Gesamt':>11}")
+        logging.debug(
+            f"{'Hysteresis:':<14} {np.mean(core_loss_dict['rotor']['hyst']) : 8.3f} W {np.mean(core_loss_dict['stator']['hyst']) : 9.3f} W {np.mean(core_loss_dict['stator']['hyst']+core_loss_dict['rotor']['hyst']) : 9.3f} W"
+        )
+        logging.debug(
+            f"{'Eddy Current:':<14} {np.mean(core_loss_dict['rotor']['eddy']) : 8.3f} W {np.mean(core_loss_dict['stator']['eddy']) : 9.3f} W {np.mean(core_loss_dict['stator']['eddy']+core_loss_dict['rotor']['eddy']) : 9.3f} W"
+        )
+        logging.debug(
+            f"{'Excess:':<14} {np.mean(core_loss_dict['rotor']['exc']) : 8.3f} W {np.mean(core_loss_dict['stator']['exc']) : 9.3f} W {np.mean(core_loss_dict['stator']['exc']+core_loss_dict['rotor']['exc']) : 9.3f} W"
+        )
+        logging.debug(
+            "---------------------------------------------------------------------"
+        )
+        logging.debug(
+            f"{'Summe:':<14} {np.mean(core_loss_dict['rotor']['exc']+core_loss_dict['rotor']['eddy']+core_loss_dict['rotor']['hyst']) : 8.3f} W {np.mean(core_loss_dict['stator']['exc']+core_loss_dict['stator']['eddy']+core_loss_dict['stator']['hyst']) : 9.3f} W {np.mean(core_loss_dict['rotor']['exc']+core_loss_dict['rotor']['eddy']+core_loss_dict['rotor']['hyst']+core_loss_dict['stator']['exc']+core_loss_dict['stator']['eddy']+core_loss_dict['stator']['hyst']) : 9.3f} W"
+        )
+    return results_dict

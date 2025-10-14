@@ -31,6 +31,8 @@ syntax: pytest <path_to_module>
 
 """
 
+from __future__ import annotations
+
 import glob
 import logging
 import os
@@ -71,7 +73,7 @@ LOGGER.addHandler(fileHandler)
 
 # Fix test cases for acutal machines to be testes from data folder:
 test_cases["api\\pyleecan"] = [
-    ("test_id", "test_case"),
+    ("test_id", "test_case", "test_run_flag"),
     (0, "IPMSM_B", False),  # TODO: mark as failing instead of skipping!
     (1, "SPMSM_002", True),
     (2, "SPMSM_003", True),
@@ -82,6 +84,9 @@ test_cases["api\\pyleecan"] = [
 # Fixture for cleaning up test data
 @pytest.fixture(scope="session", autouse=True)
 def cleanup(request):
+    """
+    fixture for cleaning up data after tests.
+    """
     from . import LOGGER
 
     def finisher():
@@ -132,17 +137,27 @@ class TestCasesIntegration:
     """
     Class containing test cases for Pyleecan API
     Prerequisites
-    - Pytest should be installed
-    - Pytest-progress should be installed (pip install pytest-progress)
-    - test data should be available locally
+
+        - Pytest should be installed
+        - Pytest-progress should be installed (pip install pytest-progress)
+        - test data should be available locally
 
     Test content:
-    1. Test Pyleecan API to create Pyleecan machine and generate simulations in Onelab
-    2. Check that GMSH and getDP files are generated
-    3. Check that simulation files are generated
-    4. Check dat files content are the same as base comparison
 
-    Test result is saved to test_result_{current_date}.log file in the result folder.
+        1. Test Pyleecan API to create Pyleecan machine and generate simulations in Onelab
+        2. Check that GMSH and getDP files are generated
+        3. Check that simulation files are generated
+        4. Check dat files content are the same as base comparison
+
+    How to run:
+
+        - Use pytest <integration_test_folder> on command line
+        - Use pytest <path_to_this_file> on command line
+
+    .. note::
+
+        The integration tests is currently limited to 4 machine models: ISPMS_B, SPMSM_002, SPMSM_003, Toyota_Prius.
+        Machines whose simulation fails will have their tests skipped.
     """
 
     @pytest.mark.dependency(name="simul_folder_exist")
@@ -164,10 +179,13 @@ class TestCasesIntegration:
         Test will fail if a folder does not exist.
         """
         # ) = test_tuple
-        LOGGER.info(f"TEST CASE {test_id}: {test_case}")
-        LOGGER.info(
-            "Test point 1: Check that simulation result folders are properly generated:"
-        )
+        if result_path == "":
+            LOGGER.info(f"TEST CASE {test_id}: {test_case}: SKIPPED")
+        else:
+            LOGGER.info(f"TEST CASE {test_id}: {test_case}:")
+            LOGGER.info(
+                "Test point 1: Check that simulation result folders are properly generated:"
+            )
         with check("check simulation folder existence"):
             assert os.path.isdir(simul_path) and messagePrinter(
                 "SUCCESS: Simulation result folder exist"
@@ -177,6 +195,7 @@ class TestCasesIntegration:
                 "SUCCESS: Simulation result subfolder exists!"
             ), "ERROR: Simulation result subfolder does not exist"
 
+    @pytest.mark.dependency(name="simul_data_gen", depends=["simul_folder_exist"])
     def test_gmsh_base_files(
         self,
         # test_tuple
@@ -190,7 +209,10 @@ class TestCasesIntegration:
         base_simul_path,
         base_simul_subfolder_path,
     ):
-
+        """
+        This test checks if the correct gmsh and getdp files have been generated correctly.
+        This will be skipped if test_api_simul_folder_exist fails.
+        """
         # (test_id, test_case, _, result_path, _, _, base_result_path, _, _) = (
         #     test_tuple
         # )
@@ -213,6 +235,10 @@ class TestCasesIntegration:
         base_simul_path,
         base_simul_subfolder_path,
     ):
+        """
+        This test checks that the simulation result files have been generated correctly.
+        If test_api_simul_folder_exist fails, this will be skipped.
+        """
         # (
         #     test_id,
         #     test_case,

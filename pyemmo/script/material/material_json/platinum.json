@@ -1,0 +1,9 @@
+{
+	"ID": 388,
+	"name": "platinum",
+	"conductivity": 9300000.0,
+	"relPermeability": 1.0,
+	"remanence": 0.0,
+	"linear": true,
+	"BHCurve": {}
+}

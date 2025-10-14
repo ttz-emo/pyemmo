@@ -19,7 +19,7 @@
 #
 """Module for Class Rotor"""
 
-from typing import Dict, List
+from __future__ import annotations
 
 from .physicalElement import PhysicalElement
 from .rotor import Rotor
@@ -30,7 +30,7 @@ class RotorASM(Rotor):
 
     def __init__(
         self,
-        physicalElementList: List[PhysicalElement],
+        physicalElementList: list[PhysicalElement],
         nbr_bars: int,
         name: str = "",
         axLen: float = 1.0,
@@ -68,7 +68,7 @@ class RotorASM(Rotor):
         else:
             raise ValueError(f"Number or rotor bars is not an integer: {nbr_bars}")
 
-    def sortPhysicals(self) -> Dict[str, List[PhysicalElement]]:
+    def sortPhysicals(self) -> dict[str, list[PhysicalElement]]:
         """Create a dict with the physical elements sorted into different domains with
         domain names as keys
             The dict will look like

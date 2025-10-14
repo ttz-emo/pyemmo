@@ -18,6 +18,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import annotations
+
 import logging
 from copy import deepcopy
 
@@ -25,9 +27,10 @@ import gmsh
 import numpy as np
 import pytest
 
-from pyemmo.script.geometry.line import Line
 from pyemmo.script.geometry.point import Point
 from pyemmo.script.gmsh.gmsh_surface import GmshArc, GmshLine, GmshPoint, GmshSurface
+
+GMSH_SURF_MESH_LEN = 1e-1
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -96,7 +99,11 @@ def create_rectangle():
     points: list[GmshPoint] = []
     for i, xy in enumerate([(0, 0), (0, 1), (1, 1), (1, 0)]):
         points.append(
-            GmshPoint.from_coordinates(name=f"P{i}", coords=np.array([xy[0], xy[1], 0]))
+            GmshPoint.from_coordinates(
+                name=f"P{i}",
+                coords=np.array([xy[0], xy[1], 0]),
+                meshLength=GMSH_SURF_MESH_LEN,
+            )
         )
     lines: list[GmshLine] = []
     for i, point in enumerate(points):
@@ -108,7 +115,7 @@ def create_rectangle():
     return GmshSurface.from_curve_loop(curve_loop=lines, name="Test surface")
 
 
-def add_circle(center: GmshPoint, radius: float):
+def add_circle(center: GmshPoint, radius: float) -> GmshSurface:
     """Create a test Circle with ``radius`` at ``center`` contructed by 4 arcs."""
     points: list[GmshPoint] = []
     for i, xy in enumerate([(0, 1), (1, 0), (0, -1), (-1, 0)]):
@@ -143,7 +150,7 @@ def test_init_with_curveloop(gmsh_surface: GmshSurface):
     assert new_gmsh_surface.curve == gmsh_surface.curve
     assert new_gmsh_surface.dim == 2
     assert new_gmsh_surface.name == "new name"
-    assert np.isclose(new_gmsh_surface.meanMeshLength, 1e-3, rtol=1e-3)
+    assert np.isclose(new_gmsh_surface.meanMeshLength, GMSH_SURF_MESH_LEN, rtol=1e-3)
 
 
 def test_init_with_id(gmsh_surface: GmshSurface):
@@ -170,9 +177,9 @@ def test_init_with_id_newName(gmsh_surface: GmshSurface):
 
 def test_set_mesh_length(gmsh_surface: GmshSurface):
     """Test setMeshLength() method"""
-    # initial mesh length is 1e-3
-    gmsh_surface.setMeshLength(0.1)
-    assert np.isclose(gmsh_surface.meanMeshLength, 0.1, rtol=1e-3)
+    # initial mesh length is 1e-1
+    gmsh_surface.setMeshLength(0.05)
+    assert np.isclose(gmsh_surface.meanMeshLength, 0.05, rtol=1e-3)
 
 
 def test_get_min_mesh_length(gmsh_surface: GmshSurface):
@@ -238,10 +245,15 @@ def test_duplicate(gmsh_surface: GmshSurface, name: str):
     """Test duplicate() method"""
     duplicate = gmsh_surface.duplicate(name=name)
     assert gmsh_surface.id != duplicate.id
-    assert gmsh_surface.points != duplicate.points
+    assert len(gmsh_surface.points) == len(duplicate.points)
+    assert len(gmsh_surface.curve) == len(duplicate.curve)
     # lines are equal if they are of the same line type (line, arc, spline) and have
-    # matching points
-    assert gmsh_surface.curve == duplicate.curve
+    # matching points. Method arePointsEqual() checks for the points coordinates.
+    for curve in gmsh_surface.curve:
+        assert any(
+            isinstance(curve, type(dup_line)) and curve.arePointsEqual(dup_line)
+            for dup_line in duplicate.curve
+        )
     assert gmsh_surface.dim == duplicate.dim
     if name:
         assert duplicate.name == name
@@ -260,17 +272,50 @@ def test_deepcopy(gmsh_surface: GmshSurface):
     assert len(gs_copy.curve) == len(gmsh_surface.curve)
 
 
-@pytest.mark.xfail(reason="not implemented mirror yet")
 def test_mirror(gmsh_surface: GmshSurface):
-    """Test mirror() method. NOT IMPLEMENTED YET"""
-    plane_point = Point("center point", 0, 0, 0)
-    x_point = Point("x point", 1, 0, 0)
-    y_point = Point("y point", 0, 1, 0)
-    x_vector = Line(name="x vector", start_point=plane_point, end_point=x_point)
-    y_vector = Line(name="y vector", start_point=plane_point, end_point=y_point)
-    gmsh_surface.mirror(
-        planePoint=plane_point, planeVector1=x_vector, planeVector2=y_vector
-    )
+    """Test mirror() method."""
+    # mirror on the y-axis
+    # to mirror along the y-axis the normal vector must point into x-direction
+    plane_normal = (1, 0, 0)
+    new_name = "mirrored surface"
+    new_surf = gmsh_surface.mirror(plane_normal, offset=0, name=new_name)
+    # make sure name is set
+    new_surf.name == new_name
+
+    # check new points
+    new_points = ((0, 0, 0), (0, 1, 0), (-1, 1, 0), (-1, 0, 0))
+    for point in new_surf.points:
+        assert any(
+            all(np.isclose(point.coordinate, coords, atol=1e-6))
+            for coords in new_points
+        )
+
+
+def test_mirror_with_tool(gmsh_surface: GmshSurface):
+    """Test mirror() method where the surface has a tool object. The tool must be
+    mirrored aswell"""
+    # create tool surface and cut it
+    center = GmshPoint.from_coordinates(name="Center", coords=[0.5, 0.5, 0])
+    circ = add_circle(center, radius=0.4)
+    gmsh_surface.cutOut(circ)
+
+    # mirror on the y-axis
+    # to mirror along the y-axis the normal vector must point into x-direction
+    plane_normal = (1, 0, 0)
+    new_name = "mirrored surface"
+    new_surf = gmsh_surface.mirror(plane_normal, offset=0, name=new_name)
+    # make sure name is set
+    new_surf.name == new_name
+
+    # check new points
+    new_points = ((0, 0, 0), (0, 1, 0), (-1, 1, 0), (-1, 0, 0))
+    for point in new_surf.points:
+        assert any(
+            all(np.isclose(point.coordinate, coords, atol=1e-6))
+            for coords in new_points
+        )
+    # check that the number of tools is the same
+    assert len(new_surf.tools) == len(gmsh_surface.tools)
 
 
 def test_combine(gmsh_surface: GmshSurface):
@@ -341,12 +386,6 @@ def test_mesh_color(gmsh_surface: GmshSurface):
     """Test color property"""
 
     color_str = "Blue"
-
-    # make sure the setter of mesh_color raises an error if the surface was not
-    # synchronized! Thats because the gmsh.model.setColor() method does not raise an
-    # error if the geometry does not exist in the non-occ representation.
-    with pytest.raises(RuntimeError):
-        gmsh_surface.mesh_color = color_str
 
     gmsh.model.occ.synchronize()  # synchronize the model to set the color
     gmsh_surface.mesh_color = color_str

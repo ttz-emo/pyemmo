@@ -19,8 +19,10 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for geometry element Point"""
+from __future__ import annotations
+
 from math import atan2, cos, degrees, sin
-from typing import TYPE_CHECKING, Tuple, Union
+from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -57,7 +59,7 @@ class Point(Transformable):
         self.name = name
         self.coordinate = (x, y, z)
 
-    def __eq__(self, comp_point: "Point") -> bool:
+    def __eq__(self, comp_point: Point) -> bool:
         """Overload the "==" operator to compare if points are equal in a given
         tolerance"""
         if not isinstance(comp_point, Point):
@@ -143,7 +145,7 @@ class Point(Transformable):
         self._z = new_z
 
     @property
-    def coordinate(self) -> Tuple[float, float, float]:
+    def coordinate(self) -> tuple[float, float, float]:
         """Die Methode getCoordinate() gibt die x- y- und z-Koordinaten eines Punktes zurück.
 
         Returns:
@@ -152,7 +154,7 @@ class Point(Transformable):
         return (self.x, self.y, self.z)
 
     @coordinate.setter
-    def coordinate(self, coordinate: Tuple[float, float, float]):
+    def coordinate(self, coordinate: tuple[float, float, float]):
         """Die Methode setCoordinate() setzt die x- y- und z-Koordinaten eines Punktes.
 
         Args:
@@ -166,7 +168,7 @@ class Point(Transformable):
 
     # ------ methods ------
 
-    def isEqual(self, comp_point: "Point", tol=DEFAULT_GEO_TOL):
+    def isEqual(self, comp_point: Point, tol=DEFAULT_GEO_TOL):
         """
         isEqual checks if another points coordinates are equal with a given tolerance
         (default < 1e-7)
@@ -185,7 +187,7 @@ class Point(Transformable):
         self._y = self._y + dy
         self._z = self._z + dz
 
-    def rotateZ(self, rotationPoint: "Point", angle: float):
+    def rotateZ(self, rotationPoint: Point, angle: float):
         """rotate a point around a rotation point and the Z-axis with a defined angle.
 
         Args:
@@ -201,7 +203,7 @@ class Point(Transformable):
         self._y = sin(angle) * oldx + cos(angle) * oldy
         self.translate(x, y, 0)
 
-    def rotateX(self, rotationPoint: "Point", angle: float):
+    def rotateX(self, rotationPoint: Point, angle: float):
         """Mit rotateX() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die
         X-Achse mit einem definierten Winkel rotiert.
 
@@ -218,7 +220,7 @@ class Point(Transformable):
         self._z = sin(angle) * oldy + cos(angle) * oldz
         self.translate(rotPointCoords[0], rotPointCoords[1], rotPointCoords[2])
 
-    def rotateY(self, rotationPoint: "Point", angle: float):
+    def rotateY(self, rotationPoint: Point, angle: float):
         """Mit rotateY() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die
         Y-Achse mit einem definierten Winkel rotiert.
 
@@ -236,7 +238,7 @@ class Point(Transformable):
         self._z = -sin(angle) * oldx + cos(angle) * oldz
         self.translate(rotPointCoords[0], rotPointCoords[1], rotPointCoords[2])
 
-    def duplicate(self, name="") -> "Point":
+    def duplicate(self, name="") -> Point:
         """Mit duplicate() wird ein neuer Punkt mit gleichen Koordinaten erzeugt.
 
         Args:
@@ -260,11 +262,11 @@ class Point(Transformable):
 
     def mirror(
         self,
-        planePoint: "Point",
-        planeVector1: "Line",
-        planeVector2: "Line",
+        planePoint: Point,
+        planeVector1: Line,
+        planeVector2: Line,
         name: str = None,
-    ) -> "Point":
+    ) -> Point:
         """Mit mirror() kann ein Punkt an einer definierten Ebene gespiegelt werden.
         Ein Bildpunkt wird hierbei erzeugt. Die Spiegelebene wird durch einen Aufpunkt
         (planePoint) und 2 Vektoren (planeVector1 und planeVector2) beschrieben.
@@ -342,7 +344,7 @@ class Point(Transformable):
     def getAngleToX(
         self,
         flag_deg=False,
-        CenterPoint: Union[Tuple[float, float, float], "Point"] = (
+        CenterPoint: tuple[float, float, float] | Point = (
             0.0,
             0.0,
             0.0,
@@ -421,7 +423,7 @@ class Point(Transformable):
 
     def plot(
         self,
-        fig: "Figure" = None,
+        fig: Figure = None,
         marker="o",
         markersize=1.0,
         color=POINT_COLOR,

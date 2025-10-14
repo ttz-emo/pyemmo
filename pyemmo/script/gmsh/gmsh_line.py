@@ -66,6 +66,8 @@ Note:
 """
 
 
+from __future__ import annotations
+
 import gmsh
 import numpy as np
 
@@ -129,7 +131,7 @@ class GmshLine(GmshGeometry, Line):
     @classmethod
     def from_points(
         cls, start_point: GmshPoint, end_point: GmshPoint, name: str = ""
-    ) -> "GmshLine":
+    ) -> GmshLine:
         """
         Create a GmshLine from two GmshPoint instances.
 
@@ -158,6 +160,12 @@ class GmshLine(GmshGeometry, Line):
             f"start_point=({self.start_point.x:.1e}, {self.start_point.y:.1e}, {self.start_point.z:.1e}), "
             f"end_point=({self.end_point.x:.1e}, {self.end_point.y:.1e}, {self.end_point.z:.1e}))"
         )
+
+    def __eq__(self, other):
+        if type(self) == type(other):
+            if self.id == other.id:
+                return True
+        return False
 
     @property
     def points(self) -> list[GmshPoint]:
@@ -291,7 +299,7 @@ class GmshLine(GmshGeometry, Line):
         x, y, z = rotationPoint.coordinate
         gmsh.model.occ.rotate((1, self.id), x, y, z, 1, 0, 0, angle=angle)
 
-    def duplicate(self, name="") -> "GmshLine":
+    def duplicate(self, name="") -> GmshLine:
         """Create a copy of the line.
 
         Args:
@@ -320,7 +328,7 @@ class GmshLine(GmshGeometry, Line):
                 new_line.name = parentName
         return new_line
 
-    def combine(self, line: "GmshLine", touchPoint=None) -> "GmshLine":
+    def combine(self, line: GmshLine, touchPoint=None) -> GmshLine:
         """Combine two lines to one.
 
         Args:

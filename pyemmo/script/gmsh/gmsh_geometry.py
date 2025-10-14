@@ -19,6 +19,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module gmsh_geometry.py for the abstract class GmshGeometry."""
+from __future__ import annotations
+
 import numbers
 from abc import ABC, abstractmethod
 from typing import Literal

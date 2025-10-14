@@ -1,6 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences
-# Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-20254 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -28,12 +28,12 @@ import logging
 import os
 import re
 import shutil
-from math import pi
+from math import isclose, pi
 from os.path import abspath, join
 from typing import TYPE_CHECKING, Literal
 
 import gmsh
-from numpy import array, cos, rad2deg, sin, where
+from numpy import mean, rad2deg, where
 from pygetdp import Function as FunctionGetDP
 from pygetdp import Group as GroupGetDP
 from pygetdp import PostOperation
@@ -65,7 +65,7 @@ from .material.electricalSteel import ElectricalSteel
 
 if TYPE_CHECKING:
     from .geometry.circleArc import CircleArc
-    from .geometry.machineAllType import MachineAllType
+    from .geometry.machineAllType import MachineAllType, Rotor, Stator
     from .geometry.point import Point
     from .geometry.spline import Spline
     from .material.material import Material
@@ -80,7 +80,7 @@ class Script:
         name: str,
         scriptPath: str,
         simuParams: dict,
-        machine: MachineAllType = None,
+        machine: MachineAllType | None = None,
         resultsPath: str = "",
         factory: str = "Build-in",
     ):
@@ -253,7 +253,7 @@ class Script:
         self._name = newName
 
     @property
-    def scriptPath(self) -> str:
+    def scriptPath(self) -> str | os.PathLike:
         """Get the path, where the model files (.geo & .pro) should be stored
 
         Returns:
@@ -262,7 +262,7 @@ class Script:
         return self._scriptPath
 
     @scriptPath.setter
-    def scriptPath(self, newScriptPath: os.PathLike):
+    def scriptPath(self, newScriptPath: str | os.PathLike):
         """setter of Script Path
 
         Args:
@@ -782,7 +782,7 @@ class Script:
                     splineType = "BSpline"
                 else:
                     raise ValueError(
-                        f"Invalid Spline type with index {curve.splineType}"
+                        f"Invalid Spline type with index {curve.spline_type}"
                     )
 
                 code = (
@@ -1049,7 +1049,7 @@ class Script:
         domainList.extend(self._createDomains(rotorPhysicalsDict, rotorDomainDict))
         # Create single Bar regions
         if DOMAIN_BAR in rotorPhysicalsDict:
-            rotorPhysicalsDict[DOMAIN_BAR].sort(key=Slot.get_radial_position)
+            rotorPhysicalsDict[DOMAIN_BAR].sort(key=Slot.get_circumferential_position)
             for i, region in enumerate(rotorPhysicalsDict[DOMAIN_BAR]):
                 domainList.append(Domain(f"Rotor_Bar_{i+1}", region))
         # add additional domains for every movinband part, to specify the
@@ -1883,18 +1883,22 @@ class Script:
                 # The following assumes, that the prime lines are located on
                 # the x-axis. Rotation from prime to secondary occure in math.
                 # positive direction!
-                phi = 2 * pi / symFactor
-                transformation_matrix = array(
-                    [
-                        [cos(phi), -sin(phi), 0, 0],
-                        [sin(phi), cos(phi), 0, 0],
-                        [0, 0, 1, 0],
-                        [0, 0, 0, 1],
-                    ]
-                )
-                gmsh.model.mesh.setPeriodic(
-                    1, secondary_tags, primary_tags, transformation_matrix.flatten()
-                )
+
+                # Skip setting of periodic meshing condition in gmsh model since
+                # its not automatically exported to any gmsh output file.
+                # phi = 2 * pi / symFactor
+                # transformation_matrix = array(
+                #     [
+                #         [cos(phi), -sin(phi), 0, 0],
+                #         [sin(phi), cos(phi), 0, 0],
+                #         [0, 0, 1, 0],
+                #         [0, 0, 0, 1],
+                #     ]
+                # )
+                # gmsh.model.mesh.setPeriodic(
+                #     1, secondary_tags, primary_tags, transformation_matrix.flatten()
+                # )
+
                 meshModCode += (
                     r"Periodic Curve{secondaryLines[]} = {primaryLines[]} "
                     r"Rotate {{0,0,1}, {0,0,0}, "
@@ -2007,10 +2011,11 @@ class Script:
             + "},\n"
         )
         meshSettingsCode += (
-            "\nFlag_individualColoring = {0,"
+            "\tFlag_individualColoring = {0,"
             + 'Name StrCat[INPUT_MESH, "09Individual Mesh Coloring"], '
             + "Choices {0, 1}}\n];\n"
         )
+        meshSettingsCode += "Mesh.MeshSizeFactor = gmsf;\n"
         # show mesh Lines without lighting
         meshSettingsCode += (
             "Mesh.SurfaceEdges = 1;\nMesh.Light = 0;\nMesh.SurfaceFaces = 1;\n"
@@ -2032,6 +2037,19 @@ class Script:
             movingGeoCode = self._createMovingGeoCode()
 
         # write out all the geometry and physicals code to .geo_unrolled file
+
+        # NOTE: add default point in geo (internal gmsh) kernel to force geo_unrolled
+        # output instead of .xao format (new in gmsh 4.14.0). See issue
+        # https://gitlab.onelab.info/gmsh/gmsh/-/issues/3214 and comment
+        # https://gitlab.onelab.info/gmsh/gmsh/-/blob/master/src/geo/GModelIO_GEO.cpp?ref_type=heads#L1840
+        # for more info
+
+        # FIXME: This should trigger gmsh to export the geometry as real
+        # geo_unrolled according to the above links, but doesn't work with
+        # gmsh==4.14.0 ...
+        # tmp_point_tag = gmsh.model.geo.addPoint(0, 0, 0, 1.0)
+        # gmsh.model.geo.addPhysicalGroup(0, [tmp_point_tag], name="dummy point")
+
         geo_unrolled_path = self.geoFilePath + "_unrolled"
         gmsh.write(geo_unrolled_path)
         # read in the file content
@@ -2052,6 +2070,9 @@ class Script:
             geoScript.write(meshSettingsCode)  # write code for mesh variables
             geoScript.writelines(geo_code)
             if self.colorCode:
+                # TODO: Update to create color code from physical elements,
+                # because the colors set by the gmsh api are not exported to
+                # the geo_unrolled file.
                 geoScript.write(
                     "\n// Color code\n"
                     + """If (!Flag_individualColoring)\n"""
@@ -2060,6 +2081,12 @@ class Script:
                 )
             geoScript.write(UD_MeshCode)
             geoScript.write(meshModCode)
+            # write code to only show physicals
+            geoScript.write(
+                "Hide {:}\nRecursive Show { Physical Surface{:}; }\n"
+                "Recursive Show { Physical Curve{:}; }\n"
+                "Geometry.PointSize = 3.0;\n\n"
+            )
             geoScript.write(movingGeoCode)
 
         logging.debug(
@@ -2090,6 +2117,28 @@ class Script:
 
         # update machine parameters:
         simuParamDict["GEO"] = {**simuParamDict["GEO"], **geometryParams}
+
+        # Create default parameters for rotor and stator airgap field post processing
+        for side in ("rotor", "stator"):
+            mside: Rotor | Stator = getattr(machine, side)
+            for phys in mside._domainAirGap.physicals:
+                airgap_radii = []
+                for geo in phys.geo_list:
+                    # calc mean radius
+                    geo: Surface = geo
+                    for p in geo.points:
+                        if isclose(p.y, 0, abs_tol=DEFAULT_GEO_TOL):
+                            airgap_radii.append(p.x)
+                if not airgap_radii:
+                    logging.warning(
+                        "No points near x-axis found in %s airgap physical element '%s'. "
+                        "Cannot calculate mean radius for airgap field post processing.",
+                        side,
+                        phys.name,
+                    )
+                    airgap_radii = [0.0]  # set to zero if no points found
+                # set mean radius default value
+                simuParamDict["GEO"][f"R_{side.upper()}_AIRGAP"] = mean(airgap_radii)
 
         # 2. Set simulation parameters
         #   INIT_ROTOR_POS  -> Allready set in __init__
@@ -2152,7 +2201,7 @@ class Script:
             # Stator angle for I_U = 1 p.u., I_V = -1/2, I_W = -1/2 in rad elec
             systemOffset = float(angle[where(mmfOrder == nbrPolePairs)])
             logging.debug(
-                "Stator north pole angle (elec): %.1f°", rad2deg(systemOffset)
+                "Stator north pole angle (elec): %.4f°", rad2deg(systemOffset)
             )
 
             # dq-offset (electrical) is:
@@ -2296,16 +2345,17 @@ class Script:
         if postOperation.items:  # if there are Items in PostOperation
             # add the code for the compute command including the postoperations
             # TODO: Add option for "-bin" case (user setting)
+            # TODO: adapt output verbosity based on internal verbosity
 
             computeCommandCode = (
-                """DefineConstant[\n\tC_ = {"-solve Analysis -v 99 -v2 -pos"""  # -bin
+                "DefineConstant[\n\t"
+                """R_ = {"Analysis", Name "GetDP/1ResolutionChoices", Visible Flag_Debug || Flag_ExpertMode},\n\t"""
+                """C_ = {"-solve -v 99 -v2 -pos", Name "GetDP/9ComputeCommand", Visible Flag_Debug || Flag_ExpertMode}\n\t"""
+                """P_ = {\""""
+                + ",".join(self.postOperationNames)
+                + """", Name "GetDP/2PostOperationChoices", Visible Flag_Debug || Flag_ExpertMode}\n"""
+                "];\n"
             )
-            for postOpName in self.postOperationNames:
-                computeCommandCode += " " + postOpName
-            computeCommandCode += (
-                """ ", Name "GetDP/9ComputeCommand", Visible Flag_Debug}\n];\n"""
-            )
-
             machineFileCode += computeCommandCode
 
         #   5. import magstatdyn file in machine file

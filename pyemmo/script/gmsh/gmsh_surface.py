@@ -20,8 +20,9 @@
 #
 """Module gmsh_surface.py for the class GmshSurface."""
 
+from __future__ import annotations
+
 import logging
-from typing import Union
 
 import gmsh
 import numpy as np
@@ -36,9 +37,10 @@ from .gmsh_arc import GmshArc
 from .gmsh_geometry import GmshGeometry
 from .gmsh_line import GmshLine
 from .gmsh_point import GmshPoint
+from .gmsh_spline import GmshSpline
 
 
-def create_curve(id: int) -> Union[GmshLine, GmshArc]:
+def create_curve(id: int) -> GmshLine | GmshArc:
     """Create a curve object based on the given id.
 
     Args:
@@ -55,6 +57,8 @@ def create_curve(id: int) -> Union[GmshLine, GmshArc]:
         return GmshLine(tag=id)
     if gmsh.model.getType(1, id) == "Circle":
         return GmshArc(tag=id)
+    if gmsh.model.getType(1, id) in ("BSpline", "Bezier", "Spline"):
+        return GmshSpline(tag=id)
     raise ValueError(f"Line with tag {id} is not of type Line or Circle!")
 
 
@@ -158,10 +162,16 @@ class GmshSurface(GmshGeometry, Surface):
         self._cut: list[Surface] = []
         self._is_tool: bool = False
 
+    def __eq__(self, other):
+        if type(self) == type(other):
+            if self.id == other.id:
+                return True
+        return False
+
     @classmethod
     def from_curve_loop(
-        cls, curve_loop: list[Union[GmshLine, GmshArc]], name: str = ""
-    ) -> "GmshSurface":
+        cls, curve_loop: list[GmshLine | GmshArc], name: str = ""
+    ) -> GmshSurface:
         """Create a GmshSurface from a list of curves.
 
         Args:
@@ -183,7 +193,7 @@ class GmshSurface(GmshGeometry, Surface):
         tag = gmsh.model.occ.addPlaneSurface([curve_loop])
         return cls(tag=tag, name=name)
 
-    def _get_lineloop(self, tag: int) -> list[Union[GmshLine, GmshArc]]:
+    def _get_lineloop(self, tag: int) -> list[GmshLine | GmshArc]:
         """Get the lineloop of the surface from the Gmsh model.
 
         Args:
@@ -197,7 +207,7 @@ class GmshSurface(GmshGeometry, Surface):
         """
         curve_loop_tags, curve_tags = gmsh.model.occ.getCurveLoops(tag)
         line_tags = curve_tags[0]
-        curves: list[Union[GmshLine, GmshArc]] = []
+        curves: list[GmshLine | GmshArc] = []
         for ltag in line_tags:
             try:
                 curves.append(create_curve(ltag))
@@ -220,11 +230,11 @@ class GmshSurface(GmshGeometry, Surface):
             )
         return msg
 
-    def __deepcopy__(self, memo) -> "GmshSurface":
+    def __deepcopy__(self, memo) -> GmshSurface:
         return self.duplicate()
 
     @property
-    def curve(self) -> list[Union[GmshLine, GmshArc]]:
+    def curve(self) -> list[GmshLine | GmshArc]:
         """Get the curves that form the surface.
 
         Returns:
@@ -233,7 +243,7 @@ class GmshSurface(GmshGeometry, Surface):
         return self._get_lineloop(self.id)
 
     @curve.setter
-    def curve(self, curves: list[Union[GmshLine, GmshArc]]) -> None:
+    def curve(self, curves: list[GmshLine | GmshArc]) -> None:
         """Set the curves that form the surface.
 
         Args:
@@ -255,7 +265,7 @@ class GmshSurface(GmshGeometry, Surface):
             float: mean of mesh length of all points in meter
         """
         points: list[GmshPoint] = self.points
-        mesh_lenght_list = [p.meshLength for p in points]
+        mesh_lenght_list = [p.meshLength for p in points if p.meshLength > 0]
         return np.mean(mesh_lenght_list)
 
     @property
@@ -264,7 +274,7 @@ class GmshSurface(GmshGeometry, Surface):
         return gmsh.model.occ.getMass(self.dim, self.id)
 
     @property
-    def mesh_color(self) -> Union[str, tuple[int, int, int, int]]:
+    def mesh_color(self) -> str | tuple[int, int, int, int]:
         """Get the mesh color of the surface.
 
         Returns:
@@ -286,7 +296,7 @@ class GmshSurface(GmshGeometry, Surface):
         return rgba
 
     @mesh_color.setter
-    def mesh_color(self, color: Union[str, tuple[int]]) -> None:
+    def mesh_color(self, color: str | tuple[int]) -> None:
         """Set the mesh color of the surface.
         This method allows setting the color of the surface mesh using either a string
         representing a color name or a tuple of integers representing RGBA values.
@@ -331,15 +341,26 @@ class GmshSurface(GmshGeometry, Surface):
             rgba = color
         # we need to test if the surface exists in the current model, because
         # gmsh.model.setColor() will not raise an error if the surface does not exist!
-        if (self.dim, self.id) not in gmsh.model.getEntities(self.dim):
-            raise RuntimeError(f"Surface {self.id=} does not exist!")
-        gmsh.model.setColor(
-            [(self.dim, self.id)],
-            int(rgba[0] * 255),
-            int(rgba[1] * 255),
-            int(rgba[2] * 255),
-            int(rgba[3] * 255),
-        )
+        try:
+            gmsh.model.setColor(
+                [(self.dim, self.id)],
+                int(rgba[0] * 255),
+                int(rgba[1] * 255),
+                int(rgba[2] * 255),
+                int(rgba[3] * 255),
+            )
+        except Exception as exce:
+            if "does not exist" in exce.args[0]:
+                gmsh.model.occ.synchronize()
+                gmsh.model.setColor(
+                    [(self.dim, self.id)],
+                    int(rgba[0] * 255),
+                    int(rgba[1] * 255),
+                    int(rgba[2] * 255),
+                    int(rgba[3] * 255),
+                )
+            else:
+                raise exce
 
     def setMeshLength(self, meshLength: float) -> None:
         """set the meshLength of all points of a surface.
@@ -387,7 +408,7 @@ class GmshSurface(GmshGeometry, Surface):
         for tool in self.tools:
             tool.rotateZ(rotationPoint, angle)
 
-    def duplicate(self, name: str = "") -> "GmshSurface":
+    def duplicate(self, name: str = "") -> GmshSurface:
         """Duplicates the surface.
 
         Args:
@@ -419,17 +440,44 @@ class GmshSurface(GmshGeometry, Surface):
             # because the tool surface must not be of type GmshSurface, but can be a
             # child class of GmshSurface (e.g. GmshSegmentSurface).
             dup_surf._cut.append(tool.duplicate())  # pylint: disable=protected-access
+        if self.isTool():
+            dup_surf.setTool()
         return dup_surf
 
-    def mirror(self, planePoint, planeVector1, planeVector2, name=""):
-        raise NotImplementedError("Method not implemented yet!")
+    def mirror(self, plane_normal: tuple[float, float, float], offset=0.0, name=""):
+        """Mirror a surface across a plane defined by a normal vector and an offset.
+
+        The general equation of a plane is ax + by + cz + d = 0, where (a, b, c) are the
+        components of the normal vector (a vector perpendicular to the plane), and at
+        least one of a, b, or c must be non-zero. The offset d moves the plane along its
+        normal vector.
+
+        Be aware that the mirror function in Gmsh creates TrimmedCurve objects for the
+        boundary lines of the new surface!
+
+        Args:
+            plane_normal (tuple[float, float, float]): The normal vector of the plane
+            offset (float, optional): Plane offset along the normal. Defaults to 0.0.
+            name (str, optional): Name of the mirrored surface. Defaults to "".
+        """
+        mirror_surf = self.duplicate(name=name)  # duplicate surface and tools
+        a, b, c = plane_normal  # unpack normal vector
+        # mirror surface and tools
+        gmsh.model.occ.mirror(
+            [(2, mirror_surf.id)] + [(2, tool.id) for tool in mirror_surf.tools],
+            a,
+            b,
+            c,
+            offset,
+        )
+        return mirror_surf
 
     def combine(
         self,
-        addSurf: Union["GmshSurface", list["GmshSurface"]],
+        addSurf: GmshSurface | list[GmshSurface],
         removeObject: bool = True,
         removeTool: bool = True,
-    ) -> "GmshSurface":
+    ) -> GmshSurface:
         """Combines two surfaces to a new surface.
 
         Args:
@@ -442,18 +490,16 @@ class GmshSurface(GmshGeometry, Surface):
             if addSurf:
                 return self._combine_multi_surface(addSurf, removeObject, removeTool)
             raise ValueError("List of surfaces to be combined must not be empty!")
-        elif isinstance(addSurf, GmshSurface):
+        if isinstance(addSurf, GmshSurface):
             return self._combine_single_surface(addSurf, removeObject, removeTool)
-        else:
-            raise TypeError(
-                "Surface to be combined must be of type GmshSurface or list of GmshSurface! "
-                "But it was of type %s!",
-                type(addSurf),
-            )
+        raise TypeError(
+            "Surface to be combined must be of type GmshSurface or list of GmshSurface! "
+            f"But it was of type {type(addSurf)}!",
+        )
 
     def _combine_single_surface(
-        self, surf_to_add: "GmshSurface", removeObject: bool, removeTool: bool
-    ) -> "GmshSurface":
+        self, surf_to_add: GmshSurface, removeObject: bool, removeTool: bool
+    ) -> GmshSurface:
         """Combine the current surface with a single surface.
 
         Args:
@@ -479,8 +525,8 @@ class GmshSurface(GmshGeometry, Surface):
         return comb_surf
 
     def _combine_multi_surface(
-        self, surfs_to_add: list["GmshSurface"], removeObject: bool, removeTool: bool
-    ) -> "GmshSurface":
+        self, surfs_to_add: list[GmshSurface], removeObject: bool, removeTool: bool
+    ) -> GmshSurface:
         """Combine the current surface with a single surface.
 
         Args:
@@ -516,7 +562,7 @@ class GmshSurface(GmshGeometry, Surface):
     def replaceCurve(self, oldCurve, newCurve):
         raise RuntimeError("No need to replace curves in GmshSurface!")
 
-    def cutOut(self, tool: "GmshSurface", keepTool: bool = True) -> None:
+    def cutOut(self, tool: GmshSurface, keepTool: bool = True) -> None:
         """Cut out a Tool Surface from the Parent surface by Boolean Difference"""
         self._cut.append(tool)
         tool.setTool()  # set to the tool surface

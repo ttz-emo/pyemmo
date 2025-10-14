@@ -19,6 +19,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module to test the function create_gmsh_lines of pyleecan api"""
+from __future__ import annotations
+
 from math import isclose, pi
 
 import gmsh

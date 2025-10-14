@@ -19,6 +19,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module test_gmsh_point.py for tests of the class GmshPoint."""
+from __future__ import annotations
+
 import gmsh
 import numpy as np
 import pytest

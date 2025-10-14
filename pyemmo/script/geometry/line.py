@@ -20,7 +20,9 @@
 #
 """Module of geometry class Line"""
 
-from typing import TYPE_CHECKING, Tuple, Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -74,7 +76,7 @@ class Line(Transformable):
         ###Name der Linie.
         self.name = name
 
-    def __eq__(self, other: "Line") -> bool:
+    def __eq__(self, other: Line) -> bool:
         # check type:
         if isinstance(other, self.__class__):
             # check that all points are equal
@@ -124,7 +126,7 @@ class Line(Transformable):
         self._end_point = new_end_point
 
     @property
-    def points(self) -> Tuple["Point", "Point"]:
+    def points(self) -> tuple[Point, Point]:
         """get the start and end point of a line
 
         Returns:
@@ -335,7 +337,7 @@ class Line(Transformable):
 
     def plot(
         self,
-        fig: "Figure" = None,
+        fig: Figure = None,
         marker=None,
         markersize=1.0,
         linewidth=0.5,
@@ -397,7 +399,7 @@ class Line(Transformable):
                 tag=tag,
             )
 
-    def arePointsEqual(self, compLine: "Line", tol=DEFAULT_GEO_TOL) -> bool:
+    def arePointsEqual(self, compLine: Line, tol=DEFAULT_GEO_TOL) -> bool:
         """
         Checks if start and end point of two lines are identical.
         The result is regardless of the direction.
@@ -439,7 +441,7 @@ class Line(Transformable):
         pStart, pEnd = self.points
         return min(pStart.meshLength, pEnd.meshLength)
 
-    def combine(self, addLine: "Line", touchPoint: Union[Point, None] = None) -> "Line":
+    def combine(self, addLine: Line, touchPoint: Point | None = None) -> Line:
         """combine two lines and return them as new line
 
         Args:

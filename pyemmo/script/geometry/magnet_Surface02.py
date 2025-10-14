@@ -18,8 +18,10 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module for tool kit magnet 02"""
+from __future__ import annotations
+
 import math
-from typing import Any, Dict
+from typing import Any
 
 from .circleArc import CircleArc
 from .line import Line
@@ -66,7 +68,7 @@ class Magnet_Surface02(Magnet):
     """
 
     def __init__(self, machineDict, magnetisationDirection, magnetisationType):
-        self._machineDict: Dict[str, Any] = machineDict
+        self._machineDict: dict[str, Any] = machineDict
         self.id = self._getNewID()
         magSurf02Name = "Magnet_Surface02_" + str(self.id)
         super().__init__(

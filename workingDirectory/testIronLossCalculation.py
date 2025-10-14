@@ -19,40 +19,36 @@
 #
 """Module to test iron loss calculation"""
 
+from __future__ import annotations
+
+import logging
+
 # %%
 import os
-from os import path
-import sys
-import time as clockTime
-import numpy as np
-import gmsh
 import subprocess
-from typing import List
-import logging
-from matplotlib import pyplot as plt
+import sys
+from os import path
+
+import numpy as np
 
 try:
-    from pyemmo.script.script import Script
+    pass
 except:
     try:
         rootname = path.abspath(path.join(path.dirname(__file__), ".."))
     except:
-        rootname = (
-            "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\pyemmo"
-        )
+        rootname = "c:\\Users\\ganser\\AppData\\Local\\Programs\\pyemmo_git\\pyemmo"
         print(f"Could not determine root. Setting it manually to '{rootname}'")
     print(f'rootname is "{rootname}"')
     sys.path.append(rootname)
     for p in sys.path:
         print(p)
 
-from pyemmo.definitions import ROOT_DIR, RESULT_DIR
-
+from pyemmo.api import json
+from pyemmo.definitions import RESULT_DIR
 
 # from pyemmo.functions import importResults as imp
-from pyemmo.functions import runOnelab
-from pyemmo.functions import calcIronLoss
-from pyemmo.api import json
+from pyemmo.functions import calcIronLoss, runOnelab
 
 
 def log_subprocess_output(pipe: subprocess.PIPE):
@@ -62,12 +58,8 @@ def log_subprocess_output(pipe: subprocess.PIPE):
 
 # %% init simulations
 # RESULT_DIR = r"C:\Users\ganser\AppData\Roaming\pyemmo\Results"
-gmshPath = (
-    r"C:\Users\ganser\AppData\Local\Programs\onelab-Windows64-230206\gmsh.exe"
-)
-getdpPath = (
-    r"C:\Users\ganser\AppData\Local\Programs\onelab-Windows64-230206\getdp.exe"
-)
+gmshPath = r"C:\Users\ganser\AppData\Local\Programs\onelab-Windows64-230206\gmsh.exe"
+getdpPath = r"C:\Users\ganser\AppData\Local\Programs\onelab-Windows64-230206\getdp.exe"
 
 geoFile = os.path.join(RESULT_DIR, "Test_1FE1051-4HF11_TherCom.geo")
 paramFile = os.path.join(RESULT_DIR, "Test_1FE1051-4HF11_TherCom_param.geo")
@@ -79,7 +71,9 @@ if not os.path.exists(proFile):
         extInfo=r"C:\Users\ganser\AppData\Local\Programs\pyemmo_git\pyemmo\Results\matlab\Test_1FE1051-4HF11_TherCom\simuInfo.json",
         model=RESULT_DIR,
     )
-RES_DIR = r"C:\Users\ganser\AppData\Roaming\pyemmo\Results\res_Test_1FE1051-4HF11_TherCom"
+RES_DIR = (
+    r"C:\Users\ganser\AppData\Roaming\pyemmo\Results\res_Test_1FE1051-4HF11_TherCom"
+)
 if not os.path.isdir(RES_DIR):
     os.mkdir(RES_DIR)
 # simulation parameters
@@ -96,7 +90,7 @@ logging.basicConfig(
     level=logging.DEBUG,
 )
 # %% run simulations
-processList: List[subprocess.Popen] = []
+processList: list[subprocess.Popen] = []
 for iStrom, stromdq in enumerate(idq.transpose()):
     # gmsh.initialize()
     # gmsh.option.setNumber("General.Verbosity", 5)
@@ -110,10 +104,8 @@ for iStrom, stromdq in enumerate(idq.transpose()):
     # gmsh.parser.setNumber("Id_eff", [stromdq[0]])
     # gmsh.parser.setNumber("Iq_eff", [stromdq[1]])
     # gmsh.onelab.setNumber("ANGLE_INCREMENT", [10])
-    resId = (
-        f"id_{np.round(stromdq[0],1)}A_iq_{np.round(stromdq[1],1)}A".replace(
-            ".", "_"
-        )
+    resId = f"id_{np.round(stromdq[0],1)}A_iq_{np.round(stromdq[1],1)}A".replace(
+        ".", "_"
     )
     # gmsh.parser.setString("ResId", resId)
     # # gmsh.onelab.run(command="check")
@@ -190,7 +182,6 @@ ironLossResFile = os.path.join(RES_DIR, "ironLossData.npy")
 ironLossArray = np.load(ironLossResFile)
 
 # %% plot loss data for check
-from matplotlib import cm
 
 # fig, ax = plt.subplots(subplot_kw={"projection": "3d"}, dpi=300)
 # fig.set

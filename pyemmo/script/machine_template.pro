@@ -56,7 +56,7 @@ DefineConstant[
     NbrPolesTot = NBR_POLE_PAIRS * 2,
     NbrPolePairs = NbrPolesTot / 2,
     Flag_MB = 1, // Allways use Movingband!
-    r_AG = R_AIRGAP
+    r_AG = R_AIRGAP // Rotor airgap radius at the interface of the moving band
     //Flag_Link = 0 			// Use Link Constraint - is not used in magstatdyn...
 ];
 //=============================================================================
@@ -87,7 +87,7 @@ DefineConstant[
 
     Flag_ExpertMode = {1, Name "01View/Expert Mode", Choices {0, 1}},
 
-    Flag_Debug = {1, Name "01View/Debug", Choices {0,1}},
+    Flag_Debug = {0, Name "01View/Debug", Choices {0,1}},
 
     MachineType = {
         (nbrRotorBars > 0), Name StrCat[INPUT_ANA_SETTINGS, "00Machine Type"],
@@ -204,8 +204,11 @@ DefineConstant[
         Name StrCat[
             INPUT_ANA_SETTINGS_OUTPUT, "02Results folder path"
         ],
-        Visible Flag_Debug
+        Help "Main results folder path where the results of the simulation
+            will be stored. This folder will be created by GetDP if it does not
+            exist yet. Use 'Results folder name' to create a result subfolder."
     }
+
     ResId = {
         "/", Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "03Results folder name"],
         Help "Name of the directory inside the results folder, where the result
@@ -221,7 +224,7 @@ DefineConstant[
     },
 
     Flag_PrintFields = {
-        1, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "05Show Local Fields"],
+        0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "05Show Local Fields"],
         Choices{0, 1}
     },
 
@@ -251,7 +254,32 @@ DefineConstant[
         1, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "09Inductance Computation Type"],
         Choices{0 = "Apparent", 1 = "Incremental"},
         Visible Flag_Inductance
-    }
+    },
+
+    Flag_SaveSolution = {
+        0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "10Save Solution"],
+        Choices{0, 1},
+        Visible Flag_ExpertMode,
+        Help StrCat[
+            "If Save Solution is active, the vector potential solution for each time ",
+            "step will be saved to a .res file. This is time consuming! For faster ",
+            "calculation, it is recommended to deactivate."
+        ]
+    },
+
+    r_rotor_airgap = {
+        R_ROTOR_AIRGAP, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "/Airgap Field/Rotor Radius"],
+        Min 0,
+        Visible Flag_PrintFields,
+        Help "Define the radius of the rotor airgap for the post-processing of B_rad and B_tan."
+    },
+
+    r_stator_airgap = {
+        R_STATOR_AIRGAP, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "/Airgap Field/Stator Radius"],
+        Min 0,
+        Visible Flag_PrintFields,
+        Help "Define the radius of the stator airgap for the post-processing of B_rad and B_tan."
+    },
 
     Flag_Lam = 0, // FIXME: Not using lamination eddy current calculation yet!
     // Flag_Lam = {
@@ -466,6 +494,7 @@ DefineConstant[
 
     // Use the Park transformation
     Flag_ParkTransformation = {
+        // current source and synchronous machine
         Flag_SrcType_Stator == TRANSIENT && MachineType==SYNCHRONOUS,
         Name StrCat[INPUT_ELEC_EXCITATION, "Use Clark-Park-Transformation"],
         Choices {0,1},
@@ -520,6 +549,10 @@ DefineConstant[
             "Circuit/11Resistance of endring segment [Ohm]"
         ],
         ReadOnly !Flag_Cir_RotorCage,
+        Help "This must be given for a single endring segment!
+        During processing the value is scaled to 1 meter because in
+        the electromagnetic formulation the resulting voltage drop given to the
+        circuit is in V/m!",
         Visible (nbrRotorBars>0)
     },
     L_endring_segment = {4.8e-9,
@@ -528,6 +561,10 @@ DefineConstant[
             "Circuit/12Inductance of endring segment [H]"
         ],
         ReadOnly !Flag_Cir_RotorCage,
+        Help "This must be given for a single endring segment!
+        During processing the value is scaled to 1 meter because in
+        the electromagnetic formulation the resulting voltage drop given to the
+        circuit is in V/m!",
         Visible (nbrRotorBars>0)
     }
 ];
@@ -540,9 +577,11 @@ DefineConstant[
 //=============================================================================
 
 DefineConstant[ //Material definitions
-    tempMag = {TEMP_MAG,
+    tempMag = {
+        TEMP_MAG,
         Name StrCat[INPUT_MAT_PROPERTIES_MAGNET, "Magnet temperature [°C]"],
-        Visible Flag_ExpertMode}
+        Visible Flag_ExpertMode && NbrRegions[Rotor_Magnets] > 0
+    }
 ];
 
 //=============================================================================
@@ -809,6 +848,7 @@ Function
     // variable containing the current rotor position => required to calculate the
     // magnetization direction of the magnets in rad. $Time is an internal variable
     // containing the current time
+    // the $dtheta value is only used when generating the ec lamination tables!
     RotorPosition[] = initrotor_pos * deg2rad + $Time * wr + $dtheta * deg2rad;
     // current position in deg
     RotorPosition_deg[] = RotorPosition[] * rad2deg;
