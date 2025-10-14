@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -21,9 +22,11 @@
 
 from __future__ import annotations
 
-from numpy import inf
+from numpy import inf, empty
 from pyleecan.Classes.Material import Material as PyleecanMaterial
 from pyleecan.Classes.MatMagnetics import MatMagnetics
+from pyleecan.Classes.MatElectrical import MatElectrical
+from pyleecan.Classes.ImportMatrixVal import ImportMatrixVal
 
 from ...script.material.material import Material
 
@@ -48,45 +51,61 @@ def build_pyemmo_material(pyleecan_material: PyleecanMaterial) -> Material:
     """
     # elec props
     try:
-        conductivity = pyleecan_material.elec.get_conductivity()
+        elec_prop: MatElectrical = pyleecan_material.elec  # type: ignore
+        conductivity = elec_prop.get_conductivity()
         if not isinstance(conductivity, (int, float)) or conductivity == inf:
             # case when rho = 0
-            conductivity = None
+            conductivity = 0.0
     except AttributeError:
-        conductivity = None
+        conductivity = 0.0
 
     # mag props
-    mag_properties: MatMagnetics = pyleecan_material.mag
+    mag_properties: MatMagnetics = pyleecan_material.mag  # type: ignore
     try:
         rel_permeability = mag_properties.mur_lin
+        assert isinstance(rel_permeability, (int, float)), "mue_r must be a number"
     except AttributeError:
-        rel_permeability = None
+        rel_permeability = 0.0
 
     try:
         remanence = mag_properties.Brm20
+        assert isinstance(remanence, (int, float)), "Br must be a number"
+
     except AttributeError:
-        remanence = None
+        remanence = 0.0
 
     try:
         alpha_br = mag_properties.alpha_Br
+        assert isinstance(alpha_br, (int, float)), "parameter alpha_Br must be a number"
+
     except AttributeError:
-        alpha_br = None
+        alpha_br = 0.0
 
     try:
-        # switch b and h axis for pyemmo
-        bh = mag_properties.BH_curve.value[:, [1, 0]]
-    except AttributeError:
-        bh = None
+        # BH_curve can have type ImportMatrixVal, None
+        if mag_properties.BH_curve is None:
+            bh = empty(0)
+        else:
+            assert isinstance(
+                mag_properties.BH_curve, ImportMatrixVal
+            ), "BH_curve is not of type pyleecan.ImportMatrixVal"
+            # switch b and h axis for pyemmo
+            # BH_curve.value is a numpy array
+            bh = mag_properties.BH_curve.value[:, [1, 0]]  # type: ignore
+    except (AssertionError, AttributeError):
+        bh = empty(0)
     # struct props
     try:
-        density = pyleecan_material.struct.rho
+        density = pyleecan_material.struct.rho  # type: ignore
     except AttributeError:
-        density = None
-    if bh is None and rel_permeability is None:
+        density = 0.0
+    if bh.size == 0 and not rel_permeability:
         # pylint: disable=locally-disabled, line-too-long
         raise ValueError(
             f"No magnetic properties (mue_r and BH curve) defined in material '{pyleecan_material.name}'"
         )
+    assert isinstance(pyleecan_material.name, str)
+
     pyemmo_material = Material(
         name=pyleecan_material.name,
         conductivity=conductivity,
@@ -95,8 +114,8 @@ def build_pyemmo_material(pyleecan_material: PyleecanMaterial) -> Material:
         tempCoefRem=alpha_br,
         BH=bh,
         density=density,
-        thermalConductivity=None,
-        thermalCapacity=None,
+        thermalConductivity=0.0,
+        thermalCapacity=0.0,
     )
 
     return pyemmo_material
