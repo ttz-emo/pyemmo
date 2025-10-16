@@ -64,19 +64,22 @@ def label2part_id(label: str) -> str:
         label "Rotor-0 Lamination" will be translated to "rotor lamination".
     """
     label_dict = decode_label(label)
+    # calculate sum of indices for single index
+    if "index" in label_dict:
+        index = sum((label_dict["R_id"], label_dict["T_id"], label_dict["S_id"]))
     if STATOR_LAB in label_dict["lam_label"]:
         if LAM_LAB in label_dict["surf_type"]:
             return STATOR_LAM_IDEXT
         if WIND_LAB in label_dict["surf_type"]:
-            return STATOR_SLOT_IDEXT
+            return STATOR_SLOT_IDEXT + f"{index}"
         return label
     if ROTOR_LAB in label_dict["lam_label"]:
         if LAM_LAB in label_dict["surf_type"]:
             return ROTOR_LAM_IDEXT
         if BAR_LAB in label_dict["surf_type"]:
-            return ROTOR_BAR_IDEXT
+            return ROTOR_BAR_IDEXT + f"{index}"
         if MAG_LAB in label_dict["surf_type"] or HOLEM_LAB in label_dict["surf_type"]:
-            return ROTOR_MAG_IDEXT
+            return ROTOR_MAG_IDEXT + f"{index}"
         return label
     raise ValueError(
         f"Pyleecan surface label did not contain rotor or stator lamination label: {label}"
