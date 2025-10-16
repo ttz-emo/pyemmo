@@ -88,10 +88,8 @@ def main(
 
     # TODO: create function to calc mean airgap radius (or implement airgap function in json api)
     # and function to get magnetization dict
-    movingband_r = 0
-    magnetizationDict = {}
     paramDict = create_param_dict(
-        pyleecan_machine, simulation, movingband_r, magnetizationDict
+        pyleecan_machine, simulation
     )
     paramDict["flag_openGUI"] = use_gui
 

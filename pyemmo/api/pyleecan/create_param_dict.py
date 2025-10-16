@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -19,6 +20,10 @@
 #
 from __future__ import annotations
 
+from statistics import mean
+from math import pi
+from typing import Any
+
 from pyleecan.Classes.LamHole import LamHole
 from pyleecan.Classes.Lamination import Lamination
 from pyleecan.Classes.LamSlotMag import LamSlotMag
@@ -26,6 +31,7 @@ from pyleecan.Classes.OPdq import OPdq
 from pyleecan.Classes.Simulation import Simulation as PyleecanSimulation
 
 from .. import logger
+from ..json import ROTOR_MAG_IDEXT
 from . import PyleecanMachine
 from .translate_winding import translate_winding
 
@@ -33,9 +39,7 @@ from .translate_winding import translate_winding
 def create_param_dict(
     machine: PyleecanMachine,
     pyleecan_simulation: PyleecanSimulation,
-    mb_radius: float,
-    magnetization_dict: dict[str, float],
-) -> dict[str, any]:
+) -> dict[str, Any]:
     """
     Builds a dictionary for communication between PYLEECAN, PyEMMO and ONELAB.
 
@@ -65,13 +69,10 @@ def create_param_dict(
     # and if so their values will directly be set in the dictionary under 'Id' and 'Iq'.
     # If only 'I0_Phi0' has a set value but 'Id_ref' and 'Iq_ref' don't 'Id' and 'Iq' will be
     # calculated.
-
     op = pyleecan_simulation.input.OP
-
     if isinstance(op, OPdq):
         i_d = op.Id_ref
         i_q = op.Iq_ref
-
     else:
         i_d = 0
         i_q = 0
@@ -79,6 +80,11 @@ def create_param_dict(
             '!! Warning: No Values set for "Id_ref" and "Iq_ref" -> Id = Iq = 0 !!'
         )
 
+    ## Calculate movingband radius
+    try:
+        mb_radius = machine.comp_Rgap_mec()
+    except Exception:
+        mb_radius = mean((machine.stator.Rint, machine.rotor.Rext))
     # --------------------------------------------------------------------------------------
     # The following part of the function tests if rotor or stator have magnets and if so
     # if there are more than one magnet build in.
@@ -91,61 +97,67 @@ def create_param_dict(
     # --------------------------------------------------------------------------------------
 
     lam_with_mag: Lamination = None
-
-    if pyleecan_simulation.machine.rotor.has_magnet():  # Test, if rotor has magnet(s)
+    pylcn_mag_type = None  # If machine doesn't have magnets, pyemmoMagType = None
+    # Magnetization dict for pyemmo json api.
+    # It has the magnet part_id as keys and the magnetization angle of the corresponding
+    # magnet as value in radians. See `pyemmo.api.json.importJSON.getMagAngle`
+    magnetization_dict = {}
+    if pyleecan_simulation.machine.rotor.has_magnet():
+        # Test, if rotor has magnet(s)
         lam_with_mag = pyleecan_simulation.machine.rotor
-
-    elif (
-        pyleecan_simulation.machine.stator.has_magnet()
-    ):  # Test, if stator has magnet(s)
+    elif pyleecan_simulation.machine.stator.has_magnet():
+        # Test, if stator has magnet(s)
         lam_with_mag = pyleecan_simulation.machine.stator
-
-    else:  # If rotor doesn't have magnets, pyemmoMagType = None
-        pyemmo_mag_type = None
-        pyemmo_mag_type = None
-
     if lam_with_mag:
-        if isinstance(
-            lam_with_mag, LamHole
-        ):  # Test, if lamWithMag has Holes where the magnet(s) sit(s) in
-            if isinstance(
-                lam_with_mag.hole, list
-            ):  # Test, if lamWithMag has more than one magnet
+        nbr_magnets_in_model: float = (
+            lam_with_mag.get_magnet_number() / lam_with_mag.get_Zs()
+        )
+        assert (
+            nbr_magnets_in_model.is_integer()
+        ), "Uneven number of magnets per segment!"
+        if isinstance(lam_with_mag, LamHole):
+            # Test, if lamWithMag has Holes where the magnet(s) sit(s) in
+            if isinstance(lam_with_mag.hole, list):
+                # Test, if lamWithMag has more than one magnet
                 # The magnetization Type for all magnets in the machine will be set
                 # in the same Type as the firt magnet in the list.
-
-                pyemmo_mag_type = lam_with_mag.hole[0].magnet_0.type_magnetization
-
+                pylcn_mag_type = lam_with_mag.hole[0].magnet_0.type_magnetization
+                mag_dict = lam_with_mag.hole[0].get_magnet_dict()
+                pylcn_magnetization_dict = lam_with_mag.hole[
+                    0
+                ].comp_magnetization_dict()
+                for i in range(int(nbr_magnets_in_model)):
+                    # get magnetization angle and add half pole pitch (pi/Zs)
+                    magnetization_dict[ROTOR_MAG_IDEXT + f"{i}"] = (
+                        pylcn_magnetization_dict[f"magnet_{i}"]
+                        + pi / lam_with_mag.get_Zs()
+                    )
             else:  # If lamWithMag has only one magnet
-                pyemmo_mag_type = lam_with_mag.hole.magnet_0.type_magnetization
-                pyemmo_mag_type = lam_with_mag.hole.magnet_0.type_magnetization
+                pylcn_mag_type = lam_with_mag.hole.magnet_0.type_magnetization
 
-        elif isinstance(
-            lam_with_mag, LamSlotMag
-        ):  # Test, if lamWithMag has Slots where the magnet(s) sit(s) in
-            if isinstance(
-                lam_with_mag.slot, list
-            ):  # Test, if lamWithMag has more than one magnet
+        elif isinstance(lam_with_mag, LamSlotMag):
+            # Test, if lamWithMag has Slots where the magnet(s) sit(s) in
+            if isinstance(lam_with_mag.slot, list):
+                # Test, if lamWithMag has more than one magnet
                 # The magnetization Type for all magnets in the machine will be set
                 # in the same Type as the firt magnet in the list.
-
-                pyemmo_mag_type = lam_with_mag.slot[0].magnet_0.type_magnetization
-
+                pylcn_mag_type = lam_with_mag.slot[0].magnet_0.type_magnetization
             else:  # If rotor has only one magnet
-                pyemmo_mag_type = lam_with_mag.magnet.type_magnetization
-                pyemmo_mag_type = lam_with_mag.magnet.type_magnetization
-
+                pylcn_mag_type = lam_with_mag.magnet.type_magnetization
         else:
-            # Error
             raise RuntimeError(
                 f'Lamination of type "{str(type(lam_with_mag))}" is not type LamHole or LamSlotMag.'
             )
-    if pyemmo_mag_type == 0:
+    if pylcn_mag_type == 0:
         pyemmo_mag_type = "radial"
-    elif pyemmo_mag_type == 1:
+    elif pylcn_mag_type == 1:
         pyemmo_mag_type = "parallel"
-    elif pyemmo_mag_type == 3:
+    elif pylcn_mag_type == 3:
         pyemmo_mag_type = "tangential"
+    else:
+        raise ValueError(
+            "Unknown pyleecan magnetization type with index: %i", pylcn_mag_type
+        )
 
     sym_factor = machine.comp_periodicity_spatial()
     if sym_factor[1]:
