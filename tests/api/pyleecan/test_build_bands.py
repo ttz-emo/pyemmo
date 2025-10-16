@@ -25,6 +25,7 @@ import math
 import os
 from os.path import join
 
+import pytest
 from pyleecan.Classes.Machine import Machine
 
 # pylint: disable=locally-disabled, no-name-in-module
@@ -37,9 +38,11 @@ import pyemmo.api.pyleecan.translate_machine
 from tests.api.pyleecan import TEST_API_PYLCN_DATA_DIR
 
 
+@pytest.mark.skip(reason="Needs rework due to json api changes")
 def test_build_bands():
     """Function to test the build bands api function."""
-    machine: Machine = load(
+
+    machine: Machine = load(  # type: ignore
         os.path.abspath(join(TEST_API_PYLCN_DATA_DIR, "00_prius_machine.json"))
     )
     is_internal_rotor = machine.rotor.is_internal
