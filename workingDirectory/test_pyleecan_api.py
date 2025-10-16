@@ -1,6 +1,6 @@
 #
-# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO, Technical University of Applied Sciences
-# Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -82,26 +82,29 @@ if os.path.isfile(pylcn_machine_testfile):
 # 4 (IPMSM, (missing wedge))
 # 17 (SIPMSM, SlotW22 + SlotM11) - full model
 # 31 (SynRM, SlotW11 (missing wedge) + HoleM54) - 1/4 model
-# 34 (Prius, SlotW11 + HoleM50)
-fileName = machineList[31]  # SELECT MACHINE HERE BY INDEX OR NAME
+# 33 (Prius-3 Phase, SlotW11 + HoleM50)
+# 34 (Prius-6 Phase, SlotW11 + HoleM50)
+fileName = machineList[33]  # SELECT MACHINE HERE BY INDEX OR NAME
 # fileName = "SIPMSM_002.json"  # SELECT MACHINE HERE BY INDEX OR NAME
 print("\nUsing machine: " + fileName)
-pyleecan_machine: Machine = load.load(  # pylint: disable=locally-disabled, no-member
-    os.path.abspath(os.path.join(machineFolder, fileName))
+pyleecan_machine: Machine = (
+    load.load(  # pylint: disable=locally-disabled, no-member # type: ignore
+        os.path.abspath(os.path.join(machineFolder, fileName))
+    )
 )
 # Workaround for wrong material
 # pylint: disable=locally-disabled, no-member
 CuMat = load.load(os.path.join(PYLEECAN_DATA_DIR, "Material", "Copper2.json"))
 try:
-    if pyleecan_machine.rotor.winding.conductor.cond_mat.name == "Copper1":
-        pyleecan_machine.rotor.winding.conductor.cond_mat = CuMat
+    if pyleecan_machine.rotor.winding.conductor.cond_mat.name == "Copper1":  # type: ignore
+        pyleecan_machine.rotor.winding.conductor.cond_mat = CuMat  # type: ignore
 except AttributeError:
     pass
 except Exception as exce:
     raise exce
 try:
-    if pyleecan_machine.stator.winding.conductor.cond_mat.name == "Copper1":
-        pyleecan_machine.stator.winding.conductor.cond_mat = CuMat
+    if pyleecan_machine.stator.winding.conductor.cond_mat.name == "Copper1":  # type: ignore
+        pyleecan_machine.stator.winding.conductor.cond_mat = CuMat  # type: ignore
 except AttributeError:
     pass
 except Exception as exce:
@@ -109,7 +112,7 @@ except Exception as exce:
 # %%
 # Run PyEMMO Pyleecan api
 pyleecanAPI.main(
-    pyleecan_machine, model_dir=os.path.join(resFolder, pyleecan_machine.name)
+    pyleecan_machine, model_dir=os.path.join(resFolder, pyleecan_machine.name)  # type: ignore
 )
 
 # %%
