@@ -563,6 +563,7 @@ def createMagnet(surf: MachineSegmentSurface, mat: Material, extInfo: dict) -> M
 
     # identify magnetization direction
     # first segment (segmentNbr=0) must be north pole for dq-Offset calculation
+    # FIXME: There can be multiple segments for one pole!
     magDir = 1 if (surf.segment_nbr + 1) % 2 else -1  # 1: north/outwards
     # get magentization angle from magAngle dict by idExt
     magAngle = importJSON.getMagAngle(extInfo)[surf.part_id]
