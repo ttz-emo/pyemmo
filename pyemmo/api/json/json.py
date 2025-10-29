@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO, Technical University of Applied
 # Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -49,6 +49,7 @@ from ..machine_segment_surface import MachineSegmentSurface
 from . import apiNameDict
 from . import boundaryJSON as boundary
 from . import importJSON, modelJSON
+from .create_airgaps import create_airgap_surfaces
 
 if not gmsh_api.is_initialized():
     gmsh_api.initialize()
@@ -87,6 +88,8 @@ def createMachine(
     logging.debug("Calling gmsh_api.model.occ.synchronize()")
     gmsh_api.model.occ.synchronize()
 
+    create_airgap_surfaces(maschineSurfDict, rotorMovingBandRadius, symFactor)
+    
     # check mesh sizes after import! Due to issues with OCC it can happen that points
     # lose their mesh size and get mesh size = 0. In this case, search for the closest
     # point and set the mesh size to its mesh size.
