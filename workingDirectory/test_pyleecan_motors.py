@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -47,6 +48,7 @@ nbrTranslatedMaschines = 0
 machine_file_list = os.listdir(MACHINE_FILE_DIR)
 nbr_machines = len(machine_file_list)
 
+# pylint: disable=locally-disabled, no-member
 CuMat = load.load(os.path.join(DATA_DIR, "Material", "Copper2.json"))
 
 for num, machineFile in enumerate(os.listdir(MACHINE_FILE_DIR)):

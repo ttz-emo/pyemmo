@@ -84,7 +84,7 @@ if os.path.isfile(pylcn_machine_testfile):
 # 31 (SynRM, SlotW11 (missing wedge) + HoleM54) - 1/4 model
 # 33 (Prius-3 Phase, SlotW11 + HoleM50)
 # 34 (Prius-6 Phase, SlotW11 + HoleM50)
-fileName = machineList[33]  # SELECT MACHINE HERE BY INDEX OR NAME
+fileName = machineList[0]  # SELECT MACHINE HERE BY INDEX OR NAME
 # fileName = "SIPMSM_002.json"  # SELECT MACHINE HERE BY INDEX OR NAME
 print("\nUsing machine: " + fileName)
 pyleecan_machine: Machine = (
