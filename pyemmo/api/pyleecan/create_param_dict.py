@@ -81,10 +81,9 @@ def create_param_dict(
         )
 
     ## Calculate movingband radius
-    try:
-        mb_radius = machine.comp_Rgap_mec()
-    except Exception:
-        mb_radius = mean((machine.stator.Rint, machine.rotor.Rext))
+    # We define movingband radius to be rotor outer radius + 2/5 of the mechanical airgap
+    r_ext_rotor = machine.rotor.comp_radius_mec()
+    mb_radius = r_ext_rotor + 2 * (machine.stator.comp_radius_mec() - r_ext_rotor) / 5
     # --------------------------------------------------------------------------------------
     # The following part of the function tests if rotor or stator have magnets and if so
     # if there are more than one magnet build in.
