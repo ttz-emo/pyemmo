@@ -448,9 +448,7 @@ def calcs_radii(
     return diff_radius, max_radius
 
 
-def translate_machine(
-    machine: PyleecanMachine,
-) -> dict[str, MachineSegmentSurface]:
+def translate_machine(machine: PyleecanMachine) -> dict[str, MachineSegmentSurface]:
     """_summary_
 
     Args:
@@ -466,40 +464,8 @@ def translate_machine(
             - Magnetization dict.
             - Geometry dict for PyEMMO JSON-api.
     """
-    diff_radius, max_radius = calcs_radii(
-        machine=machine, is_internal_rotor=machine.rotor.is_internal
-    )
     # Translation of geometry and creation of rotor and stator contour:
     geo_dict = create_geo_dict(
         machine,
     )
-    # Calculation of the MovingBand radii:
-    wp = diff_radius / 5
-    band_radius_list = []
-
-    for i in range(1, 5 + 1):
-        band_radius_list.append(max_radius + wp * i)
-
-    # (
-    #     rotor_air_gap1,
-    #     rotor_air_gap2,
-    #     movingband_r,
-    # ) = build_bands_rotor(
-    #     machine=machine,
-    #     band_radius_list=band_radius_list,
-    #     r_point_rotor_cont=r_point_rotor_cont,
-    #     l_point_rotor_cont=l_point_rotor_cont,
-    #     rotor_cont_line_list=rotor_cont_line_list,
-    # )
-    # # add rotor airgaps to geo-list:
-    # geo_dict.extend([rotor_air_gap1, rotor_air_gap2])
-    # # add stator airgaps to geo-list:
-    # geo_dict.extend(
-    #     build_bands_stator(
-    #         machine=machine,
-    #         stator_cont_line_list=stator_cont_line_list,
-    #         band_radius_list=band_radius_list,
-    #     )
-    # )
-
     return geo_dict
