@@ -153,6 +153,9 @@ def create_param_dict(
         pyemmo_mag_type = "parallel"
     elif pylcn_mag_type == 3:
         pyemmo_mag_type = "tangential"
+    elif pylcn_mag_type is None:
+        pyemmo_mag_type = None
+        pass  # no magnets
     else:
         raise ValueError(
             "Unknown pyleecan magnetization type with index: %i", pylcn_mag_type
