@@ -468,4 +468,9 @@ def translate_machine(machine: PyleecanMachine) -> dict[str, MachineSegmentSurfa
     geo_dict = create_geo_dict(
         machine,
     )
+    # TODO: If the rotor is of type LamHole, maybe create a separate airgap surface to
+    # close the rotor lamination and reduce the height of the airgap created by the
+    # pyemmo api. By definition in ``create_param_dict`` the complete rotor airgap will
+    # be 2/5 of the total mechanical airgap. So the api create two stator airgaps of
+    # The same height as the moving band.
     return geo_dict
