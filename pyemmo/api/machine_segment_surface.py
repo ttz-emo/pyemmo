@@ -84,9 +84,9 @@ class MachineSegmentSurface(GmshSegmentSurface):
             name (str, optional): name of the surface
         """
         GmshSegmentSurface.__init__(self, tag=tag, nbr_segments=nbr_segments, name=name)
-        self.part_id: str = part_id
-        self.material: Material = material
-        self.nbr_segments: int = nbr_segments
+        self.part_id = part_id
+        self.material = material
+        self.nbr_segments = nbr_segments
         self._segment_number = 0
 
     # pylint: disable=arguments-differ, too-many-arguments, too-many-positional-arguments
