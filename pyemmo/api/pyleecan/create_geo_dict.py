@@ -44,8 +44,10 @@ from pyleecan.Classes.LamH import LamH
 from pyleecan.Classes.LamSlot import LamSlot
 from pyleecan.Classes.SurfLine import SurfLine
 from pyleecan.Functions.labels import (
+    BAR_LAB,
     HOLEM_LAB,
     HOLEV_LAB,
+    WIND_LAB,
     get_obj_from_label,
 )
 
@@ -116,7 +118,12 @@ def create_geo_dict(
 
             # lam = machine.get_lam_by_label(all_surfs_labels_split1[0])
             obj = get_obj_from_label(machine, surf.label)
-            if hasattr(obj, "mat_type"):
+            if WIND_LAB in surf.label or BAR_LAB in surf.label:
+                # NOTE: In case of winding or bar label the object returned is the
+                # lamination and not the actual object itself. If so we have to get the
+                # actual conductor material.
+                material = obj.winding.conductor.cond_mat
+            elif hasattr(obj, "mat_type"):
                 material = obj.mat_type
             elif hasattr(obj, "mat_void"):
                 material = obj.mat_void
