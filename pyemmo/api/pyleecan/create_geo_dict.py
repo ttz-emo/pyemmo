@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -21,18 +22,6 @@
 
 This module provides functions to convert geometry elements from pyleecan to pyemmo format.
 
-Module dependencies:
-    - pyleecan.Classes.MachineIPMSM.MachineIPMSM
-    - pyleecan.Classes.MachineSIPMSM.MachineSIPMSM
-    - pyleecan.Classes.MachineSyRM.MachineSyRM
-    - pyleecan.Classes.Machine.Machine
-    - ...functions.plot.plot
-    - ...script.geometry.line.Line
-    - ...script.geometry.circleArc.CircleArc
-    - ...script.geometry.point.Point
-    - ..json.SurfaceJSON.SurfaceAPI
-    - ..logger
-
 Functions:
     -   ``create_geo_dict``: Creates a dictionary containing geometry
         information for communication between Pyleecan and pyemmo.
@@ -42,16 +31,8 @@ Example:
     .. code:: python
 
         machine = MachineIPMSM(...)
-        is_internal_rotor = True
-        (
-            geometry_list,
-            rotor_contour_lines,
-            stator_contour_lines,
-            r_point_rotor_cont,
-            l_point_rotor_cont,
-            magnetization_dict
-        ) = create_geo_dict(machine, is_internal_rotor)
-        # Returns geometry objects, contour lines, and magnetization dictionary suitable for pyemmo.
+        geometry_dict = create_geo_dict(machine)
+        # Returns geometry objects suitable for pyemmo.
 
 Raises:
     TypeError: If unable to generate contours of the given machine type.
@@ -60,34 +41,19 @@ Raises:
 from __future__ import annotations
 
 from pyleecan.Classes.LamH import LamH
-from pyleecan.Classes.LamHole import LamHole
-from pyleecan.Classes.Lamination import Lamination
 from pyleecan.Classes.LamSlot import LamSlot
-from pyleecan.Classes.LamSlotMag import LamSlotMag
-from pyleecan.Classes.LamSquirrelCage import LamSquirrelCage
 from pyleecan.Classes.SurfLine import SurfLine
-from pyleecan.Functions.labels import get_obj_from_label, HOLEM_LAB, HOLEV_LAB
+from pyleecan.Functions.labels import (
+    HOLEM_LAB,
+    HOLEV_LAB,
+    get_obj_from_label,
+)
 
-from ...script.geometry.circleArc import CircleArc
-from ...script.geometry.line import Line
-from ...script.geometry.point import Point
-from ...script.geometry.segment_surface import SegmentSurface
 from .. import logger
-from ..json import ROTOR_BAR_IDEXT, ROTOR_LAM_IDEXT, STATOR_LAM_IDEXT, STATOR_SLOT_IDEXT
-from ..json.modelJSON import createSurfaceDict
 from ..machine_segment_surface import MachineSegmentSurface
 from . import PyleecanMachine
 from .build_pyemmo_material import build_pyemmo_material
-from .calcs_rotor_spmsm_cont import get_lr_points
 from .create_gmsh_surf import create_gmsh_surface
-from .detect_inner_outer_limit import detect_inner_outer_limit
-from .get_magnetization_dict import get_magnetization_dict
-from .get_rotor_stator_cont import (
-    get_even_rotor_cont,
-    get_spmsm_rotor_cont,
-    get_winding_cont,
-)
-from .label2part_id import label2part_id
 
 
 def create_geo_dict(
