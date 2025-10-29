@@ -520,3 +520,9 @@ class Line(Transformable):
             if p.isEqual(refPoint, tol=tol):
                 return True
         return False
+
+    def angle_to_middle(self):
+        """Return the angle of the middle point of the curve to the x-axis
+
+        This can be used to sort lists of curve in circumferential direction"""
+        return self.middle_point.getAngleToX()

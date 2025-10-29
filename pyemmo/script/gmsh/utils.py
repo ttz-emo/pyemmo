@@ -234,12 +234,12 @@ def filter_curves_on_radius(line_list: list[GmshLine], radius: float) -> list[Gm
 
 
 def filter_lines_at_angle(line_list: list[Line], angle: float) -> list[Line]:
-    """Filter all lines from a list of lines that are on a specific ``angle`` to the
-    x-axis in the xy-plane.
+    """Filter all lines from a list of lines that are on a specific ``angle`` [rad] to
+    the x-axis in the xy-plane.
 
     Args:
         line_list (list[Line]): List of (boundary) lines.
-        angle (float): Angle of axis in xy-plane to filter.
+        angle (float): Angle of axis in xy-plane to filter in radians.
 
     Returns:
         list[Line]: List of lines that are on the specified axis.
@@ -317,9 +317,8 @@ def fix_missing_mesh_sizes() -> None:
                     zmax=1,
                     dim=0,
                 )
-                dim_tags.remove(
-                    (0, p.id)
-                )  # remove point itself because its allways found
+                # remove point itself because its allways found:
+                dim_tags.remove((0, p.id))
                 dl *= 2  # increase search radius
                 nbr_loops += 1
             p.meshLength = gmsh.model.mesh.getSizes(dimTags=[dim_tags[0]])[0]
