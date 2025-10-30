@@ -519,8 +519,14 @@ def createPhysicalSurfaces(
             material=surfList[0].material,
         )
         return [airGap], machineSide
-    if part_id == ROTOR_BAR_IDEXT:  # For ASM-Cage
-        bars = [Bar(surf.part_id, surf, surf.material) for surf in surfList]
+    if ROTOR_BAR_IDEXT in part_id:  # For ASM-Cage
+        # NOTE: We do not need to sort the physicals in circumferential direction here
+        # because this is done when creating the Rotor Bar Domains in the Script class.
+        # We could also use 'surf.segment_number' as index, but it would fail in case
+        # there are two bars per rotor segment.
+        bars = []
+        for i, surf in enumerate(surfList):
+            bars.append(Bar(f"rotor bar {i+1}", surf, surf.material))
         return bars, machineSide
 
     if ROTOR_LAM_IDEXT in part_id:
@@ -693,6 +699,9 @@ def createSlot(
 
     slotSide = getSlotInfo(surf.part_id)
     # NOTE: slotSide is set 0 or 1 where the naming of slotSide is 1 or 2
+    # Slot side 0 = right side or slot bottom; 1 = left side or slot opening.
+    # (Slot side can also be 2 or 3 but is merged into 0 and 1 by modulo operation. This
+    # is usefull when you have multiple slot side (>2) per lamination segment.)
     windingLayout = importJSON.getWindingList(extendedInfo)
     # calculate the slot number from the slot surface position:
     # the slot number is the angular position divided by the slot pitch
