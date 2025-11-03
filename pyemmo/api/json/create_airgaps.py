@@ -196,8 +196,7 @@ def create_airgap_surfaces(
                     name="Stator Airgap (PyEMMO)",
                 )
             ]
-            gmsh.model.occ.synchronize()
-            gmsh.fltk.run()
+            surface_dict[STATOR_AIRGAP_IDEXT][0].setMeshLength(band_height)
         else:
             raise NotImplementedError(
                 "Cannot create airgap surfaces for symmetry = 1 yet."
@@ -345,5 +344,4 @@ def create_airgap_surfaces(
                     name="Rotor Airgap (PyEMMO)",
                 )
             ]
-            gmsh.model.occ.synchronize()
-            gmsh.fltk.run()
+            surface_dict[ROTOR_AIRGAP_IDEXT][0].setMeshLength(band_height)
