@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO, Technical University of
 # Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -37,29 +37,7 @@ from .gmsh_arc import GmshArc
 from .gmsh_geometry import GmshGeometry
 from .gmsh_line import GmshLine
 from .gmsh_point import GmshPoint
-from .gmsh_spline import GmshSpline
-
-
-def create_curve(id: int) -> GmshLine | GmshArc:
-    """Create a curve object based on the given id.
-
-    Args:
-        id (int): The id of the curve in the Gmsh model.
-
-    Returns:
-        Union[GmshLine, GmshArc]: The created curve object.
-
-    Raises:
-        ValueError: If the line with the given id is not of type Line or Circle.
-    """
-    # TODO Add support for 'TrimmedCurve' curve type
-    if gmsh.model.getType(1, id) in ("Line", "TrimmedCurve"):
-        return GmshLine(tag=id)
-    if gmsh.model.getType(1, id) == "Circle":
-        return GmshArc(tag=id)
-    if gmsh.model.getType(1, id) in ("BSpline", "Bezier", "Spline"):
-        return GmshSpline(tag=id)
-    raise ValueError(f"Line with tag {id} is not of type Line or Circle!")
+from .create_gmsh_curve import create_curve
 
 
 class GmshSurface(GmshGeometry, Surface):
