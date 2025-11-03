@@ -266,7 +266,7 @@ def create_airgap_surfaces(
             nbr_airgaps = 2  # curve is straigt -> 2
 
         # calculate airgap radii
-        r_max = get_max_radius(rotor_dim_tags)
+        r_max = get_max_radius(get_dim_tags(air_interface))
         # divide distance of rotor moving band in 2 or 3 segments
         band_height = (moving_band_radius - r_max) / nbr_airgaps
         if symmetry > 1:
