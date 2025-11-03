@@ -37,6 +37,7 @@ from ...script.geometry.primaryLine import PrimaryLine
 from ...script.geometry.slaveLine import SlaveLine
 from ...script.geometry.transformable import Transformable
 from ...script.gmsh import SurfDimTag
+from ...script.gmsh.create_gmsh_curve import create_curve
 from ...script.gmsh.gmsh_arc import GmshArc
 from ...script.gmsh.gmsh_line import GmshLine
 from ...script.gmsh.gmsh_point import GmshPoint
@@ -485,19 +486,8 @@ def get_boundary_line_list(surf_dim_tags: list[SurfDimTag]) -> list[GmshLine]:
             print(line)
     """
     boundary_dim_tags = gmsh.model.get_boundary(surf_dim_tags)
-    # create a boundary line dict:
-    bnd_line_list: list[GmshLine, GmshArc] = []
-    for dim, l_tag in boundary_dim_tags:
-        assert dim == 1
-        l_tag = abs(l_tag)
-        # line_type = gmsh.model.get_type(1, l_tag)  # get curve type: 'Line' or 'Circle'
-        line_type = gmsh.model.get_type(1, l_tag)
-        if line_type == "Line":
-            bnd_line_list.append(GmshLine(l_tag))
-        elif line_type == "Circle":
-            bnd_line_list.append(GmshArc(l_tag))
-        else:
-            raise RuntimeError(f"Can not handle Gmsh line type '{line_type}'")
+    # create a boundary line list:
+    bnd_line_list = [create_curve(l_tag) for _, l_tag in boundary_dim_tags]
     return bnd_line_list
 
 
