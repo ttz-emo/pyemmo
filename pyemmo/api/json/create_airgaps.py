@@ -277,9 +277,10 @@ def create_airgap_surfaces(
             if nbr_airgaps == 2:
                 # create air closing box
                 p1 = start_point
-                # copy and move start point on x-axis by band height
+                # copy and move start point on x-axis by distance from P1 to r_max +
+                # band height
                 p2 = start_point.duplicate()
-                p2.translate(dx=band_height)
+                p2.translate(dx=r_max - p1.x + band_height)
                 # copy p2 and rotate result by symmetry angle
                 p3 = p2.duplicate()
                 p3.rotateZ(angle=sym_angle)
