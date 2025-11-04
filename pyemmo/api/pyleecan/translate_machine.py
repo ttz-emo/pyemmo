@@ -464,6 +464,9 @@ def translate_machine(machine: PyleecanMachine) -> dict[str, MachineSegmentSurfa
             - Magnetization dict.
             - Geometry dict for PyEMMO JSON-api.
     """
+    # Test machine attributes to make sure its translatable
+    if not machine.rotor.is_internal:
+        raise NotImplementedError("Outer rotor machines not implemented in pyemmo yet!")
     # Translation of geometry and creation of rotor and stator contour:
     geo_dict = create_geo_dict(
         machine,
