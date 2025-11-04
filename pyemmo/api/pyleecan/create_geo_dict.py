@@ -45,6 +45,9 @@ import logging
 from pyleecan.Classes.LamH import LamH
 from pyleecan.Classes.LamSlot import LamSlot
 from pyleecan.Classes.SurfLine import SurfLine
+from pyleecan.Classes.SurfRing import SurfRing
+from pyleecan.Classes.Shaft import Shaft
+from pyleecan.Classes.Frame import Frame
 from pyleecan.Functions.labels import (
     WIND_LAB,  # "Winding"
     SOP_LAB,  # "SlotOpening"
@@ -148,14 +151,30 @@ def create_geo_dict(
             else:
                 pyemmo_geo_dict[pyemmo_surf.part_id] = pyemmo_surf
 
-    # # ===============================
-    # # Getting the magnetization_dict:
-    # # ===============================
-    # magnetization_dict = get_magnetization_dict(
-    #     machine=machine,
-    #     angle_point_ref_list=angle_point_ref_list,
-    #     geometry_list=pyemmo_geo_dict,
-    # )
+    # create shaft
+    if machine.shaft:
+        shaft: Shaft = machine.shaft
+        surf: list[SurfLine] = shaft.build_geometry(machine.rotor.get_Zs())
+        assert len(surf) == 1, "Shaft has more than one surface"
+        pyemmo_geo_dict[surf[0].label] = create_gmsh_surface(
+            surface=surf[0],
+            nbr_segments=machine.rotor.get_Zs(),
+            material=build_pyemmo_material(shaft.mat_type),
+            name=surf[0].label,
+        )
+    # create frame
+    if machine.frame:
+        frame: Frame = machine.frame
+        surf: list[SurfRing | SurfLine] = frame.build_geometry(machine.stator.get_Zs())
+        if surf:
+            # empty surf list -> no frame
+            assert len(surf) == 1, "Frame has more than one surface"
+            pyemmo_geo_dict[surf[0].label] = create_gmsh_surface(
+                surface=surf[0],
+                nbr_segments=machine.stator.get_Zs(),
+                material=build_pyemmo_material(frame.mat_type),
+                name=surf[0].label,
+            )
 
     logger.debug("=======================================")
     logger.debug("End of geometry translation of machine.")
