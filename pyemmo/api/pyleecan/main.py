@@ -84,7 +84,7 @@ def main(
         gmsh_api.model.add(pyleecan_machine.name)
         geo_translation_dict = translate_machine(pyleecan_machine)
     else:
-        raise ValueError(
+        raise NotImplementedError(
             f"Machine type '{type(pyleecan_machine)}' is not translatable!"
         )
 
