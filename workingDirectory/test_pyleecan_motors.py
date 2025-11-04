@@ -45,6 +45,7 @@ MODEL_RES_DIR = join(ROOT_DIR, "Results", "pyleecanAPI")
 MACHINE_FILE_DIR = join(DATA_DIR, "Machine")
 machine_test_dict = {}
 nbrTranslatedMaschines = 0
+nbr_simulated_machines = 0
 machine_file_list = os.listdir(MACHINE_FILE_DIR)
 nbr_machines = len(machine_file_list)
 
@@ -140,10 +141,12 @@ for num, machineFile in enumerate(os.listdir(MACHINE_FILE_DIR)):
                 machine_test_dict[machineFile] = (
                     "SUCCESS: Machine successfully translated + simulated!"
                 )
+                nbr_simulated_machines += 1
             nbrTranslatedMaschines += 1
 nbrFails = nbr_machines - nbrTranslatedMaschines
 machine_test_dict["FINAL_RESULT"] = (
-    f"{nbr_machines} machines, {nbrTranslatedMaschines} tranlated, {nbrFails} failed"
+    f"{nbr_machines} machines, {nbrTranslatedMaschines} translated, "
+    f"{nbrFails} failed, {nbr_simulated_machines=}",
 )
 print(json.dumps(machine_test_dict, sort_keys=True, indent=4))  # print results
 print(machine_test_dict["FINAL_RESULT"])
