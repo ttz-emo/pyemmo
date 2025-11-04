@@ -145,7 +145,8 @@ def create_geo_dict(
             )
             if HOLEM_LAB in surf.label or HOLEV_LAB in surf.label:
                 lam_surf.cutOut(pyemmo_surf)
-            pyemmo_geo_dict[pyemmo_surf.part_id] = pyemmo_surf
+            else:
+                pyemmo_geo_dict[pyemmo_surf.part_id] = pyemmo_surf
 
     # # ===============================
     # # Getting the magnetization_dict:
