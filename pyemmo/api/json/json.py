@@ -23,7 +23,7 @@
 # import debugpy
 # debugpy.debug_this_thread()
 from __future__ import annotations
-
+# import re
 import datetime
 import json
 import logging
@@ -84,6 +84,28 @@ def createMachine(
     )
     logging.debug("Calling gmsh.model.occ.remove_all_duplicates()")
     gmsh_api.model.occ.remove_all_duplicates()
+    # TODO: Test this for complex geometry
+    # gmsh_api.logger.start()
+    # try:
+    #     gmsh_api.model.occ.remove_all_duplicates()
+    # finally:
+    #     log_catch = gmsh_api.logger.get()
+    #     gmsh_api.logger.stop()
+    # # update gmsh surface tags afer remove duplicates
+    # # pattern = re.compile(r'Info: Cannot bind existing OpenCASCADE surface (\d+) to second tag (\d+)')
+    # for line in log_catch:
+    #     match = re.match(
+    #         r"Info: Cannot bind existing OpenCASCADE surface (\d+) to second tag (\d+)",
+    #         line,
+    #     )
+    #     if match:
+    #         # Extract and convert the matched numbers
+    #         new_tag, old_tag = map(int, match.groups())
+    #         for _, surf_list in maschineSurfDict.items():
+    #             for surf in surf_list:
+    #                 if surf.id == old_tag:
+    #                     surf._id = new_tag
+
     logging.debug("Calling gmsh_api.model.occ.synchronize()")
     gmsh_api.model.occ.synchronize()
 
@@ -123,7 +145,7 @@ def createMachine(
                 raise ValueError(
                     f"MachineSide was whether rotor or stator: {machineSide}",
                 )
-    if logging.getLogger().level <= logging.DEBUG:
+    if logging.getLogger().level <= logging.DEBUG - 1:
         gmsh_api.model.occ.synchronize()
         if extendedInfo["flag_openGUI"]:  # only open GUI if specified
             gmsh_api.fltk.run()
