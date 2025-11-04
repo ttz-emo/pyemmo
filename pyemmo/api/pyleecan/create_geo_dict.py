@@ -49,12 +49,25 @@ from pyleecan.Classes.SurfRing import SurfRing
 from pyleecan.Classes.Shaft import Shaft
 from pyleecan.Classes.Frame import Frame
 from pyleecan.Functions.labels import (
+    LAM_LAB,  # "Lamination"
+    # SHAFT_LAB,  # "Shaft"
+    BORE_LAB,  # "Bore"
+    YOKE_LAB,  # "Yoke"
+    SLID_LAB,  # "SlidingBand"
     WIND_LAB,  # "Winding"
     SOP_LAB,  # "SlotOpening"
     WEDGE_LAB,  # "SlotWedge"
     BAR_LAB,  # "Bar"
     HOLEV_LAB,  # "HoleVoid"
     HOLEM_LAB,  # "HoleMag"
+    MAG_LAB,  # "Magnet"
+    AIRGAP_LAB,  # "Airgap"
+    NO_MESH_LAB,  # "NoMesh"
+    VENT_LAB,  # "Ventilation"
+    TOOTH_LAB,  # "Tooth"
+    AIRBOX_LAB,  # "Airbox"
+    NOTCH_LAB,  # "Notch"
+    KEY_LAB,  # "Key"
     get_obj_from_label,
 )
 # pylint: disable=locally-disabled, no-name-in-module
