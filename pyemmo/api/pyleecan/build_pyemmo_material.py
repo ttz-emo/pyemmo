@@ -69,14 +69,21 @@ def build_pyemmo_material(pyleecan_material: PyleecanMaterial) -> Material:
 
     try:
         remanence = mag_properties.Brm20
-        assert isinstance(remanence, (int, float)), "Br must be a number"
-
+        if remanence is None:
+            remanence = 0
+        else:
+            assert isinstance(remanence, (int, float)), "Br must be a number"
     except AttributeError:
         remanence = 0.0
 
     try:
         alpha_br = mag_properties.alpha_Br
-        assert isinstance(alpha_br, (int, float)), "parameter alpha_Br must be a number"
+        if alpha_br is None:
+            alpha_br = 0.0
+        else:
+            assert isinstance(
+                alpha_br, (int, float)
+            ), "parameter alpha_Br must be a number"
 
     except AttributeError:
         alpha_br = 0.0
