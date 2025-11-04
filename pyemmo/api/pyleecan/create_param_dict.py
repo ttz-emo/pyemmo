@@ -89,11 +89,9 @@ def create_param_dict(
     mb_radius = r_ext_rotor + 2 * (machine.stator.comp_radius_mec() - r_ext_rotor) / 5
 
     # calculate symmetry factor
-    sym_factor = machine.comp_periodicity_spatial()
-    if sym_factor[1]:
-        sym_factor = sym_factor[0] * 2
-    else:
-        sym_factor = sym_factor[0]
+    sym_factor, is_antiperiod = machine.comp_periodicity_spatial()
+    if is_antiperiod:
+        sym_factor = sym_factor * 2
     logger.debug("Symmetry factor machine: %s", {sym_factor})
     swatem_winding, wind_layout = translate_winding(machine)
     sym_winding = swatem_winding.get_periodicity_t() * 2
