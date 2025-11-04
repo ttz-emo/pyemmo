@@ -40,16 +40,22 @@ Raises:
 
 from __future__ import annotations
 
+import logging
+
 from pyleecan.Classes.LamH import LamH
 from pyleecan.Classes.LamSlot import LamSlot
 from pyleecan.Classes.SurfLine import SurfLine
 from pyleecan.Functions.labels import (
-    BAR_LAB,
-    HOLEM_LAB,
-    HOLEV_LAB,
-    WIND_LAB,
+    WIND_LAB,  # "Winding"
+    SOP_LAB,  # "SlotOpening"
+    WEDGE_LAB,  # "SlotWedge"
+    BAR_LAB,  # "Bar"
+    HOLEV_LAB,  # "HoleVoid"
+    HOLEM_LAB,  # "HoleMag"
     get_obj_from_label,
 )
+# pylint: disable=locally-disabled, no-name-in-module
+from pyleecan.Functions.load import load
 
 from .. import logger
 from ..machine_segment_surface import MachineSegmentSurface
@@ -106,18 +112,31 @@ def create_geo_dict(
         )
         pyemmo_geo_dict[lam_surf.part_id] = lam_surf
         for surf in pyleecan_surfs:
-            obj = get_obj_from_label(machine, surf.label)
-            if WIND_LAB in surf.label or BAR_LAB in surf.label:
+            if SOP_LAB in surf.label:
+                # slot opening surface -> skip because is created by airgap function.
+                continue
+            if WEDGE_LAB in surf.label:
+                # slot wedge surface
+                material = lam.slot.wedge_mat
+            elif WIND_LAB in surf.label or BAR_LAB in surf.label:
                 # NOTE: In case of winding or bar label the object returned is the
                 # lamination and not the actual object itself. If so we have to get the
                 # actual conductor material.
-                material = obj.winding.conductor.cond_mat
-            elif hasattr(obj, "mat_type"):
-                material = obj.mat_type
-            elif hasattr(obj, "mat_void"):
-                material = obj.mat_void
+                material = lam.winding.conductor.cond_mat
             else:
-                raise AttributeError(f"Cant get material from object {obj}")
+                obj = get_obj_from_label(machine, surf.label)
+                if hasattr(obj, "mat_type"):
+                    material = obj.mat_type
+                elif hasattr(obj, "mat_void"):
+                    if obj.mat_void is None:
+                        logging.warning(
+                            "Material for object %s is None. Using Air instead!", obj
+                        )
+                        material = load("Air.json")
+                    else:
+                        material = obj.mat_void
+                else:
+                    raise AttributeError(f"Cant get material from object {obj}")
             # translating the surface
             pyemmo_surf = create_gmsh_surface(
                 surface=surf,
