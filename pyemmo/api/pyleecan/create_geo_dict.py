@@ -82,28 +82,27 @@ def create_geo_dict(
             - Point: Leftmost point of the rotor contour.
             - dict: Dictionary containing magnetization information.
     """
-
+    rotor_sym = machine.rotor.comp_periodicity_geo()[0]
     rotor_surfs: list[SurfLine] = machine.rotor.build_geometry(  # type: ignore
-        sym=machine.rotor.comp_periodicity_geo()[0], alpha=0  # type: ignore
+        sym=rotor_sym, alpha=0  # type: ignore
     )
     # is_internal_rotor = machine.rotor.is_internal  # type: ignore
-
-    stator_surfs: list[SurfLine] = machine.stator.build_geometry(sym=machine.stator.slot.Zs, alpha=0)  # type: ignore
+    stator_sym = machine.stator.comp_periodicity_geo()[0]
+    stator_surfs: list[SurfLine] = machine.stator.build_geometry(sym=stator_sym, alpha=0)  # type: ignore
 
     # all_surfs_labels = []
     # all_surfs_labels_split2 = []
     pyemmo_geo_dict: dict[str, MachineSegmentSurface] = {}
-    angle_point_ref_list = []
     logger.debug("Geometry translation started")
     logger.debug("Identifying geometries by surface label:")
-    for lam, pyleecan_surfs in (
-        (machine.rotor, rotor_surfs),
-        (machine.stator, stator_surfs),
+    for lam, pyleecan_surfs, sym in (
+        (machine.rotor, rotor_surfs, rotor_sym),
+        (machine.stator, stator_surfs, stator_sym),
     ):
         assert isinstance(lam, (LamH, LamSlot)), "lam is not type LamHole or LamSlot!"
         # create lamination surface separatly for subtraction
         lam_surf = create_gmsh_surface(
-            pyleecan_surfs.pop(0), lam.get_Zs(), build_pyemmo_material(lam.mat_type)
+            pyleecan_surfs.pop(0), sym, build_pyemmo_material(lam.mat_type)
         )
         pyemmo_geo_dict[lam_surf.part_id] = lam_surf
         for surf in pyleecan_surfs:
@@ -122,7 +121,7 @@ def create_geo_dict(
             # translating the surface
             pyemmo_surf = create_gmsh_surface(
                 surface=surf,
-                nbr_segments=lam.get_Zs(),
+                nbr_segments=sym,
                 material=build_pyemmo_material(material),  # type:ignore
             )
             if HOLEM_LAB in surf.label or HOLEV_LAB in surf.label:
