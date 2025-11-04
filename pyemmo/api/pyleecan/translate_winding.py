@@ -76,7 +76,8 @@ def translate_winding(
     # TODO: It might be possible to only return the data model object and
     # then call the 'get_phases()' function directly in 'createParamDict'.
     winding = swat_em.datamodel()
-
+    if machine.stator.winding.qs != 3:
+        raise NotImplementedError("Can't handle phase number %i (!=3)")
     winding.genwdg(
         Q=machine.stator.slot.Zs,
         P=machine.stator.winding.p * 2,
