@@ -52,7 +52,7 @@ nbr_machines = len(machine_file_list)
 CuMat = load.load(os.path.join(DATA_DIR, "Material", "Copper2.json"))
 
 for num, machineFile in enumerate(os.listdir(MACHINE_FILE_DIR)):
-    print(f"Machine {num}/{nbr_machines} - {num/nbr_machines*100:.1f}")
+    print(f"Machine {num}/{nbr_machines} - {num/nbr_machines*100:.1f}% - {machineFile}")
     machinePath = join(MACHINE_FILE_DIR, machineFile)
     try:
         # pylint: disable=locally-disabled, no-member
@@ -70,6 +70,8 @@ for num, machineFile in enumerate(os.listdir(MACHINE_FILE_DIR)):
         machine_test_dict[machineFile] = f"Could not load machine. Error: {exce}"
     else:
         try:
+            if not machine.rotor.is_internal:
+                raise NotImplementedError("Outer rotor machine")
             machine_model_dir = join(MODEL_RES_DIR, machine.name)
             main(machine, machine_model_dir, use_gui=False)
         except Exception as exce:
