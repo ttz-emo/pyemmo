@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -21,10 +22,11 @@
 
 from __future__ import annotations
 
-# from matplotlib import pyplot as plt
-# from ..functions.plot import plot
+import logging
+
 import gmsh
 import numpy as np
+from matplotlib import pyplot as plt
 
 from ...definitions import DEFAULT_GEO_TOL
 from ...script.geometry import physicalsDict
@@ -46,6 +48,7 @@ from ...script.gmsh.utils import (
     filter_lines_at_angle,
     get_max_radius,
     get_min_radius,
+    get_dim_tags,
 )
 from ...script.material.material import Material
 from .. import air
@@ -368,9 +371,14 @@ def createMB(
     # This was unnecessary since remove_all_duplicates() just removes instances
     # belonging to highest order instances (= surfaces in our case)...
     # gmsh.model.occ.remove_all_duplicates()  # call to remove duplicate points of moving band interfaces
-    # if logging.getLogger().level <= logging.DEBUG:
-    #     gmsh.model.occ.synchronize()
-    #     gmsh.fltk.run()
+    if logging.getLogger().level <= logging.DEBUG - 1:
+        logging.debug("Show moving band in gmsh...")
+        gmsh.model.setVisibility(gmsh.model.getEntities(), False)  # disable all
+        gmsh.model.setVisibility(
+            get_dim_tags([mb_stator, mb_rotor_inner] + mb_rotor_ax), True, False
+        )
+        gmsh.model.occ.synchronize()
+        gmsh.fltk.run()
     return mb_stator, mb_rotor_inner, mb_rotor_ax
 
 
@@ -666,20 +674,15 @@ def get_boundaries(
                     "Cound not identify inner limit lines AND "
                     "primary lines did not contain center point!"
                 )
-    # # TODO: Add verbosity and plot this when debugging.
-    # # fig, ax = plt.subplots()
-    # # plot(primarylinesRotor + primaryLinesStator, fig=fig, color="b")
-    # # plot(slavelinesRotor + slaveLinesStator, fig=fig, color="r")
-    # # plot(movingBandStator.geo_list, fig=fig)
-    # # plot(movingBandRotorInner.geo_list, fig=fig)
-    # # plot(geoElemList(movingBandRotorAuxList), fig=fig, color=[0.4940, 0.1840, 0.5560])
-    # # plot((innerLimitLines), fig=fig, color=[0.4660, 0.6740, 0.1880])
-    # # plot((outerLimitLines), fig=fig, color=[0.4660, 0.6740, 0.1880])
-    # # ax.set_aspect("equal")
-    # # ax.xaxis.set_ticklabels([])
-    # # ax.yaxis.set_ticklabels([])
-    # # ax.grid(True)
-    # # fig.show()
+    # show boundaries if debugging -1
+    if logging.getLogger().level <= logging.DEBUG - 1:
+        logging.debug("Show boundary lines in gmsh...")
+        gmsh.model.setVisibility(gmsh.model.getEntities(), False)  # disable all
+        gmsh.model.setVisibility(
+            get_dim_tags(stator_boundary + stator_boundary), True, False
+        )
+        gmsh.model.occ.synchronize()
+        gmsh.fltk.run()
 
     return rotor_boundary, stator_boundary
 

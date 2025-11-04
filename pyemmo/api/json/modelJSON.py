@@ -305,25 +305,12 @@ def importMachineGeometry(
             # # update nbr segements (angle updates automatically) of main surface
             # main_surf.nbr_segments = new_quantity
 
-            if logging.getLogger().level <= logging.DEBUG:
-                logging.debug(
-                    f"Surface: '{main_surf.name}' before subtraction of tools."
-                )
-                # gmsh.model.occ.synchronize()
-                # gmsh.fltk.run()
             for surf in area:
                 tool_area = createAPISurf(surf)
                 # for segment in range(0, int(tool_area.nbr_segments / sym_factor)):
                 #     dup_tool_surf = tool_area.rotate_duplicate(segment)
                 #     main_surf.cutOut(dup_tool_surf)
                 main_surf.cutOut(tool_area)
-                if logging.getLogger().level <= logging.DEBUG:
-                    # show model after each tool cut out
-                    logging.debug(
-                        f"Surface: {main_surf.name} after subtraction of tool: {tool_area.name}."
-                    )
-                    # gmsh.model.occ.synchronize()
-                    # gmsh.fltk.run()
                 for tool in main_surf.tools:
                     if not isinstance(tool, MachineSegmentSurface):
                         raise RuntimeError(
@@ -346,9 +333,11 @@ def importMachineGeometry(
                 f"Type is '{type(area)}'. Value is {area}"
             )
             raise ValueError(msg)
-    # if logging.getLogger().level <= logging.DEBUG:
-    #     gmsh.model.occ.synchronize()
-    #     gmsh.fltk.run()
+    if logging.getLogger().level <= logging.DEBUG - 1:
+        logging.debug("Show imported machine geometry in Gmsh")
+        gmsh.model.setVisibility(gmsh.model.getEntities(2), True, False)
+        gmsh.model.occ.synchronize()
+        gmsh.fltk.run()
     return segmentSurfDict
 
 
@@ -443,10 +432,12 @@ def createMachineGeometryFromSegment(
                 else:
                     surf_dict[tool.part_id] = [tool]
 
-    # TODO: Add airgap creation if no airgap in given geometry
-    # if logging.getLogger().level <= logging.DEBUG:
-    #     gmsh.model.occ.synchronize()
-    #     gmsh.fltk.run()
+    if logging.getLogger().level <= logging.DEBUG - 1:
+        logging.debug(
+            "Show final machine geometry after rotation and duplication of segments..."
+        )
+        gmsh.model.occ.synchronize()
+        gmsh.fltk.run()
     return surf_dict
 
 

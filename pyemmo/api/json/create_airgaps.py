@@ -57,7 +57,7 @@ def create_airgap_surfaces(
         # create stator airgap
         # filter boundary lines and remove boundaries on symmetry axis
         bound_lines = boundary.get_boundary_line_list(stator_dim_tags)
-        if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+        if logging.getLogger().getEffectiveLevel() <= logging.DEBUG - 1:
             gmsh.model.setVisibility(gmsh.model.getEntities(), False)
             gmsh.model.setVisibility(get_dim_tags(bound_lines), True, False)
             gmsh.fltk.run()
@@ -68,7 +68,7 @@ def create_airgap_surfaces(
                 for line in filter_lines_at_angle(bound_lines, 0)
                 + filter_lines_at_angle(bound_lines, 2 * np.pi / symmetry)
             ]
-        if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+        if logging.getLogger().getEffectiveLevel() <= logging.DEBUG - 1:
             gmsh.model.setVisibility(gmsh.model.getEntities(), False)
             gmsh.model.setVisibility(get_dim_tags(bound_lines), True, False)
             # for curve in bound_lines:
@@ -85,7 +85,7 @@ def create_airgap_surfaces(
                         # point.x > 0 for handling of symmetry of 2
                         start_point = point
                         start_curve = curve
-        if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+        if logging.getLogger().getEffectiveLevel() <= logging.DEBUG - 1:
             gmsh.model.setVisibility([(0, start_point.id)], True)
             gmsh.option.setNumber("Geometry.PointNumbers", 1)
             gmsh.fltk.run()
@@ -105,7 +105,7 @@ def create_airgap_surfaces(
                     break  # restart for loop
             if not found_curve:
                 break
-        if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+        if logging.getLogger().getEffectiveLevel() <= logging.DEBUG - 1:
             gmsh.model.setVisibility(gmsh.model.getEntities(), False)
             gmsh.model.setVisibility(get_dim_tags(air_interface), True)
             gmsh.fltk.run()
@@ -200,7 +200,7 @@ def create_airgap_surfaces(
                 )
             ]
             surface_dict[STATOR_AIRGAP_IDEXT][0].setMeshLength(band_height)
-            if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+            if logging.getLogger().getEffectiveLevel() <= logging.DEBUG - 1:
                 gmsh.model.occ.synchronize()
                 gmsh.fltk.run()
         else:
@@ -211,7 +211,7 @@ def create_airgap_surfaces(
         # create rotor airgap
         # filter boundary lines and remove boundaries on symmetry axis
         bound_lines = boundary.get_boundary_line_list(rotor_dim_tags)
-        if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+        if logging.getLogger().getEffectiveLevel() <= logging.DEBUG - 1:
             gmsh.model.setVisibility(gmsh.model.getEntities(), False)
             gmsh.model.setVisibility(get_dim_tags(bound_lines), True, False)
             gmsh.fltk.run()
@@ -222,7 +222,7 @@ def create_airgap_surfaces(
                 for line in filter_lines_at_angle(bound_lines, 0)
                 + filter_lines_at_angle(bound_lines, 2 * np.pi / symmetry)
             ]
-        if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+        if logging.getLogger().getEffectiveLevel() <= logging.DEBUG - 1:
             gmsh.model.setVisibility(gmsh.model.getEntities(), False)
             gmsh.model.setVisibility(get_dim_tags(bound_lines), True, False)
             # for curve in bound_lines:
@@ -238,7 +238,7 @@ def create_airgap_surfaces(
                     if start_point is None or start_point.x < point.x:
                         start_point = point
                         start_curve = curve
-        if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+        if logging.getLogger().getEffectiveLevel() <= logging.DEBUG - 1:
             gmsh.model.setVisibility([(0, start_point.id)], True)
             gmsh.option.setNumber("Geometry.PointNumbers", 1)
             gmsh.fltk.run()
@@ -258,7 +258,7 @@ def create_airgap_surfaces(
                     break  # restart for loop
             if not found_curve:
                 break
-        if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+        if logging.getLogger().getEffectiveLevel() <= logging.DEBUG - 1:
             gmsh.model.setVisibility(gmsh.model.getEntities(), False)
             gmsh.model.setVisibility(get_dim_tags(air_interface), True)
             gmsh.fltk.run()
@@ -354,6 +354,6 @@ def create_airgap_surfaces(
                 )
             ]
             surface_dict[ROTOR_AIRGAP_IDEXT][0].setMeshLength(band_height)
-            if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+            if logging.getLogger().getEffectiveLevel() <= logging.DEBUG - 1:
                 gmsh.model.occ.synchronize()
                 gmsh.fltk.run()
