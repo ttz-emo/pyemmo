@@ -20,19 +20,22 @@
 #
 from __future__ import annotations
 
-from statistics import mean
 from math import pi
 from typing import Any
 
-from pyleecan.Classes.LamHole import LamHole
-from pyleecan.Classes.Lamination import Lamination
-from pyleecan.Classes.LamSlotMag import LamSlotMag
+import numpy as np
 from pyleecan.Classes.OPdq import OPdq
 from pyleecan.Classes.Simulation import Simulation as PyleecanSimulation
+from pyleecan.Functions.labels import (
+    HOLEM_LAB,
+    MAG_LAB,
+    decode_label,
+    get_obj_from_label,
+)
 
 from .. import logger
-from ..json import ROTOR_MAG_IDEXT
 from . import PyleecanMachine
+from .label2part_id import label2part_id
 from .translate_winding import translate_winding
 
 
@@ -84,83 +87,8 @@ def create_param_dict(
     # We define movingband radius to be rotor outer radius + 2/5 of the mechanical airgap
     r_ext_rotor = machine.rotor.comp_radius_mec()
     mb_radius = r_ext_rotor + 2 * (machine.stator.comp_radius_mec() - r_ext_rotor) / 5
-    # --------------------------------------------------------------------------------------
-    # The following part of the function tests if rotor or stator have magnets and if so
-    # if there are more than one magnet build in.
-    # If there are magnets, the type of the magnetization will be safed in 'pyemmoMagType'.
-    # 'pyemmoMagType': [0] : parallel
-    #                  [1] : radial
-    #                  [2] : Hallbach (!! not implemented in pyemmo !!)
-    #                  [3] : tangential
-    # If there are no magnets in rotor and stator, 'pyemmoMagType' will be set to 'None'.
-    # --------------------------------------------------------------------------------------
 
-    lam_with_mag: Lamination = None
-    pylcn_mag_type = None  # If machine doesn't have magnets, pyemmoMagType = None
-    # Magnetization dict for pyemmo json api.
-    # It has the magnet part_id as keys and the magnetization angle of the corresponding
-    # magnet as value in radians. See `pyemmo.api.json.importJSON.getMagAngle`
-    magnetization_dict = {}
-    if pyleecan_simulation.machine.rotor.has_magnet():
-        # Test, if rotor has magnet(s)
-        lam_with_mag = pyleecan_simulation.machine.rotor
-    elif pyleecan_simulation.machine.stator.has_magnet():
-        # Test, if stator has magnet(s)
-        lam_with_mag = pyleecan_simulation.machine.stator
-    if lam_with_mag:
-        nbr_magnets_in_model: float = (
-            lam_with_mag.get_magnet_number() / lam_with_mag.get_Zs()
-        )
-        assert (
-            nbr_magnets_in_model.is_integer()
-        ), "Uneven number of magnets per segment!"
-        if isinstance(lam_with_mag, LamHole):
-            # Test, if lamWithMag has Holes where the magnet(s) sit(s) in
-            if isinstance(lam_with_mag.hole, list):
-                # Test, if lamWithMag has more than one magnet
-                # The magnetization Type for all magnets in the machine will be set
-                # in the same Type as the firt magnet in the list.
-                pylcn_mag_type = lam_with_mag.hole[0].magnet_0.type_magnetization
-                mag_dict = lam_with_mag.hole[0].get_magnet_dict()
-                pylcn_magnetization_dict = lam_with_mag.hole[
-                    0
-                ].comp_magnetization_dict()
-                for i in range(int(nbr_magnets_in_model)):
-                    # get magnetization angle and add half pole pitch (pi/Zs)
-                    magnetization_dict[ROTOR_MAG_IDEXT + f"{i}"] = (
-                        pylcn_magnetization_dict[f"magnet_{i}"]
-                        + pi / lam_with_mag.get_Zs()
-                    )
-            else:  # If lamWithMag has only one magnet
-                pylcn_mag_type = lam_with_mag.hole.magnet_0.type_magnetization
-
-        elif isinstance(lam_with_mag, LamSlotMag):
-            # Test, if lamWithMag has Slots where the magnet(s) sit(s) in
-            if isinstance(lam_with_mag.slot, list):
-                # Test, if lamWithMag has more than one magnet
-                # The magnetization Type for all magnets in the machine will be set
-                # in the same Type as the firt magnet in the list.
-                pylcn_mag_type = lam_with_mag.slot[0].magnet_0.type_magnetization
-            else:  # If rotor has only one magnet
-                pylcn_mag_type = lam_with_mag.magnet.type_magnetization
-        else:
-            raise RuntimeError(
-                f'Lamination of type "{str(type(lam_with_mag))}" is not type LamHole or LamSlotMag.'
-            )
-    if pylcn_mag_type == 0:
-        pyemmo_mag_type = "radial"
-    elif pylcn_mag_type == 1:
-        pyemmo_mag_type = "parallel"
-    elif pylcn_mag_type == 3:
-        pyemmo_mag_type = "tangential"
-    elif pylcn_mag_type is None:
-        pyemmo_mag_type = None
-        pass  # no magnets
-    else:
-        raise ValueError(
-            "Unknown pyleecan magnetization type with index: %i", pylcn_mag_type
-        )
-
+    # calculate symmetry factor
     sym_factor = machine.comp_periodicity_spatial()
     if sym_factor[1]:
         sym_factor = sym_factor[0] * 2
@@ -171,6 +99,75 @@ def create_param_dict(
     sym_winding = swatem_winding.get_periodicity_t() * 2
     logger.debug("Symmetry factor winding: %s", {sym_winding})
     sym_factor = min(sym_winding, sym_factor)
+
+    # -----------------------------------------------------------------------------------
+    # If there are magnets, the type of the magnetization type will be safed in
+    # 'pyemmoMagType'.
+    # 'pyemmoMagType': [0] : parallel
+    #                  [1] : radial
+    #                  [2] : Hallbach (not implemented in pyemmo -> Error)
+    #                  [3] : tangential
+    pyemmo_mag_type = None  # If machine doesn't have magnets, pyemmoMagType = None
+    # Magnetization dict for json api.
+    # It has the magnet part_id as keys and the magnetization angle of the corresponding
+    # magnet as value in radians. See `pyemmo.api.json.importJSON.getMagAngle`
+    magnetization_dict = {}
+    # magnetization workflow from pyleecan.Simulation.MagElmer.solve_FEA
+    pyleecan_surf_list = machine.build_geometry(sym=sym_factor)
+    for surf in pyleecan_surf_list:
+        # label = short_label(surf.label)
+        label_dict = decode_label(surf.label)
+        if "surf_type" not in label_dict:
+            # if there is no surf_type given from label
+            continue
+        point_ref = surf.point_ref
+        if HOLEM_LAB in label_dict["surf_type"]:  # LamHole
+            mag_obj = get_obj_from_label(machine, label_dict=label_dict)
+            if mag_obj.type_magnetization in [1, None]:  # Parallel
+                pyemmo_mag_type = "parallel"
+                # calculate pole angle and angle of pole middle
+                T_id = label_dict["T_id"]
+                hole = mag_obj.parent
+                Zh = hole.Zh
+                alpha_p = 360 / Zh
+                mag_0 = (
+                    np.floor_divide(np.angle(point_ref, deg=True), alpha_p) + 0.5
+                ) * alpha_p
+
+                mag_dict = hole.comp_magnetization_dict()
+                mag = mag_0 + np.rad2deg(mag_dict["magnet_" + str(T_id)])
+                # modifiy magnetisation of south poles
+                if (label_dict["S_id"] % 2) == 1:
+                    mag = mag + 180
+                magnetization_dict[label2part_id(surf.label)] = np.deg2rad(mag)
+            else:
+                raise RuntimeError(
+                    "Only parallel magnetization available for HoleMagnet"
+                )
+        elif MAG_LAB in label_dict["surf_type"]:
+            mag_obj = get_obj_from_label(machine, label_dict=label_dict)
+            if mag_obj.type_magnetization == 0 and (label_dict["S_id"] % 2) == 0:
+                mag = 0  # North pole magnet
+                pyemmo_mag_type = "radial"
+            elif mag_obj.type_magnetization == 0:
+                mag = 180  # South pole magnet
+                pyemmo_mag_type = "radial"
+            elif mag_obj.type_magnetization == 1 and (label_dict["S_id"] % 2) == 0:
+                mag = np.angle(point_ref) * 180 / pi  # North pole magnet
+                pyemmo_mag_type = "parallel"
+            elif mag_obj.type_magnetization == 1:
+                mag = np.angle(point_ref) * 180 / pi + 180  # South pole magnet
+                pyemmo_mag_type = "parallel"
+            elif mag_obj.type_magnetization == 2:
+                raise NotImplementedError(
+                    "Hallbach magnetization not implemented in pyemmo."
+                )
+                Zs = mag_obj.parent.slot.Zs
+                mag = str(-(Zs / 2 - 1)) + " * theta + 90 "
+                pyemmo_mag_type = "hallback"
+            else:
+                continue
+            magnetization_dict[label2part_id(surf.label)] = np.deg2rad(mag)
 
     speed_rpm = pyleecan_simulation.input.OP.N0
     translation_param_dict = {
