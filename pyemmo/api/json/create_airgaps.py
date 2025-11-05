@@ -89,6 +89,7 @@ def create_airgap_surfaces(
             gmsh.model.setVisibility([(0, start_point.id)], True)
             gmsh.option.setNumber("Geometry.PointNumbers", 1)
             gmsh.fltk.run()
+            gmsh.option.setNumber("Geometry.PointNumbers", 0)  # point ids off
 
         # get all lines adjacent to the start point
         air_interface = [bound_lines.pop(bound_lines.index(start_curve))]
@@ -242,6 +243,7 @@ def create_airgap_surfaces(
             gmsh.model.setVisibility([(0, start_point.id)], True)
             gmsh.option.setNumber("Geometry.PointNumbers", 1)
             gmsh.fltk.run()
+            gmsh.option.setNumber("Geometry.PointNumbers", 0)  # show point off
 
         # get all lines adjacent to the start point
         air_interface = [bound_lines.pop(bound_lines.index(start_curve))]
