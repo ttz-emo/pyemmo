@@ -495,7 +495,7 @@ def get_boundary_line_list(surf_dim_tags: list[SurfDimTag]) -> list[GmshLine]:
     """
     boundary_dim_tags = gmsh.model.get_boundary(surf_dim_tags)
     # create a boundary line list:
-    bnd_line_list = [create_curve(l_tag) for _, l_tag in boundary_dim_tags]
+    bnd_line_list = [create_curve(abs(l_tag)) for _, l_tag in boundary_dim_tags]
     return bnd_line_list
 
 

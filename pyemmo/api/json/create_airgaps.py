@@ -89,6 +89,7 @@ def create_airgap_surfaces(
             gmsh.model.setVisibility([(0, start_point.id)], True)
             gmsh.option.setNumber("Geometry.PointNumbers", 1)
             gmsh.fltk.run()
+            gmsh.option.setNumber("Geometry.PointNumbers", 0)  # point ids off
 
         # get all lines adjacent to the start point
         air_interface = [bound_lines.pop(bound_lines.index(start_curve))]
@@ -129,32 +130,11 @@ def create_airgap_surfaces(
         if symmetry > 1:
             if nbr_airgaps not in (1, 2):
                 raise ValueError("Number of airgaps must be 1 or 2")
-            sym_angle = 2 * np.pi / symmetry
-            center = GmshPoint.from_coordinates((0, 0), name="CenterPoint")
             if nbr_airgaps == 2:
                 # create air closing box
-                p1 = start_point
-                # copy and move start point on x-axis by band height
-                p2 = start_point.duplicate()
-                p2.translate(dx=-band_height)
-                # copy p2 and rotate result by symmetry angle
-                p3 = p2.duplicate()
-                p3.rotateZ(angle=sym_angle)
-                # find end point from interface. Last element should be last curve!
-                if np.isclose(air_interface[-1].end_point.getAngleToX(), sym_angle):
-                    p4 = air_interface[-1].end_point
-                elif np.isclose(air_interface[-1].start_point.getAngleToX(), sym_angle):
-                    p4 = air_interface[-1].start_point
-                else:
-                    raise RuntimeError(
-                        "Could not create airgap surface because none of the last "
-                        "interface curve points is on the symmetry axis."
-                    )
-                l1 = GmshLine.from_points(p1, p2, "L_air_area_1")
-                l2 = GmshArc.from_points(p2, center, p3, "C_air_area_2")
-                l3 = GmshLine.from_points(p3, p4, "L_air_area_3")
-                airgap_curve_loop = [l1, l2, l3]
-                airgap_curve_loop.extend(air_interface)
+                airgap_curve_loop, air_interface, start_point = _create_band_contour(
+                    start_point, air_interface, -band_height, symmetry
+                )
                 surface_dict["Stator Air"] = [
                     MachineSegmentSurface.from_curve_loop(
                         airgap_curve_loop,
@@ -164,32 +144,10 @@ def create_airgap_surfaces(
                         name="Stator Air (PyEMMO)",
                     )
                 ]
-                # set startpoint and interface curve for final airgap
-                start_point = p2
-                air_interface = [l2]
             # create airgap
-            p1 = start_point
-            # copy and move start point on x-axis by band height
-            p2 = start_point.duplicate()
-            p2.translate(dx=-band_height)
-            # copy p2 and rotate result by symmetry angle
-            p3 = p2.duplicate()
-            p3.rotateZ(angle=sym_angle)
-            # find end point from interface. Last element should be last curve!
-            if np.isclose(air_interface[-1].end_point.getAngleToX(), sym_angle):
-                p4 = air_interface[-1].end_point
-            elif np.isclose(air_interface[-1].start_point.getAngleToX(), sym_angle):
-                p4 = air_interface[-1].start_point
-            else:
-                raise RuntimeError(
-                    "Could not create airgap surface because none of the last "
-                    "interface curve points is on the symmetry axis."
-                )
-            l1 = GmshLine.from_points(p1, p2, "L_airgap_1")
-            l2 = GmshArc.from_points(p2, center, p3, "C_airgap_2")
-            l3 = GmshLine.from_points(p3, p4, "L_airgap_3")
-            airgap_curve_loop = [l1, l2, l3]
-            airgap_curve_loop.extend(air_interface)
+            airgap_curve_loop, _, _ = _create_band_contour(
+                start_point, air_interface, -band_height, symmetry
+            )
             surface_dict[STATOR_AIRGAP_IDEXT] = [
                 MachineSegmentSurface.from_curve_loop(
                     airgap_curve_loop,
@@ -242,6 +200,7 @@ def create_airgap_surfaces(
             gmsh.model.setVisibility([(0, start_point.id)], True)
             gmsh.option.setNumber("Geometry.PointNumbers", 1)
             gmsh.fltk.run()
+            gmsh.option.setNumber("Geometry.PointNumbers", 0)  # show point off
 
         # get all lines adjacent to the start point
         air_interface = [bound_lines.pop(bound_lines.index(start_curve))]
@@ -282,33 +241,14 @@ def create_airgap_surfaces(
         if symmetry > 1:
             if nbr_airgaps not in (1, 2):
                 raise ValueError("Number of airgaps must be 1 or 2")
-            sym_angle = 2 * np.pi / symmetry
-            center = GmshPoint.from_coordinates((0, 0), name="CenterPoint")
             if nbr_airgaps == 2:
                 # create air closing box
-                p1 = start_point
-                # copy and move start point on x-axis by distance from P1 to r_max +
-                # band height
-                p2 = start_point.duplicate()
-                p2.translate(dx=r_max - p1.x + band_height)
-                # copy p2 and rotate result by symmetry angle
-                p3 = p2.duplicate()
-                p3.rotateZ(angle=sym_angle)
-                # find end point from interface. Last element should be last curve!
-                if np.isclose(air_interface[-1].end_point.getAngleToX(), sym_angle):
-                    p4 = air_interface[-1].end_point
-                elif np.isclose(air_interface[-1].start_point.getAngleToX(), sym_angle):
-                    p4 = air_interface[-1].start_point
-                else:
-                    raise RuntimeError(
-                        "Could not create airgap surface because none of the last "
-                        "interface curve points is on the symmetry axis."
-                    )
-                l1 = GmshLine.from_points(p1, p2, "L_air_area_1")
-                l2 = GmshArc.from_points(p2, center, p3, "C_air_area_2")
-                l3 = GmshLine.from_points(p3, p4, "L_air_area_3")
-                airgap_curve_loop = [l1, l2, l3]
-                airgap_curve_loop.extend(air_interface)
+                airgap_curve_loop, air_interface, start_point = _create_band_contour(
+                    start_point,
+                    air_interface,
+                    r_max - start_point.x + band_height,
+                    symmetry,
+                )
                 surface_dict["Rotor Air"] = [
                     MachineSegmentSurface.from_curve_loop(
                         airgap_curve_loop,
@@ -318,32 +258,10 @@ def create_airgap_surfaces(
                         name="Rotor Air (PyEMMO)",
                     )
                 ]
-                # set startpoint and interface curve for final airgap
-                start_point = p2
-                air_interface = [l2]
             # create airgap
-            p1 = start_point
-            # copy and move start point on x-axis by band height
-            p2 = start_point.duplicate()
-            p2.translate(dx=band_height)
-            # copy p2 and rotate result by symmetry angle
-            p3 = p2.duplicate()
-            p3.rotateZ(angle=sym_angle)
-            # find end point from interface. Last element should be last curve!
-            if np.isclose(air_interface[-1].end_point.getAngleToX(), sym_angle):
-                p4 = air_interface[-1].end_point
-            elif np.isclose(air_interface[-1].start_point.getAngleToX(), sym_angle):
-                p4 = air_interface[-1].start_point
-            else:
-                raise RuntimeError(
-                    "Could not create airgap surface because none of the last "
-                    "interface curve points is on the symmetry axis."
-                )
-            l1 = GmshLine.from_points(p1, p2, "L_airgap_1")
-            l2 = GmshArc.from_points(p2, center, p3, "C_airgap_2")
-            l3 = GmshLine.from_points(p3, p4, "L_airgap_3")
-            airgap_curve_loop = [l1, l2, l3]
-            airgap_curve_loop.extend(air_interface)
+            airgap_curve_loop, _, _ = _create_band_contour(
+                start_point, air_interface, band_height, symmetry
+            )
             surface_dict[ROTOR_AIRGAP_IDEXT] = [
                 MachineSegmentSurface.from_curve_loop(
                     airgap_curve_loop,
@@ -357,3 +275,59 @@ def create_airgap_surfaces(
             if logging.getLogger().getEffectiveLevel() <= logging.DEBUG - 1:
                 gmsh.model.occ.synchronize()
                 gmsh.fltk.run()
+
+
+def _create_band_contour(
+    start_point: GmshPoint,
+    interface: list[GmshLine, GmshArc],
+    band_height: float,
+    symmetry: int,
+) -> list[GmshLine, GmshArc]:
+    try:
+        center_dimTags = gmsh.model.getEntitiesInBoundingBox(
+            -DEFAULT_GEO_TOL,
+            -DEFAULT_GEO_TOL,
+            -DEFAULT_GEO_TOL,
+            DEFAULT_GEO_TOL,
+            DEFAULT_GEO_TOL,
+            DEFAULT_GEO_TOL,
+            0,
+        )
+        center = GmshPoint(center_dimTags[0][1])
+    except:  # pylint: disable=bare-except
+        center = GmshPoint.from_coordinates((0, 0), name="CenterPoint")
+    sym_angle = 2 * np.pi / symmetry
+    # create air closing box
+    p1 = start_point
+    # copy and move start point on x-axis by band height
+    p2 = start_point.duplicate()
+    p2.translate(dx=band_height)
+    new_start_point = p2  # next interface start point
+    # copy p2 and rotate result by symmetry angle
+    p3 = p2.duplicate()
+    p3.rotateZ(angle=sym_angle)
+    # find end point from interface. Last element should be last curve!
+    if np.isclose(interface[-1].end_point.getAngleToX(), sym_angle):
+        p4 = interface[-1].end_point
+    elif np.isclose(interface[-1].start_point.getAngleToX(), sym_angle):
+        p4 = interface[-1].start_point
+    else:
+        raise RuntimeError(
+            "Could not create airgap surface because none of the last "
+            "interface curve points is on the symmetry axis."
+        )
+    airgap_curve_loop = interface
+    airgap_curve_loop.append(GmshLine.from_points(p1, p2, "L_air_area_1"))
+    if symmetry in (2, 3):
+        # if symmetry is 2 or 3 -> create intermediate point to enforce arc export
+        p_intermediate = p2.duplicate()
+        p_intermediate.rotateZ(angle=sym_angle / 2)
+        new_interface = [
+            GmshArc.from_points(p2, center, p_intermediate, "C_air_area_2_1"),
+            GmshArc.from_points(p_intermediate, center, p3, "C_air_area_2_2"),
+        ]
+    else:
+        new_interface = [GmshArc.from_points(p2, center, p3, "C_air_area_2")]
+    airgap_curve_loop.extend(new_interface)
+    airgap_curve_loop.append(GmshLine.from_points(p3, p4, "L_air_area_3"))
+    return airgap_curve_loop, new_interface, new_start_point
