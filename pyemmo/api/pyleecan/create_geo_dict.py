@@ -75,7 +75,7 @@ from pyleecan.Functions.load import load
 
 from .. import logger
 from ..machine_segment_surface import MachineSegmentSurface
-from . import PyleecanMachine
+from . import PyleecanAir, PyleecanMachine
 from .build_pyemmo_material import build_pyemmo_material
 from .create_gmsh_surf import create_gmsh_surface
 
@@ -148,7 +148,7 @@ def create_geo_dict(
                         logging.warning(
                             "Material for object %s is None. Using Air instead!", obj
                         )
-                        material = load("Air.json")
+                        material = PyleecanAir
                     else:
                         material = obj.mat_void
                 else:

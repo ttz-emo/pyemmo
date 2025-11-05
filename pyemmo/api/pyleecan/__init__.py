@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -36,5 +37,15 @@ if use_pyleecan:
     PyleecanMachine = Union[
         MachineDFIM, MachineSIPMSM, MachineIPMSM, MachineWRSM, MachineSyRM
     ]
+    from pyleecan.Classes.Material import Material
+    from pyleecan.Classes.MatMagnetics import MatMagnetics
 
+    # Defining magnets
+    PyleecanAir = Material(name="Magnet_prius")
+
+    # Definition of the magnetic properties of the material
+    PyleecanAir.mag = MatMagnetics(
+        mur_lin=1.0,  # Relative magnetic permeability
+        Wlam=0,  # lamination sheet width without insulation [m] (0 == not laminated)
+    )
 POLE_HOLE_IDEXT = "Pole Hole"
