@@ -23,6 +23,7 @@
 # import debugpy
 # debugpy.debug_this_thread()
 from __future__ import annotations
+
 # import re
 import datetime
 import json
@@ -148,6 +149,8 @@ def createMachine(
     if logging.getLogger().level <= logging.DEBUG - 1:
         gmsh_api.model.occ.synchronize()
         if extendedInfo["flag_openGUI"]:  # only open GUI if specified
+            gmsh_api.model.setVisibility(gmsh_api.model.getEntities(), False)
+            gmsh_api.model.setVisibility(gmsh_api.model.getEntities(2), True, True)
             gmsh_api.fltk.run()
     # create the rotor
     axLen = importJSON.getAxialLength(extendedInfo)
