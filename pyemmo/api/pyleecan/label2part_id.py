@@ -69,6 +69,8 @@ def label2part_id(label: str) -> str:
     # calculate sum of indices for single index
     if "index" in label_dict:
         index = sum((label_dict["R_id"], label_dict["T_id"], label_dict["S_id"]))
+    else:
+        index = 0
     if STATOR_LAB in label_dict["lam_label"]:
         if LAM_LAB in label_dict["surf_type"]:
             return STATOR_LAM_IDEXT
