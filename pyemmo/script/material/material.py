@@ -552,14 +552,11 @@ class Material:
             self._BH[temp_key] = np.empty(0)
             if temp_key == "default":
                 self.linear = True
+            return
         elif isinstance(newBH, list):
             # if list is given, set numpy array
-            # RECALL SETTER to check valid BH shape
-            # self.linear = False # no need to set here because setter is
-            # recalled
-            self._BH[temp_key] = np.array(newBH)
-            self.linear = False
-        elif isinstance(newBH, np.ndarray):
+            newBH = np.array(newBH)
+        if isinstance(newBH, np.ndarray) and not newBH.size == 0:
             if newBH.ndim == 2:
                 # number of dimensions must be 2
                 if newBH.shape[1] == 2:
