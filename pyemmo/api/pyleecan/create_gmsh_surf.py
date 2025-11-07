@@ -54,9 +54,13 @@ def create_gmsh_surface(
     Returns:
         GmshSurface: PyEMMO surface in Gmsh.
     """
-    if not isinstance(surface, SurfLine):
-        raise TypeError(f"Surface must be of type SurfLine, got {type(surface)}")
-    assert isinstance(surface.label, str), "Surface label must be a string"
+    if not hasattr(surface, "get_lines"):
+        raise TypeError(
+            f"Surface must have method 'get_lines', Surface type is: {type(surface)}"
+        )
+    assert hasattr(surface, "label") and isinstance(
+        surface.label, str
+    ), "Surface must have attribute 'label'"
     # create line loop:
     curves: list[GmshLine] = create_gmsh_lines(surface.get_lines())
     # create gmsh surface
