@@ -43,8 +43,10 @@ from __future__ import annotations
 import logging
 
 from pyleecan.Classes.Frame import Frame
+from pyleecan.Classes.Hole import Hole
 from pyleecan.Classes.LamH import LamH
 from pyleecan.Classes.LamSlot import LamSlot
+from pyleecan.Classes.Material import Material as PyleecanMaterial
 from pyleecan.Classes.Shaft import Shaft
 from pyleecan.Classes.SurfLine import SurfLine
 from pyleecan.Classes.SurfRing import SurfRing
@@ -102,6 +104,16 @@ def create_geo_dict(
             - dict: Dictionary containing magnetization information.
     """
     rotor_sym = machine.rotor.comp_periodicity_geo()[0]
+    # NOTE: We need to extract the additional holes here, because they can cause the
+    # lamination contour to be open if they lie on the boundary. This is something thats
+    # different in Gmsh compared to FEMM (Pyleecan).
+    # Since the holes are not part of the machine then anymore, we cant find their
+    # material using `get_obj_from_label`. Thats why we create them separatly after the
+    # laminations.
+    rotor_holes: list[Hole] = machine.rotor.axial_vent.copy()
+    for duct in machine.rotor.axial_vent:
+        # rotor_holes.extend(duct.surf_list)
+        machine.rotor.axial_vent.remove(duct)
     rotor_surfs: list[SurfLine] = machine.rotor.build_geometry(  # type: ignore
         sym=rotor_sym, alpha=0  # type: ignore
     )
@@ -160,6 +172,21 @@ def create_geo_dict(
                 lam_surf.cutOut(pyemmo_surf)
             else:
                 pyemmo_geo_dict[pyemmo_surf.part_id] = pyemmo_surf
+
+    # subtract additional holes
+    for duct in rotor_holes:
+        if not isinstance(duct.mat_void, PyleecanMaterial):
+            material = PyleecanAir
+        else:
+            material = obj.mat_void
+        for surf in duct.surf_list:
+            pyemmo_geo_dict["rotor lamination"].cutOut(
+                create_gmsh_surface(
+                    surf,
+                    duct.Zh,
+                    build_pyemmo_material(material),
+                )
+            )
 
     # create shaft
     if machine.shaft:
