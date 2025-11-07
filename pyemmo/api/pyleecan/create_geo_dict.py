@@ -72,7 +72,7 @@ from pyleecan.Functions.labels import (  # SHAFT_LAB,  # "Shaft"
     get_obj_from_label,
 )
 
-from .. import logger
+from .. import logger, air
 from ..machine_segment_surface import MachineSegmentSurface
 from . import PyleecanAir, PyleecanMachine
 from .build_pyemmo_material import build_pyemmo_material
@@ -174,16 +174,33 @@ def create_geo_dict(
     # subtract additional holes
     machine.rotor.axial_vent.extend(rotor_holes)
     for duct in machine.rotor.axial_vent:
+        # try to get material
         if not isinstance(duct.mat_void, PyleecanMaterial):
+            logging.warning(
+                "No valid material given for hole %s. Using air instead!", duct
+            )
             material = PyleecanAir
         else:
-            material = obj.mat_void
-        for surf in duct.surf_list:
+            material = duct.mat_void
+        try:
+            material = build_pyemmo_material(material)
+        except Exception as e:  # pylint: disable=bare-except, broad-exception-caught
+            logging.warning(
+                (
+                    "Could not translate material %s of Hole %s with index %i due to error: %s. "
+                    "Using air instead!"
+                ),
+                material.name,
+                str(type(duct)),
+                machine.rotor.axial_vent.index(duct),
+                e.args[0],
+            )
+            material = air
             pyemmo_geo_dict["rotor lamination"].cutOut(
                 create_gmsh_surface(
                     surf,
                     duct.Zh,
-                    build_pyemmo_material(material),
+                    material,
                 )
             )
 
