@@ -63,7 +63,10 @@ def build_pyemmo_material(pyleecan_material: PyleecanMaterial) -> Material:
     mag_properties: MatMagnetics = pyleecan_material.mag  # type: ignore
     try:
         rel_permeability = mag_properties.mur_lin
-        assert isinstance(rel_permeability, (int, float)), "mue_r must be a number"
+        if rel_permeability is None:
+            rel_permeability = 0.0
+        else:
+            assert isinstance(rel_permeability, (int, float)), "mue_r must be a number"
     except AttributeError:
         rel_permeability = 0.0
 
