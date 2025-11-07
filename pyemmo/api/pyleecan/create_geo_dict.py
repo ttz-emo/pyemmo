@@ -50,6 +50,7 @@ from pyleecan.Classes.Material import Material as PyleecanMaterial
 from pyleecan.Classes.Shaft import Shaft
 from pyleecan.Classes.SurfLine import SurfLine
 from pyleecan.Classes.SurfRing import SurfRing
+from pyleecan.Functions.Geometry.transform_hole_surf import transform_hole_surf
 from pyleecan.Functions.labels import AIRBOX_LAB  # "Airbox"
 from pyleecan.Functions.labels import AIRGAP_LAB  # "Airgap"
 from pyleecan.Functions.labels import BAR_LAB  # "Bar"
@@ -68,11 +69,11 @@ from pyleecan.Functions.labels import VENT_LAB  # "Ventilation"
 from pyleecan.Functions.labels import WEDGE_LAB  # "SlotWedge"
 from pyleecan.Functions.labels import WIND_LAB  # "Winding"
 from pyleecan.Functions.labels import YOKE_LAB  # "Yoke"
-from pyleecan.Functions.labels import (  # SHAFT_LAB,  # "Shaft"
+from pyleecan.Functions.labels import (
     get_obj_from_label,
 )
 
-from .. import logger, air
+from .. import air, logger
 from ..machine_segment_surface import MachineSegmentSurface
 from . import PyleecanAir, PyleecanMachine
 from .build_pyemmo_material import build_pyemmo_material
@@ -196,10 +197,24 @@ def create_geo_dict(
                 e.args[0],
             )
             material = air
+        # build geometry
+        if hasattr(duct, "build_geometry"):
+            surfs = duct.build_geometry()
+        else:
+            raise AttributeError(f"Cant determine hole geometry for {duct}")
+        surfs = transform_hole_surf(
+            hole_surf_list=surfs,
+            Zh=duct.Zh,
+            sym=rotor_sym,
+            is_split=True,
+            alpha=0,
+            delta=0,
+        )
+        for surf in surfs:
             pyemmo_geo_dict["rotor lamination"].cutOut(
                 create_gmsh_surface(
                     surf,
-                    duct.Zh,
+                    rotor_sym,
                     material,
                 )
             )
