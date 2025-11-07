@@ -111,9 +111,7 @@ def create_geo_dict(
     # material using `get_obj_from_label`. Thats why we create them separatly after the
     # laminations.
     rotor_holes: list[Hole] = machine.rotor.axial_vent.copy()
-    for duct in machine.rotor.axial_vent:
-        # rotor_holes.extend(duct.surf_list)
-        machine.rotor.axial_vent.remove(duct)
+    machine.rotor.axial_vent = []
     rotor_surfs: list[SurfLine] = machine.rotor.build_geometry(  # type: ignore
         sym=rotor_sym, alpha=0  # type: ignore
     )
@@ -174,7 +172,8 @@ def create_geo_dict(
                 pyemmo_geo_dict[pyemmo_surf.part_id] = pyemmo_surf
 
     # subtract additional holes
-    for duct in rotor_holes:
+    machine.rotor.axial_vent.extend(rotor_holes)
+    for duct in machine.rotor.axial_vent:
         if not isinstance(duct.mat_void, PyleecanMaterial):
             material = PyleecanAir
         else:
