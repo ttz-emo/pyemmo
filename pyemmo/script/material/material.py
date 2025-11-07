@@ -564,16 +564,25 @@ class Material:
                     if newBH.shape[0] < 2:
                         raise ValueError(
                             (
-                                "Too few points in BH curve of material %s! At least specify 2 value pairs.",
+                                "Too few points in BH curve of material %s! "
+                                "At least specify 2 value pairs.",
                                 self.name,
                             )
                         )
                     if newBH.shape[0] < 6:
                         logger.warning(
-                            "Only %i point in BH curve of material %s! Results might be inaccurate.",
+                            "Only %i point in BH curve of material %s! "
+                            "Results might be inaccurate.",
                             newBH.shape[0],
                             self.name,
                         )
+                    if not np.array_equal(newBH[0], [0, 0]):
+                        logger.warning(
+                            "BH curve must start with origin B=0, H=0! "
+                            "Adding origin to BH curve of material %s",
+                            self.name,
+                        )
+                        newBH = np.concatenate([[[0.0, 0.0]], newBH], axis=0)
                     # set BH curve
                     self._BH[temp_key] = newBH
                     self.linear = False
