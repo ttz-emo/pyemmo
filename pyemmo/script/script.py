@@ -1510,11 +1510,12 @@ class Script:
                 for i, bhValue in enumerate(bhArray):
                     bString += str(bhValue[0]) + ","
                     hString += str(bhValue[1]) + ","
-                    if (i % 9 == 0) and ((i - 1) != bhArray.shape[0]):
+                    if ((i + 1) % 9 == 0) and ((i + 1) != bhArray.shape[0]):
+                        # add newline after 10 values if its not the last value
                         bString += "\n"
                         hString += "\n"
-                bString = bString[0 : len(bString) - 1] + "}"
-                hString = hString[0 : len(hString) - 1] + "}"
+                bString = bString[0 : len(bString) - 1] + "\n}"
+                hString = hString[0 : len(hString) - 1] + "\n}"
                 matFun.add_params({f"Mat_h_{matName}": hString})
                 matFun.add_params({f"Mat_b_{matName}": bString})
                 matFun.add_params({f"Mat_b2_{matName}": f"Mat_b_{matName}()^2"})
