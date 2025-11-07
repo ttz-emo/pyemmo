@@ -42,36 +42,33 @@ from __future__ import annotations
 
 import logging
 
+from pyleecan.Classes.Frame import Frame
 from pyleecan.Classes.LamH import LamH
 from pyleecan.Classes.LamSlot import LamSlot
+from pyleecan.Classes.Shaft import Shaft
 from pyleecan.Classes.SurfLine import SurfLine
 from pyleecan.Classes.SurfRing import SurfRing
-from pyleecan.Classes.Shaft import Shaft
-from pyleecan.Classes.Frame import Frame
-from pyleecan.Functions.labels import (
-    LAM_LAB,  # "Lamination"
-    # SHAFT_LAB,  # "Shaft"
-    BORE_LAB,  # "Bore"
-    YOKE_LAB,  # "Yoke"
-    SLID_LAB,  # "SlidingBand"
-    WIND_LAB,  # "Winding"
-    SOP_LAB,  # "SlotOpening"
-    WEDGE_LAB,  # "SlotWedge"
-    BAR_LAB,  # "Bar"
-    HOLEV_LAB,  # "HoleVoid"
-    HOLEM_LAB,  # "HoleMag"
-    MAG_LAB,  # "Magnet"
-    AIRGAP_LAB,  # "Airgap"
-    NO_MESH_LAB,  # "NoMesh"
-    VENT_LAB,  # "Ventilation"
-    TOOTH_LAB,  # "Tooth"
-    AIRBOX_LAB,  # "Airbox"
-    NOTCH_LAB,  # "Notch"
-    KEY_LAB,  # "Key"
+from pyleecan.Functions.labels import AIRBOX_LAB  # "Airbox"
+from pyleecan.Functions.labels import AIRGAP_LAB  # "Airgap"
+from pyleecan.Functions.labels import BAR_LAB  # "Bar"
+from pyleecan.Functions.labels import BORE_LAB  # "Bore"
+from pyleecan.Functions.labels import HOLEM_LAB  # "HoleMag"
+from pyleecan.Functions.labels import HOLEV_LAB  # "HoleVoid"
+from pyleecan.Functions.labels import KEY_LAB  # "Key"
+from pyleecan.Functions.labels import LAM_LAB  # "Lamination"
+from pyleecan.Functions.labels import MAG_LAB  # "Magnet"
+from pyleecan.Functions.labels import NO_MESH_LAB  # "NoMesh"
+from pyleecan.Functions.labels import NOTCH_LAB  # "Notch"
+from pyleecan.Functions.labels import SLID_LAB  # "SlidingBand"
+from pyleecan.Functions.labels import SOP_LAB  # "SlotOpening"
+from pyleecan.Functions.labels import TOOTH_LAB  # "Tooth"
+from pyleecan.Functions.labels import VENT_LAB  # "Ventilation"
+from pyleecan.Functions.labels import WEDGE_LAB  # "SlotWedge"
+from pyleecan.Functions.labels import WIND_LAB  # "Winding"
+from pyleecan.Functions.labels import YOKE_LAB  # "Yoke"
+from pyleecan.Functions.labels import (  # SHAFT_LAB,  # "Shaft"
     get_obj_from_label,
 )
-# pylint: disable=locally-disabled, no-name-in-module
-from pyleecan.Functions.load import load
 
 from .. import logger
 from ..machine_segment_surface import MachineSegmentSurface

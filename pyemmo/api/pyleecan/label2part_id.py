@@ -82,8 +82,10 @@ def label2part_id(label: str) -> str:
         if MAG_LAB in label_dict["surf_type"] or HOLEM_LAB in label_dict["surf_type"]:
             return ROTOR_MAG_IDEXT + f"{index}"
         return label
-    if SHAFT_LAB in label_dict["surf_type"]:
-        return SHAFT_LAB
+    if SHAFT_LAB in label:
+        return label
+    if "Frame" in label:
+        return label
     raise ValueError(
         f"Pyleecan surface label did not contain rotor or stator lamination label: {label}"
     )
