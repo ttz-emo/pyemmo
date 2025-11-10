@@ -146,9 +146,22 @@ There can be more infos like the copper fill factor or the stator resistance, wh
       "flag_openGUI": true
    }
 
+.. TODO: Add information about geometry file format and identifiers
+
+.. note::
+
+   Here we will need to add some documentation about the format of the geometry
+   definition and the important identifiers defined in:
+
+   .. automodule:: pyemmo.api.json
+      :members:
+      :undoc-members:
+      :show-inheritance:
+
+   
 
 json module
--------------------
+-----------
 
 .. automodule:: pyemmo.api.json.json
    :members:
@@ -171,18 +184,18 @@ modelJSON module
    :undoc-members:
    :show-inheritance:
 
-SurfaceJSON module
-------------------
-
-.. automodule:: pyemmo.api.json.SurfaceJSON
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 boundaryJSON module
 -------------------
 
 .. automodule:: pyemmo.api.json.boundaryJSON
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+create_airgaps module
+---------------------
+
+.. automodule:: pyemmo.api.json.create_airgaps
    :members:
    :undoc-members:
    :show-inheritance:

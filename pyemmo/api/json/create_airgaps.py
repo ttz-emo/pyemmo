@@ -55,6 +55,9 @@ def create_airgap_surfaces(
     )
     if not STATOR_AIRGAP_IDEXT in surface_dict:
         # create stator airgap
+        logging.info(
+            "Starting stator airgap creation since no airgap was given by the input dict."
+        )
         # filter boundary lines and remove boundaries on symmetry axis
         bound_lines = boundary.get_boundary_line_list(stator_dim_tags)
         if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
@@ -167,6 +170,9 @@ def create_airgap_surfaces(
             )
     if not ROTOR_AIRGAP_IDEXT in surface_dict:
         # create rotor airgap
+        logging.info(
+            "Starting rotor airgap creation since no airgap was given by the input dict."
+        )
         # filter boundary lines and remove boundaries on symmetry axis
         bound_lines = boundary.get_boundary_line_list(rotor_dim_tags)
         if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:

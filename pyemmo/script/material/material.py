@@ -226,8 +226,8 @@ class Material:
         """
         Function to plot BH curve
         Args:
-            temp: chosen temperature for the curve. can be "default", or a specific temp.
-                - if none is defined, all BH curves for all temps will be plotted
+            temp: Chosen temperature for the curve. Can be "default", or a specific
+            temperature. If none is defined, all BH curves for all temps will be plotted.
         """
         if self.linear:
             warnings.warn("Material is linear, there is no BH-curve")

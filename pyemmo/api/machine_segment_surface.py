@@ -101,7 +101,7 @@ class MachineSegmentSurface(GmshSegmentSurface):
         material: Material,
         name: str = "",
     ) -> MachineSegmentSurface:
-        """create a surface from a given tag
+        """create a MachineSegmentSurface from a list of boundary curves.
 
         Args:
             tag (int): GMSH tag of the surface
@@ -125,7 +125,9 @@ class MachineSegmentSurface(GmshSegmentSurface):
 
     @property
     def part_id(self) -> str:
-        """get the abbriviation of the surface name (literal Surface ID)
+        """Name to specify the machine part thats represented by the
+        MachineSegmentSurface, like "rotor lamination", "rotor airgap" or "stator slot".
+        All relevant identifiers can be found under :mod:`~pyemmo.api.json`.
 
         Returns:
             str: abbriviation of surface name (short name)
@@ -149,19 +151,19 @@ class MachineSegmentSurface(GmshSegmentSurface):
 
     @property
     def material(self) -> Material:
-        """get the material of the GmshSegmentSurface surface
+        """get the material property of the MachineSegmentSurface surface
 
         Returns:
-            Material: surface material
+            Material: PyEMMO material object.
         """
         return self._material
 
     @material.setter
     def material(self, material: Material) -> None:
-        """set the material of the API surface
+        """set the material of the MachineSegmentSurface.
 
         Args:
-            material (Material): surface material
+            material (Material): PyEMMO material object.
 
         Returns:
             None
