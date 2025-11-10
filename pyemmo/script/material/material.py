@@ -552,14 +552,11 @@ class Material:
             self._BH[temp_key] = np.empty(0)
             if temp_key == "default":
                 self.linear = True
+            return
         elif isinstance(newBH, list):
             # if list is given, set numpy array
-            # RECALL SETTER to check valid BH shape
-            # self.linear = False # no need to set here because setter is
-            # recalled
-            self._BH[temp_key] = np.array(newBH)
-            self.linear = False
-        elif isinstance(newBH, np.ndarray):
+            newBH = np.array(newBH)
+        if isinstance(newBH, np.ndarray) and not newBH.size == 0:
             if newBH.ndim == 2:
                 # number of dimensions must be 2
                 if newBH.shape[1] == 2:
@@ -567,16 +564,25 @@ class Material:
                     if newBH.shape[0] < 2:
                         raise ValueError(
                             (
-                                "Too few points in BH curve of material %s! At least specify 2 value pairs.",
+                                "Too few points in BH curve of material %s! "
+                                "At least specify 2 value pairs.",
                                 self.name,
                             )
                         )
                     if newBH.shape[0] < 6:
                         logger.warning(
-                            "Only %i point in BH curve of material %s! Results might be inaccurate.",
+                            "Only %i point in BH curve of material %s! "
+                            "Results might be inaccurate.",
                             newBH.shape[0],
                             self.name,
                         )
+                    if not np.array_equal(newBH[0], [0, 0]):
+                        logger.warning(
+                            "BH curve must start with origin B=0, H=0! "
+                            "Adding origin to BH curve of material %s",
+                            self.name,
+                        )
+                        newBH = np.concatenate([[[0.0, 0.0]], newBH], axis=0)
                     # set BH curve
                     self._BH[temp_key] = newBH
                     self.linear = False

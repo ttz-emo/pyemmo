@@ -128,7 +128,7 @@ def test_linear_property():
 
 def test_BH_setter_and_getter():
     m = Material(name="Steel")
-    arr = np.array([[0, 0], [1, 1]])
+    arr = np.array([[0, 0.0], [1.0, 1]])
     m.BH = arr
     np.testing.assert_array_equal(m.BH, arr)
     # Should set linear to False
@@ -140,6 +140,15 @@ def test_set_BH_with_list():
     bh_list = [[0, 0], [1, 1]]
     m.set_BH(bh_list)
     np.testing.assert_array_equal(m.BH, np.array(bh_list))
+
+
+def test_set_BH_without_origin():
+    m = Material(name="Steel")
+    arr = np.array([[1.0, 1], [2, 2], [2.2, 300]])
+    m.BH = arr
+    np.testing.assert_array_equal(m.BH, arr)
+    # Should set linear to False
+    assert m.linear is False
 
 
 def test_str_and_print(capsys):

@@ -85,9 +85,11 @@ class MachineAllType:
         paramDict["L_AX_S"] = self.stator.axialLength
         paramDict["NBR_POLE_PAIRS"] = self.nbrPolePairs
         paramDict["NBR_SLOTS"] = self.stator.nbrSlots
-        # FIXME: The following is not True anymore!:
-        #   divide by two because there are allways two slot sides
-        paramDict["NBR_TURNS_IN_FACE"] = self.stator.winding.get_turns() / 2
+        nbr_turns = self.stator.winding.get_turns()
+        if isinstance(nbr_turns, (int, float)):
+            paramDict["NBR_TURNS_IN_FACE"] = nbr_turns
+        else:
+            raise ValueError("PyEMMO cant handle individual number of turns per Coil!")
         paramDict["R_AIRGAP"] = self.rotor.movingBand[0].radius
         return paramDict
 
