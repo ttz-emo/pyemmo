@@ -194,6 +194,56 @@ boundaryJSON module
 
 create_airgaps module
 ---------------------
+Here is an example for the workflow described in :func:`~pyemmo.api.json.create_airgaps.create_airgap_surfaces` using the Toyota Prius model of Pyleecan.
+
+.. image:: ../images/create_airgaps/prius_model.png
+   :scale: 30 %
+   :alt: Final Prius Model with symmetry of 8.
+   :align: center
+
+1. Extract the boundary lines.
+   
+   .. image:: ../images/create_airgaps/prius_stator_boundary.png
+      :scale: 30 %
+      :alt: Final Prius Model with symmetry of 8.
+      :align: center
+
+2. Filter the lines on the symmetry axis.
+   
+   .. image:: ../images/create_airgaps/prius_stator_boundary_without_sym_axis.png
+      :scale: 30 %
+      :alt: Final Prius Model with symmetry of 8.
+      :align: center
+
+3. Find the point thats closest to the airgap on the x-axis.
+   
+   .. image:: ../images/create_airgaps/prius_stator_boundary_closestPoint.png
+      :scale: 30 %
+      :alt: Final Prius Model with symmetry of 8.
+      :align: center
+
+4. Find the interface curves connection to that point.
+   
+   .. image:: ../images/create_airgaps/prius_stator_airgap_interface.png
+      :scale: 30 %
+      :alt: Final Prius Model with symmetry of 8.
+      :align: center
+
+5. Create the airgap surface(s) depending on if the found contour is purely cylindrical.
+   For this stator the interface found is not cylindrical because of the slot openings.
+   Thats why two airgap surfaces are created (one closing the stator interface and one
+   purely cylindrical).
+   
+   .. image:: ../images/create_airgaps/prius_stator_airgaps.png
+      :scale: 30 %
+      :alt: Final Prius Model with symmetry of 8.
+      :align: center
+
+   .. image:: ../images/create_airgaps/prius_stator_airgaps_zoomed.png
+      :scale: 30 %
+      :alt: Final Prius Model with symmetry of 8.
+      :align: center
+
 
 .. automodule:: pyemmo.api.json.create_airgaps
    :members:
