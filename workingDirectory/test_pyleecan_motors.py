@@ -146,7 +146,7 @@ for num, machineFile in enumerate(os.listdir(MACHINE_FILE_DIR)):
 nbrFails = nbr_machines - nbrTranslatedMaschines
 machine_test_dict["FINAL_RESULT"] = (
     f"{nbr_machines} machines, {nbrTranslatedMaschines} translated, "
-    f"{nbrFails} failed, {nbr_simulated_machines=}",
+    f"{nbr_simulated_machines} simulated",
 )
 print(json.dumps(machine_test_dict, sort_keys=True, indent=4))  # print results
 print(machine_test_dict["FINAL_RESULT"])

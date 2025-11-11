@@ -82,10 +82,12 @@ if os.path.isfile(pylcn_machine_testfile):
 # 4 (IPMSM, (missing wedge))
 # 17 (SIPMSM, SlotW22 + SlotM11) - full model
 # 31 (SynRM, SlotW11 (missing wedge) + HoleM54) - 1/4 model
-# 33 (Prius-3 Phase, SlotW11 + HoleM50)
-# 34 (Prius-6 Phase, SlotW11 + HoleM50)
-# fileName = machineList[32]  # SELECT MACHINE HERE BY INDEX OR NAME
-fileName = "SPMSM_001_withSlotMat.json"  # SELECT MACHINE HERE BY INDEX OR NAME
+# 34 (Prius, SlotW11 + HoleM50)
+
+# SELECT MACHINE HERE BY INDEX OR NAME
+# fileName = machineList[33]
+fileName = "TESLA_S.json"
+
 print("\nUsing machine: " + fileName)
 pyleecan_machine: Machine = (
     load.load(  # pylint: disable=locally-disabled, no-member # type: ignore
