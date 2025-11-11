@@ -51,8 +51,6 @@ from . import apiNameDict
 from . import boundaryJSON as boundary
 from . import importJSON, modelJSON
 
-if not gmsh_api.is_initialized():
-    gmsh_api.initialize()
 
 # from swat_em import analyse
 # from .. import calcPhaseangleStarvoltageCorr
