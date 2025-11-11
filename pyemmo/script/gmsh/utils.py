@@ -60,6 +60,7 @@ from ..geometry.line import Line
 from ..geometry.physicalElement import PhysicalElement
 from ..geometry.surface import Surface
 from . import DimTag
+from .gmsh_arc import GmshArc
 from .gmsh_line import GmshLine
 from .gmsh_point import GmshPoint
 
@@ -351,3 +352,32 @@ def get_global_center() -> GmshPoint:
     except:  # pylint: disable=bare-except
         return GmshPoint.from_coordinates((0, 0), name="CenterPoint")
 
+
+def create_disk(radius: float, center: GmshPoint | None = None) -> list[GmshArc]:
+    """Workaround for gmsh.model.occ.addDisk() function, because the original gmsh
+    kernel only supports arcs up to 90°. If we want to export our model as .geo_unrolled
+    file we need to create these arcs separatly otherwise they will be exported as spline.
+
+    Args:
+        radius (float): Circle radius
+        center (GmshPoint | None, optional): Circle center point. Defaults to global
+            center point at (0,0).
+
+    Returns:
+        list[GmshArc]: List of four GmshArc object forming the contour of a circle.
+    """
+    if not center:
+        # get or create default center point
+        center = get_global_center()
+    # create first point by x = center.x + radius
+    p0 = GmshPoint.from_coordinates((center.x + radius, center.y, center.z))
+    p1 = p0  # save p0 for later to construct last arc
+    arcs = []  # init arc list
+    for _ in range(3):
+        # duplicate and rotate p1 by 90°
+        p2 = p1.duplicate()
+        p2.rotateZ(center, np.pi / 2)
+        arcs.append(GmshArc.from_points(p1, center, p2))  # create arc
+        p1 = p2  # update p1 for next iteration
+    arcs.append(GmshArc.from_points(p1, center, p0))  # create final arc using p0
+    return arcs
