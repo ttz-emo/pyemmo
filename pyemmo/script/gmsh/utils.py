@@ -327,3 +327,27 @@ def fix_missing_mesh_sizes() -> None:
             )
             nbr_fixed += 1
     logging.debug(f"Fixed {nbr_fixed} points with missing mesh sizes.")
+
+
+def get_global_center() -> GmshPoint:
+    """Get the global center point (coordinates (0,0,0) by using
+    gmsh.model.getEntitiesInBoundingBox(..) on point in origin or create the center
+    point.
+
+    Returns:
+        GmshPoint: Center point for current gmsh model.
+    """
+    try:
+        center_dimTags = gmsh.model.getEntitiesInBoundingBox(
+            -DEFAULT_GEO_TOL,
+            -DEFAULT_GEO_TOL,
+            -DEFAULT_GEO_TOL,
+            DEFAULT_GEO_TOL,
+            DEFAULT_GEO_TOL,
+            DEFAULT_GEO_TOL,
+            0,
+        )
+        return GmshPoint(center_dimTags[0][1])
+    except:  # pylint: disable=bare-except
+        return GmshPoint.from_coordinates((0, 0), name="CenterPoint")
+
