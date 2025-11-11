@@ -194,12 +194,14 @@ boundaryJSON module
 
 create_airgaps module
 ---------------------
-Here is an example for the workflow described in :func:`~pyemmo.api.json.create_airgaps.create_airgap_surfaces` using the Toyota Prius model of Pyleecan.
+Here is an example for the workflow described in :func:`~pyemmo.api.json.create_airgaps.create_airgap_surfaces` using the Toyota Prius model of Pyleecan. See the function description for a more detailed explanation.
 
-.. image:: ../images/create_airgaps/prius_model.png
+.. figure:: ../images/create_airgaps/prius_model.png
    :scale: 30 %
    :alt: Final Prius Model with symmetry of 8.
    :align: center
+   
+   ONELAB model of Toyota Prius machine in Gmsh created by PyEMMO.
 
 1. Extract the boundary lines.
    
@@ -222,7 +224,7 @@ Here is an example for the workflow described in :func:`~pyemmo.api.json.create_
       :alt: Final Prius Model with symmetry of 8.
       :align: center
 
-4. Find the interface curves connection to that point.
+4. Find the interface curves connecting to that point.
    
    .. image:: ../images/create_airgaps/prius_stator_airgap_interface.png
       :scale: 30 %

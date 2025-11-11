@@ -50,13 +50,14 @@ def create_airgap_surfaces(
     moving_band_radius: float,
     symmetry: int,
 ):
-    """This function can be used to create the airgap surface for the current gmsh model.
+    """This function can be used to create the airgap surfaces for the current gmsh model.
 
-    The algorithm workflow follows the following steps for rotor and stator side:
+    The algorithm follows these steps for the rotor and stator side:
 
         1. Get the interface contour towards the airgap
 
-            1.1 Extract the boundary lines for the combination of all surfaces (total outer boundary).
+            1.1 Extract the boundary lines for the combination of all surfaces (total
+            outer boundary).
 
             1.2 Filter out the lines on the symmetry axis.
 
@@ -69,16 +70,16 @@ def create_airgap_surfaces(
         create one or two airgap surfaces.
         
             If the interface is not purely cylindrical
-            (but maybe includes the slot opening) we create two airgap surfacees
-            to improve GetDP torque calculation by the inner cylindrical band.
+            (but i.e. includes the slot opening) we create two airgap surfaces
+            to improve GetDP torque calculation by the purely cylindrical band.
 
-        3. Find point with is closest to the airgap **out of all points** to determine
-        the band height(s). 
+        3. Find the point which is closest to the airgap **out of all points** to
+        determine the band height(s). 
             
             NOTE: If there is no geometrical point object at the closest interface
             section, the airgap creation can fail! 
         
-        4. Create the band surface(s) by constructing the points and curves and add it
+        4. Create the band surface(s) by constructing the curve loop(s) and add it
         to the surface dictionary.
 
             NOTE: If the symmetry factor is 2, the created arc will be split up into two
