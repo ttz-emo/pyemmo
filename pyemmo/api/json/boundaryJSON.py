@@ -21,6 +21,8 @@
 
 from __future__ import annotations
 
+import logging
+
 # from matplotlib import pyplot as plt
 # from ..functions.plot import plot
 import gmsh
@@ -44,6 +46,7 @@ from ...script.gmsh.gmsh_point import GmshPoint
 from ...script.gmsh.utils import (
     filter_curves_on_radius,
     filter_lines_at_angle,
+    get_dim_tags,
     get_max_radius,
     get_min_radius,
 )
@@ -368,9 +371,14 @@ def createMB(
     # This was unnecessary since remove_all_duplicates() just removes instances
     # belonging to highest order instances (= surfaces in our case)...
     # gmsh.model.occ.remove_all_duplicates()  # call to remove duplicate points of moving band interfaces
-    # if logging.getLogger().level <= logging.DEBUG:
-    #     gmsh.model.occ.synchronize()
-    #     gmsh.fltk.run()
+    if logging.getLogger().level <= logging.DEBUG - 1:
+        logging.debug("Show moving band in gmsh...")
+        gmsh.model.setVisibility(gmsh.model.getEntities(), False)  # disable all
+        gmsh.model.setVisibility(get_dim_tags([mb_stator, mb_rotor_inner]), True, False)
+        if mb_rotor_ax:
+            gmsh.model.setVisibility(get_dim_tags(mb_rotor_ax), True, False)
+        gmsh.model.occ.synchronize()
+        gmsh.fltk.run()
     return mb_stator, mb_rotor_inner, mb_rotor_ax
 
 
