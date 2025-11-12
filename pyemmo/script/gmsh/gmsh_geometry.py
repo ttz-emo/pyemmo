@@ -44,6 +44,23 @@ class GmshGeometry(ABC):
 
     This class implements the getter and setter methods for name and id, aswell as the
     abstract property dim for the geometric dimension.
+
+    You can create GmshGeometry and child class instances in two ways:
+
+        1. Create a PyEMMO object by an existing Gmsh object using its tag:
+            >>> p = GmshPoint(tag=1)
+            >>> print(p)
+            GmshPoint(tag=1, coords=(0.0, 1.0, 2.0))
+
+        2. Use the :meth:`from_...` classmethod to create a Gmsh object in parallel to PyEMMO
+            >>> p = GmshPoint.from_coordinates(coords=[0.0, 1.0, 2.0])
+            >>> print(p)
+            GmshPoint(tag=1, coords=(0.0, 1.0, 2.0))
+
+    Examples:
+
+
+
     """
 
     @property
@@ -51,10 +68,10 @@ class GmshGeometry(ABC):
     def dim(self) -> Literal[0, 1, 2, 3]:
         """Dimension of the Geometry in Gmsh
 
-            -   0 = Point
-            -   1 = Curve (Line, CircleArc, Spline)
-            -   2 = Surface
-            -   3 = Volume
+        -   0 = Point
+        -   1 = Curve (Line, CircleArc, Spline)
+        -   2 = Surface
+        -   3 = Volume
         """
 
     # pylint: disable=locally-disabled, invalid-name
