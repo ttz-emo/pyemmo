@@ -8,6 +8,7 @@ Geometry and Material package
    :maxdepth: 1
 
    pyemmo.script.geometry
+   pyemmo.script.gmsh
    pyemmo.script.material
 
 

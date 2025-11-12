@@ -18,7 +18,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module gmsh_geometry.py for the abstract class GmshGeometry."""
+"""Abstract class GmshGeometry as reference to the PyEMMO Geometry abstract class
+:class:`~pyemmo.script.geometry.transformable.Transformable` and to gather some general
+properties of gmsh geometry entities like :py:attr:`GmshGeometry.id`"""
 from __future__ import annotations
 
 import numbers
@@ -35,6 +37,7 @@ from . import DimTag
 class GmshGeometry(ABC):
     """Abstract class GmshGeometry for geometry entities in Gmsh.
     This class implements all common properties of a geometry entity in Gmsh. These are:
+
     -   id: The unique ID of the geometry entity in Gmsh.
     -   name:  The name of the geometry entity in Gmsh.
     -   dim: The dimension of the geometry entity in Gmsh.
@@ -47,23 +50,27 @@ class GmshGeometry(ABC):
     @abstractmethod
     def dim(self) -> Literal[0, 1, 2, 3]:
         """Dimension of the Geometry in Gmsh
-        -   0: Poin
-        -   1: Line, CircleArc
-        -   2: Surface
-        -   3: Volume
+
+            -   0 = Point
+            -   1 = Curve (Line, CircleArc, Spline)
+            -   2 = Surface
+            -   3 = Volume
         """
 
     # pylint: disable=locally-disabled, invalid-name
     @property
     def id(self) -> int:
-        """Property id of geo classes"""
+        """Property id of geometry classes. This refers to the Gmsh geometry instance
+        `tag <https://gmsh.info/doc/texinfo/gmsh.html#:~:text=Both%20model%20entities,a%20unique%20tag.>`_.
+        """
         return self._id
 
     @id.setter
     def id(self, new_id) -> None:
         """Setter for ID.
 
-        This only resets the id to a new id (if possible). The private attribute _id is
+        This only resets the id to a new id (if possible) using function
+        :func:`GmshGeometry._reset_id`. The private attribute _id is
         only set once at initialization.
         """
         if not isinstance(new_id, int):
@@ -82,7 +89,8 @@ class GmshGeometry(ABC):
     @property
     def name(self) -> str:
         """
-        Getter for the name property.
+        Name of the geometry instance in the current Gmsh model.
+        This uses :func:`gmsh.model.getEntityName()`
 
         Returns:
             str: The name of the line.
@@ -115,33 +123,35 @@ class GmshGeometry(ABC):
                     return gmsh.model.setEntityName(self.dim, self.id, new_name)
                 raise e
 
-    def translate(self, dx, dy, dz):
+    def translate(self, dx: float, dy: float, dz: float):
         """
         Translates the geometric entity by the given offsets in the x, y, and z
         directions.
 
         Parameters:
-        dx (float): The offset in the x direction.
-        dy (float): The offset in the y direction.
-        dz (float): The offset in the z direction.
+            dx (float): The offset in the x direction.
+            dy (float): The offset in the y direction.
+            dz (float): The offset in the z direction.
         """
         if not all(isinstance(shift, numbers.Number) for shift in (dx, dy, dz)):
             raise TypeError("Translation inputs dx,dy,dz must be a number!")
         gmsh.model.occ.translate([(self.dim, self.id)], dx, dy, dz)
 
     def rotateZ(self, rotationPoint: Point = defaultCenterPoint, angle=0.0):
-        """Mit rotateZ() wird eine Gerade um einen Rotationspunkt (rotationPoint) und die
-        Z-Achse mit einem definierten Winkel rotiert.
+        """Rotate a geometry object around the z-axis using the rotation point as base.
 
         Args:
-            - rotationPoint (Point, optional): Rotation center point.
-            Defaults to gobal center point at (0,0,0).
-            - angle (float, optional): Rotation angle in rad. Defaults to 0.0.
+            rotationPoint (Point, optional): Rotation center point.
+                Defaults to gobal center point at (0,0,0).
+            angle (float, optional): Rotation angle in rad. Defaults to 0.0.
 
-        Beispiel:
-            from math import pi\n
-            L1 = GmshLine.from_points(P1, P2,'Line 1')\n
-            L1.rotateZ(P0, pi)\n
+        Example:
+            .. code-block:: python
+
+                from math import pi
+
+                L1 = GmshLine.from_points(P1, P2,'Line 1')
+                L1.rotateZ(P0, pi)
         """
         if not isinstance(rotationPoint, Point):
             # pylint: disable=locally-disabled, consider-using-f-string
@@ -155,18 +165,20 @@ class GmshGeometry(ABC):
         gmsh.model.occ.rotate([(self.dim, self.id)], x, y, z, 0, 0, 1, angle=angle)
 
     def rotateX(self, rotationPoint: Point = defaultCenterPoint, angle=0.0):
-        """Mit rotateX() wird eine Gerade um einen Rotationspunkt (rotationPoint) und die
-        X-Achse mit einem definierten Winkel rotiert.
+        """Rotate a geometry object around the x-axis using the rotation point as base.
 
         Args:
-            - rotationPoint (Point, optional): Rotation center point.
-            Defaults to gobal center point at (0,0,0).
-            - angle (float, optional): Rotation angle in rad. Defaults to 0.0.
+            rotationPoint (Point, optional): Rotation center point.
+                Defaults to gobal center point at (0,0,0).
+            angle (float, optional): Rotation angle in rad. Defaults to 0.0.
 
-        Beispiel:
-            from math import pi\n
-            L1 = GmshLine.from_points(P1, P2,'Line 1')\n
-            L1.rotateX(P0, pi)\n
+        Example:
+            .. code-block:: python
+
+                from math import pi
+
+                L1 = GmshLine.from_points(P1, P2,'Line 1')
+                L1.rotateX(P0, pi)
         """
         if not isinstance(rotationPoint, Point):
             # pylint: disable=locally-disabled, consider-using-f-string
@@ -180,18 +192,20 @@ class GmshGeometry(ABC):
         gmsh.model.occ.rotate([(self.dim, self.id)], x, y, z, 1, 0, 0, angle=angle)
 
     def rotateY(self, rotationPoint: Point = defaultCenterPoint, angle=0.0):
-        """Mit rotateY() wird eine Gerade um einen Rotationspunkt (rotationPoint) und die
-        Y-Achse mit einem definierten Winkel rotiert.
+        """Rotate a geometry object around the y-axis using the rotation point as base.
 
         Args:
-            - rotationPoint (Point, optional): Rotation center point.
-            Defaults to gobal center point at (0,0,0).
-            - angle (float, optional): Rotation angle in rad. Defaults to 0.0.
+            rotationPoint (Point, optional): Rotation center point.
+                Defaults to gobal center point at (0,0,0).
+            angle (float, optional): Rotation angle in rad. Defaults to 0.0.
 
-        Beispiel:
-            from math import pi\n
-            L1 = GmshLine.from_points(P1, P2,'Line 1')\n
-            L1.rotateX(P0, pi)\n
+        Example:
+            .. code-block:: python
+
+                from math import pi
+
+                L1 = GmshLine.from_points(P1, P2,'Line 1')
+                L1.rotateY(P0, pi)
         """
         if not isinstance(rotationPoint, Point):
             # pylint: disable=locally-disabled, consider-using-f-string
@@ -206,12 +220,21 @@ class GmshGeometry(ABC):
 
     def duplicate(self, name=""):
         """Create a copy of the gmsh instance.
+        This uses the Gmsh Open CASCADE function
+        `gmsh.model.occ.copy <https://gmsh.info/doc/texinfo/gmsh.html#index-gmsh_002fmodel_002focc_002fcopy>`_
+        command.
 
         Args:
             name (str, optional): Name of duplicate. Defaults to "".
 
         Returns:
             GmshObj: A copy of the gmsh class instance.
+
+        Example:
+            .. code-block:: python
+
+                L1 = GmshLine.from_points(P1, P2,'Line 1')
+                L2 = L1.duplicate("New Line Name")
         """
 
         dim_tags: list[DimTag] = gmsh.model.occ.copy([(self.dim, self.id)])
@@ -228,8 +251,8 @@ class GmshGeometry(ABC):
         return new_instance
 
     def combine(self, add_obj):
-        """Combine two objects to one using opencascade fuse command.
-        The old objects will be removed!
+        """Combine two objects to one using Open CASCADE :py:func:`gmsh.model.occ.fuse`
+        command. The old objects will be removed!
 
         Args:
             add_obj (Gmsh*): Gmsh class instance.
@@ -238,10 +261,11 @@ class GmshGeometry(ABC):
             Gmsh*: Combined Gmsh class objects.
 
         Example:
-            from pyemmo.script.gmsh.gmsh_line import GmshArc\n
-            L1 = GmshArc.from_points(name='L1',start_point=P1, center_point = P0, end_point=P2)\n
-            L2 = GmshArc.from_points(name='L2',start_point=P2, center_point = P0, end_point=P3)\n
-            L3 = L1.combine(L2)\n
+            .. code-block:: python
+
+                L1 = GmshLine.from_points(P1, P2,'Line 1')
+                L2 = GmshLine.from_points(P2, P3,'Line 2')
+                L3 = L1.combine(L2) # create new combined line
         """
         assert isinstance(add_obj, type(self))
         out_dim_tags, out_dim_tags_map = gmsh.model.occ.fuse(

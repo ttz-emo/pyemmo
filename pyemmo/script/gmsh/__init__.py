@@ -18,14 +18,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""
-This module inits the gmsh subpackage of PyEMMO.
-
-The module is part of the PyEMMO project, developed by TTZ-EMO at the Technical
-University of Applied Sciences Würzburg-Schweinfurt.
-
-Author:
-    Max Schuler
+"""Gmsh subpackage of PyEMMO defining classes and functions to interface the 
+:mod:`~pyemmo.script.geometry` package with the
+`Gmsh-Python-API <https://gmsh.info/doc/texinfo/gmsh.html#Gmsh-application-programming-interface>`_
+to directly create geometrical entities in current Gmsh model.
 """
 from __future__ import annotations
 
