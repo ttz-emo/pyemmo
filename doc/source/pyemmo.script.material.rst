@@ -23,14 +23,6 @@ pyemmo.script.material.electricalSteel module
    :show-inheritance:
 
 
-pyemmo.script.material.materialManagement module
--------------------------------------------------
-
-.. automodule:: pyemmo.script.material.materialManagement
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 Module contents
 ---------------
 

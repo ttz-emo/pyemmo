@@ -417,21 +417,13 @@ def runCalcforCurrent(param: dict) -> dict:
     parameters
 
     .. code-block:: python
+
         {
             "getdp": {
                 "exe": findGetDP(), ##
                 "ResId": res_id, ##
                 "verbosity level": 3, #
                 "res": self.test_sim_dir, ##
-            },
-            "gmsh": {"exe": findGmsh()}, # gmsh exe and params ##
-            "pro": join(self.model_dir, "Toyota_Prius.pro"), # pro file ##
-            "info": "", #
-            "PostOp": [],  # "GetBOnRadius" - "Get_LocalFields_Post" #
-            "hyst": 102, # in combination with 'GetBIron' PostOp entry #
-            "eddy": 1.5, #
-            "datetime": time.ctime(), #
-        }
 
                 "IQ_RMS": 10.0,
                 "ID_RMS": 0.0,
@@ -444,6 +436,15 @@ def runCalcforCurrent(param: dict) -> dict:
                 "Flag_Debug": 1,
                 "Flag_ClearResults": 1,
                 "stop_criterion": 1e-7,
+            },
+            "gmsh": {"exe": findGmsh()}, # gmsh exe and params ##
+            "pro": join(self.model_dir, "Toyota_Prius.pro"), # pro file ##
+            "info": "", #
+            "PostOp": [],  # "GetBOnRadius" - "Get_LocalFields_Post" #
+            "hyst": 102, # in combination with 'GetBIron' PostOp entry #
+            "eddy": 1.5, #
+            "datetime": time.ctime(), #
+        }
 
     Returns:
         dict: Simulation results dict created from ``pyemmo.functions.import_results.main``

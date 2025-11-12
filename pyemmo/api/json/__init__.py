@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -17,7 +18,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""init module of json api"""
+"""Global definitions for the pyemmo json interface.
+
+Here part identifiers are defined to be used in the geometry interface or directly when
+creating the :class:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface` objects as
+for the values of :attr:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface.part_id`
+"""
 
 from __future__ import annotations
 
@@ -85,12 +91,39 @@ InnerLimitLineDict = {
 
 # Predefine IdExt of special surface api objects for identification
 ROTOR_MAG_IDEXT = "magnet"
+"""Literal part identifier
+(:attr:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface.part_id`) for magnets.
+"""
 ROTOR_BAR_IDEXT = "rotor bar"
+"""Literal part identifier
+(:attr:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface.part_id`)
+for rotor bars of a squirel cage induction motor."""
 ROTOR_LAM_IDEXT = "rotor lamination"
+"""Literal part identifier
+(:attr:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface.part_id`)
+for the rotor lamination."""
 ROTOR_AIRGAP_IDEXT = "rotor airgap"
+"""Literal part identifier
+(:attr:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface.part_id`)
+for the rotor airgap. The rotor airgap in pyemmo is defined as the most outer rotor
+surface interfacing the movingband. See
+:class:`~pyemmo.script.geometry.movingBand.MovingBand` or
+:mod:`~pyemmo.api.json.create_airgaps` for futher information."""
 STATOR_SLOT_IDEXT = "stator slot"
+"""Literal part identifier
+(:attr:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface.part_id`)
+for stator slot with winding."""
 STATOR_LAM_IDEXT = "stator lamination"
+"""Literal part identifier
+(:attr:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface.part_id`)
+for stator lamination."""
 STATOR_AIRGAP_IDEXT = "stator airgap"
+"""Literal part identifier
+(:attr:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface.part_id`)
+for stator airgap. The stator airgap in pyemmo is defined as the most inner stator
+surface interfacing the movingband. See
+:class:`~pyemmo.script.geometry.movingBand.MovingBand` or
+:mod:`~pyemmo.api.json.create_airgaps` for futher information."""
 
 # order defines user defined mesh setting order.
 apiNameDict = {
