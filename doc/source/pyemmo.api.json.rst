@@ -42,7 +42,7 @@ The default path for the model result files (`mod` path) is a new folder in the 
 For Windows this will be something like :file:`C:/Users/USER_NAME/AppData/Roaming/pyemmo/Results`.
 By default the results directory for the simulation results will be stored in the same folder as the onelab simulation files created by PyEMMO. The folder name defaults to :file:`/res_MODEL_NAME`.
 
-.. _table-label:
+.. _ref_sim_param_tabel:
 
 .. table:: Simulation parameter in the JSON file.
 
@@ -158,42 +158,12 @@ There can be more infos like the copper fill factor or the stator resistance, wh
       :undoc-members:
       :show-inheritance:
 
-   
 
-json module
------------
+Automatic Airgap Creation
+-------------------------
+This module implements a function :func:`~pyemmo.api.json.create_airgaps.create_airgap_surfaces`.
+If no airgaps (stator or rotor) given with the segmented input for the :mod:`pyemmo.api.json` API, create the airgap surfaces by extracting the inner/outer boundary of stator/rotor and the information about the movingband radius given with the `model information dict <ref_sim_param_tabel_>`_.
 
-.. automodule:: pyemmo.api.json.json
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-importJSON module
------------------
-
-.. automodule:: pyemmo.api.json.importJSON
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-modelJSON module
-----------------
-
-.. automodule:: pyemmo.api.json.modelJSON
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-boundaryJSON module
--------------------
-
-.. automodule:: pyemmo.api.json.boundaryJSON
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-create_airgaps module
----------------------
 Here is an example for the workflow described in :func:`~pyemmo.api.json.create_airgaps.create_airgap_surfaces` using the Toyota Prius model of Pyleecan. See the function description for a more detailed explanation.
 
 .. figure:: ../images/create_airgaps/prius_model.png
@@ -246,16 +216,55 @@ Here is an example for the workflow described in :func:`~pyemmo.api.json.create_
       :alt: Final Prius Model with symmetry of 8.
       :align: center
 
+.. note:: *Full model airgap creation*
+
+   For a full machine model (symmetry = 1) the workflow differs slightly.
+   The filering of the interface curve is similar.
+   But for the creation of the airgap surfaces we need to create full surface objects
+   and (by boolean difference) subtract circle surfaces from that to create the hollow
+   cylindrical structures.
+
+Module Reference for :mod:`~pyemmo.api.json.create_airgaps`
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 .. automodule:: pyemmo.api.json.create_airgaps
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. Module contents
-.. ---------------
+JSON-API Module and Function Reference
+--------------------------------------
 
-.. .. automodule:: pyemmo.api
-..    :members:
-..    :undoc-members:
-..    :show-inheritance:
+json module
+'''''''''''
+
+.. automodule:: pyemmo.api.json.json
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+importJSON module
+'''''''''''''''''
+
+.. automodule:: pyemmo.api.json.importJSON
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+modelJSON module
+''''''''''''''''
+
+.. automodule:: pyemmo.api.json.modelJSON
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+boundaryJSON module
+'''''''''''''''''''
+
+.. automodule:: pyemmo.api.json.boundaryJSON
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
