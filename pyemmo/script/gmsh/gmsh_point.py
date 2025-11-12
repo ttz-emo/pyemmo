@@ -146,6 +146,15 @@ class GmshPoint(GmshGeometry, Point):
                 numpy array, list, or tuple.
             ValueError: If `meshLength` is less than or equal to 0, or if the
                 size of `coords` is not 2 or 3.
+
+        Example:
+            .. code-block:: python
+
+                p = GmshPoint.from_coordinates(
+                    coords = (2,2),
+                    meshLength = 1e-3,
+                    name = "my point",
+                )
         """
         # init with coords
         if not isinstance(meshLength, numbers.Number):
