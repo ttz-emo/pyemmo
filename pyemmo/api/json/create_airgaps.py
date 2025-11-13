@@ -387,15 +387,15 @@ def _create_band_contour(
     interface: list[GmshLine, GmshArc],
     band_height: float,
     symmetry: int,
-) -> list[GmshLine, GmshArc]:
+) -> tuple[list[GmshLine | GmshArc], list[GmshLine | GmshArc], GmshPoint]:
     """Refactored function to create band contour (curve loop) for symmetry != 1 to then
     create airgap surface in :func:`create_airgap_surfaces`
 
     Args:
         start_point (GmshPoint): Start point of interface in x-axis
-        interface (list[GmshLine, GmshArc]): list of boundary lines without lines on
-            symmetry axis!
-        band_height (float): Requested band height
+        interface (list[GmshLine, GmshArc]): list of interface curves for the band.
+        band_height (float): Requested band height. Must be negative if the the interface
+            is outside and band should be created radially inwards.
         symmetry (int): Symmetry factor
 
     Raises:
@@ -404,7 +404,9 @@ def _create_band_contour(
             symmetry axis (at angle 2*pi/sym).
 
     Returns:
-        list[GmshLine, GmshArc]: Curve loop to create airgap band surface.
+        tuple[list[GmshLine|GmshArc], list[GmshLine|GmshArc], GmshPoint]: Curve loop
+        to create airgap band surface, new interface line list and new start point of
+        contour on x-axis.
     """
     center = get_global_center()  # get or create center point at (0,0)
     if symmetry <= 1:
