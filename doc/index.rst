@@ -1,11 +1,7 @@
 Welcome to the PyEMMO documentation!
 =====================================
 **PyEMMO** is a Python based interface for generating finite element models of
-electrical machines in `Onelab <https://www.onelab.info/>`_.
-
-.. note::
-
-   This project is under active development.
+electrical machines in `OENLAB <https://www.onelab.info/>`_.
 
 .. toctree::
    :maxdepth: 3

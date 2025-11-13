@@ -1,25 +1,24 @@
 PyEMMO packages
 ================
 
-Global parameters
------------------
-
-Some global PyEMMO parameters:
-
-.. automodule:: pyemmo.definitions
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-PyEMMO Subpackages
--------------------
-
 .. toctree::
    :maxdepth: 2
 
    pyemmo.api
    pyemmo.functions
    pyemmo.script
+
+
+Global parameters
+'''''''''''''''''
+
+These are the global PyEMMO definitions:
+
+.. automodule:: pyemmo.definitions
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 
 .. Submodules
 .. ----------

@@ -35,8 +35,11 @@ from ..script.material.material import Material
 class MachineSegmentSurface(GmshSegmentSurface):
     """
     MachineSegmentSurface is a segmented surface object in Gmsh with additional
-    physical property ``material`` and a ``part_id`` specifing the machine part it
-    is representing (e.g. "rotor lamination", "mag" for magent or "stator slot").
+    physical property :attr:`material`, :attr:`nbr_segments` and a :attr:`part_id`
+    specifing the machine part
+    it is representing (e.g. "rotor lamination", "magnet" for magent or "stator slot").
+    You can find the definiton for the values of the :attr:`part_id` in the
+    :mod:`pyemmo.api.json` module.
 
 
         .. MachineSegmentSurface_Params_Table:
@@ -77,11 +80,14 @@ class MachineSegmentSurface(GmshSegmentSurface):
         because it allways forms a machine segment or a part of a segment.
 
         Args:
-            part_id (str):
-            material (Material): surface material in simulation.
-            tag (int, optional): GMSH tag of the surface.
-            nbr_segments (int): number of segments in the full machine.
-            name (str, optional): name of the surface
+            part_id (str): Identifier for the type of machine part. Definitions can be
+                found in the :mod:`pyemmo.api.json` module. If the specified part does
+                not match any of the definitions its value is arbitrary (the value
+                doesn't matter because it does not need to be individually recognized).
+            material (Material): Material of the machine part for the simulation.
+            tag (int, optional): GMSH surface tag.
+            nbr_segments (int): Number of segments to form the full machine.
+            name (str, optional): Surface name.
         """
         GmshSegmentSurface.__init__(self, tag=tag, nbr_segments=nbr_segments, name=name)
         self.part_id: str = part_id
@@ -101,13 +107,23 @@ class MachineSegmentSurface(GmshSegmentSurface):
         material: Material,
         name: str = "",
     ) -> MachineSegmentSurface:
-        """create a MachineSegmentSurface from a list of boundary curves.
+        """Create a object of MachineSegmentSurface from a Gmsh curve loop (list of
+        GmshLine objects forming the boundary of the segment surface).
+        The method creates an
 
         Args:
-            tag (int): GMSH tag of the surface
+            curve_loop (list[GmshLine]): list of GmshLine objects forming the boundary
+                of the segment surface
+            nbr_segments (int): Number of segment to form the whole machine
+            part_id (str): Identifier for the type of machine part. Definitions can be
+                found in the :mod:`pyemmo.api.json` module. If the specified part does
+                not match any of the definitions the value is arbitrary (the value
+                doesn't matter because it does not need to be individually recognized).
+            material (Material): Material of the machine part for the simulation.
+            name (str, optional): Surface name. Defaults to "".
 
         Returns:
-            MachineSegmentSurface: MachineSegmentSurface object
+            MachineSegmentSurface
         """
         gmsh_surf = GmshSegmentSurface.from_curve_loop(
             curve_loop=curve_loop, nbr_segments=nbr_segments, name=name
@@ -178,7 +194,7 @@ class MachineSegmentSurface(GmshSegmentSurface):
 
         Args:
             name (str, optional): New name for copied surface.
-                Defaults to previous surface name + "_dup" for duplicate.
+                Defaults to *previous surface name* + "_dup" for duplicate.
 
         Returns:
             MachineSegmentSurface: Duplicate of MachineSegmentSurface object.
@@ -252,11 +268,12 @@ class MachineSegmentSurface(GmshSegmentSurface):
             ValueError: If `tool` does not represent the first segment
                 (i.e., `tool.segment_nbr != 0`).
 
-        Notes:
-            - If the number of segments in the tool and the parent surface differ,
-              the method computes the greatest common divisor (GCD) of the segment
-              counts to determine the symmetry, duplicates and rotates surfaces as
-              necessary, and updates segment properties accordingly.
+        .. Note::
+        
+            If the number of segments in the tool and the parent surface differ,
+            the method computes the greatest common divisor (GCD) of the segment
+            counts to determine the symmetry, duplicates and rotates surfaces as
+            necessary, and updates segment properties accordingly.
         """
         if not isinstance(tool, MachineSegmentSurface):
             raise TypeError(
