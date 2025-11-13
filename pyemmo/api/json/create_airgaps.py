@@ -18,8 +18,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module for function ``create_airgap_surfaces`` - if no airgaps given with the
-segmented input, create it by extracting the inner/outer boundary of stator/rotor."""
+"""This module implements a function ``create_airgap_surfaces`` - if no airgaps (stator
+or rotor) given with the segmented input for the :mod:`~pyemmo.api.json` API, create
+them by extracting the inner/outer boundary of stator/rotor and the information about the
+movingband radius given with the model information dict."""
 
 from __future__ import annotations
 
@@ -31,11 +33,14 @@ from ...definitions import DEFAULT_GEO_TOL
 from ...script.gmsh.gmsh_arc import GmshArc
 from ...script.gmsh.gmsh_line import GmshLine
 from ...script.gmsh.gmsh_point import GmshPoint
+from ...script.gmsh.gmsh_surface import GmshSurface
 from ...script.gmsh.utils import (
     filter_lines_at_angle,
     get_dim_tags,
     get_max_radius,
     get_min_radius,
+    get_global_center,
+    create_disk,
 )
 from .. import air
 from ..machine_segment_surface import MachineSegmentSurface
@@ -48,6 +53,53 @@ def create_airgap_surfaces(
     moving_band_radius: float,
     symmetry: int,
 ):
+    """This function can be used to create the airgap surfaces for the current gmsh model.
+
+    The algorithm follows these steps for the rotor and stator side:
+
+        1. Get the interface contour towards the airgap
+
+            1.1 Extract the boundary lines for the combination of all surfaces (total
+            outer boundary).
+
+            1.2 Filter out the lines on the symmetry axis.
+
+            1.3 Find the point thats closed to the airgap on the x-axis (PyEMMO models
+            allways start with the tooth on the x-axis) and its related curve.
+
+            1.4 Find the remaining lines that connect to this line froming the interface.
+
+        2. Check if the interface lines for a cylindric curve to determine wheter to
+        create one or two airgap surfaces.
+        
+            If the interface is not purely cylindrical
+            (but i.e. includes the slot opening) we create two airgap surfaces
+            to improve GetDP torque calculation by the purely cylindrical band.
+
+        3. Find the point which is closest to the airgap **out of all points** to
+        determine the band height(s). 
+            
+            NOTE: If there is no geometrical point object at the closest interface
+            section, the airgap creation can fail! 
+        
+        4. Create the band surface(s) by constructing the curve loop(s) and add it
+        to the surface dictionary.
+
+            NOTE: If the symmetry factor is 2, the created arc will be split up into two
+            separate curves, because the gmsh geometry export fails for arcs > 180°.
+
+    Args:
+        surface_dict (dict[str, list[MachineSegmentSurface]]): Actual surface dict used
+            to check for the airgaps and extracting the boundary lines of rotor and
+            stator.
+        moving_band_radius (float): Radius of the rotor side movingband interface used
+            to determine if a surface is on the outer or inner side of the movingband
+            and to calculate the airgap band heigt.
+        symmetry (int): Symmetry factor of the current model.
+
+    Raises:
+        NotImplementedError: If the symmetry of the model is 1.
+    """
     if STATOR_AIRGAP_IDEXT in surface_dict and ROTOR_AIRGAP_IDEXT in surface_dict:
         return
     rotor_dim_tags, stator_dim_tags = boundary.get_rotor_stator_dim_tags(
@@ -55,6 +107,9 @@ def create_airgap_surfaces(
     )
     if not STATOR_AIRGAP_IDEXT in surface_dict:
         # create stator airgap
+        logging.info(
+            "Starting stator airgap creation since no airgap was given by the input dict."
+        )
         # filter boundary lines and remove boundaries on symmetry axis
         bound_lines = boundary.get_boundary_line_list(stator_dim_tags)
         if logging.getLogger().getEffectiveLevel() <= logging.DEBUG - 1:
@@ -68,12 +123,12 @@ def create_airgap_surfaces(
                 for line in filter_lines_at_angle(bound_lines, 0)
                 + filter_lines_at_angle(bound_lines, 2 * np.pi / symmetry)
             ]
-        if logging.getLogger().getEffectiveLevel() <= logging.DEBUG - 1:
-            gmsh.model.setVisibility(gmsh.model.getEntities(), False)
-            gmsh.model.setVisibility(get_dim_tags(bound_lines), True, False)
-            # for curve in bound_lines:
-            #     print(f"{curve}: {curve.id}")
-            gmsh.fltk.run()
+            if logging.getLogger().getEffectiveLevel() <= logging.DEBUG - 1:
+                gmsh.model.setVisibility(gmsh.model.getEntities(), False)
+                gmsh.model.setVisibility(get_dim_tags(bound_lines), True, False)
+                # for curve in bound_lines:
+                #     print(f"{curve}: {curve.id}")
+                gmsh.fltk.run()
 
         # identify point on x-axis with minimal radius
         start_point = None
@@ -122,14 +177,14 @@ def create_airgap_surfaces(
                     break
         except AttributeError:
             nbr_airgaps = 2  # curve is straigt -> 2
+        if nbr_airgaps not in (1, 2):
+            raise ValueError("Number of airgaps must be 1 or 2")
 
         # calculate airgap radii
         r_max = get_min_radius(stator_dim_tags)
         # divide distance of rotor moving band in 2 or 3 segments
         band_height = (r_max - moving_band_radius) / (nbr_airgaps + 1)
         if symmetry > 1:
-            if nbr_airgaps not in (1, 2):
-                raise ValueError("Number of airgaps must be 1 or 2")
             if nbr_airgaps == 2:
                 # create air closing box
                 airgap_curve_loop, air_interface, start_point = _create_band_contour(
@@ -162,11 +217,39 @@ def create_airgap_surfaces(
                 gmsh.model.occ.synchronize()
                 gmsh.fltk.run()
         else:
-            raise NotImplementedError(
-                "Cannot create airgap surfaces for symmetry = 1 yet."
-            )
+            # if symmetry = 1 -> create a surface from the interface and subtract a circle
+            if nbr_airgaps == 2:
+                r_max = r_max - band_height  # reset for airgap creation
+                air_area, air_interface = _create_band_surf(air_interface, r_max)
+                surface_dict["Stator Air"] = [
+                    MachineSegmentSurface(
+                        tag=air_area.id,
+                        nbr_segments=1,
+                        part_id="Stator Air",
+                        material=air,
+                        name="Stator Air (PyEMMO)",
+                    )
+                ]
+            airgap, _ = _create_band_surf(air_interface, r_max - band_height)
+            surface_dict[STATOR_AIRGAP_IDEXT] = [
+                MachineSegmentSurface(
+                    part_id=STATOR_AIRGAP_IDEXT,
+                    nbr_segments=1,
+                    tag=airgap.id,
+                    material=air,
+                    name="Stator Airgap (PyEMMO)",
+                )
+            ]
+        # set airgap mesh size
+        surface_dict[STATOR_AIRGAP_IDEXT][0].setMeshLength(band_height)
+        if logging.getLogger().getEffectiveLevel() <= logging.DEBUG - 1:
+            gmsh.model.occ.synchronize()
+            gmsh.fltk.run()
     if not ROTOR_AIRGAP_IDEXT in surface_dict:
         # create rotor airgap
+        logging.info(
+            "Starting rotor airgap creation since no airgap was given by the input dict."
+        )
         # filter boundary lines and remove boundaries on symmetry axis
         bound_lines = boundary.get_boundary_line_list(rotor_dim_tags)
         if logging.getLogger().getEffectiveLevel() <= logging.DEBUG - 1:
@@ -180,12 +263,12 @@ def create_airgap_surfaces(
                 for line in filter_lines_at_angle(bound_lines, 0)
                 + filter_lines_at_angle(bound_lines, 2 * np.pi / symmetry)
             ]
-        if logging.getLogger().getEffectiveLevel() <= logging.DEBUG - 1:
-            gmsh.model.setVisibility(gmsh.model.getEntities(), False)
-            gmsh.model.setVisibility(get_dim_tags(bound_lines), True, False)
-            # for curve in bound_lines:
-            #     print(f"{curve}: {curve.id}")
-            gmsh.fltk.run()
+            if logging.getLogger().getEffectiveLevel() <= logging.DEBUG - 1:
+                gmsh.model.setVisibility(gmsh.model.getEntities(), False)
+                gmsh.model.setVisibility(get_dim_tags(bound_lines), True, False)
+                # for curve in bound_lines:
+                #     print(f"{curve}: {curve.id}")
+                gmsh.fltk.run()
 
         # identify point on x-axis with maximal radius
         start_point = None
@@ -233,14 +316,14 @@ def create_airgap_surfaces(
                     break
         except AttributeError:
             nbr_airgaps = 2  # curve is straigt -> 2
+        if nbr_airgaps not in (1, 2):
+            raise ValueError("Number of airgaps must be 1 or 2")
 
         # calculate airgap radii
         r_max = get_max_radius(get_dim_tags(air_interface))
         # divide distance of rotor moving band in 2 or 3 segments
         band_height = (moving_band_radius - r_max) / nbr_airgaps
         if symmetry > 1:
-            if nbr_airgaps not in (1, 2):
-                raise ValueError("Number of airgaps must be 1 or 2")
             if nbr_airgaps == 2:
                 # create air closing box
                 airgap_curve_loop, air_interface, start_point = _create_band_contour(
@@ -271,10 +354,36 @@ def create_airgap_surfaces(
                     name="Rotor Airgap (PyEMMO)",
                 )
             ]
-            surface_dict[ROTOR_AIRGAP_IDEXT][0].setMeshLength(band_height)
-            if logging.getLogger().getEffectiveLevel() <= logging.DEBUG - 1:
-                gmsh.model.occ.synchronize()
-                gmsh.fltk.run()
+        else:
+            # if symmetry = 1 -> create a surface from the interface and subtract a circle
+            if nbr_airgaps == 2:
+                air_area, air_interface = _create_band_surf(
+                    air_interface, r_max + band_height
+                )
+                r_max = r_max + band_height  # reset r_max for airgap
+                surface_dict["Rotor Air"] = [
+                    MachineSegmentSurface(
+                        tag=air_area.id,
+                        nbr_segments=1,
+                        part_id="Rotor Air",
+                        material=air,
+                        name="Rotor Air (PyEMMO)",
+                    )
+                ]
+            airgap, _ = _create_band_surf(air_interface, r_max + band_height)
+            surface_dict[ROTOR_AIRGAP_IDEXT] = [
+                MachineSegmentSurface(
+                    part_id=ROTOR_AIRGAP_IDEXT,
+                    nbr_segments=1,
+                    tag=airgap.id,
+                    material=air,
+                    name="Rotor Airgap (PyEMMO)",
+                )
+            ]
+        surface_dict[ROTOR_AIRGAP_IDEXT][0].setMeshLength(band_height)
+        if logging.getLogger().getEffectiveLevel() <= logging.DEBUG - 1:
+            gmsh.model.occ.synchronize()
+            gmsh.fltk.run()
 
 
 def _create_band_contour(
@@ -283,19 +392,9 @@ def _create_band_contour(
     band_height: float,
     symmetry: int,
 ) -> list[GmshLine, GmshArc]:
-    try:
-        center_dimTags = gmsh.model.getEntitiesInBoundingBox(
-            -DEFAULT_GEO_TOL,
-            -DEFAULT_GEO_TOL,
-            -DEFAULT_GEO_TOL,
-            DEFAULT_GEO_TOL,
-            DEFAULT_GEO_TOL,
-            DEFAULT_GEO_TOL,
-            0,
-        )
-        center = GmshPoint(center_dimTags[0][1])
-    except:  # pylint: disable=bare-except
-        center = GmshPoint.from_coordinates((0, 0), name="CenterPoint")
+    center = get_global_center()  # get or create center point at (0,0)
+    if symmetry <= 1:
+        raise ValueError("Symmetry factor must be greater than 1!")
     sym_angle = 2 * np.pi / symmetry
     # create air closing box
     p1 = start_point
@@ -331,3 +430,20 @@ def _create_band_contour(
     airgap_curve_loop.extend(new_interface)
     airgap_curve_loop.append(GmshLine.from_points(p3, p4, "L_air_area_3"))
     return airgap_curve_loop, new_interface, new_start_point
+
+
+def _create_band_surf(
+    interface: list[GmshLine], r_circ: float
+) -> tuple[GmshSurface, list[GmshLine]]:
+    interface_surface = GmshSurface.from_curve_loop(
+        curve_loop=interface, name="interface surface"
+    )
+    new_interface = create_disk(r_circ)
+    circle = GmshSurface.from_curve_loop(new_interface, "air circle")
+    if interface[0].start_point.radius > r_circ:
+        # interface is outer so disk is tool
+        interface_surface.cutOut(circle, keepTool=False)  # cut out circle and
+        return interface_surface, new_interface
+    # interface is inner so disk is air surface
+    circle.cutOut(interface_surface, False)
+    return circle, new_interface

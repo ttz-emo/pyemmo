@@ -52,8 +52,6 @@ from . import boundaryJSON as boundary
 from . import importJSON, modelJSON
 from .create_airgaps import create_airgap_surfaces
 
-if not gmsh_api.is_initialized():
-    gmsh_api.initialize()
 
 # from swat_em import analyse
 # from .. import calcPhaseangleStarvoltageCorr

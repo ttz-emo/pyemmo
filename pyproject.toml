@@ -68,6 +68,14 @@ include = ["pyemmo*"]
 # exclude = ["additional*"]`
 namespaces = false
 
+[tool.pytest.ini_options]
+testpaths = ["tests/functions", "tests/script"]
+log_cli = true
+log_cli_level = "WARNING"
+# log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)"
+# log_cli_date_format = "%Y-%m-%d %H:%M:%S"
+addopts = "--cov=pyemmo --cov=tests"
+
 [tool.isort]
 multi_line_output = 3
 include_trailing_comma = true
@@ -81,13 +89,14 @@ add_imports = ["from __future__ import annotations"]
 [tool.black]
 line-length = 88
 
-[tool.pytest.ini_options]
-testpaths = ["tests/functions", "tests/script"]
-log_cli = true
-log_cli_level = "WARNING"
-# log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)"
-# log_cli_date_format = "%Y-%m-%d %H:%M:%S"
-addopts = "--cov=pyemmo --cov=tests"
+[tool.pylint.'MESSAGES CONTROL']
+# Disable specific checks by their symbolic name or PEP 8 code.
+disable = [
+    "line-too-long",  # Missing module docstring
+    # "C0115",  # Missing class docstring
+    # "C0116",  # Missing function or method docstring
+    # "R0903",  # Too few public methods
+]
 
 [tool.bandit]
 skips = ["B311", "B404", "B603"]

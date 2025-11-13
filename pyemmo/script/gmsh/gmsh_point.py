@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO, Technical University of
 # Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -74,21 +74,18 @@ class GmshPoint(GmshGeometry, Point):
     (x, y, z) and a unique tag. The tag can be used to reference the point in Gmsh
     operations. The coordinates are stored as float values, and the class provides
     properties to access and modify them. Additionally, the class overrides the
-    `__str__` method to provide a string representation of the point, including its
+    :meth:`__str__` method to provide a string representation of the point, including its
     tag and coordinates.
 
-    Attributes:
-        tag (int): The unique identifier for the point.
-        x (float): The x-coordinate of the point.
-        y (float): The y-coordinate of the point.
-        z (float): The z-coordinate of the point.
-        TODO: Add more attributes.
+    You can create GmshPoint instances in two ways:
 
-    Methods:
-        __init__(self, tag: int, coords: np.ndarray):
-            Initializes a new GmshPoint with the given tag and coordinates.
-        __str__(self) -> str:
-            Returns a string representation of the GmshPoint object.
+        1. Create a GmshPoint from an existing Gmsh point using its tag:
+            >>> p = GmshPoint(tag=1)
+
+        2. Use the :meth:`from_coordinates` classmethod to create a GmshPoint in PyEMMO and Gmsh
+            >>> p = GmshPoint.from_coordinates(coords=[0.0, 1.0, 2.0])
+
+
     """
 
     @property
@@ -101,8 +98,9 @@ class GmshPoint(GmshGeometry, Point):
         Constructor for GmshPoint class.
 
         Args:
-            tag (int): Tag of the point.
-            name (str, optional): Name of the point. Defaults to "".
+            tag (int): Tag of the existing point int the current gmsh model.
+            name (str, optional): Name of the point. This sets the :attr:`GmshPoint.name`.
+                Defaults to "".
         """
         if not isinstance(tag, (int, np.integer)):
             raise TypeError("Gmsh tag must be positive integer!")
@@ -132,6 +130,7 @@ class GmshPoint(GmshGeometry, Point):
         Create a GmshPoint instance from given coordinates.
         This method initializes a GmshPoint object using the provided coordinates,
         mesh length, and optional name. It supports both 2D and 3D points.
+
         Args:
             coords (Union[np.ndarray, list, tuple]): The coordinates of the point.
                 Must be a numpy array, list, or tuple. For 2D points, provide
@@ -147,6 +146,15 @@ class GmshPoint(GmshGeometry, Point):
                 numpy array, list, or tuple.
             ValueError: If `meshLength` is less than or equal to 0, or if the
                 size of `coords` is not 2 or 3.
+
+        Example:
+            .. code-block:: python
+
+                p = GmshPoint.from_coordinates(
+                    coords = (2,2),
+                    meshLength = 1e-3,
+                    name = "my point",
+                )
         """
         # init with coords
         if not isinstance(meshLength, numbers.Number):
@@ -217,7 +225,7 @@ class GmshPoint(GmshGeometry, Point):
 
         Returns:
             Tuple[float, float, float]: Tuple containing the x, y, and z coordinates of
-                the point.
+            the point.
         """
         try:
             coords = gmsh.model.get_value(0, self.id, [])
@@ -238,7 +246,7 @@ class GmshPoint(GmshGeometry, Point):
     @property
     def x(self) -> float:
         """
-        Getter for the x coordinate.
+        x coordinate of the point
 
         Returns:
             float: x coordinate of the point.
@@ -252,7 +260,7 @@ class GmshPoint(GmshGeometry, Point):
     @property
     def y(self) -> float:
         """
-        Getter for the y coordinate.
+        y coordinate for the point.
 
         Returns:
             float: y coordinate of the point.
@@ -266,7 +274,7 @@ class GmshPoint(GmshGeometry, Point):
     @property
     def z(self) -> float:
         """
-        Getter for the z coordinate.
+        z coordinate for the point.
 
         Returns:
             float: z coordinate of the point.
@@ -279,7 +287,9 @@ class GmshPoint(GmshGeometry, Point):
 
     def __str__(self) -> str:
         """
-        Returns a string representation of the GmshPoint.
+        Returns a string representation of the GmshPoint like
+
+            GmshPoint(tag={self.id}, coords=({self.x}, {self.y}, {self.z}))
 
         Returns:
             str: String containing the tag and coordinates of the point.
@@ -287,7 +297,8 @@ class GmshPoint(GmshGeometry, Point):
         return f"GmshPoint(tag={self.id}, coords=({self.x}, {self.y}, {self.z}))"
 
     def translate(self, dx: float = 0.0, dy: float = 0.0, dz: float = 0.0):
-        """Translate the point by the given displacements.
+        """Translate the point by the given displacements using
+        :func:`gmsh.model.occ.translate`
 
         Args:
             dx (float): Displacement in the x-direction. Defaults to 0.0.
@@ -326,11 +337,11 @@ class GmshPoint(GmshGeometry, Point):
     def mirror(
         self,
         planePoint: Point,
-        planeVector1: Line,
-        planeVector2: Line,
+        planeVector1,
+        planeVector2,
         name: str = None,
     ) -> Point:
-        """TODO"""
+        """Not implemented yet!"""
         raise NotImplementedError("mirror is not implemented for GmshPoint!")
         # gmsh.model.occ.mirror(...)
 

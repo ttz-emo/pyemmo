@@ -29,7 +29,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "PyEMMO"
-copyright = "2024, Technologietransferzentrum Elektromobilität TTZ-EMO"
+copyright = "2025, Technologietransferzentrum Elektromobilität TTZ-EMO"
 author = "TTZ-EMO AG-EM"
 
 # -- General configuration ---------------------------------------------------

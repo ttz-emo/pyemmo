@@ -542,8 +542,9 @@ class GmshSurface(GmshGeometry, Surface):
 
     def cutOut(self, tool: GmshSurface, keepTool: bool = True) -> None:
         """Cut out a Tool Surface from the Parent surface by Boolean Difference"""
-        self._cut.append(tool)
-        tool.setTool()  # set to the tool surface
+        if keepTool:
+            self._cut.append(tool)
+            tool.setTool()  # set to the tool surface
         cut_dim_tags: list[DimTag] = [(2, tool.id)]
         # cut out tools of tools aswell!
         if tool.tools:
@@ -573,8 +574,10 @@ class GmshSurface(GmshGeometry, Surface):
         #   [[(2,1),(2,2)],[(2,2),(2,3)]]
         # This means e.g. that the original surface with old tag 1 is build by the new
         # surfaces 1 and 2.
+        # NOTE: We allways use removeTool = False, because somehow the tool is never
+        # removed even if removeTool = True. So we need to remove the tool manually.
         out_dim_tags, out_dim_tags_map = gmsh.model.occ.fragment(
-            [(2, self.id)], cut_dim_tags, removeTool=not keepTool
+            [(2, self.id)], cut_dim_tags, removeTool=False
         )
         if len(out_dim_tags) == 1:
             # single output surface -> new surface should be the = ParentSurface-Tool
@@ -588,6 +591,8 @@ class GmshSurface(GmshGeometry, Surface):
                     self.name = gmsh.model.getEntityName(self.dim, old_id)
                     # # remove old surface
                     # gmsh.model.occ.remove([(2, old_id)])
+                if not keepTool:
+                    gmsh.model.occ.remove(cut_dim_tags)
                 return None
             else:
                 raise RuntimeError("Unhandled fragment output!")
@@ -608,6 +613,8 @@ class GmshSurface(GmshGeometry, Surface):
                 # update name of new tool
                 tool.name = gmsh.model.getEntityName(self.dim, old_id)
                 gmsh.model.occ.remove([(2, old_id)])  # remove old tool surface
+            if not keepTool:
+                gmsh.model.occ.remove([2, tool.id])
             return None
         if len(out_dim_tags) > 2:
             # extra surface(s) was/were created (additional to parent and tool), so

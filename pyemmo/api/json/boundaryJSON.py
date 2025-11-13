@@ -26,7 +26,6 @@ import logging
 
 import gmsh
 import numpy as np
-from matplotlib import pyplot as plt
 
 from ...definitions import DEFAULT_GEO_TOL
 from ...script.geometry import physicalsDict
@@ -46,9 +45,9 @@ from ...script.gmsh.gmsh_point import GmshPoint
 from ...script.gmsh.utils import (
     filter_curves_on_radius,
     filter_lines_at_angle,
+    get_dim_tags,
     get_max_radius,
     get_min_radius,
-    get_dim_tags,
 )
 from ...script.material.material import Material
 from .. import air
@@ -56,7 +55,7 @@ from .. import logger as apiLogger
 from ..machine_segment_surface import MachineSegmentSurface
 from . import STATOR_AIRGAP_IDEXT, globalCenterPoint
 
-# import logging
+# from matplotlib import pyplot as plt
 
 
 def findLine(lineName: str, lineIDList) -> bool:
@@ -374,9 +373,9 @@ def createMB(
     if logging.getLogger().level <= logging.DEBUG - 1:
         logging.debug("Show moving band in gmsh...")
         gmsh.model.setVisibility(gmsh.model.getEntities(), False)  # disable all
-        gmsh.model.setVisibility(
-            get_dim_tags([mb_stator, mb_rotor_inner] + mb_rotor_ax), True, False
-        )
+        gmsh.model.setVisibility(get_dim_tags([mb_stator, mb_rotor_inner]), True, False)
+        if mb_rotor_ax:
+            gmsh.model.setVisibility(get_dim_tags(mb_rotor_ax), True, False)
         gmsh.model.occ.synchronize()
         gmsh.fltk.run()
     return mb_stator, mb_rotor_inner, mb_rotor_ax

@@ -428,6 +428,10 @@ def test_rotate_duplicate(machine_seg_surf: MachineSegmentSurface):
     """Test rotate_duplicate() method"""
     # create a duplicate of the rotated surface
     dup_surf = machine_seg_surf.rotate_duplicate(1)
+    assert dup_surf.segment_nbr == 1
+    assert dup_surf.name == machine_seg_surf.name + " (Seg.: 1)"
+    assert dup_surf.nbr_segments == machine_seg_surf.nbr_segments
+    assert dup_surf.material == machine_seg_surf.material
 
 
 def test_rotate_duplicate_wrongSym(machine_seg_surf: MachineSegmentSurface):

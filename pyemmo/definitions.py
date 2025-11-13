@@ -74,4 +74,6 @@ config_dict = get_config_dict()
 
 # default absolute geometric tolerance to check wheter points or distances are equal.
 DEFAULT_GEO_TOL = 1e-7  # in [m]
+"""Pyemmo default geometric tolerance e.g. used when checking for equality of
+coordinates."""
 logging.debug("Default geometric tolerance is set to %e meter.", DEFAULT_GEO_TOL)
