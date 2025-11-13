@@ -222,7 +222,8 @@ Here is an example for the workflow described in :func:`~pyemmo.api.json.create_
    The filering of the interface curve is similar.
    But for the creation of the airgap surfaces we need to create full surface objects
    and (by boolean difference) subtract circle surfaces from that to create the hollow
-   cylindrical structures.
+   cylindrical structures. See :func:`~pyemmo.api.json.create_airgaps._create_band_surf`
+   for more details.
 
 Module Reference for :mod:`~pyemmo.api.json.create_airgaps`
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''

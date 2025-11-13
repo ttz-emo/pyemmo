@@ -71,22 +71,22 @@ def create_airgap_surfaces(
 
         2. Check if the interface lines for a cylindric curve to determine wheter to
         create one or two airgap surfaces.
-        
+
             If the interface is not purely cylindrical
             (but i.e. includes the slot opening) we create two airgap surfaces
             to improve GetDP torque calculation by the purely cylindrical band.
 
         3. Find the point which is closest to the airgap **out of all points** to
-        determine the band height(s). 
-            
-            NOTE: If there is no geometrical point object at the closest interface
-            section, the airgap creation can fail! 
-        
+        determine the band height(s).
+
+            .. note:: If there is no geometrical point object at the closest interface
+                section, the airgap creation can fail!
+
         4. Create the band surface(s) by constructing the curve loop(s) and add it
         to the surface dictionary.
 
-            NOTE: If the symmetry factor is 2, the created arc will be split up into two
-            separate curves, because the gmsh geometry export fails for arcs > 180°.
+            .. note:: If the symmetry factor is 2, the created arc will be split up into
+                two separate curves, because the gmsh geometry export fails for arcs > 180°.
 
     Args:
         surface_dict (dict[str, list[MachineSegmentSurface]]): Actual surface dict used
@@ -391,7 +391,27 @@ def _create_band_contour(
     interface: list[GmshLine, GmshArc],
     band_height: float,
     symmetry: int,
-) -> list[GmshLine, GmshArc]:
+) -> tuple[list[GmshLine | GmshArc], list[GmshLine | GmshArc], GmshPoint]:
+    """Refactored function to create band contour (curve loop) for symmetry != 1 to then
+    create airgap surface in :func:`create_airgap_surfaces`
+
+    Args:
+        start_point (GmshPoint): Start point of interface in x-axis
+        interface (list[GmshLine, GmshArc]): list of interface curves for the band.
+        band_height (float): Requested band height. Must be negative if the the interface
+            is outside and band should be created radially inwards.
+        symmetry (int): Symmetry factor
+
+    Raises:
+        ValueError: If symmetry factor is < 2.
+        RuntimeError: If final interface line found does not contain boundary point on
+            symmetry axis (at angle 2*pi/sym).
+
+    Returns:
+        tuple[list[GmshLine|GmshArc], list[GmshLine|GmshArc], GmshPoint]: Curve loop
+        to create airgap band surface, new interface line list and new start point of
+        contour on x-axis.
+    """
     center = get_global_center()  # get or create center point at (0,0)
     if symmetry <= 1:
         raise ValueError("Symmetry factor must be greater than 1!")
@@ -435,6 +455,21 @@ def _create_band_contour(
 def _create_band_surf(
     interface: list[GmshLine], r_circ: float
 ) -> tuple[GmshSurface, list[GmshLine]]:
+    """Special refactored function like :func:`_create_band_contour` but for symmetry=1.
+    This function creates a circle surface using :func:`create_disk` at :attr:`r_circ` and
+    a second surface from the given :attr:`interface` curve loop. Then it creates the airgap
+    surface by subtracting the circle from the interface surface or the other way around
+    depending on if the interface is radially below or above r_circ.
+
+    Args:
+        interface (list[GmshLine]): Interface curve loop. For sym=1 this list forms a
+            closed boundary.
+        r_circ (float): Radius of outer/inner band interface.
+
+    Returns:
+        tuple[GmshSurface, list[GmshLine]]: Created airgap surface and new outer/inner
+        interface line list.
+    """
     interface_surface = GmshSurface.from_curve_loop(
         curve_loop=interface, name="interface surface"
     )
