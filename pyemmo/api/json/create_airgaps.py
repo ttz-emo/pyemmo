@@ -79,14 +79,14 @@ def create_airgap_surfaces(
         3. Find the point which is closest to the airgap **out of all points** to
         determine the band height(s).
 
-            NOTE: If there is no geometrical point object at the closest interface
-            section, the airgap creation can fail!
+            .. note:: If there is no geometrical point object at the closest interface
+                section, the airgap creation can fail!
 
         4. Create the band surface(s) by constructing the curve loop(s) and add it
         to the surface dictionary.
 
-            NOTE: If the symmetry factor is 2, the created arc will be split up into two
-            separate curves, because the gmsh geometry export fails for arcs > 180°.
+            .. note:: If the symmetry factor is 2, the created arc will be split up into
+                two separate curves, because the gmsh geometry export fails for arcs > 180°.
 
     Args:
         surface_dict (dict[str, list[MachineSegmentSurface]]): Actual surface dict used
@@ -450,8 +450,8 @@ def _create_band_surf(
     interface: list[GmshLine], r_circ: float
 ) -> tuple[GmshSurface, list[GmshLine]]:
     """Special refactored function like :func:`_create_band_contour` but for symmetry=1.
-    This function creates a circle surface using :func:`create_disk` at `r_circ' and
-    a second surface from the given `interface` curve loop. Then it creates the airgap
+    This function creates a circle surface using :func:`create_disk` at :attr:`r_circ` and
+    a second surface from the given :attr:`interface` curve loop. Then it creates the airgap
     surface by subtracting the circle from the interface surface or the other way around
     depending on if the interface is radially below or above r_circ.
 
