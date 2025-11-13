@@ -407,6 +407,8 @@ class MachineSegmentSurface(GmshSegmentSurface):
         if len(out_dim_tags) == 2:
             # the number of surfaces did not change (still one object and one tool)
             # check if one of the surface ids changed:
+            # FIXME: new parent surface must not be first item in out_dim_tags! We need
+            # to check out_dim_tags_map[0] for parent and tool id!
             if out_dim_tags[0][1] != self.id:
                 # the parent surface id changed -> set new id
                 old_id = self.id  # get old id
