@@ -199,7 +199,7 @@ class MachineSegmentSurface(GmshSegmentSurface):
             dup_mss.setTool()
         return dup_mss
 
-    def rotate_duplicate(self, segment: int) -> GmshSegmentSurface:
+    def rotate_duplicate(self, segment: int) -> MachineSegmentSurface:
         """
         Create a copy of the give surface and its tools surfaces + rotate it by
         :attr:`angle`.
@@ -211,8 +211,26 @@ class MachineSegmentSurface(GmshSegmentSurface):
         Returns:
             MachineSegmentSurface: Copied and rotated MachineSegmentSurface object.
         """
-        # FIXME: This should return a MSS object!
-        return GmshSegmentSurface.rotate_duplicate(self, segment=segment)
+        # rotate duplicate to create new surface
+        dup_gss = GmshSegmentSurface.rotate_duplicate(self, segment=segment)
+        # init new MSS to return correct type
+        dup_mss = MachineSegmentSurface(
+            name=dup_gss.name,
+            part_id=self.part_id,
+            tag=dup_gss.id,
+            material=self.material,
+            nbr_segments=self.nbr_segments,
+        )
+        # pylint: disable=protected-access
+        dup_mss._segment_number = dup_gss.segment_nbr
+        # its ok to access the protected attribute here, because we are in the same
+        # class. rotate_duplicate() is the only method that sets the segment number!
+
+        # copy the tools from the GmshSurface
+        dup_mss._cut = dup_gss.tools  # pylint: disable=protected-access
+        if dup_gss.isTool():
+            dup_mss.setTool()
+        return dup_mss
 
     def cutOut(self, tool: MachineSegmentSurface, keepTool: bool = True) -> None:
         """
