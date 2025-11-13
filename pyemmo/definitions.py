@@ -27,9 +27,14 @@ from os.path import abspath, dirname, isdir, join, normpath, realpath
 
 from matplotlib import font_manager
 
-ROOT_DIR = normpath(abspath(join(dirname(__file__), ".."))).replace("\\", "/")
+ROOT_DIR = normpath(abspath(join(dirname(__file__), ".."))).replace(
+    "\\", "/"
+)  #: :meta hide-value:
 """Path: ROOT_DIR is "pyemmo" root development directory with "dist", "doc", "pyemmo",
-"tests" and "workingDirectory" as subdirs. """
+"tests" and "workingDirectory" as subdirs.
+
+:meta hide-value:
+"""
 
 # Further import
 try:
@@ -49,12 +54,19 @@ except ImportError:
 
 MAIN_DIR = dirname(realpath(__file__)).replace("\\", "/")  # main dir is pyemmo
 """Path: MAIN_DIR is "pyemmo" main package directory with "script", "functions" and
-"api" as subpackages """
+"api" as subpackages
+
+:meta hide-value:
+"""
 
 RESULT_DIR = join(USER_DIR, "Results").replace("\\", "/")
 r"""Path: RESULT_DIR is "pyemmo" default result directory to store model files
 and simulation results. For Windows this is something like:
-'C:\\Users\\Username\\AppData\\Roaming\\pyemmo\\Results' """
+'C:\\Users\\Username\\AppData\\Roaming\\pyemmo\\Results'
+
+:meta hide-value:
+"""
+
 
 if not isdir(RESULT_DIR):
     mkdir(RESULT_DIR)
