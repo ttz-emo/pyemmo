@@ -270,6 +270,13 @@ def createCmdCommand(
                     # no "msh" key -> create mesh command
                     # TODO: Add gmsh paramter to mesh generation call
                     gmsh_command = f"{gmshPath} {filePath}.geo -run "
+                    # TODO: Check if the following should be used or not.
+                    # if os.path.isfile(getdpPath):
+                    #     # it getdp executable is given and exists, set internal solver
+                    #     gmsh_command += (
+                    #         f'-setstring Solver.Executable0 "{getdpPath}" '
+                    #     )
+                    #     gmsh_command += '-setstring Solver.Name0 "GetDP" '
                 # # If log file name is given, add file logging flag:
                 # if logFileName:
                 #     gmsh_command += f" -log {logFileName} "
