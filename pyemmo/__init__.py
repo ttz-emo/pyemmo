@@ -30,7 +30,8 @@ from os.path import isdir
 from typing import Literal
 
 import numpy as np
-from swat_em import analyse, config
+from swat_em import config as swatem_config
+from swat_em import analyse
 
 from .version import __version__
 
@@ -83,7 +84,7 @@ if try_pyleecan:
 
 # set the number of datapoints in the MMF calculation in SWAT-EM so offset angle
 # calculation is done correctly
-config.config["num_MMF_points"] = 36000
+swatem_config.config["num_MMF_points"] = 36000
 
 
 def calcPhaseangleStarvoltageCorr(volVecList):
