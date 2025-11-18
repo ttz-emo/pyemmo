@@ -51,6 +51,7 @@ if not isdir(USER_DIR):
     os.makedirs(USER_DIR)
 
 # init root logger:
+logging.basicConfig(level=logging.INFO)
 # global logging format
 logFmt = logging.Formatter("%(levelname)-7s: %(message)s")
 globalLogFileHandler = logging.FileHandler(
@@ -59,7 +60,6 @@ globalLogFileHandler = logging.FileHandler(
 globalLogFileHandler.setFormatter(logFmt)
 rootLogger = logging.getLogger()
 rootLogger.addHandler(globalLogFileHandler)
-# logging.basicConfig()
 logging.info(
     "PyEMMO started on %s %s",
     datetime.date.today(),
