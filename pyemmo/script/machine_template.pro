@@ -532,7 +532,7 @@ DefineConstant[
     pC = pA + 2 * Pi / 3,
     Va = VV,
     Vb = VV,
-    Vc = VV
+    Vc = VV,
 
     // ROTOR CIRCUIT
     Flag_Cir_RotorCage = {(nbrRotorBars > 0) , Choices{0,1},
