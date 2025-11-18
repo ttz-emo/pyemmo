@@ -22,13 +22,28 @@
 
 from __future__ import annotations
 
-from numpy import inf, empty
+import logging
+
+from numpy import empty, inf
+from pyleecan.Classes.ImportMatrixVal import ImportMatrixVal
+from pyleecan.Classes.MatElectrical import MatElectrical
 from pyleecan.Classes.Material import Material as PyleecanMaterial
 from pyleecan.Classes.MatMagnetics import MatMagnetics
-from pyleecan.Classes.MatElectrical import MatElectrical
-from pyleecan.Classes.ImportMatrixVal import ImportMatrixVal
 
 from ...script.material.material import Material
+
+try:
+    # try to load pyleecan copper material to catch error with copper1
+    from os.path import join
+
+    from pyleecan.definitions import DATA_DIR
+    from pyleecan.Functions.load import load  # pylint: disable=no-name-in-module
+
+    copper1: PyleecanMaterial = load(join(DATA_DIR, "Material", "Copper1.json"))
+    copper2: PyleecanMaterial = load(join(DATA_DIR, "Material", "Copper2.json"))
+except Exception:  # pylint: disable=W0718
+    copper1 = None
+    copper2 = None
 
 
 def build_pyemmo_material(pyleecan_material: PyleecanMaterial) -> Material:
@@ -49,6 +64,13 @@ def build_pyemmo_material(pyleecan_material: PyleecanMaterial) -> Material:
           in the pyemmo material.
 
     """
+    if "Copper1" in pyleecan_material.name and copper2 is not None:
+        # TODO: Check if material really missing magnetic properies
+        logging.warning(
+            "Material 'Copper1' used without magnetic properties. "
+            "Replacing it with Pyleecan default material 'Copper2'"
+        )
+        pyleecan_material = copper2
     # elec props
     try:
         elec_prop: MatElectrical = pyleecan_material.elec  # type: ignore
