@@ -32,7 +32,10 @@ from .main import main
 
 if use_pyleecan:
     from pyleecan.Functions import load
+
 if __name__ == "__main__":
+    if not use_pyleecan:
+        raise ModuleNotFoundError("Please install pyleecan!")
     # 1. Check that all argvs are valid!
     parser = argparse.ArgumentParser(
         description=(
@@ -93,7 +96,7 @@ if __name__ == "__main__":
     logger.setLevel(logLevelNum)
 
     main(
-        pyleecan_machine=load.load(args.file),
+        pyleecan_machine=load.load(args.file),  # pylint: disable=no-member,E0606
         model_dir=args.mod,
         gmsh=args.gmsh,
         getdp=args.getdp,
