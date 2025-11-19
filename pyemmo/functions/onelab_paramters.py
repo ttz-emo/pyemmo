@@ -22,13 +22,14 @@
 of constants and ONELAB parameters from a list of .geo and .pro files by parsing."""
 
 from __future__ import annotations
-
+from os.path import abspath
 import re
 import sys
-from typing import Any, Dict, List
 
 
-def extract_onelab_parameters(file_paths: List[str]) -> Dict[str, Dict[str, Any]]:
+def extract_onelab_parameters(
+    file_paths: list[str],
+) -> tuple[dict[str, str], dict[str, str]]:
     """
     Extract all Onelab parameters from .geo and .pro files in a `DefineConstant` block.
 
@@ -88,7 +89,6 @@ def extract_onelab_parameters(file_paths: List[str]) -> Dict[str, Dict[str, Any]
             for block_prefix, block in constant_blocks:
                 if "//" in block_prefix:
                     continue  # pass block
-                print(block)
                 # Extract individual parameters within DefineConstant block
                 # const_lines = const_pattern.findall(block)  # for debugging
                 for match in const_pattern.finditer(block):
@@ -161,6 +161,8 @@ def find_onelab_params(text: str) -> dict[str, str]:
 if __name__ == "__main__":
     # Example usage:
     files = sys.argv[1:]
+    if not files:
+        files = [abspath("./pyemmo/script/machine_template.pro")]
     if files:
         constants, parameters = extract_onelab_parameters(files)
         for param_name, params in constants.items():
