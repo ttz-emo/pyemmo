@@ -21,37 +21,21 @@
 """Module to test the creation of the api geo dict."""
 from __future__ import annotations
 
-import math
-from os.path import abspath, join
-
-import gmsh
 import pytest
 from pyleecan.Classes.LamHole import LamHole
-from pyleecan.Classes.MachineIPMSM import MachineIPMSM
-
-# pylint: disable=locally-disabled, no-name-in-module
-from pyleecan.Functions.load import load
 
 import pyemmo.api.pyleecan.create_geo_dict
-from tests.api.pyleecan import TEST_API_PYLCN_DATA_DIR
+
+from . import Toyota_Prius  # pylint: disable=W0611
 
 
-@pytest.fixture(scope="module", autouse=True)
-def setup_gmsh_api():
-    gmsh.initialize()
-    gmsh.model.add("test pyleecan api")
-    yield
-    gmsh.finalize()
-
-
-def test_create_geo_dict():
+@pytest.mark.parametrize("machine", ["Toyota_Prius"])
+def test_create_geo_dict(machine, request):
     """function to test the creation of the api geo dict"""
-    machine: MachineIPMSM = load(  # type: ignore
-        abspath(join(TEST_API_PYLCN_DATA_DIR, "00_prius_machine.json"))
-    )
+    machine = request.getfixturevalue(machine)
     rotor: LamHole = machine.rotor  # type: ignore
     geo_dict = pyemmo.api.pyleecan.create_geo_dict.create_geo_dict(machine)
     # assert for geometry_list
-    gmsh.model.occ.synchronize()
-    gmsh.fltk.run()
+    # gmsh.model.occ.synchronize()
+    # gmsh.fltk.run()
     # assert len(geo_dict) == 8

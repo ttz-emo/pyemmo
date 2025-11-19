@@ -22,39 +22,27 @@
 Module to test translate surface function of api
 import pyemmo.api.pyleecan.create_gmsh_surface
 """
-from os.path import abspath, join
+from __future__ import annotations
+
 from typing import List
 
 import gmsh
 import pytest
-from pyleecan.Classes.Machine import Machine
-from pyleecan.Functions.labels import HOLEM_LAB, HOLEV_LAB, MAG_LAB, get_obj_from_label
-
-# pylint: disable=locally-disabled, no-name-in-module
-from pyleecan.Functions.load import load
+from pyleecan.Functions.labels import HOLEM_LAB, HOLEV_LAB, get_obj_from_label
 
 from pyemmo.api.machine_segment_surface import MachineSegmentSurface
+from pyemmo.api.pyleecan import PyleecanMachine
 from pyemmo.api.pyleecan.create_gmsh_surf import create_gmsh_surface
-from pyemmo.functions.plot import plot
-from tests.api.pyleecan import TEST_API_PYLCN_DATA_DIR
+
+from . import Toyota_Prius  # pylint: disable=W0611
 
 
-@pytest.fixture(scope="module", autouse=True)
-def initialize_gmsh():
-    """init gmsh function"""
-    gmsh.initialize()
-    gmsh.model.add("test_model")
-    yield
-    gmsh.finalize()
-
-
-def test_create_gmsh_surface():
+@pytest.mark.parametrize("machine", ["Toyota_Prius"])
+def test_create_gmsh_surface(machine, request):
     """Function to test ``pyemmo.api.pyleecan.create_gmsh_surface``"""
     geometry_list: List[MachineSegmentSurface] = []
-    machine: Machine = load(
-        abspath(join(TEST_API_PYLCN_DATA_DIR, "00_prius_machine.json"))
-    )
-    sym, is_anti_periodic = machine.rotor.comp_periodicity_geo()
+    machine: PyleecanMachine = request.getfixturevalue(machine)
+    sym, _ = machine.rotor.comp_periodicity_geo()
     rotor_surfs = machine.rotor.build_geometry(sym=sym, alpha=0)
     lam_surf = create_gmsh_surface(rotor_surfs.pop(0))
     geometry_list.append(lam_surf)
@@ -78,7 +66,7 @@ def test_create_gmsh_surface():
         # translating the surface
         pyemmo_surf = create_gmsh_surface(surf)
         pyemmo_surf.plot()
-        if any(label in surf.label for label in (MAG_LAB, HOLEM_LAB, HOLEV_LAB)):
+        if any(label in surf.label for label in (HOLEM_LAB, HOLEV_LAB)):
             lam_surf.cutOut(pyemmo_surf)
         else:
             geometry_list.append(pyemmo_surf)

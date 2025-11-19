@@ -23,7 +23,6 @@ from __future__ import annotations
 
 from math import isclose, pi
 
-import gmsh
 import pytest
 from pyleecan.Classes.Arc1 import Arc1
 from pyleecan.Classes.Arc2 import Arc2
@@ -40,13 +39,6 @@ from pyemmo.script.geometry.line import Line
 # =======================
 # Declaration of fixtures
 # =======================
-@pytest.fixture(scope="module", autouse=True)
-def initialize_gmsh():
-    """init gmsh function"""
-    gmsh.initialize()
-    gmsh.model.add("test_model")
-    yield
-    gmsh.finalize()
 
 
 @pytest.fixture

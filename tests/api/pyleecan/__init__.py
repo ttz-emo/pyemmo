@@ -22,6 +22,7 @@ from __future__ import annotations
 from os.path import join
 
 import pytest
+import gmsh
 
 # pylint: disable=locally-disabled, no-name-in-module
 from pyleecan.Functions.load import load
@@ -29,6 +30,14 @@ from pyleecan.Functions.load import load
 from tests.api import TEST_API_DATA_DIR
 
 TEST_API_PYLCN_DATA_DIR = join(TEST_API_DATA_DIR, "pyleecan")
+
+@pytest.fixture(scope="module", autouse=True)
+def initialize_gmsh():
+    """init gmsh function"""
+    gmsh.initialize()
+    gmsh.model.add("test_model")
+    yield
+    gmsh.finalize()
 
 
 @pytest.fixture(scope="function")
