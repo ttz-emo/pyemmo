@@ -117,7 +117,7 @@ def find_onelab_params(text: str) -> dict[str, str]:
     """
     # start pattern for onelab string
     op_pat = re.compile(
-        r"""(?P<prefix>[\/]{2,})?(?P<name>\w+)\s*=\s*\{""",
+        r"""(?P<prefix>[\/]{2,})?[ ]*(?P<name>\w+)\s*=\s*\{""",
     )
     onelab_params = {}  # init params
     # opstarts = op_pat.findall(text)
