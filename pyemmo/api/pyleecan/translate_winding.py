@@ -1,6 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied
-# Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -91,38 +91,4 @@ def translate_winding(
         turns=machine.stator.winding.Ntcoil,
     )
     wind_swat = winding.get_phases()
-    # wind_test = machine.stator.winding.wind_mat
-    # is_dbl_layer = bool(winding.get_num_layers() == 2)
-    # if is_dbl_layer:
-    #     wind_test_swat = [[[], []], [[], []], [[], []]]
-    #     for a in wind_test:
-    #         for slot, conductor in enumerate(a[0]):
-    #             if conductor[0] > 0:
-    #                 wind_test_swat[0][0].append(slot + 1)
-    #             elif conductor[0] < 0:
-    #                 wind_test_swat[0][1].append(-(slot + 1))
-    #             elif conductor[1] > 0:
-    #                 wind_test_swat[1][0].append(slot + 1)
-    #             elif conductor[1] < 0:
-    #                 wind_test_swat[1][1].append(-(slot + 1))
-    #             elif conductor[2] > 0:
-    #                 wind_test_swat[2][0].append(slot + 1)
-    #             elif conductor[2] < 0:
-    #                 wind_test_swat[2][1].append(-(slot + 1))
-    # else:
-    #     wind_test_swat = [[], [], []]
-    #     for a in wind_test:
-    #         for slot, conductor in enumerate(a[0]):
-    #             if conductor[0] > 0:
-    #                 wind_test_swat[0].append(slot + 1)
-    #             elif conductor[0] < 0:
-    #                 wind_test_swat[0].append(-(slot + 1))
-    #             elif conductor[1] > 0:
-    #                 wind_test_swat[1].append(slot + 1)
-    #             elif conductor[1] < 0:
-    #                 wind_test_swat[1].append(-(slot + 1))
-    #             elif conductor[2] > 0:
-    #                 wind_test_swat[2].append(slot + 1)
-    #             elif conductor[2] < 0:
-    #                 wind_test_swat[2].append(-(slot + 1))
     return winding, wind_swat

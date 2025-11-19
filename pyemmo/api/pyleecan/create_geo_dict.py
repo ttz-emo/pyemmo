@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module: pyemmo_create_geo_dict
+"""Module: create_geo_dict
 
 This module provides functions to convert geometry elements from pyleecan to pyemmo format.
 
