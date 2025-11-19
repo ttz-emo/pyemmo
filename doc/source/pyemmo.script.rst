@@ -20,6 +20,16 @@ Script module
    :undoc-members:
    :show-inheritance:
 
+In the following you can find a list of the ONELAB model parameters given in the
+template .geo and .pro files in PyEMMO.
+These can be used to adjust and control the model and simulations.
+
+.. you can include newlines in table items like this:
+.. https://stackoverflow.com/a/72726476/26655964
+
+.. include:: pyemmo.onelab_parameters.rst
+
+
 dq-Offset calculation
 ---------------------
 
@@ -80,7 +90,3 @@ Written in code the rotation direction check looks like:
    else:
        simuParamDict.SYM.FLAG_CHANGE_ROT_DIR = 0
 
-.. .. automodule:: pyemmo.script
-..    :members:
-..    :undoc-members:
-..    :show-inheritance:

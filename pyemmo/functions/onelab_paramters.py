@@ -130,16 +130,16 @@ def find_onelab_params(text: str) -> dict[str, str]:
             1  # set number of brackets to 1 because first { is included
         )
         # in regex
-        value = "{"  # add first bracket manually
+        value = ""  # add first bracket manually
         for c in text[match.span()[1] :]:
             if c == "{":
                 # if another opening { occurs, increase the number of brackets to close
                 nbr_close_brackets += 1
             elif c == "}":
                 nbr_close_brackets -= 1
-            value += c  # add char to string:
             if nbr_close_brackets == 0:
                 break  # break loop if final bracket was found
+            value += c  # add char to string:
             if nbr_close_brackets < 0:
                 raise RuntimeError("Number of close brackets { to find cannot be < 0!")
         # strip of newline chars, whitespaces and comments with //
