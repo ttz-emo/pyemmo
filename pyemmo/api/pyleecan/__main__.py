@@ -25,14 +25,17 @@ import argparse
 import logging
 import os
 
+from ... import rootLogger as logger
 from ...definitions import RESULT_DIR
-from .. import ch, logger
 from . import use_pyleecan
 from .main import main
 
 if use_pyleecan:
     from pyleecan.Functions import load
+
 if __name__ == "__main__":
+    if not use_pyleecan:
+        raise ModuleNotFoundError("Please install pyleecan!")
     # 1. Check that all argvs are valid!
     parser = argparse.ArgumentParser(
         description=(
@@ -79,9 +82,11 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # remove commandline handler if verbose
-    if args.v:
-        logger.removeHandler(ch)
+    # remove commandline handler if not verbose
+    if not args.v:
+        for handler in logger.handlers:
+            if isinstance(handler, logging.StreamHandler):
+                logger.removeHandler(handler)
 
     # set log level
     loglevel = args.log
@@ -91,7 +96,7 @@ if __name__ == "__main__":
     logger.setLevel(logLevelNum)
 
     main(
-        pyleecan_machine=load.load(args.file),
+        pyleecan_machine=load.load(args.file),  # pylint: disable=no-member,E0606
         model_dir=args.mod,
         gmsh=args.gmsh,
         getdp=args.getdp,

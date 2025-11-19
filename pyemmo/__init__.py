@@ -30,7 +30,8 @@ from os.path import isdir
 from typing import Literal
 
 import numpy as np
-from swat_em import analyse, config
+from swat_em import config as swatem_config
+from swat_em import analyse
 
 from .version import __version__
 
@@ -50,15 +51,17 @@ if not isdir(USER_DIR):
     os.makedirs(USER_DIR)
 
 # init root logger:
+logging.basicConfig(level=logging.INFO)
+# get longest level name to determine distance for level name in log format
+max_len = max([len(name) for name in list(logging._nameToLevel.keys())])
 # global logging format
-logFmt = logging.Formatter("%(levelname)-7s: %(message)s")
+logFmt = logging.Formatter(f"%(levelname)-{max_len}s: %(message)s")
 globalLogFileHandler = logging.FileHandler(
     filename=os.path.join(USER_DIR, "pyemmo.log"), encoding="utf-8"
 )
 globalLogFileHandler.setFormatter(logFmt)
 rootLogger = logging.getLogger()
 rootLogger.addHandler(globalLogFileHandler)
-# logging.basicConfig()
 logging.info(
     "PyEMMO started on %s %s",
     datetime.date.today(),
@@ -83,7 +86,7 @@ if try_pyleecan:
 
 # set the number of datapoints in the MMF calculation in SWAT-EM so offset angle
 # calculation is done correctly
-config.config["num_MMF_points"] = 36000
+swatem_config.config["num_MMF_points"] = 36000
 
 
 def calcPhaseangleStarvoltageCorr(volVecList):
