@@ -180,12 +180,6 @@ DefineConstant[
     },
 
     Flag_Symmetry = SymmetryFactor > 1,
-    // Flag_Symmetry = {SymmetryFactor > 1,
-    //             Choices{0, 1},
-    //             Name StrCat[INPUT_ANA_SETTINGS, "91Use symmetry"],
-    //             ReadOnly 1,
-    //             Visible Flag_ExpertMode},
-
     NbrPolesInModel = (Flag_Symmetry) ? NbrPolesTot / SymmetryFactor : NbrPolesTot,
 
     // -------------------------------------------------------------------------
@@ -368,13 +362,6 @@ DefineConstant[
                      Help "Axial length of the rotor active material in m",
                      Units "m"},
 
-    // d_Lam_i = {0.5,
-    //            Name StrCat[INPUT_MAT_PROPERTIES, "Lamination thickness [mm]"],
-    //            Units "mm",
-    //            Visible Flag_Lam &&Flag_ExpertMode,
-    //            Help "Lamination Thickness"},
-    // d_Lam = d_Lam_i * mm, // conversion to SI
-
     // determine if we want to calculate using a linear or non-linear material
     Flag_NL = {
         FLAG_NL, Name StrCat[INPUT_MAT_PROPERTIES, "Non-linear B-H curves"],
@@ -384,17 +371,7 @@ DefineConstant[
              are used. Otherwise the non-linearity is replaced (extrapolated) by
              a constant mu_r."
         }
-
-    // dens_Lam = {
-    //     VALUE_DENSITY_LAM,
-    //     Name StrCat[INPUT_MAT_PROPERTIES, "Lamination density [kg/m³]"],
-    //     Units "kg m^-3",
-    //     Visible Flag_Lam &&Flag_ExpertMode,
-    //     Help "density of the lammination part where eddy current losses should be calculated"}
-
 ];
-
-// Printf("%g d_lam", d_Lam);
 
 //=============================================================================
 //========================== END MACHINE PARAMETERS ===========================
