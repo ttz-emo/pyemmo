@@ -519,7 +519,7 @@ def createPhysicalSurfaces(
             material=surfList[0].material,
         )
         return [airGap], machineSide
-    if part_id == ROTOR_BAR_IDEXT:  # For ASM-Cage
+    if ROTOR_BAR_IDEXT in part_id:  # For ASM-Cage
         bars = [Bar(surf.part_id, surf, surf.material) for surf in surfList]
         return bars, machineSide
 
