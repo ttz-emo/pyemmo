@@ -93,6 +93,8 @@ class PhysicalElement:
         self.material = material
 
     # ----- properties -----
+    def __repr__(self):
+        return f"{type(self)} - '{self.name}' - GmshID:{self.id} "
 
     @property
     def physicalElementType(self) -> str:
