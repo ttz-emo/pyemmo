@@ -98,6 +98,12 @@ ROTOR_BAR_IDEXT = "rotor bar"
 """Literal part identifier
 (:attr:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface.part_id`)
 for rotor bars of a squirel cage induction motor."""
+ROTOR_SLOT_IDEXT = "rotor slot"
+"""NOTE: Not taken into account by API yet because rotor winding system not implemented!
+Literal part identifier
+(:attr:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface.part_id`)
+for rotor slots of either a wound rotor induction motor or a electrical excitation
+system."""
 ROTOR_LAM_IDEXT = "rotor lamination"
 """Literal part identifier
 (:attr:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface.part_id`)
