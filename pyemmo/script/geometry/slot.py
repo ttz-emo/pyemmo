@@ -20,6 +20,7 @@
 """Module for class Slot"""
 from __future__ import annotations
 
+import logging
 from math import degrees, isclose, pi
 from typing import Literal
 
@@ -146,14 +147,11 @@ class Slot(PhysicalElement):
         Args:
             nbrTurnsInFace (int): number of winding turns in slot
         """
-        if isinstance(nbrTurnsInFace, int):
+        if isinstance(nbrTurnsInFace, (int, float)):
             self._nbrTurns = nbrTurnsInFace
-        elif isinstance(nbrTurnsInFace, float):
-            # nbrTurnsInFace: float = nbrTurnsInFace
-            if nbrTurnsInFace.is_integer():
-                self._nbrTurns = int(nbrTurnsInFace)
-            else:
-                raise (ValueError(f"Number of turns is not type int: {nbrTurnsInFace}"))
+            if not nbrTurnsInFace.is_integer():
+                logging.warning("Number of turns for slot %s was not an integer", self)
+
         else:
             raise (
                 ValueError(f"Number of turns in face is not a number: {nbrTurnsInFace}")
