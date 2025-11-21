@@ -158,6 +158,8 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
             # class. rotate_duplicate() is the only method that sets the segment number!
             # update tool:
             for tool_surf in dup_surf.tools:
+                # set tool segment number and name
+                tool_surf._segment_number = segment  # pylint: disable=protected-access
                 tool_surf.name = f"{tool_surf.name} (Seg.: {segment})"
 
             return dup_surf
