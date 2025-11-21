@@ -76,6 +76,11 @@ def main(
             and :class:`MachineSyRM` work.
     """
     simulation = create_simulation(pyleecan_machine, i_d=0, i_q=0, speed=1000)
+    # TODO: create function to calc mean airgap radius (or implement airgap function in json api)
+    # and function to get magnetization dict
+    paramDict = create_param_dict(pyleecan_machine, simulation)
+    paramDict["flag_openGUI"] = use_gui
+
     # make sure machine type is translatable
     if isinstance(
         pyleecan_machine,
@@ -88,11 +93,6 @@ def main(
         raise NotImplementedError(
             f"Machine type '{type(pyleecan_machine)}' is not translatable!"
         )
-
-    # TODO: create function to calc mean airgap radius (or implement airgap function in json api)
-    # and function to get magnetization dict
-    paramDict = create_param_dict(pyleecan_machine, simulation)
-    paramDict["flag_openGUI"] = use_gui
 
     script_obj = json_api_main(
         geo=geo_translation_dict,
