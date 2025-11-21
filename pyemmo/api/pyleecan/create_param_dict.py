@@ -111,7 +111,9 @@ def create_param_dict(
     # magnet as value in radians. See `pyemmo.api.json.importJSON.getMagAngle`
     magnetization_dict = {}
     # magnetization workflow from pyleecan.Simulation.MagElmer.solve_FEA
-    pyleecan_surf_list = machine.build_geometry(sym=sym_factor)
+    # NOTE: We need to use rotor symmetry here, because json api exspects one angle per
+    # magnet surface in segment dict. See `pyemmo.api.json.importJSON.getMagAngle`
+    pyleecan_surf_list = machine.build_geometry(sym=machine.rotor.comp_periodicity_geo()[0])
     for surf in pyleecan_surf_list:
         # label = short_label(surf.label)
         label_dict = decode_label(surf.label)
