@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler & Vu Nguyen, TTZ-EMO,
+# Copyright (c) 2018-2025 M. Schuler & Vu Nguyen, TTZ-EMO,
 # Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import logging
 import os
+import shutil
 import sys
 from datetime import datetime
 from subprocess import PIPE, Popen
@@ -46,8 +47,6 @@ from pyemmo.api.pyleecan import main as pyleecanAPI
 from pyemmo.definitions import ROOT_DIR
 from pyemmo.functions.runOnelab import createCmdCommand, log_subprocess_output
 from pyemmo.script.script import Script
-
-# from __future__ import absolute_import
 
 
 # logic to add local path to beginning of sys path
@@ -199,8 +198,6 @@ def pyleecan_test_base(
         # "exe": r"H:\onelab-Windows64\getdp.exe",
         "exe": GETDP_EXE,
         "gmsh": GMSH_EXE,
-        # "exe": GETDP_EXE,
-        # "gmsh": GMSH_EXE,
     }
     # runCalcforCurrent(param_dict)
     cmdCommand = createCmdCommand(
@@ -393,9 +390,6 @@ def pyleecanPrepTuple(
 
 if __name__ == "__main__":
     # ONLY RUN THIS BY ITSELF IF YOU WANT TO CREATE BASE DATA
-    import shutil
-    from distutils.dir_util import copy_tree
-
     test_type = "api\\pyleecan"
     test_cases = [
         ("test_id", "test_case"),
@@ -441,7 +435,7 @@ if __name__ == "__main__":
                 os.makedirs(backup_path_true)
             else:
                 os.makedirs(backup_path_true)
-            copy_tree(result_path_true, backup_path_true)
+            shutil.copytree(result_path_true, backup_path_true)
             shutil.rmtree(result_path_true)
 
         # create base data

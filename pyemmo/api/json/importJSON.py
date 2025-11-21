@@ -57,7 +57,7 @@ class InvalidSheetThicknessError(Exception):
         return f"{self.message}: {self.input_value}"
 
 
-def importExtInfo(extInfoPath: str) -> dict:
+def load_info_dict(extInfoPath: str) -> dict:
     """import the extended info JSON file as dict
 
     Args:
@@ -77,8 +77,7 @@ def importExtInfo(extInfoPath: str) -> dict:
     return extInfo
 
 
-# FIXME: Rename this to get_mag_TYPE!
-def getMagDir(extendedInfo: dict) -> str:
+def get_mag_type(extendedInfo: dict) -> str:
     """Retrun the magnetization direction (parallel, radial, ...) from the extendedInfo dict"""
     magDirKey = "magType"
     if magDirKey in extendedInfo.keys():
@@ -120,7 +119,7 @@ def getCurrentdq(extendedInfo: dict) -> tuple[float]:
 # ------------------------------------------------------------------------------
 
 
-def getWindingList(extendedInfo: dict) -> list[list[list[int]]]:
+def get_winding_layout(extendedInfo: dict) -> list[list[list[int]]]:
     """Get winding layout from extended info dict. The layout must be in form of
     the SWAT-EM winding layout. The layout looks something like:
 
@@ -151,7 +150,7 @@ def getWindingList(extendedInfo: dict) -> list[list[list[int]]]:
     return windList
 
 
-def getNbrOfTurns(extendedInfo: dict) -> float:
+def get_nbr_of_turns(extendedInfo: dict) -> float:
     """
     getNbrOfTurns return the number of winding turns in one slot side.
     The identifier in extendedInfo dict must be Ntps (number of turns per slot side).
@@ -206,7 +205,7 @@ def getRotFreq(extendedInfo: dict, unit: str = "Hz") -> float:
     )
 
 
-def getSymFactor(extendedInfo: dict) -> int:
+def get_sym_factor(extendedInfo: dict) -> int:
     """getSymFactor returns the symmetry factor from the extended info dict"""
     symFactorKey = "symFactor"
     if symFactorKey in extendedInfo.keys():
@@ -222,7 +221,7 @@ def getSymFactor(extendedInfo: dict) -> int:
     )
 
 
-def getNbrPolePairs(extendedInfo: dict) -> int:
+def get_nbr_of_pole_pairs(extendedInfo: dict) -> int:
     """getNbrPolePairs returns the the number of pole pairs from the extended info dict.
     Identifier is 'z_pp'."""
     nppKey = "z_pp"
@@ -238,7 +237,7 @@ def getNbrPolePairs(extendedInfo: dict) -> int:
     )
 
 
-def getNbrSlots(extendedInfo: dict) -> int:
+def get_nbr_of_slots(extendedInfo: dict) -> int:
     """returns the the number of stator slots from the extended info dict. Identifier is 'Qs'."""
     nppKey = "Qs"
     if nppKey in extendedInfo.keys():
@@ -253,10 +252,10 @@ def getElecFreq(extendedInfo: dict) -> float:
     r"""calcElecFreq calculates the electrical frequency in Hz from the extended info dict by
     :math:`f_\mathrm{el} = f_\mathrm{mech} \cdot pp`, where :math:`pp` is the number of pole
     pairs"""
-    return getRotFreq(extendedInfo, "Hz") * getNbrPolePairs(extendedInfo)
+    return getRotFreq(extendedInfo, "Hz") * get_nbr_of_pole_pairs(extendedInfo)
 
 
-def getAxialLength(extendedInfo: dict) -> dict[str, float]:
+def get_axial_length(extendedInfo: dict) -> dict[str, float]:
     """get the axial length in meter of rotor and stator from the extended info dict"""
     if "axLen_S" in extendedInfo.keys() and "axLen_R" in extendedInfo.keys():
         return {
@@ -290,7 +289,7 @@ def getMagTemperature(extendedInfo: dict) -> float:
     return 20.0
 
 
-def getSimuParams(extendedInfo: dict) -> dict[str, dict[str, float]]:
+def get_simulation_params(extendedInfo: dict) -> dict[str, dict[str, float]]:
     """
     Return the simulation parameter dictionary needed for script class. See class :class:`Script
     <pyemmo.script.script.Script>` for details about the simulation dict.
@@ -317,7 +316,7 @@ def getSimuParams(extendedInfo: dict) -> dict[str, dict[str, float]]:
     return simuParams
 
 
-def getModelName(extendedInfo: dict) -> str:
+def get_model_name(extendedInfo: dict) -> str:
     """Return the model name from the extended info dict
 
     Args:
@@ -337,7 +336,7 @@ def getModelName(extendedInfo: dict) -> str:
     raise KeyError(f"Name of model files ('{mNKey}') missing from extended info dict!")
 
 
-def getFlagOpenGui(extendedInfo: dict) -> bool:
+def get_flag_open_gui(extendedInfo: dict) -> bool:
     """Return the flag openGUI from the extended info dict
 
     Args:
@@ -355,7 +354,7 @@ def getFlagOpenGui(extendedInfo: dict) -> bool:
     raise KeyError(f"Name of model files ('{fogKey}') missing from extended info dict!")
 
 
-def getMovingbandRadius(extendedInfo: dict) -> float:
+def get_MB_radius(extendedInfo: dict) -> float:
     """
     return the the movingband radius from the extended info dict.
     Identifier is 'movingband_r'.
@@ -369,8 +368,8 @@ def getMovingbandRadius(extendedInfo: dict) -> float:
         )
 
 
-def getNbrParalellPaths(extendedInfo: dict) -> int:
-    """getNbrParalellPaths returns the number of parallel winding paths per strand
+def get_nbr_of_parallel_paths(extendedInfo: dict) -> int:
+    """get_nbr_of_parallel_paths returns the number of parallel winding paths per strand
     from the extended info dict. Identifier is 'NpP'."""
     mbKey = "NpP"
     if mbKey in extendedInfo.keys():
@@ -385,7 +384,7 @@ def getNbrParalellPaths(extendedInfo: dict) -> int:
     raise KeyError(msg)
 
 
-def getFlagCalcIronLoss(extendedInfo: dict) -> bool:
+def get_flag_core_loss_calc(extendedInfo: dict) -> bool:
     """getIronLossFlag returns true if the iron loss calculation post processing
     should be started. Identifier is 'calcIronLoss'."""
     mbKey = "calcIronLoss"
@@ -407,7 +406,7 @@ def getFlagCalcIronLoss(extendedInfo: dict) -> bool:
     return False
 
 
-def getMagAngle(extendedInfo: dict) -> dict:
+def get_mag_angle(extendedInfo: dict) -> dict:
     """Returns the magnetization angle dictionary.\n
     This dictionary defines the *magnetization vector angle in rad* with the
     magnet surface IdExt as key. Identifier is 'magAngle'.
@@ -438,7 +437,7 @@ def getMagAngle(extendedInfo: dict) -> dict:
 # ====================================== START MATERIAL FUNCTIONS ==================================
 
 
-def createMaterial(matDict: dict[str, dict[Literal["wert"], Any]]) -> Material:
+def create_material(matDict: dict[str, dict[Literal["wert"], Any]]) -> Material:
     """create a pyemmo material object based on matDict format
 
     Args:

@@ -76,8 +76,8 @@ def createMachine(
         Tuple[MachineAllType, Dict[str, List[SurfaceAPI]]]: Resulting machine object and Machine
         surface dict with IdExt as keys and list of SurfaceAPI objects as items.
     """
-    symFactor = importJSON.getSymFactor(extendedInfo)
-    rotorMovingBandRadius = importJSON.getMovingbandRadius(extendedInfo)
+    symFactor = importJSON.get_sym_factor(extendedInfo)
+    rotorMovingBandRadius = importJSON.get_MB_radius(extendedInfo)
     # create the remaining machine surfaces
     maschineSurfDict = modelJSON.createMachineGeometryFromSegment(
         segmentSurfDict, symFactor
@@ -121,7 +121,7 @@ def createMachine(
     )
 
     # Log winding layout for debugging *before* createSlot() is called.
-    logger.debug("Winding layout: %s", importJSON.getWindingList(extendedInfo))
+    logger.debug("Winding layout: %s", importJSON.get_winding_layout(extendedInfo))
     # create physical elements from the surfaces
     for idExt, surfList in maschineSurfDict.items():
         surfName = surfList[0].name
@@ -154,7 +154,7 @@ def createMachine(
             gmsh_api.model.setVisibility(gmsh_api.model.getEntities(2), True, True)
             gmsh_api.fltk.run()
     # create the rotor
-    axLen = importJSON.getAxialLength(extendedInfo)
+    axLen = importJSON.get_axial_length(extendedInfo)
     rotorAPI = Rotor(
         name="rotor created via json api",
         physicalElementList=rotorPhysicals,
@@ -172,8 +172,8 @@ def createMachine(
     )
 
     # create the machine object
-    nbrPolePair = importJSON.getNbrPolePairs(extendedInfo)
-    modelName = importJSON.getModelName(extendedInfo)
+    nbrPolePair = importJSON.get_nbr_of_pole_pairs(extendedInfo)
+    modelName = importJSON.get_model_name(extendedInfo)
     machineSiemens = MachineAllType(
         rotor=rotorAPI,
         stator=statorAPI,
@@ -290,7 +290,7 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
     """
     machine = script.machine
     # 1. Airgap flux density
-    rotorAirgapRadius = importJSON.getMovingbandRadius(extendedInfo)
+    rotorAirgapRadius = importJSON.get_MB_radius(extendedInfo)
     statorAirgapRadius = machine.stator.movingBand[0].radius
     for side, radius in {
         "rotor": rotorAirgapRadius,
@@ -347,7 +347,7 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
             )
 
     ## 4. Add rotor and stator b-field export for iron loss calculation
-    if importJSON.getFlagCalcIronLoss(extendedInfo):
+    if importJSON.get_flag_core_loss_calc(extendedInfo):
         rotorIronPhysicalID = [
             str(phys.id) for phys in machine.rotor._domainLam.physicals
         ]
@@ -461,7 +461,7 @@ def main(
     if isinstance(extInfo, str):
         if isfile(extInfo):
             # import the extended information
-            extendedInfo = importJSON.importExtInfo(extInfo)
+            extendedInfo = importJSON.load_info_dict(extInfo)
         else:
             raise (FileNotFoundError(f"Given file path {extInfo} was not a file."))
     elif isinstance(extInfo, dict):
@@ -533,10 +533,10 @@ def main(
             machine.setFunctionMesh()
 
     # get the simulation pareameters
-    simulationParameters = importJSON.getSimuParams(extendedInfo=extendedInfo)
+    simulationParameters = importJSON.get_simulation_params(extendedInfo)
     logger.info("Generating the Script object in JSON API.")
     apiScript = Script(
-        name=importJSON.getModelName(extendedInfo),
+        name=importJSON.get_model_name(extendedInfo),
         scriptPath=model,
         simuParams=simulationParameters,
         machine=machine,
@@ -554,7 +554,7 @@ def main(
         t4 = timeit.default_timer()
         logger.debug("Time for generating script files: %.2fs", t4 - t3)
 
-    if importJSON.getFlagOpenGui(extendedInfo) is True:
+    if importJSON.get_flag_open_gui(extendedInfo) is True:
         _open_onelab(apiScript, extendedInfo, gmsh, getdp)
 
     logger.removeHandler(jsonLogFileHandler)
@@ -578,7 +578,7 @@ def _check_symmetry(
         of the machine.
     """
     # Check if the symmetry factor given from extendedInfo is valid:
-    reqested_sym = importJSON.getSymFactor(extendedInfo)
+    reqested_sym = importJSON.get_sym_factor(extendedInfo)
     # get number of segments of the first surface to init symmetry check
     highest_sym = list(segmentSurfDict.values())[0].nbr_segments
     # get maximal symmetry for all segment surface:
@@ -641,7 +641,7 @@ def _open_onelab(
     if isdir(resPath):
         # check if the simulation that has been run is a single transient simulation:
         sim_is_transient = is_single_transient(resPath)
-        if importJSON.getFlagCalcIronLoss(extendedInfo):
+        if importJSON.get_flag_core_loss_calc(extendedInfo):
             if sim_is_transient:
                 # if core loss flag and simulation is transient, calc core loss:
                 _run_core_loss_calculation(resPath, apiScript)

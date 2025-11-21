@@ -60,7 +60,7 @@ test_cases = {}
 
 fileHandler = logging.FileHandler(
     filename=os.path.join(
-        TEST_DIR, "results", test_types[0], f"test_result_{curr_datetime}.log"
+        TEST_DIR, "Results", test_types[0], f"test_result_{curr_datetime}.log"
     ),
     mode="w",
     encoding="utf-8",
