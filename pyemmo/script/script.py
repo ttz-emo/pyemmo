@@ -2354,7 +2354,7 @@ class Script:
             computeCommandCode = (
                 "DefineConstant[\n\t"
                 """R_ = {"Analysis", Name "GetDP/1ResolutionChoices", Visible Flag_Debug || Flag_ExpertMode},\n\t"""
-                """C_ = {"-solve -v 99 -v2 -pos", Name "GetDP/9ComputeCommand", Visible Flag_Debug || Flag_ExpertMode}\n\t"""
+                """C_ = {"-solve -v 3 -v2 -pos", Name "GetDP/9ComputeCommand", Visible Flag_Debug || Flag_ExpertMode}\n\t"""
                 """P_ = {\""""
                 + ",".join(self.postOperationNames)
                 + """", Name "GetDP/2PostOperationChoices", Visible Flag_Debug || Flag_ExpertMode}\n"""
