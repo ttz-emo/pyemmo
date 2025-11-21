@@ -304,6 +304,11 @@ Function {
 
   // Function to rotate the points around the z axis
   RotatePZ[] = Rotate[ Vector[$X,$Y,$Z], 0, 0, $1 ] ;
+  // Function to translate the points of the ROTOR once for dynamic eccentricity
+  MoveEccentDynamic[] = Vector[$X,$Y,$Z] + Vector[eccentricity_dynamic_m,0,0];
+  // Function to translate the points of the STATOR once for static eccentricity
+  MoveEccentStatic[]  = Vector[$X,$Y,$Z] + Vector[-eccentircity_static_m,0,0];
+
 
   // The inductance is calculated using the frozen permeability method.
   // Further details on this method can be found under
@@ -793,8 +798,18 @@ Resolution {
         DeleteFile[StrCat[ResDir,"Flux_a",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Flux_b",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Flux_c",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Flux_d",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Flux_q",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Flux_0",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Ia",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Ib",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Ic",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"InducedVoltageA",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"InducedVoltageB",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"InducedVoltageC",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Ld",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Lq",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Ldq",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"LossesMagnets",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"ParkAngle_deg",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Pec_Lam",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"PMFlux_d",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"PMFlux_q",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"RotorPos_deg",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Surf_Phase_A_pos",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"temp",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Tr",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Ts",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Tmb",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Ua",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Ub",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Uc",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"JL",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"JL_Fe",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"P",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"V",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Irotor",ExtGnuplot]];
       EndIf
       */
-
-      ChangeOfCoordinates[ NodesOf[Rotor_Moving], RotatePZ[initrotor_pos*Pi/180]]; // Rotation must occure before MovingBand meshing!
+      // Rotation must occure before MovingBand meshing!
+      If (initrotor_pos != 0)
+        ChangeOfCoordinates[ NodesOf[Rotor_Moving], RotatePZ[initrotor_pos*Pi/180]]; 
+      EndIf
+      // Move rotor for dynamic excentricity
+      If (eccentricity_dynamic != 0)
+        ChangeOfCoordinates[ NodesOf[Rotor_Moving], MoveEccentDynamic[] ]; 
+      EndIf
+      // Move stator for static excentricity
+      If (eccentricity_static != 0)
+        ChangeOfCoordinates[ NodesOf[Stator], MoveEccentStatic[] ]; 
+      EndIf
       InitMovingBand2D[MB] ;
       MeshMovingBand2D[MB] ;
       InitSolution[A];
@@ -1643,6 +1658,13 @@ PostOperation Get_GlobalQuantities UsingPost MagStaDyn_a_2D {
       File > StrCat[ResDir,"U_bars",ExtGnuplot], LastTimeStepOnly,
       SendToServer StrCat[poV,"ROTOR"]{0}, Color "LightYellow"
     ];
+    For iBar In {1:nbrRotorBars}
+      Print[
+        Flux[Rotor_Bar~{iBar}], OnGlobal, Format TimeTable,
+        File > StrCat[ResDir,"Flux_Rotor_Bar_", Sprintf["%.0f",iBar] ,ExtGnuplot],
+        LastTimeStepOnly, SendToServer StrCat[poV,"ROTOR"]{0}, Color "LightYellow"
+      ];
+    EndFor
     // Print[
     //   I_S[PhaseA], OnGlobal, Format TimeTable, LastTimeStepOnly,
     //   File>StrCat[ResDir,"Ia",ExtGnuplot],
@@ -1660,7 +1682,7 @@ PostOperation Get_GlobalQuantities UsingPost MagStaDyn_a_2D {
     // ];
   EndIf
 
-  // Calculate the Flux linkage
+  // Calculate the Flux[Rotor_ars] linkage
   // In this case we have an integration quantity. The Region over which we should integrate is given between the brackets.
   // We would read: Print the Flux integrated over Phase A (rememeber that the flux was defined for Inds, for which PhaseX is a subregion) as a global quantity to the file StrCat[ResDir,"Flux_a",ExtGnuplot] (in this case since we have File > ... the quantity is appended, without the ">" it would be erased) for the last timestep only, store the result in the runtime variable $Flux_a (since we need it to calculate the dq0 fluxes) and send the value to the onelab server (GUI) in and include it under StrCat[poF,"A"]{0} with a color "Pink".
   Print[ Flux[PhaseA], OnGlobal, Format TimeTable,
