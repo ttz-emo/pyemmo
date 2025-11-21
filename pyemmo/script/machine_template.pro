@@ -370,8 +370,25 @@ DefineConstant[
         Help "If this parameter is checked (=1), then the non-linear B-H curves
              are used. Otherwise the non-linearity is replaced (extrapolated) by
              a constant mu_r."
-        }
+        },
+    eccentricity_static = {
+        0.0, Name StrCat[INPUT_GEO, "Static Eccentricity [mm]"],
+        ReadOnly SymmetryFactor != 1,
+        Help "The stator will elements be translated by this in -x direction. Make sure 
+            that the sum of static and dynamic eccentricity are not greater than the 
+            movingband height!"
+        },
+    eccentircity_static_m = eccentricity_static * mm,
+    eccentricity_dynamic = {
+        0.0, Name StrCat[INPUT_GEO, "Dynamic Eccentricity [mm]"],
+        ReadOnly SymmetryFactor != 1,
+        Help "Dynamic eccentircity in mm. The rotor initial position will be translated 
+            by this in x-direction, while still rotating the rotor elements around the 
+            origin"
+        },
+    eccentricity_dynamic_m = eccentricity_dynamic * mm
 ];
+// tranlate to meter
 
 //=============================================================================
 //========================== END MACHINE PARAMETERS ===========================
@@ -819,9 +836,6 @@ Function
     // start time
     time0 = 0;
 
-    // Number of steps: ALLREADY DEFINED IN PARAMETERS
-    // NbSteps = Ceil[(thetaMax - theta0) / (d_theta * deg2rad) + 1];
-
     // variable containing the current rotor position => required to calculate the
     // magnetization direction of the magnets in rad. $Time is an internal variable
     // containing the current time
@@ -838,6 +852,7 @@ Function
     // FIXME: fix Fac_Lam calculation!
     // Fac_Lam[] = 0.043255350884945; // = sigma_Lam*d_Lam^2/12/density_Lam ;
     // Fac_Lam[] = sigma[]*d_Lam[]^2/12/density[] ;
+
     // In the case of a static eccentricity the initial rotor center is offset in the y axis
     // RotCenter_i[] = Vector[0, EccentSta, 0];
     RotCenter_i[] = Vector[0, 0, 0];
