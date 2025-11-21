@@ -20,6 +20,7 @@
 #
 from __future__ import annotations
 
+import logging
 from math import pi
 from typing import Any
 
@@ -170,6 +171,27 @@ def create_param_dict(
             else:
                 continue
             magnetization_dict[label2part_id(surf.label)] = np.deg2rad(mag)
+    if magnetization_dict and logging.getLogger().level <= (logging.DEBUG):
+        from matplotlib import pyplot as plt
+        
+        prop_cycle = plt.rcParams["axes.prop_cycle"]
+        colors = prop_cycle.by_key()["color"]
+        fig, ax = plt.subplots()
+        for i, (name, angle) in enumerate(magnetization_dict.items()):
+
+            ax.arrow(
+                0,
+                0,
+                np.cos(angle),
+                np.sin(angle),
+                head_width=0.2,
+                head_length=0.2,
+                fc=colors[i],
+                # ec="black",
+                label=name,
+            )
+        ax.legend()
+        fig.show()
 
     speed_rpm = pyleecan_simulation.input.OP.N0
     translation_param_dict = {
