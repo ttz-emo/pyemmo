@@ -248,7 +248,7 @@ def createAPISurf(areaDict: dict) -> MachineSegmentSurface:
         curve_loop=getSurfaceLineList(
             lineDictList=areaDict["Lines"], meshLen=areaDict["Meshsize"]
         ),
-        material=importJSON.createMaterial(areaDict["Material"]),
+        material=importJSON.create_material(areaDict["Material"]),
         nbr_segments=areaDict["Quantity"],
     )
     # except Exception as exce:
@@ -566,13 +566,13 @@ def createMagnet(surf: MachineSegmentSurface, mat: Material, extInfo: dict) -> M
     # FIXME: There can be multiple segments for one pole!
     magDir = 1 if (surf.segment_nbr + 1) % 2 else -1  # 1: north/outwards
     # get magentization angle from magAngle dict by idExt
-    magAngle = importJSON.getMagAngle(extInfo)[surf.part_id]
+    magAngle = importJSON.get_mag_angle(extInfo)[surf.part_id]
     return Magnet(
         name=surf.part_id,
         geoElements=[surf],
         material=mat,
         magDirection=magDir,
-        magType=importJSON.getMagDir(extInfo),
+        magType=importJSON.get_mag_type(extInfo),
         magVectorAngle=magAngle
         + math.radians(360 / surf.nbr_segments) * surf.segment_nbr,
     )
@@ -693,12 +693,14 @@ def createSlot(
 
     slotSide = getSlotInfo(surf.part_id)
     # NOTE: slotSide is set 0 or 1 where the naming of slotSide is 1 or 2
-    windingLayout = importJSON.getWindingList(extendedInfo)
+    windingLayout = importJSON.get_winding_layout(extendedInfo)
     # calculate the slot number from the slot surface position:
     # the slot number is the angular position divided by the slot pitch
     # calculate angle of slot surface center to x-axis:
     slot_angle = surf.calcCOG().getAngleToX()
-    slot_pitch = 2 * pi / importJSON.getNbrSlots(extendedInfo)  # calculate slot pitch
+    slot_pitch = (
+        2 * pi / importJSON.get_nbr_of_slots(extendedInfo)
+    )  # calculate slot pitch
     # NOTE: need to add half slot pitch because slot angle is the center of the slot
     slot_nbr = (slot_angle + slot_pitch / 2) / slot_pitch  # calculate slot number
     cDir, phase = getSlotPhase(windingLayout, round(slot_nbr, 0), slotSide)
@@ -723,31 +725,31 @@ def createWinding(extendedInfo: dict) -> datamodel:
         datamodel: swat_em.datamodel object of winding.
     """
     swatemWinding = datamodel()
-    nbrSlots = importJSON.getNbrSlots(extendedInfo)
-    nbrPolePairs = importJSON.getNbrPolePairs(extendedInfo)
+    nbrSlots = importJSON.get_nbr_of_slots(extendedInfo)
+    nbrPolePairs = importJSON.get_nbr_of_pole_pairs(extendedInfo)
     swatemWinding.set_machinedata(Q=nbrSlots, p=nbrPolePairs, m=3)
     # get winding layout from json file
     # windList = importJSON.getWindingList(extendedInfo)
     # symFactor = importJSON.getSymFactor(extendedInfo)
     # format winding layout for swat_em
-    windLayout = importJSON.getWindingList(extendedInfo)
+    windLayout = importJSON.get_winding_layout(extendedInfo)
 
     swatemWinding.set_phases(
         S=windLayout,
-        turns=(importJSON.getNbrOfTurns(extendedInfo)),
+        turns=(importJSON.get_nbr_of_turns(extendedInfo)),
         w=get_min_coilspan(windLayout, nbrSlots),
     )
     swatemWinding.analyse_wdg()  # analyse winding to make sure its valid and
     # all parameters are set
     # make sure that number of parallel paths does not exceed max. possible
     # paths of winding:
-    if max(swatemWinding.get_parallel_connections()) < importJSON.getNbrParalellPaths(
-        extendedInfo
-    ):
+    if max(
+        swatemWinding.get_parallel_connections()
+    ) < importJSON.get_nbr_of_parallel_paths(extendedInfo):
         logger.warning(
             """The given number of parallel windings paths (%i) exceeds
             possible paths of the winding layout (%i)!""",
-            importJSON.getNbrParalellPaths(extendedInfo),
+            importJSON.get_nbr_of_parallel_paths(extendedInfo),
             max(swatemWinding.get_parallel_connections()),
         )
 
