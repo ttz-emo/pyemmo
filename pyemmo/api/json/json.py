@@ -290,7 +290,7 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
     """
     machine = script.machine
     # 1. Airgap flux density
-    rotorAirgapRadius = importJSON.get_MB_radius(extendedInfo)
+    rotorAirgapRadius = machine.rotor.movingBandRadius
     statorAirgapRadius = machine.stator.movingBand[0].radius
     for side, radius in {
         "rotor": rotorAirgapRadius,
