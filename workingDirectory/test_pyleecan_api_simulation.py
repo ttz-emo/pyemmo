@@ -29,6 +29,7 @@ import time
 import numpy as np
 from pyleecan.Classes.Machine import Machine
 from pyleecan.definitions import DATA_DIR as PYLEECAN_DATA_DIR
+from pyleecan.definitions import USER_DIR
 from pyleecan.Functions import load
 
 from pyemmo.api.pyleecan import main as pyleecanAPI
@@ -69,7 +70,8 @@ fileName = "Toyota_Prius.json"
 print("\nUsing machine: " + fileName)
 pyleecan_machine: Machine = (
     load.load(  # pylint: disable=locally-disabled, no-member # type: ignore
-        os.path.abspath(os.path.join(machineFolder, fileName))
+        # os.path.abspath(os.path.join(machineFolder, fileName))
+        os.path.abspath(os.path.join(USER_DIR, "Machine", "Toyota_Prius_complex.json"))
     )
 )
 # %%
@@ -77,7 +79,7 @@ pyleecan_machine: Machine = (
 pyemmo_script = pyleecanAPI.main(
     pyleecan_machine,
     model_dir=os.path.join(resFolder, pyleecan_machine.name),  # type: ignore
-    use_gui=False,
+    use_gui=True,
 )
 # %%
 # Run Simulation over one elec period
