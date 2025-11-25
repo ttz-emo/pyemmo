@@ -23,7 +23,7 @@ import argparse
 import logging
 
 from ...definitions import RESULT_DIR
-from ... import rootLogger as logger
+from ... import rootLogger
 from .json import main
 
 # 1. Check that all argvs are valid!
@@ -79,16 +79,16 @@ args = parser.parse_args()
 
 # remove commandline handler if not verbose
 if not args.v:
-    for handler in logger.handlers:
+    for handler in rootLogger.handlers:
         if isinstance(handler, logging.StreamHandler):
-            logger.removeHandler(handler)
+            rootLogger.removeHandler(handler)
 
 # set log level
 loglevel = args.log
 logLevelNum = getattr(logging, loglevel.upper(), None)
 if not isinstance(logLevelNum, int):
     raise ValueError(f"Invalid log level: {loglevel}")
-logger.setLevel(logLevelNum)
+rootLogger.setLevel(logLevelNum)
 
 main(
     geo=args.geo,

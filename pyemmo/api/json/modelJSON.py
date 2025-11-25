@@ -46,7 +46,6 @@ from ...script.gmsh.gmsh_line import GmshLine
 from ...script.gmsh.gmsh_point import GmshPoint
 from ...script.gmsh.gmsh_spline import GmshSpline
 from ...script.material.material import Material
-from .. import logger
 from ..machine_segment_surface import MachineSegmentSurface
 from . import (
     ROTOR_AIRGAP_IDEXT,
@@ -306,7 +305,7 @@ def importMachineGeometry(
             # # update nbr segements (angle updates automatically) of main surface
             # main_surf.nbr_segments = new_quantity
 
-            if logger.level <= logging.DEBUG:
+            if logger.getEffectiveLevel()<= logging.DEBUG:
                 logger.debug(
                     f"Surface: '{main_surf.name}' before subtraction of tools."
                 )
@@ -318,7 +317,7 @@ def importMachineGeometry(
                 #     dup_tool_surf = tool_area.rotate_duplicate(segment)
                 #     main_surf.cutOut(dup_tool_surf)
                 main_surf.cutOut(tool_area)
-                if logger.level <= logging.DEBUG:
+                if logger.getEffectiveLevel()<= logging.DEBUG:
                     # show model after each tool cut out
                     logger.debug(
                         f"Surface: {main_surf.name} after subtraction of tool: {tool_area.name}."
@@ -347,9 +346,11 @@ def importMachineGeometry(
                 f"Type is '{type(area)}'. Value is {area}"
             )
             raise ValueError(msg)
-    # if logger.level <= logging.DEBUG:
-    #     gmsh.model.occ.synchronize()
-    #     gmsh.fltk.run()
+    if logger.getEffectiveLevel()<= logging.DEBUG - 1:
+        logger.debug("Show imported machine geometry in Gmsh")
+        gmsh.model.setVisibility(gmsh.model.getEntities(2), True, False)
+        gmsh.model.occ.synchronize()
+        gmsh.fltk.run()
     return segmentSurfDict
 
 
@@ -426,7 +427,7 @@ def createMachineGeometryFromSegment(
             )
         surf_dict[surf_id] = []  # init list to append surfaces
         # rotate and duplicte the original surface segment nbrSegments times
-        if logger.level <= logging.DEBUG:
+        if logger.getEffectiveLevel()<= logging.DEBUG:
             nbr_lines = len(gmsh.model.occ.get_entities(dim=1))
             nbr_surfs = len(gmsh.model.occ.get_entities(dim=2))
             logger.debug(f"{nbr_lines = :3}")
@@ -445,10 +446,12 @@ def createMachineGeometryFromSegment(
                 else:
                     surf_dict[tool.part_id] = [tool]
 
-    # TODO: Add airgap creation if no airgap in given geometry
-    # if logger.level <= logging.DEBUG:
-    #     gmsh.model.occ.synchronize()
-    #     gmsh.fltk.run()
+    if logger.getEffectiveLevel() <= logging.DEBUG - 1:
+        logger.debug(
+            "Show final machine geometry after rotation and duplication of segments..."
+        )
+        gmsh.model.occ.synchronize()
+        gmsh.fltk.run()
     return surf_dict
 
 
@@ -748,6 +751,7 @@ def createWinding(extendedInfo: dict) -> datamodel:
     if max(
         swatemWinding.get_parallel_connections()
     ) < importJSON.get_nbr_of_parallel_paths(extendedInfo):
+        logger = logging.getLogger(__name__)
         logger.warning(
             """The given number of parallel windings paths (%i) exceeds
             possible paths of the winding layout (%i)!""",

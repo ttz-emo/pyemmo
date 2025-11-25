@@ -45,13 +45,11 @@ from ...script.geometry.stator import Stator
 from ...script.gmsh.utils import fix_missing_mesh_sizes
 from ...script.material.electricalSteel import ElectricalSteel
 from ...script.script import Script
-from .. import logger
 from ..machine_segment_surface import MachineSegmentSurface
 from . import apiNameDict
 from . import boundaryJSON as boundary
 from . import importJSON, modelJSON
 from .create_airgaps import create_airgap_surfaces
-
 
 # from swat_em import analyse
 # from .. import calcPhaseangleStarvoltageCorr
@@ -148,7 +146,7 @@ def createMachine(
                 raise ValueError(
                     f"MachineSide was whether rotor or stator: {machineSide}",
                 )
-    if logger.level <= logging.DEBUG - 1:
+    if logger.getEffectiveLevel()<= logging.DEBUG - 1:
         gmsh_api.model.occ.synchronize()
         if extendedInfo["flag_openGUI"]:  # only open GUI if specified
             gmsh_api.model.setVisibility(gmsh_api.model.getEntities(), False)
@@ -680,6 +678,7 @@ def _run_core_loss_calculation(resPath, apiScript: Script):
         resPath (str): Path to the results directory.
         apiScript (Script): Script object.
     """
+    logger = logging.getLogger(__name__)
     machine = apiScript.machine
     simulationParameters = apiScript.simParams
     # FIXME: Implement better check for simulation status
