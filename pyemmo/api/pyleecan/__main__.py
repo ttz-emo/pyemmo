@@ -28,7 +28,6 @@ import argparse
 import logging
 import os
 
-from ... import rootLogger as logger
 from ...definitions import RESULT_DIR
 from . import use_pyleecan
 from .main import main
@@ -86,6 +85,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # remove commandline handler if not verbose
+    logger = logging.getLogger(__name__)
     if not args.v:
         for handler in logger.handlers:
             if isinstance(handler, logging.StreamHandler):

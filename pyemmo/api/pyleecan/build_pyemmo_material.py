@@ -64,9 +64,10 @@ def build_pyemmo_material(pyleecan_material: PyleecanMaterial) -> Material:
           in the pyemmo material.
 
     """
+    logger = logging.getLogger(__name__)
     if "Copper1" in pyleecan_material.name and copper2 is not None:
         # TODO: Check if material really missing magnetic properies
-        logging.warning(
+        logger.warning(
             "Material 'Copper1' used without magnetic properties. "
             "Replacing it with Pyleecan default material 'Copper2'"
         )

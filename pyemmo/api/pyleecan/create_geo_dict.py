@@ -104,6 +104,7 @@ def create_geo_dict(
             - Point: Leftmost point of the rotor contour.
             - dict: Dictionary containing magnetization information.
     """
+    logger = logging.getLogger(__name__)
     rotor_sym = machine.rotor.comp_periodicity_geo()[0]
     # NOTE: We need to extract the additional holes here, because they can cause the
     # lamination contour to be open if they lie on the boundary. This is something thats
@@ -153,7 +154,7 @@ def create_geo_dict(
                     material = obj.mat_type
                 elif hasattr(obj, "mat_void"):
                     if obj.mat_void is None:
-                        logging.warning(
+                        logger.warning(
                             "Material for object %s is None. Using Air instead!", obj
                         )
                         material = PyleecanAir
@@ -177,7 +178,7 @@ def create_geo_dict(
     for duct in machine.rotor.axial_vent:
         # try to get material
         if not isinstance(duct.mat_void, PyleecanMaterial):
-            logging.warning(
+            logger.warning(
                 "No valid material given for hole %s. Using air instead!", duct
             )
             material = PyleecanAir
@@ -186,7 +187,7 @@ def create_geo_dict(
         try:
             material = build_pyemmo_material(material)
         except Exception as e:  # pylint: disable=bare-except, broad-exception-caught
-            logging.warning(
+            logger.warning(
                 (
                     "Could not translate material %s of Hole %s with index %i due to error: %s. "
                     "Using air instead!"

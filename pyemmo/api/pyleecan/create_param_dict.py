@@ -25,6 +25,7 @@ from math import pi
 from typing import Any
 
 import numpy as np
+from matplotlib import pyplot as plt
 from pyleecan.Classes.OPdq import OPdq
 from pyleecan.Classes.Simulation import Simulation as PyleecanSimulation
 from pyleecan.Functions.labels import (
@@ -114,7 +115,9 @@ def create_param_dict(
     # magnetization workflow from pyleecan.Simulation.MagElmer.solve_FEA
     # NOTE: We need to use rotor symmetry here, because json api exspects one angle per
     # magnet surface in segment dict. See `pyemmo.api.json.importJSON.getMagAngle`
-    pyleecan_surf_list = machine.rotor.build_geometry(sym=machine.rotor.comp_periodicity_geo()[0])
+    pyleecan_surf_list = machine.rotor.build_geometry(
+        sym=machine.rotor.comp_periodicity_geo()[0]
+    )
     for surf in pyleecan_surf_list:
         # label = short_label(surf.label)
         label_dict = decode_label(surf.label)
@@ -171,9 +174,7 @@ def create_param_dict(
             else:
                 continue
             magnetization_dict[label2part_id(surf.label)] = np.deg2rad(mag)
-    if magnetization_dict and logging.getLogger().level <= (logging.DEBUG):
-        from matplotlib import pyplot as plt
-        
+    if magnetization_dict and logging.getLogger(__name__).level <= (logging.DEBUG):
         prop_cycle = plt.rcParams["axes.prop_cycle"]
         colors = prop_cycle.by_key()["color"]
         fig, ax = plt.subplots()
