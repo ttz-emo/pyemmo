@@ -24,6 +24,7 @@ from json files
 from __future__ import annotations
 
 import json
+import logging
 import numbers
 from typing import Any, Literal
 
@@ -33,7 +34,7 @@ from numpy.linalg import norm
 from ...functions.clean_name import clean_name
 from ...script.material.electricalSteel import ElectricalSteel
 from ...script.material.material import Material
-from .. import air, logger
+from .. import air
 
 
 # ================================ START EXTENDED INFO FUNCTIONS ===================================
@@ -400,6 +401,7 @@ def get_flag_core_loss_calc(extendedInfo: dict) -> bool:
         )
         raise TypeError(msg)
     # core loss calculation flag not in info
+    logger = logging.getLogger(__name__)
     logger.warning(
         "Iron loss calculation flag ('%s') missing from extended info dict!", mbKey
     )
@@ -460,6 +462,7 @@ def create_material(matDict: dict[str, dict[Literal["wert"], Any]]) -> Material:
         permeability = magMatDict.get("mue_r", {}).get("wert")
         if not isinstance(permeability, (int, float)):
             if permeability is not None:
+                logger = logging.getLogger(__name__)
                 logger.warning(
                     "Bad value for permeability of Material %s: %s. Resetting to 1.0!",
                     name,

@@ -24,7 +24,6 @@ import logging
 
 import gmsh
 
-from .. import log_formatter, rootLogger
 from ..script.material.material import Material
 
 try:
@@ -41,9 +40,6 @@ except FileNotFoundError:
         thermalCapacity=1.005,
     )
 air.name = "PYEMMO_AIR"
-
-
-logger = rootLogger  # test to get script.py log in local model log file
 
 if not gmsh.is_initialized():
     gmsh.initialize()

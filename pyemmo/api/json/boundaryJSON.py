@@ -51,7 +51,6 @@ from ...script.gmsh.utils import (
 )
 from ...script.material.material import Material
 from .. import air
-from .. import logger as apiLogger
 from ..machine_segment_surface import MachineSegmentSurface
 from . import STATOR_AIRGAP_IDEXT, globalCenterPoint
 
@@ -116,7 +115,8 @@ def findLines(
     """
     areaOfSurfID = [area for area in segmentSurfDict.values() if (surfID == area.idExt)]
     if not areaOfSurfID:  # SurfID not in Surface Dict
-        apiLogger.warning("Surface ID '%s' not found in machine surface list.", surfID)
+        logger = logging.getLogger(__name__)
+        logger.warning("Surface ID '%s' not found in machine surface list.", surfID)
         return None, None
     if len(areaOfSurfID) != 1:
         # there should only be one area in the list "areaOfSurfID"
@@ -371,7 +371,7 @@ def createMB(
     # This was unnecessary since remove_all_duplicates() just removes instances
     # belonging to highest order instances (= surfaces in our case)...
     # gmsh.model.occ.remove_all_duplicates()  # call to remove duplicate points of moving band interfaces
-    if logger.level <= logging.DEBUG - 1:
+    if logger.getEffectiveLevel() <= logging.DEBUG - 1:
         logger.debug("Show moving band in gmsh...")
         gmsh.model.setVisibility(gmsh.model.getEntities(), False)  # disable all
         gmsh.model.setVisibility(get_dim_tags([mb_stator, mb_rotor_inner]), True, False)
@@ -558,6 +558,8 @@ def get_boundaries(
     rotor_mb_radius: float,
 ) -> tuple[list[PhysicalElement], list[PhysicalElement]]:
     """TODO"""
+    logger = logging.getLogger(__name__)
+
     is_inner_rotor = True  # FIXME: Adapt for outer rotor
 
     # Create lists for Stator and Rotor boundaries
@@ -599,9 +601,10 @@ def get_boundaries(
     try:
         movingBandMaterial: Material = surf_dict[STATOR_AIRGAP_IDEXT][0].material
     except KeyError:
-        apiLogger.warning(
+        logger.warning(
             "Stator-Airgap Surface-ID was not '%s'. Can't determine Airgap material! Using air instead.",
             STATOR_AIRGAP_IDEXT,
+            exc_info=True,
         )
         movingBandMaterial = air
     except Exception as exept:

@@ -46,7 +46,6 @@ from ...script.gmsh.gmsh_line import GmshLine
 from ...script.gmsh.gmsh_point import GmshPoint
 from ...script.gmsh.gmsh_spline import GmshSpline
 from ...script.material.material import Material
-from .. import logger
 from ..machine_segment_surface import MachineSegmentSurface
 from . import (
     ROTOR_AIRGAP_IDEXT,
@@ -306,7 +305,7 @@ def importMachineGeometry(
             # # update nbr segements (angle updates automatically) of main surface
             # main_surf.nbr_segments = new_quantity
 
-            if logger.level <= logging.DEBUG:
+            if logger.getEffectiveLevel()<= logging.DEBUG:
                 logger.debug(
                     f"Surface: '{main_surf.name}' before subtraction of tools."
                 )
@@ -318,7 +317,7 @@ def importMachineGeometry(
                 #     dup_tool_surf = tool_area.rotate_duplicate(segment)
                 #     main_surf.cutOut(dup_tool_surf)
                 main_surf.cutOut(tool_area)
-                if logger.level <= logging.DEBUG:
+                if logger.getEffectiveLevel()<= logging.DEBUG:
                     # show model after each tool cut out
                     logger.debug(
                         f"Surface: {main_surf.name} after subtraction of tool: {tool_area.name}."
@@ -347,7 +346,7 @@ def importMachineGeometry(
                 f"Type is '{type(area)}'. Value is {area}"
             )
             raise ValueError(msg)
-    if logger.level <= logging.DEBUG - 1:
+    if logger.getEffectiveLevel()<= logging.DEBUG - 1:
         logger.debug("Show imported machine geometry in Gmsh")
         gmsh.model.setVisibility(gmsh.model.getEntities(2), True, False)
         gmsh.model.occ.synchronize()
@@ -428,7 +427,7 @@ def createMachineGeometryFromSegment(
             )
         surf_dict[surf_id] = []  # init list to append surfaces
         # rotate and duplicte the original surface segment nbrSegments times
-        if logger.level <= logging.DEBUG:
+        if logger.getEffectiveLevel()<= logging.DEBUG:
             nbr_lines = len(gmsh.model.occ.get_entities(dim=1))
             nbr_surfs = len(gmsh.model.occ.get_entities(dim=2))
             logger.debug(f"{nbr_lines = :3}")
@@ -447,7 +446,7 @@ def createMachineGeometryFromSegment(
                 else:
                     surf_dict[tool.part_id] = [tool]
 
-    if logger.level <= logging.DEBUG - 1:
+    if logger.getEffectiveLevel() <= logging.DEBUG - 1:
         logger.debug(
             "Show final machine geometry after rotation and duplication of segments..."
         )
@@ -655,10 +654,20 @@ def getSlotPhase(
         RuntimeError: If windingLayout is empty.
 
     """
-    for phaseIndex, phaseList in enumerate(windingLayout):
-        if slot_side > 1:
+    logger = logging.getLogger(__name__)
+    if slot_side >= 1:
+        if windingLayout[0][1] == []:
+            # if slot side > 1 but second side of winding layout is empty:
+            logger.warning(
+                "Slot side of %i was given, but only one layer in winding layout!",
+                slot_side,
+            )
+            logger.warning("Resetting slot side to 0!")
+            slot_side = 0
+        else:
             # multiple slots per stator lamination segment
             logger.debug("More than one slot in segment %d", slot_number)
+    for phaseIndex, phaseList in enumerate(windingLayout):
         for slotNumber in phaseList[slot_side % 2]:  # TODO: Test if multiple
             # layer winding is working.
             if abs(slotNumber) == slot_number:
@@ -702,7 +711,7 @@ def createSlot(
     Returns:
         Slot: Slot object generated from the above information.
     """
-
+    Qs = importJSON.get_nbr_of_slots(extendedInfo)
     slotSide = getSlotInfo(surf.part_id)
     # NOTE: slotSide is set 0 or 1 where the naming of slotSide is 1 or 2
     # Slot side 0 = right side or slot bottom; 1 = left side or slot opening.
@@ -713,9 +722,7 @@ def createSlot(
     # the slot number is the angular position divided by the slot pitch
     # calculate angle of slot surface center to x-axis:
     slot_angle = surf.calcCOG().getAngleToX()
-    slot_pitch = (
-        2 * pi / importJSON.get_nbr_of_slots(extendedInfo)
-    )  # calculate slot pitch
+    slot_pitch = 2 * pi / Qs  # calculate slot pitch
     # NOTE: need to add half slot pitch because slot angle is the center of the slot
     slot_nbr = (slot_angle + slot_pitch / 2) / slot_pitch  # calculate slot number
     cDir, phase = getSlotPhase(windingLayout, round(slot_nbr, 0), slotSide)
@@ -761,6 +768,7 @@ def createWinding(extendedInfo: dict) -> datamodel:
     if max(
         swatemWinding.get_parallel_connections()
     ) < importJSON.get_nbr_of_parallel_paths(extendedInfo):
+        logger = logging.getLogger(__name__)
         logger.warning(
             """The given number of parallel windings paths (%i) exceeds
             possible paths of the winding layout (%i)!""",
