@@ -51,15 +51,16 @@ if not isdir(USER_DIR):
     os.makedirs(USER_DIR)
 
 # init root logger:
-logging.basicConfig(level=logging.INFO)
-# get longest level name to determine distance for level name in log format
-max_len = max([len(name) for name in list(logging._nameToLevel.keys())])
+# # get longest level name to determine distance for level name in log format
+# max_len = max([len(name) for name in list(logging._nameToLevel.keys())])
+FORMAT = f"%(levelname)s - %(name)s - %(message)s"
+logging.basicConfig(level=logging.INFO, format=FORMAT)
 # global logging format
-logFmt = logging.Formatter(f"%(levelname)-{max_len}s: %(message)s")
+log_formatter = logging.Formatter(FORMAT)
 globalLogFileHandler = logging.FileHandler(
     filename=os.path.join(USER_DIR, "pyemmo.log"), encoding="utf-8"
 )
-globalLogFileHandler.setFormatter(logFmt)
+globalLogFileHandler.setFormatter(log_formatter)
 rootLogger = logging.getLogger()
 rootLogger.addHandler(globalLogFileHandler)
 logging.info(

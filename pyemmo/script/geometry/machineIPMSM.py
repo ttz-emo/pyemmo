@@ -88,7 +88,8 @@ class MachineIPMSM(MachineAllType):
         try:
             sym_factor = super().symmetryFactor
             if self._simuParam["analysisParameter"]["symmetryFactor"] > sym_factor:
-                logging.error(
+                logger = logging.getLogger(__name__)
+                logger.error(
                     "Given symmetry factor doesn't match maximal sym: %i != %i",
                     self._simuParam["analysisParameter"]["symmetryFactor"],
                     sym_factor,

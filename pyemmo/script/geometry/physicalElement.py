@@ -302,7 +302,8 @@ class PhysicalElement:
                 # r, g, b, a = Colors[colorName]
                 # gmsh.model.setColor([(2, geoElem.id)], r, g, b, a)
             else:
-                logging.warning(
+                logger = logging.getLogger(__name__)
+                logger.warning(
                     "Could not set mesh color for surface %s, because it is not a GmshSurface!",
                     geoElem.name,
                 )

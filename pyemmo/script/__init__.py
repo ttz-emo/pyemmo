@@ -30,14 +30,15 @@ from typing import Dict
 from ..version import __version__, sha
 
 colorDict: dict[str, str] = {}
+logger = logging.getLogger(__name__)
 try:
     with open(
         join(dirname(__file__), "default_color_dict.json"),
         encoding="utf-8",
     ) as infile:
         colorDict = json.load(infile)
-except Exception:
-    logging.warning("Color Dict could not be imported...")
+except Exception as exce:
+    logger.warning("Color Dict could not be imported...", exc_info=True)
 
 # Define domain names globally
 DOMAIN_PRIMARY = "primary"

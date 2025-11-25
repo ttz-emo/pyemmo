@@ -76,6 +76,7 @@ class Stator:
         Raises:
             Nothing
         """
+        self.logger = logging.getLogger(__name__)
         self.name = name if name else "Stator"  # name of the stator
         self.nbrSlots = nbrSlots
         self.axialLength = axLen  # active axial length
@@ -381,7 +382,7 @@ class Stator:
         ### DomainAirGap contains all physicals, that create the airgap are containing
         # the stator movingband.
         if not allPhy["airGap"]:
-            logging.warning(
+            self.logger.warning(
                 "No physical elements for stator airgap domain. "
                 "Make sure your airgap physical surface is defined as AirGap object!"
             )
@@ -558,12 +559,12 @@ class Stator:
                 airgap (minimal mesh size).
                 Defaults to 2 * Pi * Movingband_Radius / 360.
         """
-        logging.debug("Started automatic mesh generation on stator.")
+        self.logger.debug("Started automatic mesh generation on stator.")
         # get max. outer radius:
         r_out = self.outer_radius
         if not basisMeshsize:
             basisMeshsize = 2 * np.pi * self.movingBandRadius / 360
-            logging.debug(
+            self.logger.debug(
                 "Setting basis mesh size to 2 * np.pi * self.movingBandRadius / 360 = %.3e",
                 basisMeshsize,
             )
@@ -577,7 +578,7 @@ class Stator:
                 meshGainFactor = 20
                 if not functionType:
                     functionType = "quad"
-            logging.debug(
+            self.logger.debug(
                 "Setting mesh gain factor to = %.1f",
                 meshGainFactor,
             )
@@ -599,7 +600,7 @@ class Stator:
         return [GmshPoint(tag=p_tag) for p_tag in p_tags]
 
     def _set_linear_mesh(self, meshGainFactor: float, basisMeshsize: float):
-        logging.debug("Setting linear mesh on stator.")
+        self.logger.debug("Setting linear mesh on stator.")
         # calculate linear mesh size functions (ax+b)
         a = (meshGainFactor - 1) / (self.outer_radius - self.movingBandRadius)
         b = meshGainFactor - a * self.outer_radius
@@ -615,7 +616,7 @@ class Stator:
             meshGainFactor (float): _description_
             basisMeshsize (float): _description_
         """
-        logging.debug("Setting quadratic mesh on stator.")
+        self.logger.debug("Setting quadratic mesh on stator.")
         # calculate function coefficients for ax^2+bx+c
         r_mb = self.movingBandRadius
         c = meshGainFactor

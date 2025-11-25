@@ -27,6 +27,7 @@ from os.path import abspath, dirname, isdir, join, normpath, realpath
 
 from matplotlib import font_manager
 
+logger = logging.getLogger(__name__)
 ROOT_DIR = normpath(abspath(join(dirname(__file__), ".."))).replace(
     "\\", "/"
 )  #: :meta hide-value:
@@ -88,4 +89,4 @@ config_dict = get_config_dict()
 DEFAULT_GEO_TOL = 1e-7  # in [m]
 """Pyemmo default geometric tolerance e.g. used when checking for equality of
 coordinates."""
-logging.debug("Default geometric tolerance is set to %e meter.", DEFAULT_GEO_TOL)
+logger.debug("Default geometric tolerance is set to %e meter.", DEFAULT_GEO_TOL)

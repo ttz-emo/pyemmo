@@ -300,6 +300,7 @@ def fix_missing_mesh_sizes() -> None:
     """
     nbr_fixed = 0
     all_points = gmsh.model.getEntities(0)
+    logger = logging.getLogger(__name__)
     for dim_tag in all_points:
         p = GmshPoint(dim_tag[1])
         if p.meshLength == 0:
@@ -323,11 +324,14 @@ def fix_missing_mesh_sizes() -> None:
                 dl *= 2  # increase search radius
                 nbr_loops += 1
             p.meshLength = gmsh.model.mesh.getSizes(dimTags=[dim_tags[0]])[0]
-            logging.debug(
-                f"Fixed mesh size of point {p.id} to {p.meshLength} after {nbr_loops} iterations."
+            logger.debug(
+                "Fixed mesh size of point %i to %.3e after %i iterations.",
+                p.id,
+                p.meshLength,
+                nbr_loops,
             )
             nbr_fixed += 1
-    logging.debug(f"Fixed {nbr_fixed} points with missing mesh sizes.")
+    logger.debug("Fixed %i points with missing mesh sizes.", nbr_fixed)
 
 
 def get_global_center() -> GmshPoint:

@@ -332,6 +332,7 @@ def createMB(
         - MB_Rotor_Aux (List(MovingBand) or None): Outer (auxillary) part of the movingband
           or None if symFactor=1
     """
+    logger = logging.getLogger(__name__)
     # get dim tags list of stator boundary lines (GmshLine):
     bnd_line_dim_tags = [(1, line.id) for line in stator_bnd_lines]
     # filter stator movingband lines:
@@ -371,8 +372,8 @@ def createMB(
     # This was unnecessary since remove_all_duplicates() just removes instances
     # belonging to highest order instances (= surfaces in our case)...
     # gmsh.model.occ.remove_all_duplicates()  # call to remove duplicate points of moving band interfaces
-    if logging.getLogger().level <= logging.DEBUG - 1:
-        logging.debug("Show moving band in gmsh...")
+    if logger.level <= logging.DEBUG - 1:
+        logger.debug("Show moving band in gmsh...")
         gmsh.model.setVisibility(gmsh.model.getEntities(), False)  # disable all
         gmsh.model.setVisibility(get_dim_tags([mb_stator, mb_rotor_inner]), True, False)
         if mb_rotor_ax:

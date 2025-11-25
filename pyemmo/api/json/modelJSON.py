@@ -272,6 +272,7 @@ def importMachineGeometry(
         Dict[str, SurfaceAPI]: Segment Surface dict with short IDs (IdExt) as keys and
         SurfaceAPI objects as values
     """
+    logger = logging.getLogger(__name__)
     segmentSurfDict: dict[str, MachineSegmentSurface] = {}
     for area in machineGeoList:
         if isinstance(area, dict):
@@ -305,8 +306,8 @@ def importMachineGeometry(
             # # update nbr segements (angle updates automatically) of main surface
             # main_surf.nbr_segments = new_quantity
 
-            if logging.getLogger().level <= logging.DEBUG:
-                logging.debug(
+            if logger.level <= logging.DEBUG:
+                logger.debug(
                     f"Surface: '{main_surf.name}' before subtraction of tools."
                 )
                 # gmsh.model.occ.synchronize()
@@ -317,9 +318,9 @@ def importMachineGeometry(
                 #     dup_tool_surf = tool_area.rotate_duplicate(segment)
                 #     main_surf.cutOut(dup_tool_surf)
                 main_surf.cutOut(tool_area)
-                if logging.getLogger().level <= logging.DEBUG:
+                if logger.level <= logging.DEBUG:
                     # show model after each tool cut out
-                    logging.debug(
+                    logger.debug(
                         f"Surface: {main_surf.name} after subtraction of tool: {tool_area.name}."
                     )
                     # gmsh.model.occ.synchronize()
@@ -346,7 +347,7 @@ def importMachineGeometry(
                 f"Type is '{type(area)}'. Value is {area}"
             )
             raise ValueError(msg)
-    # if logging.getLogger().level <= logging.DEBUG:
+    # if logger.level <= logging.DEBUG:
     #     gmsh.model.occ.synchronize()
     #     gmsh.fltk.run()
     return segmentSurfDict
@@ -413,6 +414,7 @@ def createMachineGeometryFromSegment(
         ValueError: If number of segments on (2*Pi / symFactor) is not an
             integer.
     """
+    logger = logging.getLogger(__name__)
     surf_dict: dict[str, list[MachineSegmentSurface]] = {}  # init surface dict
     # iterate through machine surface segments:
     for surf_id, surf in segmentSurfDict.items():
@@ -424,13 +426,13 @@ def createMachineGeometryFromSegment(
             )
         surf_dict[surf_id] = []  # init list to append surfaces
         # rotate and duplicte the original surface segment nbrSegments times
-        if logging.getLogger().level <= logging.DEBUG:
+        if logger.level <= logging.DEBUG:
             nbr_lines = len(gmsh.model.occ.get_entities(dim=1))
             nbr_surfs = len(gmsh.model.occ.get_entities(dim=2))
-            logging.debug(f"{nbr_lines = :3}")
-            logging.debug(f"{nbr_surfs = :3}")
+            logger.debug(f"{nbr_lines = :3}")
+            logger.debug(f"{nbr_surfs = :3}")
             # gmsh.fltk.run()
-        logging.debug("Rotating and duplicating %s %i times", surf.name, nbrSegments)
+        logger.debug("Rotating and duplicating %s %i times", surf.name, nbrSegments)
         for segment_nbr in range(0, int(nbrSegments)):
             # rotate_duplicate also considers the tools automatically
             surf_dict[surf_id].append(surf.rotate_duplicate(segment_nbr))
@@ -444,7 +446,7 @@ def createMachineGeometryFromSegment(
                     surf_dict[tool.part_id] = [tool]
 
     # TODO: Add airgap creation if no airgap in given geometry
-    # if logging.getLogger().level <= logging.DEBUG:
+    # if logger.level <= logging.DEBUG:
     #     gmsh.model.occ.synchronize()
     #     gmsh.fltk.run()
     return surf_dict
@@ -646,7 +648,7 @@ def getSlotPhase(
     for phaseIndex, phaseList in enumerate(windingLayout):
         if slot_side > 1:
             # multiple slots per stator lamination segment
-            logging.debug("More than one slot in segment %d", slot_number)
+            logger.debug("More than one slot in segment %d", slot_number)
         for slotNumber in phaseList[slot_side % 2]:  # TODO: Test if multiple
             # layer winding is working.
             if abs(slotNumber) == slot_number:

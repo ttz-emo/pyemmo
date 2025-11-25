@@ -37,7 +37,7 @@ from os.path import isdir, isfile, join
 import gmsh as gmsh_api
 import numpy as np
 
-from ... import logFmt
+from ... import log_formatter
 from ...functions import calcIronLoss, clean_name, import_results, runOnelab
 from ...script.geometry.machineAllType import MachineAllType
 from ...script.geometry.rotor import Rotor
@@ -82,7 +82,8 @@ def createMachine(
     maschineSurfDict = modelJSON.createMachineGeometryFromSegment(
         segmentSurfDict, symFactor
     )
-    logging.debug("Calling gmsh.model.occ.remove_all_duplicates()")
+    logger = logging.getLogger(__name__)
+    logger.debug("Calling gmsh.model.occ.remove_all_duplicates()")
     gmsh_api.model.occ.remove_all_duplicates()
     # TODO: Test this for complex geometry
     # gmsh_api.logger.start()
@@ -106,7 +107,7 @@ def createMachine(
     #                 if surf.id == old_tag:
     #                     surf._id = new_tag
 
-    logging.debug("Calling gmsh_api.model.occ.synchronize()")
+    logger.debug("Calling gmsh_api.model.occ.synchronize()")
     gmsh_api.model.occ.synchronize()
 
     create_airgap_surfaces(maschineSurfDict, rotorMovingBandRadius, symFactor)
@@ -132,7 +133,7 @@ def createMachine(
                 # -> TODO: Make sure delete also removes the gmsh instance
                 surf.delete = True
         else:
-            logging.debug("Creating physical for %s", idExt)
+            logger.debug("Creating physical for %s", idExt)
             physSurfList, machineSide = modelJSON.createPhysicalSurfaces(
                 part_id=idExt,
                 surfList=surfList,
@@ -147,7 +148,7 @@ def createMachine(
                 raise ValueError(
                     f"MachineSide was whether rotor or stator: {machineSide}",
                 )
-    if logging.getLogger().level <= logging.DEBUG - 1:
+    if logger.level <= logging.DEBUG - 1:
         gmsh_api.model.occ.synchronize()
         if extendedInfo["flag_openGUI"]:  # only open GUI if specified
             gmsh_api.model.setVisibility(gmsh_api.model.getEntities(), False)
@@ -373,10 +374,11 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
     if machine._domainM.physicals:
         # if there are magnets
         allMagConducting = True
+        logger = logging.getLogger(__name__)
         for magnet in machine._domainM.physicals:
             if magnet.material.conductivity is None:
                 allMagConducting = False
-                logging.warning(
+                logger.warning(
                     "Unable to calculate magnet losses, due to missing el. conductivity in %s.",
                     magnet.name,
                 )
@@ -437,7 +439,8 @@ def main(
         results (str, optional): Folder path to store the simulation results.
             Defaults to "modelDir/res_ModelName"
     """
-    if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+    logger = logging.getLogger(__name__)
+    if logger.getEffectiveLevel() <= logging.DEBUG:
         t0 = timeit.default_timer()
     # create dir for model files if it doesnt exist
     if not isdir(model):
@@ -449,9 +452,9 @@ def main(
         encoding="utf-8",
     )
     jsonLogFileHandler.setLevel(min(logger.getEffectiveLevel(), logging.INFO))
-    jsonLogFileHandler.setFormatter(logFmt)
+    jsonLogFileHandler.setFormatter(log_formatter)
     logger.addHandler(jsonLogFileHandler)
-    logging.info(
+    logger.info(
         "PyEMMO API started on %s %s",
         datetime.date.today(),
         datetime.datetime.now().strftime("%H:%M:%S"),
@@ -514,7 +517,7 @@ def main(
     # given symmetry factor in extendedInfo:
     _check_symmetry(segmentSurfDict, extendedInfo)
 
-    if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+    if logger.getEffectiveLevel() <= logging.DEBUG:
         # update gmsh fltk GUI config
         gmsh_api.option.setNumber("Geometry.Surfaces", 1)  # show surface indications
         gmsh_api.option.setNumber("Geometry.Light", 0)  # deactivate 3D light
@@ -523,7 +526,7 @@ def main(
         logger.debug("Time for loading geometry: %.2fs", t1 - t0)
     # generate the machine geometry
     machine, machineSurfDict = createMachine(segmentSurfDict, extendedInfo)
-    if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+    if logger.getEffectiveLevel() <= logging.DEBUG:
         t2 = timeit.default_timer()
         logger.info("Time for creating machine object: %.2fs", t2 - t1)
 
@@ -543,14 +546,14 @@ def main(
         resultsPath=results,
         # factory="OpenCascade",
     )
-    if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+    if logger.getEffectiveLevel() <= logging.DEBUG:
         t3 = timeit.default_timer()
         logger.debug("Time for creating script object: %.2fs", t3 - t2)
     addPostOperations(apiScript, extendedInfo)
     meshSizeSetCode = createMeshSizeGUICode(machineSurfDict)
     # generate geo and pro files:
     apiScript.generateScript(UD_MeshCode=meshSizeSetCode)
-    if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+    if logger.getEffectiveLevel() <= logging.DEBUG:
         t4 = timeit.default_timer()
         logger.debug("Time for generating script files: %.2fs", t4 - t3)
 
@@ -597,6 +600,7 @@ def _open_onelab(
     """
     Private function to open ONELAB simulation in GUI and evaluate results
     """
+    logger = logging.getLogger(__name__)
     # check if gmsh was provided
     if not gmsh:
         # if gmsh was not provided, try to find it:
@@ -613,7 +617,7 @@ def _open_onelab(
         getdpPath=getdp,
         useGUI=True,
     )
-    logging.debug("CMD command is: '%s'", command)
+    logger.debug("CMD command is: '%s'", command)
     calcInfo = subprocess.run(
         command,
         capture_output=True,  # not importJSON.getFlagOpenGui(extendedInfo),
@@ -625,13 +629,13 @@ def _open_onelab(
     if calcInfo.stderr:
         for textLine in calcInfo.stderr.split("\n"):
             if "error" in textLine.lower():
-                logging.error(
+                logger.error(
                     "Onelab call issued the following error: \n\t%s",
                     textLine.replace("\n", "\n\t"),
                 )
             else:
                 if textLine:  # if textline is not empty
-                    logging.warning(
+                    logger.warning(
                         "Onelab call issued the following warning: \n\t%s",
                         textLine.replace("\n", "\n\t"),
                     )

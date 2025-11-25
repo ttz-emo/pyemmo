@@ -300,10 +300,11 @@ class GmshSurface(GmshGeometry, Surface):
             except ValueError as exce:
                 if "Invalid RGBA argument" in str(exce):
                     # if color name is not valid, use random color
-                    logging.warning(str(exce))
+                    logger = logging.getLogger(__name__)
+                    logger.warning(str(exce))
                     rgba = np.random.random(4)  # use random color
                     rgba[3] = 1.0  # set alpha to 1.0
-                    logging.warning(
+                    logger.warning(
                         "Setting color of GmshSurface %s (ID: %d) to random color.",
                         self.name,
                         self.id,
