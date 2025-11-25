@@ -75,6 +75,11 @@ def label2part_id(label: str) -> str:
         if LAM_LAB in label_dict["surf_type"]:
             return STATOR_LAM_IDEXT
         if WIND_LAB in label_dict["surf_type"]:
+            # FIXME: This does not allways fit the pyemmo api winding name specification
+            # We need to set a index if a slot is divided in multiple (2) slot surface
+            # sides for as fractional slot winding.
+            # With different symmetries in the model it can happen that more than one slot
+            # is created for the stator, even if the winding is an integer slot winding!
             return STATOR_SLOT_IDEXT + f"{index}"
         return label
     if ROTOR_LAB in label_dict["lam_label"]:

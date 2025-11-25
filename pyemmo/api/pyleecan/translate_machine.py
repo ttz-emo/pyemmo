@@ -45,9 +45,7 @@ def translate_machine(machine: PyleecanMachine) -> dict[str, MachineSegmentSurfa
     if not machine.rotor.is_internal:
         raise NotImplementedError("Outer rotor machines not implemented in pyemmo yet!")
     # Translation of geometry and creation of rotor and stator contour:
-    geo_dict = create_geo_dict(
-        machine,
-    )
+    geo_dict = create_geo_dict(machine)
     # TODO: If the rotor is of type LamHole, maybe create a separate airgap surface to
     # close the rotor lamination and reduce the height of the airgap created by the
     # pyemmo api. By definition in ``create_param_dict`` the complete rotor airgap will
