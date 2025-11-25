@@ -24,13 +24,16 @@ from __future__ import annotations
 import json
 import logging
 import os
+import time
 
+import numpy as np
 from pyleecan.Classes.Machine import Machine
 from pyleecan.definitions import DATA_DIR as PYLEECAN_DATA_DIR
 from pyleecan.Functions import load
 
 from pyemmo.api.pyleecan import main as pyleecanAPI
 from pyemmo.definitions import ROOT_DIR
+from pyemmo.functions.runOnelab import findGetDP, runCalcforCurrent
 
 # disable messages of matplotlib
 logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
@@ -52,31 +55,6 @@ for i, filename in enumerate(os.listdir(machineFolder)):
     if filename.endswith(".json") and not "FEMM" in filename:
         machineList.append(filename)
         print(f"{machineList.index(filename)}: " + filename)
-# %%working machines
-# Load data with info about working machine names
-pylcn_machine_testfile = os.path.join(ROOT_DIR, r"Results\pyleecan_machine_test.json")
-if os.path.isfile(pylcn_machine_testfile):
-    # define filter function
-    def filter_success(keyVal):
-        """Filter function to search test for successfully translated machines"""
-        _, value = keyVal
-        if "success" in value:
-            return True
-
-    # load data from file
-    with open(pylcn_machine_testfile, encoding="utf-8") as infile:
-        pyleecan_machine_results_dict = json.load(infile)
-
-    # Filter original dict for working machiness
-    workingMachineDict = dict(
-        filter(filter_success, pyleecan_machine_results_dict.items())
-    )
-    # get list IDs and print them
-    print(f"Translateable machines from {machineFolder}")
-    for machineName in workingMachineDict.keys():
-        if machineName in machineList:
-            print(f"{machineList.index(machineName)}: " + machineName)
-
 # %%
 # Use machines:
 # 4 (IPMSM, (missing wedge))
@@ -86,7 +64,7 @@ if os.path.isfile(pylcn_machine_testfile):
 
 # SELECT MACHINE HERE BY INDEX OR NAME
 # fileName = machineList[33]
-fileName = "TESLA_S.json"
+fileName = "Toyota_Prius.json"
 
 print("\nUsing machine: " + fileName)
 pyleecan_machine: Machine = (
@@ -96,7 +74,63 @@ pyleecan_machine: Machine = (
 )
 # %%
 # Run PyEMMO Pyleecan api
-pyleecanAPI.main(
-    pyleecan_machine, model_dir=os.path.join(resFolder, pyleecan_machine.name)  # type: ignore
+pyemmo_script = pyleecanAPI.main(
+    pyleecan_machine,
+    model_dir=os.path.join(resFolder, pyleecan_machine.name),  # type: ignore
+    use_gui=False,
 )
 # %%
+# Run Simulation over one elec period
+
+
+# Simulation parameters
+n = 1500
+id = -10
+iq = 50
+resId = "test_simulation"  # result identifier and result folder name
+
+# create param dict for simulation
+param_dict = {
+    # model .pro file path
+    "pro": pyemmo_script.proFilePath,
+    # Gmsh Parameters
+    "gmsh": {
+        "exe": r"",
+        "gmsf": 2,
+        "verbosity level": 2,
+    },
+    # GetDP Parameters
+    "getdp": {
+        "exe": findGetDP(),  # GetDP executable, you can use the function findGetDP
+        # which tries to find the exe on you PC.
+        # change gmsh and getdp verbosity level (0-99)
+        # 0 - fatal, 1 - error, 2 - warning, 3 - info, 5 - debug, 99 - extended debug
+        "verbosity level": 3,
+        "Flag_Debug": 0,  # epxort debug infos and results from GetDP
+        ## Analysis Parameters
+        "Flag_AnalysisType": 0,  # 0 - static, 1 - transient
+        "Flag_SrcType_Stator": 1,  # 1 - current source, 2 - voltage source (not finally implemented)
+        "initrotor_pos": 0.0,  # initial rotor position in °
+        "d_theta": 1,  # angular step size in °
+        "finalrotor_pos": 45,  # final rotor position in °
+        # "RPM": n, # rotational speed
+        "Flag_EC_Magnets": 0,  # control magnet eddy current calculation
+        #
+        ## Result settings
+        "res": pyemmo_script.resultsPath,  # main results folder
+        "ResId": resId,  # current simulation result folder ID
+        "Flag_PrintFields": 0,  # control field result output (.pos files, only last timestep)
+        "Flag_ClearResults": 1,  # remove results if existing, otherwise existing results will be imported
+        #
+        ## Excitation parameters
+        "ID_RMS": id / np.sqrt(2),
+        "IQ_RMS": iq / np.sqrt(2),
+    },
+    # "log": f"{resId}.log",  # optional: log file name
+    "info": "",  # optional: info string to save with simulation config
+    "datetime": time.ctime(),  # optional: current time
+    "PostOp": [],  # PostOperations to execute after simulation.
+    # Standard Option is: GetBOnRadius
+}
+# run simulation:
+results = runCalcforCurrent(param_dict)
