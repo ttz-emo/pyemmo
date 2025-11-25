@@ -527,6 +527,7 @@ def runCalcforCurrent(param: dict) -> dict:
             log_subprocess_output(process.stdout)
         exitcode = process.wait()  # 0 means success
         logging.getLogger().removeHandler(sim_log_file_handler)
+        sim_log_file_handler.close()
 
     else:
         # Simulation with this resId has allready been done!
