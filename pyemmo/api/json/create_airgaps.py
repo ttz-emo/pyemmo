@@ -245,6 +245,7 @@ def create_airgap_surfaces(
         if logger.getEffectiveLevel() <= logging.DEBUG - 1:
             gmsh.model.occ.synchronize()
             gmsh.fltk.run()
+
     if not ROTOR_AIRGAP_IDEXT in surface_dict:
         # create rotor airgap
         logger.info(
@@ -311,7 +312,13 @@ def create_airgap_surfaces(
         try:
             interface_radius = air_interface[0].radius
             for curve in air_interface[1:]:
-                if not np.isclose(curve.radius, interface_radius):
+                if (
+                    not np.isclose(curve.radius, interface_radius)
+                    or not np.isclose(curve.start_point.radius, interface_radius)
+                    or not np.isclose(curve.end_point.radius, interface_radius)
+                ):
+                    # NOTE: Check start and end point aswell because there could be a
+                    # bore shape with same radius
                     nbr_airgaps = 2  # create two airgap surfaces
                     break
         except AttributeError:
