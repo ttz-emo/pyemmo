@@ -648,10 +648,20 @@ def getSlotPhase(
         RuntimeError: If windingLayout is empty.
 
     """
-    for phaseIndex, phaseList in enumerate(windingLayout):
-        if slot_side > 1:
+    logger = logging.getLogger(__name__)
+    if slot_side >= 1:
+        if windingLayout[0][1] == []:
+            # if slot side > 1 but second side of winding layout is empty:
+            logger.warning(
+                "Slot side of %i was given, but only one layer in winding layout!",
+                slot_side,
+            )
+            logger.warning("Resetting slot side to 0!")
+            slot_side = 0
+        else:
             # multiple slots per stator lamination segment
             logger.debug("More than one slot in segment %d", slot_number)
+    for phaseIndex, phaseList in enumerate(windingLayout):
         for slotNumber in phaseList[slot_side % 2]:  # TODO: Test if multiple
             # layer winding is working.
             if abs(slotNumber) == slot_number:
@@ -695,7 +705,7 @@ def createSlot(
     Returns:
         Slot: Slot object generated from the above information.
     """
-
+    Qs = importJSON.get_nbr_of_slots(extendedInfo)
     slotSide = getSlotInfo(surf.part_id)
     # NOTE: slotSide is set 0 or 1 where the naming of slotSide is 1 or 2
     windingLayout = importJSON.get_winding_layout(extendedInfo)
@@ -703,9 +713,7 @@ def createSlot(
     # the slot number is the angular position divided by the slot pitch
     # calculate angle of slot surface center to x-axis:
     slot_angle = surf.calcCOG().getAngleToX()
-    slot_pitch = (
-        2 * pi / importJSON.get_nbr_of_slots(extendedInfo)
-    )  # calculate slot pitch
+    slot_pitch = 2 * pi / Qs  # calculate slot pitch
     # NOTE: need to add half slot pitch because slot angle is the center of the slot
     slot_nbr = (slot_angle + slot_pitch / 2) / slot_pitch  # calculate slot number
     cDir, phase = getSlotPhase(windingLayout, round(slot_nbr, 0), slotSide)
