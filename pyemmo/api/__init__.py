@@ -24,7 +24,7 @@ import logging
 
 import gmsh
 
-from .. import logFmt, rootLogger
+from .. import log_formatter, rootLogger
 from ..script.material.material import Material
 
 try:
@@ -47,6 +47,6 @@ logger = rootLogger  # test to get script.py log in local model log file
 
 if not gmsh.is_initialized():
     gmsh.initialize()
-    if logging.getLogger().level < logging.DEBUG:
+    if logging.getLogger(__name__).level < logging.DEBUG:
         # use fine resolution for arcs in debugging
         gmsh.option.setNumber("Geometry.NumSubEdges", 360)

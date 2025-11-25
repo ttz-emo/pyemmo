@@ -22,12 +22,12 @@
 from __future__ import annotations
 
 import json
+import logging
 import operator
 import os
 
 import numpy as np
 
-from ... import rootLogger
 from . import DATABASE_PATH
 from .material import Material
 
@@ -288,7 +288,7 @@ class ElectricalSteel(Material):
             # range. Typically hysteresis loss value is between 1.0...5.0 W/kg;
             # eddy current value is between 0.2...2.0 W/kg.
             if newLossParams[0] < 20 and newLossParams[1] < 5:
-                rootLogger.warning(
+                logging.getLogger(__name__).warning(
                     (
                         "Looks like the loss parameters for material %s are "
                         "given in W/kg (not W/m³). "

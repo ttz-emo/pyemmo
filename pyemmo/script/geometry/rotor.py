@@ -88,10 +88,10 @@ class Rotor:
                 Defaults to 1.0
 
         """
+        self.logger = logging.getLogger(__name__)
         self.name = name if name else "Rotor"  # rotor name
         self.physicalElements = physicalElementList  # rotor physical elements
         self.axialLength = axLen  # active axial length
-
         self._createDomainForRotor()  # create rotor domains
 
     @property
@@ -199,7 +199,7 @@ class Rotor:
         ###DomainAirGap beinhaltet alle Physical Elements, die einen Luftspalt auf der
         # Rotorseite (Luftspalt bis zum Moving Band) beschreiben.
         if not allPhy["airGap"]:
-            logging.warning(
+            self.logger.warning(
                 "No physical elements for rotor airgap domain. "
                 "Make sure your airgap physical surface is defined as AirGap object!"
             )
@@ -519,13 +519,13 @@ class Rotor:
             functionType (Literal[&quot;linear&quot;, &quot;quad&quot;]):
                 linear or quadratic function for mesh size. Defaults to linear
         """
-        logging.debug("Started automatic mesh generation on rotor.")
+        self.logger.debug("Started automatic mesh generation on rotor.")
         # get most inner radius
         r_in = self.inner_radius
         if not basisMeshsize:
             # get max. outer radius = moving band radius:
             basisMeshsize = 2 * pi * self.movingBandRadius / 360
-            logging.debug(
+            self.logger.debug(
                 "Setting basis mesh size to 2 * pi * self.movingBandRadius / 360 = %.3e",
                 basisMeshsize,
             )
@@ -535,7 +535,7 @@ class Rotor:
                 meshGainFactor = r_in / basisMeshsize / 3
             else:
                 meshGainFactor = 30
-            logging.debug(
+            self.logger.debug(
                 "Setting mesh gain factor to = %.1f",
                 meshGainFactor,
             )
@@ -558,7 +558,7 @@ class Rotor:
 
     def _set_linear_mesh(self, meshGainFactor: float, basisMeshsize: float):
         # calculate linear mesh size functions (ax+b)
-        logging.debug("Setting linear mesh on rotor.")
+        self.logger.debug("Setting linear mesh on rotor.")
         a1 = (1 - meshGainFactor) / self.movingBandRadius
         b1 = meshGainFactor
         # a2 = (meshGainFactor - 1) / (self.movingBandRadius - self.inner_radius)
@@ -571,7 +571,7 @@ class Rotor:
             point.meshLength = pMeshSize
 
     def _set_quad_mesh(self, meshGainFactor: float, basisMeshsize: float):
-        logging.debug("Setting quadratic mesh on rotor.")
+        self.logger.debug("Setting quadratic mesh on rotor.")
         # calculate function coefficients for ax^2+bx+c
         # c = meshGainFactor
         # b = -2 * c / self.inner_radius

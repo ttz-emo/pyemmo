@@ -25,6 +25,7 @@ from __future__ import annotations
 
 # pylint: disable=line-too-long
 import json
+import logging
 import os
 import warnings
 
@@ -32,7 +33,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 from numpy.typing import NDArray
 
-from ... import rootLogger as logger
 from . import DATABASE_PATH
 
 
@@ -196,7 +196,12 @@ class Material:
             # pathlib.Path.unlink(json_path)
             os.remove(json_path)
         except FileNotFoundError:
-            logger.warning(f"{self.name}.json is already deleted or does not exist.")
+            logger = logging.getLogger(__name__)
+            logger.warning(
+                "%s is already deleted or does not exist.",
+                json_path,
+                exc_info=True,
+            )
 
     # def addBHCurveFromFile(
     #     self, data, update_db: bool = False
@@ -229,8 +234,9 @@ class Material:
             temp: Chosen temperature for the curve. Can be "default", or a specific
             temperature. If none is defined, all BH curves for all temps will be plotted.
         """
+        logger = logging.getLogger(__name__)
         if self.linear:
-            warnings.warn("Material is linear, there is no BH-curve")
+            logger.warning("Material is linear, there is no BH-curve")
             return
         if temp is None:
             for t in self.BH.keys():
@@ -433,6 +439,7 @@ class Material:
         Returns:
             numpy.ndarray: _description_
         """
+        logger = logging.getLogger(__name__)
         if not temperature:
             return np.array(self._BH["default"])
         try:
@@ -537,6 +544,7 @@ class Material:
             temperature (float): temperature of the curve. defaults to None (meaning
                 default temperature).
         """
+        logger = logging.getLogger(__name__)
         if not hasattr(self, "_BH"):
             self._BH = {}
         if not temp:
@@ -739,6 +747,7 @@ class Material:
         """
         if isinstance(is_linear, bool):
             if is_linear and self.BH.size != 0:
+                logger = logging.getLogger(__name__)
                 logger.warning(
                     "Material %s was set linear and has BH curve!", self.name
                 )

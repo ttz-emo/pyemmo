@@ -55,7 +55,8 @@ class Bar(PhysicalElement):
                 f"Material of bar ({name}) must have electrical conductivity!"
             )
         if not material.linear:
-            logging.warning(
+            logger = logging.getLogger(__name__)
+            logger.warning(
                 "Material %s of rotor bar %s is non-linear!", material.name, name
             )
         super().__init__(name=name, material=material, geo_list=geo_list)

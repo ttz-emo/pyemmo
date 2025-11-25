@@ -396,12 +396,13 @@ class MachineAllType:
                 airgap (minimal mesh size).
                 Defaults to 2 * Pi * Rotor_Movingband_Radius / 360.
         """
-        logging.debug("Using automatic mesh generation.")
+        logger = logging.getLogger(__name__)
+        logger.debug("Using automatic mesh generation.")
         if not basisMeshsize:
             # calc movingband hight
             h_mb = abs(self.rotor.movingBandRadius - self.stator.movingBandRadius)
             basisMeshsize = h_mb
-            logging.debug(
+            logger.debug(
                 "Setting basis mesh size to movingband hight = %.3e",
                 h_mb,
             )

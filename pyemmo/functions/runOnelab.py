@@ -38,21 +38,22 @@ from . import SETUP_FILE_NAME, calcIronLoss, import_results
 def log_subprocess_output(pipe: BufferedReader, stderr: BufferedReader = None):
     """Function to redirect commandline output to Python logger.
     Took this from answer in https://stackoverflow.com/a/21978778
-    TODO: add file handler to logger
     """
+    logger = logging.getLogger(__name__)
     err_msg = ""
     for line in iter(pipe.readline, b""):  # b'\n'-separated lines
-        logging.info("got line from subprocess: %s", line)
+        logger.info(line.rstrip(b"\n").decode("UTF-8"))
     if stderr:
         for line in iter(stderr.readline, b""):
-            if "Error" in str(line):
+            line = line.rstrip(b"\n").decode("UTF-8")
+            if "Error" in line:
                 # err_msg += str(line)
-                err_msg += "\t" + line.decode().replace("\r\n", "") + "\n"
-                logging.error("got line from subprocess: %s", line)
+                err_msg += "\t" + line.replace("\r\n", "") + "\n"
+                logger.error("%s", line)
             elif "Warning" in str(line):
-                logging.warning("got line from subprocess: %s", line)
+                logger.warning("%s", line)
             else:
-                logging.info("got line from subprocess: %s", line)
+                logger.info("%s", line)
     return err_msg
 
 
@@ -93,12 +94,13 @@ def findExe(exeName: str, verbosity: bool = True) -> str:
     Returns:
         str: filepath to the executable
     """
+    logger = logging.getLogger(__name__)
     executableName, _ = splitext(exeName)
     # first opion: try to find gmsh with "which"
     exePath = which(executableName)
     if not exePath:
         if verbosity:
-            logging.debug(
+            logger.debug(
                 """Could not find %s from command line.
                 Trying to find it in python-path...""",
                 executableName,
@@ -110,11 +112,11 @@ def findExe(exeName: str, verbosity: bool = True) -> str:
                     if fileList == f"{executableName}.exe":
                         exePath = join(path, fileList)
                         if verbosity:
-                            logging.debug("Found %s in '%s'!", executableName, exePath)
+                            logger.debug("Found %s in '%s'!", executableName, exePath)
                         return exePath
         if not exePath:
             if verbosity:
-                logging.debug(
+                logger.debug(
                     """%s was not found in 'path' Variable.
                     Trying to find it in user home directory. This can take some time!""",
                     executableName,
@@ -131,7 +133,7 @@ def findExe(exeName: str, verbosity: bool = True) -> str:
                     for root, _, files in os.walk(userProgDir):
                         if files == f"{executableName}.exe":
                             if verbosity:
-                                logging.debug(
+                                logger.debug(
                                     "Found %s in '%s'! :)",
                                     executableName,
                                     root,
@@ -139,14 +141,14 @@ def findExe(exeName: str, verbosity: bool = True) -> str:
                             return join(root, f"{executableName}.exe")
                     # if exe was not found in home dir
                     if verbosity:
-                        logging.debug(
+                        logger.debug(
                             "%s could not be found in home program folder '%s'",
                             executableName,
                             userProgDir,
                         )
                 else:
                     if verbosity:
-                        logging.debug("Can't find home directory.")
+                        logger.debug("Can't find home directory.")
             else:
                 raise SystemError(
                     f"sys.platform is {sys.platform}, not 'win32'. "
@@ -159,7 +161,7 @@ def findExe(exeName: str, verbosity: bool = True) -> str:
                 )
     else:
         if verbosity:
-            logging.debug("Found %s in '%s'!", executableName, exePath)
+            logger.debug("Found %s in '%s'!", executableName, exePath)
         return exePath
 
 
@@ -228,6 +230,17 @@ def createCmdCommand(
         TypeError: If the parameter value is not str, float or int.
         FileNotFoundError: If onelabFile does not exist or is not a file.
     """
+    gmsh_params = {}  # init gmsh parameter dict
+    if "getdp" in paramDict:
+        # if param dict has "getdp" sub-dict
+        getdp_params = paramDict["getdp"]
+        if "gmsh" in paramDict:
+            #  if param dict has "gmsh" sub-dict
+            gmsh_params = paramDict["gmsh"]
+    else:
+        # otherwise the paramDict is empty or only contains getdp parameters
+        getdp_params = paramDict
+
     # check if the onelab file is valid:
     if not isfile(onelabFile):
         raise FileNotFoundError(f"Provided Onelab file was not found: {onelabFile}")
@@ -256,16 +269,16 @@ def createCmdCommand(
                 # run the simulation with specific getdp exe
                 getdp_command += f"{getdpPath} {onelabFile} -solve Analysis "
                 # the command is: "getdp FILE.pro -solve Analysis"
-                if "msh" in paramDict:
-                    if paramDict["msh"] and not isfile(paramDict["msh"]):
+                if "msh" in getdp_params:
+                    if getdp_params["msh"] and not isfile(getdp_params["msh"]):
                         raise FileNotFoundError(
-                            f"""Given msh file was not found: {paramDict["msh"]}"""
+                            f"""Given msh file was not found: {getdp_params["msh"]}"""
                         )
                     # make sure file exists -> skip meshing
-                    getdp_command += f"-msh {paramDict['msh']} "
+                    getdp_command += f"-msh {getdp_params['msh']} "
                     gmsh_command = ""  # reset gmsh command
                     # allways remove "msh" field for getdp param setting later
-                    paramDict.pop("msh")
+                    getdp_params.pop("msh")
                 else:
                     # no "msh" key -> create mesh command
                     # TODO: Add gmsh paramter to mesh generation call
@@ -307,18 +320,45 @@ def createCmdCommand(
                 " or '.pro') or is missing file extension: {ext}"
             )
         )
-    if paramDict:
+    if gmsh_params:
         # if the paramDict is not empty or None
-        if not isinstance(paramDict, dict):
+        if not isinstance(gmsh_params, dict):
             raise TypeError(
-                f"Parameter dict was not a dict, but type '{type(paramDict)}.'"
+                f"Gmsh parameter dict was not a dict, but type '{type(gmsh_params)}.'"
             )
         # add verbosity if given
-        if "verbosity level" in paramDict:
+        if "verbosity level" in gmsh_params:
             if gmsh_command:
-                gmsh_command += f" -v {paramDict['verbosity level']} "
-            getdp_command += f" -v {paramDict.pop('verbosity level')} "
-        for paramName, paramValue in paramDict.items():
+                gmsh_command += f" -v {gmsh_params.pop('verbosity level')} "
+        for paramName, paramValue in gmsh_params.items():
+            if paramName == "exe":
+                continue  # skip exe
+            if isinstance(paramValue, str):
+                gmsh_command += f" -setstring {paramName} {paramValue}"
+            elif isinstance(paramValue, bool):
+                # convert bool to int!
+                gmsh_command += f" -setnumber {paramName} {int(paramValue)}"
+            elif isinstance(paramValue, (float, int)):
+                gmsh_command += f" -setnumber {paramName} {paramValue}"
+            else:
+                raise (
+                    TypeError(
+                        "Parameter value was not string, float or "
+                        f"int! -> {type(paramValue)}"
+                    )
+                )
+    if getdp_params:
+        # if the paramDict is not empty or None
+        if not isinstance(getdp_params, dict):
+            raise TypeError(
+                f"Parameter dict was not a dict, but type '{type(getdp_params)}.'"
+            )
+        # add verbosity if given
+        if "verbosity level" in getdp_params:
+            getdp_command += f" -v {getdp_params.pop('verbosity level')} "
+        for paramName, paramValue in getdp_params.items():
+            if paramName == "exe":
+                continue  # skip exe
             if isinstance(paramValue, str):
                 getdp_command += f" -setstring {paramName} {paramValue}"
             elif isinstance(paramValue, bool):
@@ -456,13 +496,14 @@ def runCalcforCurrent(param: dict) -> dict:
     Returns:
         dict: Simulation results dict created from ``pyemmo.functions.import_results.main``
     """
+    logger = logging.getLogger(__name__)
     # adding additional results path to GetDP parameters (only then GetDP knows where to
     # put the results) because its initally set in the parameter geo
     # file. But if the files are moved the results folder might not exist any more!
     RES_DIR = param["getdp"]["res"]
     if not os.path.isdir(RES_DIR):
         if os.path.isdir(os.path.dirname(RES_DIR)):
-            logging.info(f"Creating results directory: {RES_DIR}")
+            logger.info(f"Creating results directory: {RES_DIR}")
             os.mkdir(RES_DIR)
         else:
             raise RuntimeError(
@@ -474,7 +515,7 @@ def runCalcforCurrent(param: dict) -> dict:
     simulation_res_dir = os.path.join(RES_DIR, param["getdp"]["ResId"])
     if "Flag_ClearResults" in param["getdp"] and os.path.isdir(simulation_res_dir):
         if param["getdp"]["Flag_ClearResults"]:
-            logging.warning(
+            logger.warning(
                 "Removing previous results from folder: %s",
                 simulation_res_dir,
             )
@@ -503,12 +544,12 @@ def runCalcforCurrent(param: dict) -> dict:
             useGUI=False,
             gmshPath=param["gmsh"]["exe"],
             getdpPath=param["getdp"]["exe"],
-            paramDict=param["getdp"],
+            paramDict=param,
             postOperations=post_operations,
         )
 
-        logging.debug("cmd command is: %s", cmdCommand)
-        logging.info("Running simulation for result-ID '%s'", param["getdp"]["ResId"])
+        logger.debug("cmd command is: %s", cmdCommand)
+        logger.info("Running simulation for result-ID '%s'", param["getdp"]["ResId"])
 
         ## TRY TO LOG OUTPUT OF FUNCTION CALL:
         # TODO: Add log file option and stream simulation to log file
@@ -516,7 +557,7 @@ def runCalcforCurrent(param: dict) -> dict:
             os.path.join(simulation_res_dir, param["getdp"]["ResId"] + ".log"),
             encoding="utf-8",
         )
-        logging.getLogger().addHandler(sim_log_file_handler)
+        logger.addHandler(sim_log_file_handler)
         process = Popen(
             cmdCommand,
             stdout=PIPE,
@@ -526,12 +567,12 @@ def runCalcforCurrent(param: dict) -> dict:
         with process.stdout:
             log_subprocess_output(process.stdout)
         exitcode = process.wait()  # 0 means success
-        logging.getLogger().removeHandler(sim_log_file_handler)
+        logger.removeHandler(sim_log_file_handler)
         sim_log_file_handler.close()
 
     else:
         # Simulation with this resId has allready been done!
-        logging.warning(
+        logger.warning(
             "Result directory %s allready exists! Importing results...",
             simulation_res_dir,
         )

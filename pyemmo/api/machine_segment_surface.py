@@ -275,6 +275,7 @@ class MachineSegmentSurface(GmshSegmentSurface):
             counts to determine the symmetry, duplicates and rotates surfaces as
             necessary, and updates segment properties accordingly.
         """
+        logger = logging.getLogger(__name__)
         if not isinstance(tool, MachineSegmentSurface):
             raise TypeError(
                 f"Tool surface is not a MachineSegmentSurface object! "
@@ -287,7 +288,7 @@ class MachineSegmentSurface(GmshSegmentSurface):
                 "first segment!"
             )
 
-        logging.debug(
+        logger.debug(
             "Cutting out tool (%s) with %i segments from surface (%s) with %i segments!",
             tool.name,
             tool.nbr_segments,
@@ -298,14 +299,14 @@ class MachineSegmentSurface(GmshSegmentSurface):
         if tool.nbr_segments != self.nbr_segments:
             # calculate total number of segments
             symmetry = np.gcd(tool.nbr_segments, self.nbr_segments)
-            logging.debug(
+            logger.debug(
                 "New symmetry for GmshSegmentSurface (%s): %i", self.name, symmetry
             )
             if (self.nbr_segments / symmetry) > 1:
                 # create nbrSegments/symmetry copies
                 parent_name = self.name  # save name to update it later
                 dup_surfs: list[GmshSegmentSurface] = []  # list of duplicate surfaces
-                logging.debug(
+                logger.debug(
                     "Rotating and duplicating %s %i times",
                     self.name,
                     int(self.nbr_segments / symmetry),
@@ -318,7 +319,7 @@ class MachineSegmentSurface(GmshSegmentSurface):
                 self._id = comb_surf.id
                 self._cut = comb_surf.tools  # update tools
                 self.nbr_segments = symmetry  # update number of segments
-                logging.debug(
+                logger.debug(
                     "New number of segments for GmshSegmentSurface (%s): %i",
                     parent_name,
                     self.nbr_segments,

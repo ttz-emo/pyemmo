@@ -310,7 +310,8 @@ class Script:
         Args:
             machine (MachineAllType): machine to create in script.
         """
-        logging.warning("Reset of machine in script '%s'!", self.name)
+        logger = logging.getLogger(__name__)
+        logger.warning("Reset of machine in script '%s'!", self.name)
         # if isinstance(newMachine, MachineAllType):
         # self._machine = newMachine
         self.__init__(
@@ -493,7 +494,8 @@ class Script:
             self.idedentPoints.append(point)
             return identicalPoint
         # point was allready drawn
-        logging.debug("Point '%s' has allready been added to the script.", point.name)
+        logger = logging.getLogger(__name__)
+        logger.debug("Point '%s' has allready been added to the script.", point.name)
         return None
 
     def _testPoint(
@@ -994,8 +996,9 @@ class Script:
 
     def _addMachineDomains(self):
         domainList = self._createMachineDomains()
+        logger = logging.getLogger(__name__)
         for domain in domainList:
-            logging.debug("Adding domain %s", domain.name)
+            logger.debug("Adding domain %s", domain.name)
             self._addDomain(domain)
         return domainList
 
@@ -1161,7 +1164,8 @@ class Script:
                     )
                 else:
                     # FIXME: ADD MACHINE SIDE TO DOMAIN NAME
-                    logging.debug(
+                    logger = logging.getLogger(__name__)
+                    logger.debug(
                         "There were no physical elements in domain '%s'.",
                         domainName,
                     )
@@ -1478,7 +1482,8 @@ class Script:
                 self.group.add(id="group_" + matName, glist=physElemIDstr)
             except ValueError as val_err:
                 if re.search(r"Identifier .* already in use.", val_err.args[0]):
-                    logging.warning(
+                    logger = logging.getLogger(__name__)
+                    logger.warning(
                         "Material with name %s is defined multiple times, but with different "
                         "properties. Trying to add it again with different identifier...",
                         matName,
@@ -1713,6 +1718,7 @@ class Script:
         Returns:
             str: Compound mesh code.
         """
+        logger = logging.getLogger(__name__)
         if physList:
             meshCompCode = ""
             for physical in physList:
@@ -1722,14 +1728,14 @@ class Script:
                             for geoElem in physical.geo_list:
                                 meshCompCode += str(geoElem.id) + ","
                         else:
-                            logging.warning(
+                            logger.warning(
                                 'Creation of "Compound Mesh" for domain "%s" failed, because "%s" has only one surface.',
                                 regionName,
                                 physical.name,
                             )
                             return ""
                     else:
-                        logging.warning(
+                        logger.warning(
                             'Creation of "Compound Mesh" for domain "%s" failed, because "%s" is not a surface.',
                             regionName,
                             physical.name,
@@ -1738,7 +1744,7 @@ class Script:
                 else:
                     # domain/region has different materials -> no compound surface
                     # or is not geo type surface
-                    logging.warning(
+                    logger.warning(
                         (
                             "Creation of 'Compound Mesh' for domain '%s' failed, ",
                             regionName,
@@ -1998,6 +2004,7 @@ class Script:
             otherwise Movingsband-Mesh could be overwritten. Must be conformal
             with the gmsh syntax!
         """
+        logger = logging.getLogger(__name__)
         # add the code for the mesh settings and mesh modification
         meshSettingsCode = 'INPUT_MESH = "Input/03Mesh/";\n'
         meshSettingsCode += (
@@ -2090,12 +2097,12 @@ class Script:
             )
             geoScript.write(movingGeoCode)
 
-        logging.debug(
+        logger.debug(
             "I found %d identical points. There are %d points in the model.",
             self.nbrIdedentPoints,
             len(self.pointArray),
         )
-        logging.debug(
+        logger.debug(
             "I found %d identical lines. There are %d lines in the model.",
             self.nbrIdedentLines,
             len(self.curveList),
@@ -2105,6 +2112,7 @@ class Script:
         """Set the machine parameters for the script to the
         ``Script.simParams`` attribute.
         """
+        logger = logging.getLogger(__name__)
         machine = self.machine
         if not machine:
             raise RuntimeError("There was no machine specified. Add machine to script.")
@@ -2131,7 +2139,7 @@ class Script:
                         if isclose(p.y, 0, abs_tol=DEFAULT_GEO_TOL):
                             airgap_radii.append(p.x)
                 if not airgap_radii:
-                    logging.warning(
+                    logger.warning(
                         "No points near x-axis found in %s airgap physical element '%s'. "
                         "Cannot calculate mean radius for airgap field post processing.",
                         side,
@@ -2165,7 +2173,7 @@ class Script:
         if not hasMagnets and simuParamDict["SYM"]["CALC_MAGNET_LOSSES"] == 1:
             # if there where no magnet physical elements, set flag to false
             # even if its set to true...
-            logging.warning(
+            logger.warning(
                 "Unsetting the flag 'CALC_MAGNET_LOSSES', because"
                 " no magnets where found in the machine."
             )
@@ -2192,7 +2200,7 @@ class Script:
             slotPitch = 2 * pi / nbrSlots
             mmfOrder, _, angle = machine.stator.winding.get_MMF_harmonics()
             ## DEBUGGING:
-            if logging.root.level == logging.DEBUG:
+            if logger.level <= logging.DEBUG:
                 if not os.path.exists(self.resultsPath):
                     os.mkdir(self.resultsPath)
                 machine.stator.winding.save_to_file(
@@ -2201,9 +2209,7 @@ class Script:
 
             # Stator angle for I_U = 1 p.u., I_V = -1/2, I_W = -1/2 in rad elec
             systemOffset = float(angle[where(mmfOrder == nbrPolePairs)])
-            logging.debug(
-                "Stator north pole angle (elec): %.4f°", rad2deg(systemOffset)
-            )
+            logger.debug("Stator north pole angle (elec): %.4f°", rad2deg(systemOffset))
 
             # dq-offset (electrical) is:
             #   current system offset (CSO) angle - half slot pitch
@@ -2221,7 +2227,7 @@ class Script:
                 mag: Magnet = mag
                 magnetisations.append(mag.magType == "tangential")
             if any(magnetisations):
-                logging.warning(
+                logger.warning(
                     "Tangential magnetization detected! Dq-offset calculation is invalid"
                 )
                 dqOffset = 0
@@ -2377,7 +2383,7 @@ class Script:
             proScript.write(machineFileCode)
 
         # If logging is set to debug, save the winding to a file
-        if logging.root.level <= logging.DEBUG:
+        if logging.getLogger(__name__).level <= logging.DEBUG:
             if not os.path.exists(self.scriptPath):
                 os.mkdir(self.scriptPath)
             self.machine.stator.winding.save_to_file(

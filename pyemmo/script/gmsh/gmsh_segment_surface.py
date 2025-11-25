@@ -65,6 +65,7 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
         SegmentSurface.__init__(
             self, name=self.name, curves=self.curve, nbr_segments=nbr_segments
         )
+        self.logger = logging.getLogger(__name__)
 
     @property
     def tools(self) -> list[GmshSegmentSurface]:
@@ -187,7 +188,7 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
                 tag=tool.id,
                 name=tool.name,
             )
-        logging.debug(
+        self.logger.debug(
             "Cutting out tool (%s) with %i segments from surface (%s) with %i segments!",
             tool.name,
             tool.nbr_segments,
@@ -198,14 +199,14 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
         if tool.nbr_segments != self.nbr_segments:
             # calculate total number of segments
             symmetry = np.gcd(tool.nbr_segments, self.nbr_segments)
-            logging.debug(
+            self.logger.debug(
                 "New symmetry for GmshSegmentSurface (%s): %i", self.name, symmetry
             )
             if (self.nbr_segments / symmetry) > 1:
                 # create nbrSegments/symmetry copies
                 parent_name = self.name  # save name to update it later
                 dup_surfs: list[GmshSegmentSurface] = []  # list of duplicate surfaces
-                logging.debug(
+                self.logger.debug(
                     "Rotating and duplicating %s %i times",
                     self.name,
                     int(self.nbr_segments / symmetry),
@@ -218,7 +219,7 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
                 self._id = comb_surf.id
                 self._cut = comb_surf.tools  # update tools
                 self.nbr_segments = symmetry  # update number of segments
-                logging.debug(
+                self.logger.debug(
                     "New number of segments for GmshSegmentSurface (%s): %i",
                     parent_name,
                     self.nbr_segments,
@@ -433,7 +434,7 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
             # fragment it again, because the fragmented tool surface can have a
             # arbitrary shape and is difficult to handle for OCC. So in the case
             # every tool part that is outside the parent segment will be removed.
-            logging.warning(
+            self.logger.warning(
                 "Tool surface (%s) is outside parent surface in positive circumferential "
                 "direction! Removing outer tool part!",
                 outer_tool,
