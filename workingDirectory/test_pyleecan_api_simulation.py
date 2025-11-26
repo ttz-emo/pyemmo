@@ -17,11 +17,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
+"""Test script for pyleecan api with subsequent simulation"""
 # %%
-
 from __future__ import annotations
 
-import json
 import logging
 import os
 import time
@@ -65,13 +64,14 @@ for i, filename in enumerate(os.listdir(machineFolder)):
 
 # SELECT MACHINE HERE BY INDEX OR NAME
 # fileName = machineList[33]
-fileName = "Toyota_Prius.json"
+fileName = "LSRPM_001.json"
+# fileName = "Toyota_Prius_6phases.json"
 
 print("\nUsing machine: " + fileName)
 pyleecan_machine: Machine = (
     load.load(  # pylint: disable=locally-disabled, no-member # type: ignore
-        # os.path.abspath(os.path.join(machineFolder, fileName))
-        os.path.abspath(os.path.join(USER_DIR, "Machine", "Toyota_Prius_complex.json"))
+        os.path.abspath(os.path.join(machineFolder, fileName))
+        # os.path.abspath(os.path.join(USER_DIR, "Machine", "Toyota_Prius_complex.json"))
     )
 )
 # %%

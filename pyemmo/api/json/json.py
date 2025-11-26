@@ -162,6 +162,12 @@ def createMachine(
     # create the stator
     # create winding
     windingSWAT = modelJSON.createWinding(extendedInfo)
+    if windingSWAT.get_num_phases() != 3:
+        # check number of phases.
+        # NOTE: For now this fails because in Script._createWindingDomains() method
+        # the number of phases for the GetDP model is assumed to be 3! This is a open
+        # task.
+        raise NotImplementedError("PyEMMO can't handle phase numbers != 3 for now!")
     statorAPI = Stator(
         name="stator created via json api",
         nbrSlots=windingSWAT.get_num_slots(),

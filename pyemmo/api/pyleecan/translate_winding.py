@@ -39,6 +39,8 @@ Note:
 
 from __future__ import annotations
 
+import logging
+
 import swat_em
 from pyleecan.Classes.Machine import Machine
 
@@ -76,8 +78,8 @@ def translate_winding(
     # TODO: It might be possible to only return the data model object and
     # then call the 'get_phases()' function directly in 'createParamDict'.
     winding = swat_em.datamodel()
-    if machine.stator.winding.qs != 3:
-        raise NotImplementedError("Can't handle phase number %i (!=3)")
+    # FIXME: genwdg() can fail for pyleecan WindingUD. Try to use
+    # machine.stator.winding.wind_mat to directly set swatem winding layout.
     winding.genwdg(
         Q=machine.stator.slot.Zs,
         P=machine.stator.winding.p * 2,
@@ -91,4 +93,26 @@ def translate_winding(
         turns=machine.stator.winding.Ntcoil,
     )
     wind_swat = winding.get_phases()
+    try:
+        if wind_swat is None:
+            raise RuntimeError(
+                f"Could not translate winding of pyleecan machine {machine.name}",
+            )
+    except RuntimeError as exce:
+        logger = logging.getLogger(__name__)
+        logger.error(
+            "Winding data: Q=%i, p=%i, m=%i, w=%i, layers=%i, turns=%.1f - Pyleecan winding type: %s",
+            machine.stator.slot.Zs,
+            machine.stator.winding.p,
+            machine.stator.winding.qs,
+            machine.stator.winding.coil_pitch,
+            machine.stator.winding.Nlayer,
+            machine.stator.winding.Ntcoil,
+            str(type(machine.stator.winding).__name__),
+            exc_info=True,
+        )
+        raise exce
+    except Exception as exce:
+        raise exce
+
     return winding, wind_swat

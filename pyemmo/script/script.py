@@ -1188,6 +1188,7 @@ class Script:
                 for slot in physicalsList:
                     if slot.type == "Slot":
                         slot: Slot = slot
+                        # FIXME: This assumes 3-Phase winding!
                         phaseName = slot.getPhase("ABC")
                         slotDomainName = (
                             "Stator_Ind_"
