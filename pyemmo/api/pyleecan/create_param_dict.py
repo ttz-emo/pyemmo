@@ -95,7 +95,7 @@ def create_param_dict(
     if is_antiperiod:
         sym_factor = sym_factor * 2
     logger.debug("Symmetry factor machine: %s", {sym_factor})
-    swatem_winding, wind_layout = translate_winding(machine)
+    swatem_winding = translate_winding(machine)
     sym_winding = swatem_winding.get_periodicity_t() * 2
     logger.debug("Symmetry factor winding: %s", {sym_winding})
     sym_factor = min(sym_winding, sym_factor)
@@ -196,7 +196,7 @@ def create_param_dict(
 
     speed_rpm = pyleecan_simulation.input.OP.N0
     translation_param_dict = {
-        "winding": wind_layout,  # winding layout
+        "winding": swatem_winding.get_phases(),  # winding layout
         # "wickSWAT": translateWinding(machine),
         "NpP": machine.stator.winding.Npcp,  # number of parallel paths per winding phase
         "Ntps": machine.stator.winding.Ntcoil,

@@ -32,9 +32,6 @@ Note:
     using the PyEMMO `datamodel` class, extracting winding information from the
     Pyleecan machine object, and formatting it according to the SWAT-EM
     conventions.
-
-    TODO: Perhaps return only the data model object and call the
-    ``get_phases()`` function directly in ``createParamDict``.
 """
 
 from __future__ import annotations
@@ -45,18 +42,7 @@ import swat_em
 from pyleecan.Classes.Machine import Machine
 
 
-def translate_winding(
-    machine: Machine,
-) -> tuple[
-    swat_em.datamodel,
-    list[
-        (
-            list[list[int] | list[int]]
-            | list[list[int] | list[int]]
-            | list[list[int] | list[int]]
-        )
-    ],
-]:
+def translate_winding(machine: Machine) -> swat_em.datamodel:
     """
     Translates the winding from Pyleecan to PyEMMO.
 
@@ -64,23 +50,12 @@ def translate_winding(
         machine (Machine): The Pyleecan machine.
 
     Returns:
-        tuple: A tuple containing the following elements:
-
-            - ``swat-em.datamodel``: The datamodel object representing the winding.
-            - list: A list containing information about the winding in a list of
-              lists representing the winding layout for each phase. Each inner
-              list contains:
-
-                * List of integers: Positive integers representing active slots.
-
-                * List of integers: Negative integers representing inactive slots.
+        ``swat-em.datamodel``: The datamodel object representing the winding.
     """
-    # TODO: It might be possible to only return the data model object and
-    # then call the 'get_phases()' function directly in 'createParamDict'.
-    winding = swat_em.datamodel()
+    swat_emm_winding = swat_em.datamodel()
     # FIXME: genwdg() can fail for pyleecan WindingUD. Try to use
     # machine.stator.winding.wind_mat to directly set swatem winding layout.
-    winding.genwdg(
+    swat_emm_winding.genwdg(
         Q=machine.stator.slot.Zs,
         P=machine.stator.winding.p * 2,
         m=machine.stator.winding.qs,
@@ -92,7 +67,7 @@ def translate_winding(
         layers=machine.stator.winding.Nlayer,
         turns=machine.stator.winding.Ntcoil,
     )
-    wind_swat = winding.get_phases()
+    wind_swat = swat_emm_winding.get_phases()
     try:
         if wind_swat is None:
             raise RuntimeError(
@@ -115,4 +90,4 @@ def translate_winding(
     except Exception as exce:
         raise exce
 
-    return winding, wind_swat
+    return swat_emm_winding
