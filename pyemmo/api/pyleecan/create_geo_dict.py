@@ -73,7 +73,7 @@ from pyleecan.Functions.labels import (
     get_obj_from_label,
 )
 
-from .. import air, logger
+from .. import air
 from ..machine_segment_surface import MachineSegmentSurface
 from . import PyleecanAir, PyleecanMachine
 from .build_pyemmo_material import build_pyemmo_material

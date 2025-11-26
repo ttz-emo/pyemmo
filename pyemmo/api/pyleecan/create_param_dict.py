@@ -35,7 +35,6 @@ from pyleecan.Functions.labels import (
     get_obj_from_label,
 )
 
-from .. import logger
 from . import PyleecanMachine
 from .label2part_id import label2part_id
 from .translate_winding import translate_winding
@@ -70,6 +69,7 @@ def create_param_dict(
         dict[str, any]: A dictionary containing the parameters for communication
         with PyEMMO.
     """
+    logger = logging.getLogger(__name__)
     # The following part of the function tests if 'Id_ref' and 'Iq_ref' are having values
     # and if so their values will directly be set in the dictionary under 'Id' and 'Iq'.
     # If only 'I0_Phi0' has a set value but 'Id_ref' and 'Iq_ref' don't 'Id' and 'Iq' will be
