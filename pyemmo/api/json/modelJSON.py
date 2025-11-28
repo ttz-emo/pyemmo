@@ -27,6 +27,7 @@ import math
 from typing import Literal
 
 import gmsh
+import numpy as np
 from numpy import pi, sign
 from swat_em import datamodel
 
@@ -305,7 +306,7 @@ def importMachineGeometry(
             # # update nbr segements (angle updates automatically) of main surface
             # main_surf.nbr_segments = new_quantity
 
-            if logger.getEffectiveLevel()<= logging.DEBUG:
+            if logger.getEffectiveLevel() <= logging.DEBUG:
                 logger.debug(
                     f"Surface: '{main_surf.name}' before subtraction of tools."
                 )
@@ -317,7 +318,7 @@ def importMachineGeometry(
                 #     dup_tool_surf = tool_area.rotate_duplicate(segment)
                 #     main_surf.cutOut(dup_tool_surf)
                 main_surf.cutOut(tool_area)
-                if logger.getEffectiveLevel()<= logging.DEBUG:
+                if logger.getEffectiveLevel() <= logging.DEBUG:
                     # show model after each tool cut out
                     logger.debug(
                         f"Surface: {main_surf.name} after subtraction of tool: {tool_area.name}."
@@ -346,7 +347,7 @@ def importMachineGeometry(
                 f"Type is '{type(area)}'. Value is {area}"
             )
             raise ValueError(msg)
-    if logger.getEffectiveLevel()<= logging.DEBUG - 1:
+    if logger.getEffectiveLevel() <= logging.DEBUG - 1:
         logger.debug("Show imported machine geometry in Gmsh")
         gmsh.model.setVisibility(gmsh.model.getEntities(2), True, False)
         gmsh.model.occ.synchronize()
@@ -427,7 +428,7 @@ def createMachineGeometryFromSegment(
             )
         surf_dict[surf_id] = []  # init list to append surfaces
         # rotate and duplicte the original surface segment nbrSegments times
-        if logger.getEffectiveLevel()<= logging.DEBUG:
+        if logger.getEffectiveLevel() <= logging.DEBUG:
             nbr_lines = len(gmsh.model.occ.get_entities(dim=1))
             nbr_surfs = len(gmsh.model.occ.get_entities(dim=2))
             logger.debug(f"{nbr_lines = :3}")
@@ -661,32 +662,38 @@ def getSlotPhase(
         else:
             # multiple slots per stator lamination segment
             logger.debug("More than one slot in segment %d", slot_number)
-    for phaseIndex, phaseList in enumerate(windingLayout):
-        for slotNumber in phaseList[slot_side % 2]:  # TODO: Test if multiple
-            # layer winding is working.
-            if abs(slotNumber) == slot_number:
-                if phaseIndex == 0:
-                    phase = "u"
-                elif phaseIndex == 1:
-                    phase = "v"
-                elif phaseIndex == 2:
-                    phase = "w"
-                else:
-                    raise ValueError("PhaseIndex not 0, 1 or 2.")
+    # find phase index for current slot number and slot side
+    if all(phaseList[1] == [] for phaseList in windingLayout):
+        # if second slot side is empty, create winding layout separatly because np does
+        # not allow array size missmatch
+        windingLayout = np.array([phaseList[0] for phaseList in windingLayout])
+        phase, slot_index = np.where(
+            np.abs(windingLayout) == slot_number
+        )
+    else:
+        windingLayout = np.array(windingLayout)
+        phase, slot_index = np.where(
+            np.abs(windingLayout[:, slot_side, :]) == slot_number
+        )
+    if phase.size == 0:
+        raise RuntimeError("Could not determine phase index by slot number.")
+    assert (
+        phase.size == 1
+    ), f"Slot index found multiple times in winding layout of slot side {slot_side}"
 
-                if sign(slotNumber) == 1:
-                    cDir = "p"
-                else:
-                    cDir = "n"
-                logger.debug(
-                    "slot number: %i || slot side: %i || phase: %s || direction: %s",
-                    slot_number,
-                    slot_side,
-                    phase,
-                    cDir,
-                )
-                return cDir, phase
-    raise RuntimeError("Could not determine phase index by slot number.")
+    phase = chr(117 + phase[0])  # convert unicode u=117 + index -> char [u,v,w,...]
+    if sign(slot_index[0]) == 1:
+        cDir = "p"
+    else:
+        cDir = "n"
+    logger.debug(
+        "slot number: %i || slot side: %i || phase: %s || direction: %s",
+        slot_number,
+        slot_side,
+        phase,
+        cDir,
+    )
+    return cDir, phase
 
 
 def createSlot(
