@@ -1189,116 +1189,122 @@ PostProcessing {
         Integral { Type Global ; [ 0.5 * nu[] * VirtualWork [{d a}] * axialLength[] ]; In ElementsOf[Rotor_Airgap, OnOneSideOf Rotor_Bnd_MB]; Jacobian Vol ; Integration I1 ; }
       } }
 
-     { Name Torque_vw ; Value {
+      { Name Torque_vw ; Value {
 	      // Torque computation via Virtual Works
          Integral { Type Global ; [ - SymmetryFactor * CompZ[ 0.5 * nu[] * XYZ[] /\ VirtualWork[{d a}] ] * axialLength[] ];
          In ElementsOf[Rotor_Airgap, OnOneSideOf Rotor_Bnd_MB]; Jacobian Vol ; Integration I1 ; }
-       }
-     }
-     { Name Torque_vw_s ; Value {
+       }}
+      { Name Torque_vw_s ; Value {
         // Torque computation via Virtual Works
         Integral { Type Global ; [ SymmetryFactor * CompZ[ 0.5 * nu[] * XYZ[] /\ VirtualWork[{d a}] ] * axialLength[] ];
         In ElementsOf[Stator_Airgap, OnOneSideOf Stator_Bnd_MB]; Jacobian Vol ; Integration I1 ; }
-        }
-      }
-
-
-     { Name Torque_Maxwell_r ;
-       // Torque computation via Maxwell stress tensor
-       Value {
-         Integral {
-           // \int_S (\vec{r} \times (T_max \vec{n}) ) / ep
-           // with ep = |S| / (2\pi r_avg)
-           [ CompZ [ (XYZ[]-RotCenter_Current[]) /\ (T_max[{Curl a}] * (XYZ[]-RotCenter_Current[])) ] * 2*Pi*axialLength[]/SurfaceArea[] ] ;
-           In Domain ; Jacobian Vol  ; Integration I1; }
-       }
-     }
-
-     { Name Torque_Maxwell_s ;
-       // Torque computation via Maxwell stress tensor
-       Value {
-         Integral {
-           // \int_S (\vec{r} \times (T_max \vec{n}) ) / ep
-           // with ep = |S| / (2\pi r_avg)
-           [ CompZ [ XYZ[] /\ (T_max[{Curl a}] * XYZ[]) ] * 2*Pi*axialLength[]/SurfaceArea[] ] ;
-          //  [ CompZ [ (XYZ[]-RotCenter_Current[]) /\ (T_max[{Curl a}] * (XYZ[]-RotCenter_Current[])) ] * 2*Pi*axialLength[]/SurfaceArea[] ] ;
-           In Domain ; Jacobian Vol  ; Integration I1; }
-        }
-      }
-
-
-	   { Name InducedVoltage  ;
+      }}
+      { Name Force_MST;
+        Value{
+          Term{ [ T_max[{Curl a}] * XYZ[] ] ; In Region[{Rotor_Bnd_MB, Stator_Bnd_MB}]; Jacobian Sur; } 
+          Term{ [ T_max[{Curl a}] * XYZ[] ] ; In Region[Rotor_Airgap, Stator_Airgap]; Jacobian Vol; } 
+      }}
+      { Name Force_MST_Cyl;
+        Value{
+          Term{ [ Cart2Cyl[XYZ[]] * T_max[{Curl a}] * XYZ[] ] ; In Region[{Rotor_Bnd_MB, Stator_Bnd_MB}]; Jacobian Sur; } 
+          Term{ [ Cart2Cyl[XYZ[]] * T_max[{Curl a}] * XYZ[] ] ; In Region[{Rotor_Airgap, Stator_Airgap}]; Jacobian Vol; } 
+      }}
+      { Name Force_MST_Rad;
+        Value{
+          Term{ [ CompRad[T_max[{Curl a}] * XYZ[]] ] ; In Region[{Rotor_Airgap, Stator_Airgap}]; Jacobian Vol; }
+          Term{ [ CompRad[T_max[{Curl a}] * XYZ[]] ] ; In Region[{Rotor_Bnd_MB, Stator_Bnd_MB}]; Jacobian Sur; } 
+      }}
+      { Name Force_MST_Tan;
+        Value{
+          Term{ [ CompTan[T_max[{Curl a}] * XYZ[]] ] ; In Region[{Rotor_Bnd_MB, Stator_Bnd_MB}]; Jacobian Sur; } 
+          Term{ [ CompTan[T_max[{Curl a}] * XYZ[]] ] ; In Region[{Rotor_Airgap, Stator_Airgap}]; Jacobian Vol; } 
+      }}
+      { Name Torque_Maxwell_r ;
+        // Torque computation via Maxwell stress tensor
+        Value {
+          Integral {
+            // \int_S (\vec{r} \times (T_max \vec{n}) ) / ep
+            // with ep = |S| / (2\pi r_avg)
+            [ CompZ [ (XYZ[]-RotCenter_Current[]) /\ (T_max[{Curl a}] * (XYZ[]-RotCenter_Current[])) ] * 2*Pi*axialLength[]/SurfaceArea[] ] ;
+            In Domain ; Jacobian Vol  ; Integration I1; }
+      }}
+      { Name Torque_Maxwell_s ;
+         // Torque computation via Maxwell stress tensor
+        Value {
+          Integral {
+            // \int_S (\vec{r} \times (T_max \vec{n}) ) / ep
+            // with ep = |S| / (2\pi r_avg)
+            [ CompZ [ XYZ[] /\ (T_max[{Curl a}] * XYZ[]) ] * 2*Pi*axialLength[]/SurfaceArea[] ] ;
+            //  [ CompZ [ (XYZ[]-RotCenter_Current[]) /\ (T_max[{Curl a}] * (XYZ[]-RotCenter_Current[])) ] * 2*Pi*axialLength[]/SurfaceArea[] ] ;
+            In Domain ; Jacobian Vol  ; Integration I1; }
+      }}
+      { Name InducedVoltage  ;
         Value {
           Integral { [ SymmetryFactor * axialLength[] * Idir[] * NbWires[] / SurfCoil[] / NbrParallelPaths * Dt[CompZ[{a}]] ] ;
-          In Inds  ; Jacobian Vol ; Integration I1 ; }
+             In Inds  ; Jacobian Vol ; Integration I1 ; }
           Integral { [ axialLength[] * Dt[CompZ[{a}]] / SurfaceArea[]] ;
-          In DomainC  ; Jacobian Vol ; Integration I1 ; }
-        }
-      }
-
-     { Name ComplexPower ;
+            In DomainC  ; Jacobian Vol ; Integration I1 ; }
+      }}
+       { Name ComplexPower ;
         // TODO: Check if implementation of power is valid for nonlinear definition
         // in DomainC!
-       // S = P + i*Q
-       Value {
-         Integral { [ Complex[ sigma[]*SquNorm[Dt[{a}]+{ur}], nu[]*SquNorm[{d a}] ] ] ;
-           In Region[{DomainC}] ; Jacobian Vol ; Integration I1 ; }
-       }
-     }
+        // S = P + i*Q
+        Value {
+          Integral { [ Complex[ sigma[]*SquNorm[Dt[{a}]+{ur}], nu[]*SquNorm[{d a}] ] ] ;
+            In Region[{DomainC}] ; Jacobian Vol ; Integration I1 ; }
+      }}
+      { Name U ; Value {
+          Term { [ {U} ]   ; In DomainC ; }
+          Term { [ {Ub} ]  ; In DomainB ; }
+          Term { [ {Uz} ]  ; In DomainZt_Cir ; }
+      } }
 
-     { Name U ; Value {
-         Term { [ {U} ]   ; In DomainC ; }
-         Term { [ {Ub} ]  ; In DomainB ; }
-         Term { [ {Uz} ]  ; In DomainZt_Cir ; }
-     } }
+      { Name I ; Value {
+          Term { [ {I} ]   ; In DomainC ; }
+          Term { [ {Ib} ]  ; In DomainB ; }
+          Term { [ {Iz} ]  ; In DomainZt_Cir ; }
+      } }
 
-     { Name I ; Value {
-         Term { [ {I} ]   ; In DomainC ; }
-         Term { [ {Ib} ]  ; In DomainB ; }
-         Term { [ {Iz} ]  ; In DomainZt_Cir ; }
-     } }
+      { Name S ; Value {
+          Term { [ {U}*Conj[{I}] ]    ; In DomainC ; }
+          Term { [ {Ub}*Conj[{Ib}] ]  ; In DomainB ; }
+          Term { [ {Uz}*Conj[{Iz}] ]  ; In DomainZt_Cir ; }
+      } }
 
-     { Name S ; Value {
-         Term { [ {U}*Conj[{I}] ]    ; In DomainC ; }
-         Term { [ {Ub}*Conj[{Ib}] ]  ; In DomainB ; }
-         Term { [ {Uz}*Conj[{Iz}] ]  ; In DomainZt_Cir ; }
-     } }
-
-     { Name RotorPosition_deg ; Value { Term { Type Global; [ $RPos ] ; In DomainDummy ; } } }
-     {
-      Name R ; Value {
-        Term { Type Global; [ Rb[] ] ; In DomainDummy; }
-      }
-    }
-    {
-      Name Resistance; Value{
-        Integral {
-          [ Resistance[]/SurfaceArea[] ]; In DomainB; Jacobian Vol; Integration I1;
+      { Name RotorPosition_deg ; Value { Term { Type Global; [ $RPos ] ; In DomainDummy ; } } }
+      {
+        Name R ; Value {
+          Term { Type Global; [ Rb[] ] ; In DomainDummy; }
         }
-        If (MachineType==ASYNCHRONOUS)
-          // Calculation of DC bar resistance in case ASM
-          Integral { [ axialLength[] / sigma[] / SurfBar[]^2]; In Rotor_Bars; Jacobian Vol; Integration I1; }
-        EndIf
       }
+      {
+        Name Resistance;
+        Value{
+          Integral {
+            [ Resistance[]/SurfaceArea[] ]; In DomainB; Jacobian Vol; Integration I1;
+          }
+          If (MachineType==ASYNCHRONOUS)
+            // Calculation of DC bar resistance in case ASM
+            Integral { [ axialLength[] / sigma[] / SurfBar[]^2]; In Rotor_Bars; Jacobian Vol; Integration I1; }
+          EndIf
+      }}
+      { Name R_Bar;
+        Value{
+          Integral { 
+            // = P_el / I_bar^2
+            [ axialLength[]*sigma[]*SquNorm[(Dt[{a}]+{ur})] ]; In Rotor_Bars; Jacobian Vol; Integration I1;
+          }
+          Term { [ 1 / SquNorm[{I}] ]; In Rotor_Bars ; }
+      }}
+      { Name Theta_Park_deg ; Value { Term { Type Global; [ $PAng ] ; In DomainDummy ; } } }
+      { Name IA  ; Value { Term { Type Global; [ II*IA[] ] ; In DomainDummy ; } } }
+      { Name IB  ; Value { Term { Type Global; [ II*IB[] ] ; In DomainDummy ; } } }
+      { Name IC  ; Value { Term { Type Global; [ II*IC[] ] ; In DomainDummy ; } } }
+      { Name Flux_d  ; Value { Term { Type Global; [ CompX[Flux_dq0[]] ] ; In DomainDummy ; } } }
+      { Name Flux_q  ; Value { Term { Type Global; [ CompY[Flux_dq0[]] ] ; In DomainDummy ; } } }
+      { Name Flux_0  ; Value { Term { Type Global; [ CompZ[Flux_dq0[]] ] ; In DomainDummy ; } } }
     }
-    { Name R_Bar; Value{
-        Integral { [
-          // = P_el / I_bar^2
-          axialLength[]*sigma[]*SquNorm[(Dt[{a}]+{ur})]
-        ]; In Rotor_Bars; Jacobian Vol; Integration I1; }
-        Term { [ 1 / SquNorm[{I}] ]   ; In Rotor_Bars ; }
-      }
-    }
-    { Name Theta_Park_deg ; Value { Term { Type Global; [ $PAng ] ; In DomainDummy ; } } }
-    { Name IA  ; Value { Term { Type Global; [ II*IA[] ] ; In DomainDummy ; } } }
-    { Name IB  ; Value { Term { Type Global; [ II*IB[] ] ; In DomainDummy ; } } }
-    { Name IC  ; Value { Term { Type Global; [ II*IC[] ] ; In DomainDummy ; } } }
-    { Name Flux_d  ; Value { Term { Type Global; [ CompX[Flux_dq0[]] ] ; In DomainDummy ; } } }
-    { Name Flux_q  ; Value { Term { Type Global; [ CompY[Flux_dq0[]] ] ; In DomainDummy ; } } }
-    { Name Flux_0  ; Value { Term { Type Global; [ CompZ[Flux_dq0[]] ] ; In DomainDummy ; } } }
-   }
- }
-
+  }
 }
 
 //-------------------------------------------------------------------------------------------
