@@ -64,14 +64,16 @@ for i, filename in enumerate(os.listdir(machineFolder)):
 
 # SELECT MACHINE HERE BY INDEX OR NAME
 # fileName = machineList[33]
-fileName = "LSRPM_001.json"
+# fileName = "LSRPM_001.json"
 # fileName = "Toyota_Prius_6phases.json"
+fileName = "Toyota_Prius.json"
 
 print("\nUsing machine: " + fileName)
 pyleecan_machine: Machine = (
     load.load(  # pylint: disable=locally-disabled, no-member # type: ignore
         os.path.abspath(os.path.join(machineFolder, fileName))
         # os.path.abspath(os.path.join(USER_DIR, "Machine", "Toyota_Prius_complex.json"))
+        # os.path.abspath(os.path.join(USER_DIR, "Machine", "Toyota_Prius_complex_overlapDuct.json"))
     )
 )
 # %%
@@ -81,6 +83,19 @@ pyemmo_script = pyleecanAPI.main(
     model_dir=os.path.join(resFolder, pyleecan_machine.name),  # type: ignore
     use_gui=True,
 )
+# from pyemmo.script.script import Script
+
+# pyemmo_script = Script(pyemmo_script.machine)  # reset script
+pyemmo_script.addPostOperation(
+    quantityName="Force_MST",
+    name="Airgap Force",
+    # GetDP keyword arguments for PostOperations
+    OnElementsOf="Rotor_Bnd_MB_1",
+    File="CAT_RESDIR\\F_airgap.pos",
+    LastTimeStepOnly="",
+)
+pyemmo_script.generateScript(mode=2)
+
 # %%
 # Run Simulation over one elec period
 
