@@ -37,7 +37,7 @@ from os.path import isdir, isfile, join
 import gmsh as gmsh_api
 import numpy as np
 
-from ... import log_formatter
+from ... import log_formatter, rootLogger
 from ...functions import calcIronLoss, clean_name, import_results, runOnelab
 from ...script.geometry.machineAllType import MachineAllType
 from ...script.geometry.rotor import Rotor
@@ -109,7 +109,7 @@ def createMachine(
     gmsh_api.model.occ.synchronize()
 
     create_airgap_surfaces(maschineSurfDict, rotorMovingBandRadius, symFactor)
-    
+
     # check mesh sizes after import! Due to issues with OCC it can happen that points
     # lose their mesh size and get mesh size = 0. In this case, search for the closest
     # point and set the mesh size to its mesh size.
@@ -146,7 +146,7 @@ def createMachine(
                 raise ValueError(
                     f"MachineSide was whether rotor or stator: {machineSide}",
                 )
-    if logger.getEffectiveLevel()<= logging.DEBUG - 1:
+    if logger.getEffectiveLevel() <= logging.DEBUG - 1:
         gmsh_api.model.occ.synchronize()
         if extendedInfo["flag_openGUI"]:  # only open GUI if specified
             gmsh_api.model.setVisibility(gmsh_api.model.getEntities(), False)
@@ -437,8 +437,8 @@ def main(
         results (str, optional): Folder path to store the simulation results.
             Defaults to "modelDir/res_ModelName"
     """
-    logger = logging.getLogger(__name__)
-    if logger.getEffectiveLevel() <= logging.DEBUG:
+    module_logger = logging.getLogger(__name__)
+    if module_logger.getEffectiveLevel() <= logging.DEBUG:
         t0 = timeit.default_timer()
     # create dir for model files if it doesnt exist
     if not isdir(model):
@@ -449,10 +449,16 @@ def main(
         mode="w",
         encoding="utf-8",
     )
-    jsonLogFileHandler.setLevel(min(logger.getEffectiveLevel(), logging.INFO))
+    jsonLogFileHandler.setLevel(
+        min(
+            rootLogger.getEffectiveLevel(),
+            module_logger.getEffectiveLevel(),
+            logging.INFO,
+        )
+    )
     jsonLogFileHandler.setFormatter(log_formatter)
-    logger.addHandler(jsonLogFileHandler)
-    logger.info(
+    rootLogger.addHandler(jsonLogFileHandler)
+    module_logger.info(
         "PyEMMO API started on %s %s",
         datetime.date.today(),
         datetime.datetime.now().strftime("%H:%M:%S"),
@@ -515,18 +521,18 @@ def main(
     # given symmetry factor in extendedInfo:
     _check_symmetry(segmentSurfDict, extendedInfo)
 
-    if logger.getEffectiveLevel() <= logging.DEBUG:
+    if module_logger.getEffectiveLevel() <= logging.DEBUG:
         # update gmsh fltk GUI config
         gmsh_api.option.setNumber("Geometry.Surfaces", 1)  # show surface indications
         gmsh_api.option.setNumber("Geometry.Light", 0)  # deactivate 3D light
 
         t1 = timeit.default_timer()
-        logger.debug("Time for loading geometry: %.2fs", t1 - t0)
+        module_logger.debug("Time for loading geometry: %.2fs", t1 - t0)
     # generate the machine geometry
     machine, machineSurfDict = createMachine(segmentSurfDict, extendedInfo)
-    if logger.getEffectiveLevel() <= logging.DEBUG:
+    if module_logger.getEffectiveLevel() <= logging.DEBUG:
         t2 = timeit.default_timer()
-        logger.info("Time for creating machine object: %.2fs", t2 - t1)
+        module_logger.info("Time for creating machine object: %.2fs", t2 - t1)
 
     # set function mesh
     if "useFunctionMesh" in extendedInfo.keys():
@@ -535,7 +541,7 @@ def main(
 
     # get the simulation pareameters
     simulationParameters = importJSON.get_simulation_params(extendedInfo)
-    logger.info("Generating the Script object in JSON API.")
+    module_logger.info("Generating the Script object in JSON API.")
     apiScript = Script(
         name=importJSON.get_model_name(extendedInfo),
         scriptPath=model,
@@ -544,21 +550,21 @@ def main(
         resultsPath=results,
         # factory="OpenCascade",
     )
-    if logger.getEffectiveLevel() <= logging.DEBUG:
+    if module_logger.getEffectiveLevel() <= logging.DEBUG:
         t3 = timeit.default_timer()
-        logger.debug("Time for creating script object: %.2fs", t3 - t2)
+        module_logger.debug("Time for creating script object: %.2fs", t3 - t2)
     addPostOperations(apiScript, extendedInfo)
     meshSizeSetCode = createMeshSizeGUICode(machineSurfDict)
     # generate geo and pro files:
     apiScript.generateScript(UD_MeshCode=meshSizeSetCode)
-    if logger.getEffectiveLevel() <= logging.DEBUG:
+    if module_logger.getEffectiveLevel() <= logging.DEBUG:
         t4 = timeit.default_timer()
-        logger.debug("Time for generating script files: %.2fs", t4 - t3)
+        module_logger.debug("Time for generating script files: %.2fs", t4 - t3)
 
     if importJSON.get_flag_open_gui(extendedInfo) is True:
         _open_onelab(apiScript, extendedInfo, gmsh, getdp)
 
-    logger.removeHandler(jsonLogFileHandler)
+    rootLogger.removeHandler(jsonLogFileHandler)
     jsonLogFileHandler.close()  # close log file handler!
     return apiScript
 
