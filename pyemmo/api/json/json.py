@@ -482,6 +482,12 @@ def main(
     # get geometry
     if isinstance(geo, str):
         if isfile(geo):
+            # gmsh_api.logger.start()
+            # supress output of log messages to console.
+            # See https://gitlab.onelab.info/gmsh/gmsh/-/issues/1901
+            # Use gmsh.logger.start(), gmsh.logger.get(), gmsh.logger.stop() to catch logs.
+            module_logger.debug("Setting gmsh option General.Terminal to 0.")
+            gmsh_api.option.setNumber("General.Terminal", 0)
             # add new gmsh model in case api is called multiple times:
             gmsh_api.model.add(extendedInfo["modelName"])
             # import the segment surface list from the json file:
