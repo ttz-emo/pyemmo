@@ -650,26 +650,26 @@ def getSlotPhase(
 
     """
     logger = logging.getLogger(__name__)
-    if slot_side >= 1:
-        if windingLayout[0][1] == []:
-            # if slot side > 1 but second side of winding layout is empty:
-            logger.warning(
-                "Slot side of %i was given, but only one layer in winding layout!",
-                slot_side,
-            )
-            logger.warning("Resetting slot side to 0!")
-            slot_side = 0
-        else:
-            # multiple slots per stator lamination segment
-            logger.debug("More than one slot in segment %d", slot_number)
+    if slot_side == 1 and windingLayout[0][1] == []:
+        # if slot side is 1 but second side of winding layout is empty:
+        logger.warning(
+            "Slot side of %i was given, but only one layer in winding layout!",
+            slot_side,
+        )
+        logger.warning("Resetting slot side to 0!")
+        slot_side = 0
+    elif slot_side > 1:
+        raise ValueError(
+            "Index of slot side in slot identifier must be 0 or 1! "
+            "More than two layers per slot is not supported. "
+            f"Identifier of stator slot must be '{STATOR_SLOT_IDEXT}0' or '{STATOR_SLOT_IDEXT}1'"
+        )
     # find phase index for current slot number and slot side
     if all(phaseList[1] == [] for phaseList in windingLayout):
         # if second slot side is empty, create winding layout separatly because np does
         # not allow array size missmatch
         windingLayout = np.array([phaseList[0] for phaseList in windingLayout])
-        phase, slot_index = np.where(
-            np.abs(windingLayout) == slot_number
-        )
+        phase, slot_index = np.where(np.abs(windingLayout) == slot_number)
     else:
         windingLayout = np.array(windingLayout)
         phase, slot_index = np.where(
