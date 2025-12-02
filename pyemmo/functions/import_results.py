@@ -34,7 +34,7 @@ import parse
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 
-from .. import rootLogger as logger
+logger = logging.getLogger(__name__)
 
 
 def read_timetable_dat(file_path: str | os.PathLike) -> tuple[np.ndarray, np.ndarray]:

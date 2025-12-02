@@ -50,20 +50,43 @@ else:
 if not isdir(USER_DIR):
     os.makedirs(USER_DIR)
 
-# init root logger:
-# # get longest level name to determine distance for level name in log format
-# max_len = max([len(name) for name in list(logging._nameToLevel.keys())])
-FORMAT = f"%(levelname)s - %(name)s - %(message)s"
-logging.basicConfig(level=logging.INFO, format=FORMAT)
-# global logging format
-log_formatter = logging.Formatter(FORMAT)
+LOG_FORMAT = f"%(levelname)s - %(name)s - %(message)s"  # pylint: disable=W1309
+
+# init pyemmo package logger
+# NOTE: By creating a top-level package logger and adding a StreamHandler to it, we dont
+# need to configure the root logger (logging.getLogger()).
+# TODO: What to do if root logger allready initialized? Check for StreamHandler in root
+# logger? How to handle logging in __main__ files in that case?
+
+pyemmoLogger = logging.getLogger("pyemmo")
+
+# set default pyemmo log level to info
+pyemmoLogger.setLevel(logging.INFO)
+
+# create global logging format:
+# INITIALIZE LOGGING
+log_formatter = logging.Formatter(LOG_FORMAT)
+"""Global pyemmo log formatter"""
+
+# create console handler and use format
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(log_formatter)
+
+# create global log file handler with format
+# TODO: Replace simple file handler with rolling file handler
 globalLogFileHandler = logging.FileHandler(
     filename=os.path.join(USER_DIR, "pyemmo.log"), encoding="utf-8"
 )
-globalLogFileHandler.setFormatter(log_formatter)
-rootLogger = logging.getLogger()
-rootLogger.addHandler(globalLogFileHandler)
-logging.info(
+"""Global log file handler to file "pyemmo.log" in folder `USER_DIR` with level INFO"""
+globalLogFileHandler.setFormatter(log_formatter)  # set format
+# set level of !file handler! to info, no need to log debug info in global log file:
+globalLogFileHandler.setLevel(logging.INFO)
+
+# add handlers to package logger:
+pyemmoLogger.addHandler(globalLogFileHandler)
+pyemmoLogger.addHandler(console_handler)
+
+pyemmoLogger.info(
     "PyEMMO started on %s %s",
     datetime.date.today(),
     datetime.datetime.now().strftime("%H:%M:%S"),

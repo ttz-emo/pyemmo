@@ -22,6 +22,7 @@
 """This module allows an easy invoke of the json api by a tkinter file dialog!"""
 from __future__ import annotations
 
+import logging
 import os
 import re
 import tkinter as tk
@@ -29,6 +30,7 @@ from tkinter import filedialog
 
 from pyemmo.api.json import json
 
+logging.basicConfig(level=logging.DEBUG)
 root = tk.Tk()
 root.withdraw()
 model_folder = r""

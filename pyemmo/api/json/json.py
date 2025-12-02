@@ -37,7 +37,7 @@ from os.path import isdir, isfile, join
 import gmsh as gmsh_api
 import numpy as np
 
-from ... import log_formatter, rootLogger
+from ... import log_formatter
 from ...functions import calcIronLoss, clean_name, import_results, runOnelab
 from ...script.geometry.machineAllType import MachineAllType
 from ...script.geometry.rotor import Rotor
@@ -55,6 +55,7 @@ from .create_airgaps import create_airgap_surfaces
 # from .. import calcPhaseangleStarvoltageCorr
 
 # analyse.calc_phaseangle_starvoltage = calcPhaseangleStarvoltageCorr
+pyemmoLogger = logging.getLogger("pyemmo")
 
 
 def createMachine(
@@ -446,18 +447,18 @@ def main(
     # Set logging path to model dir
     jsonLogFileHandler = logging.FileHandler(
         filename=os.path.join(model, "pyemmo_jsonAPI.log"),
-        mode="w",
+        mode="w",  # create new file each time the api is run
         encoding="utf-8",
     )
     jsonLogFileHandler.setLevel(
         min(
-            rootLogger.getEffectiveLevel(),
+            pyemmoLogger.getEffectiveLevel(),
             module_logger.getEffectiveLevel(),
             logging.INFO,
         )
     )
     jsonLogFileHandler.setFormatter(log_formatter)
-    rootLogger.addHandler(jsonLogFileHandler)
+    pyemmoLogger.addHandler(jsonLogFileHandler)
     module_logger.info(
         "PyEMMO API started on %s %s",
         datetime.date.today(),
@@ -468,6 +469,7 @@ def main(
     if isinstance(extInfo, str):
         if isfile(extInfo):
             # import the extended information
+            module_logger.debug("Loading model information from file %s", extInfo)
             extendedInfo = importJSON.load_info_dict(extInfo)
         else:
             raise (FileNotFoundError(f"Given file path {extInfo} was not a file."))
@@ -486,6 +488,7 @@ def main(
             # import the segment surface list from the json file:
             try:
                 with open(geo, encoding="utf-8") as jsonFile:
+                    module_logger.debug("Loading geometry data from file %s", geo)
                     machineGeoList = json.load(jsonFile)
                     # create dict with surface api (segment) objects from the surface list
                     segmentSurfDict = modelJSON.importMachineGeometry(machineGeoList)
@@ -564,7 +567,7 @@ def main(
     if importJSON.get_flag_open_gui(extendedInfo) is True:
         _open_onelab(apiScript, extendedInfo, gmsh, getdp)
 
-    rootLogger.removeHandler(jsonLogFileHandler)
+    pyemmoLogger.removeHandler(jsonLogFileHandler)
     jsonLogFileHandler.close()  # close log file handler!
     return apiScript
 

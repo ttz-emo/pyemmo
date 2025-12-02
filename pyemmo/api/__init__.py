@@ -26,6 +26,8 @@ import gmsh
 
 from ..script.material.material import Material
 
+logger = logging.getLogger(__name__)
+
 try:
     air = Material.load("Air")
     air.density = 1.2041
@@ -43,6 +45,6 @@ air.name = "PYEMMO_AIR"
 
 if not gmsh.is_initialized():
     gmsh.initialize()
-    if logging.getLogger(__name__).level < logging.DEBUG:
+    if logger.getEffectiveLevel() < logging.DEBUG:
         # use fine resolution for arcs in debugging
         gmsh.option.setNumber("Geometry.NumSubEdges", 360)
