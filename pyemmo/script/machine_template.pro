@@ -198,16 +198,16 @@ DefineConstant[
         Name StrCat[
             INPUT_ANA_SETTINGS_OUTPUT, "02Results folder path"
         ],
-        Help "Main results folder path where the results of the simulation
-            will be stored. This folder will be created by GetDP if it does not
-            exist yet. Use 'Results folder name' to create a result subfolder."
+        Help StrCat("Main results folder path where the results of the simulation ",
+            "will be stored. This folder will be created by GetDP if it does not ",
+            "exist yet. Use 'Results folder name' to create a result subfolder.")
     }
 
     ResId = {
         "/", Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "03Results folder name"],
-        Help "Name of the directory inside the results folder, where the result
-            files of THIS simulation should be stored. This directory will be
-            automatically created by GetDP."
+        Help StrCat("Name of the directory inside the results folder, where the result ",
+            "files of THIS simulation should be stored. This directory will be ",
+            "automatically created by GetDP.")
     },
 
     Flag_ClearResults = {
@@ -315,8 +315,7 @@ DefineConstant[
     stop_criterion = {
         1e-7, Name StrCat[INPUT_SOLVER_SETTINGS_NL, "Stopping criterion"],
         //   Visible Flag_NL,
-        Help "Stop criterion for Newton-Raphson method.
-         Solver will stop when Norm((Ax-b)/x) < stop_criterion."
+        Help "Stop criterion for Newton-Raphson method. Solver will stop when Norm((Ax-b)/x) < stop_criterion."
     },
 
     // In the newton raphson method, the relaxation factor determines the new x
@@ -367,24 +366,28 @@ DefineConstant[
         FLAG_NL, Name StrCat[INPUT_MAT_PROPERTIES, "Non-linear B-H curves"],
         Choices{0, 1},
         Visible Flag_ExpertMode,
-        Help "If this parameter is checked (=1), then the non-linear B-H curves
-             are used. Otherwise the non-linearity is replaced (extrapolated) by
-             a constant mu_r."
+        Help StrCat("If this parameter is checked (=1), then the non-linear B-H curves ",
+            "are used. Otherwise the non-linearity is replaced (extrapolated) by a ",
+            "constant mu_r.")
         },
     eccentricity_static = {
         0.0, Name StrCat[INPUT_GEO, "Static Eccentricity [mm]"],
         ReadOnly SymmetryFactor != 1,
-        Help "The stator will elements be translated by this in -x direction. Make sure 
-            that the sum of static and dynamic eccentricity are not greater than the 
-            movingband height!"
+        Help StrCat("The stator will elements be translated by this in -x direction. ",
+            "Make sure that the sum of static and dynamic eccentricity are not greater ",
+            "than the movingband height! ",
+            "This can only be used in a full model (symmetry = 1).")
         },
     eccentircity_static_m = eccentricity_static * mm,
     eccentricity_dynamic = {
         0.0, Name StrCat[INPUT_GEO, "Dynamic Eccentricity [mm]"],
         ReadOnly SymmetryFactor != 1,
-        Help "Dynamic eccentircity in mm. The rotor initial position will be translated 
-            by this in x-direction, while still rotating the rotor elements around the 
-            origin"
+        Help StrCat("Dynamic eccentircity in mm. The rotor initial position will be ",
+            "translated by this in x-direction, while still rotating the rotor elements ",
+            "around the origin. ",
+            "Make sure that the sum of static and dynamic eccentricity are not greater ",
+            "than the movingband height! ",
+            "This can only be used in a full model (symmetry = 1).")
         },
     eccentricity_dynamic_m = eccentricity_dynamic * mm
 ];
@@ -405,14 +408,19 @@ DefineConstant[
         NBR_TURNS_IN_FACE,Name StrCat[
             INPUT_ELEC_WINDINGS, "01Number of wires per slot surface"
         ],
-        Help "Number of wires in a single slot surface"
+        Help StrCat(
+            "Number of wires in a single slot surface.",
+            "If the slot is divided in several surfaces, the value needs to match the ",
+            "number of wires in each surface."
+            )
     },
 
     NbrParallelPaths = {
         NBR_PARALLEL_PATHS, Name StrCat[
             INPUT_ELEC_WINDINGS, "02Number of parallel paths per phase"
         ],
-        ReadOnly !Flag_ExpertMode
+        ReadOnly !Flag_ExpertMode,
+        Help "Number of parallel paths per phase."
     },
 
     //======================== EXCITATION PARAMETERS =========================
@@ -422,7 +430,8 @@ DefineConstant[
             INPUT_ELEC_EXCITATION, "05Invert rotation Direction"
         ],
         Choices{0, 1},
-        Visible Flag_ExpertMode
+        Visible Flag_ExpertMode,
+        Help "Invert the stator field rotation direction by changing phase offset in source definition."
     },
     // IF SYNCHRONOUS
     ID_RMS = {
@@ -462,7 +471,8 @@ DefineConstant[
             INPUT_ELEC_EXCITATION, "06Stator dq-System Offset [deg elec]"
         ],
         Min -360, Max 360, Step 10,
-        Visible Flag_ExpertMode && MachineType==SYNCHRONOUS
+        Visible Flag_ExpertMode && MachineType==SYNCHRONOUS,
+        Help "Stator dq0 offset angle to align with rotor dq0 axis."
     },
     // Else if MachineType is ASYNCHRONOUS
     // For async we define rotor frequency and rms phase current
@@ -471,7 +481,8 @@ DefineConstant[
             INPUT_ELEC_EXCITATION, "00Stator Phase Current (RMS)"
         ],
         Units "A",
-        Visible Flag_SrcType_Stator == 1 && MachineType==ASYNCHRONOUS
+        Visible Flag_SrcType_Stator == 1 && MachineType==ASYNCHRONOUS,
+        Help "Stator phase current (rms)"
     },
 
     freq_rotor = {
@@ -479,7 +490,8 @@ DefineConstant[
             INPUT_ELEC_EXCITATION, "01Rotor Frquency"
         ],
         Units "Hz",
-        Visible Flag_SrcType_Stator == 1 && MachineType==ASYNCHRONOUS
+        Visible Flag_SrcType_Stator == 1 && MachineType==ASYNCHRONOUS,
+        Help "Electrical rotor frequency for induction machine."
     },
 
 
@@ -496,19 +508,23 @@ DefineConstant[
     },
 
     // Amplitude of the input voltage (in case of voltage input)
-    VV = {12,
-            Name StrCat[INPUT_ELEC, "V [V]"],
-            Units "V",
-            Visible Flag_SrcType_Stator == 2},
+    VV = {
+        12, Name StrCat[INPUT_ELEC, "V [V]"],
+        Units "V",
+        Visible Flag_SrcType_Stator == 2,
+        Help "Amplitude of the phase source voltage"
+    },
     R_wire = {
         0, Name StrCat[INPUT_ELEC, "Connection Resistance [Ohm]"],
-        Visible Flag_Cir
+        Visible Flag_Cir,
+        Help StrCat("Connection resistance between voltage source and machine ",
+            "(cable and connection resistance).")
     },
-
     CircuitConnection = {
         0, Name StrCat[INPUT_ELEC, "Winding Type"],
         Choices{0 = "Star Connection", 1 = "Delta Connection"},
-        Visible Flag_Cir
+        Visible Flag_Cir,
+        Help "Voltage source circuit connection type"
     },
 
     // Phase angle of the voltage
@@ -530,10 +546,12 @@ DefineConstant[
 
     // ROTOR CIRCUIT
     Flag_Cir_RotorCage = {(nbrRotorBars > 0) , Choices{0,1},
-        Name StrCat(
-            INPUT_ELEC_CIRCUIT_ROTOR,"Circuit/10Use circuit in rotor cage"
-            ),
-        Visible (nbrRotorBars > 0)
+        Name StrCat(INPUT_ELEC_CIRCUIT_ROTOR,"Circuit/10Use circuit in rotor cage"),
+        Visible (nbrRotorBars > 0),
+        Help StrCat(
+            "Use circuit to connect rotor bars with endring resistance and inductance. ",
+            "Otherwise the bars will be ideally connected (without any reactance)."
+            )
         // ReadOnly (Flag_SrcType_Stator==1)
     },
 
@@ -543,10 +561,10 @@ DefineConstant[
             "Circuit/11Resistance of endring segment [Ohm]"
         ],
         ReadOnly !Flag_Cir_RotorCage,
-        Help "This must be given for a single endring segment!
-        During processing the value is scaled to 1 meter because in
-        the electromagnetic formulation the resulting voltage drop given to the
-        circuit is in V/m!",
+        Help StrCat("This must be given for a single endring segment! ",
+            "During processing the value is scaled to 1 meter because in ",
+            "the electromagnetic formulation the resulting voltage drop given to the ",
+            "circuit is in V/m!"),
         Visible (nbrRotorBars>0)
     },
     L_endring_segment = {4.8e-9,
@@ -555,10 +573,10 @@ DefineConstant[
             "Circuit/12Inductance of endring segment [H]"
         ],
         ReadOnly !Flag_Cir_RotorCage,
-        Help "This must be given for a single endring segment!
-        During processing the value is scaled to 1 meter because in
-        the electromagnetic formulation the resulting voltage drop given to the
-        circuit is in V/m!",
+        Help StrCat("This must be given for a single endring segment! ",
+            "During processing the value is scaled to 1 meter because in ",
+            "the electromagnetic formulation the resulting voltage drop given to the ",
+            "circuit is in V/m!"),
         Visible (nbrRotorBars>0)
     }
 ];
