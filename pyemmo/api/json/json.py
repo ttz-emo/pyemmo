@@ -31,7 +31,7 @@ import logging
 import os
 import subprocess
 import timeit
-from os import mkdir
+from os import makedirs
 from os.path import isdir, isfile, join
 
 import gmsh as gmsh_api
@@ -442,8 +442,7 @@ def main(
     if module_logger.getEffectiveLevel() <= logging.DEBUG:
         t0 = timeit.default_timer()
     # create dir for model files if it doesnt exist
-    if not isdir(model):
-        mkdir(model)
+    makedirs(model, exist_ok=True)
     # Set logging path to model dir
     jsonLogFileHandler = logging.FileHandler(
         filename=os.path.join(model, "pyemmo_jsonAPI.log"),
