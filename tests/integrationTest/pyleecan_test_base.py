@@ -42,7 +42,7 @@ from pyleecan.Classes.Machine import Machine
 from pyleecan.definitions import DATA_DIR
 from pyleecan.Functions import load
 
-from pyemmo import rootLogger as pyemmo_main_logger
+from pyemmo import pyemmoLogger as pyemmo_main_logger
 from pyemmo.api.pyleecan import main as pyleecanAPI
 from pyemmo.definitions import ROOT_DIR
 from pyemmo.functions.runOnelab import createCmdCommand, log_subprocess_output

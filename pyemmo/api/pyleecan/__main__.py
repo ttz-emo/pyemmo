@@ -28,13 +28,15 @@ import argparse
 import logging
 import os
 
-from ... import rootLogger as logger
 from ...definitions import RESULT_DIR
 from . import use_pyleecan
 from .main import main
 
 if use_pyleecan:
     from pyleecan.Functions import load
+
+logger = logging.getLogger(__name__)
+pyemmoLogger = logging.getLogger("pyemmo")
 
 if __name__ == "__main__":
     if not use_pyleecan:
@@ -87,16 +89,16 @@ if __name__ == "__main__":
 
     # remove commandline handler if not verbose
     if not args.v:
-        for handler in logger.handlers:
+        for handler in logging.getLogger().handlers:
             if isinstance(handler, logging.StreamHandler):
-                logger.removeHandler(handler)
+                pyemmoLogger.removeHandler(handler)
 
     # set log level
     loglevel = args.log
     logLevelNum = getattr(logging, loglevel.upper(), None)
     if not isinstance(logLevelNum, int):
         raise ValueError(f"Invalid log level: {loglevel}")
-    logger.setLevel(logLevelNum)
+    pyemmoLogger.setLevel(logLevelNum)
 
     main(
         pyleecan_machine=load.load(args.file),  # pylint: disable=no-member,E0606

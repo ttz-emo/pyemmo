@@ -300,7 +300,9 @@ Function {
   T_max[] = ( SquDyadicProduct[$1] - SquNorm[$1] * TensorDiag[0.5, 0.5, 0.5] ) / mu0 ;
 
   // This function returns the angle with respect to the x axis of the point that is being evaluated
-  AngularPosition[] = (Atan2[$Y,$X]#7 >= 0.)? #7 : #7+2*Pi ;
+  AngularPosition[] = (Atan2[$Y,$X]#7 >= 0.)? #7 : #7+2*Pi;
+  CompRad[] = $1 * Vector[  Cos[AngularPosition[]#4], Sin[#4], 0.];
+  CompTan[] = $1 * Vector[ -Sin[AngularPosition[]#4], Cos[#4], 0.];
 
   // Function to rotate the points around the z axis
   RotatePZ[] = Rotate[ Vector[$X,$Y,$Z], 0, 0, $1 ] ;
@@ -1202,7 +1204,7 @@ PostProcessing {
       { Name Force_MST;
         Value{
           Term{ [ T_max[{Curl a}] * XYZ[] ] ; In Region[{Rotor_Bnd_MB, Stator_Bnd_MB}]; Jacobian Sur; } 
-          Term{ [ T_max[{Curl a}] * XYZ[] ] ; In Region[Rotor_Airgap, Stator_Airgap]; Jacobian Vol; } 
+          Term{ [ T_max[{Curl a}] * XYZ[] ] ; In Region[{Rotor_Airgap, Stator_Airgap}]; Jacobian Vol; } 
       }}
       { Name Force_MST_Cyl;
         Value{

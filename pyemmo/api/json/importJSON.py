@@ -449,7 +449,12 @@ def create_material(matDict: dict[str, dict[Literal["wert"], Any]]) -> Material:
         Material: Material object generated from Matlab dict.
     """
     name = matDict["name"]["wert"]
+    logger = logging.getLogger(__name__)
     if isAir(name):
+        logger.info(
+            "Air found in name of material '%s'. Using standard pyemmo Air material.",
+            name,
+        )
         return air
     if "elektromagnetik" in matDict.keys():
         # TODO: Optimize code by introducing default mat dict and iterating
@@ -462,7 +467,6 @@ def create_material(matDict: dict[str, dict[Literal["wert"], Any]]) -> Material:
         permeability = magMatDict.get("mue_r", {}).get("wert")
         if not isinstance(permeability, (int, float)):
             if permeability is not None:
-                logger = logging.getLogger(__name__)
                 logger.warning(
                     "Bad value for permeability of Material %s: %s. Resetting to 1.0!",
                     name,
@@ -546,8 +550,8 @@ def create_material(matDict: dict[str, dict[Literal["wert"], Any]]) -> Material:
             # add warning to log and raise InvalidSheetThicknessError (which is catched
             # by try-except statment) to create standard material
             logger.warning(
-                """Sheet thickness of material %s is greater 5mm: %f meter!
-                Creating standard material instead of electrical steel material!""",
+                """Sheet thickness of material %s is greater 5mm: %f meter! """
+                "Creating standard material instead of electrical steel material!",
                 name,
                 sheetThickness,
             )
