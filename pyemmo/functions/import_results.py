@@ -325,6 +325,40 @@ def importSP(
     return parsedName[0], time, pos, values
 
 
+def load_view(pos_file: str) -> tuple[bool, int]:
+    """Load view from post processing file (ending .pos)
+
+    Args:
+        pos_file (str): .pos file path
+
+    Returns:
+        bool: flag to indicate if gmsh had to be initialized.
+        int: Gmsh view tag.
+    """
+    finalize_gmsh = False
+    if not gmsh.isInitialized():
+        gmsh.initialize()  # init gmsh
+        # if gmsh wasn't init before -> close it a the end
+        finalize_gmsh = True
+
+    nbr_views_loaded = gmsh.view.getTags().size
+
+    gmsh.open(pos_file)  # load view
+
+    # check that view was loaded:
+    view_tags = gmsh.view.getTags()
+
+    # check if new view has been created, otherwise raise error
+    if isinstance(view_tags, np.ndarray) and view_tags.size == nbr_views_loaded:
+        if finalize_gmsh:
+            gmsh.finalize()
+        raise ValueError(
+            f"Given file '{pos_file}' did not result in a Gmsh view. Is file "
+            "in gmsh POS-format?"
+        )
+    return finalize_gmsh, view_tags[-1]
+
+
 def importPos(pos_file: str | os.PathLike) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Import POS file via gmsh api.
 
@@ -348,28 +382,16 @@ def importPos(pos_file: str | os.PathLike) -> tuple[np.ndarray, np.ndarray, np.n
     if ext != ".pos":
         raise ValueError(f"Given filepath '{pos_file}' is not a POS-file!")
 
-    finalize_gmsh = False
-    if not gmsh.isInitialized():
-        gmsh.initialize()  # init gmsh
-        # if gmsh wasn't init before -> close it a the end
-        finalize_gmsh = True
-    gmsh.open(pos_file)  # load view
+    # load view from result file
+    finalize_gmsh, view_tag = load_view(pos_file)
 
-    # check that view was loaded:
-    view_tags = gmsh.view.getTags()
-    if isinstance(view_tags, np.ndarray) and view_tags.size == 0:
-        gmsh.finalize()
-        raise ValueError(
-            f"Given file '{pos_file}' did not result in a Gmsh view. Is file "
-            "in gmsh POS-format?"
-        )
     # get number of time steps in SIMULATION (not all time steps have to be
     # saved)
-    nbr_steps = int(gmsh.view.option.getNumber(tag=view_tags[-1], name="NbTimeStep"))
+    nbr_steps = int(gmsh.view.option.getNumber(tag=view_tag, name="NbTimeStep"))
     time = []  # init time vector
     # init data containers with first time step
     _, element_tags, cdata, ctime, nbr_components = gmsh.view.getModelData(
-        tag=view_tags[-1], step=0
+        tag=view_tag, step=0
     )
     # check type of element tags and convert to numpy
     if not isinstance(element_tags, np.ndarray):
@@ -379,7 +401,7 @@ def importPos(pos_file: str | os.PathLike) -> tuple[np.ndarray, np.ndarray, np.n
     #   scalar: number of components = 1
     if not cdata:
         _, element_tags, cdata, ctime, nbr_components = gmsh.view.getModelData(
-            view_tags[-1], nbr_steps - 1
+            view_tag, nbr_steps - 1
         )
         if not cdata:
             gmsh.finalize()
@@ -405,7 +427,7 @@ def importPos(pos_file: str | os.PathLike) -> tuple[np.ndarray, np.ndarray, np.n
     time.append(ctime)  # add first time step
     # loop through time steps an extract data
     for step in range(1, nbr_steps):
-        _, _, cdata, ctime, _ = gmsh.view.getModelData(view_tags[-1], step)
+        _, _, cdata, ctime, _ = gmsh.view.getModelData(view_tag, step)
         data[step] = np.array(cdata)[:, :nbr_components]
         time.append(ctime)
     if finalize_gmsh:
