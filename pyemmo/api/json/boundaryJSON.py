@@ -678,7 +678,7 @@ def get_boundaries(
                     "primary lines did not contain center point!"
                 )
     # show boundaries if debugging -1
-    if logging.getLogger().level <= logging.DEBUG - 1:
+    if logger.getEffectiveLevel() <= logging.DEBUG - 1:
         logging.debug("Show boundary lines in gmsh...")
         gmsh.model.setVisibility(gmsh.model.getEntities(), False)  # disable all
         gmsh.model.setVisibility(
