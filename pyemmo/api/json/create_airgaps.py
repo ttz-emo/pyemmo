@@ -217,7 +217,7 @@ def create_airgap_surfaces(
                 )
             ]
             surface_dict[STATOR_AIRGAP_IDEXT][0].setMeshLength(band_height)
-            if logging.getLogger().getEffectiveLevel() <= logging.DEBUG - 1:
+            if logger.getEffectiveLevel() <= logging.DEBUG - 1:
                 gmsh.model.occ.synchronize()
                 gmsh.fltk.run()
         else:
