@@ -354,11 +354,11 @@ def importPos(pos_file: str | os.PathLike) -> tuple[np.ndarray, np.ndarray, np.n
         # if gmsh wasn't init before -> close it a the end
         finalize_gmsh = True
     gmsh.open(pos_file)  # load view
-
     # check that view was loaded:
     view_tags = gmsh.view.getTags()
     if isinstance(view_tags, np.ndarray) and view_tags.size == 0:
-        gmsh.finalize()
+        if finalize_gmsh:
+            gmsh.finalize()
         raise ValueError(
             f"Given file '{pos_file}' did not result in a Gmsh view. Is file "
             "in gmsh POS-format?"
