@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-20254 M. Schuler, TTZ-EMO,
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
 # Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -222,6 +222,10 @@ class Script:
         self.idedentPoints: list[Point] = []
         self.nbrIdedentLines: int = 0
         self.idedentLines: list[Line | CircleArc | Spline] = []
+
+        # set flags to check if files have been created trough generateScript()
+        self._pro_files_created = False
+        self._geo_files_created = False
 
         # add machine domains
         self._machine = machine  # do not set machine via setter function!
@@ -1461,8 +1465,7 @@ class Script:
         self.group.add(clean_name(domain.name), physIDs)
 
     def _printAllMaterial(self):
-        """Generate the GetDP function code for all materials in the material
-        dict"""
+        """Generate the GetDP function code for all materials in the material dict"""
         self.functionMaterial.define(name=["br", "js"])
         self.functionMaterial.add_params({"mu0": "4.e-7 * Pi"})
 
@@ -1483,6 +1486,15 @@ class Script:
             except ValueError as val_err:
                 if re.search(r"Identifier .* already in use.", val_err.args[0]):
                     logger = logging.getLogger(__name__)
+                    if self._pro_files_created:
+                        # materials allready been created. Skip material if allready
+                        # existing...
+                        logger.info(
+                            "Material '%s' has allready been created in the pro-file. "
+                            "Skip duplicate creation.",
+                            matName,
+                        )
+                        continue
                     logger.warning(
                         "Material with name %s is defined multiple times, but with different "
                         "properties. Trying to add it again with different identifier...",
@@ -2099,6 +2111,8 @@ class Script:
                 "Geometry.PointSize = 3.0;\n\n"
             )
             geoScript.write(movingGeoCode)
+        # set flag that geometry files have been created to true
+        self._geo_files_created = True
 
         logger.debug(
             "I found %d identical points. There are %d points in the model.",
@@ -2392,6 +2406,7 @@ class Script:
             self.machine.stator.winding.save_to_file(
                 os.path.join(self.scriptPath, f"winding_{self.name}.wdg")
             )
+        self._pro_files_created = True
 
     def generateScript(self, mode: int = 0, UD_MeshCode: str = ""):
         """
