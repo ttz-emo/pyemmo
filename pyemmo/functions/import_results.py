@@ -325,6 +325,40 @@ def importSP(
     return parsedName[0], time, pos, values
 
 
+def load_view(pos_file: str) -> tuple[bool, int]:
+    """Load view from post processing file (ending .pos)
+
+    Args:
+        pos_file (str): .pos file path
+
+    Returns:
+        bool: flag to indicate if gmsh had to be initialized.
+        int: Gmsh view tag.
+    """
+    finalize_gmsh = False
+    if not gmsh.isInitialized():
+        gmsh.initialize()  # init gmsh
+        # if gmsh wasn't init before -> close it a the end
+        finalize_gmsh = True
+
+    nbr_views_loaded = gmsh.view.getTags().size
+
+    gmsh.open(pos_file)  # load view
+
+    # check that view was loaded:
+    view_tags = gmsh.view.getTags()
+
+    # check if new view has been created, otherwise raise error
+    if isinstance(view_tags, np.ndarray) and view_tags.size == nbr_views_loaded:
+        if finalize_gmsh:
+            gmsh.finalize()
+        raise ValueError(
+            f"Given file '{pos_file}' did not result in a Gmsh view. Is file "
+            "in gmsh POS-format?"
+        )
+    return finalize_gmsh, view_tags[-1]
+
+
 def importPos(pos_file: str | os.PathLike) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Import POS file via gmsh api.
 
@@ -343,33 +377,40 @@ def importPos(pos_file: str | os.PathLike) -> tuple[np.ndarray, np.ndarray, np.n
             - data array
     """
     # check file extension
-    _, filename = os.path.split(pos_file)
+    path, filename = os.path.split(pos_file)
     filename, ext = os.path.splitext(filename)
     if ext != ".pos":
         raise ValueError(f"Given filepath '{pos_file}' is not a POS-file!")
 
-    finalize_gmsh = False
-    if not gmsh.isInitialized():
-        gmsh.initialize()  # init gmsh
-        # if gmsh wasn't init before -> close it a the end
-        finalize_gmsh = True
-    gmsh.open(pos_file)  # load view
-    # check that view was loaded:
-    view_tags = gmsh.view.getTags()
-    if isinstance(view_tags, np.ndarray) and view_tags.size == 0:
-        if finalize_gmsh:
-            gmsh.finalize()
-        raise ValueError(
-            f"Given file '{pos_file}' did not result in a Gmsh view. Is file "
-            "in gmsh POS-format?"
-        )
+    # Check if pos file is in old GmshParsed format. See function import_pos_parsedFormat!
+    with open(pos_file, "r") as file:
+        if file.readline().startswith("View"):
+            logger.warning(
+                "Result file '%s' is in old gmsh parsed format. "
+                "Try to convert it to new format...",
+                pos_file,
+            )
+            logger.info(
+                "Alternativly use function import_pos_parsedFormat(...) to import "
+                "parsed formatted data!"
+            )
+            # if function is in GmshParsed format, export as .msh file to update file
+            # format and the use as new results file
+            filename = filename + ".msh"  # update filename
+            _, view_tag = load_view(pos_file)
+            pos_file = os.path.join(path, filename)  # update result file path
+            gmsh.view.write(view_tag, pos_file)  # export as .msh
+
+    # load view from result file
+    finalize_gmsh, view_tag = load_view(pos_file)
+
     # get number of time steps in SIMULATION (not all time steps have to be
     # saved)
-    nbr_steps = int(gmsh.view.option.getNumber(tag=view_tags[-1], name="NbTimeStep"))
+    nbr_steps = int(gmsh.view.option.getNumber(tag=view_tag, name="NbTimeStep"))
     time = []  # init time vector
     # init data containers with first time step
     _, element_tags, cdata, ctime, nbr_components = gmsh.view.getModelData(
-        tag=view_tags[-1], step=0
+        tag=view_tag, step=0
     )
     # check type of element tags and convert to numpy
     if not isinstance(element_tags, np.ndarray):
@@ -379,7 +420,7 @@ def importPos(pos_file: str | os.PathLike) -> tuple[np.ndarray, np.ndarray, np.n
     #   scalar: number of components = 1
     if not cdata:
         _, element_tags, cdata, ctime, nbr_components = gmsh.view.getModelData(
-            view_tags[-1], nbr_steps - 1
+            view_tag, nbr_steps - 1
         )
         if not cdata:
             gmsh.finalize()
@@ -405,13 +446,105 @@ def importPos(pos_file: str | os.PathLike) -> tuple[np.ndarray, np.ndarray, np.n
     time.append(ctime)  # add first time step
     # loop through time steps an extract data
     for step in range(1, nbr_steps):
-        _, _, cdata, ctime, _ = gmsh.view.getModelData(view_tags[-1], step)
+        _, _, cdata, ctime, _ = gmsh.view.getModelData(view_tag, step)
         data[step] = np.array(cdata)[:, :nbr_components]
         time.append(ctime)
     if finalize_gmsh:
         # if gmsh wasn't init before:
         gmsh.finalize()
     return element_tags, np.array(time), data
+
+
+# TODO: move implementation of importPos to this function:
+# def _import_pos_mshFormat(view_tag: int, step: int): ...
+
+
+def import_pos_parsedFormat(file_path: str) -> tuple[str, np.ndarray, np.ndarray]:
+    """Import data from older .pos format 'GmshParsed'.
+    See this for more info about parsed file format:
+    https://gmsh.info/doc/texinfo/gmsh.html#Gmsh-file-formats:~:text=More%20explicitly%2C%20the%20syntax%20for%20a%20parsed%20View%20is%20the%20following
+
+    Args:
+        file_path (str): path to result file
+
+    Returns:
+        str: GmshParsed results data type (like SP for scalar point or VL for vector line)
+        np.ndarray: Node coordinates in shape (number of elements, number of nodes * 3)
+        np.ndarray: Data array in shape (number of element, number of simulation steps * number of values per node)
+    """
+    finalize_gmsh, view_tag = load_view(file_path)
+
+    # check that view was loaded:
+    dTypeArray, numElem, data = gmsh.view.getListData(view_tag, returnAdaptive=False)
+    for i, data_type in enumerate(dTypeArray):
+        # translate data type to number of data values per step
+        if data_type[0] == "S":  # scalar values
+            nbr_data = 1
+        elif data_type[0] == "V":  # vector result
+            nbr_data = 3
+        elif data_type[0] == "T":  # tensor result
+            raise NotImplementedError("Tensor data import not implemented.")
+        else:
+            raise ValueError(f"Unknown data type '{data_type}' in result.")
+
+        # match second character to get number of node coordinates per element
+        match data_type[1]:
+            case "P":  # point results
+                nbr_coords = [3]  # number of coordinates per element
+            case "L":  # line results
+                nbr_coords = [3, 3]  # number of coordinates per element
+            case "T":  # triangle results
+                nbr_coords = [3, 3, 3]  # 3 point per triangle
+            case _:
+                raise ValueError(
+                    f"Cannot import values for Gmsh parsed data type {data_type}!"
+                )
+        # calc number of steps (unnecessary)
+        nbr_steps = (data[i].size / numElem[i] - sum(nbr_coords)) / nbr_data
+        assert nbr_steps % 1 == 0, "Number of timesteps turns out to be non-int!"
+        
+        # FIXME: Import time step information
+        # assert nbr_steps == int(
+        #     gmsh.view.option.getNumber(tag=view_tag, name="NbTimeStep")
+        # )
+        
+        # if nbr_steps>1:
+        #     with open(file_path, encoding="utf-8") as dataFile:
+        #         dataLines = dataFile.readlines()
+        #     dataLines.pop(-1)  # remove last line (no information)
+        #     # read time values
+        #     timeStr = parse.parse("TIME{{{}}};\n", dataLines[-1])
+        #     if isinstance(timeStr, parse.Result):  # if time values could be parsed
+        #         time: list[float] = []
+        #         dataLines.pop()  # remove time line from dataLines
+        #         for timeVal in timeStr[0].split(","):
+        #             time.append(float(timeVal))
+        #     elif timeStr is None:
+        #         # no time step given in results file. Only single time step evaluated!
+        #         time = []
+        #     else:
+        #         raise TypeError(
+        #             "Parsing of TIME line in SP formatted file did not return parse.Result object."
+        #         )
+
+        # reshape data by (number of elements, number of data values)
+        # where number of data values = num_data * nbr_steps
+        reshaped_data = data[i].reshape((numElem[i], int(data[i].size / numElem)))
+
+        # extract element node data
+        # TODO: This could be reshaped by nbr_coords
+        nodes = reshaped_data[:, 0 : sum(nbr_coords)]
+
+        # extract data
+        # TODO: This could be reshaped by nbr_coords
+        out_data = reshaped_data[:, sum(nbr_coords) :]
+
+        if finalize_gmsh:
+            gmsh.finalize()
+
+        return data_type, nodes, out_data
+
+    # return dataType, numElem, data
 
 
 def get_result_files(

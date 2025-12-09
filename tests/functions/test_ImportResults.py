@@ -22,12 +22,14 @@
 from __future__ import annotations
 
 import os
+from os.path import join, abspath
 
 import numpy as np
 import pytest
 
 from pyemmo.functions.import_results import (
     get_result_files,
+    import_pos_parsedFormat,
     importPos,
     importSP,
     plot_timetable_dat,
@@ -41,21 +43,21 @@ try:
 except ImportError:
     from pyemmo.definitions import TEST_DIR
 
-    TEST_DATA_DIR = os.path.join(TEST_DIR, "data")
+    TEST_DATA_DIR = join(TEST_DIR, "data")
 except Exception as exce:
     raise exce
 
-IMP_RES_TEST_DATA_DIR = os.path.join(TEST_DATA_DIR, "functions", "import_results")
+IMP_RES_TEST_DATA_DIR = join(TEST_DATA_DIR, "functions", "import_results")
 
 
 # @pytest.mark.parametrize(
 #     "file_path",
-#     [os.path.join(IMP_RES_TEST_DATA_DIR, "Ib_test.dat")],
+#     [join(IMP_RES_TEST_DATA_DIR, "Ib_test.dat")],
 # )
 def test_read_timetable_dat():
     """Tests the function read_timetable_dat. Tests if the size and values of
     the data array are correct."""
-    time, data = read_timetable_dat(os.path.join(IMP_RES_TEST_DATA_DIR, "Ib_test.dat"))
+    time, data = read_timetable_dat(join(IMP_RES_TEST_DATA_DIR, "Ib_test.dat"))
     assert data.size == 4, "Wrong data array size."
     assert time.size == 4, "Wrong time array size."
     assert_time_array = [0, 0, 0.01, 0.02]
@@ -66,7 +68,7 @@ def test_read_timetable_dat():
 
 @pytest.mark.parametrize(
     "file_path",
-    [os.path.join(IMP_RES_TEST_DATA_DIR, "region_value_data.dat")],
+    [join(IMP_RES_TEST_DATA_DIR, "region_value_data.dat")],
 )
 def test_import_region_value(file_path):
     """
@@ -125,7 +127,7 @@ def test_plot_timetable_dat():
     Tests that the number offigures created is equal to the number of
     Simulations.
     """
-    file_path = os.path.join(IMP_RES_TEST_DATA_DIR, "Ib_test.dat")
+    file_path = join(IMP_RES_TEST_DATA_DIR, "Ib_test.dat")
 
     plot_list = plot_timetable_dat(
         file_path=file_path,
@@ -146,7 +148,7 @@ def test_import_SP():
     Tests the data name, time array, postion array and value array of the
     imported .pos file
     """
-    file_path = os.path.join(IMP_RES_TEST_DATA_DIR, "btan_test.pos")
+    file_path = join(IMP_RES_TEST_DATA_DIR, "btan_test.pos")
     test_tuple = importSP(file_path)
     assert_tuple = (
         "b_tangent",
@@ -182,26 +184,63 @@ def test_import_SP():
         ), "Incorrect Value-Array Imported!"
 
 
+@pytest.mark.parametrize(
+    ("parsed_pos_file", "dType", "numElem", "numNodes", "numDataPoints"),
+    [
+        (join(IMP_RES_TEST_DATA_DIR, "btan_test.pos"), "SP", 181, 1, 1),
+        (
+            join(IMP_RES_TEST_DATA_DIR, "SP_fomatted_res_file.pos"),
+            "SP",
+            1,
+            1,
+            3,
+        ),
+        (
+            join(IMP_RES_TEST_DATA_DIR, "VL_GmshParsed_static.pos"),
+            "VL",
+            3,
+            2,
+            3,
+        ),
+    ],
+)
+def test_import_pos_parsed(parsed_pos_file, dType, numElem, numNodes, numDataPoints):
+    """Test _import_pos_parsedFormat function
+
+    Args:
+        parsed_pos_file (str): Path to GmshParsed formatted .pos file
+        dType (str): Data type (in SP,SL,ST,VP,VL,VT)
+        numElem (int): number of elements in result file.
+        numNodes (int): Number of nodes per element.
+        numDataPoints (int): number of data values per node.
+    """
+    data_type, nodes, data = import_pos_parsedFormat(parsed_pos_file)
+    assert data_type == dType
+    # numNodes * 3 = number of coordinates
+    assert nodes.shape == (numElem, numNodes * 3)
+    assert data.shape == (numElem, numNodes * numDataPoints)
+
+
 # @pytest.mark.parametrize(
 #     "file_path",
-#     [os.path.join(IMP_RES_TEST_DATA_DIR, "AxialeLaenge_test.pos")],
+#     [join(IMP_RES_TEST_DATA_DIR, "AxialeLaenge_test.pos")],
 # )
 def test_import_pos():
     """
     Tests if the imported values (gmsh mesh element tags, time, data array)
     from a POS file are correct.
     """
-    test_posFile_path = os.path.join(IMP_RES_TEST_DATA_DIR, "AxialeLaenge_test.pos")
+    test_posFile_path = join(IMP_RES_TEST_DATA_DIR, "AxialeLaenge_test.pos")
     mesh_elemt_ids = np.load(
-        (os.path.join(IMP_RES_TEST_DATA_DIR, "import_pos_mesh_elem_ids.npy")),
+        (join(IMP_RES_TEST_DATA_DIR, "import_pos_mesh_elem_ids.npy")),
         allow_pickle=True,
     )
     time = np.load(
-        (os.path.join(IMP_RES_TEST_DATA_DIR, "import_pos_time.npy")),
+        (join(IMP_RES_TEST_DATA_DIR, "import_pos_time.npy")),
         allow_pickle=True,
     )
     data = np.load(
-        (os.path.join(IMP_RES_TEST_DATA_DIR, "import_pos_data.npy")),
+        (join(IMP_RES_TEST_DATA_DIR, "import_pos_data.npy")),
         allow_pickle=True,
     )
     imp_mesh_elem, imp_time, imp_data = importPos(test_posFile_path)
@@ -212,9 +251,21 @@ def test_import_pos():
     assert np.array_equal(data, imp_data), "Incorrect Data Array Imported!"
 
 
+@pytest.mark.parametrize(
+    "test_pos_path",
+    [
+        abspath(join(IMP_RES_TEST_DATA_DIR, "VL_GmshParsed_static.pos")),
+        abspath(join(IMP_RES_TEST_DATA_DIR, "SP_GmshParsed_transient.pos")),
+    ],
+)
+def test_import_pos_parsed_workaround(test_pos_path):
+    """Just make sure the workaround for GmshParsed formatted pos files works"""
+    imp_mesh_elem, imp_time, imp_data = importPos(test_pos_path)
+
+
 # @pytest.mark.parametrize(
 #     "file_path",
-#     [os.path.join(IMP_RES_TEST_DATA_DIR, "functions", "import_results")],
+#     [join(IMP_RES_TEST_DATA_DIR, "functions", "import_results")],
 # )
 def test_get_result_files():
     """Test the function get_result_files"""
@@ -229,6 +280,8 @@ def test_get_result_files():
             "AxialeLaenge_test.pos",
             "btan_test.pos",
             "SP_fomatted_res_file.pos",
+            "SP_GmshParsed_transient.pos",
+            "VL_GmshParsed_static.pos",
         ],
     ), "Incorrect list of .pos files!"
 
@@ -236,21 +289,21 @@ def test_get_result_files():
 # if __name__ == "__main__":
 # Test usage of importPos function:
 # mesh_element_tag, time, data = importPos(
-#   os.path.join(IMP_RES_TEST_DATA_DIR,"AxialeLaenge_test.pos")
+#   join(IMP_RES_TEST_DATA_DIR,"AxialeLaenge_test.pos")
 # )
 # print(mesh_element_tag)
 # print(time)
 # print(data)
 
 # test_import_pos(
-#     os.path.join(IMP_RES_TEST_DATA_DIR, "AxialeLaenge_test.pos")
+#     join(IMP_RES_TEST_DATA_DIR, "AxialeLaenge_test.pos")
 # )
 
-# test_import_pos(os.path.join( IMP_RES_TEST_DATA_DIR,"AxialeLaenge_test.pos"))
+# test_import_pos(join( IMP_RES_TEST_DATA_DIR,"AxialeLaenge_test.pos"))
 # print
 # Test usage of get_result_files function:
 # dat_file_list, pos_file_list = get_result_files(
-#     os.path.join(IMP_RES_TEST_DATA_DIR, "functions", "import_results")
+#     join(IMP_RES_TEST_DATA_DIR, "functions", "import_results")
 # )
 # for filename in dat_file_list + pos_file_list:
 #     print(filename)
