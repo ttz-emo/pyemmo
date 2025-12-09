@@ -2296,6 +2296,7 @@ class Script:
             4. import magstatdyn file in machine file
 
         """
+        logger = logging.getLogger(__name__)
         # Write the code
         #   1. write parameter file
         machineTempFile = abspath(join(MAIN_DIR, "script", "machine_template.pro"))
@@ -2400,7 +2401,7 @@ class Script:
             proScript.write(machineFileCode)
 
         # If logging is set to debug, save the winding to a file
-        if logging.getLogger(__name__).level <= logging.DEBUG:
+        if logger.getEffectiveLevel() <= logging.DEBUG:
             if not os.path.exists(self.scriptPath):
                 os.mkdir(self.scriptPath)
             self.machine.stator.winding.save_to_file(
