@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -23,12 +24,13 @@ from __future__ import annotations
 
 import logging
 
-# from matplotlib import pyplot as plt
-# from ..functions.plot import plot
 import gmsh
 import numpy as np
+from matplotlib import pyplot as plt
+import matplotlib.colors as mcolors
 
 from ...definitions import DEFAULT_GEO_TOL
+from ...functions.plot import plot
 from ...script.geometry import physicalsDict
 from ...script.geometry.circleArc import CircleArc
 from ...script.geometry.limitLine import LimitLine
@@ -54,8 +56,6 @@ from ...script.material.material import Material
 from .. import air
 from ..machine_segment_surface import MachineSegmentSurface
 from . import STATOR_AIRGAP_IDEXT, globalCenterPoint
-
-# import logging
 
 
 def findLine(lineName: str, lineIDList) -> bool:
@@ -220,6 +220,8 @@ def createMBAux(
     Returns:
         List[MovingBand]: Auxilliary moving band list.
     """
+    logger = logging.getLogger(__name__)
+
     mb_aux_list: list[MovingBand] = []
     sym_angle = 2 * np.pi / symFaktor
     # here order of for-loops had to be changed because for example for symFaktor=4
@@ -228,23 +230,22 @@ def createMBAux(
     nbr_mb_curves = len(mb_lines_rotor)
     mb_radius = mb_lines_rotor[0].radius
     mb_center_point = mb_lines_rotor[0].center
-    # find outer points of movingband
+
+    logger.debug("Try to find boundary points of Rotor_MB_Line_1")
     p_on_x_axis = None
     p_on_sym_axis = None
     for curve in mb_lines_rotor:
         for p in curve.points:
             if np.isclose(p.getAngleToX(), 0, atol=DEFAULT_GEO_TOL):
+                logger.debug("Found boundary point on x-axis: %s", p)
                 p_on_x_axis = p
             elif np.isclose(p.getAngleToX(), sym_angle, atol=DEFAULT_GEO_TOL):
+                logger.debug("Found boundary point on symmetry-axis: %s", p)
                 p_on_sym_axis = p
         if p_on_x_axis is not None and p_on_sym_axis is not None:
             break
 
-    # TODO: This needs to be tested for different configurations!
-    # if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
-    #     from ...functions.plot import plot
-    #     fig, _ = plot(mb_lines_rotor, tag=True)
-
+    logger.debug("Create outer movingband curves...")
     for i_band in range(1, symFaktor):  # for every symmetry part
         mb_lines_aux: list[GmshArc] = []  # re-init mb_lines_list
 
@@ -291,6 +292,7 @@ def createMBAux(
                     meshLength=1,
                 )
                 # p_end = GmshPoint(p_end.id)
+            logger.debug("Creating band arc %i for band %i", i_curve, i_band + 1)
             band_arc = GmshArc.from_points(
                 name=f"rotor auxiliary movingband {i_band+1}.{i_curve}",
                 start_point=p_start,
@@ -302,6 +304,7 @@ def createMBAux(
             #     plot(mb_lines_aux, fig=fig, tag=True)
 
         gmsh.model.occ.synchronize()  # need to sync before adding Physical
+        logger.debug("Creating Movingband physical 'Rotor_Bnd_MB_%i'", i_band + 1)
         mb_aux_list.append(
             MovingBand(
                 name=(physicalsDict["Rotor_MB_Line"] + f"_{str(i_band+1)}"),
@@ -333,31 +336,47 @@ def createMB(
           or None if symFactor=1
     """
     logger = logging.getLogger(__name__)
+
     # get dim tags list of stator boundary lines (GmshLine):
     bnd_line_dim_tags = [(1, line.id) for line in stator_bnd_lines]
-    # filter stator movingband lines:
+
+    logger.debug(
+        "Filter stator movingband lines from stator boundary curve list by minimal radius: %f",
+        get_min_radius(bnd_line_dim_tags),
+    )
     mb_lines_stator = filter_curves_on_radius(
         stator_bnd_lines, get_min_radius(bnd_line_dim_tags)
     )
+
     if not mb_lines_stator:
         raise RuntimeError("Could not find stator movingband lines")
+
     # Get rotor movingband lines:
     # get dim tags list of ROTOR boundary lines (GmshLine):
     bnd_line_dim_tags = [(1, line.id) for line in rotor_bnd_lines]
+
     # filter ROTOR movingband lines.
+    logger.debug(
+        "Filter rotor movingband lines from boundary curve list by maximal radius: %f",
+        get_max_radius(bnd_line_dim_tags),
+    )
     # Must be the most outer (max. radius) lines in the boundary list:
     mb_lines_rotor = filter_curves_on_radius(
         rotor_bnd_lines, get_max_radius(bnd_line_dim_tags)
     )
+
     if not mb_lines_rotor:
         raise RuntimeError("Could not find rotor movingband lines")
 
+    logger.debug("Create Stator Movingband...")
     mb_stator: MovingBand = MovingBand(
         name="Stator Movingband",
         geo_list=mb_lines_stator,
         material=material,
         auxiliary=False,
     )
+
+    logger.debug("Create INNER Rotor Movingband 'Rotor_Bnd_MB_1'...")
     mb_rotor_inner: MovingBand = MovingBand(
         name=physicalsDict["Rotor_MB_Line"] + "_1",
         geo_list=mb_lines_rotor,
@@ -366,20 +385,36 @@ def createMB(
     )
     # Outer Movingband-lines
     if symFactor > 1:
+        logger.debug("Create OUTER Rotor Movingband...")
         mb_rotor_ax = createMBAux(mb_lines_rotor, symFactor, material)
     else:
         mb_rotor_ax = None
+
     # This was unnecessary since remove_all_duplicates() just removes instances
     # belonging to highest order instances (= surfaces in our case)...
     # gmsh.model.occ.remove_all_duplicates()  # call to remove duplicate points of moving band interfaces
+
     if logger.getEffectiveLevel() <= logging.DEBUG - 1:
         logger.debug("Show moving band in gmsh...")
         gmsh.model.setVisibility(gmsh.model.getEntities(), False)  # disable all
         gmsh.model.setVisibility(get_dim_tags([mb_stator, mb_rotor_inner]), True, False)
         if mb_rotor_ax:
             gmsh.model.setVisibility(get_dim_tags(mb_rotor_ax), True, False)
+        gmsh.option.setNumber("Geometry.CurveLabels", 1)
+        # Show comment of what is displayed:
+        v = gmsh.view.add("comments")
+        gmsh.view.addListDataString(
+            v,
+            list(globalCenterPoint.coordinate),
+            ["Displaying Movingband Physical curves"],
+        )
+
         gmsh.model.occ.synchronize()
         gmsh.fltk.run()
+
+        # Reset gmsh layout
+        gmsh.view.remove(v)  # remove view
+        gmsh.option.setNumber("Geometry.CurveLabels", 0)  # reset curve labels
     return mb_stator, mb_rotor_inner, mb_rotor_ax
 
 
@@ -515,10 +550,16 @@ def get_primary_lines(bnd_line_list: list[GmshLine]) -> list[GmshLine]:
     Returns:
         list[GmshLine]: List of primary lines.
     """
+    logger = logging.getLogger(__name__)
+
+    logger.debug("Identifying primary lines on axis with angle 0°")
     primary_lines: list[GmshLine] = filter_lines_at_angle(bnd_line_list, 0.0)
+
     if not primary_lines:
         raise RuntimeError("Could not determine primary lines.")
+
     # remove used lines
+    logger.debug("Removing found primary lines from remaining boundary")
     for gmsh_line in primary_lines:
         bnd_line_list.remove(gmsh_line)
     return primary_lines
@@ -542,12 +583,18 @@ def get_secondary_lines(
     Returns:
         list[GmshLine]: List of secondary lines.
     """
+    logger = logging.getLogger(__name__)
+
+    logger.debug("Identifying primary lines on axis with angle %.1f", 360 / sym_factor)
     secondary_lines: list[GmshLine] = filter_lines_at_angle(
         bnd_line_list, angle=2 * np.pi / sym_factor
     )
+
     if not secondary_lines:
         raise RuntimeError("Could not determine secondary lines.")
+
     # remove used lines
+    logger.debug("Removing found secondary lines from remaining boundary")
     for gmsh_line in secondary_lines:
         bnd_line_list.remove(gmsh_line)
     return secondary_lines
@@ -568,6 +615,10 @@ def get_boundaries(
     stator_boundary: list[PhysicalElement] = []
 
     # get dim_tag_list of rotor and stator surfaces:
+    logger.debug(
+        "Distinguish between rotor and stator surfaces by movingband raidus %.3f mm",
+        rotor_mb_radius,
+    )
     rotor_dim_tags, stator_dim_tags = get_rotor_stator_dim_tags(
         surf_dict, rotor_mb_radius
     )
@@ -577,6 +628,7 @@ def get_boundaries(
 
     # 1. Get primary and secondary lines
     if symFactor > 1:
+        logger.info("Identifying primary and secondary boundary lines on symmetry axes")
         rotor_boundary.append(
             PrimaryLine("Primary Line Rotor", get_primary_lines(rotor_bnd_line_list))
         )
@@ -596,14 +648,15 @@ def get_boundaries(
             )
         )
     # 2: Movingband
+    logger.info("Creating Movingband boundary...")
     ## Handling Airgap material for Movingband
-    # machineSurfDict = createSurfaceDict(segmentSurfDict)
-
+    logger.debug("Try to find moving band material from stator airgap.")
     try:
         movingBandMaterial: Material = surf_dict[STATOR_AIRGAP_IDEXT][0].material
     except KeyError:
         logger.warning(
-            "Stator-Airgap Surface-ID was not '%s'. Can't determine Airgap material! Using air instead.",
+            "Stator-Airgap Surface-ID was not '%s'. Can't determine Airgap material! "
+            "Using air instead.",
             STATOR_AIRGAP_IDEXT,
             exc_info=True,
         )
@@ -634,10 +687,14 @@ def get_boundaries(
         rotor_bnd_line_list.remove(rotor_mb_curve)
 
     # 3: Outer-Limit
+    logger.info("Identifying outer limit curves...")
     if is_inner_rotor:
         # if rotor inside -> stator = outer limit
         if len(stator_bnd_line_list) != 0:
+            logger.debug("Setting outer limit to remaining stator boundary curves!")
             stator_boundary.append(LimitLine("outerLimit", stator_bnd_line_list))
+
+            logger.debug("Inner limit are remaining rotor boundary curves!")
             inner_limit_lines = rotor_bnd_line_list
         else:
             raise RuntimeError("Could not identify outer limit lines for boundary...")
@@ -645,7 +702,10 @@ def get_boundaries(
         # outer rotor -> rotor = outer limit
         if len(rotor_bnd_line_list) != 0:
             # TODO: Test that this actually works!
+            logger.debug("Setting outer limit to remaining rotor boundary curves!")
             rotor_boundary.append(LimitLine("outerLimit", rotor_bnd_line_list))
+
+            logger.debug("Inner limit are remaining stator boundary curves!")
             inner_limit_lines = stator_bnd_line_list
         else:
             raise RuntimeError("Could not identify outer limit lines for boundary...")
@@ -657,6 +717,10 @@ def get_boundaries(
     else:
         # No inner limit lines left, which means the center point is the inner limit.
         if symFactor > 1:
+            logger.debug(
+                "No remaining inner limit lines. "
+                "Check primary and secondary boundary contain the center point..."
+            )
             # To make sure: checkout if primary/secondary lines contain the center point
             found_center = False
             rotor_primary: PrimaryLine = rotor_boundary[0]
@@ -672,26 +736,28 @@ def get_boundaries(
                         break  # break inner point loop
                 if found_center:
                     # if the center point was found, break the outer loop too
+                    logger.debug("Primary contains center point.")
                     break
             if not found_center:
                 raise RuntimeError(
                     "Cound not identify inner limit lines AND "
                     "primary lines did not contain center point!"
                 )
-    # # TODO: Add verbosity and plot this when debugging.
-    # # fig, ax = plt.subplots()
-    # # plot(primarylinesRotor + primaryLinesStator, fig=fig, color="b")
-    # # plot(slavelinesRotor + slaveLinesStator, fig=fig, color="r")
-    # # plot(movingBandStator.geo_list, fig=fig)
-    # # plot(movingBandRotorInner.geo_list, fig=fig)
-    # # plot(geoElemList(movingBandRotorAuxList), fig=fig, color=[0.4940, 0.1840, 0.5560])
-    # # plot((innerLimitLines), fig=fig, color=[0.4660, 0.6740, 0.1880])
-    # # plot((outerLimitLines), fig=fig, color=[0.4660, 0.6740, 0.1880])
-    # # ax.set_aspect("equal")
-    # # ax.xaxis.set_ticklabels([])
-    # # ax.yaxis.set_ticklabels([])
-    # # ax.grid(True)
-    # # fig.show()
+    if logger.getEffectiveLevel() <= logging.DEBUG - 1:
+        # show boundary line plot
+        fig, ax = plt.subplots()
+        # get colors from colormap 'rainbow'
+        colors = plt.cm.get_cmap("rainbow")(
+            np.linspace(0, 1, len(rotor_boundary + stator_boundary)),1
+        )
+        # plot each boundary with own color
+        for boundary, color in zip(rotor_boundary + stator_boundary, colors):
+            plot([boundary], fig=fig, tag=True, color=color)
+        
+        ax.set_aspect("equal")
+        ax.grid(True)
+        ax.title("Model Boundary Curves")
+        fig.show()
 
     return rotor_boundary, stator_boundary
 

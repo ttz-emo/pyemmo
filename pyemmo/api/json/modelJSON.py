@@ -241,7 +241,15 @@ def createAPISurf(areaDict: dict) -> MachineSegmentSurface:
     - Angle
     - Meshsize
     """
-    # try:
+    logger = logging.getLogger(__name__)
+    logger.debug(
+        "Create MachineSegmentSurface for area %s with:\n\tID = %s\n\t"
+        "Number of segments = %.1f\n\tMaterial = %s",
+        areaDict["Name"],
+        areaDict["IdExt"],
+        areaDict["Quantity"],
+        areaDict["Material"]["name"]["wert"],
+    )
     surf = MachineSegmentSurface.from_curve_loop(
         name=areaDict["Name"],
         part_id=areaDict["IdExt"],  # get short area name ("IdExt") as dict key
@@ -277,9 +285,15 @@ def importMachineGeometry(
     for area in machineGeoList:
         if isinstance(area, dict):
             # normal surface; no subtraction
+            logger.debug("Creating surface '%s' without tools", area["Name"])
             apiSurf = createAPISurf(area)
             segmentSurfDict[apiSurf.part_id] = apiSurf
         elif isinstance(area, list):
+            logger.debug("Creating surface '%s' with tools", area[0]["Name"])
+            logger.debug("Main surface is '%s'. Tool surfaces are:", area[0]["Name"])
+            # pylint: disable=expression-not-assigned
+            [logger.debug("%i: %s", i, tool["Name"]) for i, tool in enumerate(area[1:])]
+
             area: list[dict] = area
             # TODO: add multi layer subtraction here!
             main_surf = createAPISurf(area.pop(0))
@@ -306,29 +320,38 @@ def importMachineGeometry(
             # # update nbr segements (angle updates automatically) of main surface
             # main_surf.nbr_segments = new_quantity
 
-            if logger.getEffectiveLevel() <= logging.DEBUG:
+            if logger.getEffectiveLevel() <= logging.DEBUG - 1:
                 logger.debug(
-                    f"Surface: '{main_surf.name}' before subtraction of tools."
+                    "Surface: '%s' before subtraction of tools.", main_surf.name
                 )
-                # gmsh.model.occ.synchronize()
-                # gmsh.fltk.run()
+                gmsh.model.occ.synchronize()
+                gmsh.fltk.run()
             for surf in area:
+                logger.debug("Creating tool surface '%s'", surf["Name"])
                 tool_area = createAPISurf(surf)
                 # for segment in range(0, int(tool_area.nbr_segments / sym_factor)):
                 #     dup_tool_surf = tool_area.rotate_duplicate(segment)
                 #     main_surf.cutOut(dup_tool_surf)
+
+                logger.debug(
+                    "Subtracting tool surface '%s' from main surface %s",
+                    tool_area.name,
+                    main_surf.name,
+                )
                 main_surf.cutOut(tool_area)
-                if logger.getEffectiveLevel() <= logging.DEBUG:
+                if logger.getEffectiveLevel() <= logging.DEBUG - 1:
                     # show model after each tool cut out
                     logger.debug(
-                        f"Surface: {main_surf.name} after subtraction of tool: {tool_area.name}."
+                        "Surface %s after subtraction of tool '%s'.",
+                        main_surf.name,
+                        tool_area.name,
                     )
-                    # gmsh.model.occ.synchronize()
-                    # gmsh.fltk.run()
+                    gmsh.model.occ.synchronize()
+                    gmsh.fltk.run()
                 for tool in main_surf.tools:
                     if not isinstance(tool, MachineSegmentSurface):
                         raise RuntimeError(
-                            f"Tool {tool} is not MachineSegmentSurface..."
+                            f"Created tool surface {tool} is not type 'MachineSegmentSurface'"
                         )
 
             # # correct values for nbrSegments in tools (angle updates automatically):
@@ -348,7 +371,7 @@ def importMachineGeometry(
             )
             raise ValueError(msg)
     if logger.getEffectiveLevel() <= logging.DEBUG - 1:
-        logger.debug("Show imported machine geometry in Gmsh")
+        logger.debug("Display imported machine geometry in Gmsh...")
         gmsh.model.setVisibility(gmsh.model.getEntities(2), True, False)
         gmsh.model.occ.synchronize()
         gmsh.fltk.run()
@@ -431,9 +454,9 @@ def createMachineGeometryFromSegment(
         if logger.getEffectiveLevel() <= logging.DEBUG:
             nbr_lines = len(gmsh.model.occ.get_entities(dim=1))
             nbr_surfs = len(gmsh.model.occ.get_entities(dim=2))
-            logger.debug(f"{nbr_lines = :3}")
-            logger.debug(f"{nbr_surfs = :3}")
-            # gmsh.fltk.run()
+            logger.debug("nbr_lines = %i", nbr_lines)
+            logger.debug("nbr_surfs = %i", nbr_surfs)
+
         logger.debug("Rotating and duplicating %s %i times", surf.name, nbrSegments)
         for segment_nbr in range(0, int(nbrSegments)):
             # rotate_duplicate also considers the tools automatically
@@ -485,6 +508,7 @@ def createPhysicalSurfaces(
         - Literal["Rotor", "Stator"]]: machine side to correctly assign the pE
           to the Rotor or Stator object.
     """
+    logger = logging.getLogger(__name__)
     # determine if single point of surface is inside the Movingband radius,
     # because if one point is inside, all the others have to be too.
     # FIXME: This assumes all machine are inner rotor!
@@ -492,7 +516,10 @@ def createPhysicalSurfaces(
         "Rotor" if surfList[0].points[0].calcDist() <= rotorMBRadius else "Stator"
     )
 
+    logger.debug("Physical %s is on %s", part_id, machineSide)
+
     if STATOR_SLOT_IDEXT in part_id:  # if is stator slot
+        logger.debug("Creating %s...", part_id)
         slots: list[Slot] = list()
         for surf in surfList:
             slot = createSlot(
@@ -501,6 +528,8 @@ def createPhysicalSurfaces(
             slots.append(slot)
         return slots, machineSide
     if ROTOR_MAG_IDEXT in part_id:  # if is magnet
+        logger.debug("Creating %s...", part_id)
+
         magList = list()
         for surf in surfList:
             # create magnet object
@@ -519,6 +548,7 @@ def createPhysicalSurfaces(
         #         material=surfList[0].material,
         #     )
         #     return [airArea], machineSide
+        logger.debug("Creating airgap %s...", part_id)
         airGap = AirGap(
             name=part_id,
             geo_list=surfList,
@@ -526,10 +556,13 @@ def createPhysicalSurfaces(
         )
         return [airGap], machineSide
     if ROTOR_BAR_IDEXT in part_id:  # For ASM-Cage
+        logger.debug("Creating rotor bars...")
         bars = [Bar(surf.part_id, surf, surf.material) for surf in surfList]
         return bars, machineSide
 
     if ROTOR_LAM_IDEXT in part_id:
+        logger.debug("Creating rotor lamination...")
+
         lam = RotorLamination(
             name=part_id,
             geo_list=surfList,
@@ -537,12 +570,14 @@ def createPhysicalSurfaces(
         )
         return [lam], machineSide
     if STATOR_LAM_IDEXT in part_id:
+        logger.debug("Creating stator lamination...")
         lam = StatorLamination(
             name=part_id,
             geo_list=surfList,
             material=surfList[0].material,
         )
         return [lam], machineSide
+    logger.debug("Creating physical element %s...", part_id)
     physElem = PhysicalElement(
         name=part_id, geo_list=surfList, material=surfList[0].material
     )
@@ -566,21 +601,41 @@ def createMagnet(surf: MachineSegmentSurface, mat: Material, extInfo: dict) -> M
     Returns:
         Magnet: The Magnet object generated from the above information.
     """
+    logger = logging.getLogger(__name__)
+    logger.debug("Creating magnet from surface %s", surf.name)
 
     # identify magnetization direction
     # first segment (segmentNbr=0) must be north pole for dq-Offset calculation
     # FIXME: There can be multiple segments for one pole!
     magDir = 1 if (surf.segment_nbr + 1) % 2 else -1  # 1: north/outwards
+    logger.debug(
+        "Magnetization direction for magnet with segment number %i is %i",
+        surf.segment_nbr,
+        magDir,
+    )
+
     # get magentization angle from magAngle dict by idExt
+    logger.debug(
+        "Getting magnetization angle for part_id %s from extended info", surf.part_id
+    )
     magAngle = importJSON.get_mag_angle(extInfo)[surf.part_id]
+    mag_vector_angle = (
+        magAngle + math.radians(360 / surf.nbr_segments) * surf.segment_nbr
+    )
+    logger.debug(
+        "Magnetization vector angle for magnet %s on segment %i is %.3f°",
+        surf.part_id,
+        surf.segment_nbr,
+        np.rad2deg(mag_vector_angle),
+    )
+
     return Magnet(
         name=surf.part_id,
         geoElements=[surf],
         material=mat,
         magDirection=magDir,
         magType=importJSON.get_mag_type(extInfo),
-        magVectorAngle=magAngle
-        + math.radians(360 / surf.nbr_segments) * surf.segment_nbr,
+        magVectorAngle=mag_vector_angle,
     )
 
 
@@ -600,12 +655,15 @@ def getSlotInfo(slotSurfName: str) -> int:
     Returns:
         int: slot side
     """
+    logger = logging.getLogger(__name__)
+    logger.debug("Identifying slot side from slot name: %s", slotSurfName)
     if STATOR_SLOT_IDEXT in slotSurfName:
         # split up the surface name to get Slot side (0 odr 1)
         slotSide = slotSurfName.lstrip(STATOR_SLOT_IDEXT)
         # if both strings are numbers
         if slotSide:  # if slotSide not empty
             if slotSide.isdecimal():  # string is int
+                logger.debug("Slot side is: %s", slotSide)
                 slotSide = int(slotSide)
             else:
                 raise ValueError(
@@ -613,6 +671,7 @@ def getSlotInfo(slotSurfName: str) -> int:
                 )
         else:
             # Slot side is empty -> there is one layer side
+            logger.debug("Slot side is empty. Assuming single layer winding.")
             slotSide = 0  # 0 to index first/only winding layer
         return slotSide
     raise ValueError(
@@ -664,13 +723,22 @@ def getSlotPhase(
             "More than two layers per slot is not supported. "
             f"Identifier of stator slot must be '{STATOR_SLOT_IDEXT}0' or '{STATOR_SLOT_IDEXT}1'"
         )
+
+    logger.info(
+        "Getting phase index of slot %i for layer %i from winding layout...",
+        slot_number,
+        slot_side,
+    )
+
     # find phase index for current slot number and slot side
     if all(phaseList[1] == [] for phaseList in windingLayout):
         # if second slot side is empty, create winding layout separatly because np does
         # not allow array size missmatch
+        logger.debug("Second layer in winding layout is empty.")
         windingLayout = np.array([phaseList[0] for phaseList in windingLayout])
         phase, slot_index = np.where(np.abs(windingLayout) == slot_number)
     else:
+        logger.debug("Second layer in winding layout is not empty.")
         windingLayout = np.array(windingLayout)
         phase, slot_index = np.where(
             np.abs(windingLayout[:, slot_side, :]) == slot_number
@@ -682,10 +750,12 @@ def getSlotPhase(
     ), f"Slot index found multiple times in winding layout of slot side {slot_side}"
 
     phase = chr(117 + phase[0])  # convert unicode u=117 + index -> char [u,v,w,...]
+
     if sign(slot_index[0]) == 1:
         cDir = "p"
     else:
         cDir = "n"
+
     logger.debug(
         "slot number: %i || slot side: %i || phase: %s || direction: %s",
         slot_number,
@@ -712,10 +782,12 @@ def createSlot(
     Returns:
         Slot: Slot object generated from the above information.
     """
+    logger = logging.getLogger(__name__)
     Qs = importJSON.get_nbr_of_slots(extendedInfo)
     slotSide = getSlotInfo(surf.part_id)
     # NOTE: slotSide is set 0 or 1 where the naming of slotSide is 1 or 2
     windingLayout = importJSON.get_winding_layout(extendedInfo)
+
     # calculate the slot number from the slot surface position:
     # the slot number is the angular position divided by the slot pitch
     # calculate angle of slot surface center to x-axis:
@@ -723,11 +795,24 @@ def createSlot(
     slot_pitch = 2 * pi / Qs  # calculate slot pitch
     # NOTE: need to add half slot pitch because slot angle is the center of the slot
     slot_nbr = (slot_angle + slot_pitch / 2) / slot_pitch  # calculate slot number
+    logger.debug(
+        "Slot index = Angle of slot / Slot pitch = %.3f / %.3f = %.3f",
+        np.rad2deg(slot_angle),
+        np.rad2deg(slot_pitch),
+        slot_nbr,
+    )
+
     cDir, phase = getSlotPhase(windingLayout, round(slot_nbr, 0), slotSide)
-    slotName = f"{surf.part_id}_{phase.upper()}{cDir}{surf.segment_nbr}"
+
+    slot_name = f"{surf.part_id}_{phase.upper()}{cDir}{surf.segment_nbr}"
+    logger.debug("Slot name is: %s", slot_name)
+
     # create slot without winding information, because winding is set by stator
-    slot = Slot(name=slotName, geo_list=[surf], material=material)
+    slot = Slot(name=slot_name, geo_list=[surf], material=material)
+
+    logger.debug("Setting slot color to %s", phase2color(phase))
     surf.mesh_color = phase2color(phase)
+
     return slot
 
 
@@ -744,6 +829,8 @@ def createWinding(extendedInfo: dict) -> datamodel:
     Returns:
         datamodel: swat_em.datamodel object of winding.
     """
+    logger = logging.getLogger(__name__)
+    logger.debug("Creating SWAT-EM winding object...")
     swatemWinding = datamodel()
     nbrSlots = importJSON.get_nbr_of_slots(extendedInfo)
     nbrPolePairs = importJSON.get_nbr_of_pole_pairs(extendedInfo)

@@ -304,6 +304,7 @@ def fix_missing_mesh_sizes() -> None:
     for dim_tag in all_points:
         p = GmshPoint(dim_tag[1])
         if p.meshLength == 0:
+            logger.debug("Point %s with missing mesh size.", p)
             dim_tags = []
             xmin, ymin, _, xmax, ymax, _ = gmsh.model.getBoundingBox(-1, -1)
             # initial value is 1/1000 of whole bounding box
@@ -323,15 +324,17 @@ def fix_missing_mesh_sizes() -> None:
                 dim_tags.remove((0, p.id))
                 dl *= 2  # increase search radius
                 nbr_loops += 1
+            logger.debug("Bounding box size where next point(s) were found: %e", dl)
             p.meshLength = gmsh.model.mesh.getSizes(dimTags=[dim_tags[0]])[0]
             logger.debug(
-                "Fixed mesh size of point %i to %.3e after %i iterations.",
+                "Set mesh size of point %i to %.3e of point %i after %i iterations.",
                 p.id,
                 p.meshLength,
+                dim_tags[0],
                 nbr_loops,
             )
             nbr_fixed += 1
-    logger.debug("Fixed %i points with missing mesh sizes.", nbr_fixed)
+    logger.debug("Fixed %i points with missing mesh size.", nbr_fixed)
 
 
 def get_global_center() -> GmshPoint:

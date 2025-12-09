@@ -46,7 +46,7 @@ from ...script.gmsh.utils import fix_missing_mesh_sizes
 from ...script.material.electricalSteel import ElectricalSteel
 from ...script.script import Script
 from ..machine_segment_surface import MachineSegmentSurface
-from . import apiNameDict
+from . import ROTOR_AIRGAP_IDEXT, STATOR_AIRGAP_IDEXT, apiNameDict
 from . import boundaryJSON as boundary
 from . import importJSON, modelJSON
 from .create_airgaps import create_airgap_surfaces
@@ -77,11 +77,13 @@ def createMachine(
     """
     symFactor = importJSON.get_sym_factor(extendedInfo)
     rotorMovingBandRadius = importJSON.get_MB_radius(extendedInfo)
+
+    logger = logging.getLogger(__name__)
+    logger.debug("Calling modelJSON.createMachineGeometryFromSegment...")
     # create the remaining machine surfaces
     maschineSurfDict = modelJSON.createMachineGeometryFromSegment(
         segmentSurfDict, symFactor
     )
-    logger = logging.getLogger(__name__)
     logger.debug("Calling gmsh.model.occ.remove_all_duplicates()")
     gmsh_api.model.occ.remove_all_duplicates()
     # TODO: Test this for complex geometry
@@ -106,33 +108,59 @@ def createMachine(
     #                 if surf.id == old_tag:
     #                     surf._id = new_tag
 
-    logger.debug("Calling gmsh_api.model.occ.synchronize()")
+    logger.debug("Calling gmsh.model.occ.synchronize()")
     gmsh_api.model.occ.synchronize()
 
-    create_airgap_surfaces(maschineSurfDict, rotorMovingBandRadius, symFactor)
+    # call function create_airgap if any airgap surface is missing
+    if (
+        STATOR_AIRGAP_IDEXT not in maschineSurfDict
+        or ROTOR_AIRGAP_IDEXT not in maschineSurfDict
+    ):
+        logger.debug(
+            "Missing rotor or stator airgap from surface dict! "
+            "Starting airgap creation"
+        )
+        create_airgap_surfaces(maschineSurfDict, rotorMovingBandRadius, symFactor)
+    else:
+        logger.debug(
+            "Found rotor and stator airgap in surface dict! "
+            "Not calling airgap creation."
+        )
 
     # check mesh sizes after import! Due to issues with OCC it can happen that points
     # lose their mesh size and get mesh size = 0. In this case, search for the closest
     # point and set the mesh size to its mesh size.
+    logger.info(
+        "Fixing mesh size for points without mesh size by searching for closest point "
+        "and resetting to its mesh size."
+    )
     fix_missing_mesh_sizes()
 
+    logger.info("Identifying boundary curves...")
     rotorPhysicals, statorPhysicals = boundary.get_boundaries(
         maschineSurfDict, symFactor, rotorMovingBandRadius
     )
 
     # Log winding layout for debugging *before* createSlot() is called.
     logger.debug("Winding layout: %s", importJSON.get_winding_layout(extendedInfo))
+
     # create physical elements from the surfaces
+    logger.info("Creating physicals from geometry...")
     for idExt, surfList in maschineSurfDict.items():
         surfName = surfList[0].name
         if "GehInnen" in surfName and symFactor == 1:
+            logger.warning(
+                "Found surface %s with identifier 'GehInnen' and symmetry factor = 1."
+                "Removing this tool-surface for correct housing creation",
+                surfName,
+            )
             # if the inner surface is air, overlapping the rotor, set the delete-flag to not create
             # the inner housing surface
             for surf in surfList:
-                # -> TODO: Make sure delete also removes the gmsh instance
-                surf.delete = True
+                logger.warning("Removing surface %s with id %i", surf.name, surf.id)
+                gmsh_api.model.removeEntities([(2, surf.id)])
         else:
-            logger.debug("Creating physical for %s", idExt)
+            logger.debug("Creating physical element for %s", idExt)
             physSurfList, machineSide = modelJSON.createPhysicalSurfaces(
                 part_id=idExt,
                 surfList=surfList,
@@ -153,16 +181,22 @@ def createMachine(
             gmsh_api.model.setVisibility(gmsh_api.model.getEntities(), False)
             gmsh_api.model.setVisibility(gmsh_api.model.getEntities(2), True, True)
             gmsh_api.fltk.run()
+
     # create the rotor
     axLen = importJSON.get_axial_length(extendedInfo)
+    logger.debug("Axial length of model is %.3f m", axLen)
+
+    logger.info("Creating rotor object...")
     rotorAPI = Rotor(
         name="rotor created via json api",
         physicalElementList=rotorPhysicals,
         axLen=axLen["rotor"],
     )
+
     # create the stator
     # create winding
     windingSWAT = modelJSON.createWinding(extendedInfo)
+    logger.info("Creating stator object...")
     statorAPI = Stator(
         name="stator created via json api",
         nbrSlots=windingSWAT.get_num_slots(),
@@ -174,6 +208,8 @@ def createMachine(
     # create the machine object
     nbrPolePair = importJSON.get_nbr_of_pole_pairs(extendedInfo)
     modelName = importJSON.get_model_name(extendedInfo)
+
+    logger.info("Creating Machine object for model %s...", modelName)
     machineSiemens = MachineAllType(
         rotor=rotorAPI,
         stator=statorAPI,
@@ -288,6 +324,11 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
         script (Script): Actual Script object to add PostOperation.
         extendedInfo (dict): Extended info dict to get the different radii.
     """
+    logger = logging.getLogger(__name__)
+    logger.debug(
+        "Adding api specific post operation GetBOnRadius to get the B field "
+        "(B_rad, B_tan) on different radii evaluated by OnGrid"
+    )
     machine = script.machine
     # 1. Airgap flux density
     rotorAirgapRadius = machine.rotor.movingBandRadius
@@ -296,6 +337,7 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
         "rotor": rotorAirgapRadius,
         "stator": statorAirgapRadius,
     }.items():
+        logger.debug("Adding PO for %s airgap at raidus %.3f mm", side, radius)
         for quantity in ["b_radial", "b_tangent"]:
             sign = "-" if side == "rotor" else "+"
             resFilePath = join("CAT_RESDIR", quantity + "_airgap_" + side + ".pos")
@@ -317,6 +359,7 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
     # 2. Tooth Flux density
     if "r_z" in extendedInfo.keys():
         toothRadius = extendedInfo["r_z"]
+        logger.debug("Adding PO for tooth at raidus %.3f mm", toothRadius)
         for quantity in ["b_radial", "b_tangent"]:
             script.addPostOperation(
                 quantity,
@@ -333,6 +376,8 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
     # 3. Yoke Flux density
     if "r_j" in extendedInfo.keys():
         yokeRadius = extendedInfo["r_j"]
+        logger.debug("Adding PO for yoke at raidus %.3f mm", yokeRadius)
+
         for quantity in ["b_radial", "b_tangent"]:
             script.addPostOperation(
                 quantity,
@@ -348,6 +393,8 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
 
     ## 4. Add rotor and stator b-field export for iron loss calculation
     if importJSON.get_flag_core_loss_calc(extendedInfo):
+        logger.debug("Adding post operation 'GetBIron' for core loss calculation...")
+
         rotorIronPhysicalID = [
             str(phys.id) for phys in machine.rotor._domainLam.physicals
         ]
@@ -371,14 +418,15 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
 
     # 5. PM Eddy current loss
     if machine._domainM.physicals:
+        logger.debug("Adding post operation 'GetMagnetLosses'...")
         # if there are magnets
         allMagConducting = True
-        logger = logging.getLogger(__name__)
         for magnet in machine._domainM.physicals:
             if magnet.material.conductivity is None:
                 allMagConducting = False
                 logger.warning(
-                    "Unable to calculate magnet losses, due to missing el. conductivity in %s.",
+                    "Unable to calculate magnet losses, due to missing el. conductivity "
+                    "in %s. Skip magnet loss calculation!",
                     magnet.name,
                 )
                 break
@@ -504,9 +552,10 @@ def main(
         else:
             raise FileNotFoundError(f"Given file path {geo} was not a file.")
     elif isinstance(geo, dict):
+        module_logger.debug("Checking given surface types for 'MachineSegmentSurface'")
         # Make sure all given surfaces have the correct type:
         if not all(type(surf) == MachineSegmentSurface for surf in geo.values()):
-            raise ValueError(
+            raise TypeError(
                 "Invalid geometry dict provided! "
                 "Make sure that the geometry values are of type MachineSegmentSurface!"
             )
@@ -536,8 +585,11 @@ def main(
 
         t1 = timeit.default_timer()
         module_logger.debug("Time for loading geometry: %.2fs", t1 - t0)
+
     # generate the machine geometry
+    module_logger.info("Creating complete model from segmented input...")
     machine, machineSurfDict = createMachine(segmentSurfDict, extendedInfo)
+
     if module_logger.getEffectiveLevel() <= logging.DEBUG:
         t2 = timeit.default_timer()
         module_logger.info("Time for creating machine object: %.2fs", t2 - t1)
@@ -545,11 +597,12 @@ def main(
     # set function mesh
     if "useFunctionMesh" in extendedInfo.keys():
         if extendedInfo["useFunctionMesh"]:
+            module_logger.info("Creating automatic, function based mesh sizes...")
             machine.setFunctionMesh()
 
     # get the simulation pareameters
     simulationParameters = importJSON.get_simulation_params(extendedInfo)
-    module_logger.info("Generating the Script object in JSON API.")
+    module_logger.info("Generating the Script object in JSON API...")
     apiScript = Script(
         name=importJSON.get_model_name(extendedInfo),
         scriptPath=model,
@@ -558,18 +611,26 @@ def main(
         resultsPath=results,
         # factory="OpenCascade",
     )
+
     if module_logger.getEffectiveLevel() <= logging.DEBUG:
         t3 = timeit.default_timer()
         module_logger.debug("Time for creating script object: %.2fs", t3 - t2)
+
     addPostOperations(apiScript, extendedInfo)
+
+    module_logger.debug("Creating gmsh code for user defined mesh size setting...")
     meshSizeSetCode = createMeshSizeGUICode(machineSurfDict)
+
     # generate geo and pro files:
+    module_logger.info("Creating Gmsh and GetDP input files...")
     apiScript.generateScript(UD_MeshCode=meshSizeSetCode)
+
     if module_logger.getEffectiveLevel() <= logging.DEBUG:
         t4 = timeit.default_timer()
         module_logger.debug("Time for generating script files: %.2fs", t4 - t3)
 
     if importJSON.get_flag_open_gui(extendedInfo) is True:
+        module_logger.debug("Open Gmsh GUI to show model")
         _open_onelab(apiScript, extendedInfo, gmsh, getdp)
 
     pyemmoLogger.removeHandler(jsonLogFileHandler)
@@ -592,13 +653,17 @@ def _check_symmetry(
         ValueError: If the symmetry factor is not compatible with the minimal symmetry
         of the machine.
     """
+    logger = logging.getLogger(__name__)
+    logger.debug("Checking symmetry for given model...")
     # Check if the symmetry factor given from extendedInfo is valid:
     reqested_sym = importJSON.get_sym_factor(extendedInfo)
+    logger.debug("Given symmetry factor from extended info dict is %.1f", reqested_sym)
     # get number of segments of the first surface to init symmetry check
     highest_sym = list(segmentSurfDict.values())[0].nbr_segments
     # get maximal symmetry for all segment surface:
     for seg_surf in segmentSurfDict.values():
         highest_sym = np.gcd(highest_sym, seg_surf.nbr_segments)
+    logger.debug("Highest symmetry factor from current surfaces is %.1f", highest_sym)
     # symFactor must be a multiple of the highest symmetry (sym)
     if (highest_sym / reqested_sym) % 1 != 0:
         raise ValueError(
@@ -655,23 +720,30 @@ def _open_onelab(
     resPath = apiScript.resultsPath
     # check if resPath exists -> simulation has been run.
     if isdir(resPath):
+        logger.debug("Found results path -> Simulation has been run.")
         # check if the simulation that has been run is a single transient simulation:
         sim_is_transient = is_single_transient(resPath)
         if importJSON.get_flag_core_loss_calc(extendedInfo):
             if sim_is_transient:
+                logger.info(
+                    "Simulation found in results path was single transient simulation."
+                    "Trying to run core loss calculation"
+                )
                 # if core loss flag and simulation is transient, calc core loss:
                 _run_core_loss_calculation(resPath, apiScript)
             else:
                 logger.warning(
-                    "IRON LOSS CALCULATION: Iron loss calculation "
-                    "cannot be done for static simulation!",
+                    "Iron loss calculation cannot be done for static or multi transient "
+                    "simulation!"
                 )
         # Plot Results for Debugging
-        if logger.getEffectiveLevel() <= 10:
+        if logger.getEffectiveLevel() <= logging.DEBUG - 1:
+            logger.info("Plotting all results for debugging!")
             # if the folder for results exists
-            import_results.plt.set_loglevel(
-                level="info"
-            )  # avoid matplotlib debug infos
+            
+            # avoid matplotlib debug infos
+            import_results.plt.set_loglevel(level="info")
+            
             for file in os.listdir(resPath):
                 filename, fileExt = os.path.splitext(file)
                 if fileExt == ".dat":
