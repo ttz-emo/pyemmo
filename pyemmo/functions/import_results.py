@@ -455,6 +455,98 @@ def importPos(pos_file: str | os.PathLike) -> tuple[np.ndarray, np.ndarray, np.n
     return element_tags, np.array(time), data
 
 
+# TODO: move implementation of importPos to this function:
+# def _import_pos_mshFormat(view_tag: int, step: int): ...
+
+
+def import_pos_parsedFormat(file_path: str) -> tuple[str, np.ndarray, np.ndarray]:
+    """Import data from older .pos format 'GmshParsed'.
+    See this for more info about parsed file format:
+    https://gmsh.info/doc/texinfo/gmsh.html#Gmsh-file-formats:~:text=More%20explicitly%2C%20the%20syntax%20for%20a%20parsed%20View%20is%20the%20following
+
+    Args:
+        file_path (str): path to result file
+
+    Returns:
+        str: GmshParsed results data type (like SP for scalar point or VL for vector line)
+        np.ndarray: Node coordinates in shape (number of elements, number of nodes * 3)
+        np.ndarray: Data array in shape (number of element, number of simulation steps * number of values per node)
+    """
+    finalize_gmsh, view_tag = load_view(file_path)
+
+    # check that view was loaded:
+    dTypeArray, numElem, data = gmsh.view.getListData(view_tag, returnAdaptive=False)
+    for i, data_type in enumerate(dTypeArray):
+        # translate data type to number of data values per step
+        if data_type[0] == "S":  # scalar values
+            nbr_data = 1
+        elif data_type[0] == "V":  # vector result
+            nbr_data = 3
+        elif data_type[0] == "T":  # tensor result
+            raise NotImplementedError("Tensor data import not implemented.")
+        else:
+            raise ValueError(f"Unknown data type '{data_type}' in result.")
+
+        # match second character to get number of node coordinates per element
+        match data_type[1]:
+            case "P":  # point results
+                nbr_coords = [3]  # number of coordinates per element
+            case "L":  # line results
+                nbr_coords = [3, 3]  # number of coordinates per element
+            case "T":  # triangle results
+                nbr_coords = [3, 3, 3]  # 3 point per triangle
+            case _:
+                raise ValueError(
+                    f"Cannot import values for Gmsh parsed data type {data_type}!"
+                )
+        # calc number of steps (unnecessary)
+        nbr_steps = (data[i].size / numElem[i] - sum(nbr_coords)) / nbr_data
+        assert nbr_steps % 1 == 0, "Number of timesteps turns out to be non-int!"
+        
+        # FIXME: Import time step information
+        # assert nbr_steps == int(
+        #     gmsh.view.option.getNumber(tag=view_tag, name="NbTimeStep")
+        # )
+        
+        # if nbr_steps>1:
+        #     with open(file_path, encoding="utf-8") as dataFile:
+        #         dataLines = dataFile.readlines()
+        #     dataLines.pop(-1)  # remove last line (no information)
+        #     # read time values
+        #     timeStr = parse.parse("TIME{{{}}};\n", dataLines[-1])
+        #     if isinstance(timeStr, parse.Result):  # if time values could be parsed
+        #         time: list[float] = []
+        #         dataLines.pop()  # remove time line from dataLines
+        #         for timeVal in timeStr[0].split(","):
+        #             time.append(float(timeVal))
+        #     elif timeStr is None:
+        #         # no time step given in results file. Only single time step evaluated!
+        #         time = []
+        #     else:
+        #         raise TypeError(
+        #             "Parsing of TIME line in SP formatted file did not return parse.Result object."
+        #         )
+
+        # reshape data by (number of elements, number of data values)
+        # where number of data values = num_data * nbr_steps
+        reshaped_data = data[i].reshape((numElem[i], int(data[i].size / numElem)))
+
+        # extract element node data
+        # TODO: This could be reshaped by nbr_coords
+        nodes = reshaped_data[:, 0 : sum(nbr_coords)]
+
+        # extract data
+        # TODO: This could be reshaped by nbr_coords
+        out_data = reshaped_data[:, sum(nbr_coords) :]
+
+        if finalize_gmsh:
+            gmsh.finalize()
+
+        return data_type, nodes, out_data
+
+    # return dataType, numElem, data
+
+
 def get_result_files(
     result_folder: str | os.PathLike,
 ) -> tuple[list[str | os.PathLike], list[str | os.PathLike]]:
