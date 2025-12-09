@@ -377,10 +377,29 @@ def importPos(pos_file: str | os.PathLike) -> tuple[np.ndarray, np.ndarray, np.n
             - data array
     """
     # check file extension
-    _, filename = os.path.split(pos_file)
+    path, filename = os.path.split(pos_file)
     filename, ext = os.path.splitext(filename)
     if ext != ".pos":
         raise ValueError(f"Given filepath '{pos_file}' is not a POS-file!")
+
+    # Check if pos file is in old GmshParsed format. See function import_pos_parsedFormat!
+    with open(pos_file, "r") as file:
+        if file.readline().startswith("View"):
+            logger.warning(
+                "Result file '%s' is in old gmsh parsed format. "
+                "Try to convert it to new format...",
+                pos_file,
+            )
+            logger.info(
+                "Alternativly use function import_pos_parsedFormat(...) to import "
+                "parsed formatted data!"
+            )
+            # if function is in GmshParsed format, export as .msh file to update file
+            # format and the use as new results file
+            filename = filename + ".msh"  # update filename
+            _, view_tag = load_view(pos_file)
+            pos_file = os.path.join(path, filename)  # update result file path
+            gmsh.view.write(view_tag, pos_file)  # export as .msh
 
     # load view from result file
     finalize_gmsh, view_tag = load_view(pos_file)

@@ -22,6 +22,7 @@
 from __future__ import annotations
 
 import os
+from os.path import join, abspath
 
 import numpy as np
 import pytest
@@ -210,6 +211,18 @@ def test_import_pos():
     ), "Incorrect Mesh elements Imported!"
     assert np.array_equal(time, imp_time), "Incorrect Time stamps Imported!"
     assert np.array_equal(data, imp_data), "Incorrect Data Array Imported!"
+
+
+@pytest.mark.parametrize(
+    "test_pos_path",
+    [
+        abspath(join(IMP_RES_TEST_DATA_DIR, "VL_GmshParsed_static.pos")),
+        abspath(join(IMP_RES_TEST_DATA_DIR, "SP_GmshParsed_transient.pos")),
+    ],
+)
+def test_import_pos_parsed_workaround(test_pos_path):
+    """Just make sure the workaround for GmshParsed formatted pos files works"""
+    imp_mesh_elem, imp_time, imp_data = importPos(test_pos_path)
 
 
 # @pytest.mark.parametrize(
