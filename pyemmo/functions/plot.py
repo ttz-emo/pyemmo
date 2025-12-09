@@ -72,14 +72,14 @@ def plot(
                     fig=fig,
                     marker=marker,
                     markersize=markersize,
-                    color=color if color else POINT_COLOR,
+                    color=color if color is not None else POINT_COLOR,
                     tag=tag,
                 )
             else:
                 geoObj.plot(
                     fig,
                     linewidth=linewidth,
-                    color=color if color else LINE_COLOR,
+                    color=color if color is not None else LINE_COLOR,
                     marker=marker,
                     markersize=markersize,
                     tag=tag,

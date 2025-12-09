@@ -409,25 +409,31 @@ class CircleArc(Line):
             )
         # if marker not None: Plot points
         if marker:
+            # need to check color for str, because can also be list/np.ndarray
+            if isinstance(color, str) and color == LINE_COLOR:
+                # if color is default value
+                p_color = POINT_COLOR
+            else:
+                p_color = color
             centerPoint.plot(
                 fig,
                 marker,
                 markersize,
-                color=color if color != LINE_COLOR else POINT_COLOR,
+                color=p_color,
                 tag=tag,
             )
             self.start_point.plot(
                 fig,
                 marker,
                 markersize,
-                color=color if color != LINE_COLOR else POINT_COLOR,
+                color=p_color,
                 tag=tag,
             )
             self.end_point.plot(
                 fig,
                 marker,
                 markersize,
-                color=color if color != LINE_COLOR else POINT_COLOR,
+                color=p_color,
                 tag=tag,
             )
 
