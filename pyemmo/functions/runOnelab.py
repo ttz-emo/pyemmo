@@ -267,7 +267,7 @@ def createCmdCommand(
             if getdpPath:
                 # if command line and getdp specified
                 # run the simulation with specific getdp exe
-                getdp_command += f"{getdpPath} {onelabFile} -solve Analysis "
+                getdp_command += f"""{getdpPath} "{onelabFile}" -solve Analysis"""
                 # the command is: "getdp FILE.pro -solve Analysis"
                 if "msh" in getdp_params:
                     if getdp_params["msh"] and not isfile(getdp_params["msh"]):
@@ -275,14 +275,14 @@ def createCmdCommand(
                             f"""Given msh file was not found: {getdp_params["msh"]}"""
                         )
                     # make sure file exists -> skip meshing
-                    getdp_command += f"-msh {getdp_params['msh']} "
+                    getdp_command += f" -msh {getdp_params['msh']}"
                     gmsh_command = ""  # reset gmsh command
                     # allways remove "msh" field for getdp param setting later
                     getdp_params.pop("msh")
                 else:
                     # no "msh" key -> create mesh command
                     # TODO: Add gmsh paramter to mesh generation call
-                    gmsh_command = f"{gmshPath} {filePath}.geo -run "
+                    gmsh_command = f"""{gmshPath} "{filePath}.geo" -run"""
                     # TODO: Check if the following should be used or not.
                     # if os.path.isfile(getdpPath):
                     #     # it getdp executable is given and exists, set internal solver
@@ -320,7 +320,7 @@ def createCmdCommand(
                 " or '.pro') or is missing file extension: {ext}"
             )
         )
-    if gmsh_params:
+    if gmsh_params and gmsh_command != "":
         # if the paramDict is not empty or None
         if not isinstance(gmsh_params, dict):
             raise TypeError(
@@ -329,7 +329,7 @@ def createCmdCommand(
         # add verbosity if given
         if "verbosity level" in gmsh_params:
             if gmsh_command:
-                gmsh_command += f" -v {gmsh_params.pop('verbosity level')} "
+                gmsh_command += f" -v {gmsh_params.pop('verbosity level')}"
         for paramName, paramValue in gmsh_params.items():
             if paramName == "exe":
                 continue  # skip exe
@@ -347,7 +347,7 @@ def createCmdCommand(
                         f"int! -> {type(paramValue)}"
                     )
                 )
-    if getdp_params:
+    if getdp_params and getdp_command != "":
         # if the paramDict is not empty or None
         if not isinstance(getdp_params, dict):
             raise TypeError(
@@ -355,7 +355,7 @@ def createCmdCommand(
             )
         # add verbosity if given
         if "verbosity level" in getdp_params:
-            getdp_command += f" -v {getdp_params.pop('verbosity level')} "
+            getdp_command += f" -v {getdp_params.pop('verbosity level')}"
         for paramName, paramValue in getdp_params.items():
             if paramName == "exe":
                 continue  # skip exe
