@@ -337,12 +337,24 @@ class PhysicalElement:
                 tag=False,
             )
 
-        if tag and self.geoElementType == Surface:
-            for surf in self.geo_list:
-                cog = surf.calcCOG().coordinate
+        if tag:
+            if self.geoElementType == Surface:
+                for surf in self.geo_list:
+                    cog = surf.calcCOG().coordinate
+                    ax.annotate(
+                        f"""S {self.id} ("{self.name}")""",
+                        (cog[0], cog[1]),
+                        textcoords="offset points",
+                        xytext=(1, 1),
+                        ha="left",
+                    )
+            else:
+                # line plot
+                curves: list[Line, CircleArc, Spline] = self.geo_list
+                center = np.mean([c.middle_point.coordinate for c in curves], axis=0)
                 ax.annotate(
-                    f"""S {self.id} ("{self.name}")""",
-                    (cog[0], cog[1]),
+                    f"""{self.__class__.__name__}: {self.name}""",
+                    (center[0], center[1]),
                     textcoords="offset points",
                     xytext=(1, 1),
                     ha="left",
