@@ -569,7 +569,7 @@ def main(
         module_logger.debug(
             "Assert that the given surfaces are created in the current gmsh model"
         )
-        logging.debug(f"Current gmsh model is: {gmsh_api.model.getCurrent()}")
+        module_logger.debug(f"Current gmsh model is: {gmsh_api.model.getCurrent()}")
         gmsh_api.model.occ.synchronize()
         surf_dim_tags = gmsh_api.model.get_entities(2)
         surf_tags = [dim_tag[1] for dim_tag in surf_dim_tags]
