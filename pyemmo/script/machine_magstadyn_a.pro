@@ -1115,13 +1115,16 @@ PostProcessing {
 
       { Name intAxLen; Value{ Integral { [ axialLength[]/SurfaceArea[] ]; In Domain; Jacobian Vol; Integration I1; } } }
       { Name axLen ; Value { Term { [ axialLength[] ] ; In Domain ; Jacobian Vol ; } } } // Dummy value - for visualization
-      // { Name axLenValue; Value{ Term { Type Global; [ axialLength[] ]; In DomainDummy; Jacobian Vol; Integration I1; } } } // This does NOT work...
-
       { Name surfCoil; Value{ Term { Type Global; [ SurfCoil[] ]; In DomainDummy; Jacobian Vol; Integration I1; } } }
       // { Name surfCoil; Value{ Integral { [ SurfCoil[]/SurfaceArea[] ]; In Domain; Jacobian Vol; Integration I1; } } }
-
-      { Name a  ; Value { Term { [ {a} ] ; In Domain ; Jacobian Vol ; } } }
-      { Name az ; Value { Term { [ CompZ[{a}] ] ; In Domain ; Jacobian Vol ; } } }
+      { Name a  ; Value { 
+        Term { [ {a} ] ; In Domain ; Jacobian Vol ; } 
+        Term { [ {a} ] ; In Region[{Rotor_Bnd_MB, Stator_Bnd_MB}] ; Jacobian Sur ; } 
+      }}
+      { Name az ; Value { 
+        Term { [ CompZ[{a}] ]; In Domain; Jacobian Vol; }
+        Term { [ CompZ[{a}] ]; In Region[{Rotor_Bnd_MB, Stator_Bnd_MB}]; Jacobian Sur; }
+      }}
       // Here we plot the b field on a per element basis (local quantity) since  b is defined as b=curl a. We state that the Term is {d a}. We could also have written {Curl a}. In GetDP the d operator takes the correct differential operator (div, curl, rot) depending on the differential form on which it is applied. (See function space above, or search for Tonti diagram):
       { Name b  ; Value { Term { [ {d a} ] ; In Domain ; Jacobian Vol ; } } }
       { Name bn  ; Value { Term { [ Norm[{d a}] ] ; In Domain ; Jacobian Vol ; } } }
