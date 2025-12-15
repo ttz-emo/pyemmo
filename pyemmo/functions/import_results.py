@@ -430,7 +430,7 @@ def importPos(pos_file: str | os.PathLike) -> tuple[np.ndarray, np.ndarray, np.n
         if not cdata:
             gmsh.finalize()
             raise ValueError(f"No data found in {pos_file}!")
-        logging.warning("Import file '%s' did only contain last timestep!", pos_file)
+        logger.warning("Import file '%s' did only contain last timestep!", pos_file)
         # Only last time step happens if PostProcessing is called at runtime
         # (in 'Resolution').
         # Return only that timestep
@@ -609,9 +609,10 @@ def main(
     Returns:
         dict[str, np.ndarray |dict[str, np.ndarray]]: results for given simulation
     """
+    logger = logging.getLogger(__name__)
     if not isinstance(sim_param, dict):
         sim_param = load_param_file(sim_param)
-    logging.info("Import results for result-ID '%s'", sim_param["getdp"]["ResId"])
+    logger.info("Import results for result-ID '%s'", sim_param["getdp"]["ResId"])
     results_dict = {}  # init results
     # get results folder from parameters
     simulation_res_dir = os.path.join(
@@ -706,7 +707,7 @@ def main(
                 axis=0,
             )
         else:
-            logging.warning(
+            logger.warning(
                 (
                     "MST Torque for rotor and stator diviates more than 10%! "
                     "Check results carefully!"
@@ -741,9 +742,7 @@ def main(
     # Check if file hystLoss_rotor.dat allready exists -> loss calculated
     core_loss_dict = {}
     if os.path.exists(os.path.join(simulation_res_dir, "hystLoss_rotor.dat")):
-        logging.info(
-            "Importing core loss values for %s...", sim_param["getdp"]["ResId"]
-        )
+        logger.info("Importing core loss values for %s...", sim_param["getdp"]["ResId"])
         for side in ["rotor", "stator"]:
             core_loss_dict[side] = {}
             for loss_type in ("hyst", "eddy", "exc"):
@@ -756,21 +755,21 @@ def main(
     if core_loss_dict:
         results_dict["coreLoss"] = core_loss_dict
         # pylint: disable=locally-disabled, logging-not-lazy, logging-fstring-interpolation, line-too-long
-        logging.debug("Iron loss for '" + sim_param["getdp"]["ResId"] + "'")
-        logging.debug(f"{'Rotor':>24} {'Stator':>11} {'Gesamt':>11}")
-        logging.debug(
+        logger.debug("Iron loss for '" + sim_param["getdp"]["ResId"] + "'")
+        logger.debug(f"{'Rotor':>24} {'Stator':>11} {'Gesamt':>11}")
+        logger.debug(
             f"{'Hysteresis:':<14} {np.mean(core_loss_dict['rotor']['hyst']) : 8.3f} W {np.mean(core_loss_dict['stator']['hyst']) : 9.3f} W {np.mean(core_loss_dict['stator']['hyst']+core_loss_dict['rotor']['hyst']) : 9.3f} W"
         )
-        logging.debug(
+        logger.debug(
             f"{'Eddy Current:':<14} {np.mean(core_loss_dict['rotor']['eddy']) : 8.3f} W {np.mean(core_loss_dict['stator']['eddy']) : 9.3f} W {np.mean(core_loss_dict['stator']['eddy']+core_loss_dict['rotor']['eddy']) : 9.3f} W"
         )
-        logging.debug(
+        logger.debug(
             f"{'Excess:':<14} {np.mean(core_loss_dict['rotor']['exc']) : 8.3f} W {np.mean(core_loss_dict['stator']['exc']) : 9.3f} W {np.mean(core_loss_dict['stator']['exc']+core_loss_dict['rotor']['exc']) : 9.3f} W"
         )
-        logging.debug(
+        logger.debug(
             "---------------------------------------------------------------------"
         )
-        logging.debug(
+        logger.debug(
             f"{'Summe:':<14} {np.mean(core_loss_dict['rotor']['exc']+core_loss_dict['rotor']['eddy']+core_loss_dict['rotor']['hyst']) : 8.3f} W {np.mean(core_loss_dict['stator']['exc']+core_loss_dict['stator']['eddy']+core_loss_dict['stator']['hyst']) : 9.3f} W {np.mean(core_loss_dict['rotor']['exc']+core_loss_dict['rotor']['eddy']+core_loss_dict['rotor']['hyst']+core_loss_dict['stator']['exc']+core_loss_dict['stator']['eddy']+core_loss_dict['stator']['hyst']) : 9.3f} W"
         )
     return results_dict
