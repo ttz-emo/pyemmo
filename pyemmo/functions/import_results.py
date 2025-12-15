@@ -468,9 +468,10 @@ def import_pos_parsedFormat(file_path: str) -> tuple[str, np.ndarray, np.ndarray
         file_path (str): path to result file
 
     Returns:
-        str: GmshParsed results data type (like SP for scalar point or VL for vector line)
-        np.ndarray: Node coordinates in shape (number of elements, number of nodes * 3)
-        np.ndarray: Data array in shape (number of element, number of simulation steps * number of values per node)
+        tuple[str,np.ndarray,np.ndarray]:
+            - GmshParsed results data type (like SP for scalar point or VL for vector line)
+            - Node coordinates in shape (number of elements, number of nodes * 3)
+            - Data array in shape (number of element, number of simulation steps * number of values per node)
     """
     finalize_gmsh, view_tag = load_view(file_path)
 
@@ -492,6 +493,8 @@ def import_pos_parsedFormat(file_path: str) -> tuple[str, np.ndarray, np.ndarray
             case "P":  # point results
                 nbr_coords = [3]  # number of coordinates per element
             case "L":  # line results
+                # we get results with coords [x1,x2, y1,y2, z1,z2] but data with
+                # [x1,y1,z1, x2,y2,z2]
                 nbr_coords = [3, 3]  # number of coordinates per element
             case "T":  # triangle results
                 nbr_coords = [3, 3, 3]  # 3 point per triangle
@@ -502,12 +505,12 @@ def import_pos_parsedFormat(file_path: str) -> tuple[str, np.ndarray, np.ndarray
         # calc number of steps (unnecessary)
         nbr_steps = (data[i].size / numElem[i] - sum(nbr_coords)) / nbr_data
         assert nbr_steps % 1 == 0, "Number of timesteps turns out to be non-int!"
-        
+
         # FIXME: Import time step information
         # assert nbr_steps == int(
         #     gmsh.view.option.getNumber(tag=view_tag, name="NbTimeStep")
         # )
-        
+
         # if nbr_steps>1:
         #     with open(file_path, encoding="utf-8") as dataFile:
         #         dataLines = dataFile.readlines()
