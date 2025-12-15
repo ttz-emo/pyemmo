@@ -800,6 +800,9 @@ Resolution {
         DeleteFile[StrCat[ResDir,"Flux_a",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Flux_b",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Flux_c",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Flux_d",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Flux_q",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Flux_0",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Ia",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Ib",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Ic",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"InducedVoltageA",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"InducedVoltageB",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"InducedVoltageC",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Ld",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Lq",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Ldq",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"LossesMagnets",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"ParkAngle_deg",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Pec_Lam",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"PMFlux_d",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"PMFlux_q",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"RotorPos_deg",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Surf_Phase_A_pos",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"temp",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Tr",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Ts",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Tmb",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Ua",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Ub",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Uc",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"JL",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"JL_Fe",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"P",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"V",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Irotor",ExtGnuplot]];
       EndIf
       */
+      If (Flag_ClearViews)
+        PostOperation[DeleteViews] ;
+      EndIf
       // Rotation must occure before MovingBand meshing!
       If (initrotor_pos != 0)
         ChangeOfCoordinates[ NodesOf[Rotor_Moving], RotatePZ[initrotor_pos*Pi/180]]; 
@@ -1859,5 +1862,22 @@ If (Flag_Inductance)
     Print [ Lq , OnRegion DomainDummy, Format Table, LastTimeStepOnly,
       File> StrCat[ResDir,"Lq",ExtGnuplot],
       SendToServer StrCat[poF,"Lq [H]"]{0}, Color "LightYellow"];
+  }
+EndIf
+
+If (Flag_ClearViews)
+  PostOperation DeleteViews UsingPost MagStaDyn_a_2D {
+    Echo[
+      Str[
+        "If (PostProcessing.NbViews != 0)",
+        "  Printf('Number of views is %.0f', PostProcessing.NbViews);",
+        "  For k In {0:PostProcessing.NbViews-1}",
+        "      Delete View[0];",
+        "  EndFor",
+        "EndIf"
+      ],
+      File StrCat[ResDir,"tmp.geo"],
+      LastTimeStepOnly
+    ];
   }
 EndIf
