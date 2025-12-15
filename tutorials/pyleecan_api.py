@@ -51,7 +51,7 @@ fig, ax = IPMSM_A.plot(is_show_fig=False)
 
 # %%
 # Start Pyleecan GUI from the Jupyter Notebook (this might take a second to start ;) )
-from pyleecan import run_GUI
+# from pyleecan import run_GUI
 
 # run_GUI.run_GUI([""])
 # %% [markdown]
@@ -275,7 +275,7 @@ pyemmo_script.addPostOperation(
     quantityName="Force_MST",
     name="Airgap_Force",
     # GetDP keyword arguments for PostOperations
-    OnElementsOf="Rotor_Bnd_MB_1",  # alternativly you could use
+    OnRegion="NodesOf[Rotor_Bnd_MB_1]",  # alternativly you could use
     # OnGrid=(
     #     f"{{({radius}*(1{sign}0.0001))*Cos[$A*Pi/180],"
     #     f"({radius}*(1{sign}0.0001))*Sin[$A*Pi/180],0}}"
@@ -290,7 +290,7 @@ pyemmo_script.addPostOperation(
     quantityName="Force_MST_Cyl",
     name="Airgap_Force",
     # GetDP keyword arguments for PostOperations
-    OnElementsOf="Rotor_Bnd_MB_1",  # alternativly you could use
+    OnRegion="NodesOf[Rotor_Bnd_MB_1]",  # alternativly you could use
     # OnGrid=(
     #     f"{{({radius}*(1{sign}0.0001))*Cos[$A*Pi/180],"
     #     f"({radius}*(1{sign}0.0001))*Sin[$A*Pi/180],0}}"
