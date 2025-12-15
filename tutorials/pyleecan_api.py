@@ -1,41 +1,40 @@
 # %% [markdown]
 # # PyEMMO-Pyleecan Tutorial
 # This is a tutorial on how to create or load a Pyleecan machine and translate it to ONELAB using the PyEMMO pyleecan-api.
-#
+# 
 # This tutorial has the following sections:
 # 1. Load or create a Pyleecan machine and how to modifiy its properties
 # 2. How to use use the PyEMMO pyleecan-api to create a ONELAB model
-# 3. How to run a simple simulation in ONELAB
+# 3. How to run a simple simulation in ONELAB 
 
 # %% [markdown]
 # ## 1. Load or create a Pyleecan machine and how to modifiy its properties
-#
+# 
 # Pyleecan has a lot of useful tutorials under [Pyleecan tutorials][pylcn_tutorials].
-# See those for futher details on how to use the pyleecan motor toolbox.
-#
+# See those for futher details on how to use the pyleecan motor toolbox. 
+# 
 # There are two ways to get a Pyleecan machine:
-#
+# 
 # - Load a existing machine using the `load` function.
 # - Create a machine with a python script by using the Pyleecan classes.
 #   See the [`01_tuto_Machine.ipynb`][pylcn_tutorial_machine] tutorial for that.
-#
-#
+# 
+# 
 # You can load an existing Pyleecan model using:
-#
+# 
 # [pylcn_tutorials]: https://pyleecan.org/tutorials.html
 # [pylcn_tutorial_machine]: https://pyleecan.org/01_tuto_Machine.html
 
 # %%
 # set log level to diable necessary matplotlib log messages
 import logging
-
 logging.getLogger("matplotlib").setLevel(logging.ERROR)
 # Tell matlab to use the inline kernel to show the figures in the notebook:
 
 # %%
 # Load the machine
 from os.path import join
-from pyleecan.Functions.load import load  # pylint: disable=no-name-in-module
+from pyleecan.Functions.load import load
 from pyleecan.definitions import DATA_DIR
 
 IPMSM_A = load(join(DATA_DIR, "Machine", "Toyota_Prius.json"))
@@ -46,14 +45,15 @@ fig, ax = IPMSM_A.plot(is_show_fig=False)
 # %% [markdown]
 # This can be a default machine from the Pyleecan `DATA` directory or you can create your own machine using the Pyleecan GUI.
 # See [Pyleecan Webinar on how to use the GUI][GUI_webinar] or just try it yourself by running:
-#
+# 
+# ``
+# python -m pyleecan
+# ``
+# 
+# in the command line.
+# 
 # [GUI_webinar]: https://pyleecan.org/webinar_1.html
 
-# %%
-# Start Pyleecan GUI from the Jupyter Notebook (this might take a second to start ;) )
-# from pyleecan import run_GUI
-
-# run_GUI.run_GUI([""])
 # %% [markdown]
 # Now you can modify the machine properties depending on the classes used.
 # E.g. we can modify the magnets remanence flux density by accessing:
@@ -101,7 +101,7 @@ _ = ax.set_title(f"H2 = {IPMSM_A.rotor.hole[0].H2*1e3} mm")
 # You simply need to call the `pyemmo.api.pyleecan.main.main` function.
 # You will need to supply the **Pyleecan machine object** and a **path where the ONELAB model files shoud be stored**.
 # You can optionally specify if the Gmsh GUI should be opened after the model has been generated.
-# Additionally the Gmsh and GetDP executables to use for opening the GUI and run a simulation.
+# Additionally the Gmsh and GetDP executables to use for opening the GUI and run a simulation. 
 
 # %%
 import logging
@@ -110,7 +110,7 @@ from pyemmo.definitions import RESULT_DIR
 
 # you can set the output verbosity of the model creation using the pyemmo logger.
 # The logging module by default implements DEBUG, INFO, WARNING, ERROR, FATAL log
-# levels, which are simply constants for integer levels, e.g. DEBUG == 10
+# levels, which are simply constants for integer levels, e.g. logging.DEBUG == 10
 # You can use evel(logging.DEBUG -1) to trigger extended debugging, which shows
 # additional information in plots and opens the Gmsh GUI at different levels in the
 # model creation.
@@ -130,7 +130,7 @@ pyemmo_script = pyleecan_api.main(
 # The created geometry will be saved as a *.geo* file (Gmsh specific file format).
 # The files used by GetDP to run a simulation will be saved as *.pro* files.
 # If you now look at the contents of the newly created folder *\Toyota_Prius_ONELAB*, you will find the following model files:
-#
+# 
 # | Model File | Description|
 # |------------|------------|
 # | Toyota_Prius.geo | Geometry (CAD) |
@@ -139,17 +139,17 @@ pyemmo_script = pyleecan_api.main(
 # | machine_magstadyn_a.pro | Problem Template for Electrical Machines |
 # | Circuit_SC_ASM.pro | Optional Circuit Definition (for Induction Machines) |
 # | pyemmo_jsonAPI.log | PyEMMO Model Creation log-file |
-#
+# 
 
 # %% [markdown]
-# ## 4. How to run a simple simulation in ONELAB
+# ## 4. How to run a simple simulation in ONELAB 
 
 # %% [markdown]
 # After creating a machine model you can start a simulation in the GUI adjusting the parameters and clicking the "Run" botton.
-# Or you can you the `runCalcforCurrent` function and start a simulation from Python as a subprocess.
+# Or you can use the `runCalcforCurrent` function and start a simulation from Python as a subprocess.
 # Therefore you can specify the same parameters you find in GUI using a parameter dictionary like in the example below (``paramDict``).
 # You can find all adjustable constants and parameters in the documentation under **ONELAB Model Constants** and **ONELAB Model Parameters**.
-#
+# 
 # For synchronous machines PyEMMO will try to calculate the dq-System offset between rotor and stator. See **dq-Offset calculation** for more details.
 
 # %%
@@ -213,9 +213,9 @@ results = runCalcforCurrent(param_dict)
 # %% [markdown]
 # After the simulation has finished, pyemmo automatically imports the standard global result values using `pyemmo.functions.import_results.main` function and output the results in a dictionary structure.
 # Here we store this output in the variable `results`.
-#
+# 
 # Using `print` or `pprint` (pretty-print) we can show the dictionary keys.
-#
+# 
 # Depended on the simulation parameters defined in `param_dict["getdp"]`, not all of the keys must contain result data.
 
 # %%
@@ -254,19 +254,28 @@ ax.legend()
 
 # %% [markdown]
 # ## 5. What is possible, whats not?
-#
+# 
 # The following design and geometry limitations are known:
-#
+# 
 # - Multi-phase windings with $m != 3$
 # - Number of winding layers > 2 (not supported by SWAT-EM).
 # - Wound rotor machines.
 # - Multi-cage induction motors.
 # - No multi-layered surface subtractions (you cannot cut out of tool surfaces in api)
 # - No overlaping surfaces (does not work in pyleecan aswell).
-#
+# 
 
 # %% [markdown]
 # ## 6. User-defined results
+# Finally lets talk about the definition of some user defined results appart from the standard global results seen in the simulation example before.
+# We can use the ``Script`` method ``addPostOperation`` to add user-defined post operations to the GetDP input scripts.
+# This requires some knowledge of the GetDP Syntax for evaluation PostProcessing quantities.
+# You can find all available quantities in the `machine_magstadyn_a.pro` template file in the ``PostProcessing`` section.
+# 
+# In the following example we are going to evaluate the force density in the stator airgap calculated by the Maxwell Stress Tensor.
+# The name of the (predefined) GetDP post processing quantity is `Force_MST`, the name of the new ``PostOperation`` is "Airgap_Force" and the evaluation should be performed on the mesh element nodes of the boundary curve `Stator_Bnd_MB` (``OnRegion="NodesOf[Stator_Bnd_MB]"``).
+# 
+# Before we run a new simulation and evaluate its results, we need to regenerate the .pro files for GetDP using `pyemmo_script.generateScript(2)`.
 
 # %%
 import gmsh
@@ -305,6 +314,10 @@ pyemmo_script.addPostOperation(
 )
 pyemmo_script.generateScript(2)  # recreate pro files with new PostOperation
 
+# %% [markdown]
+# Now we can run another simulation.
+# We are reusing the ``param_dict`` of the previous simulation while only changing some specific parameters.
+
 # %%
 # run a new simulation and import + display the results for the force density
 
@@ -321,6 +334,13 @@ param_dict["PostOp"] = ["Airgap_Force"]
 
 # run simulation:
 results = runCalcforCurrent(param_dict)
+
+# %% [markdown]
+# After the simulation has successfully finished, we can import the results using the pyemmo ``import_results`` module.
+# Since the force density is a local, position depended quantity, the results are saved as `.pos` files, Gmsh's default field result format.
+# We can import these files using the function `import_pos_parsedFormat`.
+# 
+# In the code below we are going to compare the radial and tangential force density calculated from the xyz force density in Python vs. the rad-tan force density directly transformed in GetDP.
 
 # %%
 # since the force density is not in the standard results import, we have to import it
@@ -346,7 +366,9 @@ data_type, nodes, sigma_xyz = import_pos_parsedFormat(
     join(param_dict["getdp"]["res"], param_dict["getdp"]["ResId"], "F_airgap.pos")
 )
 
+
 # Show evaluation points (mesh nodes) in scatter plot
+
 fig, ax = plt.subplots()
 # scatter node coodrinates
 ax.scatter(nodes[:, 0], nodes[:, 1], marker=".", s=10, label="Data points")
@@ -481,7 +503,7 @@ else:
         gmsh.view.option.setNumber(tag, "Visible", 0)
 
 # open result file with Gmsh
-gmsh.open(
+gmsh.merge(
     join(param_dict["getdp"]["res"], param_dict["getdp"]["ResId"], "F_airgap.pos")
 )
 
@@ -489,8 +511,12 @@ gmsh.open(
 gmsh.fltk.run()
 
 # %%
-# we could further load the geometry to see where we evaluated the results
-gmsh.merge(pyemmo_script.geoFilePath)
-# aswell as the created mesh file:
-gmsh.merge(join(pyemmo_script.scriptPath, pyemmo_script.name + ".msh"))
-gmsh.fltk.run()
+# we could further load the created mesh from the mesh file:
+mesh_file = join(pyemmo_script.scriptPath, pyemmo_script.name + ".msh")
+if os.path.isfile(mesh_file):
+    gmsh.merge(mesh_file)
+    gmsh.fltk.run()
+else:
+    logging.getLogger(__name__).warning("Could not find mesh file")
+
+
