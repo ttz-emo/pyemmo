@@ -174,7 +174,7 @@ def create_param_dict(
             else:
                 continue
             magnetization_dict[label2part_id(surf.label)] = np.deg2rad(mag)
-    if magnetization_dict and logging.getLogger(__name__).level <= (logging.DEBUG):
+    if magnetization_dict and logger.getEffectiveLevel() <= logging.DEBUG - 1:
         prop_cycle = plt.rcParams["axes.prop_cycle"]
         colors = prop_cycle.by_key()["color"]
         fig, ax = plt.subplots()
