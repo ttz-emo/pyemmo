@@ -184,7 +184,7 @@ def createMachine(
 
     # create the rotor
     axLen = importJSON.get_axial_length(extendedInfo)
-    logger.debug("Axial length of model is %.3f m", axLen)
+    logger.debug("Axial length of model is %.3f m", axLen["rotor"])
 
     logger.info("Creating rotor object...")
     rotorAPI = Rotor(
@@ -566,7 +566,10 @@ def main(
                 "Make sure that the geometry values are of type MachineSegmentSurface!"
             )
         # TODO: I think this can be skipped now!
-        # Assert that the given surfaces are created in the current gmsh model
+        module_logger.debug(
+            "Assert that the given surfaces are created in the current gmsh model"
+        )
+        logging.debug(f"Current gmsh model is: {gmsh_api.model.getCurrent()}")
         gmsh_api.model.occ.synchronize()
         surf_dim_tags = gmsh_api.model.get_entities(2)
         surf_tags = [dim_tag[1] for dim_tag in surf_dim_tags]
@@ -746,10 +749,10 @@ def _open_onelab(
         if logger.getEffectiveLevel() <= logging.DEBUG - 1:
             logger.info("Plotting all results for debugging!")
             # if the folder for results exists
-            
+
             # avoid matplotlib debug infos
             import_results.plt.set_loglevel(level="info")
-            
+
             for file in os.listdir(resPath):
                 filename, fileExt = os.path.splitext(file)
                 if fileExt == ".dat":
