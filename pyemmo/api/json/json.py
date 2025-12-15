@@ -184,7 +184,7 @@ def createMachine(
 
     # create the rotor
     axLen = importJSON.get_axial_length(extendedInfo)
-    logger.debug("Axial length of model is %.3f m", axLen)
+    logger.debug("Axial length of model is %.3f m", axLen["rotor"])
 
     logger.info("Creating rotor object...")
     rotorAPI = Rotor(
