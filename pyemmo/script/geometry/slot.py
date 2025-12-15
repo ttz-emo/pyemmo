@@ -149,7 +149,7 @@ class Slot(PhysicalElement):
         """
         if isinstance(nbrTurnsInFace, (int, float)):
             self._nbrTurns = nbrTurnsInFace
-            if not nbrTurnsInFace.is_integer():
+            if isinstance(nbrTurnsInFace, float) and not nbrTurnsInFace.is_integer():
                 logger = logging.getLogger(__name__)
                 logger.warning("Number of turns for slot %s was not an integer", self)
 
