@@ -31,7 +31,6 @@ import logging
 
 logging.getLogger("matplotlib").setLevel(logging.ERROR)
 # Tell matlab to use the inline kernel to show the figures in the notebook:
-# %matplotlib inline
 
 # %%
 # Load the machine
@@ -39,9 +38,7 @@ from os.path import join
 from pyleecan.Functions.load import load  # pylint: disable=no-name-in-module
 from pyleecan.definitions import DATA_DIR
 
-# %matplotlib inline
-
-IPMSM_A = load(join(DATA_DIR, "Machine", "Toyota_Prius.json"))
+IPMSM_A = load(join(DATA_DIR, "Machine", "Toyota_Prius_DXF.json"))
 # In Jupyter notebook, we set is_show_fig=False to skip call to fig.show() to avoid a warning message
 # All plot methods return the corresponding matplotlib figure and axis to further edit the resulting plot
 fig, ax = IPMSM_A.plot(is_show_fig=False)
@@ -54,8 +51,9 @@ fig, ax = IPMSM_A.plot(is_show_fig=False)
 
 # %%
 # Start Pyleecan GUI from the Jupyter Notebook (this might take a second to start ;) )
-# %run -m pyleecan
+from pyleecan import run_GUI
 
+# run_GUI.run_GUI([""])
 # %% [markdown]
 # Now you can modify the machine properties depending on the classes used.
 # E.g. we can modify the magnets remanence flux density by accessing:
@@ -77,8 +75,6 @@ _ = IPMSM_A.rotor.hole[0].plot_schematics(is_default=True, is_show_fig=False)
 
 # %%
 from matplotlib import pyplot as plt
-
-# %matplotlib inline
 
 fig, axes = plt.subplots(1, 2)  # create subplot to show results side by side
 # plot inital config
@@ -108,16 +104,25 @@ _ = ax.set_title(f"H2 = {IPMSM_A.rotor.hole[0].H2*1e3} mm")
 # Additionally the Gmsh and GetDP executables to use for opening the GUI and run a simulation.
 
 # %%
+import logging
 from pyemmo.api.pyleecan import main as pyleecan_api
 from pyemmo.definitions import RESULT_DIR
 
+# you can set the output verbosity of the model creation using the pyemmo logger.
+# The logging module by default implements DEBUG, INFO, WARNING, ERROR, FATAL log
+# levels, which are simply constants for integer levels, e.g. DEBUG == 10
+# You can use evel(logging.DEBUG -1) to trigger extended debugging, which shows
+# additional information in plots and opens the Gmsh GUI at different levels in the
+# model creation.
+logging.getLogger("pyemmo").setLevel(logging.INFO)
+
+# Run the main function of the pyleecan api:
 pyemmo_script = pyleecan_api.main(
     pyleecan_machine=IPMSM_A,
-    model_dir=join(
-        RESULT_DIR, "Toyota_Prius_ONELAB"
-    ),  # path were the model files should be stored
-    use_gui=False,  # select if you want to open the model in Gmsh.
-    gmsh="",  # optional gmsh executable. If use_gui is True, pyemmo will try to find a executable on your computer
+    model_dir=join(RESULT_DIR, "Toyota_Prius_ONELAB"),  # path for the model files
+    use_gui=False,  # select if you want to open the final model in Gmsh.
+    gmsh="",  # optional gmsh executable.
+    # If use_gui is True, pyemmo will try to find a executable on your computer.
     getdp="",  # optional getdp executable. For simulation in the GUI.
 )
 
@@ -203,7 +208,7 @@ param_dict = {
 
 # %%
 # run simulation:
-# results = runCalcforCurrent(param_dict)
+results = runCalcforCurrent(param_dict)
 
 # %% [markdown]
 # After the simulation has finished, pyemmo automatically imports the standard global result values using `pyemmo.functions.import_results.main` function and output the results in a dictionary structure.
@@ -214,38 +219,38 @@ param_dict = {
 # Depended on the simulation parameters defined in `param_dict["getdp"]`, not all of the keys must contain result data.
 
 # %%
-# from pprint import pprint
+from pprint import pprint
 
-# pprint(results.keys())
-# pprint(results["flux"].keys())
+pprint(results.keys())
+pprint(results["flux"].keys())
 
-# # %% [markdown]
-# # We can use ``matplotlib.pyplot`` to plot some time depended results:
+# %% [markdown]
+# We can use ``matplotlib.pyplot`` to plot some time depended results:
 
-# # %%
-# # Plot torque, flux and induced voltage results
-# fig, ax = plt.subplots()
-# ax.plot(results["time"], results["torque"], ".-")
-# ax.set_ylabel("Torque in Nm")
-# ax.set_xlabel("Time in s")
-# ax.grid()
+# %%
+# Plot torque, flux and induced voltage results
+fig, ax = plt.subplots()
+ax.plot(results["time"], results["torque"], ".-")
+ax.set_ylabel("Torque in Nm")
+ax.set_xlabel("Time in s")
+ax.grid()
 
-# fig, ax = plt.subplots()
-# ax.plot(results["time"], results["flux"]["d"], ".-", label="d-flux linkage")
-# ax.plot(results["time"], results["flux"]["q"], ".-", label="q-flux linkage")
-# ax.set_ylabel("Flux linkage in Wb")
-# ax.set_xlabel("Time in s")
-# ax.grid()
-# ax.legend()
+fig, ax = plt.subplots()
+ax.plot(results["time"], results["flux"]["d"], ".-", label="d-flux linkage")
+ax.plot(results["time"], results["flux"]["q"], ".-", label="q-flux linkage")
+ax.set_ylabel("Flux linkage in Wb")
+ax.set_xlabel("Time in s")
+ax.grid()
+ax.legend()
 
-# fig, ax = plt.subplots()
-# ax.plot(results["time"][1:], results["inducedVoltage"]["a"], ".-", label="Phase A")
-# ax.plot(results["time"][1:], results["inducedVoltage"]["b"], ".-", label="Phase B")
-# ax.plot(results["time"][1:], results["inducedVoltage"]["c"], ".-", label="Phase C")
-# ax.set_ylabel("Induced Voltage in V")
-# ax.set_xlabel("Time in s")
-# ax.grid()
-# ax.legend()
+fig, ax = plt.subplots()
+ax.plot(results["time"][1:], results["inducedVoltage"]["a"], ".-", label="Phase A")
+ax.plot(results["time"][1:], results["inducedVoltage"]["b"], ".-", label="Phase B")
+ax.plot(results["time"][1:], results["inducedVoltage"]["c"], ".-", label="Phase C")
+ax.set_ylabel("Induced Voltage in V")
+ax.set_xlabel("Time in s")
+ax.grid()
+ax.legend()
 
 # %% [markdown]
 # ## 5. What is possible, whats not?
@@ -270,18 +275,14 @@ pyemmo_script.addPostOperation(
     quantityName="Force_MST",
     name="Airgap_Force",
     # GetDP keyword arguments for PostOperations
-    OnRegion="NodesOf[Rotor_Bnd_MB_1]",
-    #
-    # alternativly you could use:
+    OnElementsOf="Rotor_Bnd_MB_1",  # alternativly you could use
     # OnGrid=(
-    #     f"{{({radius}**Cos[$A*Pi/180],"
-    #     f"({radius}**Sin[$A*Pi/180],0}}"
-    #     f"{0:360/SymmetryFactor:{angle},0,0}"
+    #     f"{{({radius}*(1{sign}0.0001))*Cos[$A*Pi/180],"
+    #     f"({radius}*(1{sign}0.0001))*Sin[$A*Pi/180],0}}"
+    #     "{0:360/SymmetryFactor:0.5,0,0}"
     # ),
     # to interpolate the results on a specific radius in the airgap
-    #
-    File=r"CAT_RESDIR\F_airgap.pos",  # CAT_RESDIR keyword sets default simulation
-    # result folder
+    File=r"CAT_RESDIR\F_airgap.pos",
     Format="Gmsh",
     LastTimeStepOnly="",
 )
@@ -289,12 +290,13 @@ pyemmo_script.addPostOperation(
     quantityName="Force_MST_Cyl",
     name="Airgap_Force",
     # GetDP keyword arguments for PostOperations
-    OnRegion="NodesOf[Rotor_Bnd_MB_1]",
+    OnElementsOf="Rotor_Bnd_MB_1",  # alternativly you could use
     # OnGrid=(
     #     f"{{({radius}*(1{sign}0.0001))*Cos[$A*Pi/180],"
     #     f"({radius}*(1{sign}0.0001))*Sin[$A*Pi/180],0}}"
-    #     f"{0:360/SymmetryFactor:{angle},0,0}"
+    #     "{0:360/SymmetryFactor:0.5,0,0}"
     # ),
+    # to interpolate the results on a specific radius in the airgap
     File=r"CAT_RESDIR\F_airgap_cyl.pos",
     Format="Gmsh",
     LastTimeStepOnly="",
@@ -302,26 +304,32 @@ pyemmo_script.addPostOperation(
 pyemmo_script.generateScript(2)  # recreate pro files with new PostOperation
 
 # %%
-import logging
-
-logging.getLogger("pyemmo").setLevel(logging.DEBUG)
 # run a new simulation and import + display the results for the force density
-# run simulation:
-param_dict["getdp"]["Flag_AnalysisType"] = 0  # static simulation
-param_dict["getdp"]["ID_RMS"] = 0  # static simulation
-param_dict["getdp"]["IQ_RMS"] = 0  # static simulation
-param_dict["getdp"]["ResId"] = "Calc_ForceDensity_noLoad"
-param_dict["getdp"]["Flag_ClearResults"] = 0
-param_dict["PostOp"] = ["Airgap_Force"]
-results = runCalcforCurrent(param_dict)
 
+param_dict["getdp"]["Flag_AnalysisType"] = 0  # static simulation
+# unset currents for simple no-load simulation
+param_dict["getdp"]["ID_RMS"] = 0
+param_dict["getdp"]["IQ_RMS"] = 0
+# set new results ID:
+param_dict["getdp"]["ResId"] = "Calc_ForceDensity_noLoad"
+# set post operation list to evaluate previously created PostOperation "Airgap_Force"
+param_dict["PostOp"] = ["Airgap_Force"]
+# run simulation:
+results = runCalcforCurrent(param_dict)
 
 # %%
 # since the force density is not in the standard results import, we have to import it
 # manually:
+
+# function to import GetDP "GmshParsed" formatted output files:
 from pyemmo.functions.import_results import import_pos_parsedFormat
+
+# function to transform cartesian to polar coordinates:
 from pyemmo.functions.transform_coords import cart2pol
+
+# Arc patch to plot arcs
 from matplotlib.patches import Arc
+
 
 # First import force density in with xyz components:
 # Since we did print the vector based force density on points, we get the data
@@ -329,11 +337,11 @@ from matplotlib.patches import Arc
 # of the mesh nodes and their corresponding force density values with xyz components.
 # Due to a inconsistency in GetDP, the results are written out in GmshParsed format
 # instead of newer Gmsh msh-format.
-data_type, nodes, out_data = import_pos_parsedFormat(
+data_type, nodes, sigma_xyz = import_pos_parsedFormat(
     join(param_dict["getdp"]["res"], param_dict["getdp"]["ResId"], "F_airgap.pos")
 )
 
-# Show evaluation points in scatter plot
+# Show evaluation points (mesh nodes) in scatter plot
 fig, ax = plt.subplots()
 # scatter node coodrinates
 ax.scatter(nodes[:, 0], nodes[:, 1], marker=".", s=10, label="Data points")
@@ -357,11 +365,8 @@ ax.set_xlabel("x-Achse")
 ax.set_ylabel("y-Achse")
 
 
-# set the output data
-sigma_p1_xyz = out_data
-
-# transform xy coordinates of the startpoint of each element to polar coorinates to then
-# plot over the airgap angle:
+# transform xy coordinates of the nodes to polar coorinates to then plot over the
+# airgap angle:
 r1, phi1 = cart2pol(nodes[:, 0], nodes[:, 1])
 
 # create unit vectors to calculate radial and tangential components
@@ -370,10 +375,10 @@ hat_e_tan = np.array([-np.sin(phi1), np.cos(phi1)]).reshape(2, len(phi1))
 
 # radial component is scalar product of unit vector in radial direction
 # with force density vector
-sigma_p1_xyz_rad = np.diag(np.dot(sigma_p1_xyz[:, 0:2], hat_e_rad))
+sigma_xyz_rad = np.diag(np.dot(sigma_xyz[:, 0:2], hat_e_rad))
 
 # same goes for the tangential component using the tangential unit vetor
-sigma_p1_xyz_tan = np.diag(np.dot(sigma_p1_xyz[:, 0:2], hat_e_tan))
+sigma_xyz_tan = np.diag(np.dot(sigma_xyz[:, 0:2], hat_e_tan))
 
 
 # Add plot of radial force density
@@ -381,17 +386,17 @@ fig, ax = plt.subplots()
 
 ax.plot(
     np.rad2deg(phi1),  # transform circumferential angle from rad to deg
-    sigma_p1_xyz_rad,  # radial force density calculated from xyz
+    sigma_xyz_rad,  # radial force density calculated from xyz
     ".",
     label=r"$\sigma_\mathrm{rad}$ from $\sigma_\mathrm{xyz}$",
 )
 
+
 # Second import force density allready transformed in polar components in GetDP:
-data_type, nodes, out_data = import_pos_parsedFormat(
+
+data_type, nodes, sigma_rphiz = import_pos_parsedFormat(
     join(param_dict["getdp"]["res"], param_dict["getdp"]["ResId"], "F_airgap_cyl.pos")
 )
-
-sigma_p1_rphiz = out_data
 
 # convert xy coordinates to r-phi
 r2, phi2 = cart2pol(nodes[:, 0], nodes[:, 1])  # xy -> r-phi
@@ -399,7 +404,7 @@ r2, phi2 = cart2pol(nodes[:, 0], nodes[:, 1])  # xy -> r-phi
 # add plot of radial force density directly calculated from GetDP
 ax.plot(
     np.rad2deg(phi2),  # rad -> deg
-    sigma_p1_rphiz[:, 0],  # show radial comp
+    sigma_rphiz[:, 0],  # show radial comp (index 0)
     "o",
     fillstyle="none",
     label=r"$\sigma_{rad}$ from GetDP",
@@ -414,14 +419,14 @@ _ = ax.legend()
 fig, ax = plt.subplots()
 ax.plot(
     np.rad2deg(phi1),  # transform circumferential angle from rad to deg
-    sigma_p1_xyz_tan,  # sigma_tan
+    sigma_xyz_tan,  # sigma_tan
     ".",
     label=r"$\sigma_\mathrm{tan}$ from $\sigma_\mathrm{xyz}$",
 )
 
 ax.plot(
     np.rad2deg(phi2),  # rad -> deg
-    sigma_p1_rphiz[:, 1],  # show tangentail comp
+    sigma_rphiz[:, 1],  # show tangentail comp (index 1)
     "o",
     fillstyle="none",
     label=r"$\sigma_{tan}$ from GetDP",
@@ -432,52 +437,52 @@ ax.set_ylabel(r"$\sigma_\mathrm{tan}$ in N/m²")
 _ = ax.legend()
 
 
-# We can futher check if the vectors are equal
+# We can futher check if the results are really equal:
 
 # Check the amplitude
 assert np.allclose(
-    np.linalg.norm(sigma_p1_xyz, axis=1),
-    np.linalg.norm(sigma_p1_rphiz, axis=1),
+    np.linalg.norm(sigma_xyz, axis=1),
+    np.linalg.norm(sigma_rphiz, axis=1),
     atol=1e-9,
 )
 
 # check radial component
 assert np.allclose(
-    sigma_p1_xyz_rad,
-    sigma_p1_rphiz[:, 0],
+    sigma_xyz_rad,
+    sigma_rphiz[:, 0],
     atol=1e-9,
 )
 
 # check tangential component
 assert np.allclose(
-    sigma_p1_xyz_tan,
-    sigma_p1_rphiz[:, 1],  # sigma_tan
+    sigma_xyz_tan,
+    sigma_rphiz[:, 1],  # sigma_tan
     atol=1e-9,
 )
 
-
+# %% [markdown]
+# With the Gmsh python api its easy to also visualize results and show them in the Gmsh GUI:
 
 # %%
-# We can also have a look at the results in Gmsh
+# check if gmsh was initialized
 if not gmsh.isInitialized():
     gmsh.initialize()
 else:
-    # unshow all other views
+    # unshow all other views if gmsh has been run before
     for tag in gmsh.view.getTags():
         gmsh.view.option.setNumber(tag, "Visible", 0)
 
-# open result
+# open result file with Gmsh
 gmsh.open(
     join(param_dict["getdp"]["res"], param_dict["getdp"]["ResId"], "F_airgap.pos")
 )
 
-# run GUI:
+# run GUI to show results:
 gmsh.fltk.run()
 
+# %%
 # we could further load the geometry to see where we evaluated the results
 gmsh.merge(pyemmo_script.geoFilePath)
 # aswell as the created mesh file:
 gmsh.merge(join(pyemmo_script.scriptPath, pyemmo_script.name + ".msh"))
 gmsh.fltk.run()
-
-# %%
