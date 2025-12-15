@@ -22,11 +22,13 @@
 
 from __future__ import annotations
 
+import logging
 import os
 
 import gmsh as gmsh_api
 
 from ... import use_pyleecan
+from ...functions.clean_name import clean_name
 from ..json.json import main as json_api_main
 
 if use_pyleecan:
@@ -75,6 +77,20 @@ def main(
             Currently only :class:`MachineSIPMSM`, :class:`MachineIPMSM`
             and :class:`MachineSyRM` work.
     """
+    logger = logging.getLogger(__name__)
+    if not gmsh_api.isInitialized():
+        gmsh_api.initialize()
+
+    # supress output of log messages to console.
+    # See https://gitlab.onelab.info/gmsh/gmsh/-/issues/1901
+    # Use gmsh.logger.start(), gmsh.logger.get(), gmsh.logger.stop() to catch logs.
+    logger.debug("Setting gmsh option General.Terminal to 0.")
+    gmsh_api.option.setNumber("General.Terminal", 0)
+
+    # add new gmsh model in case api is called multiple times:
+    model_name = clean_name(pyleecan_machine.name)
+    gmsh_api.model.add(model_name)
+
     simulation = create_simulation(pyleecan_machine, i_d=0, i_q=0, speed=1000)
     paramDict = create_param_dict(pyleecan_machine, simulation)
     paramDict["flag_openGUI"] = use_gui
