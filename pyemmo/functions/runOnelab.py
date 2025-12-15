@@ -233,13 +233,13 @@ def createCmdCommand(
     gmsh_params = {}  # init gmsh parameter dict
     if "getdp" in paramDict:
         # if param dict has "getdp" sub-dict
-        getdp_params = paramDict["getdp"]
+        getdp_params = paramDict["getdp"].copy()
         if "gmsh" in paramDict:
             #  if param dict has "gmsh" sub-dict
-            gmsh_params = paramDict["gmsh"]
+            gmsh_params = paramDict["gmsh"].copy()
     else:
         # otherwise the paramDict is empty or only contains getdp parameters
-        getdp_params = paramDict
+        getdp_params = paramDict.copy()
 
     # check if the onelab file is valid:
     if not isfile(onelabFile):

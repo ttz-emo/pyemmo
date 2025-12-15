@@ -343,7 +343,12 @@ def load_view(pos_file: str) -> tuple[bool, int]:
 
     nbr_views_loaded = gmsh.view.getTags().size
 
-    gmsh.open(pos_file)  # load view
+    if finalize_gmsh:
+        # use open since gmsh was just initialized
+        gmsh.open(pos_file)  # load view
+    else:
+        # use gmsh.merge to not lose the current model if one is loaded!
+        gmsh.merge(pos_file)  # merge view
 
     # check that view was loaded:
     view_tags = gmsh.view.getTags()
@@ -425,7 +430,7 @@ def importPos(pos_file: str | os.PathLike) -> tuple[np.ndarray, np.ndarray, np.n
         if not cdata:
             gmsh.finalize()
             raise ValueError(f"No data found in {pos_file}!")
-        logging.warning("Import file '%s' did only contain last timestep!", pos_file)
+        logger.warning("Import file '%s' did only contain last timestep!", pos_file)
         # Only last time step happens if PostProcessing is called at runtime
         # (in 'Resolution').
         # Return only that timestep
@@ -489,19 +494,18 @@ def import_pos_parsedFormat(file_path: str) -> tuple[str, np.ndarray, np.ndarray
             raise ValueError(f"Unknown data type '{data_type}' in result.")
 
         # match second character to get number of node coordinates per element
-        match data_type[1]:
-            case "P":  # point results
-                nbr_coords = [3]  # number of coordinates per element
-            case "L":  # line results
-                # we get results with coords [x1,x2, y1,y2, z1,z2] but data with
-                # [x1,y1,z1, x2,y2,z2]
-                nbr_coords = [3, 3]  # number of coordinates per element
-            case "T":  # triangle results
-                nbr_coords = [3, 3, 3]  # 3 point per triangle
-            case _:
-                raise ValueError(
-                    f"Cannot import values for Gmsh parsed data type {data_type}!"
-                )
+        if data_type[1] == "P":  # point results
+            nbr_coords = [3]  # number of coordinates per element
+        elif data_type[1] == "L":  # line results
+            # we get results with coords [x1,x2, y1,y2, z1,z2] but data with
+            # [x1,y1,z1, x2,y2,z2]
+            nbr_coords = [3, 3]  # number of coordinates per element
+        elif data_type[1] == "T":  # triangle results
+            nbr_coords = [3, 3, 3]  # 3 point per triangle
+        else:
+            raise ValueError(
+                f"Cannot import values for Gmsh parsed data type {data_type}!"
+            )
         # calc number of steps (unnecessary)
         nbr_steps = (data[i].size / numElem[i] - sum(nbr_coords)) / nbr_data
         assert nbr_steps % 1 == 0, "Number of timesteps turns out to be non-int!"
@@ -543,6 +547,7 @@ def import_pos_parsedFormat(file_path: str) -> tuple[str, np.ndarray, np.ndarray
         out_data = reshaped_data[:, sum(nbr_coords) :]
 
         if finalize_gmsh:
+            logging.getLogger(__name__).info("Finalizing gmsh")
             gmsh.finalize()
 
         return data_type, nodes, out_data
@@ -604,9 +609,10 @@ def main(
     Returns:
         dict[str, np.ndarray |dict[str, np.ndarray]]: results for given simulation
     """
+    logger = logging.getLogger(__name__)
     if not isinstance(sim_param, dict):
         sim_param = load_param_file(sim_param)
-    logging.info("Import results for result-ID '%s'", sim_param["getdp"]["ResId"])
+    logger.info("Import results for result-ID '%s'", sim_param["getdp"]["ResId"])
     results_dict = {}  # init results
     # get results folder from parameters
     simulation_res_dir = os.path.join(
@@ -701,7 +707,7 @@ def main(
                 axis=0,
             )
         else:
-            logging.warning(
+            logger.warning(
                 (
                     "MST Torque for rotor and stator diviates more than 10%! "
                     "Check results carefully!"
@@ -736,9 +742,7 @@ def main(
     # Check if file hystLoss_rotor.dat allready exists -> loss calculated
     core_loss_dict = {}
     if os.path.exists(os.path.join(simulation_res_dir, "hystLoss_rotor.dat")):
-        logging.info(
-            "Importing core loss values for %s...", sim_param["getdp"]["ResId"]
-        )
+        logger.info("Importing core loss values for %s...", sim_param["getdp"]["ResId"])
         for side in ["rotor", "stator"]:
             core_loss_dict[side] = {}
             for loss_type in ("hyst", "eddy", "exc"):
@@ -751,21 +755,21 @@ def main(
     if core_loss_dict:
         results_dict["coreLoss"] = core_loss_dict
         # pylint: disable=locally-disabled, logging-not-lazy, logging-fstring-interpolation, line-too-long
-        logging.debug("Iron loss for '" + sim_param["getdp"]["ResId"] + "'")
-        logging.debug(f"{'Rotor':>24} {'Stator':>11} {'Gesamt':>11}")
-        logging.debug(
+        logger.debug("Iron loss for '" + sim_param["getdp"]["ResId"] + "'")
+        logger.debug(f"{'Rotor':>24} {'Stator':>11} {'Gesamt':>11}")
+        logger.debug(
             f"{'Hysteresis:':<14} {np.mean(core_loss_dict['rotor']['hyst']) : 8.3f} W {np.mean(core_loss_dict['stator']['hyst']) : 9.3f} W {np.mean(core_loss_dict['stator']['hyst']+core_loss_dict['rotor']['hyst']) : 9.3f} W"
         )
-        logging.debug(
+        logger.debug(
             f"{'Eddy Current:':<14} {np.mean(core_loss_dict['rotor']['eddy']) : 8.3f} W {np.mean(core_loss_dict['stator']['eddy']) : 9.3f} W {np.mean(core_loss_dict['stator']['eddy']+core_loss_dict['rotor']['eddy']) : 9.3f} W"
         )
-        logging.debug(
+        logger.debug(
             f"{'Excess:':<14} {np.mean(core_loss_dict['rotor']['exc']) : 8.3f} W {np.mean(core_loss_dict['stator']['exc']) : 9.3f} W {np.mean(core_loss_dict['stator']['exc']+core_loss_dict['rotor']['exc']) : 9.3f} W"
         )
-        logging.debug(
+        logger.debug(
             "---------------------------------------------------------------------"
         )
-        logging.debug(
+        logger.debug(
             f"{'Summe:':<14} {np.mean(core_loss_dict['rotor']['exc']+core_loss_dict['rotor']['eddy']+core_loss_dict['rotor']['hyst']) : 8.3f} W {np.mean(core_loss_dict['stator']['exc']+core_loss_dict['stator']['eddy']+core_loss_dict['stator']['hyst']) : 9.3f} W {np.mean(core_loss_dict['rotor']['exc']+core_loss_dict['rotor']['eddy']+core_loss_dict['rotor']['hyst']+core_loss_dict['stator']['exc']+core_loss_dict['stator']['eddy']+core_loss_dict['stator']['hyst']) : 9.3f} W"
         )
     return results_dict

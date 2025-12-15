@@ -227,6 +227,11 @@ class Script:
         self._pro_files_created = False
         self._geo_files_created = False
 
+        # Save current gmsh model name, because if the model files shall be regenerated
+        # but the model has changed due to post processing e.g., we need to reset the
+        # model or raise an error
+        self._gmsh_model: str = gmsh.model.getCurrent()  # get current model
+
         # add machine domains
         self._machine = machine  # do not set machine via setter function!
         if machine:
@@ -2421,6 +2426,19 @@ class Script:
             UD_MeshCode (str): User defined mesh code. Must be conformal with
                 the gmsh syntax.
         """
+        logger = logging.getLogger(__name__)
+        if self._gmsh_model != gmsh.model.getCurrent():
+            logger.warning(
+                "Gmsh model did change! Resetting to '%s' for script generation.",
+                self._gmsh_model,
+            )
+            try:
+                gmsh.model.setCurrent(self._gmsh_model)
+            except Exception as e:  # pylint: disable=W0718
+                logger.fatal(
+                    "Could not reset gmsh model '%s'!", self._gmsh_model, exc_info=True
+                )
+                raise e
         if mode == 0:
             self.writeGeo(UD_MeshCode=UD_MeshCode)
             self.writePro()

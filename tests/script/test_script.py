@@ -21,6 +21,8 @@ from __future__ import annotations
 
 import unittest
 
+import gmsh
+
 from pyemmo.script.script import Script
 
 from .. import TEST_TEMP_DIR
@@ -57,6 +59,7 @@ class TestScript(unittest.TestCase):
         Die Schreibweise "setUp" muss beachtet werden.
         Setup wird vor jeder Testmethode der Klasse TestRotorIPMSM ausgeführt
         """
+        gmsh.initialize()
         # Script Objekt für Tests erzeugen
         self.initParamDict = {
             "SYM": {
@@ -86,7 +89,7 @@ class TestScript(unittest.TestCase):
         Die Schreibweise "tearDown" muss beachtet werden!
         teardown wird nach jeder Testmethode der Klasse TestRotorIPMSM ausgeführt
         """
-        pass
+        gmsh.finalize()
 
     def test_initial_value(self):
         # Setup
