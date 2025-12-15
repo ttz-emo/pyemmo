@@ -343,7 +343,12 @@ def load_view(pos_file: str) -> tuple[bool, int]:
 
     nbr_views_loaded = gmsh.view.getTags().size
 
-    gmsh.open(pos_file)  # load view
+    if finalize_gmsh:
+        # use open since gmsh was just initialized
+        gmsh.open(pos_file)  # load view
+    else:
+        # use gmsh.merge to not lose the current model if one is loaded!
+        gmsh.merge(pos_file)  # merge view
 
     # check that view was loaded:
     view_tags = gmsh.view.getTags()
@@ -543,6 +548,7 @@ def import_pos_parsedFormat(file_path: str) -> tuple[str, np.ndarray, np.ndarray
         out_data = reshaped_data[:, sum(nbr_coords) :]
 
         if finalize_gmsh:
+            logging.getLogger(__name__).info("Finalizing gmsh")
             gmsh.finalize()
 
         return data_type, nodes, out_data
