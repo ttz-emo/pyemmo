@@ -1126,23 +1126,8 @@ PostProcessing {
       { Name b  ; Value { Term { [ {d a} ] ; In Domain ; Jacobian Vol ; } } }
       { Name bn  ; Value { Term { [ Norm[{d a}] ] ; In Domain ; Jacobian Vol ; } } }
       { Name hn  ; Value { Term { [ Norm[nu[{d a}]*{d a}] ] ; In Domain ; Jacobian Vol ; } } }
-      {
-        Name b_radial ;
-        Value {
-          Term { [ {d a}* Vector[  Cos[AngularPosition[]#4], Sin[#4], 0.] ] ;
-            In Domain ; Jacobian Vol ; }
-          Term { [ {d a}* Vector[  Cos[AngularPosition[]#4], Sin[#4], 0.] ] ;
-            In Region[{Rotor_Bnd_MB,Stator_Bnd_MB}] ; Jacobian Sur ; }
-        }
-      }
-      { Name b_tangent ;
-        Value {
-          Term { [ {d a}* Vector[ -Sin[AngularPosition[]#4], Cos[#4], 0.] ] ;
-            In Domain ; Jacobian Vol ; }
-          Term { [ {d a}* Vector[ -Sin[AngularPosition[]#4], Cos[#4], 0.] ] ;
-            In Region[{Rotor_Bnd_MB, Stator_Bnd_MB}] ; Jacobian Sur ; }
-        }
-      }
+      { Name b_radial; Value { Term { [ CompRad[{d a}] ]; In Domain; Jacobian Vol; } }}
+      { Name b_tangent; Value { Term { [ CompTan[{d a}] ] ; In Domain ; Jacobian Vol ; }}}
       { Name br ; Value { Term { [ br[] ] ;      In DomainM ; Jacobian Vol ; } } }
       { Name mu ; Value { Term { [ 1/nu[{d a}]/(mu0) ] ; In Domain ; Jacobian Vol ; } } }
       { Name ur  ; Value { Term { [ {ur} ]; In DomainC ; Jacobian Vol ; } } }
@@ -1206,22 +1191,18 @@ PostProcessing {
       }}
       { Name Force_MST;
         Value{
-          Term{ [ T_max[{Curl a}] * XYZ[] ] ; In Region[{Rotor_Bnd_MB, Stator_Bnd_MB}]; Jacobian Sur; } 
           Term{ [ T_max[{Curl a}] * XYZ[] ] ; In Region[{Rotor_Airgap, Stator_Airgap}]; Jacobian Vol; } 
       }}
       { Name Force_MST_Cyl;
         Value{
-          Term{ [ Cart2Cyl[XYZ[]] * T_max[{Curl a}] * XYZ[] ] ; In Region[{Rotor_Bnd_MB, Stator_Bnd_MB}]; Jacobian Sur; } 
           Term{ [ Cart2Cyl[XYZ[]] * T_max[{Curl a}] * XYZ[] ] ; In Region[{Rotor_Airgap, Stator_Airgap}]; Jacobian Vol; } 
       }}
       { Name Force_MST_Rad;
         Value{
           Term{ [ CompRad[T_max[{Curl a}] * XYZ[]] ] ; In Region[{Rotor_Airgap, Stator_Airgap}]; Jacobian Vol; }
-          Term{ [ CompRad[T_max[{Curl a}] * XYZ[]] ] ; In Region[{Rotor_Bnd_MB, Stator_Bnd_MB}]; Jacobian Sur; } 
       }}
       { Name Force_MST_Tan;
         Value{
-          Term{ [ CompTan[T_max[{Curl a}] * XYZ[]] ] ; In Region[{Rotor_Bnd_MB, Stator_Bnd_MB}]; Jacobian Sur; } 
           Term{ [ CompTan[T_max[{Curl a}] * XYZ[]] ] ; In Region[{Rotor_Airgap, Stator_Airgap}]; Jacobian Vol; } 
       }}
       { Name Torque_Maxwell_r ;
