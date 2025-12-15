@@ -88,7 +88,7 @@ def label2part_id(label: str) -> str:
         if BAR_LAB in label_dict["surf_type"]:
             return ROTOR_BAR_IDEXT + f"{index}"
         if MAG_LAB in label_dict["surf_type"] or HOLEM_LAB in label_dict["surf_type"]:
-            return ROTOR_MAG_IDEXT + f"{label_dict["index"]}"
+            return ROTOR_MAG_IDEXT + f"""{label_dict["index"]}"""
         return label
     if HOLEV_LAB in label:
         return label
