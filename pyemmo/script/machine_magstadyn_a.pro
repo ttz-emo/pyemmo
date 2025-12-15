@@ -1112,7 +1112,6 @@ PostProcessing {
       { Name domain ; Value { Term { [ 1 ] ; In Domain ; Jacobian Vol ; } } }
       { Name boundary ; Value { Term { [ 1 ] ; In DomainPlotMovingGeo ; Jacobian Vol ; } } } // Dummy value - for visualization
       { Name surf; Value{ Integral { [ 1 ]; In Domain; Jacobian Vol; Integration I1; } } }
-
       { Name intAxLen; Value{ Integral { [ axialLength[]/SurfaceArea[] ]; In Domain; Jacobian Vol; Integration I1; } } }
       { Name axLen ; Value { Term { [ axialLength[] ] ; In Domain ; Jacobian Vol ; } } } // Dummy value - for visualization
       { Name surfCoil; Value{ Term { Type Global; [ SurfCoil[] ]; In DomainDummy; Jacobian Vol; Integration I1; } } }
@@ -1154,39 +1153,28 @@ PostProcessing {
       { Name P_Lam ; Value { Integral { [ SymmetryFactor*axialLength[]*Fac_Lam[]*SquNorm[Dt[{d a}]] ]; In Domain_Lam ; Jacobian Vol ; Integration I1 ; } } }
       // Inertia
 	    { Name Inertia; Value { Integral { [ SymmetryFactor*SquNorm[XYZ[]]*density[]*axialLength[] ]; In Rotor; Jacobian Vol; Integration I1;}}}
-      {
-        Name JouleLosses ;
-        Value {
+      { Name JouleLosses; Value {
           Integral { [ SymmetryFactor*axialLength[]*sigma[] * SquNorm[ Dt[{a}]+{ur} ] ] ; In DomainC ; Jacobian Vol ; Integration I1 ; }
           Integral { [ 1./sigma[]*SquNorm[ IA[]*{ir} ] ] ; In PhaseA ; Jacobian Vol ; Integration I1 ; }
           Integral { [ 1./sigma[]*SquNorm[ IB[]*{ir} ] ] ; In PhaseB  ; Jacobian Vol ; Integration I1 ; }
           Integral { [ 1./sigma[]*SquNorm[ IC[]*{ir} ] ] ; In PhaseC  ; Jacobian Vol ; Integration I1 ; }
-        }
-      }
-      {
-        Name p_Joule ;
-        Value {
+      }}
+      { Name p_Joule;Value {
           Term { [ sigma[] * SquNorm[ Dt[{a}]+{ur} ] ] ; In Region[{DomainC}] ; Jacobian Vol ;}
-        }
-      }
-      {
-        Name Flux ;
-        Value {
+      }}
+      { Name Flux; Value {
           Integral { [ SymmetryFactor*axialLength[]*Idir[]*NbWires[]/SurfCoil[]/NbrParallelPaths* CompZ[{a}] ] ; In Inds  ; Jacobian Vol ; Integration I1 ; }
           Integral { [ axialLength[] * CompZ[{a}] / SurfaceArea[]] ; In DomainC  ; Jacobian Vol ; Integration I1 ; }
-
-        }
-      }
+      }}
       // Force computation by Virtual Works
       { Name Force_vw ; Value {
         Integral { Type Global ; [ 0.5 * nu[] * VirtualWork [{d a}] * axialLength[] ]; In ElementsOf[Rotor_Airgap, OnOneSideOf Rotor_Bnd_MB]; Jacobian Vol ; Integration I1 ; }
-      } }
-
+      }}
       { Name Torque_vw ; Value {
 	      // Torque computation via Virtual Works
          Integral { Type Global ; [ - SymmetryFactor * CompZ[ 0.5 * nu[] * XYZ[] /\ VirtualWork[{d a}] ] * axialLength[] ];
          In ElementsOf[Rotor_Airgap, OnOneSideOf Rotor_Bnd_MB]; Jacobian Vol ; Integration I1 ; }
-       }}
+      }}
       { Name Torque_vw_s ; Value {
         // Torque computation via Virtual Works
         Integral { Type Global ; [ SymmetryFactor * CompZ[ 0.5 * nu[] * XYZ[] /\ VirtualWork[{d a}] ] * axialLength[] ];
