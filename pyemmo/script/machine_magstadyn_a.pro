@@ -1112,37 +1112,24 @@ PostProcessing {
       { Name domain ; Value { Term { [ 1 ] ; In Domain ; Jacobian Vol ; } } }
       { Name boundary ; Value { Term { [ 1 ] ; In DomainPlotMovingGeo ; Jacobian Vol ; } } } // Dummy value - for visualization
       { Name surf; Value{ Integral { [ 1 ]; In Domain; Jacobian Vol; Integration I1; } } }
-
       { Name intAxLen; Value{ Integral { [ axialLength[]/SurfaceArea[] ]; In Domain; Jacobian Vol; Integration I1; } } }
       { Name axLen ; Value { Term { [ axialLength[] ] ; In Domain ; Jacobian Vol ; } } } // Dummy value - for visualization
-      // { Name axLenValue; Value{ Term { Type Global; [ axialLength[] ]; In DomainDummy; Jacobian Vol; Integration I1; } } } // This does NOT work...
-
       { Name surfCoil; Value{ Term { Type Global; [ SurfCoil[] ]; In DomainDummy; Jacobian Vol; Integration I1; } } }
       // { Name surfCoil; Value{ Integral { [ SurfCoil[]/SurfaceArea[] ]; In Domain; Jacobian Vol; Integration I1; } } }
-
-      { Name a  ; Value { Term { [ {a} ] ; In Domain ; Jacobian Vol ; } } }
-      { Name az ; Value { Term { [ CompZ[{a}] ] ; In Domain ; Jacobian Vol ; } } }
+      { Name a  ; Value { 
+        Term { [ {a} ] ; In Domain ; Jacobian Vol ; } 
+        Term { [ {a} ] ; In Region[{Rotor_Bnd_MB, Stator_Bnd_MB}] ; Jacobian Sur ; } 
+      }}
+      { Name az ; Value { 
+        Term { [ CompZ[{a}] ]; In Domain; Jacobian Vol; }
+        Term { [ CompZ[{a}] ]; In Region[{Rotor_Bnd_MB, Stator_Bnd_MB}]; Jacobian Sur; }
+      }}
       // Here we plot the b field on a per element basis (local quantity) since  b is defined as b=curl a. We state that the Term is {d a}. We could also have written {Curl a}. In GetDP the d operator takes the correct differential operator (div, curl, rot) depending on the differential form on which it is applied. (See function space above, or search for Tonti diagram):
       { Name b  ; Value { Term { [ {d a} ] ; In Domain ; Jacobian Vol ; } } }
       { Name bn  ; Value { Term { [ Norm[{d a}] ] ; In Domain ; Jacobian Vol ; } } }
       { Name hn  ; Value { Term { [ Norm[nu[{d a}]*{d a}] ] ; In Domain ; Jacobian Vol ; } } }
-      {
-        Name b_radial ;
-        Value {
-          Term { [ {d a}* Vector[  Cos[AngularPosition[]#4], Sin[#4], 0.] ] ;
-            In Domain ; Jacobian Vol ; }
-          Term { [ {d a}* Vector[  Cos[AngularPosition[]#4], Sin[#4], 0.] ] ;
-            In Region[{Rotor_Bnd_MB,Stator_Bnd_MB}] ; Jacobian Sur ; }
-        }
-      }
-      { Name b_tangent ;
-        Value {
-          Term { [ {d a}* Vector[ -Sin[AngularPosition[]#4], Cos[#4], 0.] ] ;
-            In Domain ; Jacobian Vol ; }
-          Term { [ {d a}* Vector[ -Sin[AngularPosition[]#4], Cos[#4], 0.] ] ;
-            In Region[{Rotor_Bnd_MB, Stator_Bnd_MB}] ; Jacobian Sur ; }
-        }
-      }
+      { Name b_radial; Value { Term { [ CompRad[{d a}] ]; In Domain; Jacobian Vol; } }}
+      { Name b_tangent; Value { Term { [ CompTan[{d a}] ] ; In Domain ; Jacobian Vol ; }}}
       { Name br ; Value { Term { [ br[] ] ;      In DomainM ; Jacobian Vol ; } } }
       { Name mu ; Value { Term { [ 1/nu[{d a}]/(mu0) ] ; In Domain ; Jacobian Vol ; } } }
       { Name ur  ; Value { Term { [ {ur} ]; In DomainC ; Jacobian Vol ; } } }
@@ -1166,39 +1153,28 @@ PostProcessing {
       { Name P_Lam ; Value { Integral { [ SymmetryFactor*axialLength[]*Fac_Lam[]*SquNorm[Dt[{d a}]] ]; In Domain_Lam ; Jacobian Vol ; Integration I1 ; } } }
       // Inertia
 	    { Name Inertia; Value { Integral { [ SymmetryFactor*SquNorm[XYZ[]]*density[]*axialLength[] ]; In Rotor; Jacobian Vol; Integration I1;}}}
-      {
-        Name JouleLosses ;
-        Value {
+      { Name JouleLosses; Value {
           Integral { [ SymmetryFactor*axialLength[]*sigma[] * SquNorm[ Dt[{a}]+{ur} ] ] ; In DomainC ; Jacobian Vol ; Integration I1 ; }
           Integral { [ 1./sigma[]*SquNorm[ IA[]*{ir} ] ] ; In PhaseA ; Jacobian Vol ; Integration I1 ; }
           Integral { [ 1./sigma[]*SquNorm[ IB[]*{ir} ] ] ; In PhaseB  ; Jacobian Vol ; Integration I1 ; }
           Integral { [ 1./sigma[]*SquNorm[ IC[]*{ir} ] ] ; In PhaseC  ; Jacobian Vol ; Integration I1 ; }
-        }
-      }
-      {
-        Name p_Joule ;
-        Value {
+      }}
+      { Name p_Joule;Value {
           Term { [ sigma[] * SquNorm[ Dt[{a}]+{ur} ] ] ; In Region[{DomainC}] ; Jacobian Vol ;}
-        }
-      }
-      {
-        Name Flux ;
-        Value {
+      }}
+      { Name Flux; Value {
           Integral { [ SymmetryFactor*axialLength[]*Idir[]*NbWires[]/SurfCoil[]/NbrParallelPaths* CompZ[{a}] ] ; In Inds  ; Jacobian Vol ; Integration I1 ; }
           Integral { [ axialLength[] * CompZ[{a}] / SurfaceArea[]] ; In DomainC  ; Jacobian Vol ; Integration I1 ; }
-
-        }
-      }
+      }}
       // Force computation by Virtual Works
       { Name Force_vw ; Value {
         Integral { Type Global ; [ 0.5 * nu[] * VirtualWork [{d a}] * axialLength[] ]; In ElementsOf[Rotor_Airgap, OnOneSideOf Rotor_Bnd_MB]; Jacobian Vol ; Integration I1 ; }
-      } }
-
+      }}
       { Name Torque_vw ; Value {
 	      // Torque computation via Virtual Works
          Integral { Type Global ; [ - SymmetryFactor * CompZ[ 0.5 * nu[] * XYZ[] /\ VirtualWork[{d a}] ] * axialLength[] ];
          In ElementsOf[Rotor_Airgap, OnOneSideOf Rotor_Bnd_MB]; Jacobian Vol ; Integration I1 ; }
-       }}
+      }}
       { Name Torque_vw_s ; Value {
         // Torque computation via Virtual Works
         Integral { Type Global ; [ SymmetryFactor * CompZ[ 0.5 * nu[] * XYZ[] /\ VirtualWork[{d a}] ] * axialLength[] ];
@@ -1206,22 +1182,18 @@ PostProcessing {
       }}
       { Name Force_MST;
         Value{
-          Term{ [ T_max[{Curl a}] * XYZ[] ] ; In Region[{Rotor_Bnd_MB, Stator_Bnd_MB}]; Jacobian Sur; } 
           Term{ [ T_max[{Curl a}] * XYZ[] ] ; In Region[{Rotor_Airgap, Stator_Airgap}]; Jacobian Vol; } 
       }}
       { Name Force_MST_Cyl;
         Value{
-          Term{ [ Cart2Cyl[XYZ[]] * T_max[{Curl a}] * XYZ[] ] ; In Region[{Rotor_Bnd_MB, Stator_Bnd_MB}]; Jacobian Sur; } 
           Term{ [ Cart2Cyl[XYZ[]] * T_max[{Curl a}] * XYZ[] ] ; In Region[{Rotor_Airgap, Stator_Airgap}]; Jacobian Vol; } 
       }}
       { Name Force_MST_Rad;
         Value{
           Term{ [ CompRad[T_max[{Curl a}] * XYZ[]] ] ; In Region[{Rotor_Airgap, Stator_Airgap}]; Jacobian Vol; }
-          Term{ [ CompRad[T_max[{Curl a}] * XYZ[]] ] ; In Region[{Rotor_Bnd_MB, Stator_Bnd_MB}]; Jacobian Sur; } 
       }}
       { Name Force_MST_Tan;
         Value{
-          Term{ [ CompTan[T_max[{Curl a}] * XYZ[]] ] ; In Region[{Rotor_Bnd_MB, Stator_Bnd_MB}]; Jacobian Sur; } 
           Term{ [ CompTan[T_max[{Curl a}] * XYZ[]] ] ; In Region[{Rotor_Airgap, Stator_Airgap}]; Jacobian Vol; } 
       }}
       { Name Torque_Maxwell_r ;
