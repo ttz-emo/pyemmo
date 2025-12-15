@@ -38,7 +38,7 @@ from os.path import join
 from pyleecan.Functions.load import load  # pylint: disable=no-name-in-module
 from pyleecan.definitions import DATA_DIR
 
-IPMSM_A = load(join(DATA_DIR, "Machine", "Toyota_Prius_DXF.json"))
+IPMSM_A = load(join(DATA_DIR, "Machine", "Toyota_Prius.json"))
 # In Jupyter notebook, we set is_show_fig=False to skip call to fig.show() to avoid a warning message
 # All plot methods return the corresponding matplotlib figure and axis to further edit the resulting plot
 fig, ax = IPMSM_A.plot(is_show_fig=False)
