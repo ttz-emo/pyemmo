@@ -217,14 +217,21 @@ DefineConstant[
         Choices {0,1}
     },
 
+    Flag_ClearViews = {
+        1,
+        Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "05Delete all field plots"],
+        Choices{0,1}
+    },
+
+
     Flag_PrintFields = {
-        0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "05Show Local Fields"],
+        0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "06Show Local Fields"],
         Choices{0, 1}
     },
 
     Flag_Calculate_ONELAB = {
         1, Name StrCat[
-            INPUT_ANA_SETTINGS_OUTPUT, "06Calculate torque: Arrkios method"
+            INPUT_ANA_SETTINGS_OUTPUT, "07Calculate torque: Arrkios method"
         ],
         Choices {0,1},
         Help "ONELAB implementation of Arrkios method.",
@@ -233,25 +240,25 @@ DefineConstant[
 
     Flag_Calculate_VW = {
         0, Name StrCat[
-            INPUT_ANA_SETTINGS_OUTPUT, "07Calculate torque: Virtual Work"
+            INPUT_ANA_SETTINGS_OUTPUT, "08Calculate torque: Virtual Work"
         ],
         Choices {0,1},
         Visible Flag_ExpertMode
     },
 
     Flag_Inductance = {
-        0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "08Compute inductances"],
+        0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "09Compute inductances"],
         Choices{0, 1}
     },
 
     Flag_diffInductance = {
-        1, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "09Inductance Computation Type"],
+        1, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "10Inductance Computation Type"],
         Choices{0 = "Apparent", 1 = "Incremental"},
         Visible Flag_Inductance
     },
 
     Flag_SaveSolution = {
-        0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "10Save Solution"],
+        0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "11Save Solution"],
         Choices{0, 1},
         Visible Flag_ExpertMode,
         Help StrCat[
