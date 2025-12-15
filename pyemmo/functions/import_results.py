@@ -494,19 +494,18 @@ def import_pos_parsedFormat(file_path: str) -> tuple[str, np.ndarray, np.ndarray
             raise ValueError(f"Unknown data type '{data_type}' in result.")
 
         # match second character to get number of node coordinates per element
-        match data_type[1]:
-            case "P":  # point results
-                nbr_coords = [3]  # number of coordinates per element
-            case "L":  # line results
-                # we get results with coords [x1,x2, y1,y2, z1,z2] but data with
-                # [x1,y1,z1, x2,y2,z2]
-                nbr_coords = [3, 3]  # number of coordinates per element
-            case "T":  # triangle results
-                nbr_coords = [3, 3, 3]  # 3 point per triangle
-            case _:
-                raise ValueError(
-                    f"Cannot import values for Gmsh parsed data type {data_type}!"
-                )
+        if data_type[1] == "P":  # point results
+            nbr_coords = [3]  # number of coordinates per element
+        elif data_type[1] == "L":  # line results
+            # we get results with coords [x1,x2, y1,y2, z1,z2] but data with
+            # [x1,y1,z1, x2,y2,z2]
+            nbr_coords = [3, 3]  # number of coordinates per element
+        elif data_type[1] == "T":  # triangle results
+            nbr_coords = [3, 3, 3]  # 3 point per triangle
+        else:
+            raise ValueError(
+                f"Cannot import values for Gmsh parsed data type {data_type}!"
+            )
         # calc number of steps (unnecessary)
         nbr_steps = (data[i].size / numElem[i] - sum(nbr_coords)) / nbr_data
         assert nbr_steps % 1 == 0, "Number of timesteps turns out to be non-int!"
