@@ -33,6 +33,8 @@ from pyemmo.api.pyleecan.create_gmsh_lines import create_gmsh_lines
 from pyemmo.script.geometry.circleArc import CircleArc
 from pyemmo.script.geometry.line import Line
 
+from . import initialize_gmsh  # pylint: disable=locally-disabled, unused-import
+
 # pylint: disable=locally-disabled, redefined-outer-name
 
 

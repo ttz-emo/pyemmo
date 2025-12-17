@@ -26,7 +26,7 @@ from pyleecan.Classes.LamHole import LamHole
 
 import pyemmo.api.pyleecan.create_geo_dict
 
-from . import Toyota_Prius  # pylint: disable=W0611
+from . import Toyota_Prius, initialize_gmsh  # pylint: disable=W0611
 
 
 @pytest.mark.parametrize("machine", ["Toyota_Prius"])

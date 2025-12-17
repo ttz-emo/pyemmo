@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO,
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
 # Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -24,7 +24,13 @@ from __future__ import annotations
 import pytest
 
 from pyemmo.api.pyleecan.translate_machine import translate_machine
-from . import Toyota_Prius, IPMSM, SIPMSM_1, SYNRM_ZAW  # pylint: disable=W0611
+from . import (
+    Toyota_Prius,
+    IPMSM,
+    SIPMSM_1,
+    SYNRM_ZAW,
+    initialize_gmsh,
+)  # pylint: disable=W0611
 
 
 @pytest.mark.parametrize("machine", ["Toyota_Prius", "IPMSM", "SIPMSM_1", "SYNRM_ZAW"])

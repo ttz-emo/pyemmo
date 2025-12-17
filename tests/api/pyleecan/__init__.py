@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -31,7 +32,7 @@ from tests.api import TEST_API_DATA_DIR
 
 TEST_API_PYLCN_DATA_DIR = join(TEST_API_DATA_DIR, "pyleecan")
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(scope="function", autouse=True)
 def initialize_gmsh():
     """init gmsh function"""
     gmsh.initialize()
