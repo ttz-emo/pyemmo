@@ -35,11 +35,13 @@ from pyemmo.api.pyleecan import PyleecanMachine
 from pyemmo.api.pyleecan.build_pyemmo_material import build_pyemmo_material
 from pyemmo.api.pyleecan.create_gmsh_surf import create_gmsh_surface
 
-from . import Toyota_Prius, initialize_gmsh  # pylint: disable=W0611
+from . import Toyota_Prius,SYNRM_ZAW, initialize_gmsh  # pylint: disable=W0611
 
 
-@pytest.mark.parametrize("machine", ["Toyota_Prius"])
-def test_create_gmsh_surface(machine, request):
+@pytest.mark.parametrize(
+    ("machine", "nbr_main_surfs", "nbr_total_surfs"), [("Toyota_Prius", 1, 6),("SYNRM_ZAW",1,4)]
+)
+def test_create_gmsh_surface(machine, request, nbr_main_surfs, nbr_total_surfs):
     """Function to test ``pyemmo.api.pyleecan.create_gmsh_surface``"""
     # get value of fixture
     machine: PyleecanMachine = request.getfixturevalue(machine)
@@ -59,19 +61,14 @@ def test_create_gmsh_surface(machine, request):
     for surf in rotor_surfs:
         # get pyleecan object for material identification
         pyleecan_obj = get_obj_from_label(machine, surf.label)
-        try:
+        if hasattr(pyleecan_obj, "mat_type"):
             material = pyleecan_obj.mat_type
-        except AttributeError:
-            try:
-                material = pyleecan_obj.mat_void
-            except AttributeError as e:
-                raise RuntimeError(
-                    f"Could not identify material of surface {surf} from object {pyleecan_obj}."
-                ) from e
-            except Exception as e:
-                raise e
-        except Exception as e:
-            raise e
+        elif hasattr(pyleecan_obj, "mat_void"):
+            material = pyleecan_obj.mat_void
+        else:
+            raise AttributeError(
+                "Pyleecan object material can not be accessed by mat_type or mat_void."
+            )
 
         # translating the surface
         pyemmo_surf = create_gmsh_surface(
@@ -83,8 +80,8 @@ def test_create_gmsh_surface(machine, request):
         else:
             geometry_list.append(pyemmo_surf)
     # there should only be the lamination surface in the geo list
-    assert len(geometry_list) == 1
+    assert len(geometry_list) == nbr_main_surfs
     # there should be 5 surfaces subtracted from this lam surface
-    assert len(lam_surf.tools) == 5
+    assert len(lam_surf.tools) == (nbr_total_surfs - nbr_main_surfs)
     # there should be 6 surfaces created in gmsh
-    assert len(gmsh.model.getEntities(2)) == 6
+    assert len(gmsh.model.getEntities(2)) == nbr_total_surfs
