@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import logging
 import os
+from typing import Union
 
 import gmsh as gmsh_api
 
@@ -32,11 +33,13 @@ from ...functions.clean_name import clean_name
 from ..json.json import main as json_api_main
 
 if use_pyleecan:
+    from pyleecan.Classes.Machine import Machine
     from pyleecan.Classes.MachineIPMSM import MachineIPMSM
+    from pyleecan.Classes.MachineLSPM import MachineLSPM
     from pyleecan.Classes.MachineSCIM import MachineSCIM
     from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
     from pyleecan.Classes.MachineSyRM import MachineSyRM
-    from pyleecan.Classes.MachineLSPM import MachineLSPM
+    from pyleecan.Functions.load import load  # pylint:disable=no-name-in-module
 
     from . import PyleecanMachine
     from .create_param_dict import create_param_dict
@@ -49,7 +52,7 @@ else:
 
 
 def main(
-    pyleecan_machine: PyleecanMachine,
+    pyleecan_machine: Union[PyleecanMachine, str],
     model_dir: str,
     gmsh: str | os.PathLike = "",
     getdp: str | os.PathLike = "",
@@ -64,7 +67,8 @@ def main(
     the model by invoking the JSON-API.
 
     Args:
-        pyleecan_machine (PyleecanMachine): Pyleecan machine object to translate
+        pyleecan_machine (PyleecanMachine | str): Pyleecan machine object to translate
+            or path to machine json file.
         model_dir (str): Path to the directory where the model files should be
             stored.
         gmsh (Union[str ,os.PathLike], optional): Path to a Gmsh executable.
@@ -80,6 +84,8 @@ def main(
     """
     logger = logging.getLogger(__name__)
 
+    if not isinstance(pyleecan_machine, Machine) and isinstance(pyleecan_machine, str):
+        pyleecan_machine = load(pyleecan_machine)
     # make sure machine type is translatable
     if isinstance(
         pyleecan_machine,
