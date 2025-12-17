@@ -36,6 +36,7 @@ if use_pyleecan:
     from pyleecan.Classes.MachineSCIM import MachineSCIM
     from pyleecan.Classes.MachineSIPMSM import MachineSIPMSM
     from pyleecan.Classes.MachineSyRM import MachineSyRM
+    from pyleecan.Classes.MachineLSPM import MachineLSPM
 
     from . import PyleecanMachine
     from .create_param_dict import create_param_dict
@@ -78,30 +79,30 @@ def main(
             and :class:`MachineSyRM` work.
     """
     logger = logging.getLogger(__name__)
-    if not gmsh_api.isInitialized():
-        gmsh_api.initialize()
-
-    # supress output of log messages to console.
-    # See https://gitlab.onelab.info/gmsh/gmsh/-/issues/1901
-    # Use gmsh.logger.start(), gmsh.logger.get(), gmsh.logger.stop() to catch logs.
-    logger.debug("Setting gmsh option General.Terminal to 0.")
-    gmsh_api.option.setNumber("General.Terminal", 0)
-
-    # add new gmsh model in case api is called multiple times:
-    model_name = clean_name(pyleecan_machine.name)
-    gmsh_api.model.add(model_name)
-
-    simulation = create_simulation(pyleecan_machine, i_d=0, i_q=0, speed=1000)
-    paramDict = create_param_dict(pyleecan_machine, simulation)
-    paramDict["flag_openGUI"] = use_gui
 
     # make sure machine type is translatable
     if isinstance(
         pyleecan_machine,
-        (MachineSIPMSM, MachineIPMSM, MachineSyRM, MachineSCIM),
+        (MachineSIPMSM, MachineIPMSM, MachineSyRM, MachineSCIM, MachineLSPM),
     ):
-        # create new gmsh model in case api is called multiple times:
-        gmsh_api.model.add(pyleecan_machine.name)
+        if not gmsh_api.isInitialized():
+            gmsh_api.initialize()
+
+        # supress output of log messages to console.
+        # See https://gitlab.onelab.info/gmsh/gmsh/-/issues/1901
+        # Use gmsh.logger.start(), gmsh.logger.get(), gmsh.logger.stop() to catch logs.
+        logger.debug("Setting gmsh option General.Terminal to 0.")
+        gmsh_api.option.setNumber("General.Terminal", 0)
+
+        # add new gmsh model in case api is called multiple times:
+        model_name = clean_name(pyleecan_machine.name)
+        gmsh_api.model.add(model_name)
+
+        # Create model parameter dict
+        simulation = create_simulation(pyleecan_machine, i_d=0, i_q=0, speed=1000)
+        paramDict = create_param_dict(pyleecan_machine, simulation)
+        paramDict["flag_openGUI"] = use_gui
+
         geo_translation_dict = translate_machine(pyleecan_machine)
     else:
         raise NotImplementedError(
