@@ -179,7 +179,9 @@ def create_geo_dict(
         # try to get material
         if not isinstance(duct.mat_void, PyleecanMaterial):
             logger.warning(
-                "No valid material given for hole %s. Using air instead!", duct
+                "No valid material '%s' given for hole %s. Using air instead!",
+                duct.mat_void,
+                duct.__class__.__name__,
             )
             material = PyleecanAir
         else:
