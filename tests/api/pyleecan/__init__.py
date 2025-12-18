@@ -25,12 +25,66 @@ from os.path import join
 import pytest
 import gmsh
 
-# pylint: disable=locally-disabled, no-name-in-module
-from pyleecan.Functions.load import load
+from pyleecan.Classes.InputCurrent import InputCurrent
+from pyleecan.Classes.MagFEMM import MagFEMM
+from pyleecan.Classes.OPdq import OPdq
+from pyleecan.Classes.Simu1 import Simu1
+from pyleecan.Functions.load import load  # pylint: disable=no-name-in-module
 
 from tests.api import TEST_API_DATA_DIR
 
 TEST_API_PYLCN_DATA_DIR = join(TEST_API_DATA_DIR, "pyleecan")
+
+
+def run_pyleecan_sim(
+    pyleecan_model_file: str,
+    speed: float = 1000,
+    Id: float = 0.0,
+    Iq: float = 0.0,
+    nbr_steps_per_period: int = 32,
+):
+    # Load the machine
+    machine = load(pyleecan_model_file)
+    p = machine.stator.winding.p
+
+    simu_femm = Simu1(
+        name="FEMM_simulation",
+        machine=machine,
+        input=InputCurrent(
+            OP=OPdq(N0=speed, Id_ref=Id, Iq_ref=Iq, Tem_av_ref=0),
+            Na_tot=2048,
+            Nt_tot=nbr_steps_per_period * p,
+        ),
+    )
+
+    # # time discretization [s]
+    # time = linspace(
+    #     start=0, stop=60 / speed, num=nbr_steps_per_period * p, endpoint=False
+    # )
+    # simu_femm.input.time = time
+    # # Angular discretization along the airgap circonference for flux density calculation
+    # simu_femm.input.angle = linspace(start=0, stop=2 * pi, num=2048, endpoint=False)
+
+    simu_femm.mag = MagFEMM(
+        type_BH_stator=0,
+        type_BH_rotor=0,
+        file_name="",
+        is_fast_draw=True,
+        is_sliding_band=True,
+        is_calc_torque_energy=True,
+        T_mag=20,
+        is_remove_ventS=False,
+        is_remove_ventR=False,
+    )
+
+    # Only the magnetic module is defined
+    simu_femm.elec = None
+    simu_femm.force = None
+    simu_femm.struct = None
+    simu_femm.mag.is_periodicity_a = True
+    simu_femm.mag.is_periodicity_t = True
+    return simu_femm.run()
+
 
 @pytest.fixture(scope="function", autouse=True)
 def initialize_gmsh():
