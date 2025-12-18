@@ -21,17 +21,21 @@
 from __future__ import annotations
 
 import fnmatch
+import logging
 import unittest
 from os import listdir, makedirs
-from os.path import isdir, isfile, join
-from shutil import copytree, ignore_patterns, rmtree
-import logging
-from matplotlib import pyplot as plt
+from os.path import isdir, join
+from shutil import rmtree
+
 import numpy as np
-from pyemmo.functions.runOnelab import findGetDP, findGmsh, runCalcforCurrent
-from ... import TEST_DATA_DIR, GMSH_EXE, GETDP_EXE
-from ... import TEST_TEMP_DIR as TESTS_RESULTS_DIR
+from matplotlib import pyplot as plt
+
 from pyemmo.api.pyleecan.main import main
+from pyemmo.functions.runOnelab import runCalcforCurrent
+
+from ... import GETDP_EXE, GMSH_EXE, TEST_DATA_DIR
+from ... import TEST_TEMP_DIR as TESTS_RESULTS_DIR
+from ...api.pyleecan import run_pyleecan_sim
 
 
 class TestRunOnelab(unittest.TestCase):
@@ -49,8 +53,10 @@ class TestRunOnelab(unittest.TestCase):
         that will not be changed.
         Specifically, for example, loading predefined, verified test geometry.
         """
-        logging.getLogger(__name__).setLevel(logging.INFO)
-        pyleecan_model_file = join(
+        logger = logging.getLogger(__name__)
+        logger.setLevel(logging.INFO)
+        logging.getLogger("pyemmo").setLevel(logging.INFO)
+        cls.pyleecan_model_file = join(
             TEST_DATA_DIR, "api", "pyleecan", "Toyota_Prius.json"
         )
         # folder to store temporary model data and simulation results
@@ -60,13 +66,15 @@ class TestRunOnelab(unittest.TestCase):
 
         # Create model data to test simulation results
         cls.model_dir = join(cls.main_test_dir, "Toyota_Prius_Model")
+        logger.info("Creating ONELAB model scripts...")
         cls.script = main(
-            pyleecan_model_file,
+            cls.pyleecan_model_file,
             cls.model_dir,
             gmsh=GMSH_EXE,
             getdp=GETDP_EXE,
             use_gui=False,
         )
+        logger.info("ONELAB scripts created!")
 
     @classmethod
     def tearDownClass(cls):
@@ -112,11 +120,12 @@ class TestRunOnelab(unittest.TestCase):
                     "ID_RMS": 0.0,
                     "RPM": 6000,
                     "initrotor_pos": 0.0,
-                    "d_theta": 2.5,
+                    "d_theta": 90.0 / 32,
                     "finalrotor_pos": 90.0,
                     "ResId": res_id,
                     "Flag_AnalysisType": 1,
                     "Flag_PrintFields": 0,
+                    "Flag_EC_Magnets": 0,  # no eddy currents
                     "Flag_Debug": 0,
                     "Flag_ClearResults": 1,
                     "verbosity level": 3,
@@ -127,7 +136,7 @@ class TestRunOnelab(unittest.TestCase):
                     "res": join(self.main_test_dir, res_id),  # result folder
                 },
                 "pro": join(self.model_dir, "Toyota_Prius.pro"),  # pro file
-                "gmsh": {"exe": GMSH_EXE},  # gmsh exe and params
+                "gmsh": {"exe": GMSH_EXE, "gmsf": 2},  # gmsh exe and params
                 "info": "",
                 "PostOp": [],  # "GetBOnRadius" - "Get_LocalFields_Post"
             }
@@ -140,11 +149,90 @@ class TestRunOnelab(unittest.TestCase):
             ax.set_xlabel("time in s")
             ax.set_ylabel(r"$U_\mathrm{ind}$ in V")
 
+        bemf_rms = np.mean([rms(results["inducedVoltage"][phase]) for phase in "abc"])
+
+        # Results from Maxwell simulation but with slightly different geometry
+        # assert np.isclose(
+        #     bemf_rms,
+        #     380, # value from Maxwell simulation
+        #     atol=15,
+        # ), "Calculated back emf for 6000 rpm does not match expected value!"
+
+        outfemm = run_pyleecan_sim(
+            self.pyleecan_model_file, speed=6000.0, nbr_steps_per_period=int(90 / 2.5)
+        )
+        outfemm.mag.comp_emf()
+        bemf_rms_pyleecan = rms(outfemm.mag.emf.values)
         assert np.isclose(
-            np.mean([rms(results["inducedVoltage"][phase]) for phase in "abc"]),
-            320,
-            atol=15,
-        ), "Calculated back emf for 6000 rpm does not match expected value!"
+            bemf_rms,
+            bemf_rms_pyleecan,
+            rtol=1,
+        ), "Back emf ONELAB <-> FEMM for 6000 rpm does not match!"
+
+    def test_WP1(self):
+        """Test working point results
+
+        "Burress, T A, C L Coomer, S L Campbell, et.al. "Evaluation of the 2007 Toyota
+        Camry Hybrid Synergy Drive System". ORNL/TM-2007/190, Revised, 928684. 2008.
+        https://doi.org/10.2172/928684.
+        """
+        res_id = "test_WP1"
+        Id, Iq = (-100, 200)
+        speed = 1000.0
+        nbr_steps = 32
+        results = runCalcforCurrent(
+            {
+                "getdp": {
+                    "exe": GETDP_EXE,
+                    "IQ_RMS": Iq,
+                    "ID_RMS": Id,
+                    "RPM": speed,
+                    "initrotor_pos": 0.0,
+                    "d_theta": 90.0 / nbr_steps,
+                    "finalrotor_pos": 90.0,
+                    "ResId": res_id,
+                    "Flag_AnalysisType": 1,
+                    "Flag_PrintFields": 0,
+                    "Flag_EC_Magnets": 0,  # no eddy currents
+                    "Flag_Debug": 0,
+                    "Flag_ClearResults": 1,
+                    "verbosity level": 3,
+                    #                     mesh_veryFine, fineMesh or coarseMesh
+                    # "msh": os.path.join(MODEL_DIR, "mesh_veryFine.msh"),
+                    # "Flag_SecondOrder": 0,
+                    "stop_criterion": 1e-7,
+                    "res": join(self.main_test_dir, res_id),  # result folder
+                },
+                "pro": join(self.model_dir, "Toyota_Prius.pro"),  # pro file
+                "gmsh": {"exe": GMSH_EXE, "gmsf": 2},  # gmsh exe and params
+                "info": "",
+                "PostOp": [],  # "GetBOnRadius" - "Get_LocalFields_Post"
+            }
+        )
+
+        if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+            fig, ax = plt.subplots()
+            ax.plot(results["time"], results["torque"])
+            ax.set_xlabel("time in s")
+            ax.set_ylabel(r"$T_\mathrm{em}$ in Nm")
+
+        mean_torque = np.mean(results["torque"])
+
+        assert np.isclose(
+            mean_torque, 376.0, atol=15
+        ), "Torque does not match expected value!"
+
+        outfemm = run_pyleecan_sim(
+            self.pyleecan_model_file,
+            speed=6000.0,
+            Id=Id,
+            Iq=Iq,
+            nbr_steps_per_period=nbr_steps,
+        )
+
+        assert np.isclose(
+            mean_torque, np.mean(outfemm.mag.Tem.values), rtol=5
+        ), "Torque ONELAB <-> FEMM does not match!"
 
 
 def rms(array) -> float:
