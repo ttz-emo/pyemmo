@@ -65,15 +65,15 @@ def createMachine(
     (imported from matlab).
 
     Args:
-        segmentSurfDict (Dict[str, SurfaceAPI]): dict of surfaces forming one machine segment
+        segmentSurfDict (Dict[str, MachineSegmentSurface]): dict of surfaces forming one machine segment
             (on stator and rotor side). Segment width for rotor and stator can be different.
-            Dict keys are IdExt of SurfaceAPI.
+            Dict keys are IdExt of MachineSegmentSurface.
         extendedInfo (dict): Dict with additional information like pole pair number and axial
             length.
 
     Returns:
-        Tuple[MachineAllType, Dict[str, List[SurfaceAPI]]]: Resulting machine object and Machine
-        surface dict with IdExt as keys and list of SurfaceAPI objects as items.
+        Tuple[MachineAllType, Dict[str, List[MachineSegmentSurface]]]: Resulting machine object and Machine
+        surface dict with IdExt as keys and list of MachineSegmentSurface objects as items.
     """
     symFactor = importJSON.get_sym_factor(extendedInfo)
     rotorMovingBandRadius = importJSON.get_MB_radius(extendedInfo)
@@ -233,7 +233,7 @@ def createMeshSizeGUICode(machineSurfDict: dict[str, list[MachineSegmentSurface]
     Create the gmsh fomatted code to set the mesh size of the machine surfaces via the GUI.
 
     The names of the sufaces are defined in the `apiNameDict` (defined globally in
-    pyemmo.api.init), which links the IdExt value of a SurfaceAPI object to a real name in the
+    pyemmo.api.init), which links the IdExt value of a MachineSegmentSurface object to a real name in the
     GUI. The order of the IdExt in that dict matters since it defines which mesh size the
     intersection points between two surfaces should get.
 
@@ -263,7 +263,7 @@ def createMeshSizeGUICode(machineSurfDict: dict[str, list[MachineSegmentSurface]
     be used.
 
     Args:
-        machineSurfDict (Dict[str, List[SurfaceAPI]]): dictionary with IdExt as keys.
+        machineSurfDict (Dict[str, List[MachineSegmentSurface]]): dictionary with IdExt as keys.
     """
     mscDefConst = (
         "\nDefineConstant[\n\tmm = 1e-3,\n"
@@ -290,7 +290,7 @@ def createMeshSizeGUICode(machineSurfDict: dict[str, list[MachineSegmentSurface]
                 surfList.extend(machineSurfDict[surfID])
             # get the mesh size
             meshSize = surfList[0].meanMeshLength
-            # if meshsize in surfaceAPI was 0, get the mean mesh size of the points
+            # if meshsize in MachineSegmentSurface was 0, get the mean mesh size of the points
             if not meshSize:
                 meshSize = surfList[0].meanMeshLength
             meshSize = round(meshSize * 1e3, 3)
@@ -481,7 +481,7 @@ def main(
 
     Args:
         geo (str or dict): File path to JSON formatted geometry file OR segment
-            surface dict with IdExt as keys and SurfaceAPI objects as values.
+            surface dict with IdExt as keys and MachineSegmentSurface objects as values.
         extInfo (str or dict): File path to JSON formatted extended information
             file or directly given info dict.
         model (str): Folder path where the resulting model files should be
