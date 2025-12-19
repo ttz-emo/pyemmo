@@ -1389,6 +1389,17 @@ PostOperation Get_LocalFields UsingPost MagStaDyn_a_2D {
     js, OnElementsOf DomainS, File StrCat[ResDir,"js",ExtGmsh], LastTimeStepOnly,
     AppendTimeStepToFileName Flag_SaveAllSteps
   ] ;
+  
+  Print[
+    az, OnElementsOf Domain, File StrCat[ResDir,"az",ExtGmsh], LastTimeStepOnly,
+    AppendTimeStepToFileName Flag_SaveAllSteps
+  ] ;
+  Echo[ Str[
+      "l=PostProcessing.NbViews-1;", "View[l].IntervalsType = 1;", "View[l].NbIso = 30;", "View[l].Light = 0;", "View[l].LineWidth = 2;"
+    ],
+    File StrCat[ResDir,"tmp.geo"],
+    LastTimeStepOnly
+  ];
 
   Print[
     b,  OnElementsOf Domain, File StrCat[ResDir,"b",ExtGmsh], Format Gmsh,
@@ -1405,16 +1416,8 @@ PostOperation Get_LocalFields UsingPost MagStaDyn_a_2D {
     AppendTimeStepToFileName Flag_SaveAllSteps
   ] ;
 
+If (Flag_Lam)
   Print[
-    az, OnElementsOf Domain, File StrCat[ResDir,"az",ExtGmsh], LastTimeStepOnly,
-    AppendTimeStepToFileName Flag_SaveAllSteps
-  ] ;
-  Echo[ Str["l=PostProcessing.NbViews-1;", "View[l].IntervalsType = 1;", "View[l].NbIso = 30;", "View[l].Light = 0;", "View[l].LineWidth = 2;"],
-    File StrCat[ResDir,"tmp.geo"], LastTimeStepOnly
-  ] ;
-
-  If (Flag_Lam)
-    Print[
       p_Lam, OnElementsOf Domain_Lam, File StrCat[ResDir,"p_Lam.pos"],
       LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps
     ];

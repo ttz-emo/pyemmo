@@ -113,7 +113,7 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
                 Defaults to previous surface name + "_dup" for duplicate.
 
         Returns:
-            SurfaceAPI: Duplicate of SurfaceAPI object.
+            GmshSegmentSurface: Duplicate of GmshSegmentSurface object.
         """
         # duplicate surface in Gmsh
         dup_gmsh_surf = GmshSurface.duplicate(self, name)

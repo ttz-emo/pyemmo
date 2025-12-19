@@ -439,7 +439,7 @@ def get_mag_angle(extendedInfo: dict) -> dict:
 # ====================================== START MATERIAL FUNCTIONS ==================================
 
 
-def create_material(matDict: dict[str, dict[Literal["wert"], Any]]) -> Material:
+def create_material(mat_dict: dict[str, dict[Literal["wert"], Any]]) -> Material:
     """create a pyemmo material object based on matDict format
 
     Args:
@@ -448,184 +448,21 @@ def create_material(matDict: dict[str, dict[Literal["wert"], Any]]) -> Material:
     Returns:
         Material: Material object generated from Matlab dict.
     """
-    name = matDict["name"]["wert"]
     logger = logging.getLogger(__name__)
-    if isAir(name):
-        logger.info(
-            "Air found in name of material '%s'. Using standard pyemmo Air material.",
-            name,
-        )
-        return air
-    if "elektromagnetik" in matDict.keys():
-        # TODO: Optimize code by introducing default mat dict and iterating
-        #  over its elements!
-        magMatDict: dict = matDict["elektromagnetik"]
-        conductivity = magMatDict.get("el_lw", {}).get("wert")
-        if not isinstance(conductivity, (int, float)):
-            conductivity = 0
-        # linear magnetic permerability
-        permeability = magMatDict.get("mue_r", {}).get("wert")
-        if not isinstance(permeability, (int, float)):
-            if permeability is not None:
-                logger.warning(
-                    "Bad value for permeability of Material %s: %s. Resetting to 1.0!",
-                    name,
-                    permeability,
-                )
-            permeability = 1  # default value
-        # remanent flux density [T]
-        remanence = magMatDict.get("b_rem", {}).get("wert")
-        if not isinstance(remanence, (int, float)):
-            remanence = 0
-            remanenceTempCoef = 0
-        else:
-            if "tk_rem_100" in magMatDict.keys():
-                remanenceTempCoef = magMatDict["tk_rem_100"]["wert"]
-                if not isinstance(remanenceTempCoef, (int, float)):
-                    # if not valid value for temperature coefficient of remanence
-                    remanenceTempCoef = 0  # set to None
-        # BH Curve
-        bhCurve = np.empty(0)
-        if "bh_kl" in magMatDict.keys():
-            bhDict: dict = magMatDict["bh_kl"]
-            if isinstance(bhDict["wert"], list):
-                # one BH-curve
-                nbrBasePoints = len(bhDict["wert"])
-                if nbrBasePoints > 0:
-                    bhCurve = np.zeros((nbrBasePoints, 2))
-                    for i, hbArray in enumerate(bhDict["wert"]):
-                        bhCurve[i] = [hbArray[1], hbArray[0]]
-                # else:
-                # raise ValueError(f"BH-Curve of Material '{name}' is empty!")
-            elif isinstance(bhDict["wert"], memoryview):
-                # workaround from coupling with matlab. class memoryview is only used
-                # for matrices (not vectors).
-                bhDict["wert"] = bhDict["wert"].tolist()  # convert memoryview to list
-                nbrBasePoints = len(bhDict["wert"])
-                if nbrBasePoints > 0:
-                    bhCurve = np.zeros((nbrBasePoints, 2))
-                    for i, hbArray in enumerate(bhDict["wert"]):
-                        bhCurve[i] = [hbArray[1], hbArray[0]]
-
-            elif "kl_1" in bhDict.keys():
-                ...  # TODO: add temperatur depended BH curve to material
-            else:
-                msg = (
-                    f"No valid keys for bh curve in material dict for material '{name}'."
-                    f"Keys are {bhDict.keys()}"
-                )
-                raise KeyError(msg)
-        if bhCurve.size == 0:
-            # check that there is a magnetic property
-            if not permeability:
-                msg = (
-                    f"Material '{name}' does not have magnetic properties!"
-                    "(neither relative permeability nor BH-Curve)"
-                )
-                raise AttributeError(msg)
-            if permeability < 1:
-                # pylint: disable=locally-disabled,  line-too-long
-                logger.warning(
-                    "Permeability of material '%s' is smaller than 1! Resetting it to 1 for model.",
-                    name,
-                    exc_info=1,
-                )
-                permeability = 1.0
-    else:
-        raise ValueError(f"Material '{name}' missing 'elektromagnetik' section!")
-
-    density = matDict.get("dichte", {}).get("wert")
-    if not isinstance(density, (int, float)):
-        density = None
-    # check for sheet thickness
-    # if valid value (>0, <5e-3) for thickness is given -> create steel mat
-    try:
-        sheetThickness = matDict["d"]["wert"]
-        if not isinstance(sheetThickness, (int, float)):
-            raise InvalidSheetThicknessError(
-                sheetThickness,
-                f"Invalid sheet thickness type {type(sheetThickness)}",
+    logger.debug("Creating material object for %s", mat_dict["name"])
+    if "sheetThickness" in mat_dict:
+        if mat_dict["sheetThickness"] != 0:
+            logger.debug(
+                "Parameter sheetThickness in material dict! Creating ElectricalSteel "
+                "object..."
             )
-        if sheetThickness > 5e-3:
-            # add warning to log and raise InvalidSheetThicknessError (which is catched
-            # by try-except statment) to create standard material
-            logger.warning(
-                """Sheet thickness of material %s is greater 5mm: %f meter! """
-                "Creating standard material instead of electrical steel material!",
-                name,
-                sheetThickness,
-            )
-            raise InvalidSheetThicknessError(sheetThickness)
-        mat = createSteelMaterial(
-            matDict,
-            name,
-            conductivity,
-            permeability,
-            bhCurve,
-            density,
-            sheetThickness,
-        )
-    except (KeyError, InvalidSheetThicknessError):
-        mat = Material(
-            name=name,
-            conductivity=conductivity,
-            relPermeability=permeability,
-            remanence=remanence,
-            tempCoefRem=remanenceTempCoef,
-            BH=bhCurve,
-            density=density,
-        )
-    except Exception as exce:
-        raise exce
-    return mat
-
-
-def createSteelMaterial(
-    materialDict,
-    name,
-    conductivity,
-    permeability,
-    bhCurve,
-    density,
-    sheetThickness,
-) -> ElectricalSteel:
-    emDict: dict = materialDict["elektromagnetik"]
-    try:
-        lossParams = []
-        for lossChar in ("h", "w", "z"):
-            lossParam = emDict["sigma_" + lossChar]["wert"]
-            if not isinstance(lossParam, float):
-                # TODO: Add warning
-                lossParams.append(0)
-            else:
-                lossParams.append(lossParam)
-    except KeyError as keyErr:
-        raise KeyError(
-            "Missing loss parameter from material dict for material " + name
-        ) from keyErr
-    except Exception as exc:
-        raise exc
-
-    try:
-        refInd = emDict["bez_ind"]["wert"]
-    except KeyError as keyErr:
-        raise KeyError(
-            f"Missing reference induction from material dict for material '{name}'."
-        ) from keyErr
-    except Exception as exc:
-        raise exc
-
-    return ElectricalSteel(
-        name=name,
-        conductivity=conductivity,
-        relPermeability=permeability,
-        BH=bhCurve,
-        density=density,
-        sheetThickness=sheetThickness,
-        lossParams=lossParams,
-        referenceFluxDensity=refInd,
-        referenceFrequency=50,  # setting to 50Hz allways
-    )
+            return ElectricalSteel.from_dict(mat_dict)
+        logger.debug("Parameter sheetThickness is 0. Removing it from material dict!")
+        mat_dict.pop("sheetThickness")
+        if "lossParams" in mat_dict:
+            logger.debug("Removing parameter lossParams from material dict!")
+            mat_dict.pop("lossParams")
+    return Material.from_dict(mat_dict)
 
 
 def isAir(materialName: str):
