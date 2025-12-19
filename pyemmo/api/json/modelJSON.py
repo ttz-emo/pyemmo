@@ -223,15 +223,15 @@ def getSurfaceLineList(
 
 
 def createAPISurf(areaDict: dict) -> MachineSegmentSurface:
-    """create a SurfaceAPI object from a area dict imported via json.
+    """create a MachineSegmentSurface object from a area dict imported via json.
 
     Args:
         areaDict (dict): dict with area information.
 
     Returns:
-        SurfaceAPI: Created surface object
+        MachineSegmentSurface: Created surface object
 
-    Keys in area dict are the following (see SurfaceAPI definition for more details):
+    Keys in area dict are the following (see MachineSegmentSurface definition for more details):
 
     - Name
     - IdExt
@@ -259,11 +259,6 @@ def createAPISurf(areaDict: dict) -> MachineSegmentSurface:
         material=importJSON.create_material(areaDict["Material"]),
         nbr_segments=areaDict["Quantity"],
     )
-    # except Exception as exce:
-    # raise RuntimeError(
-    #     f"""Failed to generate API surface for '{areaDict["Name"]}' """
-    #     f"due to following error: {exce.args[0]}"
-    # ) from exce
     return surf
 
 
@@ -277,8 +272,8 @@ def importMachineGeometry(
         TODO: describe surface dict structure!
 
     Returns:
-        Dict[str, SurfaceAPI]: Segment Surface dict with short IDs (IdExt) as keys and
-        SurfaceAPI objects as values
+        Dict[str, MachineSegmentSurface]: Segment Surface dict with short IDs (IdExt) as keys and
+        MachineSegmentSurface objects as values
     """
     logger = logging.getLogger(__name__)
     segmentSurfDict: dict[str, MachineSegmentSurface] = {}
@@ -381,21 +376,21 @@ def importMachineGeometry(
 def createSurfaceDict(
     surfList: list[MachineSegmentSurface],
 ) -> dict[str, MachineSegmentSurface]:
-    """creates a Dict of SurfaceAPI objects from a List of SurfaceAPI (see
+    """creates a Dict of MachineSegmentSurface objects from a List of MachineSegmentSurface (see
     :func:`importMachineGeometry() <pyemmo.api.modelJSON.importMachineGeometry>`).
     The dict-keys are the surface IDs (short names/abbriviations of the surface
     name).
 
     Args:
-        surfList: (List[SurfaceAPI]): List of surface dicts extended from the
+        surfList: (List[MachineSegmentSurface]): List of surface dicts extended from the
             geometry json file
 
     Returns:
-        Dict[str, SurfaceAPI]: Dict with surface ID as key
+        Dict[str, MachineSegmentSurface]: Dict with surface ID as key
 
     Raises:
         ValueError: if surfList is not type list.
-        ValueError: if a member of surfList is not type SurfaceAPI
+        ValueError: if a member of surfList is not type MachineSegmentSurface
     """
     if not isinstance(surfList, list):
         msg = (
@@ -408,7 +403,7 @@ def createSurfaceDict(
     for surf in surfList:
         if not isinstance(surf, MachineSegmentSurface):
             msg = (
-                "The object in the surface list was not type 'SurfaceAPI',"
+                "The object in the surface list was not type 'MachineSegmentSurface',"
                 f" but '{type(surf)}'."
             )
             raise ValueError(msg)
@@ -425,15 +420,15 @@ def createMachineGeometryFromSegment(
     (list of surfaces) and return them as surface-list
 
     Args:
-        segmentSurfDict (Dict[str, SurfaceAPI]): Segment Surface dict with
-            short IDs (IdExt) as keys and SurfaceAPI objects as values.
+        segmentSurfDict (Dict[str, MachineSegmentSurface]): Segment Surface dict with
+            short IDs (IdExt) as keys and MachineSegmentSurface objects as values.
         SymFactor (int): Symmetry factor to calculate the number of segments
             that should be generated
 
     Returns:
-        Dict[str, List[SurfaceAPI]]: Dict of all surfaces (including the
+        Dict[str, List[MachineSegmentSurface]]: Dict of all surfaces (including the
         ones from segmentSurfList, but with different Name and tool surfaces), with
-        IdExt as keys and list of SurfaceAPI as values.
+        IdExt as keys and list of MachineSegmentSurface as values.
 
     Raises:
         ValueError: If number of segments on (2*Pi / symFactor) is not an
@@ -493,7 +488,7 @@ def createPhysicalSurfaces(
 
     Args:
         IdExt (str): Short ID of surface list.
-        surf (SurfaceAPI): a surface of the machine geometry.
+        surf (MachineSegmentSurface): a surface of the machine geometry.
         rotorMBRadius (float): radius of the moving band line of the rotor side.
         extendedInfo (dict): dict with additional simulation information.
             E.g. Winding configuration, symmetry factor, rotational speed,...
@@ -593,7 +588,7 @@ def createMagnet(surf: MachineSegmentSurface, mat: Material, extInfo: dict) -> M
         towards the airgap)
 
     Args:
-        surf (SurfaceAPI): magnet geometry
+        surf (MachineSegmentSurface): magnet geometry
         material (Material): material of the magnet. Shoud have Br defined!
         extInfo (dict): dict with additional simulation information.
             E.g. Winding configuration, symmetry factor, rotational speed,...

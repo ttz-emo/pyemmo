@@ -99,14 +99,14 @@ def findLines(
     either "ID1" or "ID21" and "ID22". See function "findLine" for more details)
 
     Args:
-        segmentSurfDict (Dict[str, SurfaceAPI]): Segment Surface dict with short IDs (IdExt)
-            as keys and SurfaceAPI objects as values
+        segmentSurfDict (Dict[str, MachineSegmentSurface]): Segment Surface dict with short IDs (IdExt)
+            as keys and MachineSegmentSurface objects as values
         SurfID (str): ID of the surface to search for in the MachineSurfaceList
         LineIDList (List[Union[List[str],str]]): List of line IDs or List of LineIDs to
             search for in the surface line list ()
 
     Returns:
-        Tuple[List[Line], SurfaceAPI] | Tuple[None, None]: List of identified lines and the
+        Tuple[List[Line], MachineSegmentSurface] | Tuple[None, None]: List of identified lines and the
         surface where the lines where found. Both tuple members will be None if the surface
         was not in the surface list.
 
@@ -142,8 +142,8 @@ def getBoundaryLines(
     machine surfaces by identifying them through surface ID and a list of related line IDs
 
     Args:
-        segmentSurfDict (Dict[str, SurfaceAPI]): Segment Surface dict with short IDs (IdExt) as keys
-            and SurfaceAPI objects as values
+        segmentSurfDict (Dict[str, MachineSegmentSurface]): Segment Surface dict with short IDs (IdExt) as keys
+            and MachineSegmentSurface objects as values
         surfID (str): Surface ID to search for in the machine surface list.
         lineIDList (str | List[str]): Line ID or list of line IDs to search for in the lineloop of
             the surface with "surfID".
@@ -177,7 +177,7 @@ def createMBLines(
     symFactor: int,
 ) -> list[Line]:
     """
-    createMBLines finds the inner Movingband lines in the list of SurfaceAPI objects by the IDs
+    createMBLines finds the inner Movingband lines in the list of MachineSegmentSurface objects by the IDs
     in MBLineDict and generates the corresponding number of movingband lines for the given symmetry
     by duplicate and rotate.
 
@@ -185,8 +185,8 @@ def createMBLines(
         MBLineDict (Dict[str, List[str]]): Dict identifying the surface IDs to search for as
             dict keys and a list of corresponding line IDs to search for as values.
             e.g.: {"StLu": ["LuA", "LuM"] }
-        segmentSurfDict (Dict[str, SurfaceAPI]): Segment Surface dict with short IDs (IdExt)
-            as keys and SurfaceAPI objects as values
+        segmentSurfDict (Dict[str, MachineSegmentSurface]): Segment Surface dict with short IDs (IdExt)
+            as keys and MachineSegmentSurface objects as values
         SymFactor (int): symmetry factor
 
     Returns:
@@ -438,7 +438,7 @@ def getLimitLines(
 
                 TODO: Create example for inner limit line dict
 
-        machineSurfList (List[SurfaceAPI]): List of all surfaces that should be searched
+        machineSurfList (List[MachineSegmentSurface]): List of all surfaces that should be searched
         symFactor (int): symmetry factor for duplication.
 
     Returns:
@@ -470,7 +470,7 @@ def get_rotor_stator_dim_tags(
     others are categorized as rotor.
 
     Args:
-        surf_dict (dict[str, list[SurfaceAPI]]): Dictionary of surface lists.
+        surf_dict (dict[str, list[MachineSegmentSurface]]): Dictionary of surface lists.
         rotor_mb_radius (float): Radius used to distinguish between rotor and stator
             surfaces.
 
@@ -483,7 +483,7 @@ def get_rotor_stator_dim_tags(
 
     .. python:
 
-        surf_dict = ... # SurfaceAPI dict
+        surf_dict = ... # MachineSegmentSurface dict
         rotor_mb_radius = 0.6
         rotor_tags, stator_tags = get_rotor_stator_dim_tags(surf_dict, rotor_mb_radius)
     """
