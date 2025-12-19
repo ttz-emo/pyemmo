@@ -772,9 +772,9 @@ def createSlot(
     """create a Physical Element of type Slot.
 
     Args:
-        surf (SurfaceAPI): Slot geometric surface. Surface IdExt must be
-            formatted like "stator slot<slotSide>_<segmentNumber>". E.g. The first
-            slot side of the first segment must be named "stator slot0_0".
+        surf (MachineSegmentSurface): Slot geometric surface. Surface IdExt must be
+            formatted like "stator slot<slotSide>". E.g. The first
+            slot side of the first segment must be named "stator slot0".
         material (Material): Slot Material.
         extendedInfo (dict): Additional model information dict, with winding
             configuration.
@@ -785,7 +785,17 @@ def createSlot(
     logger = logging.getLogger(__name__)
     Qs = importJSON.get_nbr_of_slots(extendedInfo)
     slotSide = getSlotInfo(surf.part_id)
-    # NOTE: slotSide is set 0 or 1 where the naming of slotSide is 1 or 2
+    if slotSide > 1:
+        # for the special case where a single stator segment is not symmetrical and has
+        # multiple e.g. to slots with two slot sides each
+        logger.warning(
+            "Slot side %i is greater 1! "
+            "This assumes you have more than one slot per given stator segment. "
+            "Resetting slot side index to %i. ",
+            slotSide,
+            slotSide % 2,
+        )
+        slotSide = slotSide % 2
     windingLayout = importJSON.get_winding_layout(extendedInfo)
 
     # calculate the slot number from the slot surface position:
