@@ -545,30 +545,48 @@ class Material:
                 default temperature).
         """
         logger = logging.getLogger(__name__)
+
         if not hasattr(self, "_BH"):
+            # init BH curve private attribute
             self._BH = {}
+
         if not temp:
+            # if no temperature given, set default curve
             temp_key = "default"
         else:
             temp_key = temp
+
         if newBH is None:
             raise TypeError("BH curve cant be of type None")
+
         if not isinstance(newBH, (np.ndarray, list)):
             raise TypeError("BH curve must be numpy.ndarray or list of lists")
+
         if len(newBH) == 0:
             # if BH is None, set empty array
             self._BH[temp_key] = np.empty(0)
             if temp_key == "default":
                 self.linear = True
             return
-        elif isinstance(newBH, list):
-            # if list is given, set numpy array
+
+        if isinstance(newBH, list):
+            # if list is given, create numpy array
             newBH = np.array(newBH)
+
         if isinstance(newBH, np.ndarray) and not newBH.size == 0:
+            # make sure newBH is numpy array now and is not empty
             if newBH.ndim == 2:
                 # number of dimensions must be 2
-                if newBH.shape[1] == 2:
+                if any(shape == 2 for shape in newBH.shape):
                     # number of coloums must be 2 for B and H
+                    if newBH.shape[1] != 2:
+                        # switch rows and coloums
+                        logger.debug(
+                            "Transposing given BH curve of shape (%i,%i)",
+                            newBH.shape[0],
+                            newBH.shape[1],
+                        )
+                        newBH = newBH.T
                     if newBH.shape[0] < 2:
                         raise ValueError(
                             (
@@ -597,8 +615,9 @@ class Material:
                 else:
                     raise (
                         ValueError(
-                            f"Wrong shape of array BH. Must be (X,2) but is {newBH.shape}. "
-                            + "BH must look like [[B1, H1],[B2, H2],[B3, H3],...]"
+                            "Wrong shape of array BH. Must be (X,2) or (2,X) but is "
+                            f"{newBH.shape}. BH must look like "
+                            "[[B1, H1],[B2, H2],[B3, H3],...]"
                         )
                     )
             else:
