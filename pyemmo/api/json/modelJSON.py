@@ -248,7 +248,7 @@ def createAPISurf(areaDict: dict) -> MachineSegmentSurface:
         areaDict["Name"],
         areaDict["IdExt"],
         areaDict["Quantity"],
-        areaDict["Material"]["name"]["wert"],
+        areaDict["Material"]["name"],
     )
     surf = MachineSegmentSurface.from_curve_loop(
         name=areaDict["Name"],
