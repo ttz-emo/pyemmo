@@ -57,11 +57,11 @@ from .testUtils import (
 # Vars for using in tests
 test_types = ["api\\pyleecan"]
 test_cases = {}
-
+log_dir = os.path.join(TEST_DIR, "Results", test_types[0])
+if not os.path.isdir(log_dir):
+    os.makedirs(log_dir)
 fileHandler = logging.FileHandler(
-    filename=os.path.join(
-        TEST_DIR, "Results", test_types[0], f"test_result_{curr_datetime}.log"
-    ),
+    filename=os.path.join(log_dir, f"test_result_{curr_datetime}.log"),
     mode="w",
     encoding="utf-8",
 )
@@ -117,6 +117,11 @@ def cleanup(request):
 
 
 # Integration test class
+@pytest.mark.skip(
+    reason="This old integration test setup is too complicated! New PyleecanAPI "
+    "integration test in subfolder 'Toyota_Prius'. Additionally all pyleecan default "
+    "motor files are tested in the pyleecan api tests."
+)
 @pytest.mark.parametrize(
     # "test_tuple",
     (
