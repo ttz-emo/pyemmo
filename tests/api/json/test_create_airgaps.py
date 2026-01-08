@@ -154,15 +154,5 @@ def test_create_band_contour_outwards(machine_seg_surf: MachineSegmentSurface):
     )
 
 
-@pytest.mark.skip(reason="Test not implemented yet!")
-def test_create_band_symmetry_1():
-    """Test band surface creation for symmetry = 1"""
-    # create circle with radius = 1
-    inner_radius = 1
-    thickness = 0.5
-    band_height = 0.01
-    center = GmshPoint.from_coordinates((0, 0, 0))
-    circ = add_circle(center, radius=inner_radius + thickness, nbr_segments=1)
-    circ.cutOut(add_circle(center, radius=inner_radius, nbr_segments=1), keepTool=False)
-    # TODO: find inner curve line loop = interface and run:
-    # _create_band_surf(interface, r_circ=inner_radius - band_height)
+# TODO: Add tests for creating the airgap surfaces
+# TODO: Add tests for creating the airgap surfaces with symmetry = 1!
