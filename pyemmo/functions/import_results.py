@@ -536,7 +536,7 @@ def import_pos_parsedFormat(file_path: str) -> tuple[str, np.ndarray, np.ndarray
 
         # reshape data by (number of elements, number of data values)
         # where number of data values = num_data * nbr_steps
-        reshaped_data = data[i].reshape((numElem[i], int(data[i].size / numElem)))
+        reshaped_data = data[i].reshape((numElem[i], int(data[i].size / numElem[i])))
 
         # extract element node data
         # TODO: This could be reshaped by nbr_coords
