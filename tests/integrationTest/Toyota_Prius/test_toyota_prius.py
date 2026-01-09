@@ -23,6 +23,7 @@ from __future__ import annotations
 import fnmatch
 import logging
 import unittest
+from datetime import datetime
 from os import listdir, makedirs
 from os.path import isdir, join
 from shutil import rmtree
@@ -60,12 +61,13 @@ class TestRunOnelab(unittest.TestCase):
             TEST_DATA_DIR, "api", "pyleecan", "Toyota_Prius.json"
         )
         # folder to store temporary model data and simulation results
+        cls.timestamp = datetime.now().strftime(r"%Y%m%d_%H%M%S")
         cls.main_test_dir = join(TESTS_RESULTS_DIR, "TestToyotaPrius")
         if not isdir(cls.main_test_dir):
             makedirs(cls.main_test_dir)
 
         # Create model data to test simulation results
-        cls.model_dir = join(cls.main_test_dir, "Toyota_Prius_Model")
+        cls.model_dir = join(cls.main_test_dir, cls.timestamp + "_Toyota_Prius_Model")
         logger.info("Creating ONELAB model scripts...")
         cls.script = main(
             cls.pyleecan_model_file,
@@ -86,7 +88,7 @@ class TestRunOnelab(unittest.TestCase):
         rmtree(cls.model_dir)
         # remove any results folders that match the test res_id pattern
         for folder in listdir(cls.main_test_dir):
-            if fnmatch.fnmatch(folder, "test_*"):
+            if fnmatch.fnmatch(folder, "*_test_*"):
                 rmtree(join(cls.main_test_dir, folder))
 
     def setUp(self):
@@ -111,7 +113,8 @@ class TestRunOnelab(unittest.TestCase):
         Camry Hybrid Synergy Drive System". ORNL/TM-2007/190, Revised, 928684. 2008.
         https://doi.org/10.2172/928684.
         """
-        res_id = "test_backEMF"
+        res_id = self.timestamp + "_test_backEMF"
+        # logging.getLogger("pyemmo.functions.runOnelab").setLevel(logging.WARNING)
         results = runCalcforCurrent(
             {
                 "getdp": {
@@ -176,7 +179,7 @@ class TestRunOnelab(unittest.TestCase):
         Camry Hybrid Synergy Drive System". ORNL/TM-2007/190, Revised, 928684. 2008.
         https://doi.org/10.2172/928684.
         """
-        res_id = "test_WP1"
+        res_id = self.timestamp + "_test_WP1"
         Id, Iq = (-100, 200)
         speed = 1000.0
         nbr_steps = 32
@@ -239,6 +242,5 @@ def rms(array) -> float:
     return np.sqrt(np.mean(array**2))
 
 
-# Dieser Abschnitt ermöglicht das direkte Starten der Testmethoden beim ausführen der Datei
 if __name__ == "__main__":
     unittest.main()
