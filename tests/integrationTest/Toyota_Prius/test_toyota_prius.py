@@ -142,7 +142,7 @@ class TestRunOnelab(unittest.TestCase):
             }
         )
 
-        if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
+        if logging.getLogger(__name__).getEffectiveLevel() <= logging.DEBUG:
             fig, ax = plt.subplots()
             for phase in results["inducedVoltage"].keys():
                 ax.plot(results["time"][1:], results["inducedVoltage"][phase])

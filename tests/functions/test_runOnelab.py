@@ -46,9 +46,7 @@ class TestRunOnelab(unittest.TestCase):
         Konkret z.B. Laden von vordefinierter, verifizierter Testgeometrie
         """
         # copy model data and set actual model directory
-        original_model_dir = join(
-            TEST_DATA_DIR, "api", "pyleecan", "comparison_base", "Toyota_Prius"
-        )
+        original_model_dir = join(TEST_DATA_DIR, "onelab", "Toyota_Prius")
         # folder to store temporary model data and simulation results
         cls.test_sim_dir = join(TESTS_RESULTS_DIR, "TestRunOnelab")
         if not isdir(cls.test_sim_dir):

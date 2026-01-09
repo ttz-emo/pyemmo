@@ -26,28 +26,35 @@ from __future__ import annotations
 import importlib.util
 import logging
 import pathlib
-from . import TEST_DIR
+
 import pytest  # pylint: disable=unused-import
+
+from . import TEST_DIR
 
 
 def pytest_ignore_collect(collection_path: pathlib.Path, config):
-    """Using the pytest_ignore_collect hook to skip all tests in tests/api/pyleecan.
+    """Using the pytest_ignore_collect hook to skip all tests in "tests/api/pyleecan"
+    and "tests/integrationTest" folders if pyleecan is missing.
+
     This was taken from:
     https://community.lambdatest.com/t/how-can-i-skip-all-pytest-tests-in-a-directory-if-a-certain-condition-is-met/47397
     """
+    logger = logging.getLogger(__name__)
     if not importlib.util.find_spec("pyleecan"):
         # logging.info("Current path is: %s", str(collection_path))
         # Skip tests under a specific folder
         pylcn_test_path = pathlib.PurePath(TEST_DIR) / "api" / "pyleecan"
         if pylcn_test_path in pathlib.PurePath(collection_path).parents:
-            logging.debug(
+            logger.debug(
                 "Ignoring test path '%s' because pyleecan is missing",
                 str(collection_path),
             )
             return True
+
+        # skip integration tests because they are using pyleecan aswell
         integration_test_path = pathlib.PurePath(TEST_DIR) / "integrationTest"
         if integration_test_path in pathlib.PurePath(collection_path).parents:
-            logging.debug(
+            logger.debug(
                 "Ignoring test path '%s' because pyleecan is missing",
                 str(collection_path),
             )
