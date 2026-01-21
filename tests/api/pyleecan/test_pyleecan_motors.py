@@ -22,27 +22,24 @@
 
 from __future__ import annotations
 
-import json
-import logging
-
-# %%
 import os
-import traceback
 from os.path import join
 
 import pytest
+from pyleecan.Classes.LamSlotMulti import LamSlotMulti
 from pyleecan.Classes.Machine import Machine
 from pyleecan.Classes.MachineWRSM import MachineWRSM
-from pyleecan.Classes.LamSlotMulti import LamSlotMulti
-
-# from pyleecan.Classes.MachineLSPM
-
 from pyleecan.definitions import DATA_DIR
 from pyleecan.Functions import load
 
 from pyemmo.api.pyleecan.main import main
-from pyemmo.functions.runOnelab import main as run_onelab
+
+# from pyemmo.functions.runOnelab import main as run_onelab
 from ... import TEST_TEMP_DIR
+
+# from pyleecan.Classes.MachineLSPM
+
+
 
 MODEL_RES_DIR = join(TEST_TEMP_DIR, "pyleecanAPI")
 MACHINE_FILE_DIR = join(DATA_DIR, "Machine")
@@ -52,6 +49,8 @@ nbr_machines = len(machine_file_list)
 
 @pytest.mark.parametrize("machineFile", machine_file_list)
 def test_translate_machine(machineFile: str):
+    """This function runs the pyemmmo pyleecan api for all available pyleecan machine
+    from pyleecan.definitions.DATA_DIR."""
     machinePath = join(MACHINE_FILE_DIR, machineFile)
     # pylint: disable=locally-disabled, no-member
     machine: Machine = load.load(machinePath)
@@ -65,7 +64,26 @@ def test_translate_machine(machineFile: str):
     if machine.stator.winding.qs != 3:
         pytest.skip(f"Stator winding has {machine.stator.winding.qs} phases")
     if any(isinstance(lam, LamSlotMulti) for lam in machine.get_lam_list()):
-        pytest.skip(f"Can not translate lamination of type LamSlotMulti.")
+        pytest.skip("Can not translate lamination of type LamSlotMulti.")
+    if "LSPM_001.json" == machineFile:
+        pytest.xfail(
+            "Bug in LSPM_001.json: Rotor Squirrle Cage winding pole pair number does "
+            "not match stator winding pole pair number"
+        )
+    if "SCIM_010.json" == machineFile:
+        pytest.xfail(
+            "Bug in SCIM_010.json: Material 'UserAluminium' missing magnetic properties"
+        )
+    if "Stellantis_IPMSM_test_doubleV.json" == machineFile:
+        pytest.xfail(
+            "Bug in Stellantis_IPMSM_test_doubleV.json: Material 'Magnet1' has invalid "
+            "BH Curve."
+        )
+    if "TESLA_S.json" == machineFile:
+        pytest.xfail(
+            "Bug in TESLA_S.json: Bug in rotor slot parametrization leads to overlaping "
+            "surfaces!"
+        )
 
     main(machine, machine_model_dir, use_gui=False)
 
