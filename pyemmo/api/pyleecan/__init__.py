@@ -39,14 +39,8 @@ if use_pyleecan:
         MachineDFIM, MachineSIPMSM, MachineIPMSM, MachineWRSM, MachineSyRM
     ]
     from pyleecan.Classes.Material import Material
-    from pyleecan.Classes.MatMagnetics import MatMagnetics
 
-    # Defining magnets
-    PyleecanAir = Material(name="Magnet_prius")
-
-    # Definition of the magnetic properties of the material
-    PyleecanAir.mag = MatMagnetics(
-        mur_lin=1.0,  # Relative magnetic permeability
-        Wlam=0,  # lamination sheet width without insulation [m] (0 == not laminated)
-    )
-POLE_HOLE_IDEXT = "Pole Hole"
+    # Load default air material used in create_geo_dict function for surfaces without
+    # referenced material.
+    PyleecanAir = Material(name="Air")
+POLE_HOLE_IDEXT = "Pole Hole"  # usused for now
