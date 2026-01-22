@@ -25,6 +25,7 @@ from os.path import join
 
 from pyemmo.definitions import MAIN_DIR
 from pyemmo.functions.onelab_paramters import extract_onelab_parameters
+from pyemmo.version import __version__
 
 # Configuration file for the Sphinx documentation builder.
 #
@@ -37,7 +38,7 @@ from pyemmo.functions.onelab_paramters import extract_onelab_parameters
 project = "PyEMMO"
 copyright = "2026, Technologietransferzentrum Elektromobilität TTZ-EMO"
 author = "TTZ-EMO AG-EM"
-
+release = __version__
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
@@ -82,6 +83,8 @@ html_logo = "_static/PyEMMO_Logo_2_small.png"
 
 ## default theme options
 html_theme_options = {
+    "version_selector": True,
+    "language_selector": True,
     #     'analytics_id': 'G-XXXXXXXXXX',  #  Provided by Google in your dashboard
     #     'analytics_anonymize_ip': False,
     #     'logo_only': False,
