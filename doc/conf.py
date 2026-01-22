@@ -21,11 +21,15 @@
 #
 from __future__ import annotations
 
+import os
+import sys
 from os.path import join
 
 from pyemmo.definitions import MAIN_DIR
 from pyemmo.functions.onelab_paramters import extract_onelab_parameters
 from pyemmo.version import __version__
+
+sys.path.insert(0, os.path.abspath("../pyemmo/"))
 
 # Configuration file for the Sphinx documentation builder.
 #
@@ -43,12 +47,17 @@ release = __version__
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
+    # "sphinx.ext.apidoc", # auto generate .rst files of all pyemmo packages
     "sphinx.ext.autodoc",
     "sphinx.ext.coverage",
     "sphinx.ext.napoleon",
     "sphinx.ext.autosummary",
+    "sphinx.ext.doctest",
+    # "sphinx.ext.intersphinx",  # used for links to existing online documentations
+    #   see https://www.sphinx-doc.org/en/master/usage/quickstart.html#intersphinx
     # "sphinx.ext.autosectionlabel", # fix warning of duplicate label.
     "sphinx.ext.todo",  # enable todo directive
+    "sphinx_rtd_theme",
 ]
 
 templates_path = ["_templates"]
@@ -88,14 +97,14 @@ html_theme_options = {
     #     'analytics_id': 'G-XXXXXXXXXX',  #  Provided by Google in your dashboard
     #     'analytics_anonymize_ip': False,
     #     'logo_only': False,
-    #     'display_version': True,
+    # "display_version": True,
     #     'prev_next_buttons_location': 'bottom',
     #     'style_external_links': True,
     #     'vcs_pageview_mode': '',
     #     'style_nav_header_background': 'white',
-    #     # Toc options
-    #     'collapse_navigation': True,
-    #     'sticky_navigation': True,
+    # Toc options
+    "collapse_navigation": True,
+    "sticky_navigation": False,
     #     'navigation_depth': 4,
     #     'includehidden': True,
     #     'titles_only': False
