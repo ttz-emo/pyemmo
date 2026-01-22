@@ -35,7 +35,7 @@ from pyemmo.functions.onelab_paramters import extract_onelab_parameters
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "PyEMMO"
-copyright = "2025, Technologietransferzentrum Elektromobilität TTZ-EMO"
+copyright = "2026, Technologietransferzentrum Elektromobilität TTZ-EMO"
 author = "TTZ-EMO AG-EM"
 
 # -- General configuration ---------------------------------------------------
