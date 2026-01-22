@@ -198,18 +198,17 @@ class Spline(Line):
             p.rotateZ(rotationPoint, angle)
 
     def duplicate(self, name="") -> Spline:
-        """Mit duplicate() wird eine Spline mit gleichen Eigenschaften zur Originalen
-        erzeugt. Diese Spline hat jedoch eine unterschiedliche ID.
-                Beispiel:
-                    SP1 = Spline('sp1', P1, P2, [P3, P4, P5])
-                    SP2 = SP1.duplicate()
+        """Copy the spline object.
 
         Args:
             name (str, optional): Name of new spline. Defaults to \"\".
 
         Returns:
-            Spline: Duplicate of the current Spline
+            Spline: Copy of the current Spline
 
+        Example:
+            >>> spline1 = Spline('sp1', P1, P2, [P3, P4, P5])
+            >>> spline2 = SP1.duplicate()
         """
         newP1 = self.start_point.duplicate()
         newP2 = self.end_point.duplicate()

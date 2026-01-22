@@ -44,15 +44,11 @@ class Line(Transformable):
     class Point) in three-dimensional space.
 
     Example:
-
-    .. python
-
-        from pyemmo.script.geometry.point import Point
-        from pyemmo.script.geometry.line import Line
-
-        P1 = pyd.Point('p1', 0, 0, 0, 0.3)
-        P2 = pyd.Point('p2', 1, 0, 0, 0.3)
-        L1 = pyd.Line('l1', P1, P2)
+        >>> from pyemmo.script.geometry.point import Point
+        >>> from pyemmo.script.geometry.line import Line
+        >>> P1 = pyd.Point('p1', 0, 0, 0)
+        >>> P2 = pyd.Point('p2', 1, 0, 0)
+        >>> L1 = pyd.Line('l1', P1, P2)
     """
 
     def __init__(

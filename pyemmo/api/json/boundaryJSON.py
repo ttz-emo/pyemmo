@@ -481,11 +481,12 @@ def get_rotor_stator_dim_tags(
 
     Example:
 
-    .. python:
+        >>> surf_dict = ...  # dict of MachineSegmentSurface objects
+        >>> rotor_mb_radius = 0.6  # radius in meter
+        >>> rotor_tags, stator_tags = get_rotor_stator_dim_tags(
+                surf_dict, rotor_mb_radius
+            )
 
-        surf_dict = ... # MachineSegmentSurface dict
-        rotor_mb_radius = 0.6
-        rotor_tags, stator_tags = get_rotor_stator_dim_tags(surf_dict, rotor_mb_radius)
     """
     stator_dim_tags: list[SurfDimTag] = []
     rotor_dim_tags: list[SurfDimTag] = []
@@ -521,13 +522,8 @@ def get_boundary_line_list(surf_dim_tags: list[SurfDimTag]) -> list[GmshLine]:
             boundary retrieval process.
 
     Example:
-
-    .. python:
-
-        surf_dim_tags = [(2, 1)]  # Example surface tag
-        boundary_lines = get_boundary_line_dict(surf_dim_tags)
-        for line in boundary_lines:
-            print(line)
+        >>> surf_dim_tags = [(2, 1)]  # Example surface tag
+        >>> boundary_lines = get_boundary_line_dict(surf_dim_tags)
     """
     boundary_dim_tags = gmsh.model.get_boundary(surf_dim_tags)
     # create a boundary line list:

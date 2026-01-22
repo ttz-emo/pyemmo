@@ -59,13 +59,6 @@ Plot module
    :undoc-members:
    :show-inheritance:
 
-.. pyemmo.functions.punkteAusStructExtrahieren module
-.. ---------------------------------------------------
-
-.. .. automodule:: pyemmo.functions.punkteAusStructExtrahieren
-..    :members:
-..    :undoc-members:
-..    :show-inheritance:
 
 RunOnelab module
 ----------------
@@ -75,13 +68,14 @@ RunOnelab module
    :undoc-members:
    :show-inheritance:
 
-.. pyemmo.functions.xml2pyemmo module
-.. ------------------------------------
+phase module
+-----------------------------
 
-.. .. automodule:: pyemmo.functions.xml2pyemmo
-..    :members:
-..    :undoc-members:
-..    :show-inheritance:
+.. automodule:: pyemmo.functions.phase
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 
 .. Nothing in here...
 .. Module contents

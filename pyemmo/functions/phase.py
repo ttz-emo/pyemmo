@@ -51,7 +51,6 @@ def angle2phase(phase_angle: float, phase_names: tuple[str] = ("u", "v", "w")) -
     Example:
         >>> angle2phase(np.pi / 3, ["A", "B", "C"]) # 120 °
         'B'
-
         >>> angle2phase(np.pi / 100, ["A", "B", "C"]) # 1.8 °
         'A'
     """
