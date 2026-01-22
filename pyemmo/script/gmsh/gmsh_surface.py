@@ -41,49 +41,16 @@ from .create_gmsh_curve import create_curve
 
 
 class GmshSurface(GmshGeometry, Surface):
-    """GmshSurface is a class that represents a 2D surface in the Gmsh model. It provides
+    """
+    GmshSurface is a class that represents a 2D surface in the Gmsh model. It provides
     methods for creating, manipulating, and querying surfaces in the Gmsh geometry kernel.
-    Attributes:
-        dim (int): The dimension of the surface, which is always 2.
-        curve (list[Union[GmshLine, GmshArc]]): The list of curves that form the surface.
-        meanMeshLength (float): The mean mesh length of all points of the surface.
-        area (float): The area of the surface as calculated by Gmsh.
-    Methods:
-        __init__(tag: int, name: str = ""):
-            Initializes a GmshSurface object with a given tag and optional name.
-        from_curve_loop(curve_loop: list[Union[GmshLine, GmshArc]], name: str = "") -> "GmshSurface":
-            Creates a GmshSurface from a list of curves that form a closed loop.
-        _get_lineloop(tag: int) -> list[Union[GmshLine, GmshArc]]:
-            Retrieves the line loop of the surface from the Gmsh model.
-        __str__() -> str:
-            Returns a string representation of the GmshSurface object.
-        setMeshLength(meshLength: float) -> None:
-            Sets the mesh length of all points of the surface.
-        getMinMeshLength() -> float:
-            Retrieves the minimum mesh length of all points of the surface.
-        translate(dx: float, dy: float, dz: float) -> None:
-            Translates the surface by the specified distances in the x, y, and z directions.
-        rotateZ(rotationPoint: Point, angle: float) -> None:
-            Rotates the surface around the z-axis by a specified angle.
-        rotateX(rotationPoint: Point, angle: float) -> None:
-            Rotates the surface around the x-axis by a specified angle.
-        rotateY(rotationPoint: Point, angle: float) -> None:
-            Rotates the surface around the y-axis by a specified angle.
-        duplicate(name: str = "") -> "GmshSurface":
-            Duplicates the surface and returns the new surface.
-        mirror(planePoint: Point, planeVector1: Point, planeVector2: Point, name: str = "") -> None:
-            Not implemented. Intended to mirror the surface across a plane.
-        combine(addSurf: "GmshSurface", removeObject: bool = True, removeTool: bool = True) -> "GmshSurface":
-            Combines the current surface with another surface to create a new surface.
-        sortCurves() -> None:
-            No-op method. Curves are already sorted when retrieved from Gmsh.
-        replaceCurve(oldCurve: GmshLine, newCurve: GmshLine) -> None:
-            Raises an error. Replacing curves is not supported for GmshSurface.
-        cutOut(tool: "GmshSurface", keepTool: bool = True) -> None:
-            Cuts out a tool surface from the parent surface using a Boolean difference.
-        calcCOG() -> Point:
-            Calculates the center of gravity (COG) of the surface.
-    Examples:
+
+    Example:
+        >>> import gmsh
+        >>> from pyemmo.script.gmsh.gmsh_surface import GmshSurface
+        >>> gmsh.initialize()
+        >>> gmsh.model.add("surface example")
+        >>> gmsh_surface_tag = gmsh.model.occ.addRectangle(0,0,0,1,1)
         >>> square_surf = GmshSurface(tag=gmsh_surface_tag)
     """
 
@@ -376,8 +343,11 @@ class GmshSurface(GmshGeometry, Surface):
             angle (float): The angle in degrees by which the surface should be rotated.
                 Defaults to 0.0.
 
-        example:
-            >>> from pyemmo.gmsh import GmshSurface, GmshPoint
+        .. example:
+            >>> from pyemmo.script.geometry.gmsh.gmsh_surface import (
+            >>>     GmshSurface,
+            >>>     GmshPoint,
+            >>> )
             >>> from math import pi
             >>> surface = GmshSurface(...)
             >>> rotationPoint = GmshPoint(...)

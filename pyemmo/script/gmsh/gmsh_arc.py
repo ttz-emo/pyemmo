@@ -38,27 +38,21 @@ Usage:
     - Utilize the string representation for debugging and logging purposes.
 
 Example:
+    >>> from module_name import GmshArc, GmshPoint
+    >>> import numpy as np
 
-.. python:
-
-    from module_name import GmshArc, GmshPoint
-    import numpy as np
-
-    # Create GmshPoint instances
-    center = GmshPoint.from_coordinates(coords=np.array([0.0, 0.0, 0.0]))
-    start = GmshPoint.from_coordinates(coords=np.array([1.0, 0.0, 0.0]))
-    end = GmshPoint.from_coordinates(coords=np.array([0.0, 1.0, 0.0]))
-
-    # Define a line using GmshArc
-    line = GmshArc.from_points(
+    >>> center = GmshPoint.from_coordinates(coords=np.array([0.0, 0.0, 0.0]))
+    >>> start = GmshPoint.from_coordinates(coords=np.array([1.0, 0.0, 0.0]))
+    >>> end = GmshPoint.from_coordinates(coords=np.array([0.0, 1.0, 0.0]))
+    >>> # Define a line using GmshArc
+    >>> line = GmshArc.from_points(
         start_point=start,
         center_point=center,
         end_point=end,
         name="Quarter circle",
     )
-
-    # Print line details
-    print(line)
+    >>> # Print line details
+    >>> print(line)
 
 Author:
     Max Schuler
@@ -82,40 +76,9 @@ from .gmsh_point import GmshPoint
 
 
 class GmshArc(GmshLine, CircleArc):
-    """GmshArc is a class that represents a circular arc in the Gmsh geometric modeling kernel.
-    It inherits from both GmshLine and CircleArc, providing functionality to interact with
-    and manipulate circular arcs in a Gmsh model.
-    Attributes:
-        dim (Literal[1]): The dimension of the CircleArc in Gmsh, which is always 1.
-        id (int): The unique identifier (tag) of the arc in the Gmsh model.
-        name (str): The name of the arc.
-        center (GmshPoint): The center point of the arc.
-        length (float): The length of the arc, calculated using Gmsh's geometric modeling functions.
-    Methods:
-        __init__(tag: int, name: str = ""):
-            Initializes a GmshArc instance using an existing Gmsh line tag. Validates the tag
-            and retrieves the start and end points of the arc.
-        from_points(start_point: GmshPoint, center_point: GmshPoint, end_point: GmshPoint, name: str) -> GmshArc:
-            Class method to create a new GmshArc instance by specifying the start, center,
-            and end points of the arc.
-        __str__() -> str:
-            Returns a string representation of the GmshArc, including its name, ID, and
-            start and end points.
-        start_point (property):
-            Getter for the starting point of the arc. Raises an error if an attempt is made
-            to modify the start point.
-        end_point (property):
-            Getter for the ending point of the arc. Raises an error if an attempt is made
-            to modify the end point.
-        center (property):
-            Getter for the center point of the arc. If the center point does not exist, it
-            is created. Raises an error if an attempt is made to modify the center point.
-        length (property):
-            Getter for the length of the arc, calculated using Gmsh's geometric modeling
-            functions.
-        TypeError: If the provided tag is not a positive integer.
-        ValueError: If the specified tag does not correspond to an existing curve in the
-                    Gmsh model or if the provided points are not of type GmshPoint."""
+    """GmshArc is a class that represents a circular arc in the Gmsh geometric modeling
+    kernel. It inherits from both GmshLine and CircleArc, providing functionality to
+    interact with and manipulate circular arcs in a Gmsh model."""
 
     @property
     def dim(self) -> Literal[1]:
