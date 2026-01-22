@@ -5,14 +5,6 @@ TEXT TODO...
 
 
 
-pyemmo.api.pyleecan.build\_pyemmo\_line\_list module
-----------------------------------------------------
-
-.. automodule:: pyemmo.api.pyleecan.build_pyemmo_line_list
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 pyemmo.api.pyleecan.build\_pyemmo\_material module
 --------------------------------------------------
 
@@ -21,42 +13,35 @@ pyemmo.api.pyleecan.build\_pyemmo\_material module
    :undoc-members:
    :show-inheritance:
 
-pyemmo.api.pyleecan.build\_pyemmo\_point module
------------------------------------------------
-
-.. automodule:: pyemmo.api.pyleecan.build_pyemmo_point
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-pyemmo.api.pyleecan.calc\_wind\_cont module
--------------------------------------------
-
-.. automodule:: pyemmo.api.pyleecan.calc_wind_cont
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-pyemmo.api.pyleecan.calcs\_even\_rotor\_cont module
----------------------------------------------------
-
-.. automodule:: pyemmo.api.pyleecan.calcs_even_rotor_cont
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-pyemmo.api.pyleecan.calcs\_rotor\_spmsm\_cont module
-----------------------------------------------------
-
-.. automodule:: pyemmo.api.pyleecan.calcs_rotor_spmsm_cont
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
 pyemmo.api.pyleecan.create\_geo\_dict module
 --------------------------------------------
 
 .. automodule:: pyemmo.api.pyleecan.create_geo_dict
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyemmo.api.pyleecan.create\gmsh\_point module
+---------------------------------------------
+
+.. automodule:: pyemmo.api.pyleecan.create_gmsh_point
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyemmo.api.pyleecan.create\gmsh\_lines module
+---------------------------------------------
+
+.. automodule:: pyemmo.api.pyleecan.create_gmsh_lines
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyemmo.api.pyleecan.create\gmsh\_surf module
+--------------------------------------------
+
+.. automodule:: pyemmo.api.pyleecan.create_gmsh_surf
    :members:
    :undoc-members:
    :show-inheritance:
@@ -77,42 +62,11 @@ pyemmo.api.pyleecan.create\_pyleecan\_simulation module
    :undoc-members:
    :show-inheritance:
 
-pyemmo.api.pyleecan.detect_inner_outer_limit module
----------------------------------------------------
 
-.. automodule:: pyemmo.api.pyleecan.detect_inner_outer_limit
-   :members:
-   :undoc-members:
-   :show-inheritance:
+pyemmo.api.pyleecan.label2part\_id module
+-----------------------------------------
 
-pyemmo.api.pyleecan.get\_coords\_for\_point module
---------------------------------------------------
-
-.. automodule:: pyemmo.api.pyleecan.get_coords_for_point
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-pyemmo.api.pyleecan.get\_magnetization\_dict module
----------------------------------------------------
-
-.. automodule:: pyemmo.api.pyleecan.get_magnetization_dict
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-pyemmo.api.pyleecan.get\_rotor\_stator\_cont module
----------------------------------------------------
-
-.. automodule:: pyemmo.api.pyleecan.get_rotor_stator_cont
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-pyemmo.api.pyleecan.get\_rotor\_stator\_surfs module
-----------------------------------------------------
-
-.. automodule:: pyemmo.api.pyleecan.get_rotor_stator_surfs
+.. automodule:: pyemmo.api.pyleecan.label2part_id
    :members:
    :undoc-members:
    :show-inheritance:
@@ -133,13 +87,6 @@ pyemmo.api.pyleecan.translate\_machine module
    :undoc-members:
    :show-inheritance:
 
-pyemmo.api.pyleecan.translate\_surfs module
--------------------------------------------
-
-.. automodule:: pyemmo.api.pyleecan.translate_surfs
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
 pyemmo.api.pyleecan.translate\_winding module
 ---------------------------------------------

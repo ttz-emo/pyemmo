@@ -27,12 +27,8 @@ Functions:
         information for communication between Pyleecan and pyemmo.
 
 Example:
-
-    .. code:: python
-
-        machine = MachineIPMSM(...)
-        geometry_dict = create_geo_dict(machine)
-        # Returns geometry objects suitable for pyemmo.
+    >>> machine = MachineIPMSM(...)  # Pyleecan machine object
+    >>> geometry_dict = create_geo_dict(machine)
 
 Raises:
     TypeError: If unable to generate contours of the given machine type.

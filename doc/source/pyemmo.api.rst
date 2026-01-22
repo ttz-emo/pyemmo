@@ -8,7 +8,7 @@ TODO
    :maxdepth: 2
 
    pyemmo.api.json
-.. pyemmo.api.pyleecan -> TODO: Update Pyleecan API Doc
+   pyemmo.api.pyleecan
 
 MachineSegmentSurface class
 ---------------------------

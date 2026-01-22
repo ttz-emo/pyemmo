@@ -36,12 +36,8 @@ Functions:
         list of pyemmo curves.
 
 Example:
-
-    .. code:: python
-
-        pyleecan_line_list = [Segment(...), Arc1(...), ...]
-        pyemmo_line_list = create_gmsh_lines(pyleecan_line_list)
-        # Returns a list of pyemmo curves corresponding to the input pyleecan curves.
+    >>> pyleecan_line_list = [Segment(...), Arc1(...), ...]
+    >>> pyemmo_line_list = create_gmsh_lines(pyleecan_line_list)
 
 Raises:
     TypeError: If pyleecan_line_list is not of type 'list'.
