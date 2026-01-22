@@ -111,7 +111,7 @@ html_theme_options = {
 }
 
 # parameter to control if a new pyemmo.onelab_parameters.rst file should be created.
-create_param_file = False
+create_param_file = True
 
 if create_param_file:
     const, params = extract_onelab_parameters(
@@ -142,6 +142,9 @@ if create_param_file:
         rst_file.write(".. list-table::\n\t:widths: 12 28\n\t:header-rows: 1\n\n")
         heading = "\t*\t- Parameter Name\n\t\t- Description"
         rst_file.write(heading + "\n")
+
+        # TODO: Write separate description for R_, C_ and P_ parameters because they are
+        # special ONELAB parameters. + add backslash like R\_ otherwise results in link.
         for name, code in params.items():
             # TODO: Extract "Help" from code and put in separate column
             line = f"\t*\t- {name}\n\t\t- {code}"
