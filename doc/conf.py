@@ -22,6 +22,7 @@
 from __future__ import annotations
 
 import os
+import subprocess
 import sys
 from os.path import join
 
@@ -29,7 +30,8 @@ from pyemmo.definitions import MAIN_DIR
 from pyemmo.functions.onelab_paramters import extract_onelab_parameters
 from pyemmo.version import __version__
 
-sys.path.insert(0, os.path.abspath("../pyemmo/"))
+if not MAIN_DIR in sys.path:
+    sys.path.insert(0, os.path.abspath("../pyemmo/"))
 
 # Configuration file for the Sphinx documentation builder.
 #
@@ -152,6 +154,18 @@ if create_param_file:
         rst_file.write("\n")
 
 
-# change color of theme
+def run_apidoc(app):
+    apidoc_cmd = [
+        "sphinx-apidoc",
+        "--separate",
+        "-o",
+        os.path.join(app.srcdir, "source", "gen"),
+        os.path.abspath(MAIN_DIR),
+    ]
+    subprocess.check_call(apidoc_cmd)
+
+
 def setup(app):
+    app.connect("builder-inited", run_apidoc)
+    # change color of theme
     app.add_css_file("css/custom.css")
