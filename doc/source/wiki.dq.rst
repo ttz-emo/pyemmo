@@ -1,5 +1,3 @@
-
-
 dq-Offset calculation
 =====================
 
@@ -28,7 +26,7 @@ To align it with the first pole (which must be a north pole by this definition),
 
 
 Winding rotation direction determination
-----------------------------------------
+========================================
 
 To ensure that rotor and stator field are allways rotating in the same direction, the rotation direction of the resulting field wave of the stator winding must be determined.
 This is done by evaluating the sign of the winding factor refering to the first electrical harmonic of that winding.
