@@ -155,10 +155,16 @@ if create_param_file:
 
 
 def run_apidoc(app):
+    """This function is connected to sphinx using its api. See :py:function::`setup`
+
+    It runs the apidoc function to create new rst files for each module in
+    PyEMMO. Note that existing files will not be overwritten!
+    """
     apidoc_cmd = [
         "sphinx-apidoc",
-        "--separate",
-        "-o",
+        "--separate",  # create separate files for each module
+        "--remove-old",  # remove rst files if modules were deleted in pyemmo!
+        "-o",  # specify output directory
         os.path.join(app.srcdir, "source", "gen"),
         os.path.abspath(MAIN_DIR),
     ]
