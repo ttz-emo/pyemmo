@@ -20,6 +20,7 @@ test*.geo
 test*.json
 *.log
 .tox
+.aider*
 
 # Dont track doc build
 doc/_build/
