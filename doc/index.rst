@@ -16,9 +16,8 @@ What is PyEMMO and what is it used for
    :caption: Contents:
 
    source/usage
-   .. source/pyemmo
-
-   source/gen/modules
+   source/gen/pyemmo
+   source/wiki
 
 Indices and tables
 ==================
