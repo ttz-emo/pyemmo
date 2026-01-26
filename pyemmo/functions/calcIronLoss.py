@@ -271,9 +271,8 @@ def calc_freq_domain_core_loss(
     hyst_loss_field = np.linalg.norm(
         hyst_loss_factor * freqs * (amp.transpose() ** 2), axis=0
     )
-    hyst_loss = integrate_field(hyst_loss_field.transpose(), freqs, elem_tags)[1:]
-    hyst_loss = integrate_field(hyst_loss_field.transpose(), freqs, elem_tags)[1:]
     # skip first value, because its 0
+    hyst_loss = integrate_field(hyst_loss_field.transpose(), freqs, elem_tags)[1:]
     core_loss["hyst"] = hyst_loss * sym_factor * axial_length  # correct values
 
     # ------------------------- Calculate eddy current losses -------------------------
