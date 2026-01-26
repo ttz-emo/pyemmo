@@ -64,7 +64,7 @@ class Magnet_Surface01(Magnet):
         material (Material): Material of magnet.
         meshLength (float):
 
-    .. figure:: ../images/magnet_Surface01.png
+    .. figure:: ../../images/magnet_Surface01.png
         :align: center
 
         Parameter description for Magnet_Surface01
