@@ -5,7 +5,7 @@ Python and Compatible Versions
 ------------------------------
 PyEMMO is tested and works for Python versions from 3.8 to 3.14.
 The current development version is Python 3.12.10.
-You can :link:`get the latest Python versions here <https://www.python.org/downloads/>`.
+You can `get the latest Python versions here <https://www.python.org/downloads/>`_.
 If you have never used Python before we recommend you get familiar with the basics of programming with Python.
 `This video <https://www.youtube.com/watch?v=fWjsdhR3z3c>`_ or `the official Python Getting Started <https://www.python.org/about/gettingstarted/>`_ website can be good entry points.
 
@@ -18,8 +18,6 @@ To install PyEMMO in your current Python installation (thats the one first found
 .. code-block:: console
 
     $ pip install pyemmo
-
-If you want to run simulations on electrical machines, which is probably the reason you install PyEMMO, you further need to install ONELAB (=Gmsh + GetDP) from the :link:`ONELAB website <https://onelab.info/>`_ 
 
 If you have allready installed a version of PyEMMO and you want to upgrade to a **new** version:
 
@@ -34,3 +32,18 @@ If you want to install a specific PyEMMO version (`x.y.z` are placeholders for t
     $ pip install pyemmo==x.y.z --force-reinstall
 
 But keep in mind that this will also uninstall and reinstall the libraries that PyEMMO depends on.
+
+Getting ONELAB
+--------------
+
+If you want to run simulations on electrical machines, which is probably the reason you install PyEMMO, you further need to install ONELAB (= `Gmsh <http://gmsh.info>`_  + `GetDP <http://getdp.info>`_ ) from the `ONELAB website <https://onelab.info/>`_.
+You can either install ONELAB as a bundle of Gmsh and GetDP or install both programms separately.
+Just make sure the executables can be found on your system by setting the `PATH` variable.
+
+.. note:: There is a known bug in the latest Gmsh versions when exporting geometries to the `old` **geo** format: 
+    
+    For versions greater 4.14.0 the **geo_unrolled** formated output of OpenCascade instances is replaced by the .xao format which does not work properly for the current model generation workflow.
+    Thats why the version of the Gmsh Python library (which PyEMMO uses) is limited to version 4.13.
+    Anyway, to visualize the geometry and create the mesh you can use the lastest Gmsh version. 
+    See `issue <https://gitlab.onelab.info/gmsh/gmsh/-/issues/3214>`_ and `comment <https://gitlab.onelab.info/gmsh/gmsh/-/blob/master/src/geo/GModelIO_GEO.cpp?ref_type=heads#L1840>`_  for more info.
+
