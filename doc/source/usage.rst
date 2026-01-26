@@ -1,7 +1,7 @@
 Getting Started
 ===============
 
-Python and compatible versions
+Python and Compatible Versions
 ------------------------------
 PyEMMO is tested and works for Python versions from 3.8 to 3.14.
 The current development version is Python 3.12.10.
