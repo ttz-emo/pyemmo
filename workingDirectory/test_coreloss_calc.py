@@ -118,6 +118,7 @@ if FREQ_DOMAIN:
     print("---------------------------------------------------------------------")
 if TIME_DOMAIN:
     print("Time domain results:")
+    print(f"{'Rotor':>24} {'Stator':>11} {'Sum':>9}")
     print(
         f"{'Hysteresis:':<14} {np.mean(losses['rotor']['hyst']) : 8.3f} W {np.mean(losses['stator']['hyst']) : 9.3f} W {np.mean(losses['stator']['hyst']+losses['rotor']['hyst']) : 9.3f} W"
     )
