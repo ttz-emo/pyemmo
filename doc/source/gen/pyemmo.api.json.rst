@@ -1,14 +1,154 @@
 pyemmo.api.json package
 =======================
 
+.. toctree::
+   :maxdepth: 1
+
 This section is about the PyEMMO JSON API.
 It's working with two `JSON <https://de.wikipedia.org/wiki/JavaScript_Object_Notation>`_ formatted files, giving the geometry and the additional machine information.
 You can call the API via the command line using the following command:
 
-.. code:: shell
+.. code-block:: console
 
    $ python -m pyemmo.api.json /path/to/geo.json /path/to/machineInfo.json
 
+Or you can use a Python script to execute the :func:`~pyemmo.api.json.json.main` function of the :mod:`~pyemmo.api.json.json` module, like this:
+
+.. code-block:: python
+
+   import os
+   from pyemmo.api.json.json import main
+
+   model_folder = r"/path/to/model/folder"
+   param_file_path = os.path.join(model_folder, "param.json")
+   model_file_path = os.path.join(model_folder, "geometry.json")
+   # run json api to create ONELAB Model
+   pyemmo_script = main(
+      geo=model_file_path,
+      extInfo=param_file_path,
+      model=model_folder,
+      gmsh="",
+      getdp="",
+      results="",
+   )
+
+The api returns a PyEMMO :class:`~pyemmo.script.script.Script` object, which is the core to create the model files for ONELAB.
+
+Input Structure
+---------------
+The input to the json api are two structures (Python dictionaries or json files), one for the geometry and material definition of the individual machine surfaces and another one for the machine properties.
+This section highlights the format of those two structures.
+
+1. Geometry Structure
+'''''''''''''''''''''
+The geometry is defined by a list of segmented surface structures.
+Every surface represents a minimal segment of the full model geometry and has the following attributes:
+
+.. list-table:: PyEMMO Segmented Surface Structure Attributes
+   :header-rows: 1
+
+   * - Attribute
+     - Description
+   * - Name
+     - Surface name
+   * - IdExt
+     - Surface identifier defined in the api module :mod:`definitions <~pyemmo.api.json>`
+   * - Lines
+     - Curve loop to draw the surface outline defined by a list of *line structures*
+   * - Material
+     - PyEMMO :class:`~pyemmo.script.material.material.Material` structure
+   * - Quantity
+     - Number of surface segments to form a full model (circle)
+   * - Meshsize
+     - Optional surface mesh size
+
+Example:
+
+.. code-block:: python
+
+   # Example dict for stator lamination
+   stator_lam_dict = {
+      "Name": "stator core",
+      "IdExt": "stator lamination",
+      "Lines": [...],
+      "Material": {
+         "name": "steel material",
+         "conductivity": 1.9e6,
+         "relPermeability": 1000,
+         "BHCurve": {"default": []},
+         "density": 7680,
+         "sheetThickness": 0.5e-3,
+         "lossParams": [5000, 18e3, 0],
+      },
+      "Quantity": 4, # symmetry = 4
+      "Meshsize": None,
+   }
+
+Each curve of the surface outline should have the following attributes:
+
+.. list-table:: PyEMMO Line Structure Attributes
+   :header-rows: 1
+
+   * - Attribute
+     - Description
+   * - LineName
+     - Line name
+   * - Typ
+     - Line type. Can be "Arc" for circle arc or "Line" for a straight curve.
+   * - ApName
+     - Start point name.
+   * - ApX
+     - Start point x-coordinate.
+   * - ApY
+     - Start point y-coordinate.
+   * - ApZ
+     - Start point z-coordinate.
+   * - ApMesh
+     - Start point mesh size.
+   * - EpName
+     - End point name.
+   * - EpX
+     - End point x-coordinate.
+   * - EpY
+     - End point y-coordinate.
+   * - EpZ
+     - End point z-coordinate.
+   * - EpMesh
+     - End point mesh size.
+   * - MpName
+     - Middle point name. Only for arc.
+   * - MpX
+     - Middle point x-coordinate. Only for arc.
+   * - MpY
+     - Middle point y-coordinate. Only for arc.
+   * - MpZ
+     - Middle point z-coordinate. Only for arc.
+   * - MpMesh
+     - Middle point mesh size. Only for arc.
+
+Example:
+
+.. code-block:: python
+
+   arc_structure = {
+      "LineName": "individual line name",
+      "Typ": "Arc",
+      "ApName": "Start point name",
+      "ApX": 0.028731988729135773,
+      "ApY": 5E-6,
+      "ApZ": 0,
+      "ApMesh": 0.0011827808408478094,
+      "EpName": "End point name",
+      "EpX": 0.027681988729135774,
+      "EpY": 0.0010550000000000004,
+      "EpZ": 0,
+      "EpMesh": 0.0011827808408478094,
+      "MpName": "Center point name",
+      "MpX": 0.027681988729135777,
+      "MpY": 5E-6,
+      "MpZ": 0,
+      "MpMesh": 0.0011827808408478094
+   }
 
 Command-line Interface
 ----------------------
@@ -36,6 +176,8 @@ You can call :bash:`python -m pyemmo.api.json -h` to get the following informati
       --getdp GETDP  path to the GetDP executable
       --mod MOD      path where the model files should be stored
       --res RES      path where the simulation results should be stored
+      --log LOG      logging level for execution. Options are: error, warning, info, debug. default is warning
+      -v             set execution to verbose. Verbosity level equals logging level.
 
 The arguments `gmsh`, `getdp`, `mod` and `res` are optional. If you don't specify the paths for Gmsh or GetDP, the program will try to find them in the system path.
 The default path for the model result files (`mod` path) is a new folder in the user directory created at install time.
@@ -145,18 +287,6 @@ There can be more infos like the copper fill factor or the stator resistance, wh
       "magDirection": "parallel",
       "flag_openGUI": true
    }
-
-.. TODO: Add information about geometry file format and identifiers
-
-.. note::
-
-   Here we will need to add some documentation about the format of the geometry
-   definition and the important identifiers defined in:
-
-   .. automodule:: pyemmo.api.json
-      :members:
-      :undoc-members:
-      :show-inheritance:
 
 
 Submodules

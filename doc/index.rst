@@ -36,7 +36,7 @@ Current features are:
    * **universal interface** either from user defined scripted geometry definition or based on json-formatted input files.
    * coupling to `Pyleecan project <https://pyleecan.org/>`_.
 
-* Build in material database.
+* Built-in material database.
 * Various functions to:
 
    * Run ONELAB simulations through Python based on Subprocesses.
