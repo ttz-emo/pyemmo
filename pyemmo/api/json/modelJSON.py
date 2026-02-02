@@ -748,7 +748,7 @@ def getSlotPhase(
         117 + phase_index[0]
     )  # convert unicode u=117 + index -> char [u,v,w,...]
 
-    if sign(windingLayout[phase_index[0],slot_side, slot_index[0]]) == 1:
+    if sign(windingLayout[phase_index[0], slot_side, slot_index[0]]) == 1:
         cDir = "p"
     else:
         cDir = "n"
@@ -823,7 +823,9 @@ def createSlot(
     return slot
 
 
-def createWinding(extendedInfo: dict) -> datamodel:
+def createWinding(
+    extendedInfo: dict, segmentSurfDict: dict[str, list[MachineSegmentSurface]] = {}
+) -> datamodel:
     """Create a
     `swat_em <https://swat-em.readthedocs.io/en/latest/#>`__ :class:`datamodel`
     object for the stator winding by the information given in the extended
@@ -833,34 +835,80 @@ def createWinding(extendedInfo: dict) -> datamodel:
         extendedInfo (dict): dict with extended machine and simulation
             information.
 
+
     Returns:
         datamodel: swat_em.datamodel object of winding.
     """
     logger = logging.getLogger(__name__)
     logger.debug("Creating SWAT-EM winding object...")
-    swatemWinding = datamodel()
-    nbrSlots = importJSON.get_nbr_of_slots(extendedInfo)
-    nbrPolePairs = importJSON.get_nbr_of_pole_pairs(extendedInfo)
-    swatemWinding.set_machinedata(Q=nbrSlots, p=nbrPolePairs, m=3)
-    # get winding layout from json file
-    # windList = importJSON.getWindingList(extendedInfo)
-    # symFactor = importJSON.getSymFactor(extendedInfo)
-    # format winding layout for swat_em
+    swatemWinding = datamodel()  # init swat-em winding object
+    Qs = importJSON.get_nbr_of_slots(extendedInfo)
+    z_pp = importJSON.get_nbr_of_pole_pairs(extendedInfo)
+    nbr_turns = importJSON.get_nbr_of_turns(extendedInfo)
+    # if no winding config is given (which means windLayout = "auto"), try to create winding object
     windLayout = importJSON.get_winding_layout(extendedInfo)
+    if windLayout == "auto":
+        logger.info("Creating auto generated winding with SWAT-EM...")
+        if not segmentSurfDict:
+            raise ValueError(
+                "Can not create winding object without geometry information!"
+            )
+        logger.debug("Trying to find number of layers from geometry...")
+        # get number of slots in minimal model
+        stator_slotsides = [
+            item for key, item in segmentSurfDict.items() if STATOR_SLOT_IDEXT in key
+        ]
+        if not stator_slotsides:
+            raise RuntimeError(
+                "Missing slots from geometry dict! "
+                "Can not determine number of layers for winding!"
+                f"Make sure slot identifier has '{STATOR_SLOT_IDEXT}' in it"
+            )
+        nbr_slotsides = len(stator_slotsides)
+        logger.debug("Number of slot sides given = %d", nbr_slotsides)
+        # assert all slots have the same number of segments:
+        if not all(
+            slots[0].nbr_segments == stator_slotsides[0][0].nbr_segments
+            for slots in stator_slotsides
+        ):
+            logger.warning(
+                "Different number of segments for stator slots! "
+                "Check created winding configuration carefully!"
+                "Using %d slot segments",
+                stator_slotsides[0][0].nbr_segments,
+            )
+        segments = stator_slotsides[0][0].nbr_segments
+        # number of sides per slot = total number of slot sides / number of slots
+        nbr_layers = nbr_slotsides * segments / Qs
+        logger.debug("Found number of layers from geometry = %.1f.", nbr_layers)
 
-    swatemWinding.set_phases(
-        S=windLayout,
-        turns=(importJSON.get_nbr_of_turns(extendedInfo)),
-        w=get_min_coilspan(windLayout, nbrSlots),
-    )
-    swatemWinding.analyse_wdg()  # analyse winding to make sure its valid and
-    # all parameters are set
+        # call genwdg to create automatic winding config
+        swatemWinding.genwdg(Q=Qs, P=2 * z_pp, m=3, layers=nbr_layers, turns=nbr_turns)
+        extendedInfo["winding"] = swatemWinding.get_phases()  # reset winding config
+    else:
+        # create winding from given swat-em winding layout
+        # set machine data of swat-em object
+        swatemWinding.set_machinedata(Q=Qs, p=z_pp, m=3)
+        # Since windLayout was not "auto" it must be formatted in swat-em winding layout
+        # format.
+        if len(windLayout) != 3:
+            # check number of phases.
+            # NOTE: For now this fails because in Script._createWindingDomains() method
+            # the number of phases for the GetDP model is assumed to be 3! This is a open
+            # task.
+            raise NotImplementedError("PyEMMO can't handle phase numbers != 3 for now!")
+        swatemWinding.set_phases(
+            S=windLayout,
+            turns=nbr_turns,
+            w=get_min_coilspan(windLayout, Qs),
+        )
+    # analyse winding to make sure its valid and all parameters are set:
+    swatemWinding.analyse_wdg()
     # make sure that number of parallel paths does not exceed max. possible
     # paths of winding:
     if max(
         swatemWinding.get_parallel_connections()
     ) < importJSON.get_nbr_of_parallel_paths(extendedInfo):
-        logger = logging.getLogger(__name__)
         logger.warning(
             """The given number of parallel windings paths (%i) exceeds
             possible paths of the winding layout (%i)!""",

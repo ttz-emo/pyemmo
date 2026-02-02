@@ -142,8 +142,11 @@ def createMachine(
         maschineSurfDict, symFactor, rotorMovingBandRadius
     )
 
+    # create winding
+    windingSWAT = modelJSON.createWinding(extendedInfo, maschineSurfDict)
     # Log winding layout for debugging *before* createSlot() is called.
-    logger.debug("Winding layout: %s", importJSON.get_winding_layout(extendedInfo))
+    logger.debug("Winding: %s", windingSWAT)
+    logger.debug("Winding layout: %s", windingSWAT.get_phases())
 
     # create physical elements from the surfaces
     logger.info("Creating physicals from geometry...")
@@ -195,8 +198,6 @@ def createMachine(
     )
 
     # create the stator
-    # create winding
-    windingSWAT = modelJSON.createWinding(extendedInfo)
     logger.info("Creating stator object...")
     statorAPI = Stator(
         name="stator created via json api",
