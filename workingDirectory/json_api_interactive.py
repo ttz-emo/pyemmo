@@ -30,7 +30,9 @@ from tkinter import filedialog
 
 from pyemmo.api.json import json
 
-logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger("pyemmo")
+logger.setLevel(logging.DEBUG)
+
 root = tk.Tk()
 root.withdraw()
 model_folder = r""
