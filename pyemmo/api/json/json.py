@@ -33,6 +33,7 @@ import subprocess
 import timeit
 from os import makedirs
 from os.path import isdir, isfile, join
+from pprint import pformat
 
 import gmsh as gmsh_api
 import numpy as np
@@ -48,7 +49,7 @@ from ...script.script import Script
 from ..machine_segment_surface import MachineSegmentSurface
 from . import ROTOR_AIRGAP_IDEXT, STATOR_AIRGAP_IDEXT, apiNameDict
 from . import boundaryJSON as boundary
-from . import importJSON, modelJSON
+from . import default_info_dict, importJSON, modelJSON
 from .create_airgaps import create_airgap_surfaces
 
 # from swat_em import analyse
@@ -526,6 +527,14 @@ def main(
         raise TypeError(
             f"Model information file has to be type 'File' or 'dict', not {type(extInfo)}"
         )
+    module_logger.debug(
+        "Model and simulation parameters from info dict: %s",
+        pformat(extendedInfo, indent=4),
+    )
+    # make sure extendedInfo contains all relevant infos by merging with default dict.
+    # second dict is prioritized!
+    extendedInfo = {**default_info_dict, **extendedInfo}
+    # TODO: Update default simulation parameters if they are matching the default values
 
     # get geometry
     if isinstance(geo, str):
