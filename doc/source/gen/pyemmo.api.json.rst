@@ -77,10 +77,10 @@ Example:
          "relPermeability": 1000,
          "BHCurve": {"default": []},
          "density": 7680,
-         "sheetThickness": 0.5e-3,
-         "lossParams": [5000, 18e3, 0],
+         "sheetThickness": 0.5e-3,  # for laminated core material
+         "lossParams": [5000, 18e3, 0],  # core loss params in W/m³
       },
-      "Quantity": 4, # symmetry = 4
+      "Quantity": 4,  # symmetry = 4
       "Meshsize": None,
    }
 
@@ -94,7 +94,7 @@ Each curve of the surface outline should have the following attributes:
    * - LineName
      - Line name
    * - Typ
-     - Line type. Can be "Arc" for circle arc or "Line" for a straight curve.
+     - Line type. Can be "Arc" for circle arc, "Line" for a straight curve or "Spline".
    * - ApName
      - Start point name.
    * - ApX
@@ -150,6 +150,82 @@ Example:
       "MpMesh": 0.0011827808408478094
    }
 
+2. Model Properties Structure
+'''''''''''''''''''''''''''''
+Additional to the geoemtry of the machine a second dictionary containing the **machine parameters** and **initial simulation parameters** must be defined.
+In the project history you will find the term *extInfo*, short for *extended information*, for the name that structure/.json file.
+In the following table you can find the required and optional parameters for this structure and an example.
+
+.. _ref_sim_param_tabel:
+
+.. csv-table:: Relevant Parameters for the JSON API
+   :header: "ParameterName", "Description", "Format"
+   :width: 50%
+   
+   "winding", "winding layout in `SWAT-EM format <https://swat-em.readthedocs.io/en/latest/reference.html#swat_em.datamodel.datamodel.set_phases>`_ or use 'auto' to create winding with SWAT-EM", "array of signed int"
+   "NpP", "number of parallel paths per winding phase", "int"
+   "Ntps", "number of winding turns per slot surface", "int or float"
+   "z\_pp", "number of pole pairs", "int"
+   "Qs", "number of stator slots", "int"
+   "movingband_r", "Rotor-:class:`~pyemmo.script.geometry.movingBand.MovingBand` radius in meter", "float"
+   "axLen_S", "Axial length of stator in meter", "float"
+   "axLen_R", "Axial length of rotor in meter", "float"
+   "symFactor", "Symmetry factor for model", "int"
+   "modelName", "Name of the model files", "string"
+   "magType", "Magnetization type of permament magnets ('parallel', 'radial', 'tangential')", "string"
+   "magAngle", "Magnetization angle dict with magnet surface ID as key and magnetization vector angle as value in radians", "dict[str, float]"
+
+.. csv-table:: Optional Parameters for the JSON API
+   :header: "ParameterName", "Description", "Format"
+
+   "useFunctionMesh", "Control automatic mesh size function", "bool"
+   "rot_freq", "Rotational speed/frequency in Hz", "float"
+   "startPos", "Start rotor position in °", "float"
+   "endPos", "End rotor position in °", "float"
+   "nbrSteps", "Number of time steps for simulation", "int"
+   "parkAngleOffset", "Park Transfomation offset angle in elec. °", "float"
+   "analysisType", "Simulation analysis type. 0 = static or 1 = transient", "int"
+   "tempMag", "Magnet temperature °C", "float"
+   "id", "d-axis current in A. For asynchronous machines I_eff will be calculated from norm of Id and Iq", "float"
+   "iq", "q-axis current in A", "float"
+   "r_z", "Tooth radius in meter for evaluation of flux density", "float"
+   "r_j", "Yoke radius in meter for evaluation of flux density", "float"
+   "flag_openGUI", "Open Gmsh GUI after model generation", "bool"
+
+Example:
+
+.. code:: json
+
+   {
+      "winding": ["+u","+u","+u","-v","-v","-v","+w","+w","+w"],
+      "NpP": 2,
+      "Ntps": 25,
+      "cuFillFactor": 0.5,
+      "R_S": 0.75,
+      "z_pp": 2,
+      "Qs": 36,
+      "movingband_r": 0.032,
+      "axLen_S": 0.05,
+      "axLen_R": 0.05,
+      "symFactor": 4,
+      "startPos": 0,
+      "endPos": 90,
+      "nbrSteps": 18,
+      "rot_freq": 25,
+      "parkAngleOffset": null,
+      "analysisType": 0,
+      "tempMag": 20,
+      "r_z": 0.038,
+      "r_j": 0.0475,
+      "id": 0,
+      "iq": 0,
+      "modelName": "Example_Maschine",
+      "magDirection": "parallel",
+      "flag_openGUI": true
+   }
+
+
+
 Command-line Interface
 ----------------------
 
@@ -183,111 +259,6 @@ The arguments `gmsh`, `getdp`, `mod` and `res` are optional. If you don't specif
 The default path for the model result files (`mod` path) is a new folder in the user directory created at install time.
 For Windows this will be something like :file:`C:/Users/USER_NAME/AppData/Roaming/pyemmo/Results`.
 By default the results directory for the simulation results will be stored in the same folder as the onelab simulation files created by PyEMMO. The folder name defaults to :file:`/res_MODEL_NAME`.
-
-.. _ref_sim_param_tabel:
-
-.. table:: Simulation parameter in the JSON file.
-
-   +-----------------+-----------------------------+-----------------+
-   | parameter       | description                 | format          |
-   | name            |                             |                 |
-   +=================+=============================+=================+
-   | winding         | winding layout              | List of str     |
-   |                 | for given geometry          |                 |
-   +-----------------+-----------------------------+-----------------+
-   | NpP             | number of parallel paths per| int             |
-   |                 | winding phase               |                 |
-   +-----------------+-----------------------------+-----------------+
-   | z_pp            | number of pole pairs        | int             |
-   +-----------------+-----------------------------+-----------------+
-   | Qs              | number of stator slots      | int             |
-   +-----------------+-----------------------------+-----------------+
-   | movingband_r    | moving band radius in meter | float           |
-   +-----------------+-----------------------------+-----------------+
-   | axLen_S         | axial length of stator      | float           |
-   +-----------------+-----------------------------+-----------------+
-   | axLen_R         | axial length of rotor       | float           |
-   +-----------------+-----------------------------+-----------------+
-   | symFactor       | symmetry factor for model   | int             |
-   +-----------------+-----------------------------+-----------------+
-   | startPos        | start rotor position in °   | float           |
-   +-----------------+-----------------------------+-----------------+
-   | endPos          | end rotor position in °     | float           |
-   +-----------------+-----------------------------+-----------------+
-   | nbrSteps        | number of time steps for    | int             |
-   |                 | simulation                  |                 |
-   +-----------------+-----------------------------+-----------------+
-   | rot_freq        | rotational frequency in Hz  | float           |
-   +-----------------+-----------------------------+-----------------+
-   | parkAngleOffset | park transfomation offset   | float           |
-   |                 | angle in elec. °            |                 |
-   +-----------------+-----------------------------+-----------------+
-   | analysisType    | 0 = static;                 | 0 or 1          |
-   |                 | 1 = transient               |                 |
-   +-----------------+-----------------------------+-----------------+
-   | tempMag         | magnet temperature °C       | float           |
-   +-----------------+-----------------------------+-----------------+
-   | r_z             | tooth radius in meter       | float           |
-   +-----------------+-----------------------------+-----------------+
-   | r_j             | yoke radius in meter        | float           |
-   +-----------------+-----------------------------+-----------------+
-   | id              | d-axis current in A         | float           |
-   +-----------------+-----------------------------+-----------------+
-   | iq              | q-axis current in A         | float           |
-   +-----------------+-----------------------------+-----------------+
-   | modelName       | name of the model files     | string          |
-   +-----------------+-----------------------------+-----------------+
-   | magDirection    | | magnetization direction/  | string          |
-   |                 |   type of permament magnets |                 |
-   |                 | | ("parallel", "radial"     |                 |
-   |                 |   or "tangential")          |                 |
-   +-----------------+-----------------------------+-----------------+
-   | flag_openGUI    | open Gmsh GUI after model   | bool            |
-   |                 | generation                  |                 |
-   +-----------------+-----------------------------+-----------------+
-..   | flag_openGUI    | open Gmsh GUI after model   | bool            |
-..   |                 | generation                  |                 |
-..   +-----------------+-----------------------------+-----------------+
-.. TODO: Update simulation parameters automatically
-
-.. +-----------------+-----------------------------+-----------------+
-.. | cuFillFactor    | copper fill symFactor       | float           |
-.. +-----------------+-----------------------------+-----------------+
-.. | R_S             | phase resistance in Ohm     | float           |
-
-Here is an example of how the `extInfo` JSON file content could look like.
-There can be more infos like the copper fill factor or the stator resistance, which will be used in the future.
-
-.. code:: json
-
-   {
-      "winding": ["+u","+u","+u","-v","-v","-v","+w","+w","+w"],
-      "NpP": 2,
-      "Ntps": 25,
-      "cuFillFactor": 0.5,
-      "R_S": 0.75,
-      "z_pp": 2,
-      "Qs": 36,
-      "movingband_r": 0.032,
-      "axLen_S": 0.05,
-      "axLen_R": 0.05,
-      "symFactor": 4,
-      "startPos": 0,
-      "endPos": 90,
-      "nbrSteps": 18,
-      "rot_freq": 16.666666666666668,
-      "parkAngleOffset": null,
-      "analysisType": 0,
-      "tempMag": 20,
-      "r_z": 0.038,
-      "r_j": 0.0475,
-      "id": 0,
-      "iq": 0,
-      "modelName": "Example_Maschine",
-      "magDirection": "parallel",
-      "flag_openGUI": true
-   }
-
 
 Submodules
 ----------
