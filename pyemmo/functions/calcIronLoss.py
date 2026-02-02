@@ -266,7 +266,6 @@ def calc_freq_domain_core_loss(
     freqs = np.fft.rfftfreq(nbr_timesteps, timestep)
     nbr_freqs = len(freqs)
     amp = np.concatenate(([amp[0] / nbr_freqs / 2], amp[1:] / (nbr_freqs)), axis=0)
-    amp = np.concatenate(([amp[0] / nbr_freqs / 2], amp[1:] / (nbr_freqs)), axis=0)
     # norm of xyz comp. -> hystLossField has shape (nbrElements, nbrFreqs)
     hyst_loss_field = np.linalg.norm(
         hyst_loss_factor * freqs * (amp.transpose() ** 2), axis=0
