@@ -33,6 +33,7 @@ import subprocess
 import timeit
 from os import makedirs
 from os.path import isdir, isfile, join
+from pprint import pformat
 
 import gmsh as gmsh_api
 import numpy as np
@@ -48,7 +49,7 @@ from ...script.script import Script
 from ..machine_segment_surface import MachineSegmentSurface
 from . import ROTOR_AIRGAP_IDEXT, STATOR_AIRGAP_IDEXT, apiNameDict
 from . import boundaryJSON as boundary
-from . import importJSON, modelJSON
+from . import default_info_dict, importJSON, modelJSON
 from .create_airgaps import create_airgap_surfaces
 
 # from swat_em import analyse
@@ -141,8 +142,11 @@ def createMachine(
         maschineSurfDict, symFactor, rotorMovingBandRadius
     )
 
+    # create winding
+    windingSWAT = modelJSON.createWinding(extendedInfo, maschineSurfDict)
     # Log winding layout for debugging *before* createSlot() is called.
-    logger.debug("Winding layout: %s", importJSON.get_winding_layout(extendedInfo))
+    logger.debug("Winding: %s", windingSWAT)
+    logger.debug("Winding layout: %s", windingSWAT.get_phases())
 
     # create physical elements from the surfaces
     logger.info("Creating physicals from geometry...")
@@ -194,14 +198,6 @@ def createMachine(
     )
 
     # create the stator
-    # create winding
-    windingSWAT = modelJSON.createWinding(extendedInfo)
-    if windingSWAT.get_num_phases() != 3:
-        # check number of phases.
-        # NOTE: For now this fails because in Script._createWindingDomains() method
-        # the number of phases for the GetDP model is assumed to be 3! This is a open
-        # task.
-        raise NotImplementedError("PyEMMO can't handle phase numbers != 3 for now!")
     logger.info("Creating stator object...")
     statorAPI = Stator(
         name="stator created via json api",
@@ -532,6 +528,14 @@ def main(
         raise TypeError(
             f"Model information file has to be type 'File' or 'dict', not {type(extInfo)}"
         )
+    module_logger.debug(
+        "Model and simulation parameters from info dict: %s",
+        pformat(extendedInfo, indent=4),
+    )
+    # make sure extendedInfo contains all relevant infos by merging with default dict.
+    # second dict is prioritized!
+    extendedInfo = {**default_info_dict, **extendedInfo}
+    # TODO: Update default simulation parameters if they are matching the default values
 
     # get geometry
     if isinstance(geo, str):

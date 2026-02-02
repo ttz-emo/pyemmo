@@ -28,6 +28,7 @@ for the values of :attr:`~pyemmo.api.machine_segment_surface.MachineSegmentSurfa
 from __future__ import annotations
 
 from ...script.geometry import defaultCenterPoint
+import datetime
 
 # TODO: Clean up unused definitions here!
 
@@ -87,6 +88,34 @@ InnerLimitLineDict = {
         ["RndI", "RndM"],  # second case:APM
     ],
     "RoNut": ["SZ", "SN"],
+}
+
+default_info_dict = {
+    "winding": "auto",  # auto = try to create winding from number of slots and poles
+    "Ntps": None,
+    "z_pp": None,
+    "Qs": None,
+    "movingband_r": None,
+    "axLen_S": None,
+    "axLen_R": None,
+    "symFactor": None,
+    "magType": "",
+    "magAngle": None,
+    # Optional simulation parameters
+    "modelName": f"model_{datetime.datetime.now().isoformat()}",
+    "NpP": 1,
+    "flag_openGUI": False,
+    "rot_freq": 25,
+    "startPos": 0,
+    "endPos": 0,
+    "nbrSteps": 1,
+    "parkAngleOffset": None,
+    "analysisType": 0,
+    "tempMag": 20,
+    "id": 0,
+    "iq": 0,
+    "calcIronLoss": False,
+    "useFunctionMesh": False,
 }
 
 # Predefine IdExt of special surface api objects for identification
