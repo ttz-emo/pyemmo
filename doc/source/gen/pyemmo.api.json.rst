@@ -154,7 +154,9 @@ Example:
 '''''''''''''''''''''''''''''
 Additional to the geoemtry of the machine a second dictionary containing the **machine parameters** and **initial simulation parameters** must be defined.
 In the project history you will find the term *extInfo*, short for *extended information*, for the name that structure/.json file.
-In the following table you can find the required and optional parameters for this structure and an example.
+In the following tables you can find the required and optional parameters for this structure and an example, where the optional parameters are mostly the default ONELAB parameters for the model.
+All ONELAB parameters for the simulation can be set when calling GetDP to run the simulation.
+See `this <https://getdp.info/doc/texinfo/getdp.html#Types-for-Resolution:~:text=%2Dsetnumber,string%20name%20to%20value>`_ for more details on the CLI of GetDP.
 
 .. _ref_sim_param_tabel:
 
@@ -162,18 +164,18 @@ In the following table you can find the required and optional parameters for thi
    :header: "ParameterName", "Description", "Format"
    :width: 50%
    
-   "winding", "winding layout in `SWAT-EM format <https://swat-em.readthedocs.io/en/latest/reference.html#swat_em.datamodel.datamodel.set_phases>`_ or use 'auto' to create winding with SWAT-EM", "array of signed int"
-   "NpP", "number of parallel paths per winding phase", "int"
-   "Ntps", "number of winding turns per slot surface", "int or float"
-   "z\_pp", "number of pole pairs", "int"
-   "Qs", "number of stator slots", "int"
+   "winding", "Winding layout in `SWAT-EM format <https://swat-em.readthedocs.io/en/latest/reference.html#swat_em.datamodel.datamodel.set_phases>`_ or use 'auto' to create winding", "array of signed int"
+   "NpP", "Number of parallel paths per winding phase", "int"
+   "Ntps", "Number of wires per slot surface", "int or float"
+   "z\_pp", "Number of pole pairs", "int"
+   "Qs", "Number of stator slots", "int"
    "movingband_r", "Rotor-:class:`~pyemmo.script.geometry.movingBand.MovingBand` radius in meter", "float"
    "axLen_S", "Axial length of stator in meter", "float"
    "axLen_R", "Axial length of rotor in meter", "float"
    "symFactor", "Symmetry factor for model", "int"
-   "modelName", "Name of the model files", "string"
+   "modelName", "Name of the model", "string"
    "magType", "Magnetization type of permament magnets ('parallel', 'radial', 'tangential')", "string"
-   "magAngle", "Magnetization angle dict with magnet surface ID as key and magnetization vector angle as value in radians", "dict[str, float]"
+   "magAngle", "Magnetization angle dict with magnet surface ID as key", "dict[str, float]"
 
 .. csv-table:: Optional Parameters for the JSON API
    :header: "ParameterName", "Description", "Format"
@@ -183,45 +185,80 @@ In the following table you can find the required and optional parameters for thi
    "startPos", "Start rotor position in °", "float"
    "endPos", "End rotor position in °", "float"
    "nbrSteps", "Number of time steps for simulation", "int"
-   "parkAngleOffset", "Park Transfomation offset angle in elec. °", "float"
+   "parkAngleOffset", "Park Transfomation offset angle in elec. °. Set None to make PyEMMO :ref:`calculate <section-wiki-dqOffset>` this angle.", "float or None"
    "analysisType", "Simulation analysis type. 0 = static or 1 = transient", "int"
    "tempMag", "Magnet temperature °C", "float"
-   "id", "d-axis current in A. For asynchronous machines I_eff will be calculated from norm of Id and Iq", "float"
-   "iq", "q-axis current in A", "float"
+   "id", "RMS value of d-axis current in A. For asynchronous machines I_eff will be calculated from norm of Id and Iq", "float"
+   "iq", "RMS value of q-axis current in A", "float"
    "r_z", "Tooth radius in meter for evaluation of flux density", "float"
    "r_j", "Yoke radius in meter for evaluation of flux density", "float"
+   "calcIronLoss", "Control post processing and evaluation of core loss", "bool"
    "flag_openGUI", "Open Gmsh GUI after model generation", "bool"
 
-Example:
+Example for Python dict:
 
-.. code:: json
+.. code:: python
 
-   {
-      "winding": ["+u","+u","+u","-v","-v","-v","+w","+w","+w"],
+   parameter_dict = {
+      "winding": "auto",
       "NpP": 2,
-      "Ntps": 25,
-      "cuFillFactor": 0.5,
-      "R_S": 0.75,
+      "Ntps": 12.5,
       "z_pp": 2,
       "Qs": 36,
       "movingband_r": 0.032,
       "axLen_S": 0.05,
       "axLen_R": 0.05,
       "symFactor": 4,
+      "modelName": "MyExampleModel",
+      "magType": "parallel",
+      "magAngle": {
+         "magnet1": 0.19385582991299233,
+         "magnet2": 0.39103660774114435,
+      },
+      "useFunctionMesh": True,
       "startPos": 0,
       "endPos": 90,
-      "nbrSteps": 18,
-      "rot_freq": 25,
-      "parkAngleOffset": null,
-      "analysisType": 0,
-      "tempMag": 20,
-      "r_z": 0.038,
-      "r_j": 0.0475,
+      "nbrSteps": 90,
+      "parkAngleOffset": None,  # -> calculate dq0-offset
+      "analysisType": 1,  # transient simulation
+      "tempMag": 90,
       "id": 0,
-      "iq": 0,
-      "modelName": "Example_Maschine",
-      "magDirection": "parallel",
-      "flag_openGUI": true
+      "iq": 40,
+      "calcIronLoss": True,
+      "flag_openGUI": False
+   }
+
+Example for file content in json format:
+
+.. code:: json
+
+   {
+      "winding": "auto",
+      "NpP": 2,
+      "Ntps": 12.5,
+      "z_pp": 2,
+      "Qs": 36,
+      "movingband_r": 0.032,
+      "axLen_S": 0.05,
+      "axLen_R": 0.05,
+      "symFactor": 4,
+      "modelName": "MyExampleModel",
+      "magType": "parallel",
+      "magAngle": {
+         "magnet1": 0.19385582991299233,
+         "magnet2": 0.39103660774114435,
+      },
+      "useFunctionMesh": true,
+      "startPos": 0,
+      "endPos": 90,
+      "nbrSteps": 90,
+      "parkAngleOffset": null,
+      "analysisType": 1,
+      "tempMag": 90,
+      "id": 0,
+      "iq": 40,
+      "calcIronLoss": true,
+      "flag_openGUI": false
    }
 
 

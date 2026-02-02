@@ -1,3 +1,5 @@
+.. _section-wiki-dqOffset:
+
 dq-Offset calculation
 =====================
 
