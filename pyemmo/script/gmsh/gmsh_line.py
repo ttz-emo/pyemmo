@@ -233,6 +233,43 @@ class GmshLine(GmshGeometry, Line):
         """Length of gmsh line by gmsh.model.occ.getMass(dim, tag)"""
         return gmsh.model.occ.getMass(self.dim, self.id)
 
+    def to_dict(self) -> dict:
+        """Return the dict representation of a GmshLine.
+        The keys are:
+
+        - LineName: Line name
+        - Typ: Line type: "Line"
+        - ApName: start point name
+        - ApX: start point x
+        - ApY: start point y
+        - ApZ: start point z
+        - ApMesh: start point mesh size
+        - EpName: end point name
+        - EpX: end point x
+        - EpY: end point y
+        - EpZ: end point z
+        - EpMesh: end point mesh size
+
+        Returns:
+            dict: With Line, start point and end point properties
+        """
+        return (
+            {
+                "LineName": "L_PLM*-PL2*",
+                "Typ": "Line",
+                "ApName": self.start_point.name,
+                "ApX": self.start_point.x,
+                "ApY": self.start_point.y,
+                "ApZ": self.start_point.z,
+                "ApMesh": self.start_point.meshLength,
+                "EpName": self.end_point.name,
+                "EpX": self.end_point.x,
+                "EpY": self.end_point.y,
+                "EpZ": self.end_point.z,
+                "EpMesh": self.end_point.meshLength,
+            },
+        )
+
     def switchPoints(self):
         raise AttributeError("Cannot switch points of GmshLine!")
 
@@ -248,6 +285,7 @@ class GmshLine(GmshGeometry, Line):
 
     def rotateZ(self, rotationPoint=defaultCenterPoint, angle=0.0):
         """rotate line around z-axis
+
         Args:
             rotationPoint (Point, optional): Rotation center point.
                 Defaults to Point("tmpCenterPoint", 0, 0, 0, 1).

@@ -295,6 +295,45 @@ class GmshArc(GmshLine, CircleArc):
         """Length of gmsh line by gmsh.model.occ.getMass(dim, tag)"""
         return gmsh.model.occ.getMass(self.dim, self.id)
 
+    def to_dict(self) -> dict:
+        """Return the dict representation of a GmshArc.
+        The keys are:
+
+        - LineName: Line name
+        - Typ: Line type: "Line"
+        - ApName: start point name
+        - ApX: start point x
+        - ApY: start point y
+        - ApZ: start point z
+        - ApMesh: start point mesh size
+        - EpName: end point name
+        - EpX: end point x
+        - EpY: end point y
+        - EpZ: end point z
+        - EpMesh: end point mesh size
+        - MpName: middle point name
+        - MpX: middle point x
+        - MpY: middle point y
+        - MpZ: middle point z
+        - MpMesh: middle point mesh size
+
+        Returns:
+            dict: With arc, start, center and end point properties
+        """
+        line_dict = GmshLine.to_dict(self)
+        return (
+            {
+                **line_dict,
+                **{
+                    "MpName": self.center.name,
+                    "MpX": self.center.x,
+                    "MpY": self.center.y,
+                    "MpZ": self.center.z,
+                    "MpMesh": self.center.meshLength,
+                },
+            },
+        )
+
 
 GmshArc.duplicate = GmshGeometry.duplicate
 GmshArc.combine = GmshGeometry.combine
