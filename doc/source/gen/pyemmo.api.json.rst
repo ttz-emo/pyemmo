@@ -225,7 +225,7 @@ Example for Python dict:
       "id": 0,
       "iq": 40,
       "calcIronLoss": True,
-      "flag_openGUI": False
+      "flag_openGUI": False,
    }
 
 Example for file content in json format:
@@ -246,7 +246,7 @@ Example for file content in json format:
       "magType": "parallel",
       "magAngle": {
          "magnet1": 0.19385582991299233,
-         "magnet2": 0.39103660774114435,
+         "magnet2": 0.39103660774114435
       },
       "useFunctionMesh": true,
       "startPos": 0,
