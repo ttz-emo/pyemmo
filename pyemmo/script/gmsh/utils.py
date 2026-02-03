@@ -330,7 +330,7 @@ def fix_missing_mesh_sizes() -> None:
                 "Set mesh size of point %i to %.3e of point %i after %i iterations.",
                 p.id,
                 p.meshLength,
-                dim_tags[0],
+                dim_tags[0][1],
                 nbr_loops,
             )
             nbr_fixed += 1
