@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -17,41 +18,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module: pyemmo_create_geo_dict
+"""Module: create_geo_dict
 
 This module provides functions to convert geometry elements from pyleecan to pyemmo format.
-
-Module dependencies:
-    - pyleecan.Classes.MachineIPMSM.MachineIPMSM
-    - pyleecan.Classes.MachineSIPMSM.MachineSIPMSM
-    - pyleecan.Classes.MachineSyRM.MachineSyRM
-    - pyleecan.Classes.Machine.Machine
-    - ...functions.plot.plot
-    - ...script.geometry.line.Line
-    - ...script.geometry.circleArc.CircleArc
-    - ...script.geometry.point.Point
-    - ..json.SurfaceJSON.SurfaceAPI
-    - ..logger
 
 Functions:
     -   ``create_geo_dict``: Creates a dictionary containing geometry
         information for communication between Pyleecan and pyemmo.
 
 Example:
-
-    .. code:: python
-
-        machine = MachineIPMSM(...)
-        is_internal_rotor = True
-        (
-            geometry_list,
-            rotor_contour_lines,
-            stator_contour_lines,
-            r_point_rotor_cont,
-            l_point_rotor_cont,
-            magnetization_dict
-        ) = create_geo_dict(machine, is_internal_rotor)
-        # Returns geometry objects, contour lines, and magnetization dictionary suitable for pyemmo.
+    >>> machine = MachineIPMSM(...)  # Pyleecan machine object
+    >>> geometry_dict = create_geo_dict(machine)
 
 Raises:
     TypeError: If unable to generate contours of the given machine type.
@@ -59,41 +36,49 @@ Raises:
 
 from __future__ import annotations
 
-from pyleecan.Classes.LamHole import LamHole
-from pyleecan.Classes.LamSlotMag import LamSlotMag
-from pyleecan.Classes.LamSquirrelCage import LamSquirrelCage
-from pyleecan.Classes.SurfLine import SurfLine
+import logging
 
-from ...script.geometry.circleArc import CircleArc
-from ...script.geometry.line import Line
-from ...script.geometry.point import Point
-from ...script.geometry.segment_surface import SegmentSurface
-from .. import logger
-from ..json import ROTOR_BAR_IDEXT, ROTOR_LAM_IDEXT, STATOR_LAM_IDEXT, STATOR_SLOT_IDEXT
-from ..json.modelJSON import createSurfaceDict
-from . import PyleecanMachine
-from .calcs_rotor_spmsm_cont import get_lr_points
-from .detect_inner_outer_limit import detect_inner_outer_limit
-from .get_magnetization_dict import get_magnetization_dict
-from .get_rotor_stator_cont import (
-    get_even_rotor_cont,
-    get_spmsm_rotor_cont,
-    get_winding_cont,
+from pyleecan.Classes.Frame import Frame
+from pyleecan.Classes.Hole import Hole
+from pyleecan.Classes.LamH import LamH
+from pyleecan.Classes.LamSlot import LamSlot
+from pyleecan.Classes.Material import Material as PyleecanMaterial
+from pyleecan.Classes.Shaft import Shaft
+from pyleecan.Classes.SurfLine import SurfLine
+from pyleecan.Classes.SurfRing import SurfRing
+from pyleecan.Functions.Geometry.transform_hole_surf import transform_hole_surf
+from pyleecan.Functions.labels import AIRBOX_LAB  # "Airbox"
+from pyleecan.Functions.labels import AIRGAP_LAB  # "Airgap"
+from pyleecan.Functions.labels import BAR_LAB  # "Bar"
+from pyleecan.Functions.labels import BORE_LAB  # "Bore"
+from pyleecan.Functions.labels import HOLEM_LAB  # "HoleMag"
+from pyleecan.Functions.labels import HOLEV_LAB  # "HoleVoid"
+from pyleecan.Functions.labels import KEY_LAB  # "Key"
+from pyleecan.Functions.labels import LAM_LAB  # "Lamination"
+from pyleecan.Functions.labels import MAG_LAB  # "Magnet"
+from pyleecan.Functions.labels import NO_MESH_LAB  # "NoMesh"
+from pyleecan.Functions.labels import NOTCH_LAB  # "Notch"
+from pyleecan.Functions.labels import SLID_LAB  # "SlidingBand"
+from pyleecan.Functions.labels import SOP_LAB  # "SlotOpening"
+from pyleecan.Functions.labels import TOOTH_LAB  # "Tooth"
+from pyleecan.Functions.labels import VENT_LAB  # "Ventilation"
+from pyleecan.Functions.labels import WEDGE_LAB  # "SlotWedge"
+from pyleecan.Functions.labels import WIND_LAB  # "Winding"
+from pyleecan.Functions.labels import YOKE_LAB  # "Yoke"
+from pyleecan.Functions.labels import (
+    get_obj_from_label,
 )
-from .translate_surfs import translate_surface
+
+from .. import air
+from ..machine_segment_surface import MachineSegmentSurface
+from . import PyleecanAir, PyleecanMachine
+from .build_pyemmo_material import build_pyemmo_material
+from .create_gmsh_surf import create_gmsh_surface
 
 
 def create_geo_dict(
     machine: PyleecanMachine,
-    is_internal_rotor: bool,
-) -> tuple[
-    list[SegmentSurface],
-    list[Line | CircleArc],
-    list[Line | CircleArc],
-    Point,
-    Point,
-    dict,
-]:
+) -> dict[str, MachineSegmentSurface]:
     """
     Creates a dictionary containing geometry information for communication
     between Pyleecan and pyemmo.
@@ -115,54 +100,148 @@ def create_geo_dict(
             - Point: Leftmost point of the rotor contour.
             - dict: Dictionary containing magnetization information.
     """
-    all_surfaces: list[SurfLine] = machine.rotor.build_geometry(
-        sym=machine.rotor.comp_periodicity_geo()[0], alpha=0
+    logger = logging.getLogger(__name__)
+    rotor_sym = machine.rotor.comp_periodicity_geo()[0]
+    # NOTE: We need to extract the additional holes here, because they can cause the
+    # lamination contour to be open if they lie on the boundary. This is something thats
+    # different in Gmsh compared to FEMM (Pyleecan).
+    # Since the holes are not part of the machine then anymore, we cant find their
+    # material using `get_obj_from_label`. Thats why we create them separatly after the
+    # laminations.
+    rotor_holes: list[Hole] = machine.rotor.axial_vent.copy()
+    machine.rotor.axial_vent = []
+    rotor_surfs: list[SurfLine] = machine.rotor.build_geometry(  # type: ignore
+        sym=rotor_sym, alpha=0  # type: ignore
     )
+    # is_internal_rotor = machine.rotor.is_internal  # type: ignore
+    stator_sym = machine.stator.comp_periodicity_geo()[0]
+    stator_surfs: list[SurfLine] = machine.stator.build_geometry(sym=stator_sym, alpha=0)  # type: ignore
 
-    all_surfaces.extend(
-        machine.stator.build_geometry(sym=machine.stator.slot.Zs, alpha=0)
-    )
-
-    all_surfs_labels = []
-    all_surfs_labels_split2 = []
-    geometry_list: list[SegmentSurface] = []
-    angle_point_ref_list = []
-
+    # all_surfs_labels = []
+    # all_surfs_labels_split2 = []
+    pyemmo_geo_dict: dict[str, MachineSegmentSurface] = {}
     logger.debug("Geometry translation started")
     logger.debug("Identifying geometries by surface label:")
-
-    for i, surf in enumerate(all_surfaces):
-        save_space_temp = []
-        all_surfs_labels_split1 = []
-        all_surfs_labels.append(surf.label)
-        all_surfs_labels_split1.extend(surf.label.split("_"))
-
-        for split1 in all_surfs_labels_split1:
-            save_space_temp.extend(split1.split("-"))
-        all_surfs_labels_split2.append(save_space_temp)
-
-        logger.debug(
-            "Geometry translation: %s -> %s",
-            all_surfs_labels[i],
-            " - ".join(all_surfs_labels_split2[i]),
+    for lam, pyleecan_surfs, sym in (
+        (machine.rotor, rotor_surfs, rotor_sym),
+        (machine.stator, stator_surfs, stator_sym),
+    ):
+        assert isinstance(lam, (LamH, LamSlot)), "lam is not type LamHole or LamSlot!"
+        # create lamination surface separatly for subtraction
+        lam_surf = create_gmsh_surface(
+            pyleecan_surfs.pop(0), sym, build_pyemmo_material(lam.mat_type)
         )
-        # translating the surface
-        pyemmo_surf, angle_point_ref_list = translate_surface(
-            name_split_list=all_surfs_labels_split2[i],
-            machine=machine,
-            surface=surf,
-            angle_point_ref_list=angle_point_ref_list,
-        )
-        geometry_list.append(pyemmo_surf)
+        pyemmo_geo_dict[lam_surf.part_id] = lam_surf
+        for surf in pyleecan_surfs:
+            if SOP_LAB in surf.label:
+                # slot opening surface -> skip because is created by airgap function.
+                continue
+            if WEDGE_LAB in surf.label:
+                # slot wedge surface
+                material = lam.slot.wedge_mat
+            elif WIND_LAB in surf.label or BAR_LAB in surf.label:
+                # NOTE: In case of winding or bar label the object returned is the
+                # lamination and not the actual object itself. If so we have to get the
+                # actual conductor material.
+                material = lam.winding.conductor.cond_mat
+            else:
+                obj = get_obj_from_label(machine, surf.label)
+                if hasattr(obj, "mat_type"):
+                    material = obj.mat_type
+                elif hasattr(obj, "mat_void"):
+                    if obj.mat_void is None:
+                        logger.warning(
+                            "Material for object %s is None. Using Air instead!", obj
+                        )
+                        material = PyleecanAir
+                    else:
+                        material = obj.mat_void
+                else:
+                    raise AttributeError(f"Cant get material from object {obj}")
+            # translating the surface
+            pyemmo_surf = create_gmsh_surface(
+                surface=surf,
+                nbr_segments=sym,
+                material=build_pyemmo_material(material),  # type:ignore
+            )
+            if HOLEM_LAB in surf.label or HOLEV_LAB in surf.label:
+                lam_surf.cutOut(pyemmo_surf)
+            else:
+                pyemmo_geo_dict[pyemmo_surf.part_id] = pyemmo_surf
 
-    # ===============================
-    # Getting the magnetization_dict:
-    # ===============================
-    magnetization_dict = get_magnetization_dict(
-        machine=machine,
-        angle_point_ref_list=angle_point_ref_list,
-        geometry_list=geometry_list,
-    )
+    # subtract additional holes
+    machine.rotor.axial_vent.extend(rotor_holes)
+    for duct in machine.rotor.axial_vent:
+        # try to get material
+        if not isinstance(duct.mat_void, PyleecanMaterial):
+            logger.warning(
+                "No valid material '%s' given for hole %s. Using air instead!",
+                duct.mat_void,
+                duct.__class__.__name__,
+            )
+            material = PyleecanAir
+        else:
+            material = duct.mat_void
+        try:
+            material = build_pyemmo_material(material)
+        except Exception as e:  # pylint: disable=bare-except, broad-exception-caught
+            logger.warning(
+                (
+                    "Could not translate material %s of Hole %s with index %i due to error: %s. "
+                    "Using air instead!"
+                ),
+                material.name,
+                str(type(duct)),
+                machine.rotor.axial_vent.index(duct),
+                e.args[0],
+            )
+            material = air
+        # build geometry
+        if hasattr(duct, "build_geometry"):
+            surfs = duct.build_geometry()
+        else:
+            raise AttributeError(f"Cant determine hole geometry for {duct}")
+        surfs = transform_hole_surf(
+            hole_surf_list=surfs,
+            Zh=duct.Zh,
+            sym=rotor_sym,
+            is_split=True,
+            alpha=0,
+            delta=0,
+        )
+        for surf in surfs:
+            pyemmo_geo_dict["rotor lamination"].cutOut(
+                create_gmsh_surface(
+                    surf,
+                    rotor_sym,
+                    material,
+                )
+            )
+
+    # create shaft
+    if machine.shaft:
+        shaft: Shaft = machine.shaft
+        surf: list[SurfLine] = shaft.build_geometry(machine.rotor.get_Zs())
+        assert len(surf) == 1, "Shaft has more than one surface"
+        pyemmo_geo_dict[surf[0].label] = create_gmsh_surface(
+            surface=surf[0],
+            nbr_segments=machine.rotor.get_Zs(),
+            material=build_pyemmo_material(shaft.mat_type),
+            name=surf[0].label,
+        )
+    # create frame
+    if machine.frame:
+        frame: Frame = machine.frame
+        surf: list[SurfRing | SurfLine] = frame.build_geometry(machine.stator.get_Zs())
+        if surf:
+            # empty surf list -> no frame
+            assert len(surf) == 1, "Frame has more than one surface"
+            pyemmo_geo_dict[surf[0].label] = create_gmsh_surface(
+                surface=surf[0],
+                nbr_segments=machine.stator.get_Zs(),
+                material=build_pyemmo_material(frame.mat_type),
+                name=surf[0].label,
+            )
 
     logger.debug("=======================================")
     logger.debug("End of geometry translation of machine.")
@@ -173,94 +252,4 @@ def create_geo_dict(
     logger.debug("End of geometry translation")
     logger.debug("===========================")
 
-    # --------------------------------------
-    # Generate the rotor and stator contour:
-    # --------------------------------------
-    logger.debug("Generating rotor and stator contour")
-    # create dict with idExt as keys and surface items:
-    geo_dict = createSurfaceDict(geometry_list)
-    # FIXME: This part is unstable since there could be Holes on the stator too! For now
-    # this works because the name "Loch" specifically specifies its a rotor hole. But
-    # thats very hard to keep track of and understand! So it should be improved!
-    if isinstance(machine.rotor, LamHole):
-        # CutOuts in rotorLamination if IPMSM or SynRM:
-        for surf_to_cutout in geometry_list:
-            if surf_to_cutout.name in ("Loch", "Magnet"):
-                geo_dict[ROTOR_LAM_IDEXT].cutOut(surf_to_cutout)
-        (
-            rotor_contour_line_list,
-            r_point_rotor_cont,
-            l_point_rotor_cont,
-        ) = get_even_rotor_cont(
-            geometry_list=geometry_list,
-            machine=machine,
-            is_internal_rotor=is_internal_rotor,
-        )
-    elif isinstance(machine.rotor, LamSlotMag):
-        (
-            rotor_contour_line_list,
-            r_point_rotor_cont,
-            l_point_rotor_cont,
-        ) = get_spmsm_rotor_cont(
-            geometry_list=geometry_list,
-            machine=machine,
-            is_internal_rotor=is_internal_rotor,
-        )
-    elif isinstance(machine.rotor, LamSquirrelCage):
-        lam_surf = geo_dict[ROTOR_LAM_IDEXT]
-        slot_surf = geo_dict[ROTOR_BAR_IDEXT]
-        rotor_contour_line_list = get_winding_cont(
-            lamination_surf=lam_surf,
-            slot_surfs=[slot_surf],
-            lamination=machine.rotor,
-        )
-        l_point_rotor_cont, r_point_rotor_cont = get_lr_points(
-            machine,
-            rotor_contour_line_list,
-            is_internal_rotor,
-            radius=(machine.rotor.Rint if is_internal_rotor else machine.rotor.Rext),
-        )
-
-    else:
-        raise TypeError(
-            f"Unable to generate contours of rotor lamination type {type(machine.rotor)}!"
-        )
-    lam_surf = geo_dict[STATOR_LAM_IDEXT]
-    slot_surfs = [geo_dict[STATOR_SLOT_IDEXT + "0"]]
-    if (STATOR_SLOT_IDEXT + "1") in geo_dict:
-        slot_surfs.append(geo_dict[STATOR_SLOT_IDEXT + "1"])
-    stator_contour_line_list = get_winding_cont(
-        lamination_surf=lam_surf,
-        slot_surfs=slot_surfs,
-        lamination=machine.stator,
-    )
-
-    # ------------------------------------------------------
-    # Change names of rotorRint-Curve and statorRext-Curve:
-    # ------------------------------------------------------
-
-    has_shaft = bool(machine.rotor.Rint > 0)
-
-    if is_internal_rotor:
-        geometry_list = detect_inner_outer_limit(
-            geometry_list=geometry_list,
-            inner_radius=machine.rotor.Rint,
-            outer_radius=machine.stator.Rext,
-            has_shaft=has_shaft,
-        )
-    else:
-        geometry_list = detect_inner_outer_limit(
-            geometry_list=geometry_list,
-            inner_radius=machine.stator.Rint,
-            outer_radius=machine.rotor.Rext,
-            has_shaft=has_shaft,
-        )
-
-    return (
-        geometry_list,
-        rotor_contour_line_list,
-        stator_contour_line_list,
-        r_point_rotor_cont,
-        l_point_rotor_cont,
-        magnetization_dict,
-    )
+    return pyemmo_geo_dict

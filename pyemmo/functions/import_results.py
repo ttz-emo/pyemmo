@@ -607,7 +607,7 @@ def main(
         FileNotFoundError: If parameter file is path but given json file is not found.
 
     Returns:
-        dict[str, np.ndarray |dict[str, np.ndarray]]: results for given simulation
+        dict[str, np.ndarray | dict[str, np.ndarray]]: results for given simulation
     """
     logger = logging.getLogger(__name__)
     if not isinstance(sim_param, dict):

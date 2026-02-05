@@ -185,6 +185,7 @@ class TestGmshArc:
 
     def test_combine(self, gmsh_arc: GmshArc):
         """Test combine method of abstract class GmshGeometry"""
+        logger = logging.getLogger(__name__)
         add_arc = gmsh_arc.duplicate()
         add_arc.rotateZ(angle=gmsh_arc.getAngle())
         # We need to call sync() here because otherwise the rotation will only be available
@@ -194,7 +195,7 @@ class TestGmshArc:
         # after fuse we need to call sync() again to make the changes available for the
         # python api to check for the properties of the arc
         gmsh.model.occ.synchronize()
-        logging.debug(f"Combined arc: {combined_arc}")
+        logger.debug(f"Combined arc: {combined_arc}")
 
         assert combined_arc.center.coordinate == (0.0, 0.0, 0.0)
         assert any(

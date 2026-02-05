@@ -35,6 +35,10 @@ ONELAB Model Constants
 		- 0
 	*	- x_n
 		- x_(n-1) + relaxation_factor*(x_clac-x_(n-1))
+	*	- eccentircity_static_m
+		- eccentricity_static * mm
+	*	- eccentricity_dynamic_m
+		- eccentricity_dynamic * mm
 	*	- pA
 		- pA_deg * deg2rad
 	*	- Flag_ConstantSource
@@ -82,10 +86,7 @@ ONELAB Model Parameters
 	*	- Flag_Debug
 		- 0, Name "01View/Debug", Choices {0,1}
 	*	- MachineType
-		- | (nbrRotorBars > 0),
-		  | Name StrCat[INPUT_ANA_SETTINGS, "00Machine Type"], 
-		  | Choices {SYNCHRONOUS = "Synchronous", ASYNCHRONOUS = "Asynchronous"},
-		  | Visible Flag_Debug, ReadOnly 1
+		- (nbrRotorBars > 0), Name StrCat[INPUT_ANA_SETTINGS, "00Machine Type"],Choices {SYNCHRONOUS = "Synchronous", ASYNCHRONOUS = "Asynchronous"},Visible Flag_Debug,ReadOnly 1
 	*	- Flag_AnalysisType
 		- ANALYSIS_TYPE, Name StrCat[INPUT_ANA_SETTINGS, "01Analysis Type"],Choices{STATIC = "Static", TRANSIENT = "Transient"}
 	*	- Flag_SrcType_Stator
@@ -109,23 +110,25 @@ ONELAB Model Parameters
 	*	- Flag_SaveAllSteps
 		- 0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "01Save all time steps"],Help "Save each field results (pos) in a separate file with time step index",Choices {0,1},Visible Flag_ExpertMode && Flag_AnalysisType == TRANSIENT
 	*	- res
-		- Str[PATH_RES],Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "02Results folder path"],Help "Main results folder path where the results of the simulationwill be stored. This folder will be created by GetDP if it does notexist yet. Use 'Results folder name' to create a result subfolder."
+		- Str[PATH_RES],Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "02Results folder path"],Help StrCat("Main results folder path where the results of the simulation ","will be stored. This folder will be created by GetDP if it does not ","exist yet. Use 'Results folder name' to create a result subfolder.")
 	*	- ResId
-		- "/", Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "03Results folder name"],Help "Name of the directory inside the results folder, where the resultfiles of THIS simulation should be stored. This directory will beautomatically created by GetDP."
+		- "/", Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "03Results folder name"],Help StrCat("Name of the directory inside the results folder, where the result ","files of THIS simulation should be stored. This directory will be ","automatically created by GetDP.")
 	*	- Flag_ClearResults
 		- 0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "04Delete previous result files"],Choices {0,1}
+	*	- Flag_ClearViews
+		- 1,Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "05Delete all field plots"],Choices{0,1}
 	*	- Flag_PrintFields
-		- 0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "05Show Local Fields"],Choices{0, 1}
+		- 0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "06Show Local Fields"],Choices{0, 1}
 	*	- Flag_Calculate_ONELAB
-		- 1, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "06Calculate torque: Arrkios method"],Choices {0,1},Help "ONELAB implementation of Arrkios method.",Visible Flag_ExpertMode
+		- 1, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "07Calculate torque: Arrkios method"],Choices {0,1},Help "ONELAB implementation of Arrkios method.",Visible Flag_ExpertMode
 	*	- Flag_Calculate_VW
-		- 0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "07Calculate torque: Virtual Work"],Choices {0,1},Visible Flag_ExpertMode
+		- 0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "08Calculate torque: Virtual Work"],Choices {0,1},Visible Flag_ExpertMode
 	*	- Flag_Inductance
-		- 0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "08Compute inductances"],Choices{0, 1}
+		- 0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "09Compute inductances"],Choices{0, 1}
 	*	- Flag_diffInductance
-		- 1, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "09Inductance Computation Type"],Choices{0 = "Apparent", 1 = "Incremental"},Visible Flag_Inductance
+		- 1, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "10Inductance Computation Type"],Choices{0 = "Apparent", 1 = "Incremental"},Visible Flag_Inductance
 	*	- Flag_SaveSolution
-		- 0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "10Save Solution"],Choices{0, 1},Visible Flag_ExpertMode,Help StrCat["If Save Solution is active, the vector potential solution for each time ","step will be saved to a .res file. This is time consuming! For faster ","calculation, it is recommended to deactivate."]
+		- 0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "11Save Solution"],Choices{0, 1},Visible Flag_ExpertMode,Help StrCat["If Save Solution is active, the vector potential solution for each time ","step will be saved to a .res file. This is time consuming! For faster ","calculation, it is recommended to deactivate."]
 	*	- r_rotor_airgap
 		- R_ROTOR_AIRGAP, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "/Airgap Field/Rotor Radius"],Min 0,Visible Flag_PrintFields,Help "Define the radius of the rotor airgap for the post-processing of B_rad and B_tan."
 	*	- r_stator_airgap
@@ -145,13 +148,17 @@ ONELAB Model Parameters
 	*	- AxialLength_R
 		- L_AX_R,Name StrCat[INPUT_GEO_ROTOR, "Rotor axial length"],Help "Axial length of the rotor active material in m",Units "m"
 	*	- Flag_NL
-		- FLAG_NL, Name StrCat[INPUT_MAT_PROPERTIES, "Non-linear B-H curves"],Choices{0, 1},Visible Flag_ExpertMode,Help "If this parameter is checked (=1), then the non-linear B-H curvesare used. Otherwise the non-linearity is replaced (extrapolated) bya constant mu_r."
+		- FLAG_NL, Name StrCat[INPUT_MAT_PROPERTIES, "Non-linear B-H curves"],Choices{0, 1},Visible Flag_ExpertMode,Help StrCat("If this parameter is checked (=1), then the non-linear B-H curves ","are used. Otherwise the non-linearity is replaced (extrapolated) by a ","constant mu_r.")
+	*	- eccentricity_static
+		- 0.0, Name StrCat[INPUT_GEO, "Static Eccentricity [mm]"],ReadOnly SymmetryFactor != 1,Help StrCat("The stator will elements be translated by this in -x direction. ","Make sure that the sum of static and dynamic eccentricity are not greater ","than the movingband height! ","This can only be used in a full model (symmetry = 1).")
+	*	- eccentricity_dynamic
+		- 0.0, Name StrCat[INPUT_GEO, "Dynamic Eccentricity [mm]"],ReadOnly SymmetryFactor != 1,Help StrCat("Dynamic eccentircity in mm. The rotor initial position will be ","translated by this in x-direction, while still rotating the rotor elements ","around the origin. ","Make sure that the sum of static and dynamic eccentricity are not greater ","than the movingband height! ","This can only be used in a full model (symmetry = 1).")
 	*	- nbrTurns
-		- NBR_TURNS_IN_FACE,Name StrCat[INPUT_ELEC_WINDINGS, "01Number of wires per slot surface"],Help "Number of wires in a single slot surface"
+		- NBR_TURNS_IN_FACE,Name StrCat[INPUT_ELEC_WINDINGS, "01Number of wires per slot surface"],Help StrCat("Number of wires in a single slot surface.","If the slot is divided in several surfaces, the value needs to match the ","number of wires in each surface.")
 	*	- NbrParallelPaths
-		- NBR_PARALLEL_PATHS, Name StrCat[INPUT_ELEC_WINDINGS, "02Number of parallel paths per phase"],ReadOnly !Flag_ExpertMode
+		- NBR_PARALLEL_PATHS, Name StrCat[INPUT_ELEC_WINDINGS, "02Number of parallel paths per phase"],ReadOnly !Flag_ExpertMode,Help "Number of parallel paths per phase."
 	*	- Flag_invertRotDir
-		- FLAG_CHANGE_ROT_DIR, Name StrCat[INPUT_ELEC_EXCITATION, "05Invert rotation Direction"],Choices{0, 1},Visible Flag_ExpertMode
+		- FLAG_CHANGE_ROT_DIR, Name StrCat[INPUT_ELEC_EXCITATION, "05Invert rotation Direction"],Choices{0, 1},Visible Flag_ExpertMode,Help "Invert the stator field rotation direction by changing phase offset in source definition."
 	*	- ID_RMS
 		- Id_eff, Name StrCat[INPUT_ELEC_EXCITATION, "00ID_RMS"],Units "A",Visible Flag_SrcType_Stator == 1 && MachineType==SYNCHRONOUS
 	*	- ID
@@ -163,27 +170,27 @@ ONELAB Model Parameters
 	*	- I0
 		- 0, Name StrCat[INPUT_ELEC_EXCITATION, "04I0"],Units "A",Visible Flag_ExpertMode && Flag_SrcType_Stator==1 && MachineType==SYNCHRONOUS
 	*	- ParkOffset
-		- ParkAngOffset, Name StrCat[INPUT_ELEC_EXCITATION, "06Stator dq-System Offset [deg elec]"],Min -360, Max 360, Step 10,Visible Flag_ExpertMode && MachineType==SYNCHRONOUS
+		- ParkAngOffset, Name StrCat[INPUT_ELEC_EXCITATION, "06Stator dq-System Offset [deg elec]"],Min -360, Max 360, Step 10,Visible Flag_ExpertMode && MachineType==SYNCHRONOUS,Help "Stator dq0 offset angle to align with rotor dq0 axis."
 	*	- I_eff
-		- Sqrt[ID_RMS^2 + IQ_RMS^2], Name StrCat[INPUT_ELEC_EXCITATION, "00Stator Phase Current (RMS)"],Units "A",Visible Flag_SrcType_Stator == 1 && MachineType==ASYNCHRONOUS
+		- Sqrt[ID_RMS^2 + IQ_RMS^2], Name StrCat[INPUT_ELEC_EXCITATION, "00Stator Phase Current (RMS)"],Units "A",Visible Flag_SrcType_Stator == 1 && MachineType==ASYNCHRONOUS,Help "Stator phase current (rms)"
 	*	- freq_rotor
-		- 5, Name StrCat[INPUT_ELEC_EXCITATION, "01Rotor Frquency"],Units "Hz",Visible Flag_SrcType_Stator == 1 && MachineType==ASYNCHRONOUS
+		- 5, Name StrCat[INPUT_ELEC_EXCITATION, "01Rotor Frquency"],Units "Hz",Visible Flag_SrcType_Stator == 1 && MachineType==ASYNCHRONOUS,Help "Electrical rotor frequency for induction machine."
 	*	- Flag_ParkTransformation
 		- Flag_SrcType_Stator == TRANSIENT && MachineType==SYNCHRONOUS,Name StrCat[INPUT_ELEC_EXCITATION, "Use Clark-Park-Transformation"],Choices {0,1},ReadOnly 1
 	*	- VV
-		- 12,Name StrCat[INPUT_ELEC, "V [V]"],Units "V",Visible Flag_SrcType_Stator == 2
+		- 12, Name StrCat[INPUT_ELEC, "V [V]"],Units "V",Visible Flag_SrcType_Stator == 2,Help "Amplitude of the phase source voltage"
 	*	- R_wire
-		- 0, Name StrCat[INPUT_ELEC, "Connection Resistance [Ohm]"],Visible Flag_Cir
+		- 0, Name StrCat[INPUT_ELEC, "Connection Resistance [Ohm]"],Visible Flag_Cir,Help StrCat("Connection resistance between voltage source and machine ","(cable and connection resistance).")
 	*	- CircuitConnection
-		- 0, Name StrCat[INPUT_ELEC, "Winding Type"],Choices{0 = "Star Connection", 1 = "Delta Connection"},Visible Flag_Cir
+		- 0, Name StrCat[INPUT_ELEC, "Winding Type"],Choices{0 = "Star Connection", 1 = "Delta Connection"},Visible Flag_Cir,Help "Voltage source circuit connection type"
 	*	- pA_deg
 		- 0, Name StrCat[INPUT_ELEC, "Current System Offset"],Units "deg",Help "Offset angle for (sinusoidal) stator phase currents",Visible !Flag_ParkTransformation
 	*	- Flag_Cir_RotorCage
-		- (nbrRotorBars > 0) , Choices{0,1},Name StrCat(INPUT_ELEC_CIRCUIT_ROTOR,"Circuit/10Use circuit in rotor cage"),Visible (nbrRotorBars > 0)
+		- (nbrRotorBars > 0) , Choices{0,1},Name StrCat(INPUT_ELEC_CIRCUIT_ROTOR,"Circuit/10Use circuit in rotor cage"),Visible (nbrRotorBars > 0),Help StrCat("Use circuit to connect rotor bars with endring resistance and inductance. ","Otherwise the bars will be ideally connected (without any reactance).")
 	*	- R_endring_segment
-		- 0.836e-6,Name StrCat[INPUT_ELEC_CIRCUIT_ROTOR,"Circuit/11Resistance of endring segment [Ohm]"],ReadOnly !Flag_Cir_RotorCage,Help "This must be given for a single endring segment!During processing the value is scaled to 1 meter because inthe electromagnetic formulation the resulting voltage drop given to thecircuit is in V/m!",Visible (nbrRotorBars>0)
+		- 0.836e-6,Name StrCat[INPUT_ELEC_CIRCUIT_ROTOR,"Circuit/11Resistance of endring segment [Ohm]"],ReadOnly !Flag_Cir_RotorCage,Help StrCat("This must be given for a single endring segment! ","During processing the value is scaled to 1 meter because in ","the electromagnetic formulation the resulting voltage drop given to the ","circuit is in V/m!"),Visible (nbrRotorBars>0)
 	*	- L_endring_segment
-		- 4.8e-9,Name StrCat[INPUT_ELEC_CIRCUIT_ROTOR,"Circuit/12Inductance of endring segment [H]"],ReadOnly !Flag_Cir_RotorCage,Help "This must be given for a single endring segment!During processing the value is scaled to 1 meter because inthe electromagnetic formulation the resulting voltage drop given to thecircuit is in V/m!",Visible (nbrRotorBars>0)
+		- 4.8e-9,Name StrCat[INPUT_ELEC_CIRCUIT_ROTOR,"Circuit/12Inductance of endring segment [H]"],ReadOnly !Flag_Cir_RotorCage,Help StrCat("This must be given for a single endring segment! ","During processing the value is scaled to 1 meter because in ","the electromagnetic formulation the resulting voltage drop given to the ","circuit is in V/m!"),Visible (nbrRotorBars>0)
 	*	- tempMag
 		- TEMP_MAG,Name StrCat[INPUT_MAT_PROPERTIES_MAGNET, "Magnet temperature [°C]"],Visible Flag_ExpertMode && NbrRegions[Rotor_Magnets] > 0
 	*	- freq_stator

@@ -552,7 +552,13 @@ def createPhysicalSurfaces(
         return [airGap], machineSide
     if ROTOR_BAR_IDEXT in part_id:  # For ASM-Cage
         logger.debug("Creating rotor bars...")
-        bars = [Bar(surf.part_id, surf, surf.material) for surf in surfList]
+        # NOTE: We do not need to sort the physicals in circumferential direction here
+        # because this is done when creating the Rotor Bar Domains in the Script class.
+        # We could also use 'surf.segment_number' as index, but it would fail in case
+        # there are two bars per rotor segment.
+        bars = []
+        for i, surf in enumerate(surfList):
+            bars.append(Bar(f"rotor bar {i+1}", surf, surf.material))
         return bars, machineSide
 
     if ROTOR_LAM_IDEXT in part_id:
@@ -782,6 +788,9 @@ def createSlot(
     logger = logging.getLogger(__name__)
     Qs = importJSON.get_nbr_of_slots(extendedInfo)
     slotSide = getSlotInfo(surf.part_id)
+    # Slot side 0 = right side or slot bottom; 1 = left side or slot opening.
+    # (Slot side can also be 2 or 3 but is merged into 0 and 1 by modulo operation. This
+    # is usefull when you have multiple slot side (>2) per lamination segment.)
     if slotSide > 1:
         # for the special case where a single stator segment is not symmetrical and has
         # multiple e.g. to slots with two slot sides each

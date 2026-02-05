@@ -23,6 +23,7 @@ from __future__ import annotations
 from typing import Literal
 
 import numpy as np
+from ..colors import Colors
 
 
 def angle2phase(phase_angle: float, phase_names: tuple[str] = ("u", "v", "w")) -> str:
@@ -50,7 +51,6 @@ def angle2phase(phase_angle: float, phase_names: tuple[str] = ("u", "v", "w")) -
     Example:
         >>> angle2phase(np.pi / 3, ["A", "B", "C"]) # 120 °
         'B'
-
         >>> angle2phase(np.pi / 100, ["A", "B", "C"]) # 1.8 °
         'A'
     """
@@ -131,6 +131,10 @@ def phase2color(
             return "Yellow"
         if phaseChar.lower() == "w":
             return "Cyan"
+        if isinstance(phaseChar, str):
+            # if not in uvw, but is str (eg. for multiphase windings), return unicode
+            # number of char from list of ONELAB colors
+            return list(Colors.keys())[ord(phaseChar)]
         raise ValueError(
             f'Phase ID "{phaseChar}" is not uvw! Can not determine phase angle!'
         )

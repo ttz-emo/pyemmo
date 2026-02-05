@@ -27,44 +27,8 @@ This module includes the `GmshSpline` class, which represents a curved segment i
 The class allows for the definition of a line with a unique tag, start and end points,
 a name, and a type.
 
-Classes:
-    - GmshSpline: Represents a line segment in 3D space with attributes for identifying
-      the line, specifying its start and end points (as `GmshPoint` objects), and
-      assigning a name and type to the line.
-
-Usage:
-    - Instantiate `GmshSpline` with a unique tag, start and end points, and optionally
-      a name and type.
-    - Access and modify the line's properties through getter and setter methods.
-    - Utilize the string representation for debugging and logging purposes.
-
-Example:
-
-.. python:
-
-    from module_name import GmshSpline, GmshPoint
-    import numpy as np
-
-    # Create GmshPoint instances
-    # TODO!
-    center = GmshPoint.from_coordinates(coords=np.array([0.0, 0.0, 0.0]))
-    start = GmshPoint.from_coordinates(coords=np.array([1.0, 0.0, 0.0]))
-    end = GmshPoint.from_coordinates(coords=np.array([0.0, 1.0, 0.0]))
-
-    # Define a line using GmshSpline
-    line = GmshSpline.from_points(
-        points=end,
-        name="Quarter circle",
-    )
-
-    # Print line details
-    print(line)
-
 Author:
     Max Schuler
-
-Note:
-    This docstring was created by ChatGPT.
 """
 
 from __future__ import annotations
@@ -82,7 +46,9 @@ from .gmsh_point import GmshPoint
 
 
 class GmshSpline(GmshLine, Spline):
-    """"""
+    """
+    TODO
+    """
 
     def __init__(
         self,
@@ -131,7 +97,7 @@ class GmshSpline(GmshLine, Spline):
         start point, control_points and end point of the spline in `points`.
 
         Args:
-            points (List[GmshPoint]): start, control and end points of the spline.
+            points (List[GmshPoint]): start, control and end point(s) of the spline.
             name (str): The name to assign to the spline.
             spline_type (Literal[0,1,2]): The type of the spline (0=BSpline, 1=Bezier,
                 2=Simple Spline). Defaults to 1 (Bezier).
@@ -174,7 +140,7 @@ class GmshSpline(GmshLine, Spline):
         )
 
     @property
-    def spline_type(self) -> Literal:
+    def spline_type(self) -> Literal["BSpline", "Bezier", "Spline"]:
         """Return the Gmsh spline type.
         Since we use open cascade (OCC) we can only generate C2 BSplines, which have
         index 1 according to

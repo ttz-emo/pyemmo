@@ -138,6 +138,8 @@ def test_BH_setter_and_getter():
 
 def test_BH_setter_transposed(caplog):
     """Test that setting BH curve also works if transposed"""
+    # using pytest caplog fixture to capture logging messages from pyemmo logger to make
+    # sure warning message is raised.
     caplog.set_level(logging.DEBUG, logger="pyemmo")
     m = Material(name="Steel")
     arr = np.array([[0, 0.0], [1.0, 1], [100, 1.1]])

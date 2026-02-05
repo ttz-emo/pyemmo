@@ -21,10 +21,17 @@
 #
 from __future__ import annotations
 
+import os
+import subprocess
+import sys
 from os.path import join
 
 from pyemmo.definitions import MAIN_DIR
 from pyemmo.functions.onelab_paramters import extract_onelab_parameters
+from pyemmo.version import __version__
+
+if not MAIN_DIR in sys.path:
+    sys.path.insert(0, os.path.abspath("../pyemmo/"))
 
 # Configuration file for the Sphinx documentation builder.
 #
@@ -35,19 +42,24 @@ from pyemmo.functions.onelab_paramters import extract_onelab_parameters
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "PyEMMO"
-copyright = "2025, Technologietransferzentrum Elektromobilität TTZ-EMO"
+copyright = "2026, Technologietransferzentrum Elektromobilität TTZ-EMO"
 author = "TTZ-EMO AG-EM"
-
+release = __version__
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
+    # "sphinx.ext.apidoc", # auto generate .rst files of all pyemmo packages
     "sphinx.ext.autodoc",
     "sphinx.ext.coverage",
     "sphinx.ext.napoleon",
     "sphinx.ext.autosummary",
+    "sphinx.ext.doctest",
+    # "sphinx.ext.intersphinx",  # used for links to existing online documentations
+    #   see https://www.sphinx-doc.org/en/master/usage/quickstart.html#intersphinx
     # "sphinx.ext.autosectionlabel", # fix warning of duplicate label.
     "sphinx.ext.todo",  # enable todo directive
+    "sphinx_rtd_theme",
 ]
 
 templates_path = ["_templates"]
@@ -73,6 +85,8 @@ napoleon_use_ivar = False
 napoleon_use_param = True
 napoleon_use_rtype = True
 
+todo_include_todos = True
+
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
@@ -82,24 +96,26 @@ html_logo = "_static/PyEMMO_Logo_2_small.png"
 
 ## default theme options
 html_theme_options = {
+    "version_selector": True,
+    "language_selector": True,
     #     'analytics_id': 'G-XXXXXXXXXX',  #  Provided by Google in your dashboard
     #     'analytics_anonymize_ip': False,
     #     'logo_only': False,
-    #     'display_version': True,
+    # "display_version": True,
     #     'prev_next_buttons_location': 'bottom',
     #     'style_external_links': True,
     #     'vcs_pageview_mode': '',
     #     'style_nav_header_background': 'white',
-    #     # Toc options
-    #     'collapse_navigation': True,
-    #     'sticky_navigation': True,
+    # Toc options
+    "collapse_navigation": True,
+    "sticky_navigation": False,
     #     'navigation_depth': 4,
     #     'includehidden': True,
     #     'titles_only': False
 }
 
 # parameter to control if a new pyemmo.onelab_parameters.rst file should be created.
-create_param_file = False
+create_param_file = True
 
 if create_param_file:
     const, params = extract_onelab_parameters(
@@ -130,6 +146,9 @@ if create_param_file:
         rst_file.write(".. list-table::\n\t:widths: 12 28\n\t:header-rows: 1\n\n")
         heading = "\t*\t- Parameter Name\n\t\t- Description"
         rst_file.write(heading + "\n")
+
+        # TODO: Write separate description for R_, C_ and P_ parameters because they are
+        # special ONELAB parameters. + add backslash like R\_ otherwise results in link.
         for name, code in params.items():
             # TODO: Extract "Help" from code and put in separate column
             line = f"\t*\t- {name}\n\t\t- {code}"
@@ -137,6 +156,24 @@ if create_param_file:
         rst_file.write("\n")
 
 
-# change color of theme
+def run_apidoc(app):
+    """This function is connected to sphinx using its api. See :py:function::`setup`
+
+    It runs the apidoc function to create new rst files for each module in
+    PyEMMO. Note that existing files will not be overwritten!
+    """
+    apidoc_cmd = [
+        "sphinx-apidoc",
+        "--separate",  # create separate files for each module
+        "--remove-old",  # remove rst files if modules were deleted in pyemmo!
+        "-o",  # specify output directory
+        os.path.join(app.srcdir, "source", "gen"),
+        os.path.abspath(MAIN_DIR),
+    ]
+    subprocess.check_call(apidoc_cmd)
+
+
 def setup(app):
+    app.connect("builder-inited", run_apidoc)
+    # change color of theme
     app.add_css_file("css/custom.css")

@@ -39,24 +39,17 @@ Usage:
 
 Example:
 
-.. python:
-
-    from module_name import GmshLine, GmshPoint
-    import numpy as np
-
-    # Create GmshPoint instances
-    start = GmshPoint.from_coordinates(coords=np.array([0.0, 0.0, 0.0]))
-    end = GmshPoint.from_coordinates(coords=np.array([1.0, 1.0, 1.0]))
-
-    # Define a line using GmshLine
-    line = GmshLine.from_points(
-        start_point=start,
-        end_point=end,
-        name="Diagonal",
-    )
-
-    # Print line details
-    print(line)
+    >>> from pyemmo.script.gmsh.gmsh_line import GmshLine, GmshPoint
+    >>> import numpy as np
+    >>> # Create GmshPoint instances
+    >>> start = GmshPoint.from_coordinates(coords=np.array([0.0, 0.0, 0.0]))
+    >>> end = GmshPoint.from_coordinates(coords=np.array([1.0, 1.0, 1.0]))
+    >>> # Define a line using GmshLine
+    >>> line = GmshLine.from_points(
+    >>>     start_point=start,
+    >>>     end_point=end,
+    >>>     name="Diagonal",
+    >>> )
 
 Author:
     Max Schuler
@@ -84,14 +77,6 @@ class GmshLine(GmshGeometry, Line):
     Represents a Gmsh line in 3D space defined by a start and end point, with a unique
     identifier (tag), a name. The start and end points are instances of
     GmshPoint.
-
-    Attributes:
-        tag (int): The unique identifier for the line.
-        start_point (GmshPoint): The starting point of the line.
-        end_point (GmshPoint): The ending point of the line.
-        points (list[GmshPoint]): A list containing the start and end points of the line.
-        length (float): The length of the line.
-        name (str): The name of the line.
     """
 
     @property
@@ -248,6 +233,7 @@ class GmshLine(GmshGeometry, Line):
 
     def rotateZ(self, rotationPoint=defaultCenterPoint, angle=0.0):
         """rotate line around z-axis
+        
         Args:
             rotationPoint (Point, optional): Rotation center point.
                 Defaults to Point("tmpCenterPoint", 0, 0, 0, 1).

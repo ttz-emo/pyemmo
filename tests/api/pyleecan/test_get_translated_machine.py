@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO,
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
 # Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -21,48 +21,25 @@
 """Module to test pyemmo.api.pyleecan.get_translated_machine"""
 from __future__ import annotations
 
-import math
-from os.path import abspath, join
+import pytest
 
-from pyleecan.Classes.Machine import Machine
+from pyemmo.api.pyleecan.translate_machine import translate_machine
+from . import (
+    Toyota_Prius,
+    IPMSM,
+    SIPMSM_1,
+    SYNRM_ZAW,
+    initialize_gmsh,
+)  # pylint: disable=W0611
 
-# pylint: disable=locally-disabled, no-name-in-module
-from pyleecan.Functions.load import load
 
-import pyemmo.api.pyleecan.translate_machine
-from tests.api.pyleecan import TEST_API_PYLCN_DATA_DIR
-
-
-def test_get_translated_machine():
+@pytest.mark.parametrize("machine", ["Toyota_Prius", "IPMSM", "SIPMSM_1", "SYNRM_ZAW"])
+def test_get_translated_machine(machine, request):
     """Function to test pyemmo.api.pyleecan.get_translated_machine"""
-    machine: Machine = load(
-        abspath(join(TEST_API_PYLCN_DATA_DIR, "00_prius_machine.json"))
-    )
+    machine = request.getfixturevalue(machine)
 
-    (
-        movingband_r,
-        magnetization_dict,
-        geo_translation_dict,
-    ) = pyemmo.api.pyleecan.translate_machine.translate_machine(
-        machine=machine,
-    )
-    # check movingband radius
-    assert math.isclose(movingband_r, 0.0797, abs_tol=1e-16)
-    # check magnetization directions
-    assert math.isclose(magnetization_dict["Mag0"], 0.5462703245568578, rel_tol=1e-12)
-    assert math.isclose(magnetization_dict["Mag1"], 0.2391278388405909, rel_tol=1e-12)
-    for key in (
-        "Pol",
-        "Lpl0",
-        "Mag0",
-        "Lpl1",
-        "Mag1",
-        "Lpl2",
-        "StNut",
-        "StCu0",
-        "LuR1",
-        "LuR2",
-        "StLu1",
-        "StLu2",
-    ):
-        assert key in geo_translation_dict
+    geo_translation_dict = translate_machine(machine=machine)
+
+    # TODO:
+    # - Check if all relevant surfaces are translated
+    # - Check symmetries

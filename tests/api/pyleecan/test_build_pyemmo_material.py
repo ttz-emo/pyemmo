@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO,
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
 # Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -42,74 +42,85 @@ Test Functions:
 
 from __future__ import annotations
 
+from os.path import join
+
 import numpy as np
 import pytest
-from pyleecan.Classes.MatElectrical import MatElectrical
-from pyleecan.Classes.Material import Material as pyleecanMat
-from pyleecan.Classes.MatMagnetics import MatMagnetics
-from pyleecan.Classes.MatStructural import MatStructural
+from pyleecan.Classes.ImportMatrixVal import ImportMatrixVal
+from pyleecan.Classes.Material import Material as PyleecanMaterial
+from pyleecan.definitions import DATA_DIR
+from pyleecan.Functions.load import load  # pylint: disable=no-name-in-module
 
 from pyemmo.api.pyleecan.build_pyemmo_material import build_pyemmo_material
+from pyemmo.script.material.material import Material
 
 
-@pytest.fixture
-def sample_pyleecan_material() -> pyleecanMat:
-    """
-    Fixture providing a sample pyleecan material for testing.
+def _test_material_properies(pyemmo_material: Material, pyleecan_material):
+    # misc properties
+    assert pyemmo_material.name == pyleecan_material.name
 
-    Returns:
-        pyleecanMat: Sample pyleecan material object.
-    """
-    # pylint: disable=locally-disabled, redefined-outer-name
-    sample_pyleecan_material = pyleecanMat(name="sample_pyleecan_material")
+    # structural properties
+    assert pyemmo_material.density == pyleecan_material.struct.rho
 
-    sample_pyleecan_material.struct = MatStructural(
-        rho=7650,  # mechanische Dichte: mass per unit volume [kg/m3]
-    )
-    sample_pyleecan_material.elec = MatElectrical(
-        rho=0.01,  # Elektrischer Widerstand [Ohm]
-    )
-    sample_pyleecan_material.mag = MatMagnetics(
-        mur_lin=0.000345,  # Relative magnetic permeability
-        alpha_Br=-0.001,  # Temperaturkoffezient für die Remanenzflussdichte /°C compared to 20°C
-        Brm20=1.5,  # magnet remanence induction at 20°C [T]
-        Wlam=0.35,  # lamination sheet width without insulation [m] (0 == not laminated)
-    )
+    # electrical properties
+    if pyleecan_material.elec.rho != 0.0:
+        # if material has conductivity
+        assert pyemmo_material.conductivity == pyleecan_material.elec.get_conductivity()
+    else:
+        assert pyemmo_material.conductivity == 0.0
 
-    sample_pyleecan_material.mag.BH_curve = [
-        [0, 0],
-        [1, 2],
-        [2, 4],
-    ]
+    # magnetic properties
+    assert pyemmo_material.relPermeability == pyleecan_material.mag.mur_lin
+    if pyleecan_material.mag.BH_curve is not None and isinstance(
+        pyleecan_material.mag.BH_curve, ImportMatrixVal  # abstract class
+    ):
+        np.testing.assert_array_equal(
+            pyemmo_material.BH, pyleecan_material.mag.BH_curve.value[:, [1, 0]]
+        )
+    else:
+        assert pyemmo_material.linear == True
 
-    return sample_pyleecan_material
+    assert pyemmo_material.tempCoefRem == pyleecan_material.mag.alpha_Br
+    assert pyemmo_material.remanence == pyleecan_material.mag.get_Brm()
+
+    # thermal properties
+    # set to default by now in build_pyemmo_material!
+    assert pyemmo_material.thermalCapacity == 0.0
+    assert pyemmo_material.thermalConductivity == 0.0
+    return
 
 
-# pylint: disable=locally-disabled, redefined-outer-name
-def test_build_pyemmo_material(sample_pyleecan_material: pyleecanMat) -> None:
+@pytest.mark.parametrize(
+    "mat_name",
+    [
+        "Air",
+        "Copper2",
+        "M19",  # Elec. steel with loss
+        "M270-35A",  # Elec. steel
+        "Magnet_N50",
+    ],
+)
+def test_build_pyemmo_material(mat_name: str) -> None:
     """
     Tests the build_pyemmo_material function with a sample pyleecan material.
 
     Args:
         sample_pyleecan_material (pyleecanMat): Sample pyleecan material object.
-
-    Returns:
-        None
-
-    Raises:
-        AssertionError: If the translated pyemmo material does not match the expected values.
-
-    Example:
-        >>> sample_pyleecan_material = pyleecanMat(name="example_material")
-        >>> test_build_pyemmo_material(sample_pyleecan_material)
     """
-    pyemmo_material = build_pyemmo_material(sample_pyleecan_material)
-    assert pyemmo_material.name == "sample_pyleecan_material"
-    assert pyemmo_material.density == 7650
-    assert pyemmo_material.conductivity == 1 / 0.01
-    assert pyemmo_material.relPermeability == 0.000345
-    assert pyemmo_material.tempCoefRem == -0.001
-    assert pyemmo_material.remanence == 1.5
-    np.testing.assert_array_equal(
-        pyemmo_material.BH, np.array([[0, 0], [2, 1], [4, 2]])
+    pyleecan_material: PyleecanMaterial = load(
+        join(DATA_DIR, "Material", mat_name + ".json")
     )
+    pyemmo_material = build_pyemmo_material(pyleecan_material)
+
+    _test_material_properies(pyemmo_material, pyleecan_material)
+
+
+def test_nonMag_material_error():
+    """Make sure build_material raises ValueError if no magnetic properties given"""
+    # Material without magnetic properties:
+    pyleecan_mat = load(join(DATA_DIR, "Material", "Insulator1.json"))
+    with pytest.raises(ValueError) as excinfo:
+        _ = build_pyemmo_material(pyleecan_mat)
+        assert "No magnetic properties (mue_r and BH curve) defined in material" in str(
+            excinfo.value
+        )

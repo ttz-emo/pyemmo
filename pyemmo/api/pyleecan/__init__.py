@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -17,6 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+"""TODO"""
 
 from __future__ import annotations
 
@@ -36,5 +38,9 @@ if use_pyleecan:
     PyleecanMachine = Union[
         MachineDFIM, MachineSIPMSM, MachineIPMSM, MachineWRSM, MachineSyRM
     ]
+    from pyleecan.Classes.Material import Material
 
-POLE_HOLE_IDEXT = "Pole Hole"
+    # Load default air material used in create_geo_dict function for surfaces without
+    # referenced material.
+    PyleecanAir = Material(name="Air")
+POLE_HOLE_IDEXT = "Pole Hole"  # usused for now

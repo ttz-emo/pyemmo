@@ -266,8 +266,9 @@ def test_duplicate(gmsh_surface: GmshSurface, name: str):
 def test_deepcopy(gmsh_surface: GmshSurface):
     """test deepcopy method"""
     gs_copy = deepcopy(gmsh_surface)
-    logging.info(f"original: {gmsh_surface}")
-    logging.info(f"copy: {gs_copy}")
+    logger = logging.getLogger(__name__)
+    logger.debug(f"original: {gmsh_surface}")
+    logger.debug(f"copy: {gs_copy}")
     assert gs_copy.id != gmsh_surface.id
     assert len(gs_copy.curve) == len(gmsh_surface.curve)
 

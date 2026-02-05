@@ -19,19 +19,19 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """
+Currently there are 3 curve types in PyEMMO using the gmsh python api:
+    - Straight lines (:py:class:`pyemmo.script.gmsh.gmsh_line.GmshLine`)
+    - Circle arcs (:py:class:`pyemmo.script.gmsh.gmsh_arc.GmshArc`)
+    - Splines (:py:class:`pyemmo.script.gmsh.gmsh_spline.GmshSpline`)
 
-Functions:
-- create_curve: Function to create a GmshLine, GmshArc or GmshSpline object from a 
-    gmsh curve tag. It also handles the case of a OCC TrimmedCurve object and tries
-    to detect its line type.
-    NOTE: Needed to move this function to a separate module instead of putting it into
-     utils, because it lead to a circular import with GmshSurface and PhysicalElement.
+This module implements the function :py:func:`create_curve` to create a GmshLine,
+GmshArc or GmshSpline object from a gmsh curve tag (ID). It especially handles the case
+of a OpenCascade (OCC) TrimmedCurve object and tries to detect its line type.
+TrimmedCurve object can result from boolean operations in OCC.
 
-The module is part of the PyEMMO project, developed by TTZ-EMO at the Technical
-University of Applied Sciences Würzburg-Schweinfurt.
-
-Author:
-    Max Schuler
+We needed to move this function to a separate module instead of putting it into 
+:py:mod:`pyemmo.script.gmsh.utils`, because it lead to a circular import with
+GmshSurface and PhysicalElement.
 """
 from __future__ import annotations
 

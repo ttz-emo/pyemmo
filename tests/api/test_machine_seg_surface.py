@@ -218,7 +218,7 @@ def test_rotate_z(machine_seg_surf: MachineSegmentSurface):
     # rotate surf by 90 degrees around z-axis
     center = Point("center point", 0, 0, 0)
     machine_seg_surf.rotateZ(center, np.pi / 2)
-    gmsh.model.occ.synchronize()  # synchronize model to apply changes
+    gmsh.model.occ.synchronize()  # NOTE: Need to sync to update the coordinates
     new_angle = 3 * np.pi / 4
     exspected_coords = [
         (0, 1, 0),

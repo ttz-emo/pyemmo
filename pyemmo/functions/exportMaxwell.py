@@ -32,9 +32,7 @@ def exportBH2Maxwell(material: Material, filepath: str = None) -> None:
     """function to export the BH-Curve in ANSYS Maxwell readable format.
 
     Args:
-        data (list): List of data vectors.
-        identifier (list[str]): List of data identifier for Maxwell like
-            "H (A_per_meter)" or "B (tesla)".
+        material (Material): TODO
         filepath (str, optional): File path to write the results to. File
             extension must be ".tab"! Defaults to
             PYEMMO_RESULTS_FOLDER/MATERIAL_NAME_BH.tab .
@@ -60,7 +58,7 @@ def exportTabMaxwell(data: list, identifier: list[str], filepath: str) -> None:
     Args:
         data (list): List of data vectors.
         identifier (list[str]): List of data identifier for Maxwell like
-            "Time (s)", "H (A_per_meter)" or "B (tesla)".
+            \"Time (s)\", \"H (A_per_meter)\" or \"B (tesla)\".
         filepath (str): File path to write the results to. File
             extension must be ".tab"!
 
@@ -68,19 +66,13 @@ def exportTabMaxwell(data: list, identifier: list[str], filepath: str) -> None:
         ValueError: If extension is not .tab
 
     Example:
+        >>> time = [4, 5, 6]  # time in seconds
+        >>> H = [1, 2, 3]  # H field data in A/m
+        >>> data = [time_data, h_data]
+        >>> ids = ["Time (s)", "H (A_per_meter)"]
+        >>> file = f"{RES_DIR}\\testExportMaxwellData.tab"
+        >>> exportTabMaxwell(data, ids, file)
 
-        ..code:: python
-
-            time_data = [4, 5, 6]
-            h_data = [1, 2, 3]
-
-            data = [time_data, h_data]
-            ids = ["Time (s)", "H (A_per_meter)"]
-
-            file = (
-                f"{RES_DIR}\testExportMaxwellData.tab"
-            )
-            exportTabMaxwell(data, ids, file)
     """
     if len(data) != len(identifier):
         raise ValueError("data and identifier length are not matching!")

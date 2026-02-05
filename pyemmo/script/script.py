@@ -1197,6 +1197,7 @@ class Script:
                 for slot in physicalsList:
                     if slot.type == "Slot":
                         slot: Slot = slot
+                        # FIXME: This assumes 3-Phase winding!
                         phaseName = slot.getPhase("ABC")
                         slotDomainName = (
                             "Stator_Ind_"
@@ -2051,9 +2052,6 @@ class Script:
         meshSettingsCode += "Mesh.MshFileVersion = 4.0; // Fix bug in mesh file creation for GetDP Version 3.6.0\n"
         meshSettingsCode += "\n"
 
-        # # Set mesh algorithm in Gmsh:
-        # for surf_tag in [dimTag[1] for dimTag in gmsh.model.get_entities(2)]:
-        #     gmsh.model.mesh.set_algorithm(2,surf_tag,6) # Frontal-Delaunay for 2D
         meshModCode = ""
         movingGeoCode = ""
         if self.machine:

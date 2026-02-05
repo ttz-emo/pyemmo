@@ -235,6 +235,10 @@ def create_airgap_surfaces(
                     name="Stator Airgap (PyEMMO)",
                 )
             ]
+            surface_dict[STATOR_AIRGAP_IDEXT][0].setMeshLength(band_height)
+            if logger.getEffectiveLevel() <= logging.DEBUG - 1:
+                gmsh.model.occ.synchronize()
+                gmsh.fltk.run()
         else:
             # if symmetry = 1 -> create a surface from the interface and subtract a circle
             logger.debug("Creating airgap surfaces for stator with symmetry 1!")
