@@ -42,7 +42,15 @@ This section highlights the format of those two structures.
 1. Geometry Structure
 '''''''''''''''''''''
 The geometry is defined by a list of segmented surface structures.
-Every surface represents a minimal segment of the full model geometry and has the following attributes:
+Every surface represents a minimal segment of the full model geometry.
+The following picture shows an example of the segmented surface input for a simple IPMSM model geometry.
+
+.. figure:: ../../images/Example_Segmented_Input.png
+   :align: center
+
+   Example of the surface segments of a IPMSM model geometry input for the JSON API.
+
+Each surface segment has the following attributes:
 
 .. list-table:: PyEMMO Segmented Surface Structure Attributes
    :header-rows: 1
@@ -52,24 +60,23 @@ Every surface represents a minimal segment of the full model geometry and has th
    * - Name
      - Surface name
    * - IdExt
-     - Surface identifier defined in the api module :mod:`definitions <~pyemmo.api.json>`
+     - Surface identifier defined in the api module :ref:`definitions <section-pyemmo.api.json>`
    * - Lines
      - Curve loop to draw the surface outline defined by a list of *line structures*
    * - Material
-     - PyEMMO :class:`~pyemmo.script.material.material.Material` structure
+     - PyEMMO :class:`~pyemmo.script.material.material.Material` structure as dict.
    * - Quantity
      - Number of surface segments to form a full model (circle)
    * - Meshsize
      - Optional surface mesh size
 
-Example:
+Example dict structure for a stator lamination segment:
 
 .. code-block:: python
 
-   # Example dict for stator lamination
    stator_lam_dict = {
       "Name": "stator core",
-      "IdExt": "stator lamination",
+      "IdExt": "stator lamination", # must be exactly "stator lamination"
       "Lines": [...],
       "Material": {
          "name": "steel material",
@@ -83,6 +90,52 @@ Example:
       "Quantity": 4,  # symmetry = 4
       "Meshsize": None,
    }
+
+Here the ``idExt`` attribute must be exactly ``"stator lamination"`` to be recognized as stator lamination by the API.
+The line structures are explained below.
+
+The next example for rotor lamination with subtracted hole and magnet shows that subtracted surfaces (holes, magnets) must be defined in a list with the parent surface first and all tools afterwards.
+**For now multi-layer subtractions are not supported in PyEMMO**, so the tool surfaces cannot have tools yet.
+**And the tools should not overlap each other**.
+As you can see the ``Quantity`` value does not have to match the parent surface quantity.
+PyEMMO handles the symmetry by rotating and duplicating before subtracting.
+You only have to make sure that tool is placed correctly in the first segment.
+The magnet surface is identified by the keyword ``"magnet"`` defined in :ref:`definitions <section-pyemmo.api.json>`.
+But you can have several magnets in the geometry, as long as the keyword ``"magnet"`` is part of ``idExt``.
+The hole surface can have any identifier appart from the reserved keywords defined in the :ref:`definitions <section-pyemmo.api.json>`.
+
+.. code-block:: python
+
+   # Example dict for stator lamination
+   rotor_lam_list = [
+      {
+        "Name": "rotor core",
+        "IdExt": "rotor lamination", # must be exactly "rotor lamination"
+        "Lines": [...],
+        "Material": {...},
+        "Quantity": 4,  # symmetry = 4
+        "Meshsize": None,
+      },
+      {
+        "Name": "hole in rotor core",
+        "IdExt": "arbitrary hole name", #  can be any name
+        "Lines": [...],
+        "Material": {...},
+        "Quantity": 8, #  two holes per rotor segment
+        "Meshsize": None,
+      },
+      {
+        "Name": "magnet in rotor",
+        "IdExt": "magnet_1", # Must contain keyword "magnet"
+        "Lines": [...],
+        "Material": {
+          ...
+          "remanence" = 1.2, #  Tesla
+          },
+        "Quantity": 4,  # one magnet per segment
+        "Meshsize": None,
+      }
+   ]
 
 Each curve of the surface outline should have the following attributes:
 
@@ -150,13 +203,13 @@ Example:
       "MpMesh": 0.0011827808408478094
    }
 
-2. Model Properties Structure
+1. Model Properties Structure
 '''''''''''''''''''''''''''''
 Additional to the geoemtry of the machine a second dictionary containing the **machine parameters** and **initial simulation parameters** must be defined.
 In the project history you will find the term *extInfo*, short for *extended information*, for the name that structure/.json file.
 In the following tables you can find the required and optional parameters for this structure and an example, where the optional parameters are mostly the default ONELAB parameters for the model.
 All ONELAB parameters for the simulation can be set when calling GetDP to run the simulation.
-See `this <https://getdp.info/doc/texinfo/getdp.html#Types-for-Resolution:~:text=%2Dsetnumber,string%20name%20to%20value>`_ for more details on the CLI of GetDP.
+See `this <https://getdp.info/doc/texinfo/getdp.html#Types-for-Resolution:~:text=%2Dsetnumber,string%20name%20to%20value>`_ for more details on the command line interface (CLI) of GetDP.
 
 .. _ref_sim_param_tabel:
 
@@ -175,7 +228,7 @@ See `this <https://getdp.info/doc/texinfo/getdp.html#Types-for-Resolution:~:text
    "symFactor", "Symmetry factor for model", "int"
    "modelName", "Name of the model", "string"
    "magType", "Magnetization type of permament magnets ('parallel', 'radial', 'tangential')", "string"
-   "magAngle", "Magnetization angle dict with magnet surface ID as key", "dict[str, float]"
+   "magAngle", "Magnetization angle dict with magnet ``idExt`` as key", "dict[str, float]"
 
 .. csv-table:: Optional Parameters for the JSON API
    :header: "ParameterName", "Description", "Format"
@@ -212,8 +265,8 @@ Example for Python dict:
       "modelName": "MyExampleModel",
       "magType": "parallel",
       "magAngle": {
-         "magnet1": 0.19385582991299233,
-         "magnet2": 0.39103660774114435,
+         "magnet1": 0.19385582991299233, # vector angle to x in rad
+         "magnet2": 0.39103660774114435, # vector angle to x in rad
       },
       "useFunctionMesh": True,
       "startPos": 0,
@@ -309,6 +362,8 @@ Submodules
    pyemmo.api.json.importJSON
    pyemmo.api.json.json
    pyemmo.api.json.modelJSON
+
+.. _section-pyemmo.api.json:
 
 Module contents
 ---------------

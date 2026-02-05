@@ -37,9 +37,10 @@ from pprint import pformat
 
 import gmsh as gmsh_api
 import numpy as np
+from matplotlib import pyplot as plt
 
 from ... import log_formatter
-from ...functions import calcIronLoss, clean_name, import_results, runOnelab
+from ...functions import calcIronLoss, clean_name, import_results, runOnelab, plot
 from ...script.geometry.machineAllType import MachineAllType
 from ...script.geometry.rotor import Rotor
 from ...script.geometry.stator import Stator
@@ -598,6 +599,26 @@ def main(
 
         t1 = timeit.default_timer()
         module_logger.debug("Time for loading geometry: %.2fs", t1 - t0)
+
+    # add plot of given geometry
+    if module_logger.getEffectiveLevel() <= logging.DEBUG - 1:
+        # show boundary line plot
+        fig, ax = plt.subplots()
+        surfs = [elem for _, elem in segmentSurfDict.items()]
+        # get colors from colormap 'rainbow'
+        colors = plt.cm.get_cmap("rainbow")(np.linspace(0, 1, len(surfs)), 1)
+        # plot each boundary with own color
+        for surf, color in zip(surfs, colors):
+            plot.plot([surf], fig=fig, tag=False, color=color)
+            if surf.tools:
+                for tool in surf.tools:
+                    plot.plot([tool], fig=fig, tag=False, color=color)
+        ax.set_aspect("equal")
+        ax.grid(True)
+        ax.set_xlabel("x Axis")
+        ax.set_ylabel("y Axis")
+        ax.set_title("Model Geometry Input")
+        fig.show()
 
     # generate the machine geometry
     module_logger.info("Creating complete model from segmented input...")
