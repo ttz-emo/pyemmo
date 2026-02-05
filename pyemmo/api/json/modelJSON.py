@@ -736,6 +736,8 @@ def getSlotPhase(
         # if second slot side is empty, create winding layout separatly because np does
         # not allow array size missmatch
         logger.debug("Second layer in winding layout is empty.")
+        # NOTE: cannot convert windingLayout directly because second layer (empty) size
+        # does not match first layer, which is not supported by numpy.
         windingLayout = np.array([phaseList[0] for phaseList in windingLayout])
         phase_index, slot_index = np.where(np.abs(windingLayout) == slot_number)
     else:
@@ -754,17 +756,25 @@ def getSlotPhase(
         117 + phase_index[0]
     )  # convert unicode u=117 + index -> char [u,v,w,...]
 
-    if sign(windingLayout[phase_index[0], slot_side, slot_index[0]]) == 1:
-        cDir = "p"
+    if len(windingLayout.shape) == 2:
+        # single layer
+        if sign(windingLayout[phase_index[0], slot_index[0]]) == 1:
+            cDir = "p"
+        else:
+            cDir = "n"
     else:
-        cDir = "n"
+        # double layer
+        if sign(windingLayout[phase_index[0], slot_side, slot_index[0]]) == 1:
+            cDir = "p"
+        else:
+            cDir = "n"
 
     logger.debug(
         "slot number: %i || slot side: %i || phase: %s || direction: %s",
         slot_number,
         slot_side,
         phase,
-        cDir,
+        "positive" if cDir == "p" else "negative",
     )
     return cDir, phase
 
