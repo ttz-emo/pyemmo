@@ -280,6 +280,55 @@ class PhysicalElement:
         """
         script._addPhysicalElement(self)
 
+    def get_radial_position(self) -> float:
+        """get the mean radial position of the PhsicalElement.\n
+        This is useful when e.g. sorting the slots in radial direction.
+
+        Returns:
+            float: Mean radius of the physical elements geometry positions.
+                - Mean radius of the center of the physical surface(s) in m
+                - Mean radius of the middle point of the physical line(s) in m
+        """
+        radius_list: list[float] = []
+        for elem in self.geo_list:
+            if self.geoElementType == Surface:
+                centerPoint = elem.calcCOG()
+                radius_list.append(centerPoint.radius)
+            elif self.geoElementType == Line:
+                radius_list.append(elem.middle_point.radius)
+            else:
+                raise ValueError(
+                    f"Can't determine radial position of physical {self.name}, because "
+                    f"geometry element type is {self.geoElementType}. "
+                    "Must be Surface or Line!"
+                )
+        return np.mean(radius_list)
+
+    def get_circumferential_position(self) -> float:
+        """get the circumferential position of a PhsicalElement.\n
+        This is useful when e.g. sorting the rotor bars in circumfederal direction.
+
+        float: Mean angle to x-axis of the physical elements geometry positions.
+                - Mean angle of the center (COG) of the physical surface(s) in m
+                - Mean angle of the middle point of the physical line(s) in m
+        """
+        if not self.geo_list:
+            raise RuntimeError("No geometry to determine slot position.")
+        angle_list: list[float] = []
+        for elem in self.geo_list:
+            if self.geoElementType == Surface:
+                centerPoint = elem.calcCOG()
+                angle_list.append(centerPoint.getAngleToX())
+            elif self.geoElementType == Line:
+                angle_list.append(elem.middle_point.getAngleToX())
+            else:
+                raise ValueError(
+                    f"Can't determine circumferential position of physical {self.name}, "
+                    f"because geometry element type is {self.geoElementType}. "
+                    "Must be Surface or Line!"
+                )
+        return np.mean(angle_list)
+
     def setColor(self, colorName: str = None):
         """Set mesh color for PhysicalElement
 

@@ -24,8 +24,6 @@ import logging
 from math import degrees, isclose, pi
 from typing import Literal
 
-from numpy import mean
-
 from pyemmo.script.geometry.line import Line
 from pyemmo.script.geometry.surface import Surface
 from pyemmo.script.material.material import Material
@@ -182,34 +180,6 @@ class Slot(PhysicalElement):
             )  # mod 3, to make sure 2 Pi is handled correctly
             phase = phaseStr[phaseIndex]
             return phase
-
-    def get_radial_position(self) -> float:
-        """get the radial position of the slot.\n
-        This is useful when sorting the slots in radial direction
-
-        Returns:
-            float: Radius of the center of the slots surface(s) in m
-        """
-        radList: list[float] = []
-        for surf in self.geo_list:
-            centerPoint = surf.calcCOG()
-            radList.append(centerPoint.radius)
-        return mean(radList)
-
-    def get_circumferential_position(self) -> float:
-        """get the circumferential position of the slot.\n
-        This is useful when sorting the slots in circumfederal direction
-
-        Returns:
-            float: Angle of the center of the slots surface(s) in radians
-        """
-        if not self.geo_list:
-            raise RuntimeError("No geometry to determine slot position.")
-        phiList: list[float] = []
-        for surf in self.geo_list:
-            centerPoint = surf.calcCOG()
-            phiList.append(centerPoint.getAngleToX())
-        return mean(phiList)
 
     def setColor(self, colorName: str = None):  # overwrite set color
         """Set mesh color for Slot
