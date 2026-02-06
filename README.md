@@ -51,7 +51,7 @@ You will need versions of [Gmsh](https://gmsh.info/) and [GetDP](https://getdp.i
 
 The easiest way to start is by using the [Pyleecan](https://github.com/Eomys/pyleecan) project to create a electrical machine instance and feeding it into the PyEMMO-Pyleecan interface.
 - Have a look at the [Pyleecan tutorials](https://pyleecan.org/tutorials.html) on how to use Pyleecan. Especially the tutorial on ["How to define a machine"](https://pyleecan.org/01_tuto_Machine.html).
-- See the [Pyleecan API tutorial](tutorials/tutorial_pyleecan_api.py) for detailed instructions on how to create a ONELAB model from a Pyleecan machine object.
+- See the [Pyleecan API tutorial](tutorials/pyleecan_api.py) for detailed instructions on how to create a ONELAB model from a Pyleecan machine object.
 
 
 ## Contributing
