@@ -39,7 +39,7 @@ The goal of the project is to automate model creation and the simulation workflo
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install PyEMMO.
 
 ```bash
-pip install pyemmo
+pip install https://github.com/ttz-emo/pyemmo.git
 ```
 
 You will need versions of [Gmsh](https://gmsh.info/) and [GetDP](https://getdp.info/) executables. While Gmsh can be directly installed from pip with the Gmsh Python-API, you will need to download GetDP individually.
