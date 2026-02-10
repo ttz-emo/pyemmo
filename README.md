@@ -78,3 +78,15 @@ install-hooks.bat
 ## License
 
 [GPLv3](https://www.gnu.org/licenses/gpl-3.0.html)
+
+## Run Sphinx to create Documentation
+
+To create or update the documentation you will need to do:
+
+1. Install the doc requirments with: `pip install -r requirements-doc.txt`.
+2. Make sure pyemmo is found by either creating a *pyemmo.pth* file in the *site-packages* folder or use `pip install -e .`.
+3. To fully build the documentation including the pyleecan api subpackage you need to install pyleecan. Currently we have to use the Github version since the new release is not out yet: `pip install git+https://gitlab.com/Eomys/pyleecan/tree/update-python-version.git`
+4. Run Sphinx to build the docs e.g. in html `doc\make.bat html`.
+   
+You can run `doc\make.bat` plane to see the build options.
+Futher information on building the documentation can be found in the [Sphinx documentation](https://www.sphinx-doc.org/en/master/tutorial/index.html).
