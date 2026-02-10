@@ -1,6 +1,14 @@
 pyemmo.functions package
 ========================
 
+Module contents
+---------------
+
+.. automodule:: pyemmo.functions
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 Submodules
 ----------
 
@@ -20,11 +28,3 @@ Submodules
    pyemmo.functions.runOnelab
    pyemmo.functions.transform_coords
    pyemmo.functions.xml2pyDraft
-
-Module contents
----------------
-
-.. automodule:: pyemmo.functions
-   :members:
-   :show-inheritance:
-   :undoc-members:

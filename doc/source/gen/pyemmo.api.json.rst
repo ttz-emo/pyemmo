@@ -350,6 +350,16 @@ The default path for the model result files (`mod` path) is a new folder in the 
 For Windows this will be something like :file:`C:/Users/USER_NAME/AppData/Roaming/pyemmo/Results`.
 By default the results directory for the simulation results will be stored in the same folder as the onelab simulation files created by PyEMMO. The folder name defaults to :file:`/res_MODEL_NAME`.
 
+.. _section-pyemmo.api.json:
+
+Module contents
+---------------
+
+.. automodule:: pyemmo.api.json
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 Submodules
 ----------
 
@@ -362,13 +372,3 @@ Submodules
    pyemmo.api.json.importJSON
    pyemmo.api.json.json
    pyemmo.api.json.modelJSON
-
-.. _section-pyemmo.api.json:
-
-Module contents
----------------
-
-.. automodule:: pyemmo.api.json
-   :members:
-   :show-inheritance:
-   :undoc-members:

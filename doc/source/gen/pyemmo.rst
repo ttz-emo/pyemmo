@@ -15,6 +15,13 @@ and 4 modules (*colors*, *default_config_dict*, *definitions*, *version*) with d
 * The :mod:`~pyemmo.script` package contains the core functionality by the :py:class:`~pyemmo.script.script.Script`
   class and subpackages for :mod:`~pyemmo.script.geometry` and :mod:`~pyemmo.script.material` classes.
 
+Module contents
+---------------
+
+.. automodule:: pyemmo
+   :members:
+   :show-inheritance:
+   :undoc-members:
 
 Subpackages
 -----------
@@ -36,11 +43,3 @@ Submodules
    pyemmo.default_config_dict
    pyemmo.definitions
    pyemmo.version
-
-Module contents
----------------
-
-.. automodule:: pyemmo
-   :members:
-   :show-inheritance:
-   :undoc-members:

@@ -1,6 +1,14 @@
 pyemmo.api package
 ==================
 
+Module contents
+---------------
+
+.. automodule:: pyemmo.api
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 Subpackages
 -----------
 
@@ -18,10 +26,3 @@ Submodules
 
    pyemmo.api.machine_segment_surface
 
-Module contents
----------------
-
-.. automodule:: pyemmo.api
-   :members:
-   :show-inheritance:
-   :undoc-members:

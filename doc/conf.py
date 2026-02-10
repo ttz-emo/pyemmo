@@ -67,6 +67,7 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 autodoc_default_options = {
     "member_order": "bysource",
+    "apidoc_module_first": True,
 }
 # Autosummary settings
 autosummary_generate = True  # Turn on sphinx.ext.autosummary

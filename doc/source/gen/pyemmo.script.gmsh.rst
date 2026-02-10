@@ -1,6 +1,14 @@
 pyemmo.script.gmsh package
 ==========================
 
+Module contents
+---------------
+
+.. automodule:: pyemmo.script.gmsh
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 Submodules
 ----------
 
@@ -16,11 +24,3 @@ Submodules
    pyemmo.script.gmsh.gmsh_spline
    pyemmo.script.gmsh.gmsh_surface
    pyemmo.script.gmsh.utils
-
-Module contents
----------------
-
-.. automodule:: pyemmo.script.gmsh
-   :members:
-   :show-inheritance:
-   :undoc-members:

@@ -1,6 +1,14 @@
 pyemmo.script.geometry package
 ==============================
 
+Module contents
+---------------
+
+.. automodule:: pyemmo.script.geometry
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 Submodules
 ----------
 
@@ -49,11 +57,3 @@ Submodules
    pyemmo.script.geometry.stepToArea
    pyemmo.script.geometry.surface
    pyemmo.script.geometry.transformable
-
-Module contents
----------------
-
-.. automodule:: pyemmo.script.geometry
-   :members:
-   :show-inheritance:
-   :undoc-members:

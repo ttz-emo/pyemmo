@@ -1,6 +1,14 @@
 pyemmo.api.pyleecan package
 ===========================
 
+Module contents
+---------------
+
+.. automodule:: pyemmo.api.pyleecan
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 Submodules
 ----------
 
@@ -18,11 +26,3 @@ Submodules
    pyemmo.api.pyleecan.main
    pyemmo.api.pyleecan.translate_machine
    pyemmo.api.pyleecan.translate_winding
-
-Module contents
----------------
-
-.. automodule:: pyemmo.api.pyleecan
-   :members:
-   :show-inheritance:
-   :undoc-members:

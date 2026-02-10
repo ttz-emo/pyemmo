@@ -1,6 +1,14 @@
 pyemmo.script package
 =====================
 
+Module contents
+---------------
+
+.. automodule:: pyemmo.script
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 Subpackages
 -----------
 
@@ -18,11 +26,3 @@ Submodules
    :maxdepth: 4
 
    pyemmo.script.script
-
-Module contents
----------------
-
-.. automodule:: pyemmo.script
-   :members:
-   :show-inheritance:
-   :undoc-members:

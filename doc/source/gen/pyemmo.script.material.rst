@@ -1,6 +1,14 @@
 pyemmo.script.material package
 ==============================
 
+Module contents
+---------------
+
+.. automodule:: pyemmo.script.material
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 Submodules
 ----------
 
@@ -9,11 +17,3 @@ Submodules
 
    pyemmo.script.material.electricalSteel
    pyemmo.script.material.material
-
-Module contents
----------------
-
-.. automodule:: pyemmo.script.material
-   :members:
-   :show-inheritance:
-   :undoc-members:
