@@ -1,8 +1,8 @@
 pyemmo.api.pyleecan package
 ===========================
 
-Module contents
----------------
+.. Module contents
+.. ---------------
 
 .. automodule:: pyemmo.api.pyleecan
    :members:

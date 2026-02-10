@@ -1,3 +1,5 @@
+.. _section-pyemmo.api.json-package:
+
 pyemmo.api.json package
 =======================
 
@@ -203,7 +205,9 @@ Example:
       "MpMesh": 0.0011827808408478094
    }
 
-1. Model Properties Structure
+.. _section-pyemmo.api.json-param:
+
+2. Model Properties Structure
 '''''''''''''''''''''''''''''
 Additional to the geoemtry of the machine a second dictionary containing the **machine parameters** and **initial simulation parameters** must be defined.
 In the project history you will find the term *extInfo*, short for *extended information*, for the name that structure/.json file.
