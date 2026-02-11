@@ -27,7 +27,7 @@ import sys
 from os.path import join
 
 from pyemmo.definitions import MAIN_DIR
-from pyemmo.functions.onelab_paramters import extract_onelab_parameters
+from pyemmo.functions.onelab_parameters import extract_onelab_parameters
 from pyemmo.version import __version__
 
 if not MAIN_DIR in sys.path:

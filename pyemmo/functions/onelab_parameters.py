@@ -22,9 +22,10 @@
 of constants and ONELAB parameters from a list of .geo and .pro files by parsing."""
 
 from __future__ import annotations
-from os.path import abspath
+
 import re
 import sys
+from os.path import abspath
 
 
 def extract_onelab_parameters(
@@ -81,7 +82,7 @@ def extract_onelab_parameters(
     parameters = {}
 
     for file_path in file_paths:
-        with open(file_path, "r", encoding="utf-8") as file:
+        with open(file_path, encoding="utf-8") as file:
             # Find all DefineConstant blocks
             constant_blocks = define_constant_pattern.findall(file.read())
 
