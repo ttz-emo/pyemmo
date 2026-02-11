@@ -17,7 +17,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+"""
+The ``functions`` subpackage provides a collection of utilities to be used in PyEMMO and by the user.
 
+Modules
+-------
+- :mod:`~pyemmo.functions.`:
+- :mod:`~pyemmo.functions.`:
+- :mod:`~pyemmo.functions.`:
+- :mod:`~pyemmo.functions.`:
+- :mod:`~pyemmo.functions.`:
+- :mod:`~pyemmo.functions.`:
+- :mod:`~pyemmo.functions.`:
+- :mod:`~pyemmo.functions.`:
+- :mod:`~pyemmo.functions.`:
+- :mod:`~pyemmo.functions.`:
+- :mod:`~pyemmo.functions.`:
+"""
 from __future__ import annotations
 
 SETUP_FILE_NAME = "pyemmo_sim_setup.json"

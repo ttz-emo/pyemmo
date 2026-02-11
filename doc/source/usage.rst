@@ -40,16 +40,14 @@ If you want to run simulations on electrical machines, which is probably the rea
 You can either install ONELAB as a bundle of Gmsh and GetDP or install both programms separately.
 Just make sure the executables can be found on your system by setting the `PATH` variable.
 
-.. note:: There is a known bug in the latest Gmsh versions when exporting geometries to the `old` **geo** format: 
-    
+.. note:: There is a known bug in the latest Gmsh versions when exporting geometries to the `old` **geo** format:
+
     For versions greater 4.14.0 the **geo_unrolled** formated output of OpenCascade instances is replaced by the .xao format which does not work properly for the current model generation workflow.
     Thats why the version of the Gmsh Python library (which PyEMMO uses) is limited to version 4.13.
-    Anyway, to visualize the geometry and create the mesh you can use the lastest Gmsh version. 
-    See this `issue <https://gitlab.onelab.info/gmsh/gmsh/-/issues/3214>`_ and this 
+    Anyway, to visualize the geometry and create the mesh you can use the lastest Gmsh version.
+    See this `issue <https://gitlab.onelab.info/gmsh/gmsh/-/issues/3214>`_ and this
     `comment <https://gitlab.onelab.info/gmsh/gmsh/-/blob/master/src/geo/GModelIO_GEO.cpp?ref_type=heads#L1840>`_
     on the ONELAB GitLab page for more info.
 
-Usage
-=====
-
-
+.. Usage
+.. =====
