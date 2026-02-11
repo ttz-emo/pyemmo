@@ -16,7 +16,7 @@ What is PyEMMO
 **PyEMMO is a Python library for the automated modeling of electrical machines in the
 Open-Source finite element software** `ONELAB <https://onelab.info/>`_.
 
-The projects motivation is to **reduce license costs** and accelerate standard tasks 
+The projects motivation is to **reduce license costs** and accelerate standard tasks
 through **parallelization of calculations**.
 
 Its goal is to create a **Open-Source alternative for the calculation of electrical
@@ -51,6 +51,12 @@ Current features are:
    source/usage
    source/gen/pyemmo
    source/wiki
+
+Publications
+============
+
+- `PyEMMO - a Python based software for the finite element modelling of electrical machines in ONELAB <https://nbn-resolving.org/urn:nbn:de:bvb:863-opus-55489>`_
+
 
 Indices and tables
 ==================

@@ -82,6 +82,11 @@ These hooks make sure you have formatted your files correctly.
 
 [GPLv3](https://www.gnu.org/licenses/gpl-3.0.html)
 
+## Publications
+
+- [2023: PyEMMO - a Python based software for the finite element modelling of electrical machines in ONELAB](https://nbn-resolving.org/urn:nbn:de:bvb:863-opus-55489)
+
+
 ## Run Sphinx to create Documentation
 
 To create or update the documentation you will need to do:
