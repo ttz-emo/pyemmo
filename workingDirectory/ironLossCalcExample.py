@@ -29,7 +29,7 @@ import gmsh
 import numpy as np
 from matplotlib import pyplot as plt
 
-from pyemmo.functions.calcIronLoss import write_simple
+from pyemmo.functions.core_loss import write_simple
 
 viewPos = [2, 3, 4, 5]
 

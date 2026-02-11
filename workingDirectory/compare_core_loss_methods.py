@@ -32,7 +32,7 @@ from matplotlib import pyplot as plt
 from pyemmo.definitions import TEST_DIR
 
 # from pyemmo.definitions import ROOT_DIR
-from pyemmo.functions import calcIronLoss, import_results
+from pyemmo.functions import core_loss, import_results
 
 # import tkinter as tk
 # from tkinter import filedialog
@@ -58,7 +58,7 @@ if FREQ_DOMAIN:
     for side in ("rotor", "stator"):
         print(f"run freq. domain iron loss calculation for {side}")
         tstart = clockTime.time()
-        lossesFreq[side], freqs = calcIronLoss.calc_freq_domain_core_loss(
+        lossesFreq[side], freqs = core_loss.calc_freq_domain_core_loss(
             os.path.join(RES_DIR, f"b_{side}.pos"), loss_factors, SYM, AX_LEN
         )
         print(
@@ -85,7 +85,7 @@ if TIME_DOMAIN:
     for side in ["rotor", "stator"]:
         print(f"run time domain iron loss calculation for {side}")
         tstart = clockTime.time()
-        losses[side], time = calcIronLoss.calc_time_domain_core_loss(
+        losses[side], time = core_loss.calc_time_domain_core_loss(
             os.path.join(RES_DIR, f"b_{side}.pos"), loss_factors, SYM, AX_LEN
         )
         print(

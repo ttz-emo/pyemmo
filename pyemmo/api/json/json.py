@@ -40,7 +40,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from ... import log_formatter
-from ...functions import calcIronLoss, clean_name, import_results, plot, runOnelab
+from ...functions import clean_name, core_loss, import_results, plot, runOnelab
 from ...script.geometry.machineAllType import MachineAllType
 from ...script.geometry.rotor import Rotor
 from ...script.geometry.stator import Stator
@@ -834,7 +834,7 @@ def _run_core_loss_calculation(resPath, apiScript: Script):
     ):
         # FIXME: Material properties should be given valid
         lossParams = rotorMat.lossParams
-        ironLossR, _ = calcIronLoss.main(
+        ironLossR, _ = core_loss.main(
             brFilePath,
             loss_factor={
                 "hyst": lossParams[0],
@@ -845,7 +845,7 @@ def _run_core_loss_calculation(resPath, apiScript: Script):
             axial_length=machine.rotor.axialLength,
         )
         lossParams = statorMat.lossParams
-        ironLossS, time = calcIronLoss.main(
+        ironLossS, time = core_loss.main(
             bsFilePath,
             loss_factor={
                 "hyst": lossParams[0],
@@ -855,20 +855,12 @@ def _run_core_loss_calculation(resPath, apiScript: Script):
             sym_factor=machine.symmetryFactor,
             axial_length=machine.stator.axialLength,
         )
-        calcIronLoss.write_simple(
-            join(resPath, "Pv_hyst_R.dat"), time, ironLossR["hyst"]
-        )
-        calcIronLoss.write_simple(
-            join(resPath, "Pv_hyst_S.dat"), time, ironLossS["hyst"]
-        )
-        calcIronLoss.write_simple(
-            join(resPath, "Pv_eddy_R.dat"), time, ironLossR["eddy"]
-        )
-        calcIronLoss.write_simple(
-            join(resPath, "Pv_eddy_S.dat"), time, ironLossS["eddy"]
-        )
-        calcIronLoss.write_simple(join(resPath, "Pv_exc_R.dat"), time, ironLossR["exc"])
-        calcIronLoss.write_simple(join(resPath, "Pv_exc_S.dat"), time, ironLossS["exc"])
+        core_loss.write_simple(join(resPath, "Pv_hyst_R.dat"), time, ironLossR["hyst"])
+        core_loss.write_simple(join(resPath, "Pv_hyst_S.dat"), time, ironLossS["hyst"])
+        core_loss.write_simple(join(resPath, "Pv_eddy_R.dat"), time, ironLossR["eddy"])
+        core_loss.write_simple(join(resPath, "Pv_eddy_S.dat"), time, ironLossS["eddy"])
+        core_loss.write_simple(join(resPath, "Pv_exc_R.dat"), time, ironLossR["exc"])
+        core_loss.write_simple(join(resPath, "Pv_exc_S.dat"), time, ironLossS["exc"])
     else:
         logger.warning(
             "IRON LOSS CALCULATION: field file 'b_rotor.pos' or 'b_stator.pos'"

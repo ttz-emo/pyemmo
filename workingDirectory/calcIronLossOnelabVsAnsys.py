@@ -42,7 +42,7 @@ if ROOT_DIR not in sys.path:
 from pyemmo.api import json
 
 # from pyemmo.functions import importResults as imp
-from pyemmo.functions import calcIronLoss, runOnelab
+from pyemmo.functions import core_loss, runOnelab
 
 RES_DIR = (
     r"C:\Users\ganser\AppData\Roaming\pyemmo\Results\res_Test_1FE1051-4HF11_TherCom"
@@ -105,7 +105,7 @@ def runCalcforCurrent(stromdq):
     for side in ["rotor", "stator"]:
         bFilePath = os.path.join(resDir, f"b_{side}.pos")
         try:
-            ironLoss, _ = calcIronLoss.main(
+            ironLoss, _ = core_loss.main(
                 bFilePath,
                 loss_factor={"hyst": 172.04, "eddy": 1.05, "exc": 0},
                 sym_factor=4,

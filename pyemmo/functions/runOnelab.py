@@ -32,7 +32,7 @@ from os.path import expanduser, isdir, isfile, join, normpath, splitext
 from shutil import which
 from subprocess import PIPE, STDOUT, Popen
 
-from . import SETUP_FILE_NAME, calcIronLoss, import_results
+from . import SETUP_FILE_NAME, core_loss, import_results
 
 
 def log_subprocess_output(pipe: BufferedReader, stderr: BufferedReader = None):
@@ -586,7 +586,7 @@ def runCalcforCurrent(param: dict) -> dict:
             totalLoss = 0
             for _, side in enumerate(["rotor", "stator"]):
                 bFilePath = os.path.join(simulation_res_dir, f"b_{side}.pos")
-                lossDict, time = calcIronLoss.main(
+                lossDict, time = core_loss.main(
                     bFilePath,
                     loss_factor={
                         "hyst": param["hyst"],
@@ -603,7 +603,7 @@ def runCalcforCurrent(param: dict) -> dict:
                         simulation_res_dir,
                         str(loss_type) + f"Loss_{side}" + ".dat",
                     )
-                    calcIronLoss.write_simple(core_loss_res_file, time, loss_data)
+                    core_loss.write_simple(core_loss_res_file, time, loss_data)
                     # with open(ironLossResFile, mode="w+", encoding="utf-8") as file:
                     #     lossDataJSON = json.dumps(ironLossDictList, indent=3)
                     #     file.write(lossDataJSON)
