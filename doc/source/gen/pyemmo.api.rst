@@ -1,8 +1,8 @@
 pyemmo.api package
 ==================
 
-Module contents
----------------
+.. Module contents
+.. ---------------
 
 .. automodule:: pyemmo.api
    :members:
@@ -25,4 +25,3 @@ Submodules
    :maxdepth: 2
 
    pyemmo.api.machine_segment_surface
-

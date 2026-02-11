@@ -40,7 +40,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from ... import log_formatter
-from ...functions import calcIronLoss, clean_name, import_results, runOnelab, plot
+from ...functions import calcIronLoss, clean_name, import_results, plot, runOnelab
 from ...script.geometry.machineAllType import MachineAllType
 from ...script.geometry.rotor import Rotor
 from ...script.geometry.stator import Stator
@@ -685,7 +685,9 @@ def _check_symmetry(
 
     Raises:
         ValueError: If the symmetry factor is not compatible with the minimal symmetry
-        of the machine.
+            of the machine.
+
+    :meta private:
     """
     logger = logging.getLogger(__name__)
     logger.debug("Checking symmetry for given model...")
@@ -710,6 +712,8 @@ def _open_onelab(
 ):
     """
     Private function to open ONELAB simulation in GUI and evaluate results
+
+    :meta private:
     """
     logger = logging.getLogger(__name__)
     # check if gmsh was provided
@@ -797,6 +801,8 @@ def _run_core_loss_calculation(resPath, apiScript: Script):
     Args:
         resPath (str): Path to the results directory.
         apiScript (Script): Script object.
+
+    :meta private:
     """
     logger = logging.getLogger(__name__)
     machine = apiScript.machine
@@ -880,6 +886,8 @@ def is_single_transient(res_dir: str) -> bool:
 
     Returns:
         bool: True if nbr_sims = 1 && nbr_timesteps > 1 otherwise False.
+
+    :meta private:
     """
     # This function checks a results folder for .dat results files and
     # determines if the results are transient

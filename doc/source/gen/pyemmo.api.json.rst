@@ -3,6 +3,8 @@
 pyemmo.api.json package
 =======================
 
+Overview
+--------
 .. toctree::
    :maxdepth: 1
 
@@ -14,7 +16,9 @@ You can call the API via the command line using the following command:
 
    $ python -m pyemmo.api.json /path/to/geo.json /path/to/machineInfo.json
 
-Or you can use a Python script to execute the :func:`~pyemmo.api.json.json.main` function of the :mod:`~pyemmo.api.json.json` module, like this:
+See the :ref:`section-command-line-interface` section below for more details on the command line options.
+
+Alternatively you can use a Python script to execute the :func:`~pyemmo.api.json.json.main` function of the :mod:`~pyemmo.api.json.json` module, like this:
 
 .. code-block:: python
 
@@ -40,6 +44,8 @@ Input Structure
 ---------------
 The input to the json api are two structures (Python dictionaries or json files), one for the geometry and material definition of the individual machine surfaces and another one for the machine properties.
 This section highlights the format of those two structures.
+
+.. _section-pyemmo.api.json-geo:
 
 1. Geometry Structure
 '''''''''''''''''''''
@@ -220,7 +226,7 @@ See `this <https://getdp.info/doc/texinfo/getdp.html#Types-for-Resolution:~:text
 .. csv-table:: Relevant Parameters for the JSON API
    :header: "ParameterName", "Description", "Format"
    :width: 50%
-   
+
    "winding", "Winding layout in `SWAT-EM format <https://swat-em.readthedocs.io/en/latest/reference.html#swat_em.datamodel.datamodel.set_phases>`_ or use 'auto' to create winding", "array of signed int"
    "NpP", "Number of parallel paths per winding phase", "int"
    "Ntps", "Number of wires per slot surface", "int or float"
@@ -318,7 +324,7 @@ Example for file content in json format:
       "flag_openGUI": false
    }
 
-
+.. _section-command-line-interface:
 
 Command-line Interface
 ----------------------
@@ -354,6 +360,19 @@ The default path for the model result files (`mod` path) is a new folder in the 
 For Windows this will be something like :file:`C:/Users/USER_NAME/AppData/Roaming/pyemmo/Results`.
 By default the results directory for the simulation results will be stored in the same folder as the onelab simulation files created by PyEMMO. The folder name defaults to :file:`/res_MODEL_NAME`.
 
+
+Current Limitations
+-------------------
+The following design and geometry limitations are known for the coupling to Pyleecan:
+
+- Multi-phase windings with $m != 3$.
+- Number of winding layers > 2 (not supported by SWAT-EM).
+- Multi rotor or stator machines.
+- Wound rotor machines, like electrically excited synchronous machines or wound induction machines.
+- Multi-cage induction motors.
+- No multi-layered surface subtractions (you cannot cut out of tool surfaces in the api).
+- No overlaping surfaces, e.g. air box overlaping magnet (does not work in pyleecan aswell).
+
 .. _section-pyemmo.api.json:
 
 Module contents
@@ -370,9 +389,9 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   pyemmo.api.json.boundaryJSON
-   pyemmo.api.json.create_airgaps
-   pyemmo.api.json.get_coilspan
-   pyemmo.api.json.importJSON
    pyemmo.api.json.json
+   pyemmo.api.json.importJSON
    pyemmo.api.json.modelJSON
+   pyemmo.api.json.create_airgaps
+   pyemmo.api.json.boundaryJSON
+   pyemmo.api.json.get_coilspan
