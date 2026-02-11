@@ -32,7 +32,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from pyemmo.api.pyleecan.main import main
-from pyemmo.functions.runOnelab import runCalcforCurrent
+from pyemmo.functions.run_onelab import runCalcforCurrent
 
 from ... import GETDP_EXE, GMSH_EXE, TEST_DATA_DIR
 from ... import TEST_TEMP_DIR as TESTS_RESULTS_DIR

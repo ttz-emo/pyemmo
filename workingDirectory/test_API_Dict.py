@@ -46,7 +46,7 @@ path.append(rootname)
 # from pyemmo.script.geometry.stator import Stator
 # from pyemmo.script.geometry.machineAllType import MachineAllType
 import pyemmo.api.json.json as api
-from pyemmo.functions.runOnelab import findGmsh
+from pyemmo.functions.run_onelab import findGmsh
 
 # import subprocess
 # from matplotlib import pyplot as plt

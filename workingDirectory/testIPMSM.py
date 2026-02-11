@@ -30,7 +30,7 @@ from os import path
 from swat_em import datamodel
 
 from pyemmo.definitions import ROOT_DIR
-from pyemmo.functions import runOnelab
+from pyemmo.functions import run_onelab
 from pyemmo.script.geometry.machineIPMSM import MachineIPMSM
 from pyemmo.script.geometry.point import Point
 from pyemmo.script.material.material import Material
@@ -172,9 +172,9 @@ print(f"\n Generation of script took {stopTime-startTime} seconds.")
 
 # %%
 proFilePath = path.join(testIPMSM_Script.scriptPath, testIPMSM_Script.name + ".pro")
-command = runOnelab.createCmdCommand(
+command = run_onelab.createCmdCommand(
     onelabFile=path.abspath(proFilePath),
-    gmshPath=runOnelab.findGmsh(),
+    gmshPath=run_onelab.findGmsh(),
     useGUI=True,
 )
 subprocess.run(command, check=False)

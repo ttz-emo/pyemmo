@@ -25,7 +25,7 @@ from __future__ import annotations
 import os
 import subprocess
 
-from pyemmo.functions.runOnelab import createGMSHCommand
+from pyemmo.functions.run_onelab import createGMSHCommand
 from tests import GMSH_EXE, TEST_DATA_DIR
 
 

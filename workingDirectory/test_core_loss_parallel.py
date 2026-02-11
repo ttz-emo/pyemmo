@@ -41,7 +41,7 @@ if ROOT_DIR not in sys.path:
 
 
 # from pyemmo.functions import importResults as imp
-from pyemmo.functions import runOnelab
+from pyemmo.functions import run_onelab
 
 if __name__ == "__main__":
     # set result directory
@@ -107,7 +107,7 @@ if __name__ == "__main__":
 
     ##  run simulations
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(runOnelab.runCalcforCurrent, paramDictList)
+        results = executor.map(run_onelab.runCalcforCurrent, paramDictList)
 
     res_list = [result for result in results]
 

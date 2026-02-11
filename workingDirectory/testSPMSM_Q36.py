@@ -33,7 +33,7 @@ from os import mkdir, path
 from swat_em import datamodel
 
 from pyemmo.definitions import ROOT_DIR
-from pyemmo.functions.runOnelab import createCmdCommand
+from pyemmo.functions.run_onelab import createCmdCommand
 from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
 
 # from pyemmo.definitions import RESULT_DIR, MAIN_DIR

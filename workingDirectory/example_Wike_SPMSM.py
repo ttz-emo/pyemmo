@@ -46,7 +46,7 @@ except ImportError:
     from pyemmo.script.script import Script
 
 from pyemmo.definitions import ROOT_DIR
-from pyemmo.functions.runOnelab import createCmdCommand
+from pyemmo.functions.run_onelab import createCmdCommand
 from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
 from pyemmo.script.geometry.point import Point
 from pyemmo.script.material.electricalSteel import Material

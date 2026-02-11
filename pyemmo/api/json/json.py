@@ -40,7 +40,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from ... import log_formatter
-from ...functions import clean_name, core_loss, import_results, plot, runOnelab
+from ...functions import clean_name, core_loss, import_results, plot, run_onelab
 from ...script.geometry.machineAllType import MachineAllType
 from ...script.geometry.rotor import Rotor
 from ...script.geometry.stator import Stator
@@ -720,13 +720,13 @@ def _open_onelab(
     if not gmsh:
         # if gmsh was not provided, try to find it:
         logger.debug("Gmsh path not given. Trying to find Gmsh...")
-        gmsh = runOnelab.findGmsh()
+        gmsh = run_onelab.findGmsh()
     else:
         # if gmsh was given by the user, check that its valid
         if not isfile(gmsh):
             raise FileNotFoundError(f"Provided gmsh executable was not found: {gmsh}")
     proFile = apiScript.proFilePath  # path to .pro file
-    command = runOnelab.createCmdCommand(
+    command = run_onelab.createCmdCommand(
         onelabFile=proFile,
         gmshPath=gmsh,
         getdpPath=getdp,

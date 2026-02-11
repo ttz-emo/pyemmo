@@ -44,7 +44,7 @@ except:
     from pyemmo.script.script import Script
 
 from pyemmo.definitions import RESULT_DIR
-from pyemmo.functions.runOnelab import createCmdCommand
+from pyemmo.functions.run_onelab import createCmdCommand
 from pyemmo.script.geometry.airArea import AirArea
 from pyemmo.script.geometry.airGap import AirGap
 from pyemmo.script.geometry.circleArc import CircleArc

@@ -24,7 +24,7 @@ from __future__ import annotations
 import subprocess
 
 from pyemmo.definitions import RESULT_DIR
-from pyemmo.functions.runOnelab import createCmdCommand
+from pyemmo.functions.run_onelab import createCmdCommand
 from pyemmo.script.geometry.line import Line
 from pyemmo.script.geometry.point import Point
 from pyemmo.script.geometry.spline import Spline

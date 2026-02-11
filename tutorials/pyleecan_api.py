@@ -162,7 +162,7 @@ import time
 
 import numpy as np
 
-from pyemmo.functions.runOnelab import findGetDP, runCalcforCurrent
+from pyemmo.functions.run_onelab import findGetDP, runCalcforCurrent
 
 # Simulation parameters
 n = 1500

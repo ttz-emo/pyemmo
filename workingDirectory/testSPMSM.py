@@ -32,7 +32,7 @@ from swat_em import datamodel
 
 from pyemmo.definitions import ROOT_DIR
 from pyemmo.functions.import_results import plot_all_dat
-from pyemmo.functions.runOnelab import createCmdCommand, findGetDP, findGmsh
+from pyemmo.functions.run_onelab import createCmdCommand, findGetDP, findGmsh
 from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
 
 # from pyemmo.definitions import RESULT_DIR, MAIN_DIR

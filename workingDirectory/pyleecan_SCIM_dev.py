@@ -27,14 +27,13 @@ import logging
 # %%
 import os
 
-from numpy import deg2rad
 from pyleecan.Classes.MachineSCIM import MachineSCIM
 from pyleecan.definitions import DATA_DIR
 from pyleecan.Functions import load
 
 from pyemmo.api.pyleecan import main as pyleecanAPI
 from pyemmo.definitions import ROOT_DIR
-from pyemmo.functions.runOnelab import findGetDP, findGmsh, runCalcforCurrent
+from pyemmo.functions.run_onelab import findGetDP, findGmsh, runCalcforCurrent
 
 # disable messages of matplotlib
 logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)

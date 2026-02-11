@@ -31,7 +31,7 @@ from swat_em import analyse, datamodel
 
 from pyemmo.definitions import RESULT_DIR
 from pyemmo.functions.import_results import plot_all_dat
-from pyemmo.functions.runOnelab import createCmdCommand
+from pyemmo.functions.run_onelab import createCmdCommand
 from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
 from pyemmo.script.geometry.point import Point
 

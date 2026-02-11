@@ -163,7 +163,7 @@ myScript.generateScript()
 
 
 # %%
-from pyemmo.functions.runOnelab import createCmdCommand
+from pyemmo.functions.run_onelab import createCmdCommand
 
 subprocess.run(
     createCmdCommand(

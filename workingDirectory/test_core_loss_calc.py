@@ -48,7 +48,7 @@ from pyemmo.api import json
 from pyemmo.definitions import RESULT_DIR
 
 # from pyemmo.functions import importResults as imp
-from pyemmo.functions import core_loss, runOnelab
+from pyemmo.functions import core_loss, run_onelab
 
 
 def log_subprocess_output(pipe: subprocess.PIPE):
@@ -124,7 +124,7 @@ for iStrom, stromdq in enumerate(idq.transpose()):
     resDir = os.path.join(RES_DIR, resId)
     if not os.path.isdir(resDir):
         # only run if dir not exists
-        cmdCommand = runOnelab.createCmdCommand(
+        cmdCommand = run_onelab.createCmdCommand(
             proFile,
             False,
             gmshPath=gmshPath,
