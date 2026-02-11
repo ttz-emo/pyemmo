@@ -23,5 +23,5 @@ Submodules
    pyemmo.functions.onelab_paramters
    pyemmo.functions.phase
    pyemmo.functions.plot
-   pyemmo.functions.runOnelab
+   pyemmo.functions.run_onelab
    pyemmo.functions.transform_coords

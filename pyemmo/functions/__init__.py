@@ -22,17 +22,16 @@ The ``functions`` subpackage provides a collection of utilities to be used in Py
 
 Modules
 -------
-- :mod:`~pyemmo.functions.`:
-- :mod:`~pyemmo.functions.`:
-- :mod:`~pyemmo.functions.`:
-- :mod:`~pyemmo.functions.`:
-- :mod:`~pyemmo.functions.`:
-- :mod:`~pyemmo.functions.`:
-- :mod:`~pyemmo.functions.`:
-- :mod:`~pyemmo.functions.`:
-- :mod:`~pyemmo.functions.`:
-- :mod:`~pyemmo.functions.`:
-- :mod:`~pyemmo.functions.`:
+- :mod:`~pyemmo.functions.clean_name`: defines function :func:`clean_name` to modify strings to be valid ONELAB variable names (C-programming style)
+- :mod:`~pyemmo.functions.core_loss`: defines functions to calculate core losses from flux density simulation results.
+- :mod:`~pyemmo.functions.init_environment`: defines functions to initialize the PyEMMO program environment.
+- :mod:`~pyemmo.functions.maxwell`: defines functions to import and export data from ANSYS Maxwell.
+- :mod:`~pyemmo.functions.import_results`: defines functions to import simulation results from ONELAB result files (.dat and .pos).
+- :mod:`~pyemmo.functions.onelab_parameters`: defines functions to parse ONELAB parameters from .geo and .pro files.
+- :mod:`~pyemmo.functions.phase`: defines functions to convert phase names and angles for three and multi-phase systems.
+- :mod:`~pyemmo.functions.plot`: defines a general plot function to visualize PyEMMO geometries.
+- :mod:`~pyemmo.functions.run_onelab`: defines functions to run ONELAB simulations.
+- :mod:`~pyemmo.functions.transform_coords`: defines general functions for coordinate system transformations used in PyEMMO.
 """
 from __future__ import annotations
 
