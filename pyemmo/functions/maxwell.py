@@ -21,13 +21,24 @@
 from __future__ import annotations
 
 import csv
+import logging
 import os
+from math import pi
 
 import numpy as np
 
 from ..definitions import RESULT_DIR
 from ..script.material.material import Material
 from . import clean_name
+
+try:
+    import defusedxml.ElementTree as ET
+except ImportError:
+    logging.getLogger(__name__).warning(
+        "defusedxml package not found! XML parsing for Maxwell material data will not work!"
+    )
+except Exception as e:
+    raise e
 
 
 def import_tab(filepath: str) -> tuple[list[str], np.ndarray]:
@@ -182,3 +193,114 @@ def export_tab(data: list, identifier: list[str], filepath: str) -> None:
 
     with open(filepath, encoding="utf-8", mode="w") as tabFile:
         tabFile.write(fileContent)
+
+
+def _get_material_array(
+    xmlPath: str,
+) -> list[dict[str, str | float | list[float]]]:
+    """This function is a parser specifically designed for XML documents created from
+    Maxwell material data (.amat).
+    The complete path of the XML file serves as input.
+    A list of all materials and their properties:
+
+        - electrical conductivity
+        - magnetic conductivity
+        - magnetization curve
+
+    is provided to the user as an output variable. All values are converted to SI units.
+
+    The output dicts look like:
+
+    .. code-block:: python
+
+        {
+            "name": name,
+            "conductivity": value,
+            "relativePermeability": value,
+            "BH": {
+                "B": valuesOfB,
+                "H": valuesOfH,
+            }
+        }
+
+    Args:
+        xmlPath (str): path to the xml file.
+
+    Returns:
+        List[Dict[str, Union[str, float, List[float]]]]: List of material dicts.
+
+    :meta private:
+    """
+    # Parser mit der Funktion aus Modul xml.etree.ElementTree
+    root = ET.parse(xmlPath).getroot()
+
+    # Leere Material-Liste (OUTPUT)
+    materialArray = []
+
+    # for-Schleife für jedes einzelne Material in root (alle Roh-daten die geparst wurden).
+    for mat in root:
+        ###Name des Materials
+        name = mat.tag
+        # Alle '-' Zeichen durch '_' ersetzen, da sonst die Weiterverarbeitung mit SQL eine Fehlermeldung bringt.
+        name = name.replace("-", "_")
+        # Material Dictionary erstellen. Die Dictionary werden nach und nach in die Material-Liste abgespeichert.
+        matDict = {"name": name}
+        # Wenn ein Material eine Magnetisierungskurve besitzt, werden die Listen B[] und H[] befüllt.
+        B = []
+        H = []
+        unitH = ""
+        unitB = ""
+
+        for matAttr in mat:
+            # Material besitzt Informationen über die elektrische Leitfähigkeit.
+            if matAttr.tag == "conductivity":
+                matDict["conductivity"] = matAttr.text
+            # Material besitzt Informatinen über die magnetische Leitfähigkeit.
+            if matAttr.tag == "permeability":
+                matDict["relativePermeability"] = matAttr.text
+            # Einheit von H der BH-Kurve bestimmen.
+            if matAttr.tag == "permHUnite":
+                unitH = matAttr.text
+            # Einheit von B der BH-Kurve bestimmen.
+            if matAttr.tag == "permBUnit":
+                unitB = matAttr.text
+            # BH-Kurve importieren.
+            if matAttr.tag == "permBHcurve":
+                # Alle H-Werte importieren
+                for hElem in matAttr[0]:
+                    hVal = float(hElem.text)
+                    # Werte in SI-Einheiten umrechnen.
+                    if unitH in ("Oe", "oe"):
+                        hSI = 4 * pi * hVal / 1000
+                    elif unitH == "kA_per_meter":
+                        hSI = hVal / 1000
+                    elif unitH == "A_per_meter":
+                        hSI = hVal
+                    else:
+                        raise ValueError(
+                            "Unit for magnetic field strength not defined."
+                        )
+                    # H-Wert in der H[]-Liste abspeichern (nach einander).
+                    H.append(hSI)
+
+                # Alle B-Werte importieren
+                for bElem in matAttr[1]:
+                    bVal = float(bElem.text)
+                    # Werte in SI-Einheiten umrechnen.
+                    if unitB.lower() == "gauss":
+                        bSI = bVal * 1e4
+                    elif unitB.lower() == "tesla":
+                        bSI = bVal
+                    else:
+                        raise ValueError("Unit for magnetic flux density not defined.")
+                    # B-Wert in der B[]-Liste abspeichern (nach einander).
+                    B.append(bSI)
+                # Listen in ein BH-Dict abspeichern.
+                bhDict = {"B": B, "H": H}
+                # BH-Dict in matDict abspeichern.
+                matDict["BH"] = bhDict
+        # Material-Liste (OUTPUT) mit den einzelnen Material-Dicts befüllen.
+        if len(matDict) > 1:
+            materialArray.append(matDict)
+    # Material-Liste mit den einzelnen Materialien (Dict) zurück geben.
+    return materialArray
