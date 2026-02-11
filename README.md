@@ -29,7 +29,7 @@ to write your content. -->
 # PyEMMO
 _**Py**thon **E**lectrical **M**achine **M**odelling in **O**NELAB_
 
-PyEMMO is a interface for modeling electrical machines in the open-source FEA software [Onelab](https://onelab.info/).
+PyEMMO is a interface for modeling electrical machines in the open-source FEA software [ONELAB](https://onelab.info/).
 The goal of the project is to automate model creation and the simulation workflow for electrical machines with ONELAB.
 <!-- That's why it name stands for **Py**thon **E**lectrical **M**achine **M**odelling in **O**NELAB -->
 
@@ -45,7 +45,7 @@ pip install pyemmo
 You will need versions of [Gmsh](https://gmsh.info/) and [GetDP](https://getdp.info/) executables. While Gmsh can be directly installed from pip with the Gmsh Python-API, you will need to download GetDP individually.
 > [!WARNING]
 > Models created with PyEMMO fail with current GetDP version 3.6.0 due to mesh import error!
-> You can check your GetDP version wirh  ``getdp --version``
+> You can check your GetDP version with  ``getdp --version``
 
 ## Usage
 
@@ -63,7 +63,9 @@ Please make sure to update tests as appropriate.
 
 ### Setup
 
-After cloning the repository, run the following command to install Git hooks:
+After cloning the repository you should install pre-commit package using ``pip install pre-commit``.
+After that please update the ``INSTALL_PYTHON`` path in the pre-commit hook under "./workingDirectory/pre-commit".
+Then run the following command to install the Git hooks:
 
 ```sh
 ./workingDirectory/install-hooks.sh
@@ -74,6 +76,7 @@ Or if you are on Windows:
 ```sh
 install-hooks.bat
 ```
+These hooks make sure you have formatted your files correctly.
 
 ## License
 
@@ -87,6 +90,6 @@ To create or update the documentation you will need to do:
 2. Make sure pyemmo is found by either creating a *pyemmo.pth* file in the *site-packages* folder or use `pip install -e .`.
 3. To fully build the documentation including the pyleecan api subpackage you need to install pyleecan. Currently we have to use the Github version since the new release is not out yet: `pip install git+https://gitlab.com/Eomys/pyleecan/tree/update-python-version.git`
 4. Run Sphinx to build the docs e.g. in html `doc\make.bat html`.
-   
+
 You can run `doc\make.bat` plane to see the build options.
 Futher information on building the documentation can be found in the [Sphinx documentation](https://www.sphinx-doc.org/en/master/tutorial/index.html).
