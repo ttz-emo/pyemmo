@@ -1,0 +1,16 @@
+digraph "packages_PyEMMO.functions" {
+rankdir=BT
+charset="utf-8"
+"pyemmo.functions" [color="black", label=<pyemmo.functions>, shape="box", style="solid"];
+"pyemmo.functions.clean_name" [color="black", label=<pyemmo.functions.clean_name>, shape="box", style="solid"];
+"pyemmo.functions.core_loss" [color="black", label=<pyemmo.functions.core_loss>, shape="box", style="solid"];
+"pyemmo.functions.import_results" [color="black", label=<pyemmo.functions.import_results>, shape="box", style="solid"];
+"pyemmo.functions.init_environment" [color="black", label=<pyemmo.functions.init_environment>, shape="box", style="solid"];
+"pyemmo.functions.maxwell" [color="black", label=<pyemmo.functions.maxwell>, shape="box", style="solid"];
+"pyemmo.functions.onelab_parameters" [color="black", label=<pyemmo.functions.onelab_parameters>, shape="box", style="solid"];
+"pyemmo.functions.phase" [color="black", label=<pyemmo.functions.phase>, shape="box", style="solid"];
+"pyemmo.functions.plot" [color="black", label=<pyemmo.functions.plot>, shape="box", style="solid"];
+"pyemmo.functions.run_onelab" [color="black", label=<pyemmo.functions.run_onelab>, shape="box", style="solid"];
+"pyemmo.functions.transform_coords" [color="black", label=<pyemmo.functions.transform_coords>, shape="box", style="solid"];
+"pyemmo.functions.core_loss" -> "pyemmo.functions.import_results" [arrowhead="open", arrowtail="none"];
+}

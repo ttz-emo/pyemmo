@@ -1,0 +1,36 @@
+digraph "packages_PyEMMO.script.gmsh" {
+rankdir=BT
+charset="utf-8"
+"pyemmo.script.gmsh" [color="black", label=<pyemmo.script.gmsh>, shape="box", style="solid"];
+"pyemmo.script.gmsh.create_gmsh_curve" [color="black", label=<pyemmo.script.gmsh.create_gmsh_curve>, shape="box", style="solid"];
+"pyemmo.script.gmsh.gmsh_arc" [color="black", label=<pyemmo.script.gmsh.gmsh_arc>, shape="box", style="solid"];
+"pyemmo.script.gmsh.gmsh_geometry" [color="black", label=<pyemmo.script.gmsh.gmsh_geometry>, shape="box", style="solid"];
+"pyemmo.script.gmsh.gmsh_line" [color="black", label=<pyemmo.script.gmsh.gmsh_line>, shape="box", style="solid"];
+"pyemmo.script.gmsh.gmsh_point" [color="black", label=<pyemmo.script.gmsh.gmsh_point>, shape="box", style="solid"];
+"pyemmo.script.gmsh.gmsh_segment_surface" [color="black", label=<pyemmo.script.gmsh.gmsh_segment_surface>, shape="box", style="solid"];
+"pyemmo.script.gmsh.gmsh_spline" [color="black", label=<pyemmo.script.gmsh.gmsh_spline>, shape="box", style="solid"];
+"pyemmo.script.gmsh.gmsh_surface" [color="black", label=<pyemmo.script.gmsh.gmsh_surface>, shape="box", style="solid"];
+"pyemmo.script.gmsh.utils" [color="black", label=<pyemmo.script.gmsh.utils>, shape="box", style="solid"];
+"pyemmo.script.gmsh.create_gmsh_curve" -> "pyemmo.script.gmsh.gmsh_arc" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.gmsh.create_gmsh_curve" -> "pyemmo.script.gmsh.gmsh_line" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.gmsh.create_gmsh_curve" -> "pyemmo.script.gmsh.gmsh_spline" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.gmsh.gmsh_arc" -> "pyemmo.script.gmsh.gmsh_geometry" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.gmsh.gmsh_arc" -> "pyemmo.script.gmsh.gmsh_line" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.gmsh.gmsh_arc" -> "pyemmo.script.gmsh.gmsh_point" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.gmsh.gmsh_line" -> "pyemmo.script.gmsh.gmsh_geometry" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.gmsh.gmsh_line" -> "pyemmo.script.gmsh.gmsh_point" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.gmsh.gmsh_point" -> "pyemmo.script.gmsh.gmsh_geometry" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.gmsh.gmsh_segment_surface" -> "pyemmo.script.gmsh.gmsh_line" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.gmsh.gmsh_segment_surface" -> "pyemmo.script.gmsh.gmsh_surface" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.gmsh.gmsh_spline" -> "pyemmo.script.gmsh.gmsh_geometry" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.gmsh.gmsh_spline" -> "pyemmo.script.gmsh.gmsh_line" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.gmsh.gmsh_spline" -> "pyemmo.script.gmsh.gmsh_point" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.gmsh.gmsh_surface" -> "pyemmo.script.gmsh.create_gmsh_curve" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.gmsh.gmsh_surface" -> "pyemmo.script.gmsh.gmsh_arc" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.gmsh.gmsh_surface" -> "pyemmo.script.gmsh.gmsh_geometry" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.gmsh.gmsh_surface" -> "pyemmo.script.gmsh.gmsh_line" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.gmsh.gmsh_surface" -> "pyemmo.script.gmsh.gmsh_point" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.gmsh.utils" -> "pyemmo.script.gmsh.gmsh_arc" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.gmsh.utils" -> "pyemmo.script.gmsh.gmsh_line" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.gmsh.utils" -> "pyemmo.script.gmsh.gmsh_point" [arrowhead="open", arrowtail="none"];
+}

@@ -1,0 +1,7 @@
+digraph "classes_PyEMMO.script.material" {
+rankdir=BT
+charset="utf-8"
+"pyemmo.script.material.electricalSteel.ElectricalSteel" [color="black", fontcolor="black", label=<{ElectricalSteel|lossParams : tuple[float, float, float]<br ALIGN="LEFT"/>referenceFluxDensity : float \| int<br ALIGN="LEFT"/>referenceFrequency : float \| int<br ALIGN="LEFT"/>sheetThickness : float<br ALIGN="LEFT"/>|as_dict(): dict<br ALIGN="LEFT"/>from_dict(mat_dict: dict): ElectricalSteel<br ALIGN="LEFT"/>load(mat_name: str): ElectricalSteel<br ALIGN="LEFT"/>}>, shape="record", style="solid"];
+"pyemmo.script.material.material.Material" [color="black", fontcolor="black", label=<{Material|BH : NDArray<br ALIGN="LEFT"/>conductivity : float \| int<br ALIGN="LEFT"/>density<br ALIGN="LEFT"/>linear : bool<br ALIGN="LEFT"/>name : str<br ALIGN="LEFT"/>relPermeability : float \| int<br ALIGN="LEFT"/>remanence : float \| int<br ALIGN="LEFT"/>tempCoefRem : float \| int<br ALIGN="LEFT"/>thermalCapacity<br ALIGN="LEFT"/>thermalConductivity<br ALIGN="LEFT"/>|as_dict(): dict<br ALIGN="LEFT"/>delete()<br ALIGN="LEFT"/>from_dict(mat_dict: dict): Material<br ALIGN="LEFT"/>get_BH(temperature: float)<br ALIGN="LEFT"/>load(mat_name)<br ALIGN="LEFT"/>plotBHCurve(temp)<br ALIGN="LEFT"/>print(): None<br ALIGN="LEFT"/>save()<br ALIGN="LEFT"/>set_BH(newBH: NDArray, temp: float)<br ALIGN="LEFT"/>}>, shape="record", style="solid"];
+"pyemmo.script.material.electricalSteel.ElectricalSteel" -> "pyemmo.script.material.material.Material" [arrowhead="empty", arrowtail="none"];
+}
