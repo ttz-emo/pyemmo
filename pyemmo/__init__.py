@@ -39,8 +39,8 @@ from os.path import isdir
 from typing import Literal
 
 import numpy as np
-from swat_em import config as swatem_config
 from swat_em import analyse
+from swat_em import config as swatem_config
 
 from .version import __version__
 
@@ -53,9 +53,9 @@ if platform.system() == "Windows":
     USER_DIR = os.path.join(os.environ["APPDATA"], PACKAGE_NAME)
     """System depended pyemmo user directory to store material data and default model
     results.
-    For Windows this is ``%APPDATA%/pyemmo``. For ever other systems its 
+    For Windows this is ``%APPDATA%/pyemmo``. For ever other systems its
     ``%HOME%/.local/share/pyemmo``
-    
+
     :meta hide-value:
     """
     USER_DIR = USER_DIR.replace("\\", "/")
@@ -75,7 +75,7 @@ LOG_FORMAT = f"%(levelname)s - %(name)s - %(message)s"  # pylint: disable=W1309
 # logger? How to handle logging in __main__ files in that case?
 
 pyemmo_package_logger = logging.getLogger("pyemmo")
-"""PyEMMO package file handler. The default log level is set to ``logging.INFO``.
+"""PyEMMO package logger. The default log level is set to ``logging.INFO``.
 
 .. note:: Do not import this from pyemmo but access it by ``logging.getLogger("pyemmo")``.
 """

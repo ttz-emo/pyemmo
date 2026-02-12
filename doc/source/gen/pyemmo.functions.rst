@@ -20,7 +20,7 @@ Submodules
    pyemmo.functions.maxwell
    pyemmo.functions.import_results
    pyemmo.functions.init_environment
-   pyemmo.functions.onelab_paramters
+   pyemmo.functions.onelab_parameters
    pyemmo.functions.phase
    pyemmo.functions.plot
    pyemmo.functions.run_onelab

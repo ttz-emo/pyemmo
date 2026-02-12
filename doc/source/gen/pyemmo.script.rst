@@ -1,9 +1,6 @@
 pyemmo.script package
 =====================
 
-Module contents
----------------
-
 .. automodule:: pyemmo.script
    :members:
    :show-inheritance:

@@ -60,6 +60,7 @@ extensions = [
     # "sphinx.ext.autosectionlabel", # fix warning of duplicate label.
     "sphinx.ext.todo",  # enable todo directive
     "sphinx_rtd_theme",
+    "sphinx.ext.graphviz",
 ]
 
 templates_path = ["_templates"]

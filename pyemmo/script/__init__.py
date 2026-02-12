@@ -18,7 +18,60 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""init of script module"""
+"""
+The script subpackage provides the all necessary functions and classes to create ONELAB
+models.
+
+1. The main class is the :class:`~pyemmo.script.script.Script` class, which creates
+   the geometry (.geo) and model (.pro) files from a PyEMMO
+   :class:`~pyemmo.script.geometry.machineAllType.MachineAllType` object and some
+   additonal parameters.
+2. The :mod:`~pyemmo.script.geometry` subpackage provides classes for:
+
+   - **Basic geometric objects**, like the :class:`~pyemmo.script.geometry.line.Line`
+     class, which are the basis for the ``GmshGeometry`` classes in the
+     :mod:`~pyemmo.script.gmsh` subpackage.
+   - Different types of **PhysicalElements**
+     (= surfaces with phyiscal properties, e.g. :class:`~pyemmo.script.geometry.slot.Slot`
+     , or boundary curves, e.g. :class:`~pyemmo.script.geometry.limitLine.LimitLine`)
+   - **Domains** which are groups of :class:`~pyemmo.script.geometry.physicalElement.PhysicalElement`.
+
+   These classes mirror the object structure of ONELAB models. See
+   `GetDP Groups <https://getdp.info/doc/texinfo/getdp.html#Group>`_ documentation
+   section for more details.
+   For a visual overview of the package structure see the graph below.
+
+
+
+.. graph:: script_subpackage
+
+   "script" -- "Script";
+   "script" -- "geometry";
+   "geometry" -- "Transformable";
+   "Transformable" -- "Point";
+   "Transformable" -- "Line";
+   "Transformable" -- "Surface";
+   "Line" -- "CircleArc";
+   "Line" -- "Spline";
+   "Surface" -- "SegmentSurface";
+   "script" -- "material";
+   "material" -- "Material";
+   "Material" -- "ElectricalSteel";
+   "script" -- "gmsh";
+   "gmsh" -- "GmshGeometry";
+   "GmshGeometry" -- "GmshPoint";
+   "GmshGeometry" -- "GmshLine";
+   "GmshGeometry" -- "GmshSurface";
+   "GmshLine" -- "GmshArc";
+   "GmshLine" -- "GmshSpline";
+   "GmshSurface" -- "GmshSegmentSurface";
+
+|
+|
+
+More text
+
+"""
 
 from __future__ import annotations
 
@@ -60,39 +113,47 @@ DOMAIN_LINEAR = "domainL"
 
 # define default parameters in parameter dict
 default_param_dict: dict[str, dict] = {"GEO": {}, "SYM": {}, "MAT": {}}
-"""Default Script parameters dict, looks like:
-    {\n
-        "GEO": {\n
-            "SYMMETRY_FACTOR": 1,\n
-            "L_AX_R": 1.0,\n
-            "L_AX_S": 1.0,\n
-            "NBR_POLE_PAIRS": 4,\n
-            "NBR_SLOTS": 12,\n
-            "NBR_TURNS_IN_FACE": 20,\n
-            "R_AIRGAP": 0.1,\n
-        }, \n
-        "SYM": {\n
-            "INIT_ROTOR_POS": 0.0,\n
-            "ANGLE_INCREMENT": 0.5,\n
-            "FINAL_ROTOR_POS": 90.0,\n
-            "Id_eff": 0,\n
-            "Iq_eff": 1,\n
-            "FLAG_NL": 1,\n
-            "SPEED_RPM": 1000,\n
-            "PATH_RES": "",\n
-            "ParkAngOffset": None,  # optional\n
-            "ANALYSIS_TYPE": 1,  # optional; 0: static, 1: transient\n
-            "FLAG_CHANGE_ROT_DIR": 0,\n
-            "NBR_PARALLEL_PATHS": 1,\n
-            "CALC_MAGNET_LOSSES": 0,\n
-            "R_ENDRING_SEGMENT": 0.,\n
-            "L_ENDRING_SEGMENT": 0.,\n
-        }, \n
-        "MAT": {\n
-            "VALUE_DENSITY_LAM": 7800,\n
-            "TEMP_MAG": 20,\n
-        }\n
+"""Default parameter dict used in the :class:`~pyemmo.script.script.Script` class to
+initialize the ``Script.simulation_parameters`` attribute.
+
+The default vlaues looks like:
+
+.. code-block:: python
+
+    {
+        "GEO": {
+            "SYMMETRY_FACTOR": 1,
+            "L_AX_R": 1.0,
+            "L_AX_S": 1.0,
+            "NBR_POLE_PAIRS": 4,
+            "NBR_SLOTS": 12,
+            "NBR_TURNS_IN_FACE": 20,
+            "R_AIRGAP": 0.1,
+        },
+        "SYM": {
+            "INIT_ROTOR_POS": 0.0,
+            "ANGLE_INCREMENT": 0.5,
+            "FINAL_ROTOR_POS": 90.0,
+            "Id_eff": 0,
+            "Iq_eff": 1,
+            "FLAG_NL": 1,
+            "SPEED_RPM": 1000,
+            "PATH_RES": "",
+            "ParkAngOffset": None,  # optional
+            "ANALYSIS_TYPE": 1,  # optional; 0: static, 1: transient
+            "FLAG_CHANGE_ROT_DIR": 0,
+            "NBR_PARALLEL_PATHS": 1,
+            "CALC_MAGNET_LOSSES": 0,
+            "R_ENDRING_SEGMENT": 0.,
+            "L_ENDRING_SEGMENT": 0.,
+        },
+        "MAT": {
+            "VALUE_DENSITY_LAM": 7800,
+            "TEMP_MAG": 20,
+        }
     }
+
+:meta hide-value:
 """
 default_param_dict["GEO"] = {
     "SYMMETRY_FACTOR": 1,
@@ -160,33 +221,6 @@ rotorDomainDict = {
     DOMAIN_LIMIT: "Surf_bn0",
 }
 
-# GETDP_DOMAINS ={
-#     DOMAIN_PRIMARY: "Surf_cutA0",
-#     DOMAIN_SECONDARY: "Surf_cutA1",
-#     # "domainS": "",
-#     DOMAIN_CONDUCTING: "StatorC",
-#     DOMAIN_NON_CONDUCTING: "StatorCC",
-#     DOMAIN_MOVINGBAND: "Stator_Bnd_MB",
-#     # "domain": "",
-#     # "domainNL": "",
-#     # "domainL": "",
-#     DOMAIN_AIRGAP: "Stator_Airgap",
-#     DOMAIN_LIMIT: "Surf_Inf",
-
-#     # "domainS": "",
-#     DOMAIN_MAGNET: "Rotor_Magnets",
-#     DOMAIN_BAR: "Rotor_Bars",
-#     DOMAIN_CONDUCTING: "RotorC",
-#     DOMAIN_NON_CONDUCTING: "RotorCC",
-#     DOMAIN_MOVINGBAND: "Rotor_Bnd_MB",
-#     # "domain": "",
-#     # "domainNL": "",
-#     # "domainL": "",
-#     # "rotor_moving": "",
-#     DOMAIN_MOVINGBAND_AUX: "Rotor_Bnd_MBaux",
-#     DOMAIN_AIRGAP: "Rotor_Airgap",
-#     DOMAIN_LIMIT: "Surf_bn0",
-# }
 # additional line for pyemmo version in geo and pro files
 versionStr = f"// This script was created with pyemmo (Version {__version__}"
 # if git module is available, sha is the commit hash. Then add that too
