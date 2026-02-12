@@ -23,16 +23,10 @@ from __future__ import annotations
 
 ###Noch nicht in die Doku. Funktioniert zunächst eingeschränkt für einzelne Linien wie beim Luis.
 # def loadFromStep(self, stepFiles, unit, meshLength):
-try:
-    from .circleArc import CircleArc
-    from .line import Line
-    from .point import Point
-    from .surface import Surface
-except ImportError:
-    from circleArc import CircleArc
-    from line import Line
-    from point import Point
-    from surface import Surface
+from pyemmo.script.geometry.circleArc import CircleArc
+from pyemmo.script.geometry.line import Line
+from pyemmo.script.geometry.point import Point
+from pyemmo.script.geometry.surface import Surface
 
 
 def trimStepData(textLineFromFile):
@@ -156,21 +150,23 @@ def getRawCoordinate(textLineFromFile, idCurve):
 def createCurve(rawCoord, typeCurve, meshLength, unit):
     if typeCurve == "circleArc":
         coord = rawCoordToFloatCoord(rawCoord[2])
-        pC = Point("", coord[0] * unit, coord[1] * unit, coord[2] * unit, meshLength)
-        pC.name = "point_" + str(pC.id)
+        pC = Point(
+            "", coord[0] * unit, coord[1] * unit, coord[2] * unit
+        )  # , meshLength)
+        pC.name = "point_"  # + str(pC.id)
     coord = rawCoordToFloatCoord(rawCoord[0])
-    p1 = Point("", coord[0] * unit, coord[1] * unit, coord[2] * unit, meshLength)
-    p1.name = "point_" + str(p1.id)
+    p1 = Point("", coord[0] * unit, coord[1] * unit, coord[2] * unit)  # , meshLength)
+    p1.name = "point_"  # + str(p1.id)
     coord = rawCoordToFloatCoord(rawCoord[1])
-    p2 = Point("", coord[0] * unit, coord[1] * unit, coord[2] * unit, meshLength)
-    p2.name = "point_" + str(p2.id)
+    p2 = Point("", coord[0] * unit, coord[1] * unit, coord[2] * unit)  # , meshLength)
+    p2.name = "point_"  # + str(p2.id)
 
     if typeCurve == "circleArc":
         curve1 = CircleArc("", p1, pC, p2)
-        curve1.name = "curve_" + str(curve1.id)
+        curve1.name = "curve_"  # + str(curve1.id)
     else:
         curve1 = Line("", p1, p2)
-        curve1.name = "curve_" + str(curve1.id)
+        curve1.name = "curve_"  # + str(curve1.id)
     return curve1
 
 
