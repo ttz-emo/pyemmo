@@ -20,46 +20,40 @@
 """Module for AirArea Physical Element"""
 from __future__ import annotations
 
-from .physicalElement import Material, PhysicalElement, Surface
+from ..geometry.circleArc import CircleArc, Line
+from ..geometry.spline import Spline
+from ..geometry.surface import Surface
+from ..material.material import Material
+from .physicalElement import PhysicalElement
 
 
-class AirArea(PhysicalElement):
+class AirGap(PhysicalElement):
     """
-    Eine Instanz der Klasse AirArea beschreibt jeden beliebigen Luftraum innerhalb der
-    elektrischen Maschine im dreidimensionalen Raum. Für den Luftspalt existiert eine eigene
-    Klasse AirGap. Diese Klasse ist eine abgeleitete Klasse der Basisklasse PhysicalElement.
+    Eine Instanz der AirGap ist ein Teil des Luftspalts einer elektrischen Maschine im
+    dreidimensionalen Raum. Diese Klasse beschreibt sowohl den Luftraum auf der Rotor sowie auf
+    der Stator-Seite.
+
+        \\image html class_airGap.png
+
     Beim Verwenden vom Baukasten muss der Luftspalt vom Nutzer nicht manuell definiert werden.
     Die Ergänzung vom Luftraum muss bei der Erstellung vom Rotor bzw. Stator automatisch erfolgen
     (siehe RotorSPMSM.py).
 
-        \\image html class_airArea.png
-
     """
 
-    ###
-    # Konstruktor der Klasse AirArea.
-    #
-    #   Attribute:
-    #
-    #       ID : Integer
-    #       name : String
-    #       material : Material
-    #       geo_list : [Surface]
-    #
-    ###
     def __init__(
         self,
         name: str,
-        geo_list: list[Surface],
+        geo_list: list[Surface | Line | CircleArc | Spline],
         material: Material = None,
     ):
-        """AirArea is any area defined with material air except from the Airgap surface
+        """AirGap
 
         Args:
-            - name (str): Domain name
-            - geo_list (List[Union[Surface, Line, CircleArc, Spline]):
-            List of geometry objects
-            - material (Material, optional): Material of AirArea. Should be "air". Defaults to None.
+            name (str): Physical Element Name
+            geo_list (List[Union[Surface, Line, CircleArc, Spline]]):
+            List of geo elements
+            material (Material, optional): Material of airgap. Defaults to None.
         """
         PhysicalElement.__init__(
             self,
@@ -68,5 +62,5 @@ class AirArea(PhysicalElement):
             geo_list=geo_list,
         )
         # the physical element type can be used to identify physical elements
-        self.physicalElementType = "AirArea"
+        self.physicalElementType = "AirGap"
         self.setColor("SkyBlue")

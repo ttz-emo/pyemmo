@@ -27,18 +27,12 @@ import logging
 import gmsh
 import numpy as np
 from matplotlib import pyplot as plt
-import matplotlib.colors as mcolors
 
 from ...definitions import DEFAULT_GEO_TOL
 from ...functions.plot import plot
 from ...script.geometry import physicalsDict
 from ...script.geometry.circleArc import CircleArc
-from ...script.geometry.limitLine import LimitLine
 from ...script.geometry.line import Line
-from ...script.geometry.movingBand import MovingBand
-from ...script.geometry.physicalElement import PhysicalElement
-from ...script.geometry.primaryLine import PrimaryLine
-from ...script.geometry.slaveLine import SlaveLine
 from ...script.geometry.transformable import Transformable
 from ...script.gmsh import SurfDimTag
 from ...script.gmsh.create_gmsh_curve import create_curve
@@ -53,6 +47,11 @@ from ...script.gmsh.utils import (
     get_min_radius,
 )
 from ...script.material.material import Material
+from ...script.physicals.limitLine import LimitLine
+from ...script.physicals.movingBand import MovingBand
+from ...script.physicals.physicalElement import PhysicalElement
+from ...script.physicals.primaryLine import PrimaryLine
+from ...script.physicals.slaveLine import SlaveLine
 from .. import air
 from ..machine_segment_surface import MachineSegmentSurface
 from . import STATOR_AIRGAP_IDEXT, globalCenterPoint
@@ -744,12 +743,12 @@ def get_boundaries(
         fig, ax = plt.subplots()
         # get colors from colormap 'rainbow'
         colors = plt.cm.get_cmap("rainbow")(
-            np.linspace(0, 1, len(rotor_boundary + stator_boundary)),1
+            np.linspace(0, 1, len(rotor_boundary + stator_boundary)), 1
         )
         # plot each boundary with own color
         for boundary, color in zip(rotor_boundary + stator_boundary, colors):
             plot([boundary], fig=fig, tag=True, color=color)
-        
+
         ax.set_aspect("equal")
         ax.grid(True)
         ax.title("Model Boundary Curves")

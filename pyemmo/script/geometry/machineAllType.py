@@ -27,9 +27,9 @@ from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 
 from ...script import default_param_dict
+from ..physicals.movingBand import MovingBand
+from ..physicals.physicalElement import PhysicalElement
 from .domain import Domain
-from .movingBand import MovingBand
-from .physicalElement import PhysicalElement
 from .rotor import Rotor
 from .stator import Stator
 from .surface import Line

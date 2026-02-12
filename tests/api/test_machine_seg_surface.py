@@ -27,10 +27,8 @@ import numpy as np
 import pytest
 
 from pyemmo.api import air
-from pyemmo.api.machine_segment_surface import MachineSegmentSurface
 from pyemmo.script.geometry.line import Line
 from pyemmo.script.geometry.point import Point
-from pyemmo.script.gmsh.gmsh_point import GmshPoint
 from pyemmo.script.gmsh.gmsh_segment_surface import GmshSegmentSurface
 from pyemmo.script.gmsh.gmsh_surface import GmshSurface
 
@@ -83,19 +81,6 @@ def fixture_gmsh_circle():
     """Default test circle with radius 1 meter."""
     centerpoint = GmshPoint.from_coordinates(coords=(0, 0, 0))
     return add_gmsh_circle(centerpoint, 1)
-
-
-def add_circle(
-    center: GmshPoint, radius: float, nbr_segments: int
-) -> MachineSegmentSurface:
-    circ = add_gmsh_circle(center, radius)
-    return MachineSegmentSurface(
-        part_id="Circle",
-        material=air,
-        tag=circ.id,
-        name=circ.name,
-        nbr_segments=nbr_segments,
-    )
 
 
 def test_init_with_id():

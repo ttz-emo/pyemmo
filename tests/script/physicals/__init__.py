@@ -17,29 +17,3 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-from __future__ import annotations
-
-from os.path import join
-
-from pyemmo.api import air
-from pyemmo.api.machine_segment_surface import MachineSegmentSurface
-from pyemmo.script.gmsh.gmsh_point import GmshPoint
-from tests import TEST_DATA_DIR
-
-from ..script.gmsh.test_gmsh_surface import add_circle as add_gmsh_circle
-
-TEST_API_DATA_DIR = join(TEST_DATA_DIR, "api")
-
-
-def add_circle(
-    center: GmshPoint, radius: float, nbr_segments: int
-) -> MachineSegmentSurface:
-    """Function to create MachineSegmentSurface circle"""
-    circ = add_gmsh_circle(center, radius)
-    return MachineSegmentSurface(
-        part_id="Circle",
-        material=air,
-        tag=circ.id,
-        name=circ.name,
-        nbr_segments=nbr_segments,
-    )

@@ -22,24 +22,17 @@
 
 from __future__ import annotations
 
-import math
-
 import gmsh
 import numpy as np
 import pytest
 
 from pyemmo.api import air
-from pyemmo.api.machine_segment_surface import MachineSegmentSurface
 from pyemmo.api.json.create_airgaps import (
-    create_airgap_surfaces,
     _create_band_contour,
-    _create_band_surf,
 )
-from pyemmo.script.geometry.line import Line
-from pyemmo.script.geometry.point import Point
+from pyemmo.api.machine_segment_surface import MachineSegmentSurface
 from pyemmo.script.gmsh.gmsh_point import GmshPoint
 from pyemmo.script.gmsh.gmsh_segment_surface import GmshSegmentSurface
-from pyemmo.script.gmsh.gmsh_surface import GmshSurface
 
 from ...script.gmsh.test_gmsh_seg_surface import create_segment
 from ...script.gmsh.test_gmsh_surface import add_circle as add_gmsh_circle
@@ -90,20 +83,6 @@ def fixture_gmsh_circle():
     """Default test circle with radius 1 meter."""
     centerpoint = GmshPoint.from_coordinates(coords=(0, 0, 0))
     return add_gmsh_circle(centerpoint, radius=1)
-
-
-def add_circle(
-    center: GmshPoint, radius: float, nbr_segments: int
-) -> MachineSegmentSurface:
-    """Function to create MachineSegmentSurface circle"""
-    circ = add_gmsh_circle(center, radius)
-    return MachineSegmentSurface(
-        part_id="Circle",
-        material=air,
-        tag=circ.id,
-        name=circ.name,
-        nbr_segments=nbr_segments,
-    )
 
 
 def test_create_band_contour_inwards(machine_seg_surf: MachineSegmentSurface):

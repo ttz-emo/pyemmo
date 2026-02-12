@@ -19,41 +19,34 @@
 #
 from __future__ import annotations
 
+from ..geometry.surface import Surface
 from ..material.material import Material
-from .circleArc import CircleArc
-from .line import Line
 from .physicalElement import PhysicalElement
-from .spline import Spline
 
 
 ###
-# TODO: Rename SLAVE -> LINKED/LINK
-# Eine Instanz der Klasse SlaveLine beschreibt die Slavekante eines Teilmodells einer zu simulierenden elektischen Maschine.
-# \image html slaveLine.png
+# Eine Instanz der RotorLamination ist das Blechpaket des Rotors. Eine beliebige Geometrie kann mit der Klasse RotorLamination definiert werden.
+# Diese Klasse sollte nur im Expertenmodus angewandt werden.
+# Dies kann beispielsweise beim Import und Weiterverarbeitung von Step-Dateien geschehen.
+# Eine einfachere Anwendung bietet der Maschinenbaukasten von pyemmo.
+# \image html RotorBlech.png
 ###
-class SlaveLine(PhysicalElement):
-    ###
-    # Konstruktor der Klasse SlaveLine.
-    #
-    #   Attribute:
-    #
-    #       ID : Integer
-    #       name : String
-    #       material : Material
-    #       geo_list : [Line]
-    #
-    ###
+class RotorLamination(PhysicalElement):
+    """Class for rotor lamination"""
+
     def __init__(
         self,
         name: str,
-        geo_list: list[Line | CircleArc | Spline],
-        material: Material = None,
+        geo_list: list[Surface],
+        material: Material,
+        phyID: int = None,
     ):
-        PhysicalElement.__init__(
-            self,
+        super().__init__(
             name=name,
             material=material,
             geo_list=geo_list,
+            phyID=phyID,
         )
-
-        self.physicalElementType = "SlaveLine"  # the physical element type can be used to identify physical elements
+        # the physical element type can be used to identify physical elements
+        self.physicalElementType = "Lamination"
+        self.setColor("SteelBlue")

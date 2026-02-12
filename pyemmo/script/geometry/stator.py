@@ -30,12 +30,12 @@ from swat_em import datamodel
 from ..gmsh.gmsh_point import GmshPoint
 from ..gmsh.utils import get_dim_tags, get_point_tags
 from ..material.electricalSteel import ElectricalSteel
-from .airGap import AirGap
+from ..physicals.airGap import AirGap
+from ..physicals.movingBand import MovingBand
+from ..physicals.physicalElement import PhysicalElement
+from ..physicals.slot import Slot
 from .domain import Domain
 from .line import Line
-from .movingBand import MovingBand
-from .physicalElement import PhysicalElement
-from .slot import Slot
 from .surface import Surface
 
 # from ... import calc_phaseangle_starvoltageV2

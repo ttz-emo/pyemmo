@@ -20,7 +20,11 @@
 """Module for Class LimitLine"""
 from __future__ import annotations
 
-from .physicalElement import CircleArc, Line, Material, PhysicalElement, Spline
+from ..geometry.circleArc import CircleArc
+from ..geometry.line import Line
+from ..geometry.spline import Spline
+from ..material.material import Material
+from .physicalElement import PhysicalElement
 
 
 class LimitLine(PhysicalElement):

@@ -22,12 +22,12 @@ from __future__ import annotations
 
 from typing import Literal
 
+from ..geometry.circleArc import CircleArc
+from ..geometry.line import Line
+from ..geometry.spline import Spline
+from ..geometry.surface import Surface
 from ..material.material import Material
-from .circleArc import CircleArc
-from .line import Line
 from .physicalElement import PhysicalElement
-from .spline import Spline
-from .surface import Surface
 
 
 class Magnet(PhysicalElement):

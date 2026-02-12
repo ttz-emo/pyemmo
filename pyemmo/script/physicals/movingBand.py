@@ -21,9 +21,9 @@
 """Module for class MovingBand"""
 from __future__ import annotations
 
+from ..geometry.circleArc import CircleArc
 from ..material.material import Material
 from ..script import DEFAULT_GEO_TOL
-from .circleArc import CircleArc
 from .physicalElement import PhysicalElement
 
 

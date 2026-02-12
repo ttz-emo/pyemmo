@@ -33,7 +33,7 @@ models.
      :mod:`~pyemmo.script.gmsh` subpackage.
    - Different types of **PhysicalElements**
      (= surfaces with phyiscal properties, e.g. :class:`~pyemmo.script.geometry.slot.Slot`
-     , or boundary curves, e.g. :class:`~pyemmo.script.geometry.limitLine.LimitLine`)
+     , or boundary curves, e.g. :class:`~pyemmo.script.physicals.limitLine.LimitLine`)
    - **Domains** which are groups of :class:`~pyemmo.script.geometry.physicalElement.PhysicalElement`.
 
    These classes mirror the object structure of ONELAB models. See

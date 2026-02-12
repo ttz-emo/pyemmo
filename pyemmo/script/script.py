@@ -57,11 +57,11 @@ from . import (
 )
 from .geometry.domain import Domain
 from .geometry.line import Line
-from .geometry.magnet import Magnet
-from .geometry.physicalElement import PhysicalElement
-from .geometry.slot import Slot
 from .geometry.surface import Surface
 from .material.electricalSteel import ElectricalSteel
+from .physicals.magnet import Magnet
+from .physicals.physicalElement import PhysicalElement
+from .physicals.slot import Slot
 
 if TYPE_CHECKING:
     from .geometry.circleArc import CircleArc

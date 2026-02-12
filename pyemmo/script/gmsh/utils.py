@@ -57,8 +57,8 @@ from ...definitions import DEFAULT_GEO_TOL
 from ..geometry import defaultCenterPoint
 from ..geometry.circleArc import CircleArc
 from ..geometry.line import Line
-from ..geometry.physicalElement import PhysicalElement
 from ..geometry.surface import Surface
+from ..physicals.physicalElement import PhysicalElement
 from . import DimTag
 from .gmsh_arc import GmshArc
 from .gmsh_line import GmshLine

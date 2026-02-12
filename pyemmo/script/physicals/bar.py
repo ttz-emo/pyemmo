@@ -24,7 +24,9 @@ from __future__ import annotations
 
 import logging
 
-from .physicalElement import Material, PhysicalElement, Surface
+from ..geometry.surface import Surface
+from ..material.material import Material
+from .physicalElement import PhysicalElement
 
 
 class Bar(PhysicalElement):
