@@ -1,0 +1,42 @@
+digraph "packages_PyEMMO.api" {
+rankdir=BT
+charset="utf-8"
+"pyemmo.api" [color="black", label=<pyemmo.api>, shape="box", style="solid"];
+"pyemmo.api.json" [color="black", label=<pyemmo.api.json>, shape="box", style="solid"];
+"pyemmo.api.json.__main__" [color="black", label=<pyemmo.api.json.__main__>, shape="box", style="solid"];
+"pyemmo.api.json.boundaryJSON" [color="black", label=<pyemmo.api.json.boundaryJSON>, shape="box", style="solid"];
+"pyemmo.api.json.create_airgaps" [color="black", label=<pyemmo.api.json.create_airgaps>, shape="box", style="solid"];
+"pyemmo.api.json.get_coilspan" [color="black", label=<pyemmo.api.json.get_coilspan>, shape="box", style="solid"];
+"pyemmo.api.json.importJSON" [color="black", label=<pyemmo.api.json.importJSON>, shape="box", style="solid"];
+"pyemmo.api.json.json" [color="black", label=<pyemmo.api.json.json>, shape="box", style="solid"];
+"pyemmo.api.json.modelJSON" [color="black", label=<pyemmo.api.json.modelJSON>, shape="box", style="solid"];
+"pyemmo.api.machine_segment_surface" [color="black", label=<pyemmo.api.machine_segment_surface>, shape="box", style="solid"];
+"pyemmo.api.pyleecan" [color="black", label=<pyemmo.api.pyleecan>, shape="box", style="solid"];
+"pyemmo.api.pyleecan.__main__" [color="black", label=<pyemmo.api.pyleecan.__main__>, shape="box", style="solid"];
+"pyemmo.api.pyleecan.build_pyemmo_material" [color="black", label=<pyemmo.api.pyleecan.build_pyemmo_material>, shape="box", style="solid"];
+"pyemmo.api.pyleecan.create_geo_dict" [color="black", label=<pyemmo.api.pyleecan.create_geo_dict>, shape="box", style="solid"];
+"pyemmo.api.pyleecan.create_gmsh_lines" [color="black", label=<pyemmo.api.pyleecan.create_gmsh_lines>, shape="box", style="solid"];
+"pyemmo.api.pyleecan.create_gmsh_point" [color="black", label=<pyemmo.api.pyleecan.create_gmsh_point>, shape="box", style="solid"];
+"pyemmo.api.pyleecan.create_gmsh_surf" [color="black", label=<pyemmo.api.pyleecan.create_gmsh_surf>, shape="box", style="solid"];
+"pyemmo.api.pyleecan.create_param_dict" [color="black", label=<pyemmo.api.pyleecan.create_param_dict>, shape="box", style="solid"];
+"pyemmo.api.pyleecan.create_pyleecan_simulation" [color="black", label=<pyemmo.api.pyleecan.create_pyleecan_simulation>, shape="box", style="solid"];
+"pyemmo.api.pyleecan.label2part_id" [color="black", label=<pyemmo.api.pyleecan.label2part_id>, shape="box", style="solid"];
+"pyemmo.api.pyleecan.main" [color="black", label=<pyemmo.api.pyleecan.main>, shape="box", style="solid"];
+"pyemmo.api.pyleecan.translate_machine" [color="black", label=<pyemmo.api.pyleecan.translate_machine>, shape="box", style="solid"];
+"pyemmo.api.pyleecan.translate_winding" [color="black", label=<pyemmo.api.pyleecan.translate_winding>, shape="box", style="solid"];
+"pyemmo.api.json.__main__" -> "pyemmo.api.json.json" [arrowhead="open", arrowtail="none"];
+"pyemmo.api.json.json" -> "pyemmo.api.json.create_airgaps" [arrowhead="open", arrowtail="none"];
+"pyemmo.api.json.modelJSON" -> "pyemmo.api.json.get_coilspan" [arrowhead="open", arrowtail="none"];
+"pyemmo.api.pyleecan.__main__" -> "pyemmo.api.pyleecan.main" [arrowhead="open", arrowtail="none"];
+"pyemmo.api.pyleecan.create_geo_dict" -> "pyemmo.api.pyleecan.build_pyemmo_material" [arrowhead="open", arrowtail="none"];
+"pyemmo.api.pyleecan.create_geo_dict" -> "pyemmo.api.pyleecan.create_gmsh_surf" [arrowhead="open", arrowtail="none"];
+"pyemmo.api.pyleecan.create_gmsh_lines" -> "pyemmo.api.pyleecan.create_gmsh_point" [arrowhead="open", arrowtail="none"];
+"pyemmo.api.pyleecan.create_gmsh_surf" -> "pyemmo.api.pyleecan.create_gmsh_lines" [arrowhead="open", arrowtail="none"];
+"pyemmo.api.pyleecan.create_gmsh_surf" -> "pyemmo.api.pyleecan.label2part_id" [arrowhead="open", arrowtail="none"];
+"pyemmo.api.pyleecan.create_param_dict" -> "pyemmo.api.pyleecan.label2part_id" [arrowhead="open", arrowtail="none"];
+"pyemmo.api.pyleecan.create_param_dict" -> "pyemmo.api.pyleecan.translate_winding" [arrowhead="open", arrowtail="none"];
+"pyemmo.api.pyleecan.main" -> "pyemmo.api.pyleecan.create_param_dict" [arrowhead="open", arrowtail="none"];
+"pyemmo.api.pyleecan.main" -> "pyemmo.api.pyleecan.create_pyleecan_simulation" [arrowhead="open", arrowtail="none"];
+"pyemmo.api.pyleecan.main" -> "pyemmo.api.pyleecan.translate_machine" [arrowhead="open", arrowtail="none"];
+"pyemmo.api.pyleecan.translate_machine" -> "pyemmo.api.pyleecan.create_geo_dict" [arrowhead="open", arrowtail="none"];
+}
