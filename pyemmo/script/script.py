@@ -2024,7 +2024,7 @@ class Script:
         """
         logger = logging.getLogger(__name__)
         # add the code for the mesh settings and mesh modification
-        meshSettingsCode = 'INPUT_MESH = "Input/03Mesh/";\n'
+        meshSettingsCode = 'INPUT_MESH = "Input/04Mesh/";\n'
         meshSettingsCode += (
             "DefineConstant[\n"
             + "\tgmsf = {1, "
