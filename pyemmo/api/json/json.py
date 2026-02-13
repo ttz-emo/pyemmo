@@ -352,7 +352,7 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
                 OnGrid=(
                     f"{{({radius}*(1{sign}0.0001))*Cos[$A*Pi/180],"
                     f"({radius}*(1{sign}0.0001))*Sin[$A*Pi/180],0}}"
-                    "{0:360/SymmetryFactor:0.5,0,0}"
+                    "{0:360/SymmetryFactor:360/SymmetryFactor/NbrMbSegments*GlobalMeshsizeFactor,0,0}"
                 ),
                 File=resFilePath,
                 Name=f'"{quantity} (airgap {side})"',

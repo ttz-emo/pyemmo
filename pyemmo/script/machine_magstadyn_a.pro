@@ -64,7 +64,6 @@ EndIf
 Printf("ResId is %s", ResId());
 
 DefineConstant[
-  NbrMbSegments = GetNumber["Input/03Mesh/Number of Rotor Movingband Segments", 360],
 
   sigma_al = 3.72e7, // conductivity of aluminum [S/m]
   sigma_cu = 5.8e7  // conductivity of copper [S/m]
@@ -805,15 +804,15 @@ Resolution {
       EndIf
       // Rotation must occure before MovingBand meshing!
       If (initrotor_pos != 0)
-        ChangeOfCoordinates[ NodesOf[Rotor_Moving], RotatePZ[initrotor_pos*Pi/180]]; 
+        ChangeOfCoordinates[ NodesOf[Rotor_Moving], RotatePZ[initrotor_pos*Pi/180]];
       EndIf
       // Move rotor for dynamic excentricity
       If (eccentricity_dynamic != 0)
-        ChangeOfCoordinates[ NodesOf[Rotor_Moving], MoveEccentDynamic[] ]; 
+        ChangeOfCoordinates[ NodesOf[Rotor_Moving], MoveEccentDynamic[] ];
       EndIf
       // Move stator for static excentricity
       If (eccentricity_static != 0)
-        ChangeOfCoordinates[ NodesOf[Stator], MoveEccentStatic[] ]; 
+        ChangeOfCoordinates[ NodesOf[Stator], MoveEccentStatic[] ];
       EndIf
       InitMovingBand2D[MB] ;
       MeshMovingBand2D[MB] ;
@@ -1116,11 +1115,11 @@ PostProcessing {
       { Name axLen ; Value { Term { [ axialLength[] ] ; In Domain ; Jacobian Vol ; } } } // Dummy value - for visualization
       { Name surfCoil; Value{ Term { Type Global; [ SurfCoil[] ]; In DomainDummy; Jacobian Vol; Integration I1; } } }
       // { Name surfCoil; Value{ Integral { [ SurfCoil[]/SurfaceArea[] ]; In Domain; Jacobian Vol; Integration I1; } } }
-      { Name a  ; Value { 
-        Term { [ {a} ] ; In Domain ; Jacobian Vol ; } 
-        Term { [ {a} ] ; In Region[{Rotor_Bnd_MB, Stator_Bnd_MB}] ; Jacobian Sur ; } 
+      { Name a  ; Value {
+        Term { [ {a} ] ; In Domain ; Jacobian Vol ; }
+        Term { [ {a} ] ; In Region[{Rotor_Bnd_MB, Stator_Bnd_MB}] ; Jacobian Sur ; }
       }}
-      { Name az ; Value { 
+      { Name az ; Value {
         Term { [ CompZ[{a}] ]; In Domain; Jacobian Vol; }
         Term { [ CompZ[{a}] ]; In Region[{Rotor_Bnd_MB, Stator_Bnd_MB}]; Jacobian Sur; }
       }}
@@ -1182,11 +1181,11 @@ PostProcessing {
       }}
       { Name Force_MST;
         Value{
-          Term{ [ T_max[{Curl a}] * XYZ[] ] ; In Region[{Rotor_Airgap, Stator_Airgap}]; Jacobian Vol; } 
+          Term{ [ T_max[{Curl a}] * XYZ[] ] ; In Region[{Rotor_Airgap, Stator_Airgap}]; Jacobian Vol; }
       }}
       { Name Force_MST_Cyl;
         Value{
-          Term{ [ Cart2Cyl[XYZ[]] * T_max[{Curl a}] * XYZ[] ] ; In Region[{Rotor_Airgap, Stator_Airgap}]; Jacobian Vol; } 
+          Term{ [ Cart2Cyl[XYZ[]] * T_max[{Curl a}] * XYZ[] ] ; In Region[{Rotor_Airgap, Stator_Airgap}]; Jacobian Vol; }
       }}
       { Name Force_MST_Rad;
         Value{
@@ -1194,7 +1193,7 @@ PostProcessing {
       }}
       { Name Force_MST_Tan;
         Value{
-          Term{ [ CompTan[T_max[{Curl a}] * XYZ[]] ] ; In Region[{Rotor_Airgap, Stator_Airgap}]; Jacobian Vol; } 
+          Term{ [ CompTan[T_max[{Curl a}] * XYZ[]] ] ; In Region[{Rotor_Airgap, Stator_Airgap}]; Jacobian Vol; }
       }}
       { Name Torque_Maxwell_r ;
         // Torque computation via Maxwell stress tensor
@@ -1267,7 +1266,7 @@ PostProcessing {
       }}
       { Name R_Bar;
         Value{
-          Integral { 
+          Integral {
             // = P_el / I_bar^2
             [ axialLength[]*sigma[]*SquNorm[(Dt[{a}]+{ur})] ]; In Rotor_Bars; Jacobian Vol; Integration I1;
           }
@@ -1389,7 +1388,7 @@ PostOperation Get_LocalFields UsingPost MagStaDyn_a_2D {
     js, OnElementsOf DomainS, File StrCat[ResDir,"js",ExtGmsh], LastTimeStepOnly,
     AppendTimeStepToFileName Flag_SaveAllSteps
   ] ;
-  
+
   Print[
     az, OnElementsOf Domain, File StrCat[ResDir,"az",ExtGmsh], LastTimeStepOnly,
     AppendTimeStepToFileName Flag_SaveAllSteps

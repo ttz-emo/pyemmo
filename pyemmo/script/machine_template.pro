@@ -396,7 +396,10 @@ DefineConstant[
             "than the movingband height! ",
             "This can only be used in a full model (symmetry = 1).")
         },
-    eccentricity_dynamic_m = eccentricity_dynamic * mm
+    eccentricity_dynamic_m = eccentricity_dynamic * mm,
+    // Get number of movingband segments from .geo file to use in PostOperations
+    NbrMbSegments = GetNumber[INPUT_MESH, "Number of Rotor Movingband Segments", 360]
+    GlobalMeshsizeFactor = GetNumber[INPUT_MESH, "00Mesh size factor", 1.0]
 ];
 // tranlate to meter
 
