@@ -1,7 +1,7 @@
-pyemmo.script.geometry.slot module
+pyemmo.script.physicals.bar module
 ==================================
 
-.. automodule:: pyemmo.script.geometry.slot
+.. automodule:: pyemmo.script.physicals.bar
    :members:
    :show-inheritance:
    :undoc-members:

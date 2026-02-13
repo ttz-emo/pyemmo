@@ -1,7 +1,7 @@
-pyemmo.script.geometry.slot\_Form02 module
+pyemmo.script.physicals.primaryLine module
 ==========================================
 
-.. automodule:: pyemmo.script.geometry.slot_Form02
+.. automodule:: pyemmo.script.physicals.primaryLine
    :members:
    :show-inheritance:
    :undoc-members:

@@ -1,7 +1,7 @@
-pyemmo.script.geometry.primaryLine module
+pyemmo.script.physicals.movingBand module
 =========================================
 
-.. automodule:: pyemmo.script.geometry.primaryLine
+.. automodule:: pyemmo.script.physicals.movingBand
    :members:
    :show-inheritance:
    :undoc-members:

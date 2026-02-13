@@ -1,7 +1,7 @@
-pyemmo.script.geometry.airArea module
+pyemmo.script.physicals.magnet module
 =====================================
 
-.. automodule:: pyemmo.script.geometry.airArea
+.. automodule:: pyemmo.script.physicals.magnet
    :members:
    :show-inheritance:
    :undoc-members:

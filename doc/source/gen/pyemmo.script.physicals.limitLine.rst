@@ -1,7 +1,7 @@
-pyemmo.script.geometry.stepToArea module
+pyemmo.script.physicals.limitLine module
 ========================================
 
-.. automodule:: pyemmo.script.geometry.stepToArea
+.. automodule:: pyemmo.script.physicals.limitLine
    :members:
    :show-inheritance:
    :undoc-members:

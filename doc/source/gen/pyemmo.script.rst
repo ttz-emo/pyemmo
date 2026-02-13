@@ -10,9 +10,10 @@ Subpackages
 -----------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
 
    pyemmo.script.geometry
+   pyemmo.script.physicals
    pyemmo.script.gmsh
    pyemmo.script.material
 
@@ -20,6 +21,6 @@ Submodules
 ----------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 3
 
    pyemmo.script.script

@@ -1,7 +1,7 @@
-pyemmo.script.geometry.machineASM module
+pyemmo.script.physicals.slaveLine module
 ========================================
 
-.. automodule:: pyemmo.script.geometry.machineASM
+.. automodule:: pyemmo.script.physicals.slaveLine
    :members:
    :show-inheritance:
    :undoc-members:

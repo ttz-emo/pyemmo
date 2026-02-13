@@ -1,7 +1,7 @@
-pyemmo.script.geometry.rotorASM module
+pyemmo.script.physicals.airArea module
 ======================================
 
-.. automodule:: pyemmo.script.geometry.rotorASM
+.. automodule:: pyemmo.script.physicals.airArea
    :members:
    :show-inheritance:
    :undoc-members:

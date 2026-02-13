@@ -41,6 +41,7 @@ models.
    section for more details.
    For a visual overview of the package structure see the graph below.
 
+   .. todo:: Update graph and description for new script structure
 
 
 .. graph:: script_subpackage
