@@ -128,6 +128,44 @@ def createMachine(
             "Found rotor and stator airgap in surface dict! "
             "Not calling airgap creation."
         )
+        # Recombine airgap surfaces
+        nbr_airgap_segments = maschineSurfDict[ROTOR_AIRGAP_IDEXT][0].nbr_segments
+        if nbr_airgap_segments > 4 and symFactor <= 4:
+            # check if there are more than 4 segments since we can have max. 90° arcs in
+            # classic gmsh kernel!
+            logger.info("Trying to recombine airgap surfaces for better meshing...")
+            # combine first airgap segment with remaining airgap surfaces.
+            # Combination results in GmshSurface object...
+            new_airgap = maschineSurfDict[ROTOR_AIRGAP_IDEXT][0].combine(
+                maschineSurfDict[ROTOR_AIRGAP_IDEXT][1:]
+            )
+            logger.debug("New combined airgap surface: %s", new_airgap)
+            # recrate MachineSegmentSurface object with new airgap surface and update
+            # number of segments:
+            logger.debug(
+                "Recreating MachineSegmentSurface object for new combined airgap surface..."
+            )
+            new_seg_airgap = maschineSurfDict[ROTOR_AIRGAP_IDEXT][0]
+            if new_seg_airgap.id != new_airgap.id:
+                raise RuntimeError(
+                    "ID of combined airgap surface has changed after combination!"
+                )
+            new_nbr_segments = new_seg_airgap.nbr_segments / len(
+                maschineSurfDict[ROTOR_AIRGAP_IDEXT]
+            )
+            assert (
+                new_nbr_segments.is_integer()
+            ), "Number of segments after combination is not an integer!"
+            new_seg_airgap.nbr_segments = int(new_nbr_segments)
+            logger.debug(
+                "New MachineSegmentSurface object for combined airgap: %s",
+                new_seg_airgap,
+            )
+            maschineSurfDict[ROTOR_AIRGAP_IDEXT] = [new_seg_airgap]
+            logger.info("Successfully recombined airgap surfaces.")
+            if logger.getEffectiveLevel() <= logging.DEBUG - 1:
+                gmsh_api.model.occ.synchronize()
+                gmsh_api.fltk.run()
 
     # check mesh sizes after import! Due to issues with OCC it can happen that points
     # lose their mesh size and get mesh size = 0. In this case, search for the closest
