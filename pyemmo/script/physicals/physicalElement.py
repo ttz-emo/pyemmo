@@ -36,6 +36,7 @@ from ..geometry.circleArc import CircleArc
 from ..geometry.line import Line
 from ..geometry.spline import Spline
 from ..geometry.surface import Surface
+from ..gmsh.gmsh_line import GmshLine
 from ..gmsh.gmsh_surface import GmshSurface
 from ..material.material import Material
 
@@ -49,7 +50,7 @@ class PhysicalElement:
     dreidimensionalen Raum.\n
     Input:
         name : string
-        geo_list : [Line] oder [Surface]
+        geo_list : [GmshLine] oder [GmshSurface]
         material : Material
 
     Beispiel:
@@ -72,7 +73,7 @@ class PhysicalElement:
     def __init__(
         self,
         name: str,
-        geo_list: list[Surface] | list[Line],
+        geo_list: list[GmshSurface] | list[GmshLine],
         material: Material | None = None,
         phyID: int | None = None,
     ):
@@ -182,16 +183,16 @@ class PhysicalElement:
         self._id = newID
 
     @property
-    def geo_list(self) -> list[Surface] | list[Line]:
+    def geo_list(self) -> list[GmshSurface] | list[GmshLine]:
         """Geometrical enities of physical element.
 
         Returns:
-            Union[List[Surface], List[Line]]: Geometrical Entities.
+            Union[List[GmshSurface], List[GmshLine]]: Geometrical Entities.
         """
         return self._geo_list
 
     @geo_list.setter
-    def geo_list(self, geo_list: list[Surface] | list[Line]):
+    def geo_list(self, geo_list: list[GmshSurface] | list[GmshLine]):
         """Geometrical elements
 
         Args:
