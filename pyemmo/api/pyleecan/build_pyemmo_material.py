@@ -46,6 +46,7 @@ except Exception:  # pylint: disable=W0718
     copper2 = None
 
 
+# FIXME: Need to implement ElectricalSteel creation for loss data and lamination thickness!
 def build_pyemmo_material(pyleecan_material: PyleecanMaterial) -> Material:
     """Translates a pyleecan material into a pyemmo material.
 
