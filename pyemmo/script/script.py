@@ -1955,21 +1955,33 @@ class Script:
             mbMeshSize = min(gmsh.model.mesh.getSizes([(0, tag) for tag in p_tags]))
             if mbLineIDs:
                 rRotorMB = rotor.movingBandRadius
+                # TODO: Calculate the number of moving band segments to be a multiple of
+                # the symmetry factor to allow for a finite airgap mesh size angle.
+                # The angle of each movingband mesh segment must be a divisor of the
+                # smallest airgap arc segment. Only then we can calculate a correct number
+                # of evaluation points in the OnGrid evaluation.
                 nbrSeg0 = (2 * pi * rRotorMB / mbMeshSize) - (
                     2 * pi * rRotorMB / mbMeshSize
-                ) % 10  # calc number of movingband segments by steps of 10
+                ) % 10
                 max_nbr_segments = max(nbrSeg0, 1440)
                 # create parameter code for movingband segment setting
                 meshModCode += "// Add mesh size setting for Movingband lines\n"
                 meshModCode += (
                     "DefineConstant[\n"
                     + (
-                        f"\tNbrMbSegments = {{{nbrSeg0}, "
-                        """Name StrCat[INPUT_MESH, "Number of Rotor Movingband Segments"],"""
-                        f"Max {max_nbr_segments}, Min 180, Step 10, Help "
-                        '"Set the number of mesh segments on the interface between rotor/stator'
+                        "\tNbrMbSegments = {\n"
+                        f"\t\t{nbrSeg0}/gmsf,\n"
+                        """\t\tName StrCat[INPUT_MESH, "Number of Rotor Movingband Segments"],\n"""
+                        f"\t\tMax {max_nbr_segments}, Min 180, Step 10,\n"
+                        '\t\tHelp "Set the number of mesh segments on the interface between rotor/stator'
                         "airgap and movingband. Value represents number of segments on whole "
-                        'circle.", Visible Flag_ExpertMode},\n'
+                        'circle.",\n'
+                        "\t\tVisible Flag_ExpertMode\n\t},\n"
+                        "\t\tangle = {\n"
+                        "\t\t360 / NbrMbSegments,\n"
+                        '\t\tName StrCat[INPUT_MESH, "Rotor airgap segmentation angle"],\n'
+                        '\t\tUnits "°",\n\t\tReadOnly 1,\n'
+                        "\t\tVisible Flag_ExpertMode\n\t},\n"
                     )
                     + f"\tr_MB_R = {rRotorMB}"  # rotor movingband radius as parameter
                     # + ",\n"
@@ -1984,7 +1996,7 @@ class Script:
                 # set the mesh size for all movingband points
                 meshModCode += (
                     "MeshSize{ PointsOf{Line{MB_LinesR[]};}} = "
-                    "2*Pi*r_MB_R/NbrMbSegments;\n\n"
+                    "2*Pi*r_MB_R/NbrMbSegments/gmsf;\n\n"
                 )
             # same thing for stator movingband with number of segments of
             # rotor movingband
@@ -2006,7 +2018,7 @@ class Script:
                 meshModCode += (
                     "MeshSize{ PointsOf{Line{MB_LinesS[]};}} = 2*Pi*"
                     + str(rStatorMB)
-                    + "/NbrMbSegments;\n\n"
+                    + "/NbrMbSegments/gmsf;\n\n"
                 )  # set the mesh size for all movingband points
             meshModCode += (
                 "Mesh.SurfaceFaces = 0; // don't show mesh faces (only edges)\n\n"
@@ -2027,21 +2039,24 @@ class Script:
         meshSettingsCode = 'INPUT_MESH = "Input/04Mesh/";\n'
         meshSettingsCode += (
             "DefineConstant[\n"
-            + "\tgmsf = {1, "
-            + 'Name StrCat[INPUT_MESH, "00Mesh size factor"], '
-            # + "Visible Flag_ExpertMode, "
-            + (
-                'Help "Global mesh size factor to modify the mesh size of all points. '
-                'Is multiplied with the given mesh size."'
-            )
-            + "},\n"
+            "\tgmsf = {\n\t\t1,\n"
+            '\t\tName StrCat[INPUT_MESH, "00Mesh size factor"],\n'
+            "\t\tVisible Flag_ExpertMode,\n"
+            '\t\tHelp "Global mesh size factor to modify the mesh size of all points. '
+            'Is multiplied with the given mesh size.",\n'
+            '\t\tGmshOption "Mesh.MeshSizeFactor",\n'
+            '\t\tServerAction StrCat["Reset ", INPUT_MESH, "Number of Rotor Movingband Segments"],\n'
+            "\t\tChangedValue 3\n"
+            "\t},\n"
         )
         meshSettingsCode += (
-            "\tFlag_individualColoring = {0,"
-            + 'Name StrCat[INPUT_MESH, "09Individual Mesh Coloring"], '
-            + "Choices {0, 1}}\n];\n"
+            "\tFlag_individualColoring = {\n"
+            "\t\t0,\n"
+            '\t\tName StrCat[INPUT_MESH, "09Individual Mesh Coloring"],\n'
+            "\t\tChoices {0, 1}\n"
+            "\t}\n"
+            "];\n"
         )
-        meshSettingsCode += "Mesh.MeshSizeFactor = gmsf;\n"
         # show mesh Lines without lighting
         meshSettingsCode += (
             "Mesh.SurfaceEdges = 1;\nMesh.Light = 0;\nMesh.SurfaceFaces = 1;\n"
