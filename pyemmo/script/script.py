@@ -1737,53 +1737,52 @@ class Script:
             str: Compound mesh code.
         """
         logger = logging.getLogger(__name__)
-        if physList:
-            meshCompCode = ""
-            for physical in physList:
-                if physical.material == physList[0].material:
-                    if physical.geoElementType is Surface:
-                        if len(physical.geo_list) > 1:
-                            for geoElem in physical.geo_list:
-                                meshCompCode += str(geoElem.id) + ","
-                        else:
-                            logger.warning(
-                                'Creation of "Compound Mesh" for domain "%s" failed, because "%s" has only one surface.',
-                                regionName,
-                                physical.name,
-                            )
-                            return ""
-                    else:
-                        logger.warning(
-                            'Creation of "Compound Mesh" for domain "%s" failed, because "%s" is not a surface.',
-                            regionName,
-                            physical.name,
-                        )
-                        return ""
-                else:
-                    # domain/region has different materials -> no compound surface
-                    # or is not geo type surface
-                    logger.warning(
-                        (
-                            "Creation of 'Compound Mesh' for domain '%s' failed, ",
-                            regionName,
-                        )
-                        + ("because materials of '%s' and ", physList[0].name)
-                        + ("'%s' don't match.", physical.name)
-                    )
-                    return ""
-
-            # make sure there is code
-            if meshCompCode:
-                meshCompCode = (
-                    "Compound Surface{" + meshCompCode[0:-1]
-                )  # erase last comma
-                meshCompCode += f"}}; // {regionName}\n"  # add closing and comment
-                return meshCompCode
-            else:
-                return ""
-        else:
-            # if there are no pEs in that region -> no compound surface
+        if not isinstance(physList, (list, PhysicalElement)):
+            raise TypeError(
+                "physList must be of type list of PhysicalElement or PhysicalElement, "
+                f"but is {type(physList)}"
+            )
+        # convert to list of necessary
+        if isinstance(physList, PhysicalElement):
+            physList = [physList]
+        # check geometry type
+        geo_type = physList[0].geoElementType
+        if not all(phys.geoElementType == geo_type for phys in physList):
+            raise TypeError(
+                "All physical elements in physList must have the same geometry type."
+            )
+        # check all elements have the same material:
+        if geo_type == Surface and not all(
+            phys.material == physList[0].material for phys in physList
+        ):
+            # domain/region has different materials -> no compound surface
+            # or is not geo type surface
+            logger.warning(
+                "Creation of 'Compound Mesh' for domain '%s' failed, because not all "
+                "surfaces have the same material.",
+                regionName,
+            )
             return ""
+        # create list of phyiscal ids
+        geo_id_list: list[int] = []
+        for physical in physList:
+            for geo_elem in physical.geo_list:
+                geo_id_list.append(geo_elem.id)
+        # return if only one geometric element in list
+        if len(geo_id_list) <= 1:
+            logger.warning(
+                'Creation of "Compound Mesh" for domain "%s" failed, because "%s" has ""only one geometry element.',
+                regionName,
+                physical.name,
+            )
+            return ""
+        geo_ids = ", ".join([str(id) for id in geo_id_list])
+        if geo_type == Surface:
+            return "Compound Surface{" + geo_ids + f"}}; // {regionName}\n"
+        if geo_type == Line:
+            return "Compound Curve{" + geo_ids + f"}}; // {regionName}\n"
+        # else:
+        raise TypeError(f"Unknown geometry type: {geo_type}")
 
     def _createMeshModCode(self) -> str:
         """Create the code to individually modify the mesh size of the machine
@@ -1847,10 +1846,11 @@ class Script:
 
         """
         rotor = self.machine.rotor
-        rotorDict = rotor.sortPhysicals()
-
         stator = self.machine.stator
-        statorDict = stator.sortPhysicals()
+        physicals_dict = {
+            "stator": stator.sortPhysicals(),
+            "rotor": rotor.sortPhysicals(),
+        }
 
         meshModCode = "\n// Mesh operations\n\n"
         # 1. add compound mesh for domain
@@ -1866,19 +1866,23 @@ class Script:
             + """Visible Flag_ExpertMode}];\n"""
         )
         meshModCode += """If (Flag_CompoundMesh)\n"""
-        for region in ["domainLam", "airGap"]:
-            # for region in ["domainLam"]:
-            physicalsList = rotorDict[region]
+        for side in ("rotor", "stator"):
+            physicalsList = physicals_dict[side][DOMAIN_LAMINATION]
             if physicalsList:
                 meshModCode += self._createMeshCompoundCode(
-                    physicalsList, ("rotor " + region)
-                )
-            physicalsList = statorDict[region]
-            if physicalsList:
-                meshModCode += self._createMeshCompoundCode(
-                    physicalsList, ("stator " + region)
+                    physicalsList, (side + " " + DOMAIN_LAMINATION)
                 )
         meshModCode += """EndIf // (Flag_CompoundMesh)\n\n"""
+
+        # gmsh.option.setNumber("General.Terminal", 1)
+
+        # for mb in rotor.movingBand:
+        #     gmsh.model.mesh.set_compound(1, [c.id for c in mb.geo_list])
+        # gmsh.model.mesh.set_compound(2, [ag.id for ag in rotorDict["airGap"][0].geo_list])
+        # gmsh.model.mesh.generate(2)
+        # gmsh.fltk.run()
+
+        # gmsh.option.setNumber("General.Terminal", 0)
 
         # 2. add mesh size setting via factor
         # Allready done in json API. This would need a other grouping instead
