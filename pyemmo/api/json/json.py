@@ -41,12 +41,12 @@ from matplotlib import pyplot as plt
 
 from ... import log_formatter
 from ...functions import clean_name, core_loss, import_results, plot, run_onelab
-from ...script.geometry.machine import Machine
-from ...script.geometry.rotor import Rotor
-from ...script.geometry.stator import Stator
 from ...script.gmsh.utils import fix_missing_mesh_sizes
+from ...script.machine import Machine
 from ...script.material.electricalSteel import ElectricalSteel
+from ...script.rotor import Rotor
 from ...script.script import Script
+from ...script.stator import Stator
 from ..machine_segment_surface import MachineSegmentSurface
 from . import ROTOR_AIRGAP_IDEXT, STATOR_AIRGAP_IDEXT, apiNameDict
 from . import boundaryJSON as boundary

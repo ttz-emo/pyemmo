@@ -65,10 +65,12 @@ from .physicals.slot import Slot
 
 if TYPE_CHECKING:
     from .geometry.circleArc import CircleArc
-    from .geometry.machine import Machine, Rotor, Stator
     from .geometry.point import Point
     from .geometry.spline import Spline
+    from .machine import Machine
     from .material.material import Material
+    from .rotor import Rotor
+    from .stator import Stator
 
 
 class Script:

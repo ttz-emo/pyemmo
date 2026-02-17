@@ -24,7 +24,7 @@ models.
 
 1. The main class is the :class:`~pyemmo.script.script.Script` class, which creates
    the geometry (.geo) and model (.pro) files from a PyEMMO
-   :class:`~pyemmo.script.geometry.machine.Machine` object and some
+   :class:`~pyemmo.script.machine.Machine` object and some
    additonal parameters.
 2. The :mod:`~pyemmo.script.geometry` subpackage provides classes for:
 
