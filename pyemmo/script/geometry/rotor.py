@@ -46,6 +46,7 @@ from .. import (
     DOMAIN_PRIMARY,
     DOMAIN_SECONDARY,
 )
+from ..domain import Domain
 from ..gmsh.gmsh_point import GmshPoint
 from ..gmsh.utils import get_dim_tags, get_point_tags
 from ..material.electricalSteel import ElectricalSteel
@@ -53,7 +54,6 @@ from ..physicals.magnet import Magnet
 from ..physicals.movingBand import MovingBand
 from ..physicals.physicalElement import PhysicalElement
 from . import default_domain_dict
-from .domain import Domain
 from .line import Line
 from .surface import Surface
 

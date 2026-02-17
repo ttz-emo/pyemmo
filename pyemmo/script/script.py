@@ -55,7 +55,7 @@ from . import (
     statorDomainDict,
     versionStr,
 )
-from .geometry.domain import Domain
+from .domain import Domain
 from .geometry.line import Line
 from .geometry.surface import Surface
 from .material.electricalSteel import ElectricalSteel

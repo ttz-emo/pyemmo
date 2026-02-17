@@ -22,7 +22,7 @@ from __future__ import annotations
 from os import path
 
 from pyemmo.definitions import RESULT_DIR as pathRes
-from pyemmo.script.geometry.domain import Domain, PhysicalElement
+from pyemmo.script.domain import Domain, PhysicalElement
 from pyemmo.script.script import Script
 
 from .stepToEMMO import changeToEmmoObjects, getAdaptedPath

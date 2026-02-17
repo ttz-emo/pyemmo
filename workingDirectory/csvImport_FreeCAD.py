@@ -161,9 +161,9 @@ for surf in surfList:
         print("Unknown surface name to set mesh length")
 
 from pyemmo.functions import run_onelab
+from pyemmo.script.domain import Domain
 from pyemmo.script.geometry.airArea import AirArea
 from pyemmo.script.geometry.airGap import AirGap
-from pyemmo.script.geometry.domain import Domain
 from pyemmo.script.geometry.magnet import Magnet
 
 # %% Dummy Objekte zum befüllen

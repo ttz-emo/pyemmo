@@ -20,13 +20,14 @@
 from __future__ import annotations
 
 import logging
-from typing import List, Literal
+from typing import Literal
 
 import gmsh
 import numpy as np
 from matplotlib import pyplot as plt
 from swat_em import datamodel
 
+from ..domain import Domain
 from ..gmsh.gmsh_point import GmshPoint
 from ..gmsh.utils import get_dim_tags, get_point_tags
 from ..material.electricalSteel import ElectricalSteel
@@ -34,7 +35,6 @@ from ..physicals.airGap import AirGap
 from ..physicals.movingBand import MovingBand
 from ..physicals.physicalElement import PhysicalElement
 from ..physicals.slot import Slot
-from .domain import Domain
 from .line import Line
 from .surface import Surface
 
@@ -168,7 +168,7 @@ class Stator:
         Returns:
             _type_: _description_
         """
-        if isinstance(physicalElementsList, List):
+        if isinstance(physicalElementsList, list):
             self._physicalElements = physicalElementsList
             self._createDomainForStator()
             return None
