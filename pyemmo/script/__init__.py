@@ -26,23 +26,30 @@ models.
    the geometry (.geo) and model (.pro) files from a PyEMMO
    :class:`~pyemmo.script.machine.Machine` object and some
    additonal parameters.
-2. The :mod:`~pyemmo.script.geometry` subpackage provides classes for:
-
-   - **Basic geometric objects**, like the :class:`~pyemmo.script.geometry.line.Line`
-     class, which are the basis for the ``GmshGeometry`` classes in the
-     :mod:`~pyemmo.script.gmsh` subpackage.
-   - Different types of **PhysicalElements**
-     (= surfaces with phyiscal properties, e.g. :class:`~pyemmo.script.geometry.slot.Slot`
-     , or boundary curves, e.g. :class:`~pyemmo.script.physicals.limitLine.LimitLine`)
-   - **Domains** which are groups of :class:`~pyemmo.script.geometry.physicalElement.PhysicalElement`.
-
-   These classes mirror the object structure of ONELAB models. See
+2. The :mod:`~pyemmo.script.geometry` subpackage provides classes for **basic geometric
+   objects**, like the :class:`~pyemmo.script.geometry.line.Line` class, which are the
+   basis for the :class:`~pyemmo.script.gmsh.gmsh_geometry.GmshGeometry` classes in the
+   :mod:`~pyemmo.script.gmsh` subpackage.
+3. The :mod:`~pyemmo.script.gmsh` subpackage provides classes for **Gmsh geometry objects**,
+   like the :class:`~pyemmo.script.gmsh.GmshLine` class, which are used to create the
+   geometry of the ONELAB model through the
+   `gmsh python api <https://gmsh.info/doc/texinfo/gmsh.html#Gmsh-application-programming-interface>`_.
+4. The :mod:`~pyemmo.script.material` subpackage provides classes for handling of
+   material properties.
+5. The :mod:`~pyemmo.script.physicals` subpackage provides classes that represent the
+   **PhyicalElement** objects according to the Gmsh/GetDP definition.
+   This means groups of geometric objects (e.g. surfaces) with assigned physical
+   properties (e.g. magnetization and material properties) or boundary conditions.
+   The subpackage contains different types of **PhysicalElements**
+   (= surfaces with phyiscal properties, e.g. :class:`~pyemmo.script.geometry.slot.Slot`
+   , or boundary curves, e.g. :class:`~pyemmo.script.physicals.limitLine.LimitLine`)
+6. The :class:`~pyemmo.script.domain.Domain` which represents groups of
+   :class:`~pyemmo.script.geometry.physicalElement.PhysicalElement` objects with shared
+   properties. These mirror the object structure of ONELAB models. See
    `GetDP Groups <https://getdp.info/doc/texinfo/getdp.html#Group>`_ documentation
    section for more details.
-   For a visual overview of the package structure see the graph below.
 
-   .. todo:: Update graph and description for new script structure
-
+For a visual overview of the package structure see the graph below.
 
 .. graph:: script_subpackage
 
@@ -58,6 +65,11 @@ models.
    "script" -- "material";
    "material" -- "Material";
    "Material" -- "ElectricalSteel";
+   "script" -- "physicals";
+   "physicals" -- "PhysicalElement";
+   "PhysicalElement" -- "Magnet";
+   "PhysicalElement" -- "LimitLine";
+   "PhysicalElement" -- "...";
    "script" -- "gmsh";
    "gmsh" -- "GmshGeometry";
    "GmshGeometry" -- "GmshPoint";
