@@ -18,15 +18,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """
-This module provides functions for translating points between different geometric libraries.
-
-Functions:
-    -   ``build_pyemmo_point``: Translates the coordinates of a point in pyleecan
-        into a pyemmo point.
-
-Classes:
-    ``Point``: Represents a point in 3D space.
-
+This module provides the function ``create_gmsh_point`` which translates the coordinates
+of a point in pyleecan into a pyemmo :class:`~pyemmo.script.gmsh.gmsh_point.GmshPoint`.
 """
 
 from __future__ import annotations

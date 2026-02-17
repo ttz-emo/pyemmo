@@ -18,6 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+""" """
 from __future__ import annotations
 
 import logging
@@ -45,29 +46,23 @@ def create_param_dict(
     pyleecan_simulation: PyleecanSimulation,
 ) -> dict[str, Any]:
     """
-    Builds a dictionary for communication between PYLEECAN, PyEMMO and ONELAB.
-
-    This function constructs a dictionary containing various parameters related
-    to the Pyleecan machine and simulation, which are necessary for communication
-    with the pyemmo module. The dictionary is needed for setting the simulation
-    parameters in ONELAB.
-
+    Builds a dictionary for the usage :mod:`pyemmo.api.json` api with all relevant
+    machine parameters. See `JSON API parameters <section-pyemmo.api.json-param>`_
+    section in documentation for further details.
     Args:
         machine (PyleecanMachine): Pyleecan `Machine
             <https://pyleecan.org/pyleecan.Classes.Machine.html>`_ object.
         pyleecan_simulation (PyleecanSimulation): A Pyleecan `Simulation
             <https://pyleecan.org/pyleecan.Classes.Simulation.html>`_ object.
-        mb_radius (float): The radius of the moving band.
-        magnetization_dict (dict): A dictionary containing the magnet IdExt with
-            corresponding magnetization angle.
-
-    Raises:
-        RuntimeError: Raised when encountering errors during execution.
-        ValueError: Raised when the magnetization type is not 0, 1 or 3
 
     Returns:
         dict[str, any]: A dictionary containing the parameters for communication
         with PyEMMO.
+
+    Raises:
+        RuntimeError: Raised when encountering errors during execution.
+        NotImplementedError: Raised when Hallbach magnetization is defined in pyleecan
+            machine because is not implemented in pyemmo.
     """
     logger = logging.getLogger(__name__)
     # The following part of the function tests if 'Id_ref' and 'Iq_ref' are having values

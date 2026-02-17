@@ -13,7 +13,7 @@ Submodules
 ----------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 1
 
    pyemmo.api.pyleecan.build_pyemmo_material
    pyemmo.api.pyleecan.create_geo_dict

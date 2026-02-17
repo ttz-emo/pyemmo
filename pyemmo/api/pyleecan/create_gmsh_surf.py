@@ -19,13 +19,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """
-Module: create_gmsh_surface
-
-This module provides functions for translating surfaces from pyleecan format to
-pyemmo format.
-
-Functions:
-    -   ``create_gmsh_surface``: Translates pyleecan surfaces into pyemmo surfaces.
+This module provides the function ``create_gmsh_surface`` which translates pyleecan
+surfaces into pyemmo :class:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface`.
 """
 
 from __future__ import annotations
@@ -46,13 +41,16 @@ def create_gmsh_surface(
     name: str = "",
 ) -> MachineSegmentSurface:
     """
-    Translates Pyleecan SurfLine surfaces into pyemmo GmshSurface objects.
+    Translates Pyleecan SurfLine surfaces into pyemmo MachineSegmentSurface objects.
 
     Args:
         surface (pyleecan.Classes.SurfLine.SurfLine): Pyleecan surface.
+        nbr_segments (int): Number of segments for the surface.
+        material (Material): Material for the surface.
+        name str: Optional name for the surface. Defaults to "".
 
     Returns:
-        GmshSurface: PyEMMO surface in Gmsh.
+        MachineSegmentSurface: PyEMMO machine segment surface in Gmsh.
     """
     if not hasattr(surface, "get_lines"):
         raise TypeError(

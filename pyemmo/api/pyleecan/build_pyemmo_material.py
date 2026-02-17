@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module: pyemmo_material_conversion"""
+"""Define function :func:`~pyemmo.api.pyleecan.build_pyemmo_material.build_pyemmo_material` to convert pyleecan materials to pyemmo materials."""
 
 from __future__ import annotations
 

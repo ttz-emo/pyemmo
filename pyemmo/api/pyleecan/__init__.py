@@ -81,11 +81,13 @@ The :func:`~pyemmo.api.pyleecan.main` function returns a PyEMMO :class:`~pyemmo.
 
 See the pyleecan api tutorial for a more detailed walkthrough of the workflow and the expected input and output structures.
 
+.. todo:: add link to tutorial or transfer tutorial copy to doc
+
 Current Limitations
 -------------------
 The following design and geometry limitations are known for the coupling to Pyleecan:
 
-- Multi-phase windings with $m != 3$.
+- Multi-phase windings with :math:`m \\ne 3`.
 - Number of winding layers > 2 (not supported by SWAT-EM).
 - Multi rotor or stator machines.
 - Wound rotor machines, like electrically excited synchronous machines or wound induction machines.

@@ -39,6 +39,10 @@ ONELAB Model Constants
 		- eccentricity_static * mm
 	*	- eccentricity_dynamic_m
 		- eccentricity_dynamic * mm
+	*	- NbrMbSegments
+		- GetNumber[StrCat[INPUT_MESH
+	*	- GlobalMeshsizeFactor
+		- GetNumber[StrCat[INPUT_MESH
 	*	- pA
 		- pA_deg * deg2rad
 	*	- Flag_ConstantSource
@@ -205,4 +209,3 @@ ONELAB Model Parameters
 		- "-solve Analysis -v 3 -v2",Name "GetDP/9ComputeCommand",Visible Flag_Debug || Flag_ExpertMode
 	*	- P_
 		- "", Name "GetDP/2PostOperationChoices", Visible Flag_Debug
-

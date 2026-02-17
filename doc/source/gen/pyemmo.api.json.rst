@@ -365,7 +365,7 @@ Current Limitations
 -------------------
 The following design and geometry limitations are known for the coupling to Pyleecan:
 
-- Multi-phase windings with $m != 3$.
+- Multi-phase windings with :math:`m \ne 3`.
 - Number of winding layers > 2 (not supported by SWAT-EM).
 - Multi rotor or stator machines.
 - Wound rotor machines, like electrically excited synchronous machines or wound induction machines.
