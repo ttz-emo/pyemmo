@@ -21,6 +21,7 @@
 """Test the class PhysicalElement"""
 from __future__ import annotations
 
+import gmsh
 import pytest
 
 from pyemmo.api import air
@@ -31,6 +32,15 @@ from pyemmo.script.gmsh.gmsh_point import GmshPoint
 from pyemmo.script.physicals.physicalElement import PhysicalElement
 
 from ..gmsh.test_utils import add_circle
+
+
+@pytest.fixture(scope="module", autouse=True)
+def initialize_gmsh():
+    """init gmsh function"""
+    gmsh.initialize()
+    gmsh.model.add("test_model")
+    yield
+    gmsh.finalize()
 
 
 class TestSurfacePhysical:
