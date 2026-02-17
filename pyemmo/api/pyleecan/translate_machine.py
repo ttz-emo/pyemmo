@@ -18,7 +18,9 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """
-TODO
+This module defines the function :func:`~pyemmo.api.pyleecan.translate_machine.translate_machine`
+to convert a given pyleecan machine object to a geometry dictionary in pyemmo json-api
+format.
 """
 
 from __future__ import annotations
@@ -29,13 +31,18 @@ from .create_geo_dict import create_geo_dict
 
 
 def translate_machine(machine: PyleecanMachine) -> dict[str, MachineSegmentSurface]:
-    """_summary_ TODO
+    """Convert a given pyleecan machine to a geometry dict for use in pyemmo json-api.
+    This uses the :func:`~pyemmo.api.pyleecan.create_geo_dict.create_geo_dict` function
+    to create a geometry dictionary.
 
     Args:
         machine (PyleecanMachine): Pyleecan Machine object.
 
     Returns:
-        dict[str, MachineSegmentSurface]: TODO
+        dict[str, MachineSegmentSurface]: json-api compatible geometry dictionary with
+        part_ids as keys and MachineSegmentSurface objects as values.
+        See  `Geometry input <section-pyemmo.api.json-geo>`_ section in docs for details
+        on the structure of the geometry dictionary.
 
     Raises:
         RuntimeError: If a surface ID is already present in the geometry

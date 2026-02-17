@@ -130,8 +130,8 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
     def rotate_duplicate(self, segment: int) -> GmshSegmentSurface:
         """
         Create a copy of the give surface and its tools surfaces + rotate it by
-        :attr:`angle`.
-        This also sets the property :attr:`segment_nbr` to the given segment value.
+        :math:`\\frac{2 \\pi}{\\mathrm{self.nbr\\_segments}}\\cdot\\mathrm{segment}`.
+        This also sets the property :attr:`segment_nbr` to the given ``segment`` value.
 
         Args:
             segment (float): Segment number.

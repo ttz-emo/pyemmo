@@ -19,30 +19,22 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """
-This module provides a function to translate Pyleecan surface labels to corresponding part IDs
-used in the pyemmo API. It maps specific label patterns from Pyleecan to standardized part
-identifiers, facilitating interoperability between Pyleecan and pyemmo.
-
-Functions:
-    
-    label2part_id(label: str) -> str: Translates a Pyleecan surface label to the
-        corresponding pyemmo part ID. If the label does not match any known pattern,
-        the original label is returned. Raises a ValueError
-        if the label does not contain a rotor or stator lamination label.
+This module provides the function `label2part_id` to translate Pyleecan surface labels
+to corresponding part IDs used in the pyemmo API.
 """
 
 from __future__ import annotations
 
 from pyleecan.Functions.labels import (
     BAR_LAB,
+    HOLEM_LAB,
+    HOLEV_LAB,
     LAM_LAB,
     MAG_LAB,
     ROTOR_LAB,
+    SHAFT_LAB,
     STATOR_LAB,
     WIND_LAB,
-    HOLEM_LAB,
-    HOLEV_LAB,
-    SHAFT_LAB,
     decode_label,
 )
 

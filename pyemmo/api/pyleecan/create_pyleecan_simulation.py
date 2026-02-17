@@ -17,8 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""This module defines the function generate_simulation to generate a pyleecan
-simulation object to use in pyleecan-api."""
+"""This module defines the function `create_simulation` to generate a default pyleecan
+simulation object to use in the api."""
 
 from __future__ import annotations
 

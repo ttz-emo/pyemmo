@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module for PyEMMO api MachineSegmentSurface class"""
+"""Module for PyEMMO api class :class:`MachineSegmentSurface`"""
 from __future__ import annotations
 
 import logging
@@ -37,7 +37,7 @@ class MachineSegmentSurface(GmshSegmentSurface):
     MachineSegmentSurface is a segmented surface object in Gmsh with additional
     physical property :attr:`material`, :attr:`nbr_segments` and a :attr:`part_id`
     specifing the machine part
-    it is representing (e.g. "rotor lamination", "magnet" for magent or "stator slot").
+    it is representing (e.g. "rotor lamination", "magnet" or "stator slot").
     You can find the definiton for the values of the :attr:`part_id` in the
     :mod:`pyemmo.api.json` module.
 
@@ -76,8 +76,10 @@ class MachineSegmentSurface(GmshSegmentSurface):
         nbr_segments: int,
         name: str = "",
     ):
-        """init of surface for API. This type of surface is special,
-        because it allways forms a machine segment or a part of a segment.
+        """Initialize a MachineSegmentSurface object from a existing Gmsh surface and
+        its corresponding tag. You can use the classmethod :func:`from_curve_loop` to
+        create a MachineSegmentSurface directly from a curve loop (list of GmshLine
+        objects forming the boundary of the surface).
 
         Args:
             part_id (str): Identifier for the type of machine part. Definitions can be
@@ -218,7 +220,7 @@ class MachineSegmentSurface(GmshSegmentSurface):
     def rotate_duplicate(self, segment: int) -> MachineSegmentSurface:
         """
         Create a copy of the give surface and its tools surfaces + rotate it by
-        :attr:`angle`.
+        :math:`\\frac{2 \\pi}{\\mathrm{self.nbr\\_segments}}\\cdot\\mathrm{segment}`.
         This also sets the property :attr:`segment_nbr` to the given segment value.
 
         Args:
@@ -269,7 +271,7 @@ class MachineSegmentSurface(GmshSegmentSurface):
                 (i.e., `tool.segment_nbr != 0`).
 
         .. Note::
-        
+
             If the number of segments in the tool and the parent surface differ,
             the method computes the greatest common divisor (GCD) of the segment
             counts to determine the symmetry, duplicates and rotates surfaces as

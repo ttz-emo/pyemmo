@@ -18,7 +18,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Define function :func:`~pyemmo.api.pyleecan.build_pyemmo_material.build_pyemmo_material` to convert pyleecan materials to pyemmo materials."""
+"""
+Define function :func:`~pyemmo.api.pyleecan.build_pyemmo_material.build_pyemmo_material`
+to convert pyleecan materials to pyemmo materials.
+"""
 
 from __future__ import annotations
 
@@ -61,8 +64,8 @@ def build_pyemmo_material(pyleecan_material: PyleecanMaterial) -> Material:
     Notes:
         - Conductivity, relPermeability, remanence, tempCoefRem, BH, and density
           are extracted from the pyleecan material to construct the pyemmo material.
-        - If any attribute is missing from the pyleecan material, it is set to None
-          in the pyemmo material.
+        - If any attribute is missing from the pyleecan material, it is set to its
+          default value in the pyemmo material.
 
     """
     logger = logging.getLogger(__name__)

@@ -67,11 +67,14 @@ def create_geo_dict(
     communication with pyemmo.
 
     Args:
-        machine (PyleecanMachine): The machine object to translate into pyemmo-compatible geometry.
+        machine (PyleecanMachine): The machine object to translate into
+            pyemmo-compatible geometry.
 
     Returns:
-        dict[str, MachineSegmentSurface]:
-            - dict: Dictionary containing magnetization information.
+        dict[str, MachineSegmentSurface]: A dict with part_id as key and the
+        corresponding MachineSegmentSurface object as value. See
+        `Geometry input <section-pyemmo.api.json-geo>`_ section in docs for details
+        on the structure of the geometry dictionary.
     """
     logger = logging.getLogger(__name__)
     rotor_sym = machine.rotor.comp_periodicity_geo()[0]

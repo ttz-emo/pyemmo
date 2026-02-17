@@ -18,13 +18,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Main module of pyleecan api"""
+"""
+Core module of pyleecan api which contains the :func:`main` function to build a ONELAB
+model from a pyleecan machine object.
+"""
 
 from __future__ import annotations
 
 import logging
 import os
-from typing import Union
 
 import gmsh as gmsh_api
 
@@ -52,16 +54,16 @@ else:
 
 
 def main(
-    pyleecan_machine: Union[PyleecanMachine, str],
+    pyleecan_machine: PyleecanMachine | str,
     model_dir: str,
     gmsh: str | os.PathLike = "",
     getdp: str | os.PathLike = "",
     use_gui: bool = True,
 ):
-    """Main of pyleecan api.
+    """Main of pyleecan api to build a ONELAB model from a pyleecan machine.
 
     This uses the
-    :func:`~pyemmo.api.pyleecan.get_translated_machine.get_translated_machine`
+    :func:`~pyemmo.api.pyleecan.translate_machine.translate_machine`
     function to create the geometry and simulation dicts for the
     :mod:`PyEMMO JSON-API <pyemmo.api.json.json>` interface and directly build
     the model by invoking the JSON-API.

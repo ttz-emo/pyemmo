@@ -18,20 +18,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module to translate winding data from Pyleecan to PyEMMO.
+"""
+This module provides function `translate_winding` to convert the winding from Pyleecan
+to SWAT-EM format for pyemmo.
 
-This module provides functions to translate winding data from Pyleecan, to
-PyEMMO by the SWAT-EM package.
-
-Functions:
-    -   ``translate_winding``: Translates the winding from Pyleecan to PyEMMO
-        format.
-
-Note:
-    The winding translation process involves generating a winding data model
-    using the PyEMMO `datamodel` class, extracting winding information from the
-    Pyleecan machine object, and formatting it according to the SWAT-EM
-    conventions.
+The winding translation process involves generating a winding data model
+using the PyEMMO `datamodel` class, extracting winding information from the
+Pyleecan machine object, and formatting it according to the SWAT-EM conventions.
 """
 
 from __future__ import annotations
@@ -39,15 +32,19 @@ from __future__ import annotations
 import logging
 
 import swat_em
-from pyleecan.Classes.Machine import Machine
+from pyleecan.Classes.Machine import Machine as PyleecanMachine
 
 
-def translate_winding(machine: Machine) -> swat_em.datamodel:
+def translate_winding(machine: PyleecanMachine) -> swat_em.datamodel:
     """
     Translates the winding from Pyleecan to PyEMMO.
+    This uses the `genwdg` method of the `datamodel` class in SWAT-EM to generate the winding
+    data model based on the winding parameters extracted from the Pyleecan machine object.
+
+    .. note:: This can fail for ``WindingUD`` objects!
 
     Args:
-        machine (Machine): The Pyleecan machine.
+        machine (PyleecanMachine): Pyleecan machine object
 
     Returns:
         ``swat-em.datamodel``: The datamodel object representing the winding.
