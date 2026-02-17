@@ -26,7 +26,7 @@ from typing import Literal
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 
-from ...script import default_param_dict
+from .. import default_param_dict
 from ..domain import Domain
 from ..physicals.movingBand import MovingBand
 from ..physicals.physicalElement import PhysicalElement
@@ -35,7 +35,7 @@ from .stator import Stator
 from .surface import Line
 
 
-class MachineAllType:
+class Machine:
     def __init__(
         self,
         nbrPolePairs: int,

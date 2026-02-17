@@ -62,7 +62,7 @@ class Rotor:
     """
     An instance of the Rotor class describes the rotor of an electrical
     machine in three-dimensional space. This class is used in conjunction with
-    the class machineAllType. The user himself defines the type of machine by
+    the class Machine. The user himself defines the type of machine by
     defining his physical elements. This class should only be used if the
     geometry of the machine is further processed as an import (e.g. Step). To
     use the construction kit, it makes sense to specify the machine first. You

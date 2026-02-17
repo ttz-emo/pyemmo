@@ -65,7 +65,7 @@ from .physicals.slot import Slot
 
 if TYPE_CHECKING:
     from .geometry.circleArc import CircleArc
-    from .geometry.machineAllType import MachineAllType, Rotor, Stator
+    from .geometry.machine import Machine, Rotor, Stator
     from .geometry.point import Point
     from .geometry.spline import Spline
     from .material.material import Material
@@ -80,7 +80,7 @@ class Script:
         name: str,
         scriptPath: str,
         simuParams: dict,
-        machine: MachineAllType | None = None,
+        machine: Machine | None = None,
         resultsPath: str = "",
         factory: str = "Build-in",
     ):
@@ -299,17 +299,17 @@ class Script:
         return join(self.scriptPath, self.name + ".geo")
 
     @property
-    def machine(self) -> MachineAllType | None:
+    def machine(self) -> Machine | None:
         """getter of machine object
 
         Returns:
-            Union[MachineAllType, None]: actual machine object in script or
+            Union[Machine, None]: actual machine object in script or
                 None if no machine was given
         """
         return self._machine
 
     @machine.setter
-    def machine(self, newMachine: MachineAllType):
+    def machine(self, newMachine: Machine):
         """Setter of machine attribute.
         You should not use setMachine because then basically everything would
         have to be recreated (Domains, Physicals, Geos,...) Rather generate new
@@ -317,11 +317,11 @@ class Script:
         TODO: check this function and add test case.
 
         Args:
-            machine (MachineAllType): machine to create in script.
+            machine (Machine): machine to create in script.
         """
         logger = logging.getLogger(__name__)
         logger.warning("Reset of machine in script '%s'!", self.name)
-        # if isinstance(newMachine, MachineAllType):
+        # if isinstance(newMachine, Machine):
         # self._machine = newMachine
         self.__init__(
             self.name,
@@ -502,7 +502,7 @@ class Script:
         magStatDynName])
 
         Args:
-            machine (MachineAllType): machine to get the physicals from
+            machine (Machine): machine to get the physicals from
                 (machine of script)
 
         Returns:

@@ -41,7 +41,7 @@ from matplotlib import pyplot as plt
 
 from ... import log_formatter
 from ...functions import clean_name, core_loss, import_results, plot, run_onelab
-from ...script.geometry.machineAllType import MachineAllType
+from ...script.geometry.machine import Machine
 from ...script.geometry.rotor import Rotor
 from ...script.geometry.stator import Stator
 from ...script.gmsh.utils import fix_missing_mesh_sizes
@@ -62,7 +62,7 @@ pyemmoLogger = logging.getLogger("pyemmo")
 
 def createMachine(
     segmentSurfDict: dict[str, MachineSegmentSurface], extendedInfo: dict
-) -> tuple[MachineAllType, dict[str, list[MachineSegmentSurface]]]:
+) -> tuple[Machine, dict[str, list[MachineSegmentSurface]]]:
     """create a pyemmo Machine object from a list of surfaces forming one machine segment
     (imported from matlab).
 
@@ -74,7 +74,7 @@ def createMachine(
             length.
 
     Returns:
-        Tuple[MachineAllType, Dict[str, List[MachineSegmentSurface]]]: Resulting machine object and Machine
+        Tuple[Machine, Dict[str, List[MachineSegmentSurface]]]: Resulting machine object and Machine
         surface dict with IdExt as keys and list of MachineSegmentSurface objects as items.
     """
     symFactor = importJSON.get_sym_factor(extendedInfo)
@@ -213,7 +213,7 @@ def createMachine(
     modelName = importJSON.get_model_name(extendedInfo)
 
     logger.info("Creating Machine object for model %s...", modelName)
-    machineSiemens = MachineAllType(
+    machineSiemens = Machine(
         rotor=rotorAPI,
         stator=statorAPI,
         name=f"Machine from json interface ({modelName})",

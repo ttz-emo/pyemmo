@@ -44,7 +44,7 @@ from .surface import Surface
 # analyse.calc_phaseangle_starvoltage = calc_phaseangle_starvoltageV2
 ###
 # Eine Instanz der Klasse Stator beschreibt den Stator eine elektrische Maschine im dreidimensionalen Raum.
-# Diese Klasse wird in Verbindung mit der Klasse machineAllType verwendet.
+# Diese Klasse wird in Verbindung mit der Klasse Machine verwendet.
 # Um welchen Type Maschine es sich handelt, definiert der Nutzer selbst, durch die Definition seiner Physical Elements.
 # Diese Klasse sollte man nur verwenden, wenn die Geometrie der Maschine als Import (bspw. Step) weiter verarbeitet wird.
 # Für die Verwendung des Baukastens, ist die Spezifizierung der Maschine zunächst sinnvoll.
