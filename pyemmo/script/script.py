@@ -30,7 +30,7 @@ import re
 import shutil
 from math import isclose, pi
 from os.path import abspath, join
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
 
 import gmsh
 from numpy import mean, rad2deg, where
@@ -408,7 +408,8 @@ class Script:
         """
         return self._curveList
 
-    def _setCurveList(self, curveList: list[Line | CircleArc | Spline]) -> None:
+    @curveList.setter
+    def curveList(self, new_curve_list: list[Line | CircleArc | Spline]) -> None:
         """set the curve list of the script.
 
         Args:
@@ -420,8 +421,8 @@ class Script:
             ValueError: if one element of curve list is not a line of child of
                 class line
         """
-        if isinstance(curveList, list):
-            for curve in curveList:
+        if isinstance(new_curve_list, list):
+            for curve in new_curve_list:
                 # check if the element of curveList is neither type "Line" nor
                 # child-class of Line
                 # (e.g. CircleArc)
@@ -429,14 +430,14 @@ class Script:
                 if not isinstance(curve, Line):
                     msg = f"Element {curve} of given curve list is not type Line!"
                     raise ValueError(msg)
-            # if all elements in curveList are valid lines -> set new line list
-            self._curveList = curveList
+            # if all elements new_curve_listist are valid lines -> set new line list
+            self._curveList = new_curve_list
             # TODO: normally the point list has to be renewed by now...
             # But the function should not be used anyway by now.
         else:
             raise (
                 ValueError(
-                    f"Given curve list object was not a list, but type '{type(curveList)}'!"
+                    f"Given curve list object was not a list, but type '{type(new_curve_list)}'!"
                 )
             )
 
@@ -481,531 +482,12 @@ class Script:
     # -------------------------------------------------------------------------
 
     # -------------------------------------------------------------------------
-    # -------------------------- START OF GEO FUNCTIONS -----------------------
-    # -------------------------------------------------------------------------
-
-    def _addPoint(self, point: Point) -> Point | None:
-        """
-        Adding Point to Script Object.
-
-        The function returns the identical point if one was found otherwise
-        None.
-        """
-        if not point.isDrawn():
-            identicalPoint = self._testPoint(point)
-            # Wenn return None -> kein identischer Punkt in der Liste gefunden
-            if not identicalPoint:
-                # add point to pointArray
-                self.pointArray.append(point)
-                return None  # -> Punkt wird mit _printPoint() regulär erzeugt
-            # return identicalPoint -> identischer Punkt gefunden
-            self.nbrIdedentPoints += 1
-            self.idedentPoints.append(point)
-            return identicalPoint
-        # point was allready drawn
-        logger = logging.getLogger(__name__)
-        logger.debug("Point '%s' has allready been added to the script.", point.name)
-        return None
-
-    def _testPoint(
-        self, testPoint: Point, tol: float = DEFAULT_GEO_TOL
-    ) -> Point | None:
-        """
-        Tests if the coordinates of a given point match with those of a point
-        allready existing in the point list of the script inside a given
-        tolerance (tol). The function returns the identical point (from the
-        point list) if one was found, otherwise None.
-
-        Args:
-            point (Point): Point to test against the point list
-            tol (float): Tolerance radius (im meter) to check if
-                points are equal
-
-        Returns:
-            Point or None: Identical point from the point list if one was found
-        """
-        for point in self.pointArray:
-            if testPoint.isEqual(point, tol=tol):
-                # Stop program at this stage and return identical point
-                if point.meshLength > testPoint.meshLength:
-                    point.meshLength = testPoint.meshLength
-                return point
-        return None
-
-    def _testLine(self, line2Test: Line) -> Line | None:
-        """checks if start or end point of the given curve of type Line are
-        allready existing in the point list of the script and if the given line
-        is identical with an existing line in the line list of the script. If
-        start or end point are allready existing, they are replaced by the
-        existing points.
-        FIXME: If only a part of curve is overlapping an existing curve, its
-        not recognized by the function!!!
-
-        Args:
-            line2Test (Line): New line that should be added to the script.
-
-        Returns:
-            Line | None: Identical Line if an existing Line was found,
-                otherwise None.
-        """
-        curveList = self.curveList
-        existingLines: list[Line] = []
-        # getting all existing lines from _curveList
-        for savedCurve in curveList:
-            if type(savedCurve) == Line:
-                existingLines.append(savedCurve)
-        # getting points of tested line
-        testPointDict = {"p1": line2Test.start_point, "p2": line2Test.end_point}
-        # compare all points to the two test points
-        for existingLine in existingLines:
-            compareP = {
-                "p1": existingLine.start_point,
-                "p2": existingLine.end_point,
-            }
-            #!!! Testing for absolute identical points (name, id, ...)
-            if (
-                testPointDict["p1"] == compareP["p1"]
-                or testPointDict["p1"] == compareP["p2"]
-            ) and (
-                testPointDict["p2"] == compareP["p1"]
-                or testPointDict["p2"] == compareP["p2"]
-            ):
-                # Return identical Line, if one was found
-                ### For debugging ###
-                self.nbrIdedentLines += 1
-                self.idedentLines.append(line2Test)
-                return existingLine
-        # If no identical line was found, return None to add the line to the
-        # curve list.
-        return None
-
-    def _testCircleArc(self, curve: CircleArc) -> CircleArc | None:
-        """checks if start point, end point and center point of the given curve
-        of type CircleArc are equal to the points of an existing circle arc in
-        the curve list of the script.
-        FIXME: If only a part of curve is overlapping an existing curve, its
-        not recognized by the function!!!
-
-        Args:
-            curve (CircleArc): New arc that should be added to the script
-
-        Returns:
-            CircleArc | None: Identical arc if an existing CircleArc was found,
-                otherwise None
-        """
-        curveList = self.curveList
-        existingArcs: list[CircleArc] = list()
-        for savedCurve in curveList:
-            if type(savedCurve) == CircleArc:
-                existingArcs.append(savedCurve)
-        testPointDict = {
-            "p1": curve.start_point,
-            "p2": curve.end_point,
-            "c": curve.center,
-        }
-        for arc in existingArcs:
-            comparePointDict = {
-                "p1": arc.start_point,
-                "p2": arc.end_point,
-                "c": arc.center,
-            }
-            if (
-                (
-                    testPointDict["p1"] == comparePointDict["p1"]
-                    or testPointDict["p1"] == comparePointDict["p2"]
-                )
-                and (
-                    testPointDict["p2"] == comparePointDict["p1"]
-                    or testPointDict["p2"] == comparePointDict["p2"]
-                )
-                and (testPointDict["c"] == comparePointDict["c"])
-            ):
-                ### For debugging ###
-                self.nbrIdedentLines += 1
-
-                self.idedentLines.append(curve)
-                ######
-                # return identical CircleArc
-                return arc
-        # no identical curve found
-        # return None to add Curve to global curve list
-        return None
-
-    def _testSpline(self, curve: Spline) -> Spline | None:
-        """checks if start point, end point and control point list of the given
-        curve of type Spline are equal to the points of an existing spline in
-        the curve list of the script.
-        FIXME: If only a part of curve is overlapping an existing curve, its
-        not recognized by the function!!!
-
-        Args:
-            curve (Spline): New arc that should be added to the script
-
-        Returns:
-            Spline | None: Identical arc if an existing Spline was found,
-                otherwise None
-        """
-        curveList = self.curveList
-        existingSplines: list[Spline] = []
-        for savedCurve in curveList:
-            if type(savedCurve) == Spline:
-                existingSplines.append(savedCurve)
-
-        testPointDict = {
-            "p1": curve.start_point,
-            "p2": curve.end_point,
-            "controlP": curve.control_points,
-        }
-
-        for spline in existingSplines:
-            comparePointDict = {
-                "p1": spline.start_point,
-                "p2": spline.end_point,
-                "controlP": spline.control_points,
-            }
-            if len(testPointDict["controlP"]) == len(comparePointDict["controlP"]):
-                # only continue if control point list length is equal
-                if (
-                    (
-                        testPointDict["p1"] == comparePointDict["p1"]
-                        or testPointDict["p1"] == comparePointDict["p2"]
-                    )
-                    and (
-                        testPointDict["p2"] == comparePointDict["p1"]
-                        or testPointDict["p2"] == comparePointDict["p2"]
-                    )
-                    and (testPointDict["controlP"] == comparePointDict["controlP"])
-                ):
-                    # if all start, end point and control point list are
-                    # matching -> return identical spline
-                    return spline
-        # if no equal spline was found, return None to add it
-        return None
-
-    def testCurve(self, curve: Line | CircleArc | Spline):
-        """
-        checks if start or end point of the given line "curve" are allready
-        existing in the point list of the script and if the given line "curve"
-        is identical with an existing line in the line list of the script.
-        If start or end point are allready existing, they are replaced by the
-        existing points. If only a part of curve is overlapping an existing
-        curve, its not recognized by the function.
-
-        Args:
-            curve (Line|CircleArc|Spline):  line to check start point, end
-                point and the line itself on existance in the script.
-
-        Returns:
-            Line|CircleArc|Spline or None: Existing identical line, if one was
-                found, or None.
-        """
-        # test line
-        if type(curve) == Line:
-            testResult = self._testLine(curve)
-        elif type(curve) == CircleArc:
-            testResult = self._testCircleArc(curve)
-        elif type(curve) == Spline:
-            testResult = self._testSpline(curve)
-        else:
-            msg = f"Curve type of {curve} is unknown."
-            raise TypeError(msg)
-        return testResult
-
-    def _addCurve(self, curve: Line | CircleArc | Spline) -> None | Line:
-        """
-        The function _addCurve checks if the points of the Line/Curve or the
-        curve itself allready exist in the Script point- and curve list. If not
-        it adds the point and line code to the script. The function returns
-        None if no identical curve was found and the given curve has been
-        added. The functions returns the Line if an identical Line allready
-        exists.
-
-        Args:
-            curve: Line
-
-        Returns:
-            Line or None: Identical line, if one was found, so it can be
-                replaced in the surfaces curveloop. If no duplicate was found
-                the function returns None.
-        """
-        # Punkte prüfen und erzeugen
-        startPoint = curve.start_point
-        endPoint = curve.end_point
-        # Try to add the points
-        addP1 = self._addPoint(startPoint)
-        addP2 = self._addPoint(endPoint)
-
-        # If one or both points are allready existing: set them in curve
-        if addP1:
-            curve.start_point = addP1
-        if addP2:
-            curve.end_point = addP2
-        if type(curve) == CircleArc:
-            centerPoint = curve.center
-            addC = self._addPoint(centerPoint)
-            if addC is not None:
-                curve.center = addC
-        elif type(curve) == Spline:
-            controlPointList = curve.control_points.copy()
-            for controlPoint in controlPointList:
-                newP = self._addPoint(controlPoint)
-                if newP is not None:
-                    curve.removeControlPoint(controlPoint)
-                    curve.addControlPoint(newP, controlPointList.index(controlPoint))
-
-        identicalCurve = self.testCurve(curve)
-        if identicalCurve is None:
-            # add the curve to the global curve list
-            self.curveList.append(curve)
-        # Wenn identicalCurve = None -> no identical curve found in list
-        if not identicalCurve:
-            # create the geometrical curve Code
-            curveName = clean_name(curve.name)
-            curveID = curve.id
-            startPointID = curve.start_point.id
-            endPointID = curve.end_point.id
-            if type(curve) == Line:
-                code = (
-                    f"{curveName} = {curveID};"
-                    f"Line({curveName}) = {{{startPointID}, {endPointID}}};\n"
-                )
-            elif type(curve) == CircleArc:
-                curve: CircleArc = curve
-                centerPointID = curve.center.id
-                code = (
-                    f"{curveName} = {curveID};"
-                    f"Circle({curveName}) = {{{startPointID}, {centerPointID}, {endPointID}}};\n"
-                )
-                ###
-                # # test add Transfinite curve mesh
-                # angle = abs(curve.getAngle(flag_deg=True))
-                # radius = curve.getRadius()
-                # arcLen = 2*pi*radius*(angle/180)
-                # nbrMeshPoints = round(arcLen*1e3) # 1mm distance
-                # code += f"Transfinite Curve {{{curve.id}}} = {nbrMeshPoints};"
-                ###
-            elif type(curve) == Spline:
-                if curve.spline_type == 0:
-                    splineType = "Spline"
-                elif curve.spline_type == 1:
-                    splineType = "Bezier"
-                elif curve.spline_type == 2:
-                    splineType = "BSpline"
-                else:
-                    raise ValueError(
-                        f"Invalid Spline type with index {curve.spline_type}"
-                    )
-
-                code = (
-                    f"{curveName} = {curveID}; \n"
-                    f"{splineType}({curveName}) = {{{startPointID}, "
-                )
-                control_points = curve.control_points
-                for controlPoint in control_points:
-                    code += f"{controlPoint.id}, "
-                code += f"{endPointID}}};\n"
-
-            self.curveCode += code
-            return None
-        return identicalCurve
-
-    def _addLineCode(self, surface: Surface) -> None:
-        """Add the Code for the lines of a Surface to the Script"""
-        lines: list[Line] = surface.curve
-        # Alle Kurven erzeugen und Testen
-        for line in lines:
-            testLine = self._addCurve(line)
-            # if a similar line was found replace it
-            if testLine is not None:
-                surface.replaceCurve(line, testLine)
-
-    def _checkLoop(self, surface: Surface) -> tuple[list[Line], list[Literal[-1, 1]]]:
-        """
-        Reorder the lines of a close curve loop (surface) to generate a valid
-        Gmsh curve loop.
-
-        Args:
-            surface (Surface): Surface to get line loop to sort.
-
-        Returns:
-            (List[Line], List[Literal[-1, 1]]): New reorder curve loop and
-                direction list with 1 if line should appear in defined
-                direction (from P1 to P2) or -1 if direction should be inverted
-                (from P2 to P1)
-        """
-        oldLoop: list[Line] = surface.curve.copy()
-        direction: list[int] = []
-        direction.append(1)  # append 1 for first line, cause it sets the direction
-        newLoop: list[Line] = []
-        # add first line to newLoop, because it doesnt need to be checked
-        newLoop.append(oldLoop.pop(0))
-        nbrLines = len(oldLoop)  # get the remaining number of lines
-        # for every line thats left:
-        for _ in range(nbrLines):
-            # Check which line in oldLoop appends to the last line in newLoop
-            # if that line was found get direction, append it to newLoop and
-            # remove it from oldLoop
-            for curveIndex, curve in enumerate(oldLoop):
-                if direction[-1] == 1:
-                    if curve.start_point.isEqual(newLoop[-1].end_point):
-                        direction.append(1)
-                        newLoop.append(oldLoop.pop(curveIndex))
-                        break
-                    if curve.end_point.isEqual(newLoop[-1].end_point):
-                        direction.append(-1)
-                        newLoop.append(oldLoop.pop(curveIndex))
-                        break
-                else:
-                    if curve.start_point.isEqual(newLoop[-1].start_point):
-                        direction.append(1)
-                        newLoop.append(oldLoop.pop(curveIndex))
-                        break
-                    if curve.end_point.isEqual(newLoop[-1].start_point):
-                        direction.append(-1)
-                        newLoop.append(oldLoop.pop(curveIndex))
-                        break
-        return newLoop, direction
-
-    def _addLoopCode(self, surface: Surface) -> str:
-        """Create the curve loop code for the gmsh input file.
-
-        The IDs of the curve objects (lines) forming a closed loop must be in
-        the correct order so the end point of the first line is the start point
-        of the second line and so on. See
-        :func:`_checkLoop <pyemmo.script.script.Script._checkLoop>` function
-        for more information.
-
-        The gmsh-code for a curve loop looks like:
-
-        .. code::
-
-            Curve Loop(Surface_ID) = {Line_ID1, Line_ID2, -Line_ID3, Line_ID4};
-
-        Where :code:`Surface_ID` and :code:`Line_ID` are integers refering to
-        a surface and line instance.
-
-        Args:
-            surface (Surface): Surface to generate the curve loop code from
-
-        Returns:
-            str: Curve loop code in correct gmsh format
-        """
-        # TODO: add flag to not check the loop if lines are allready in order:
-        lineList, directionList = self._checkLoop(surface)
-        # Add CurveLoop code
-        code = f"Curve Loop({surface.id}) = {{"
-        # for every line in the Loop
-        for lineIndex, line in enumerate(lineList):
-            # add line index with sign for direction
-            code += str(directionList[lineIndex] * line.id) + ","
-        # print last element without ","
-        code = code.rstrip(",")
-        code += "};\n"
-        return code
-
-    def _addSurface(self, surface: Surface) -> None:
-        """Create curve-, curve loop- and surface code for gmsh.
-
-        The resulting code is stored in the internal :code:`Script` variables:
-
-        - curve code -> :code:`Script.curveCode` (see :func:`addCurve
-          <pyemmo.script.script.Script._addCurve>`)
-        - curve loop code -> :code:`Script.areaCode` (see :func:`_addLoopCode
-          <pyemmo.script.script.Script._addLoopCode>`)
-        - surface code -> :code:`Script.areaCode`
-
-        Args:
-            surface (Surface): Surface to add to Script.
-        """
-        if surface not in self.areaArray:
-            self._addLineCode(surface)
-            code: str = "\n"
-            toolIDCode: str = ", "  # string for tool surfaces that should be subtracted
-            for toolSurf in surface.tools:  # if _cut list is not empty
-                toolSurfName = clean_name(toolSurf.name)
-                toolSurfID = toolSurf.id
-                # if toolSurf not in self._areaArray:
-                if not toolSurf.isDrawn():  # if the surface is not in script
-                    self._addLineCode(toolSurf)
-                    code += self._addLoopCode(toolSurf)
-                    # if the tool-surface should be kept; add it as surface
-                    # delete only makes sence for cutting surface
-                    if not toolSurf.delete:
-                        # adding Surface name for better identification
-                        code += f"Surf_{toolSurfName} = {{{toolSurfID}}};\n"
-                        # add Surface Code
-                        code += (
-                            f"Plane Surface(Surf_{toolSurfName}) = {{{toolSurfID}}};\n"
-                        )
-                        self.areaArray.append(toolSurf)
-                    # code = code + "};\n"
-                # add the surface ID to the lineloop-cut-id-list
-                toolIDCode += str(toolSurfID) + ", "
-
-            # Add CurveLoop code for parent surface
-            code += self._addLoopCode(surface)
-            surfName = clean_name(surface.name)
-            surfID = surface.id
-            ## Add surface code:
-            # Generate name for ID; adding Surface name for better
-            # identification
-            code += f"Surf_{surfName} = {{{surfID}}};\n"
-            # add Surface Code:
-            # Plane Surface(Surf_SURFNAME) = {LOOPID, CUT_ID1, CUT_ID2,...};\n
-            code += (
-                f"Plane Surface(Surf_{surfName}) = {{{surfID}"
-                + toolIDCode[:-2]  # ignore last two characters because they are ", "
-                + "};\n"
-            )
-
-            self.areaCode += code
-            self.areaArray.append(surface)
-
-            # cCode = ""
-            # if surface.getMeshColor():
-            #     cCode = f"Color {surface.getMeshColor()} {{Surface {{{surfID}}}; }}\n"
-            # for toolSurf in surface.tools:
-            #     if toolSurf.getMeshColor():
-            #         cCode += (
-            #             f"Color {toolSurf.getMeshColor()} "
-            #             f"{{Surface {{{toolSurf.id}}}; }}\n"
-            #         )
-            # self.colorCode += cCode
-
-    def _resetGeometry(self) -> None:
-        """Reset all geometry attributes of the script (point, line and surface
-        lists; code strings; physical elements)"""
-        # reset all lists and code strings
-        # points
-        self.pointCode: str = ""
-        self.pointArray: list[Point] = []
-
-        # lines
-        self.curveCode: str = ""
-        self._setCurveList([])
-
-        # surfaces
-        self.areaCode: str = ""
-        self.areaArray: list[Surface] = []
-
-        # physical surfaces
-        self.physicalElementCode: str = ""
-        self.physicalElementArray: list[PhysicalElement] = []
-
-        # reset colors
-        self.colorCode: str = "\n"  # code for mesh colors
-
-    # -------------------------------------------------------------------------
-    # -------------------------- END OF GEO FUNCTIONS -------------------------
-    # -------------------------------------------------------------------------
-
-    # -------------------------------------------------------------------------
     # -------------------------- START OF PRO FUNCTIONS -----------------------
     # -------------------------------------------------------------------------
 
     def _addMachineDomains(self):
-        domainList = self._createMachineDomains()
         logger = logging.getLogger(__name__)
+        domainList = self._createMachineDomains()
         for domain in domainList:
             logger.debug("Adding domain %s", domain.name)
             self._addDomain(domain)
@@ -1276,54 +758,6 @@ class Script:
     # -------------------------------------------------------------------------
     # -------------------------- END OF PRO FUNCTIONS -------------------------
     # -------------------------------------------------------------------------
-    def _createPhysicalElementCode(self, physicalElement: PhysicalElement) -> str:
-        """Create the code for a physical element (= domain for simulation) in
-        the .geo file. E.g. for a Physical Surface the code would look like:
-
-        .. code:: text
-
-            Physical Surface("PHYSICAL_NAME", PHSICAL_ID) =
-                {GEO_ID1,GEO_ID2,...};
-
-        Args:
-            physicalElement (PhysicalElement): Physical element to generate
-                code from.
-
-        Returns:
-            str: Gmsh style physical element code.
-        """
-        if physicalElement not in self.physicalElementArray:
-            code = f"// {physicalElement.name}\n"
-            # raises error if not Surface or Line
-            geoElmType = physicalElement.geoElementType
-            if geoElmType == Surface:
-                elementType = "Surface"
-            elif geoElmType == Line:
-                elementType = "Curve"
-            else:
-                raise TypeError(f"Invalid geometry type {geoElmType}")
-            code += (
-                "Physical "
-                + elementType
-                + f'("{physicalElement.name}", {physicalElement.id}) = {{'
-            )
-            for geo in physicalElement.geo_list:
-                if elementType == "Surface":
-                    self._addSurface(geo)
-                    code += f"{geo.id},"
-                else:  # its a line
-                    lineOrNone = self._addCurve(geo)
-                    if lineOrNone:
-                        # result of addCurve was an identical line;
-                        # add the id of that line
-                        code += f"{lineOrNone.id},"
-                    else:
-                        # add the id of the new line (= geo)
-                        code += f"{geo.id},"
-            # replace the last unnecessary "," with "};\n"
-            code = code.rstrip(",") + "};\n"
-            return code
-        return ""
 
     def _addPhysicalElement(self, physicalElement: PhysicalElement) -> None:
         """Add a PhysicalElement to the Script.
@@ -1374,19 +808,6 @@ class Script:
                         + "Magnetisation Type must be 'radial', 'parallel' or "
                         + "'tangential'."
                     )
-
-            # try:
-            #     typeMag = physicalElement.magnetisationType
-            #     if typeMag == "radial":
-            #         self._addMagnetisationRadial(physicalElement)
-            #     elif typeMag == "parallel":
-            #         self._addMagnetisationParallel(physicalElement)
-            #     elif typeMag == "tangential":
-            #         self._addMagnetisationTangential(physicalElement)
-            #     else:
-            #         pass
-            # except AttributeError:
-            #     pass
 
     def _addMaterial(self, physicalElement: PhysicalElement) -> None:
         """
@@ -1626,25 +1047,6 @@ class Script:
                     }
                 )
                 matFun.add("density", f"density_{matName}", f"group_{matName}")
-
-    def _createPointCode(self) -> None:
-        """creates all the point code (as text) and stores it in the privat
-        variable _pointCode.
-
-        Here a function had to be outsourced instead of printing the points
-        directly on generation, because otherwise the smallest mesh size of a
-        point could not be recognized
-        """
-        for point in self.pointArray:
-            pName = clean_name(point.name)
-            pID = point.id
-            coord = point.coordinate
-            pMeshSize = point.meshLength
-            pCode = (
-                f"{pName} = {pID}; "
-                f"Point({pID}) = {{{coord[0]}, {coord[1]}, {coord[2]}, {pMeshSize}*gmsf}};\n"
-            )
-            self.pointCode += pCode
 
     def _createMovingGeoCode(self) -> str:
         """Create the code for plotting the moving geometry in the gmsh GUI.
