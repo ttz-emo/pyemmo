@@ -130,6 +130,8 @@ def build_pyemmo_material(pyleecan_material: PyleecanMaterial) -> Material:
     # struct props
     try:
         density = pyleecan_material.struct.rho  # type: ignore
+        if density is None:
+            density = 0.0
     except AttributeError:
         density = 0.0
     if bh.size == 0 and not rel_permeability:
