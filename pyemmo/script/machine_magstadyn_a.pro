@@ -840,7 +840,7 @@ Resolution {
       If(Flag_ParkTransformation)
         PostOperation[ThetaPark_IABC] ;
       EndIf
-
+      Print[{$RPos}, Format "Executing first static simulation at rotor position %f deg"];
       If(!Flag_NL)
         Generate[A] ; Solve[A] ;
       EndIf
@@ -895,9 +895,9 @@ Resolution {
           ChangeOfCoordinates[ NodesOf[Rotor_Moving], RotatePZ[delta_theta[]]];
           Print[
             {
-              Floor[$Time/delta_time]+1,
+              Floor[$Time/delta_time],
               Ceil[(timemax-time0)/delta_time],
-              ((Floor[$Time/delta_time]+1) / Ceil[(timemax-time0)/delta_time])*100
+              ((Floor[$Time/delta_time]) / Ceil[(timemax-time0)/delta_time])*100
             },
             Format "Step %.0f / %.0f  -  %.1f %%"];
           // Print[{$Time}, Format "Time: %f"];
