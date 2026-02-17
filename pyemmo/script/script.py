@@ -2228,8 +2228,20 @@ class Script:
                 )
 
             # Stator angle for I_U = 1 p.u., I_V = -1/2, I_W = -1/2 in rad elec
-            systemOffset = float(angle[where(mmfOrder == nbrPolePairs)])
-            logger.debug("Stator north pole angle (elec): %.4f°", rad2deg(systemOffset))
+            try:
+                # get index of fundamental MMF electrical order
+                elec_order_index = where(mmfOrder == nbrPolePairs)
+                system_offset = float(angle[elec_order_index[0][0]])
+                logger.debug(
+                    "Stator north pole angle (elec): %.4f°", rad2deg(system_offset)
+                )
+            except Exception as e:
+                logger.warning(
+                    "Cant find single fundamental MMF order in harmonics of SWAT-EM winding."
+                    "Can't determine Park transformation offset angle.",
+                    exc_info=e,
+                )
+                system_offset = None
 
             # dq-offset (electrical) is:
             #   current system offset (CSO) angle - half slot pitch
@@ -2242,19 +2254,24 @@ class Script:
             # the first pole pitch. This only is true if first pole (CCW) is a
             # north pole! And the magnetization is kind of radial. Does't work
             # for tangential or hallbach magnetization...
-            magnetisations: list[str] = []
-            for mag in machine.rotor._domainM.physicals:
-                mag: Magnet = mag
-                magnetisations.append(mag.magType == "tangential")
-            if any(magnetisations):
-                logger.warning(
-                    "Tangential magnetization detected! Dq-offset calculation is invalid"
-                )
-                dqOffset = 0
+            if system_offset is not None:
+                magnetisations: list[str] = []
+                for mag in machine.rotor._domainM.physicals:
+                    mag: Magnet = mag
+                    magnetisations.append(mag.magType == "tangential")
+                if any(magnetisations):
+                    logger.warning(
+                        "Tangential magnetization detected! Dq-offset calculation is invalid"
+                    )
+                    dqOffset = 0
+                else:
+                    dqOffset = (
+                        -rad2deg(slotPitch / 2 * nbrPolePairs)
+                        + rad2deg(system_offset)
+                        + 270
+                    )
             else:
-                dqOffset = (
-                    -rad2deg(slotPitch / 2 * nbrPolePairs) + rad2deg(systemOffset) + 270
-                )
+                dqOffset = 0
             simuParamDict["SYM"]["ParkAngOffset"] = dqOffset
 
     def _getParamCode(self, paramName: str, paramValue) -> str:
