@@ -398,8 +398,8 @@ DefineConstant[
         },
     eccentricity_dynamic_m = eccentricity_dynamic * mm,
     // Get number of movingband segments from .geo file to use in PostOperations
-    NbrMbSegments = GetNumber[INPUT_MESH, "Number of Rotor Movingband Segments", 360]
-    GlobalMeshsizeFactor = GetNumber[INPUT_MESH, "00Mesh size factor", 1.0]
+    NbrMbSegments = GetNumber[StrCat[INPUT_MESH, "Number of Rotor Movingband Segments"], 360],
+    GlobalMeshsizeFactor = GetNumber[StrCat[INPUT_MESH, "00Mesh size factor"], 1.0]
 ];
 // tranlate to meter
 
