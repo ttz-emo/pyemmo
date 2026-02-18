@@ -76,9 +76,9 @@ autosummary_generate = True  # Turn on sphinx.ext.autosummary
 # Napolen settings
 # Napoleon settings
 napoleon_google_docstring = True
-napoleon_numpy_docstring = True
+napoleon_numpy_docstring = False
 napoleon_include_init_with_doc = True
-napoleon_include_private_with_doc = True
+napoleon_include_private_with_doc = False
 napoleon_include_special_with_doc = True
 napoleon_use_admonition_for_examples = False
 napoleon_use_admonition_for_notes = False
@@ -155,7 +155,6 @@ if create_param_file:
             # TODO: Extract "Help" from code and put in separate column
             line = f"\t*\t- {name}\n\t\t- {code}"
             rst_file.write(line + "\n")
-        rst_file.write("\n")
 
 
 def run_apidoc(app):

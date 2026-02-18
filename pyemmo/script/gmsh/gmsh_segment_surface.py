@@ -246,6 +246,7 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
         additionally handles the case where the tool intersects the parent surface
         partly. In this case the remaining tool part will be rotated by the parent
         segment angle and subtracted again.
+
         Args:
             tool (GmshSegmentSurface): Tool surface to cut out.
             keep_tool (bool, optional): If True, the tool surface will not be removed
@@ -372,6 +373,7 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
         self, outer_tool: GmshSegmentSurface, tool: GmshSegmentSurface
     ) -> None:
         """Handle outer tool surface after subtraction:
+
         - If the tool intersects in **negative** circumferential direction,
           rotate and subtract the original tool and subtract from the parent
           surface again.

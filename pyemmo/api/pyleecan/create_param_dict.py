@@ -49,11 +49,12 @@ def create_param_dict(
     Builds a dictionary for the usage :mod:`pyemmo.api.json` api with all relevant
     machine parameters. See `JSON API parameters <section-pyemmo.api.json-param>`_
     section in documentation for further details.
+
     Args:
-        machine (PyleecanMachine): Pyleecan `Machine
-            <https://pyleecan.org/pyleecan.Classes.Machine.html>`_ object.
-        pyleecan_simulation (PyleecanSimulation): A Pyleecan `Simulation
-            <https://pyleecan.org/pyleecan.Classes.Simulation.html>`_ object.
+        machine (PyleecanMachine): Pyleecan
+            `Machine <https://pyleecan.org/pyleecan.Classes.Machine.html>`_ object.
+        pyleecan_simulation (PyleecanSimulation): A Pyleecan
+        `Simulation <https://pyleecan.org/pyleecan.Classes.Simulation.html>`_ object.
 
     Returns:
         dict[str, any]: A dictionary containing the parameters for communication

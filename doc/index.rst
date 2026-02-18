@@ -1,7 +1,8 @@
 Welcome to the PyEMMO documentation!
 =====================================
+
 **PyEMMO is a Python based software for generating finite element models of
-electrical machines in** `ONELAB <https://www.onelab.info/>`_.
+electrical machines in** `ONELAB <onelab_link>`_.
 
 .. figure:: images/PyEMMO_Workflow.png
    :scale: 40 %
@@ -13,8 +14,9 @@ electrical machines in** `ONELAB <https://www.onelab.info/>`_.
 
 What is PyEMMO
 ==============
+
 **PyEMMO is a Python library for the automated modeling of electrical machines in the
-Open-Source finite element software** `ONELAB <https://onelab.info/>`_.
+Open-Source finite element software** `ONELAB <onelab_link>`_.
 
 The projects motivation is to **reduce license costs** and accelerate standard tasks
 through **parallelization of calculations**.
@@ -64,3 +66,6 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+.. _onelab_link: https://www.onelab.info/
+.. _Pyleecan: https://pyleecan.org/

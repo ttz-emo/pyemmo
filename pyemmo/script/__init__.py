@@ -18,73 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""
-The script subpackage provides the all necessary functions and classes to create ONELAB
-models.
-
-1. The main class is the :class:`~pyemmo.script.script.Script` class, which creates
-   the geometry (.geo) and model (.pro) files from a PyEMMO
-   :class:`~pyemmo.script.machine.Machine` object and some
-   additonal parameters.
-2. The :mod:`~pyemmo.script.geometry` subpackage provides classes for **basic geometric
-   objects**, like the :class:`~pyemmo.script.geometry.line.Line` class, which are the
-   basis for the :class:`~pyemmo.script.gmsh.gmsh_geometry.GmshGeometry` classes in the
-   :mod:`~pyemmo.script.gmsh` subpackage.
-3. The :mod:`~pyemmo.script.gmsh` subpackage provides classes for **Gmsh geometry objects**,
-   like the :class:`~pyemmo.script.gmsh.GmshLine` class, which are used to create the
-   geometry of the ONELAB model through the
-   `gmsh python api <https://gmsh.info/doc/texinfo/gmsh.html#Gmsh-application-programming-interface>`_.
-4. The :mod:`~pyemmo.script.material` subpackage provides classes for handling of
-   material properties.
-5. The :mod:`~pyemmo.script.physicals` subpackage provides classes that represent the
-   **PhyicalElement** objects according to the Gmsh/GetDP definition.
-   This means groups of geometric objects (e.g. surfaces) with assigned physical
-   properties (e.g. magnetization and material properties) or boundary conditions.
-   The subpackage contains different types of **PhysicalElements**
-   (= surfaces with phyiscal properties, e.g. :class:`~pyemmo.script.geometry.slot.Slot`
-   , or boundary curves, e.g. :class:`~pyemmo.script.physicals.limitLine.LimitLine`)
-6. The :class:`~pyemmo.script.domain.Domain` which represents groups of
-   :class:`~pyemmo.script.geometry.physicalElement.PhysicalElement` objects with shared
-   properties. These mirror the object structure of ONELAB models. See
-   `GetDP Groups <https://getdp.info/doc/texinfo/getdp.html#Group>`_ documentation
-   section for more details.
-
-For a visual overview of the package structure see the graph below.
-
-.. graph:: script_subpackage
-
-   "script" -- "Script";
-   "script" -- "geometry";
-   "geometry" -- "Transformable";
-   "Transformable" -- "Point";
-   "Transformable" -- "Line";
-   "Transformable" -- "Surface";
-   "Line" -- "CircleArc";
-   "Line" -- "Spline";
-   "Surface" -- "SegmentSurface";
-   "script" -- "material";
-   "material" -- "Material";
-   "Material" -- "ElectricalSteel";
-   "script" -- "physicals";
-   "physicals" -- "PhysicalElement";
-   "PhysicalElement" -- "Magnet";
-   "PhysicalElement" -- "LimitLine";
-   "PhysicalElement" -- "...";
-   "script" -- "gmsh";
-   "gmsh" -- "GmshGeometry";
-   "GmshGeometry" -- "GmshPoint";
-   "GmshGeometry" -- "GmshLine";
-   "GmshGeometry" -- "GmshSurface";
-   "GmshLine" -- "GmshArc";
-   "GmshLine" -- "GmshSpline";
-   "GmshSurface" -- "GmshSegmentSurface";
-
-|
-|
-
-More text
-
-"""
+""""""
 
 from __future__ import annotations
 
@@ -129,7 +63,16 @@ default_param_dict: dict[str, dict] = {"GEO": {}, "SYM": {}, "MAT": {}}
 """Default parameter dict used in the :class:`~pyemmo.script.script.Script` class to
 initialize the ``Script.simulation_parameters`` attribute.
 
-The default vlaues looks like:
+These attributes will be written to the {model_name}_param.geo file which initializes
+some of the ONELAB parameters defined the *machine_template.pro* file.
+**GEO**metry parameter will be updated from the :class:`~pyemmo.script.machine.Machine`
+object.
+**SIM**ulation some of the simualtion parameters will be updated from the
+:class:`~pyemmo.script.script.Script` itself.
+**MAT*erial parameters will be updated from the :class:`~pyemmo.script.material.Material`
+objects.
+
+The default value looks like:
 
 .. code-block:: python
 
@@ -161,7 +104,6 @@ The default vlaues looks like:
             "L_ENDRING_SEGMENT": 0.,
         },
         "MAT": {
-            "VALUE_DENSITY_LAM": 7800,
             "TEMP_MAG": 20,
         }
     }
@@ -195,7 +137,6 @@ default_param_dict["SYM"] = {
     "L_ENDRING_SEGMENT": 0.0,
 }
 default_param_dict["MAT"] = {
-    "VALUE_DENSITY_LAM": 7800,
     "TEMP_MAG": 20,
 }
 
