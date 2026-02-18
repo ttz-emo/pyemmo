@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""pyemmo Script module"""
+""""""
 
 # make all annotations strings, to avoid import errors in type checking case
 from __future__ import annotations
@@ -74,8 +74,20 @@ if TYPE_CHECKING:
 
 
 class Script:
-    """Eine Instanz der Klasse Script beinhaltet alle Informationen, die zum
-    Erzeugen der .geo- und .pro-Skripte benötigt werden."""
+    """
+    Script class for generating GetDP simulation files from a PyEMMO machine model.
+    This class manages the creation of .geo (geometry) and .pro (GetDP) files for
+    electromagnetic finite element simulations. It handles:
+
+    - Domain and material definitions
+    - Mesh configuration and constraints
+    - Post-processing operations
+    - Simulation parameter management
+
+    The Script class integrates with a :class:`~pyemmo.script.machine.Machine` object to automatically generate
+    geometry-dependent parameters and domain definitions for both rotor and stator
+    components.
+    """
 
     def __init__(
         self,
@@ -90,35 +102,18 @@ class Script:
             name (str): script name
             scriptPath (str): path, where the geo and pro scripts should be
                 saved
-            simuParams (dict): Dictionary with different simulation parameters
-
-                - "INIT_ROTOR_POS" - initial rotor position mech °
-                - "ANGLE_INCREMENT" - angular step size in mech °
-                - "FINAL_ROTOR_POS" - final rotor position mech °
-                - "Id_eff" - d-axis current in A
-                - "Iq_eff" - q-axis current in A
-                - "SPEED_RPM" - rotational speed in rpm
-
-                optional:
-
-                - "ParkAngOffset" - offset angle for park-transformation in
-                    elec °
-                - "NBR_PARALLEL_PATHS" - number of parallel winding paths
-                - "CALC_MAGNET_LOSSES" - flag to calculate eddy current losses
-                    in PMs
-                - "ANALYSIS_TYPE"
-
-                    - 0: static (default)
-                    - 1: transient
-
-            machine (Machine): pyemmo machine object for geometry and geometic
+            simuParams (dict): Dictionary with different parameters to initialize the
+                ONELAB paramters defined in the *machine_template.pro* file. See
+                :data:`~pyemmo.script.default_param_dict` for or the example below for
+                more details.
+            machine (Machine): pyemmo machine object for domain definitions and geometic
                 parameters. Defaults to None.
             resultsPath (str, optional): path, where the simulation results
                 should be stored. Defaults to a folder in scriptPath with name
                 "res_{scriptName}".
 
 
-        DEFAULT SimuParam Dict:
+        Example simulation paramter dictionary:
 
         .. code-block:: python
 
@@ -240,7 +235,7 @@ class Script:
 
     @property
     def name(self) -> str:
-        """getter of Script name
+        """Name of the script, used for file naming.
 
         Returns:
             str: script name
@@ -258,10 +253,10 @@ class Script:
 
     @property
     def scriptPath(self) -> str | os.PathLike:
-        """Get the path, where the model files (.geo & .pro) should be stored
+        """Get the path, where the model files (.geo & .pro) are stored.
 
         Returns:
-            str: path where the model files should be stored
+            str: path where the model files should be stored.
         """
         return self._scriptPath
 
@@ -277,7 +272,7 @@ class Script:
 
     @property
     def proFilePath(self) -> str:
-        """Get the path to the resulting pro file named "ScriptName.pro"
+        """Get the path to the resulting .pro file named "ScriptName.pro"
 
         Returns:
             str: path to the pro Script file
@@ -286,7 +281,7 @@ class Script:
 
     @property
     def geoFilePath(self) -> str:
-        """Get the path to the resulting geo file named "ScriptName.geo"
+        """Get the path to the resulting .geo file named "ScriptName.geo"
 
         Returns:
             str: path to the geo Script file
@@ -344,8 +339,13 @@ class Script:
 
     @property
     def resultsPath(self) -> str:
-        """path to the folder where the simulation results are stored
-        (simulation results folder)"""
+        """
+        path to the folder where the simulation results are stored
+        (simulation results folder)
+
+        Retruns:
+            str
+        """
         return self._resPath
 
     @resultsPath.setter
