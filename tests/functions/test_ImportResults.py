@@ -36,6 +36,7 @@ from pyemmo.functions.import_results import (
     read_RegionValue_dat,
     read_timetable_dat,
     split_data,
+    freq_from_signal,
 )
 
 try:
@@ -284,6 +285,21 @@ def test_get_result_files():
             "VL_GmshParsed_static.pos",
         ],
     ), "Incorrect list of .pos files!"
+
+
+def test_freq_from_signal():
+    """Test the function freq_from_signal"""
+    # Test signal with known frequency
+    fs = 1000  # Sampling frequency
+    f = 5  # Frequency of the signal
+    t = np.arange(0, 1, 1 / fs)  # Time vector of 1 second
+    # Generate sine wave signal with noise:
+    signal = np.sin(2 * np.pi * f * t) + 0.1 * np.random.normal(0, 1, len(t))
+
+    estimated_freq = freq_from_signal(signal, fs)
+    assert np.isclose(
+        estimated_freq, f, atol=0.5
+    ), "Estimated frequency is not close to actual frequency!"
 
 
 # if __name__ == "__main__":

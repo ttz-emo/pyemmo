@@ -582,6 +582,25 @@ def get_result_files(
         logger.warning("No result files found in '%s'", result_folder)
     return dat_file_list, pos_file_list
 
+def freq_from_signal(signal: np.ndarray, fs: float) -> float:
+    """Calculate the frequency of a signal via FFT.
+
+    Args:
+        signal (np.ndarray): 1D array with signal values.
+        fs (float): Sampling frequency in Hz.
+
+    Returns:
+        float: Frequency of the signal in Hz.
+    """
+    # Number of samples in signal
+    N = len(signal)
+    # Perform FFT and get frequencies
+    freqs = np.fft.fftfreq(N, d=1 / fs)
+    fft_values = np.fft.fft(signal)
+    # Get index of peak in FFT
+    peak_index = np.argmax(np.abs(fft_values))
+    # Return corresponding frequency
+    return abs(freqs[peak_index])
 
 def load_param_file(setup_file: str | os.PathLike) -> dict:
     """load the parameter json file create in
