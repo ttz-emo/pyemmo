@@ -79,7 +79,6 @@ class TestScript(unittest.TestCase):
         self.scriptObj = Script(
             name="testScript",
             scriptPath=TEST_TEMP_DIR,
-            factory="Built-in",
             simuParams=self.initParamDict,
         )
 
@@ -97,7 +96,6 @@ class TestScript(unittest.TestCase):
         # Sicherstellen, dass init Funktion Werte richtig setzt
         self.assertEqual(self.scriptObj.name, "testScript")
         self.assertEqual(self.scriptObj.scriptPath, TEST_TEMP_DIR)
-        self.assertEqual(self.scriptObj.factory, "Build-in")
         # Test that the initial parameters are in the resulting param dict
         self.assertEqual(
             self.scriptObj.simParams["SYM"],

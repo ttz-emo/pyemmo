@@ -54,7 +54,7 @@ class Spline(Line):
             spline_type (Literal[0, 1, 2], optional): There are 3 different types of Splines
              that can be generated with Gmsh. Defaults to 0 (Spline):
 
-                0 : Catmull-Rom Spline (Build-in Kernel) or C2 BSpline (OpenCASCADE Kernel)
+                0 :C2 BSpline
                 1 : Bezierkurve
                 2 : Basis-Spline
 
@@ -70,7 +70,7 @@ class Spline(Line):
         """get Spline type.
         There are 3 different types of Splines that can be generated with Gmsh:
 
-            0 : Catmull-Rom Spline (Build-in Kernel) or C2 BSpline (OpenCASCADE Kernel)
+            0 : C2 BSpline
             1 : Bezierkurve
             2 : Basis-Spline
 

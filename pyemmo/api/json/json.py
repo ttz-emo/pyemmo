@@ -643,7 +643,6 @@ def main(
         simuParams=simulationParameters,
         machine=machine,
         resultsPath=results,
-        # factory="OpenCascade",
     )
 
     if module_logger.getEffectiveLevel() <= logging.DEBUG:

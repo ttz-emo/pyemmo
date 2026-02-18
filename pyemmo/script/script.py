@@ -84,7 +84,6 @@ class Script:
         simuParams: dict,
         machine: Machine | None = None,
         resultsPath: str = "",
-        factory: str = "Build-in",
     ):
         """
         Args:
@@ -117,11 +116,6 @@ class Script:
             resultsPath (str, optional): path, where the simulation results
                 should be stored. Defaults to a folder in scriptPath with name
                 "res_{scriptName}".
-            factory (str, optional): Geometry kernel for the geo file.
-                Possible inputs are:
-
-                - "Build-in" (default)
-                - "OpenCASCADE"
 
 
         DEFAULT SimuParam Dict:
@@ -217,7 +211,6 @@ class Script:
         #     }
         #     }
         # }
-        self.factory = factory  # gmsh geometry kernel
 
         # FOR DEBUGGING:
         self.nbrIdedentPoints: int = 0
@@ -331,7 +324,6 @@ class Script:
             simuParams=self.simParams,
             machine=newMachine,
             resultsPath=self.resultsPath,
-            factory=self.factory,
         )
         # else:
         # msg = f"Given parameter machine was not type machine, but '{type(newMachine)}'"
@@ -366,20 +358,6 @@ class Script:
     def simParams(self) -> dict:
         """Getter of the attribute simulationParameters"""
         return self._simulationParameters
-
-    @property
-    def factory(self) -> str:
-        """Getter of the attribute factory"""
-        return self._factory
-
-    @factory.setter
-    def factory(self, factory: str):
-        """Setter of the attribute factory"""
-        if re.search(r"open[\s\-]?cascade", factory.lower()):
-            self._factory = "OpenCASCADE"
-        else:
-            self._factory = "Build-in"
-        # raise(ValueError(f"Given factory '{factory}' was not recognized!"))
 
     @property
     def materialDict(self) -> dict[str, list[list[int]]]:
