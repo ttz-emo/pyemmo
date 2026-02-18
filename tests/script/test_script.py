@@ -95,15 +95,15 @@ class TestScript(unittest.TestCase):
 
         # Sicherstellen, dass init Funktion Werte richtig setzt
         self.assertEqual(self.scriptObj.name, "testScript")
-        self.assertEqual(self.scriptObj.scriptPath, TEST_TEMP_DIR)
+        self.assertEqual(self.scriptObj.script_path, TEST_TEMP_DIR)
         # Test that the initial parameters are in the resulting param dict
         self.assertEqual(
-            self.scriptObj.simParams["SYM"],
-            {**self.scriptObj.simParams["SYM"], **self.initParamDict["SYM"]},
+            self.scriptObj.sim_params["SYM"],
+            {**self.scriptObj.sim_params["SYM"], **self.initParamDict["SYM"]},
         )
         self.assertEqual(
-            self.scriptObj.simParams["MAT"],
-            {**self.scriptObj.simParams["MAT"], **self.initParamDict["MAT"]},
+            self.scriptObj.sim_params["MAT"],
+            {**self.scriptObj.sim_params["MAT"], **self.initParamDict["MAT"]},
         )
 
 

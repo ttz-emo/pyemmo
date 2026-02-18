@@ -279,7 +279,7 @@ class PhysicalElement:
         Args:
             script (Script)
         """
-        script._addPhysicalElement(self)
+        script._add_physical(self)
 
     def get_radial_position(self) -> float:
         """get the mean radial position of the PhsicalElement.\n

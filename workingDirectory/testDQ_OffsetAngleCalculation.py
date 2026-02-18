@@ -187,14 +187,14 @@ myScript = Script(
     },
     machine=SPMSM,
 )
-myScript.generateScript()
+myScript.generate()
 
 subprocess.run(
     createCmdCommand(
-        onelabFile=myScript.proFilePath,
+        onelabFile=myScript.pro_file_path,
         useGUI=True,
         paramDict={"Flag_ClearResults": 1},
     )
 )
-plot_all_dat(myScript.resultsPath)
+plot_all_dat(myScript.results_path)
 # %%

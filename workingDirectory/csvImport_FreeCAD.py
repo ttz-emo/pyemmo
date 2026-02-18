@@ -194,9 +194,9 @@ for surf in surfList:
 
 domTest = Domain("domTest", allPhysical)
 domTest.addToScript(myScript)
-myScript.generateScript(mode=1)
+myScript.generate(mode=1)
 # %% Run gmsh
-command = run_onelab.createCmdCommand(myScript.geoFilePath, useGUI=True)
+command = run_onelab.createCmdCommand(myScript.geo_file_path, useGUI=True)
 subprocess.run(command)
 
 # %%

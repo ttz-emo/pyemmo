@@ -124,6 +124,6 @@ myScript = Script(name="Reluktanz", scriptPath=pathRes, simuParams={})
 domainMaschine.addToScript(myScript)
 
 # .geo-Datei erzeugen
-myScript.generateScript()
+myScript.generate()
 
 print("done")

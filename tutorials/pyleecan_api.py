@@ -173,7 +173,7 @@ resId = "test_simulation"  # result identifier and result folder name
 # create param dict for simulation
 param_dict = {
     # model .pro file path
-    "pro": pyemmo_script.proFilePath,
+    "pro": pyemmo_script.pro_file_path,
     # Gmsh Parameters
     "gmsh": {"exe": r"", "gmsf": 2, "verbosity level": 2},
     # GetDP Parameters
@@ -194,7 +194,7 @@ param_dict = {
         "Flag_EC_Magnets": 0,  # control magnet eddy current calculation
         #
         ## Result settings
-        "res": pyemmo_script.resultsPath,  # main results folder
+        "res": pyemmo_script.results_path,  # main results folder
         "ResId": resId,  # current simulation result folder ID
         "Flag_PrintFields": 0,  # control field result output (.pos files, only last timestep)
         "Flag_ClearResults": 0,  # remove results if existing, otherwise existing results will be imported
@@ -284,7 +284,7 @@ ax.legend()
 # %%
 import gmsh
 
-pyemmo_script.addPostOperation(
+pyemmo_script.add_post_operation(
     quantityName="Force_MST",
     name="Airgap_Force",
     # GetDP keyword arguments for PostOperations
@@ -300,7 +300,7 @@ pyemmo_script.addPostOperation(
     Format="Gmsh",
     LastTimeStepOnly="",
 )
-pyemmo_script.addPostOperation(
+pyemmo_script.add_post_operation(
     quantityName="Force_MST_Cyl",
     name="Airgap_Force",
     # GetDP keyword arguments for PostOperations
@@ -316,7 +316,7 @@ pyemmo_script.addPostOperation(
     Format="Gmsh",
     LastTimeStepOnly="",
 )
-pyemmo_script.generateScript(2)  # recreate pro files with new PostOperation
+pyemmo_script.generate(2)  # recreate pro files with new PostOperation
 
 # %% [markdown]
 # Now we can run another simulation.
@@ -515,7 +515,7 @@ gmsh.fltk.run()
 
 # %%
 # we could further load the created mesh from the mesh file:
-mesh_file = join(pyemmo_script.scriptPath, pyemmo_script.name + ".msh")
+mesh_file = join(pyemmo_script.script_path, pyemmo_script.name + ".msh")
 if os.path.isfile(mesh_file):
     gmsh.merge(mesh_file)
     gmsh.fltk.run()

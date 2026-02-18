@@ -75,7 +75,7 @@ spline.addControlPoint(p8, 1)
 # %%
 spline.addToScript(myScript)
 
-myScript.generateScript(mode=1)  # only geo file
+myScript.generate(mode=1)  # only geo file
 subprocess.run(
-    createCmdCommand(onelabFile=myScript.geoFilePath, useGUI=True), check=False
+    createCmdCommand(onelabFile=myScript.geo_file_path, useGUI=True), check=False
 )

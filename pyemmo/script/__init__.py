@@ -142,7 +142,7 @@ default_param_dict["MAT"] = {
 
 # Translate Domain names from pyemmo -> GetDP template
 # ONLY DOMAINS SPECIFIED HERE WILL BE CREATED!
-boundaryDomainDict = {
+boundary_domain_dict = {
     DOMAIN_PRIMARY: "Surf_cutA0",
     DOMAIN_SECONDARY: "Surf_cutA1",
 }
@@ -159,7 +159,7 @@ statorDomainDict = {
     DOMAIN_LIMIT: "Surf_Inf",
 }
 # rotor specific domains:
-rotorDomainDict = {
+rotor_domain_dict = {
     # "domainS": "",
     DOMAIN_MAGNET: "Rotor_Magnets",
     DOMAIN_BAR: "Rotor_Bars",
