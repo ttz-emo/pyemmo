@@ -272,7 +272,7 @@ ax.legend()
 # %% [markdown]
 # ## 6. User-defined results
 # Finally lets talk about the definition of some user defined results appart from the standard global results seen in the simulation example before.
-# We can use the ``Script`` method ``addPostOperation`` to add user-defined post operations to the GetDP input scripts.
+# We can use the ``Script`` method ``add_post_operation`` to add user-defined post operations to the GetDP input scripts.
 # This requires some knowledge of the GetDP Syntax for evaluation PostProcessing quantities.
 # You can find all available quantities in the `machine_magstadyn_a.pro` template file in the ``PostProcessing`` section.
 #
@@ -285,8 +285,8 @@ ax.legend()
 import gmsh
 
 pyemmo_script.add_post_operation(
-    quantityName="Force_MST",
-    name="Airgap_Force",
+    quantity_name="Force_MST",
+    post_operation="Airgap_Force",
     # GetDP keyword arguments for PostOperations
     OnRegion="NodesOf[Stator_Bnd_MB]",
     # alternativly you could use:
@@ -301,8 +301,8 @@ pyemmo_script.add_post_operation(
     LastTimeStepOnly="",
 )
 pyemmo_script.add_post_operation(
-    quantityName="Force_MST_Cyl",
-    name="Airgap_Force",
+    quantity_name="Force_MST_Cyl",
+    post_operation="Airgap_Force",
     # GetDP keyword arguments for PostOperations
     OnRegion="NodesOf[Stator_Bnd_MB]",
     # alternativly you could use:

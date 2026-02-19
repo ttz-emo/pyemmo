@@ -374,7 +374,7 @@ class Script:
         return self._post_operation
 
     @post_operation.setter
-    def postOperations(self, postOperation: PostOperation) -> None:
+    def post_operation(self, postOperation: PostOperation) -> None:
         """set the user defined PostOperation
 
         Args:
@@ -626,35 +626,68 @@ class Script:
                 return slot_domains
         return None
 
-    def add_post_operation(self, quantityName: str, name: str, **kwargs) -> None:
+    def add_post_operation(
+        self, quantity_name: str, post_operation: str, **kwargs
+    ) -> None:
         r"""Add a new PostOperation (Print) statement
 
         Args:
 
-            quantityName (str): Name of the PostProcessing quantity (eg. a,
-                az, b, bn, hn, b_tangent, b_radial, br, mu, j, js, jz, Vmag,
-                I_n, ir, p_Lam, P_Lam, Inertia,...)
-            name (str, optional): Name of the PostOperation.
+            quantity_name (str): Name of the PostProcessing quantity. See available
+                quantities below.
+            post_operation (str, optional): Name of the PostOperation.
 
         Additionally kwargs can be used to complete the Print statment, so eg.
-        to print Br on the whole Domain the function call would look
+        to print 'b_radial' on the whole 'Domain' the function call would look
         like:
 
-        .. code-block:: python
+        Example:
 
-            myScript.addPostOperation("b_radial", "User Defined
-            PostOperation", OnElementsOf="Domain",
-            File="Path/To/resFile.pos", LastTimeStepOnly="",)
+            >>> myScript.add_post_operation(
+            >>>     quantity_name = "b_radial",
+            >>>     post_operation = "User Defined PostOperation",
+            >>>     OnElementsO = "Domain",
+            >>>     File = "Path/To/resFile.pos"
+            >>> )
 
         A special case is if you want to save something to the
-        parameterized folder "ResDir" (Onelab parameter). In this case you
-        have to specify the following "File" kwarg:
-            '..., File = "CAT_RESDIR/YourResFileName.pos" ...'
-        That way the File kwarg is replaced by:
-            '.., File = StrCat[ResDir,"YourResFileName.pos"] ...'
+        parameterized folder "ResDir" (ONELAB parameter). In this case you
+        have to specify the following "File" argument with the keyword "CAT_RESDIR"::
 
-        See https://getdp.info/doc/texinfo/getdp.html#Types-for-PostOperation
-        for more PostOperation options.
+            ..., File = "CAT_RESDIR/YourResFileName.pos" ...
+
+        That way the "CAT_RESDIR" is replaced by::
+
+            ..., File = StrCat[ResDir,"YourResFileName.pos"] ...
+
+        See `Types-for-PostOperation <https://getdp.info/doc/texinfo/getdp.html#Types-for-PostOperation>`_
+        section in GetDP doc for all PostOperation options.
+
+        Some available *local* (field) quantities are:
+
+            - a: Magnetic vector potential
+            - az: Magnetic vector potential (z component)
+            - b: Magnetic flux density
+            - bn: Norm of magnetic flux density
+            - hn: Magnetic field strengh
+            - b_tangent: Tangential component of flux density
+            - b_radial: Radial component of flux density
+            - br: Remanence flus density (only in magnets)
+            - mu: Relative magnetic permeability
+              (:math:`\mu_r=(\frac{\nu(B)}{\mu_0})^{-1}`)
+            - j: Vector current density
+            - js: Source vector current density
+            - jz: Z component of current density
+
+        Some *global* (integral) quantities are:
+
+            - Flux: Magnetic flux linkage
+            - JouleLosses: Joule losses (only on conducting domains)
+            - Torque_Maxwell_{s/r}: Stator and rotor torque from Maxwell Stress Tensor
+            - InducedVoltage: Induced Voltage (only in conducting and inductor domains)
+            - U: Global voltage drop
+            - I: Global current
+
         """
         po_names = self.get_post_operation_names()
         # search in the user defined PostOperation if there is a PO with that
@@ -662,18 +695,18 @@ class Script:
         # (PostOperation) has a list of PostOperations ("items") which can have
         # several "Operations" (eg. Prints, Echos,...) defined
 
-        name = clean_name(name)
-        if name in po_names:
+        post_operation = clean_name(post_operation)
+        if post_operation in po_names:
             # if that PostOperation allready exists, get the PostOperationItem
             # with that name
-            po_item = self.post_operation.items[po_names.index(name)]
+            po_item = self.post_operation.items[po_names.index(post_operation)]
         else:
             # it that PostOperation is not existing, create it
             po_item = self.post_operation.add(
-                Name=name, NameOfPostProcessing="MagStaDyn_a_2D"
+                Name=post_operation, NameOfPostProcessing="MagStaDyn_a_2D"
             )
         po_item: PostopItem = po_item
-        po_item.add().add(quantity=quantityName, **kwargs)
+        po_item.add().add(quantity=quantity_name, **kwargs)
         if "File" in kwargs:
             if "CAT_RESDIR" in kwargs["File"]:
                 res_file: str = kwargs["File"]

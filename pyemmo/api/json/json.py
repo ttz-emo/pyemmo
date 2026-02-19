@@ -348,8 +348,8 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
             #     join(script.getResultsPath(), quantity + "_airgap_" + side + ".pos")
             # )
             script.add_post_operation(
-                quantityName=quantity,
-                name="GetBOnRadius",
+                quantity_name=quantity,
+                post_operation="GetBOnRadius",
                 OnGrid=(
                     f"{{({radius}*(1{sign}0.0001))*Cos[$A*Pi/180],"
                     f"({radius}*(1{sign}0.0001))*Sin[$A*Pi/180],0}}"

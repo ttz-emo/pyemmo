@@ -76,8 +76,8 @@ myScript = Script(
     None,
 )
 myScript.add_post_operation(
-    quantityName="b",
-    name="User Defined PostOperation",
+    quantity_name="b",
+    post_operation="User Defined PostOperation",
     OnGrid="{(r_AG)*Sin[Pi/nbSlots-$A*Pi/180],(r_AG)*Cos[Pi/nbSlots-$A*Pi/180],0}{0:360/SymmetryFactor,0,0}",
     File=path.abspath(path.join(myScript.getResultsPath(), "b_OnRadius.pos")),
 )
