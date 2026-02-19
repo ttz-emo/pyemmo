@@ -29,10 +29,15 @@ import time as time_module
 from argparse import ArgumentParser
 from io import BufferedReader
 from os.path import expanduser, isdir, isfile, join, normpath, splitext
+from pathlib import Path
 from shutil import which
 from subprocess import PIPE, STDOUT, Popen
 
+import psutil
+
 from . import SETUP_FILE_NAME, core_loss, import_results
+
+PID_FILE = Path("worker.pid")
 
 
 def log_subprocess_output(pipe: BufferedReader, stderr: BufferedReader = None):
@@ -454,7 +459,7 @@ def createGMSHCommand(
     return command
 
 
-def runCalcforCurrent(param: dict) -> dict:
+def runCalcforCurrent(param: dict, detach_process: bool = False) -> dict:
     """Function to run a getdp calculation based on parameter from param dict
 
     Args:
@@ -521,6 +526,9 @@ def runCalcforCurrent(param: dict) -> dict:
             )
             for res_file in os.listdir(simulation_res_dir):
                 os.remove(os.path.join(simulation_res_dir, res_file))
+            # need to remove dir here to recreate it and export setupfile below.
+            # Otherwise the simulation will not be run because their could still be data
+            # in the results folder.
             os.rmdir(simulation_res_dir)
 
     post_operations = param["PostOp"] if "PostOp" in param else []
@@ -558,14 +566,16 @@ def runCalcforCurrent(param: dict) -> dict:
             encoding="utf-8",
         )
         logger.addHandler(sim_log_file_handler)
-        process = Popen(
-            cmdCommand,
-            stdout=PIPE,
-            stderr=STDOUT,
-            # text=True,
-        )
-        with process.stdout:
-            log_subprocess_output(process.stdout)
+        if detach_process:
+            process = start_worker(cmdCommand, simulation_res_dir)
+        else:
+            with Popen(
+                cmdCommand,
+                stdout=PIPE,
+                stderr=STDOUT,
+            ) as process:
+                logger.info("Started simulation subprocess with %i", process.pid)
+                log_subprocess_output(process.stdout)
         exitcode = process.wait()  # 0 means success
         logger.removeHandler(sim_log_file_handler)
         sim_log_file_handler.close()
@@ -610,6 +620,61 @@ def runCalcforCurrent(param: dict) -> dict:
                 # core_loss_dict[side] = lossDict
     results_dict = import_results.main(param)
     return results_dict
+
+
+def worker_is_running(pid: int):
+    """Use psutil to check if process with `pid` is running and if it has called getdp"""
+    try:
+        p = psutil.Process(pid)
+
+        # Check process still exists
+        if not p.is_running():
+            return False
+
+        # Verify it is actually our worker with gmsh or getdp
+        cmdline = " ".join(p.cmdline())
+        return "getdp.exe" in cmdline
+    except psutil.NoSuchProcess:
+        return False
+
+
+def start_worker(command, res_dir) -> subprocess.Popen:
+    """
+    Start detached simulation subprocess that does not terminate if pyhton exits and
+    save the process id to Path(resdir + "worker.pid") file.
+
+    Args:
+        command(str): subprocess getdp command.
+        res_dir(str | Path): Path to simulation results folder to store process id.
+    """
+    logger = logging.getLogger(__name__)
+    creationflags = 0
+    kwargs = {}
+
+    if os.name == "nt":  # Windows
+        creationflags = (
+            subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP
+        )
+        kwargs["creationflags"] = creationflags
+    else:  # Linux / macOS
+        kwargs["start_new_session"] = True
+
+    pid_path = Path(res_dir, PID_FILE)
+    with Popen(
+        command,
+        stdout=PIPE,
+        stderr=STDOUT,
+        close_fds=True,
+        **kwargs,
+    ) as process:
+        logger.info("Started simulation subprocess with %i", process.pid)
+        with open(join(res_dir, "worker.pid"), "w", encoding="UTF-8") as f:
+            logger.info("Writing process id %i to file %s", process.pid, pid_path)
+            f.write(str(process.pid))
+        PID_FILE.write_text(str(process.pid))
+        # with process.stdout:
+        log_subprocess_output(process.stdout)
+    return process
 
 
 def main(onelabFile, use_gui, gmsh="", getdp="", paramDict={}) -> bytes:

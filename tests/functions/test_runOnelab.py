@@ -22,11 +22,18 @@ from __future__ import annotations
 
 import fnmatch
 import unittest
+from json import load
 from os import listdir, makedirs
-from os.path import isdir, isfile, join
+from os.path import isdir, isfile, join, normpath
+from pathlib import Path
 from shutil import copytree, ignore_patterns, rmtree
 
-from pyemmo.functions.run_onelab import findGetDP, findGmsh, runCalcforCurrent
+from pyemmo.functions.run_onelab import (
+    SETUP_FILE_NAME,
+    findGetDP,
+    findGmsh,
+    runCalcforCurrent,
+)
 from tests import TEST_DATA_DIR
 from tests import TEST_TEMP_DIR as TESTS_RESULTS_DIR
 
@@ -46,9 +53,9 @@ class TestRunOnelab(unittest.TestCase):
         Konkret z.B. Laden von vordefinierter, verifizierter Testgeometrie
         """
         # copy model data and set actual model directory
-        original_model_dir = join(TEST_DATA_DIR, "onelab", "Toyota_Prius")
+        original_model_dir = normpath(join(TEST_DATA_DIR, "onelab", "Toyota_Prius"))
         # folder to store temporary model data and simulation results
-        cls.test_sim_dir = join(TESTS_RESULTS_DIR, "TestRunOnelab")
+        cls.test_sim_dir = normpath(join(TESTS_RESULTS_DIR, "TestRunOnelab"))
         if not isdir(cls.test_sim_dir):
             makedirs(cls.test_sim_dir)
         # copy model data to test simulation results directory
@@ -67,6 +74,33 @@ class TestRunOnelab(unittest.TestCase):
                     f"Model directory {model_dir} already exists but does not "
                     "contain the expected files (Toyota_Prius.pro)."
                 )
+        # add default setup dict to use in runCalcForCurrent
+        cls.default_param_dict = {
+            "getdp": {
+                "exe": findGetDP(),
+                "IQ_RMS": 10.0,
+                "ID_RMS": 0.0,
+                "RPM": 1000,
+                "initrotor_pos": 0.0,
+                "d_theta": 5.0,
+                "finalrotor_pos": 10.0,
+                "ResId": "",
+                "Flag_AnalysisType": 0,
+                "Flag_PrintFields": 0,
+                "Flag_Debug": 0,
+                "Flag_ClearResults": 1,
+                "verbosity level": 3,
+                #                     mesh_veryFine, fineMesh or coarseMesh
+                # "msh": os.path.join(MODEL_DIR, "mesh_veryFine.msh"),
+                # "Flag_SecondOrder": 0,
+                "stop_criterion": 1e-5,
+                "res": cls.test_sim_dir,  # result folder
+            },
+            "pro": join(cls.model_dir, "Toyota_Prius.pro"),  # pro file
+            "gmsh": {"exe": findGmsh()},  # gmsh exe and params
+            "info": "",
+            "PostOp": [],  # "GetBOnRadius" - "Get_LocalFields_Post"
+        }
 
     @classmethod
     def tearDownClass(cls):
@@ -105,36 +139,53 @@ class TestRunOnelab(unittest.TestCase):
         ...
 
     def test_run_ONELAB(self):
+        """Test the run_calc_for_current function"""
 
         res_id = "test_runOnelab"
-        runCalcforCurrent(
-            {
-                "getdp": {
-                    "exe": findGetDP(),
-                    "IQ_RMS": 10.0,
-                    "ID_RMS": 0.0,
-                    "RPM": 1000,
-                    "initrotor_pos": 0.0,
-                    "d_theta": 5.0,
-                    "finalrotor_pos": 10.0,
-                    "ResId": res_id,
-                    "Flag_AnalysisType": 1,
-                    "Flag_PrintFields": 0,
-                    "Flag_Debug": 0,
-                    "Flag_ClearResults": 1,
-                    "verbosity level": 3,
-                    #                     mesh_veryFine, fineMesh or coarseMesh
-                    # "msh": os.path.join(MODEL_DIR, "mesh_veryFine.msh"),
-                    # "Flag_SecondOrder": 0,
-                    "stop_criterion": 1e-5,
-                    "res": self.test_sim_dir,  # result folder
-                },
-                "pro": join(self.model_dir, "Toyota_Prius.pro"),  # pro file
-                "gmsh": {"exe": findGmsh()},  # gmsh exe and params
-                "info": "",
-                "PostOp": [],  # "GetBOnRadius" - "Get_LocalFields_Post"
-            }
-        )
+        input_param_dict = self.default_param_dict
+        input_param_dict["getdp"]["ResId"] = res_id
+        # input_param_dict["getdp"]["Flag_AnalysisType"] = 1  # transient
+
+        # run simulation
+        sim_res_dict = runCalcforCurrent(input_param_dict)
+        # results are stored in [getdp][res] + [getdp][resId]
+        res_dir = join(self.test_sim_dir, res_id)
+        # make sure results folder exists
+        if not isdir(res_dir):
+            raise FileNotFoundError(
+                f"Simulation results folder '{self.test_sim_dir} + {res_id}' does not exist!"
+            )
+        # make sure setup_file was created
+        setup_file_path = join(res_dir, SETUP_FILE_NAME)
+        if SETUP_FILE_NAME not in listdir(res_dir):
+            raise FileNotFoundError(
+                f"Missing simulation setup json file '{SETUP_FILE_NAME}'."
+            )
+        # make sure setup file contains all input parameters
+        with open(setup_file_path, "r", encoding="UTF-8") as setup_file:
+            setup_dict = load(setup_file)
+        for key, val in input_param_dict.items():
+            assert key in setup_dict, f"Key '{key}' is missing from dict: {setup_dict}"
+            if not setup_dict[key] == val:
+                raise ValueError(
+                    f"Value of key '{key}' between input dict and exported json setup "
+                    f"file does not match:\n{setup_dict[key]} != {val}"
+                )
+        # make sure log file was created and is not empty
+        if not any(file.endswith(".log") for file in listdir(res_dir)):
+            raise FileNotFoundError(
+                f"Missing simulation log file from {res_dir}!\n"
+                f"Files in that directory:\n{listdir(res_dir)}"
+            )
+        else:
+            log_files = [path for path in Path(res_dir).glob("*.log")]
+            if len(log_files) == 0:
+                raise RuntimeError("Found log file with listdir but missing from path!")
+            assert len(log_files) == 1, "More than one log file in results folder!"
+            log_file_path = log_files[0]
+            with open(log_file_path, "r", encoding="UTF-8") as log_file:
+                log = log_file.read()
+            assert log, "Log of simulation was empty!"
 
 
 # Dieser Abschnitt ermöglicht das direkte Starten der Testmethoden beim ausführen der Datei
