@@ -532,7 +532,7 @@ def runCalcforCurrent(param: dict) -> dict:
         if "hyst" in param and "eddy" in param and "GetBIron" not in post_operations:
             post_operations.append("GetBIron")  # calc core loss
         if "datetime" not in param:
-            param["datetime"] = (time_module.ctime(),)
+            param["datetime"] = time_module.ctime()
 
         # save simulation setup to file
         setup_file_path = join(simulation_res_dir, SETUP_FILE_NAME)
