@@ -21,6 +21,7 @@
 from __future__ import annotations
 
 import fnmatch
+import logging
 import unittest
 from json import load
 from os import listdir, makedirs
@@ -28,6 +29,7 @@ from os.path import isdir, isfile, join, normpath
 from pathlib import Path
 from shutil import copytree, ignore_patterns, rmtree
 
+from pyemmo.functions import run_onelab
 from pyemmo.functions.run_onelab import (
     SETUP_FILE_NAME,
     findGetDP,
@@ -74,6 +76,8 @@ class TestRunOnelab(unittest.TestCase):
                     f"Model directory {model_dir} already exists but does not "
                     "contain the expected files (Toyota_Prius.pro)."
                 )
+        cls.pro_file = join(cls.model_dir, "Toyota_Prius.pro")
+        cls.geo_file = join(cls.model_dir, "Toyota_Prius.geo")
         # add default setup dict to use in runCalcForCurrent
         cls.default_param_dict = {
             "getdp": {
@@ -162,7 +166,7 @@ class TestRunOnelab(unittest.TestCase):
                 f"Missing simulation setup json file '{SETUP_FILE_NAME}'."
             )
         # make sure setup file contains all input parameters
-        with open(setup_file_path, "r", encoding="UTF-8") as setup_file:
+        with open(setup_file_path, encoding="UTF-8") as setup_file:
             setup_dict = load(setup_file)
         for key, val in input_param_dict.items():
             assert key in setup_dict, f"Key '{key}' is missing from dict: {setup_dict}"
@@ -183,9 +187,33 @@ class TestRunOnelab(unittest.TestCase):
                 raise RuntimeError("Found log file with listdir but missing from path!")
             assert len(log_files) == 1, "More than one log file in results folder!"
             log_file_path = log_files[0]
-            with open(log_file_path, "r", encoding="UTF-8") as log_file:
+            with open(log_file_path, encoding="UTF-8") as log_file:
                 log = log_file.read()
             assert log, "Log of simulation was empty!"
+
+    def test_run_sim_detached(self):
+        """Test that runCalcForCurrent function also works with ``detach_process=True``"""
+        logger = logging.getLogger(__file__)
+        res_id = "test_simulation_detached"
+        res_dir = Path(self.test_sim_dir, res_id)
+        logger.info(f"Running simulation '{res_id}' with detached subprocess")
+        res_dict = runCalcforCurrent(
+            param={
+                "getdp": {
+                    "exe": "getdp",
+                    "res": str(self.test_sim_dir),
+                    "ResId": res_id,
+                    "Flag_AnalysisType": 0,
+                    "Flag_ClearResults": 0,
+                    "Flag_NL": 0,  # linear fast
+                },
+                "gmsh": {"exe": "gmsh"},
+                "pro": str(self.pro_file),
+            },
+            detach_process=True,
+        )
+        # make sure process id was saved
+        assert isfile(Path(res_dir, run_onelab.PID_FILE))
 
 
 # Dieser Abschnitt ermöglicht das direkte Starten der Testmethoden beim ausführen der Datei

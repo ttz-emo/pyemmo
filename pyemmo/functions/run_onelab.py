@@ -463,7 +463,9 @@ def runCalcforCurrent(param: dict, detach_process: bool = False) -> dict:
     """Function to run a getdp calculation based on parameter from param dict
 
     Args:
-        param (dict): Parameter dict that looks like
+        param (dict): Parameter dict with all simulation information including executables
+        detach_process (bool): If `True` the simulation subprocess will be detached from
+            the python process, so the simulation runs even if the python process terminates.
 
     TODO: Show which parameter are not-optional and give hints for setting machine model
     parameters
@@ -476,7 +478,6 @@ def runCalcforCurrent(param: dict, detach_process: bool = False) -> dict:
                 "ResId": res_id, ##
                 "verbosity level": 3, #
                 "res": self.test_sim_dir, ##
-
                 "IQ_RMS": 10.0,
                 "ID_RMS": 0.0,
                 "RPM": 1000,
@@ -659,7 +660,10 @@ def start_worker(command, res_dir) -> subprocess.Popen:
     else:  # Linux / macOS
         kwargs["start_new_session"] = True
 
-    pid_path = Path(res_dir, PID_FILE)
+    pid_path = Path(res_dir, PID_FILE)  # process id path
+    # FIXME: If command is a windows specific command with gmsh ... && getdp ...
+    # there will be a subprocess for each executable and only the first PID (gmsh) will
+    # be written to the pid file...
     with Popen(
         command,
         stdout=PIPE,
@@ -668,10 +672,9 @@ def start_worker(command, res_dir) -> subprocess.Popen:
         **kwargs,
     ) as process:
         logger.info("Started simulation subprocess with %i", process.pid)
-        with open(join(res_dir, "worker.pid"), "w", encoding="UTF-8") as f:
+        with open(pid_path, "w", encoding="UTF-8") as f:
             logger.info("Writing process id %i to file %s", process.pid, pid_path)
             f.write(str(process.pid))
-        PID_FILE.write_text(str(process.pid))
         # with process.stdout:
         log_subprocess_output(process.stdout)
     return process
