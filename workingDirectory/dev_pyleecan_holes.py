@@ -19,6 +19,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 # %%
 
+from __future__ import annotations
+
 import logging
 import os
 
@@ -42,7 +44,7 @@ from pyemmo.definitions import TEST_DIR
 # disable messages of matplotlib
 logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
 logging.getLogger().setLevel(logging.INFO)
-
+logger = logging.getLogger(__file__)
 gmsh.initialize()
 gmsh.model.add("test_model")
 # %%
@@ -78,7 +80,7 @@ for surf in surfs:
     try:
         part_sym = machine_part.comp_periodicity_spacial()[0]
         if part_sym != nbr_segments:
-            logging.warning(
+            logger.warning(
                 "Part %s has a different symmetry (%i) than the lamination (%i)",
                 surf.label,
                 part_sym,

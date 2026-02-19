@@ -50,10 +50,12 @@ from pyemmo.definitions import RESULT_DIR
 # from pyemmo.functions import importResults as imp
 from pyemmo.functions import core_loss, run_onelab
 
+logger = logging.getLogger(__file__)
+
 
 def log_subprocess_output(pipe: subprocess.PIPE):
     for line in iter(pipe.readline, b""):  # b'\n'-separated lines
-        logging.info("got line from subprocess: %r", line)
+        logger.info("got line from subprocess: %r", line)
 
 
 # %% init simulations
