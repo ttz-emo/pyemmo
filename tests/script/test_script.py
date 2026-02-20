@@ -22,6 +22,7 @@ from __future__ import annotations
 import unittest
 
 import gmsh
+import pytest
 
 from pyemmo.functions.clean_name import clean_name
 from pyemmo.script.script import Script
@@ -123,6 +124,13 @@ class TestScript(unittest.TestCase):
             'Operation {  \n            Print [ b_radial, OnElementsOf Domain, File "Path/To/resFile.pos" ]; '
             "\n            }\n    }\n    }\n"
         )
+
+    def test_generate_without_machine(self):
+        """Test the script.generate() method fails for no machine."""
+        assert self.scriptObj.machine is None, "For this test the machine must be None."
+        # make sure generate runs into value error without machine.
+        with pytest.raises(ValueError):
+            self.scriptObj.generate()
 
 
 if __name__ == "__main__":

@@ -1438,7 +1438,7 @@ class Script:
         logger = logging.getLogger(__name__)
         machine = self.machine
         if not machine:
-            raise RuntimeError("There was no machine specified. Add machine to script.")
+            raise ValueError("There was no machine specified. Add machine to script.")
         simu_param_dict = self.sim_params
         # 1. Set geometrical parameters via "machine.getSimParams()"
         #   SYMMETRY_FACTOR, L_AX_R, L_AX_S, NBR_POLE_PAIRS, NBR_TURNS_IN_FACE
@@ -1759,7 +1759,6 @@ class Script:
         if mode == 0:
             self.write_geo(UD_MeshCode=UD_MeshCode)
             self.write_pro()
-
         elif mode == 1:
             self.write_geo(UD_MeshCode=UD_MeshCode)
         elif mode == 2:
