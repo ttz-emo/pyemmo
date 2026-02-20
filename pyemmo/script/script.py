@@ -1758,7 +1758,13 @@ class Script:
         if mode == 0:
             self.write_geo(UD_MeshCode=UD_MeshCode)
             self.write_pro()
-        elif mode == 1:
+            return
+        if mode == 1:
             self.write_geo(UD_MeshCode=UD_MeshCode)
-        elif mode == 2:
+            return
+        if mode == 2:
             self.write_pro()
+            return
+        raise ValueError(
+            f"Invalid model file generation mode {mode}. Must be 0,1 or 2!"
+        )
