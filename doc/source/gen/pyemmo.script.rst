@@ -37,6 +37,8 @@ For a visual overview of the package structure see the graph below.
 .. graph:: script_subpackage
 
    dpi=300
+   rankdir=LR
+
 
    "script" -- "Script";
    "script" -- "Domain";

@@ -72,7 +72,7 @@ if TYPE_CHECKING:
 
 class Script:
     """
-    Script class for generating GetDP simulation files from a PyEMMO machine model.
+    Script class for generating ONELAB simulation files from a PyEMMO machine model.
     This class manages the creation of .geo (geometry) and .pro (GetDP) files for
     electromagnetic finite element simulations. It handles:
 
@@ -433,8 +433,7 @@ class Script:
         """
         domain_list: list[Domain] = []
         stator_physicals = self.machine.stator.sortPhysicals()
-        rotor = self.machine.rotor
-        rotor_physicals = rotor.sortPhysicals()
+        rotor_physicals = self.machine.rotor.sortPhysicals()
         # create (boundary) domains existing in rotor AND stator (primary,
         # secondary lines) These domains MUST be created first, because meshing
         # constraints need to be applied on them and this is only possible if
