@@ -743,19 +743,7 @@ class Script:
             # add magnetization if specified
             if isinstance(physical_element, Magnet):
                 mag: Magnet = physical_element
-                typeMag = mag.magType
-                if typeMag == "radial":
-                    self._addMagnetisationRadial(physical_element)
-                elif typeMag == "parallel":
-                    self._addMagnetisationParallel(physical_element)
-                elif typeMag == "tangential":
-                    self._addMagnetisationTangential(physical_element)
-                else:
-                    raise TypeError(
-                        f"Wrong Magnetisation Type: '{typeMag}'."
-                        + "Magnetisation Type must be 'radial', 'parallel' or "
-                        + "'tangential'."
-                    )
+                self._add_mag_function(mag, mag.magType)
 
     def _add_material(self, physical_element: PhysicalElement) -> None:
         """
@@ -789,44 +777,53 @@ class Script:
             # and append the PhysicalElement to the List[PhysicalElement]
             mat_dict["physicalElemID"][mat_index].append(physical_element.id)
 
-    def _addMagnetisationRadial(self, magnet: Magnet):
-        magDir = magnet.magDir
-        matName = clean_name(magnet.material.name)
-        self.function_magnetization.add(
-            name="br",
-            expression=f"{magDir}*br_{matName} * XYZ[]/Norm[XYZ[]]",
-            region=f"Region[{magnet.id}]",
-        )
+    def _add_mag_function(
+        self,
+        magnet: Magnet,
+        magnetization_type: Literal["radial", "parallel", "tangential"],
+    ):
+        """Add magnetization function to :attr:`function_magnetization` GetDP Functions definition.
 
-    def _addMagnetisationParallel(self, physicalElement: Magnet):
-        matName = clean_name(physicalElement.material.name)
-        magAngle = physicalElement.magAngle
-        magDir = physicalElement.magDir
-        magFunction = (
-            f"{magDir}*br_{matName} * Vector["
-            f"Cos[{magAngle} + RotorPosition[]], "
-            f"Sin[{magAngle} + RotorPosition[]], 0]"
-        )
-        self.function_magnetization.add(
-            "br",
-            magFunction,
-            f"Region[{physicalElement.id}]",
-        )
-
-    def _addMagnetisationTangential(self, magnet: Magnet):
-        magAngle = magnet.magAngle
+        Args:
+            magnet (Magnet): Magnet physical object.
+            magnetization_type (Literal[&quot;radial&quot;, &quot;parallel&quot;, &quot;tangential&quot;]): Magnetization type.
+        """
         magDir = magnet.magDir
+        magAngle = magAngle
         matName = clean_name(magnet.material.name)
-        magFunction = (
-            f"{magDir}*br_{matName} * Vector["
-            f"-Sin[{magAngle} + RotorPosition[]], "
-            f"Cos[{magAngle} + RotorPosition[]], 0] "
-        )
-        self.function_magnetization.add(
-            "br",
-            magFunction,
-            f"Region[{magnet.id}]",
-        )
+        if magnetization_type.lower() == "radial":
+            self.function_magnetization.add(
+                name="br",
+                expression=f"{magDir}*br_{matName} * XYZ[]/Norm[XYZ[]]",
+                region=f"Region[{magnet.id}]",
+            )
+        elif magnetization_type.lower() == "parallel":
+            magFunction = (
+                f"{magDir}*br_{matName} * Vector["
+                f"Cos[{magAngle} + RotorPosition[]], "
+                f"Sin[{magAngle} + RotorPosition[]], 0]"
+            )
+            self.function_magnetization.add(
+                "br",
+                magFunction,
+                f"Region[{magnet.id}]",
+            )
+        elif magnetization_type.lower() == "tangential":
+            magFunction = (
+                f"{magDir}*br_{matName} * Vector["
+                f"-Sin[{magAngle} + RotorPosition[]], "
+                f"Cos[{magAngle} + RotorPosition[]], 0] "
+            )
+            self.function_magnetization.add(
+                "br",
+                magFunction,
+                f"Region[{magnet.id}]",
+            )
+        else:
+            raise ValueError(
+                f"Attribute magnetization_type is invalid: {magnetization_type}. "
+                'Must be "radial", "parallel" or "tangential"!'
+            )
 
     def _add_domain(self, domain: Domain):
         """Add a group with the domain name to the getdp-group section."""
