@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""This module inits the program environment.
+"""Inits the program environment in the PCs operating system.
 
 The code is copied from the Pyleecan project and adapted for the use with
 PyEMMO. See https://github.com/Eomys/pyleecan for the original code."""
@@ -38,10 +38,8 @@ from ..version import __version__
 def save_config_dict(config_dict):
     """update the config file with config_dict values
 
-    Parameters
-    ----------
-    config_dict : dict
-        new values to put in the config file
+    Args:
+        config_dict (dict): New values to put in the config file
     """
     # dynamic import to avoid loop
     module = __import__(
@@ -146,10 +144,8 @@ def init_config_dict():
 def get_config_dict():
     """Return the config dict (update with default to make sure all parameter exist)
 
-    Returns
-    -------
-    config_dict: dict
-        dictionary gather the parameters of the software
+    Returns:
+        dict: dictionary gather the parameters of the software.
     """
     # dynamic import to avoid loop (pyemmo.definitions calls get_config_dict() function!!!)
     module = __import__(
@@ -218,7 +214,12 @@ def get_config_dict():
     return config_dict
 
 
-def update_dict(source, update):
+def update_dict(source: dict, update: dict):
+    """Update the config dict `source` with the values of `update`
+
+    Returns:
+        dict: Updated `source` dictionary.
+    """
     for key, value in update.items():
         if isinstance(value, dict):
             source[key] = update_dict(source.get(key, {}), value)

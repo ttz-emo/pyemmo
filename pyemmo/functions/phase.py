@@ -18,11 +18,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+"""Convert winding phase angle to index character or vice versa."""
 from __future__ import annotations
 
 from typing import Literal
 
 import numpy as np
+
 from ..colors import Colors
 
 
