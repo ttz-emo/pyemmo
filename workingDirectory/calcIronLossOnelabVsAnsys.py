@@ -80,8 +80,8 @@ def runCalcforCurrent(stromdq):
             useGUI=False,
             # gmshPath=gmshPath,
             # getdpPath=getdpPath,
-            paramDict=paramDict,
-            postOperations=["GetB"],
+            params=paramDict,
+            postops=["GetB"],
         )
         print("cmd command is: ", cmdCommand)
         n = 0

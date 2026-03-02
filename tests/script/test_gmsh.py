@@ -35,7 +35,7 @@ def test_run_gmsh():
     geo_file = os.path.join(TEST_DATA_DIR, "MACHINE_TEST.geo")
     assert os.path.isfile(geo_file)
     gmsh_command = create_gmsh_command(
-        gmshFile=geo_file, useGUI=False, gmshPath=GMSH_EXE, logFileName=""
+        file=geo_file, useGUI=False, gmsh_path=GMSH_EXE, log_file=""
     )
     out = subprocess.run(gmsh_command, check=True, capture_output=True, text=True)
     # TODO: Check that .db and .msh file are created and clean them up after

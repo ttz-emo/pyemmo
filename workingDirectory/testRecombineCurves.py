@@ -102,7 +102,7 @@ recombineScript = Script("testRecombineSurfs", scriptPath=RESULT_DIR, simuParams
 surfSeg.addToScript(recombineScript)
 recombineScript.generate(mode=1)  # only geo file
 run(
-    create_command(onelabFile=recombineScript.getGeoFilePath(), useGUI=True),
+    create_command(file=recombineScript.getGeoFilePath(), useGUI=True),
     check=True,
 )
 

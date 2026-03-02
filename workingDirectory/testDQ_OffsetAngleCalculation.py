@@ -191,9 +191,9 @@ myScript.generate()
 
 subprocess.run(
     create_command(
-        onelabFile=myScript.pro_file_path,
+        file=myScript.pro_file_path,
         useGUI=True,
-        paramDict={"Flag_ClearResults": 1},
+        params={"Flag_ClearResults": 1},
     )
 )
 plot_all_dat(myScript.results_path)

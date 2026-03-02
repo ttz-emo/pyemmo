@@ -18,6 +18,34 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+"""You can use the run_onelab module to run ONELAB from the command line.
+
+.. code-block:: text
+
+    usage: run_onelab.py [-h] [--gmsh GMSH] [--getdp GETDP] [--gui] file
+
+    Open the given Onelab file with gmsh.
+
+    positional arguments:
+    file           path to the file that should be processed
+
+    options:
+    -h, --help     show this help message and exit
+    --gmsh GMSH    path to the Gmsh executable
+    --getdp GETDP  path to the GetDP executable
+    --gui          flag to decide if the file should be opened in the gui or command line. Defaults to False if flag is not mentioned
+
+
+Example
+-------
+To open the file `my_file.geo` in the gmsh GUI you can run:
+
+.. code-block:: bash
+
+    python -m pyemmo.functions.run_onelab my_file.geo --gmsh /path/to/gmsh --gui
+
+
+"""
 from __future__ import annotations
 
 import json
@@ -65,7 +93,10 @@ def find_gmsh(verbosity: bool = True) -> str:
 
 
 def findGmsh(verbosity: bool = True) -> str:
-    """Old find gmsh executable on maschine"""
+    """Old find gmsh executable on maschine
+
+    :meta private:
+    """
     warnings.warn("The 'findGmsh' function was renamed find_gmsh!", DeprecationWarning)
     # TODO: Remove in pyemmo 1.6
     return find_gmsh(verbosity)
@@ -78,7 +109,10 @@ def find_getdp(verbosity: bool = True) -> str:
 
 
 def findGetDP(verbosity: bool = True) -> str:
-    """Old find GetDP executable on maschine"""
+    """Old find GetDP executable on maschine
+
+    :meta private:
+    """
     warnings.warn("The 'findGetDP' function was renamed find_gmsh!", DeprecationWarning)
     # TODO: Remove in pyemmo 1.6
     return find_getdp(verbosity)
@@ -163,7 +197,10 @@ def find_exe(exe_name: str, verbosity: bool = True) -> str:
 
 
 def findExe(exeName: str, verbosity: bool = True) -> str:
-    """Old function def to find exe on maschine"""
+    """Old function def to find exe on maschine
+
+    :meta private:
+    """
     warnings.warn("The 'findExe' function was renamed find_exe!", DeprecationWarning)
     # TODO: Remove in pyemmo 1.6
     return find_exe(exeName, verbosity)
@@ -171,31 +208,30 @@ def findExe(exeName: str, verbosity: bool = True) -> str:
 
 # pylint: disable=locally-disabled, dangerous-default-value
 def create_command(
-    onelabFile: str,
+    file: str,
     useGUI: bool,
-    gmshPath: str | os.PathLike = "",
-    getdpPath: str | os.PathLike = "",
-    logFileName: str | os.PathLike = "",
-    paramDict: dict[str, str | int | float] = {},
-    postOperations: list[str] = [],
+    gmsh_path: str | os.PathLike = "",
+    getdp_path: str | os.PathLike = "",
+    log_file: str | os.PathLike = "",
+    params: dict[str, str | int | float] = {},
+    postops: list[str] = [],
 ) -> str:
-    """Create a cmd command to open a .geo or .pro file with the gmsh gui or
+    """Create a command line command to open a .geo or .pro file with the gmsh gui or
     run gmsh and getdp from the command line.
 
     Args:
-        onelabFile (str): Path to the .geo or .pro file.
+        file (str): Path to the .geo or .pro file.
         useGUI (bool): If True command will open the file in the gmsh gui
             (independed if its a geo or pro file).
-        gmshPath (str): Path to the gmsh executable. By defaults the gmsh exe
+        gmsh_path (str): Path to the gmsh executable. By defaults the gmsh exe
             is searched.
-        getdpPath (str, optional): path to a getdp executable. Path will only
+        getdp_path (str, optional): path to a getdp executable. Path will only
             be used if gui is not used. Defaults to "".
-        logFileName (str, optional): Provide a log file name if the simulation
+        log_file (str, optional): Provide a log file name if the simulation
             procedure should be saved to a file. Defaults to "".
-        paramDict (Dict[str, Union[str, int, float]], optional):
-            Dict with parameters to set in the simulation. Defaults to None.
-            You can use the value "verbosity level" to change verbosity in
-            GetDP from 0 to 99.
+        params (Dict[str, Union[str, int, float]], optional): Dict with parameters
+            to set in the simulation. Defaults to None. You can use the value "verbosity
+            level" to change verbosity in GetDP from 0 to 99.
 
                 E.g. to set the onelab parameter "IQ_RMS" for the quadrature
                 rms current to 10A the dict would look like:
@@ -206,7 +242,7 @@ def create_command(
                         "IQ_RMS": 10,
                     }
 
-        postOperations (List[str], optional): List containing the PostOperation
+        postops (List[str], optional): List containing the PostOperation
             names that should be performed after the solving stage.
             PostOperations will only be executed if a getdp executable is
             given!
@@ -221,24 +257,24 @@ def create_command(
         FileNotFoundError: If onelabFile does not exist or is not a file.
     """
     gmsh_params = {}  # init gmsh parameter dict
-    if "getdp" in paramDict:
+    if "getdp" in params:
         # if param dict has "getdp" sub-dict
-        getdp_params = paramDict["getdp"].copy()
-        if "gmsh" in paramDict:
+        getdp_params = params["getdp"].copy()
+        if "gmsh" in params:
             #  if param dict has "gmsh" sub-dict
-            gmsh_params = paramDict["gmsh"].copy()
+            gmsh_params = params["gmsh"].copy()
     else:
         # otherwise the paramDict is empty or only contains getdp parameters
-        getdp_params = paramDict.copy()
+        getdp_params = params.copy()
 
     # check if the onelab file is valid:
-    if not isfile(onelabFile):
-        raise FileNotFoundError(f"Provided Onelab file was not found: {onelabFile}")
-    (filePath, ext) = splitext(onelabFile)
+    if not isfile(file):
+        raise FileNotFoundError(f"Provided Onelab file was not found: {file}")
+    (filePath, ext) = splitext(file)
     # first part of the cmd command: open the geo or pro-file
-    if not gmshPath:
-        gmshPath = find_gmsh()
-    gmsh_command = f'{gmshPath} "{onelabFile}"'  # the command is: 'gmsh "FILE.xxx"'
+    if not gmsh_path:
+        gmsh_path = find_gmsh()
+    gmsh_command = f'{gmsh_path} "{file}"'  # the command is: 'gmsh "FILE.xxx"'
     if ext.lower() == ".geo":
         # if its a geo file
         if not useGUI:
@@ -247,17 +283,17 @@ def create_command(
             # TODO: Add general gmsh paramter to mesh generation call via gmsh parameter
             # dict
             gmsh_command += " -run"  # the command is: "gmsh FILE.geo -run"
-            if logFileName:
-                gmsh_command += f" -log {logFileName} "
+            if log_file:
+                gmsh_command += f" -log {log_file} "
         # else:
         #   just leave the command as it is: "gmsh FILE.geo" to open gmsh GUI
     elif ext.lower() == ".pro":
         getdp_command = ""
         if not useGUI:
-            if getdpPath:
+            if getdp_path:
                 # if command line and getdp specified
                 # run the simulation with specific getdp exe
-                getdp_command += f"""{getdpPath} "{onelabFile}" -solve Analysis"""
+                getdp_command += f"""{getdp_path} "{file}" -solve Analysis"""
                 # the command is: "getdp FILE.pro -solve Analysis"
                 if "msh" in getdp_params:
                     if getdp_params["msh"] and not isfile(getdp_params["msh"]):
@@ -272,7 +308,7 @@ def create_command(
                 else:
                     # no "msh" key -> create mesh command
                     # TODO: Add gmsh paramter to mesh generation call
-                    gmsh_command = f"""{gmshPath} "{filePath}.geo" -run"""
+                    gmsh_command = f"""{gmsh_path} "{filePath}.geo" -run"""
                     # TODO: Check if the following should be used or not.
                     # if os.path.isfile(getdpPath):
                     #     # it getdp executable is given and exists, set internal solver
@@ -284,10 +320,10 @@ def create_command(
                 # if logFileName:
                 #     gmsh_command += f" -log {logFileName} "
                 # add post operations
-                if postOperations:
+                if postops:
                     getdp_command += " -pos "
                     # Using set() because it removes string duplicates automatically
-                    for postOp in set(postOperations):
+                    for postOp in set(postops):
                         if not isinstance(postOp, str):
                             raise (
                                 ValueError(
@@ -306,7 +342,7 @@ def create_command(
     else:
         raise (
             ValueError(
-                f"File '{onelabFile}' has wrong file extension (not '.geo'"
+                f"File '{file}' has wrong file extension (not '.geo'"
                 " or '.pro') or is missing file extension: {ext}"
             )
         )
@@ -372,6 +408,9 @@ def create_command(
 
 
 def createCmdCommand(*args, **kwargs) -> str:
+    """
+    :meta private:
+    """
     warnings.warn(
         "The 'createCmdCommand' function was renamed create_command!",
         DeprecationWarning,
@@ -381,19 +420,19 @@ def createCmdCommand(*args, **kwargs) -> str:
 
 
 def create_gmsh_command(
-    gmshFile: str,
+    file: str,
     useGUI: bool,
-    gmshPath: str = "",
-    logFileName: str = "",
+    gmsh_path: str = "",
+    log_file: str = "",
 ) -> str:
     """Create a cmd command to open a GMSH .geo file with the GUI or
     generate the mesh by running gmsh from the command line.
 
     Args:
-        onelabFile (str): Path to the .geo or .pro file.
+        file (str): Path to the .geo or .pro file.
         useGUI (bool): If True command will open the file in the gmsh gui
             (independed if its a geo or pro file).
-        gmshPath (str): Path to the gmsh executable. By defaults the gmsh exe
+        gmsh_path (str): Path to the gmsh executable. By defaults the gmsh exe
             is searched.
 
             E.g. to set the onelab parameter "IQ_RMS" for the quadrature rms
@@ -404,9 +443,7 @@ def create_gmsh_command(
                 {
                     "IQ_RMS": 10,
                 }
-        postOperations (List[str], optional): List containing the PostOperation
-            names that should be performed after the solving stage.
-            ! PostOperations will only be executed if a getdp executable is given !
+        log_file (str): Log file path to log gmsh output.
 
     Returns:
         str: string of the executable command-line command
@@ -417,22 +454,22 @@ def create_gmsh_command(
         TypeError: If the parameter value is not str, float or int.
         FileNotFoundError: If onelabFile does not exist or is not a file.
     """
-    if not gmshPath:
-        gmshPath = find_gmsh()
+    if not gmsh_path:
+        gmsh_path = find_gmsh()
     # check if the onelab file is valid:
-    if not isfile(gmshFile):
-        raise FileNotFoundError(f"Provided Onelab file was not found: {gmshFile}")
-    (_, ext) = splitext(gmshFile)
+    if not isfile(file):
+        raise FileNotFoundError(f"Provided Onelab file was not found: {file}")
+    (_, ext) = splitext(file)
     # first part of the cmd command: open the geo or pro-file
-    command = f'{gmshPath} "{gmshFile}"'  # the command is: 'gmsh "FILE.xxx"'
+    command = f'{gmsh_path} "{file}"'  # the command is: 'gmsh "FILE.xxx"'
     if ext.lower() == ".geo":
         # if its a geo file
         if not useGUI:
             # run onelab server in command line if gui is False
             #   this does the meshing and database generation
             command += " -run"  # the command is: "gmsh FILE.geo -run"
-            if logFileName:
-                command += f" -log {logFileName} "
+            if log_file:
+                command += f" -log {log_file} "
         # else:
         #   just leave the command as it is: "gmsh FILE.geo" to open gmsh GUI
     elif ext.lower() == ".pro":
@@ -446,7 +483,7 @@ def create_gmsh_command(
     else:
         raise (
             ValueError(
-                f"File '{gmshFile}' has wrong file extension (not '.geo' "
+                f"File '{file}' has wrong file extension (not '.geo' "
                 f"or '.pro') or is missing file extension: {ext}"
             )
         )
@@ -454,6 +491,9 @@ def create_gmsh_command(
 
 
 def createGMSHCommand(*args, **kwargs) -> str:
+    """
+    :meta private:
+    """
     warnings.warn(
         "The 'createGMSHCommand' function was renamed create_gmsh_command!",
         DeprecationWarning,
@@ -511,7 +551,7 @@ def run_simulation(param: dict) -> dict:
     RES_DIR = param["getdp"]["res"]
     if not os.path.isdir(RES_DIR):
         if os.path.isdir(os.path.dirname(RES_DIR)):
-            logger.info(f"Creating results directory: {RES_DIR}")
+            logger.info("Creating results directory: %s", RES_DIR)
             os.mkdir(RES_DIR)
         else:
             raise RuntimeError(
@@ -550,10 +590,10 @@ def run_simulation(param: dict) -> dict:
         cmdCommand = create_command(
             pro_file,
             useGUI=False,
-            gmshPath=param["gmsh"]["exe"],
-            getdpPath=param["getdp"]["exe"],
-            paramDict=param,
-            postOperations=post_operations,
+            gmsh_path=param["gmsh"]["exe"],
+            getdp_path=param["getdp"]["exe"],
+            params=param,
+            postops=post_operations,
         )
 
         logger.debug("cmd command is: %s", cmdCommand)
@@ -575,6 +615,7 @@ def run_simulation(param: dict) -> dict:
         with process.stdout:
             log_subprocess_output(process.stdout)
         exitcode = process.wait()  # 0 means success
+        logger.info("Subprocess returned exit code %i", exitcode)
         logger.removeHandler(sim_log_file_handler)
         sim_log_file_handler.close()
 
@@ -621,6 +662,9 @@ def run_simulation(param: dict) -> dict:
 
 
 def runCalcforCurrent(*args, **kwargs) -> str:
+    """
+    :meta private:
+    """
     warnings.warn(
         "The 'runCalcforCurrent' function was renamed run_simulation!",
         DeprecationWarning,
@@ -629,14 +673,31 @@ def runCalcforCurrent(*args, **kwargs) -> str:
     return run_simulation(*args, **kwargs)
 
 
-def main(onelabFile, use_gui, gmsh="", getdp="", paramDict={}) -> bytes:
+def main(
+    file: str, use_gui: bool, gmsh="", getdp="", params={}
+) -> subprocess.CompletedProcess:
+    """Main function to open Gmsh GUI or run simulation.
 
+    This uses :func:`create_command` to create a command call for gmsh or getdp and
+    then starts a subprocess using that command.
+
+    Args:
+        file (str): GetDP or Gmsh input file.
+        use_gui (_type_): Flag to open Gmsh GUI.
+        gmsh (str, optional): Path to gmsh executable. If not given, try to find gmsh.
+        getdp (str, optional): Path to GetDP executable. If not given, try to find getdp.
+        params (dict, optional): Parameter dictionary for :func:`create_command`.
+            Defaults to {}.
+
+    Returns:
+        subprocess.CompletedProcess: subprocess.CompletedProcess object.
+    """
     command = create_command(
-        onelabFile,
+        file,
         useGUI=use_gui,
-        gmshPath=gmsh,
-        getdpPath=getdp,
-        paramDict=paramDict,
+        gmsh_path=gmsh,
+        getdp_path=getdp,
+        params=params,
     )
     comp_process = subprocess.run(
         command,
@@ -644,7 +705,7 @@ def main(onelabFile, use_gui, gmsh="", getdp="", paramDict={}) -> bytes:
         capture_output=True,
         # shell=True # fixing bandit subprocess issue -> shell = False
     )
-    return comp_process.stderr
+    return comp_process
 
 
 if __name__ == "__main__":
@@ -653,7 +714,7 @@ if __name__ == "__main__":
     parser = ArgumentParser(description="Open the given Onelab file with gmsh.")
 
     parser.add_argument(
-        "onelabFile",
+        "file",
         help="path to the file that should be processed",
         type=str,
     )

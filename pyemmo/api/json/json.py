@@ -726,9 +726,9 @@ def _open_onelab(
             raise FileNotFoundError(f"Provided gmsh executable was not found: {gmsh}")
     proFile = apiScript.pro_file_path  # path to .pro file
     command = run_onelab.create_command(
-        onelabFile=proFile,
-        gmshPath=gmsh,
-        getdpPath=getdp,
+        file=proFile,
+        gmsh_path=gmsh,
+        getdp_path=getdp,
         useGUI=True,
     )
     logger.debug("CMD command is: '%s'", command)

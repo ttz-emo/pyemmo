@@ -109,5 +109,5 @@ surf5.plot()
 surf6 = surf4.combine(surf5)
 surf6.addToScript(myScript)
 myScript.generate(mode=1)  # only geo file
-run(create_command(onelabFile=myScript.geo_file_path, useGUI=True))
+run(create_command(file=myScript.geo_file_path, useGUI=True))
 # %%
