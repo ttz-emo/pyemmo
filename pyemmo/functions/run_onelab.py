@@ -26,6 +26,7 @@ import os
 import subprocess
 import sys
 import time as time_module
+import warnings
 from argparse import ArgumentParser
 from io import BufferedReader
 from os.path import expanduser, isdir, isfile, join, normpath, splitext
@@ -57,19 +58,33 @@ def log_subprocess_output(pipe: BufferedReader, stderr: BufferedReader = None):
     return err_msg
 
 
-def findGmsh(verbosity: bool = True) -> str:
+def find_gmsh(verbosity: bool = True) -> str:
     """Find gmsh executable on maschine"""
-    gmshExe = findExe("gmsh", verbosity=verbosity)
+    gmshExe = find_exe("gmsh", verbosity=verbosity)
     return gmshExe
 
 
-def findGetDP(verbosity: bool = True) -> str:
+def findGmsh(verbosity: bool = True) -> str:
+    """Old find gmsh executable on maschine"""
+    warnings.warn("The 'findGmsh' function was renamed find_gmsh!", DeprecationWarning)
+    # TODO: Remove in pyemmo 1.6
+    return find_gmsh(verbosity)
+
+
+def find_getdp(verbosity: bool = True) -> str:
     """Find getdp executable on maschine"""
-    getdpExe = findExe("getdp", verbosity=verbosity)
+    getdpExe = find_exe("getdp", verbosity=verbosity)
     return getdpExe
 
 
-def findExe(exeName: str, verbosity: bool = True) -> str:
+def findGetDP(verbosity: bool = True) -> str:
+    """Old find GetDP executable on maschine"""
+    warnings.warn("The 'findGetDP' function was renamed find_gmsh!", DeprecationWarning)
+    # TODO: Remove in pyemmo 1.6
+    return find_getdp(verbosity)
+
+
+def find_exe(exe_name: str, verbosity: bool = True) -> str:
     """Search the local machine for the executalble given in exeName.
     There are several searching stages and the function returns the exe path if
     one stage gives a result:
@@ -83,104 +98,79 @@ def findExe(exeName: str, verbosity: bool = True) -> str:
         Search "C:/Program Files" path
 
     Args:
-        exeName (str): name of the executable. E.g. "myExe.exe" or just "myExe"
+        exe_name (str): name of the executable. E.g. "myExe.exe" or just "myExe"
         verbosity (bool): Print additional information to the command line if
             True. Defaults to True.
 
     Raises:
-        SystemError: If not run on Windows
+        SystemError: If not run on Windows and program not found using which and path.
         FileNotFoundError: If the exe is not found.
 
     Returns:
         str: filepath to the executable
     """
     logger = logging.getLogger(__name__)
-    executableName, _ = splitext(exeName)
+    exe_name, _ = splitext(exe_name)
     # first opion: try to find gmsh with "which"
-    exePath = which(executableName)
-    if not exePath:
-        if verbosity:
+    exe_path = which(exe_name)
+    if exe_path:
+        logger.debug("Found %s in '%s'!", exe_name, exe_path)
+        return exe_path
+    logger.debug(
+        "Could not find %s from command line. Trying to find it in python-path...",
+        exe_name,
+    )
+    # second option: try to find gmsh in python path. (Should work since gmsh module is installed!)
+    for path in sys.path:
+        if isdir(path):
+            for file in os.listdir(path):
+                if file == f"{exe_name}.exe":
+                    exe_path = join(path, file)
+                    logger.debug("Found %s in '%s'!", exe_name, exe_path)
+                    return exe_path
+
+    logger.debug(
+        "%s was not found in 'path' Variable. Trying to find it in user home directory."
+        "This can take some time!",
+        exe_name,
+    )
+    # third option: try to find {executableName} in user/local/programs
+    # and subfolders. Takes time to iterate through all files
+    if sys.platform.startswith("win32"):
+        # is system windows; user-program-path:
+        user_dir = normpath(join(expanduser("~"), "appdata", "local", "programs"))
+        # try to find {executableName} in user programm path
+        if isdir(user_dir):
+            for root, _, files in os.walk(user_dir):
+                if files == f"{exe_name}.exe":
+                    logger.debug("Found %s in '%s'! :)", exe_name, root)
+                    return join(root, f"{exe_name}.exe")
+            # if exe was not found in home dir
             logger.debug(
-                """Could not find %s from command line.
-                Trying to find it in python-path...""",
-                executableName,
+                "%s could not be found in home program folder '%s'", exe_name, user_dir
             )
-        # second option: try to find gmsh in python path. (Should work since gmsh module is installed!)
-        for path in sys.path:
-            if isdir(path):
-                for fileList in os.listdir(path):
-                    if fileList == f"{executableName}.exe":
-                        exePath = join(path, fileList)
-                        if verbosity:
-                            logger.debug("Found %s in '%s'!", executableName, exePath)
-                        return exePath
-        if not exePath:
-            if verbosity:
-                logger.debug(
-                    """%s was not found in 'path' Variable.
-                    Trying to find it in user home directory. This can take some time!""",
-                    executableName,
-                )
-            # third option: try to find {executableName} in user/local/programs
-            # and subfolders. Takes time to iterate through all files
-            if sys.platform.startswith("win32"):
-                # is system windows; user-program-path:
-                userProgDir = normpath(
-                    join(expanduser("~"), "appdata", "local", "programs")
-                )
-                # try to find {executableName} in user programm path
-                if isdir(userProgDir):
-                    for root, _, files in os.walk(userProgDir):
-                        if files == f"{executableName}.exe":
-                            if verbosity:
-                                logger.debug(
-                                    "Found %s in '%s'! :)",
-                                    executableName,
-                                    root,
-                                )
-                            return join(root, f"{executableName}.exe")
-                    # if exe was not found in home dir
-                    if verbosity:
-                        logger.debug(
-                            "%s could not be found in home program folder '%s'",
-                            executableName,
-                            userProgDir,
-                        )
-                else:
-                    if verbosity:
-                        logger.debug("Can't find home directory.")
-            else:
-                raise SystemError(
-                    f"sys.platform is {sys.platform}, not 'win32'. "
-                    "Could not find home directory"
-                )
-            if not exePath:
-                raise FileNotFoundError(
-                    f"Can not find {executableName} on your system! "
-                    "Please install {executableName} or set PATH Variable."
-                )
+        else:
+            logger.debug("Can't find home directory.")
     else:
-        if verbosity:
-            logger.debug("Found %s in '%s'!", executableName, exePath)
-        return exePath
+        raise SystemError(
+            f"sys.platform is {sys.platform}, not 'win32'. Could not find home directory"
+        )
+    if not exe_path:
+        raise FileNotFoundError(
+            f"Can not find {exe_name} on your system! Please install {exe_name} or set "
+            "PATH Variable."
+        )
 
 
-def mergeAllGeoFiles(folderPath, gmshExe):
-    # get all files in path:
-    allFiles = os.listdir(folderPath)
-    allCommands = list()
-    allCommands.append(gmshExe)  # add gmsh exe as first command part
-    for filename in allFiles:
-        if ".geo" in filename:  # if its a geo file
-            geoFilePath = join(folderPath, filename)
-            # append the total filename to allCommands:
-            allCommands.append(geoFilePath)
-    subprocess.run(allCommands, shell=False)
-    return None
+def findExe(exeName: str, verbosity: bool = True) -> str:
+    """Old function def to find exe on maschine"""
+    warnings.warn("The 'findExe' function was renamed find_exe!", DeprecationWarning)
+    # TODO: Remove in pyemmo 1.6
+    return find_exe(exeName, verbosity)
 
 
 # pylint: disable=locally-disabled, dangerous-default-value
-def createCmdCommand(
+def create_command(
     onelabFile: str,
     useGUI: bool,
     gmshPath: str | os.PathLike = "",
@@ -247,7 +237,7 @@ def createCmdCommand(
     (filePath, ext) = splitext(onelabFile)
     # first part of the cmd command: open the geo or pro-file
     if not gmshPath:
-        gmshPath = findGmsh()
+        gmshPath = find_gmsh()
     gmsh_command = f'{gmshPath} "{onelabFile}"'  # the command is: 'gmsh "FILE.xxx"'
     if ext.lower() == ".geo":
         # if its a geo file
@@ -381,7 +371,16 @@ def createCmdCommand(
     return getdp_command
 
 
-def createGMSHCommand(
+def createCmdCommand(*args, **kwargs) -> str:
+    warnings.warn(
+        "The 'createCmdCommand' function was renamed create_command!",
+        DeprecationWarning,
+    )
+    # TODO: Remove in pyemmo 1.6
+    return create_command(*args, **kwargs)
+
+
+def create_gmsh_command(
     gmshFile: str,
     useGUI: bool,
     gmshPath: str = "",
@@ -419,7 +418,7 @@ def createGMSHCommand(
         FileNotFoundError: If onelabFile does not exist or is not a file.
     """
     if not gmshPath:
-        gmshPath = findGmsh()
+        gmshPath = find_gmsh()
     # check if the onelab file is valid:
     if not isfile(gmshFile):
         raise FileNotFoundError(f"Provided Onelab file was not found: {gmshFile}")
@@ -454,7 +453,16 @@ def createGMSHCommand(
     return command
 
 
-def runCalcforCurrent(param: dict) -> dict:
+def createGMSHCommand(*args, **kwargs) -> str:
+    warnings.warn(
+        "The 'createGMSHCommand' function was renamed create_gmsh_command!",
+        DeprecationWarning,
+    )
+    # TODO: Remove in pyemmo 1.6
+    return create_gmsh_command(*args, **kwargs)
+
+
+def run_simulation(param: dict) -> dict:
     """Function to run a getdp calculation based on parameter from param dict
 
     Args:
@@ -539,7 +547,7 @@ def runCalcforCurrent(param: dict) -> dict:
         with open(setup_file_path, "x", encoding="utf-8") as setup_file:
             json.dump(param, setup_file)
 
-        cmdCommand = createCmdCommand(
+        cmdCommand = create_command(
             pro_file,
             useGUI=False,
             gmshPath=param["gmsh"]["exe"],
@@ -612,9 +620,18 @@ def runCalcforCurrent(param: dict) -> dict:
     return results_dict
 
 
+def runCalcforCurrent(*args, **kwargs) -> str:
+    warnings.warn(
+        "The 'runCalcforCurrent' function was renamed run_simulation!",
+        DeprecationWarning,
+    )
+    # TODO: Remove in pyemmo 1.6
+    return run_simulation(*args, **kwargs)
+
+
 def main(onelabFile, use_gui, gmsh="", getdp="", paramDict={}) -> bytes:
 
-    command = createCmdCommand(
+    command = create_command(
         onelabFile,
         useGUI=use_gui,
         gmshPath=gmsh,
@@ -661,7 +678,7 @@ if __name__ == "__main__":
     # check if gmsh was provided
     if not args.gmsh:
         # if not provided find gmsh
-        args.gmsh = findGmsh()
+        args.gmsh = find_gmsh()
     else:
         # if provided check if its a correct file
         if not isfile(args.gmsh):

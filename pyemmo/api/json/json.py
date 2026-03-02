@@ -719,13 +719,13 @@ def _open_onelab(
     if not gmsh:
         # if gmsh was not provided, try to find it:
         logger.debug("Gmsh path not given. Trying to find Gmsh...")
-        gmsh = run_onelab.findGmsh()
+        gmsh = run_onelab.find_gmsh()
     else:
         # if gmsh was given by the user, check that its valid
         if not isfile(gmsh):
             raise FileNotFoundError(f"Provided gmsh executable was not found: {gmsh}")
     proFile = apiScript.pro_file_path  # path to .pro file
-    command = run_onelab.createCmdCommand(
+    command = run_onelab.create_command(
         onelabFile=proFile,
         gmshPath=gmsh,
         getdpPath=getdp,

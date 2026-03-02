@@ -25,7 +25,7 @@ from subprocess import run
 from numpy import deg2rad
 
 from pyemmo.definitions import RESULT_DIR
-from pyemmo.functions.run_onelab import createCmdCommand
+from pyemmo.functions.run_onelab import create_command
 from pyemmo.script.geometry.circleArc import CircleArc
 from pyemmo.script.geometry.line import Line
 from pyemmo.script.geometry.point import Point
@@ -109,5 +109,5 @@ surf5.plot()
 surf6 = surf4.combine(surf5)
 surf6.addToScript(myScript)
 myScript.generate(mode=1)  # only geo file
-run(createCmdCommand(onelabFile=myScript.geo_file_path, useGUI=True))
+run(create_command(onelabFile=myScript.geo_file_path, useGUI=True))
 # %%

@@ -75,7 +75,7 @@ def runCalcforCurrent(stromdq):
     resDir = os.path.join(RES_DIR, resId)
     if not os.path.isdir(resDir):
         # only run if dir not exists
-        cmdCommand = run_onelab.createCmdCommand(
+        cmdCommand = run_onelab.create_command(
             proFile,
             useGUI=False,
             # gmshPath=gmshPath,
@@ -138,7 +138,7 @@ if __name__ == "__main__":
         os.mkdir(RES_DIR)
     # create mesh file:
     if not os.path.exists(mshFile):
-        meshCommand = run_onelab.createCmdCommand(geoFile, useGUI=False)
+        meshCommand = run_onelab.create_command(geoFile, useGUI=False)
         subprocess.run(meshCommand)
 
     ## simulation parameters

@@ -25,7 +25,7 @@ from __future__ import annotations
 import os
 import subprocess
 
-from pyemmo.functions.run_onelab import createGMSHCommand
+from pyemmo.functions.run_onelab import create_gmsh_command
 from tests import GMSH_EXE, TEST_DATA_DIR
 
 
@@ -34,7 +34,7 @@ def test_run_gmsh():
     installation and mesh command is correct and runs."""
     geo_file = os.path.join(TEST_DATA_DIR, "MACHINE_TEST.geo")
     assert os.path.isfile(geo_file)
-    gmsh_command = createGMSHCommand(
+    gmsh_command = create_gmsh_command(
         gmshFile=geo_file, useGUI=False, gmshPath=GMSH_EXE, logFileName=""
     )
     out = subprocess.run(gmsh_command, check=True, capture_output=True, text=True)

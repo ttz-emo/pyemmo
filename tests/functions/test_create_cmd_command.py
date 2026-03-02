@@ -24,7 +24,7 @@ from os.path import join
 
 import pytest
 
-from pyemmo.functions.run_onelab import createCmdCommand
+from pyemmo.functions.run_onelab import create_command
 from tests import GETDP_EXE, GMSH_EXE, TEST_DATA_DIR, TEST_TEMP_DIR
 
 
@@ -83,7 +83,7 @@ def test_create_cmd_command(
     command: str,
 ):
 
-    created_command = createCmdCommand(
+    created_command = create_command(
         onelabFile,
         useGUI,
         gmshPath,

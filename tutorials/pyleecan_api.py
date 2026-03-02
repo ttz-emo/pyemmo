@@ -162,7 +162,7 @@ import time
 
 import numpy as np
 
-from pyemmo.functions.run_onelab import findGetDP, runCalcforCurrent
+from pyemmo.functions.run_onelab import find_getdp, run_simulation
 
 # Simulation parameters
 n = 1500
@@ -178,7 +178,7 @@ param_dict = {
     "gmsh": {"exe": r"", "gmsf": 2, "verbosity level": 2},
     # GetDP Parameters
     "getdp": {
-        "exe": findGetDP(),  # GetDP executable, you can use the function findGetDP
+        "exe": find_getdp(),  # GetDP executable, you can use the function findGetDP
         # which tries to find the exe on you PC.
         # change gmsh and getdp verbosity level (0-99)
         # 0 - fatal, 1 - error, 2 - warning, 3 - info, 5 - debug, 99 - extended debug
@@ -212,7 +212,7 @@ param_dict = {
 
 # %%
 # run simulation:
-results = runCalcforCurrent(param_dict)
+results = run_simulation(param_dict)
 
 # %% [markdown]
 # After the simulation has finished, pyemmo automatically imports the standard global result values using `pyemmo.functions.import_results.main` function and output the results in a dictionary structure.
@@ -337,7 +337,7 @@ param_dict["getdp"]["ResId"] = "Calc_ForceDensity_noLoad"
 param_dict["PostOp"] = ["Airgap_Force"]
 
 # run simulation:
-results = runCalcforCurrent(param_dict)
+results = run_simulation(param_dict)
 
 # %% [markdown]
 # After the simulation has successfully finished, we can import the results using the pyemmo ``import_results`` module.

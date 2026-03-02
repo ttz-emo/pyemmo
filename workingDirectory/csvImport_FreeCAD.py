@@ -196,7 +196,7 @@ domTest = Domain("domTest", allPhysical)
 domTest.addToScript(myScript)
 myScript.generate(mode=1)
 # %% Run gmsh
-command = run_onelab.createCmdCommand(myScript.geo_file_path, useGUI=True)
+command = run_onelab.create_command(myScript.geo_file_path, useGUI=True)
 subprocess.run(command)
 
 # %%
