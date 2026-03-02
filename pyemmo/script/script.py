@@ -30,7 +30,7 @@ import re
 import shutil
 from math import isclose, pi
 from os.path import abspath, join
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 import gmsh
 from numpy import mean, rad2deg, where
@@ -787,35 +787,35 @@ class Script:
             magnet (Magnet): Magnet physical object.
             magnetization_type (Literal[&quot;radial&quot;, &quot;parallel&quot;, &quot;tangential&quot;]): Magnetization type.
         """
-        magDir = magnet.magDir
-        magAngle = magAngle
-        matName = clean_name(magnet.material.name)
+        mag_dir = magnet.magDir
+        mag_angle = magnet.magAngle
+        mat_name = clean_name(magnet.material.name)
         if magnetization_type.lower() == "radial":
             self.function_magnetization.add(
                 name="br",
-                expression=f"{magDir}*br_{matName} * XYZ[]/Norm[XYZ[]]",
+                expression=f"{mag_dir}*br_{mat_name} * XYZ[]/Norm[XYZ[]]",
                 region=f"Region[{magnet.id}]",
             )
         elif magnetization_type.lower() == "parallel":
-            magFunction = (
-                f"{magDir}*br_{matName} * Vector["
-                f"Cos[{magAngle} + RotorPosition[]], "
-                f"Sin[{magAngle} + RotorPosition[]], 0]"
+            mag_function = (
+                f"{mag_dir}*br_{mat_name} * Vector["
+                f"Cos[{mag_angle} + RotorPosition[]], "
+                f"Sin[{mag_angle} + RotorPosition[]], 0]"
             )
             self.function_magnetization.add(
                 "br",
-                magFunction,
+                mag_function,
                 f"Region[{magnet.id}]",
             )
         elif magnetization_type.lower() == "tangential":
-            magFunction = (
-                f"{magDir}*br_{matName} * Vector["
-                f"-Sin[{magAngle} + RotorPosition[]], "
-                f"Cos[{magAngle} + RotorPosition[]], 0] "
+            mag_function = (
+                f"{mag_dir}*br_{mat_name} * Vector["
+                f"-Sin[{mag_angle} + RotorPosition[]], "
+                f"Cos[{mag_angle} + RotorPosition[]], 0] "
             )
             self.function_magnetization.add(
                 "br",
-                magFunction,
+                mag_function,
                 f"Region[{magnet.id}]",
             )
         else:
@@ -1728,7 +1728,7 @@ class Script:
             )
         self._pro_files_created = True
 
-    def generate(self, mode: int = 0, UD_MeshCode: str = ""):
+    def generate(self, mode: Literal[0, 1, 2] = 0, UD_MeshCode: str = ""):
         """
         generate .geo- and .pro files
 
