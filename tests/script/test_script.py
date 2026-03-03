@@ -22,7 +22,9 @@ from __future__ import annotations
 import unittest
 
 import gmsh
+import pytest
 
+from pyemmo.functions.clean_name import clean_name
 from pyemmo.script.script import Script
 
 from .. import TEST_TEMP_DIR
@@ -79,7 +81,6 @@ class TestScript(unittest.TestCase):
         self.scriptObj = Script(
             name="testScript",
             scriptPath=TEST_TEMP_DIR,
-            factory="Built-in",
             simuParams=self.initParamDict,
         )
 
@@ -96,17 +97,40 @@ class TestScript(unittest.TestCase):
 
         # Sicherstellen, dass init Funktion Werte richtig setzt
         self.assertEqual(self.scriptObj.name, "testScript")
-        self.assertEqual(self.scriptObj.scriptPath, TEST_TEMP_DIR)
-        self.assertEqual(self.scriptObj.factory, "Build-in")
+        self.assertEqual(self.scriptObj.script_path, TEST_TEMP_DIR)
         # Test that the initial parameters are in the resulting param dict
         self.assertEqual(
-            self.scriptObj.simParams["SYM"],
-            {**self.scriptObj.simParams["SYM"], **self.initParamDict["SYM"]},
+            self.scriptObj.sim_params["SYM"],
+            {**self.scriptObj.sim_params["SYM"], **self.initParamDict["SYM"]},
         )
         self.assertEqual(
-            self.scriptObj.simParams["MAT"],
-            {**self.scriptObj.simParams["MAT"], **self.initParamDict["MAT"]},
+            self.scriptObj.sim_params["MAT"],
+            {**self.scriptObj.sim_params["MAT"], **self.initParamDict["MAT"]},
         )
+
+    def test_add_postop(self):
+        """Test the add_post_operation function"""
+        PO_name = "User Defined PostOperation"
+        self.scriptObj.add_post_operation(
+            quantity_name="b_radial",
+            post_operation=PO_name,
+            OnElementsOf="Domain",
+            File="Path/To/resFile.pos",
+        )
+        assert self.scriptObj.get_post_operation_names() == [clean_name(PO_name)]
+        assert (
+            self.scriptObj.post_operation.code == "PostOperation{\n    { "
+            "Name User_Defined_PostOperation; NameOfPostProcessing MagStaDyn_a_2D; \n         "
+            'Operation {  \n            Print [ b_radial, OnElementsOf Domain, File "Path/To/resFile.pos" ]; '
+            "\n            }\n    }\n    }\n"
+        )
+
+    def test_generate_without_machine(self):
+        """Test the script.generate() method fails for no machine."""
+        assert self.scriptObj.machine is None, "For this test the machine must be None."
+        # make sure generate runs into value error without machine.
+        with pytest.raises(ValueError):
+            self.scriptObj.generate()
 
 
 if __name__ == "__main__":

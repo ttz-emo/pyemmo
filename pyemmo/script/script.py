@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""pyemmo Script module"""
+""""""
 
 # make all annotations strings, to avoid import errors in type checking case
 from __future__ import annotations
@@ -30,7 +30,7 @@ import re
 import shutil
 from math import isclose, pi
 from os.path import abspath, join
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 import gmsh
 from numpy import mean, rad2deg, where
@@ -49,9 +49,9 @@ from . import (
     DOMAIN_LINEAR,
     DOMAIN_NON_CONDUCTING,
     DOMAIN_NON_LINEAR,
-    boundaryDomainDict,
+    boundary_domain_dict,
     default_param_dict,
-    rotorDomainDict,
+    rotor_domain_dict,
     statorDomainDict,
     versionStr,
 )
@@ -64,9 +64,6 @@ from .physicals.physicalElement import PhysicalElement
 from .physicals.slot import Slot
 
 if TYPE_CHECKING:
-    from .geometry.circleArc import CircleArc
-    from .geometry.point import Point
-    from .geometry.spline import Spline
     from .machine import Machine
     from .material.material import Material
     from .rotor import Rotor
@@ -74,8 +71,20 @@ if TYPE_CHECKING:
 
 
 class Script:
-    """Eine Instanz der Klasse Script beinhaltet alle Informationen, die zum
-    Erzeugen der .geo- und .pro-Skripte benötigt werden."""
+    """
+    Script class for generating ONELAB simulation files from a PyEMMO machine model.
+    This class manages the creation of .geo (geometry) and .pro (GetDP) files for
+    electromagnetic finite element simulations. It handles:
+
+    - Domain and material definitions
+    - Mesh configuration and constraints
+    - Post-processing operations
+    - Simulation parameter management
+
+    The Script class integrates with a :class:`~pyemmo.script.machine.Machine` object to automatically generate
+    geometry-dependent parameters and domain definitions for both rotor and stator
+    components.
+    """
 
     def __init__(
         self,
@@ -84,47 +93,24 @@ class Script:
         simuParams: dict,
         machine: Machine | None = None,
         resultsPath: str = "",
-        factory: str = "Build-in",
     ):
         """
         Args:
             name (str): script name
             scriptPath (str): path, where the geo and pro scripts should be
                 saved
-            simuParams (dict): Dictionary with different simulation parameters
-
-                - "INIT_ROTOR_POS" - initial rotor position mech °
-                - "ANGLE_INCREMENT" - angular step size in mech °
-                - "FINAL_ROTOR_POS" - final rotor position mech °
-                - "Id_eff" - d-axis current in A
-                - "Iq_eff" - q-axis current in A
-                - "SPEED_RPM" - rotational speed in rpm
-
-                optional:
-
-                - "ParkAngOffset" - offset angle for park-transformation in
-                    elec °
-                - "NBR_PARALLEL_PATHS" - number of parallel winding paths
-                - "CALC_MAGNET_LOSSES" - flag to calculate eddy current losses
-                    in PMs
-                - "ANALYSIS_TYPE"
-
-                    - 0: static (default)
-                    - 1: transient
-
-            machine (Machine): pyemmo machine object for geometry and geometic
+            simuParams (dict): Dictionary with different parameters to initialize the
+                ONELAB paramters defined in the *machine_template.pro* file. See
+                :data:`~pyemmo.script.default_param_dict` for or the example below for
+                more details.
+            machine (Machine): pyemmo machine object for domain definitions and geometic
                 parameters. Defaults to None.
             resultsPath (str, optional): path, where the simulation results
                 should be stored. Defaults to a folder in scriptPath with name
                 "res_{scriptName}".
-            factory (str, optional): Geometry kernel for the geo file.
-                Possible inputs are:
-
-                - "Build-in" (default)
-                - "OpenCASCADE"
 
 
-        DEFAULT SimuParam Dict:
+        Example simulation paramter dictionary:
 
         .. code-block:: python
 
@@ -161,43 +147,33 @@ class Script:
                 **paramDict,
             }
         ### directory to save the model files
-        self.scriptPath = scriptPath
+        self.script_path = scriptPath
         # directory to save simulation results
-        self.resultsPath = (
+        self.results_path = (
             abspath(resultsPath).replace("\\", "/")
             if resultsPath
             else abspath(join(scriptPath, "res_" + self.name)).replace("\\", "/")
         )
-        # point code (in gmsh syntax)
-        self.pointCode: str = "\n// Points\n"
-        # all points
-        self.pointArray: list[Point] = []
-        # line code (gmsh syntax)
-        self.curveCode: str = "\n// Lines and Curves\n"
-        # all generated lines
-        self._curveList: list[Line | CircleArc | Spline] = []
-        # all surfaces (gmsh syntax)
-        self.areaCode: str = "\n// Surfaces\n"
-        # all generated surfaces
-        self.areaArray: list[Surface] = []
 
-        self.colorCode: str = ""  # code for mesh colors
+        self.color_code: str = ""  # code for mesh colors
 
-        # PhysicalElement code (gmsh syntax)
-        self.physicalElementCode: str = "\n// Physical Elements\n"
-        # all generatedPhysicals
-        self.physicalElementArray: list[PhysicalElement] = []
+        # list of phyiscal elements to make sure physicals and its properties are not
+        # added twice.
+        self._physicals: list[PhysicalElement] = []
 
-        # Alle bereits erzeugten Materialien
+        # group object to create the domains in the .pro file.
+        # This contails the domain definitions of the individual phyiscals and
+        # the material domains.
         self.group = GroupGetDP()
         self._materialDict: dict[str, list[list[int]]] = {
             "material": [],
             "physicalElemID": [],
         }
-        self.functionMaterial = FunctionGetDP()
-        self.functionMagnetisation = FunctionGetDP()
+        self.function_material = FunctionGetDP()
+        self.function_magnetization = FunctionGetDP()
 
-        self._postOperation: PostOperation = PostOperation()
+        self._post_operation = PostOperation()
+
         # TODO: Add default Post Operation:
         # PostOperation{
         #     {
@@ -217,13 +193,6 @@ class Script:
         #     }
         #     }
         # }
-        self.factory = factory  # gmsh geometry kernel
-
-        # FOR DEBUGGING:
-        self.nbrIdedentPoints: int = 0
-        self.idedentPoints: list[Point] = []
-        self.nbrIdedentLines: int = 0
-        self.idedentLines: list[Line | CircleArc | Spline] = []
 
         # set flags to check if files have been created trough generateScript()
         self._pro_files_created = False
@@ -235,9 +204,10 @@ class Script:
         self._gmsh_model: str = gmsh.model.getCurrent()  # get current model
 
         # add machine domains
-        self._machine = machine  # do not set machine via setter function!
+        self._machine = machine  # do not set machine via setter function, because this
+        # will reset the script object!
         if machine:
-            self._addMachineDomains()
+            self._add_machine_domains()
         # else
         #   machine is None...
 
@@ -247,7 +217,7 @@ class Script:
 
     @property
     def name(self) -> str:
-        """getter of Script name
+        """Name of the script, used for file naming.
 
         Returns:
             str: script name
@@ -264,16 +234,16 @@ class Script:
         self._name = newName
 
     @property
-    def scriptPath(self) -> str | os.PathLike:
-        """Get the path, where the model files (.geo & .pro) should be stored
+    def script_path(self) -> str | os.PathLike:
+        """Get the path, where the model files (.geo & .pro) are stored.
 
         Returns:
-            str: path where the model files should be stored
+            str: path where the model files should be stored.
         """
         return self._scriptPath
 
-    @scriptPath.setter
-    def scriptPath(self, newScriptPath: str | os.PathLike):
+    @script_path.setter
+    def script_path(self, newScriptPath: str | os.PathLike):
         """setter of Script Path
 
         Args:
@@ -283,22 +253,22 @@ class Script:
         self._scriptPath = newScriptPath
 
     @property
-    def proFilePath(self) -> str:
-        """Get the path to the resulting pro file named "ScriptName.pro"
+    def pro_file_path(self) -> str:
+        """Get the path to the resulting .pro file named "ScriptName.pro"
 
         Returns:
             str: path to the pro Script file
         """
-        return join(self.scriptPath, self.name + ".pro")
+        return join(self.script_path, self.name + ".pro")
 
     @property
-    def geoFilePath(self) -> str:
-        """Get the path to the resulting geo file named "ScriptName.geo"
+    def geo_file_path(self) -> str:
+        """Get the path to the resulting .geo file named "ScriptName.geo"
 
         Returns:
             str: path to the geo Script file
         """
-        return join(self.scriptPath, self.name + ".geo")
+        return join(self.script_path, self.name + ".geo")
 
     @property
     def machine(self) -> Machine | None:
@@ -327,11 +297,10 @@ class Script:
         # self._machine = newMachine
         self.__init__(
             self.name,
-            scriptPath=self.scriptPath,
-            simuParams=self.simParams,
+            scriptPath=self.script_path,
+            simuParams=self.sim_params,
             machine=newMachine,
-            resultsPath=self.resultsPath,
-            factory=self.factory,
+            resultsPath=self.results_path,
         )
         # else:
         # msg = f"Given parameter machine was not type machine, but '{type(newMachine)}'"
@@ -351,116 +320,68 @@ class Script:
         # self._addMachineDomains()
 
     @property
-    def resultsPath(self) -> str:
-        """path to the folder where the simulation results are stored
-        (simulation results folder)"""
+    def results_path(self) -> str:
+        """
+        path to the folder where the simulation results are stored
+        (simulation results folder)
+
+        Retruns:
+            str
+        """
         return self._resPath
 
-    @resultsPath.setter
-    def resultsPath(self, resPath: str):
+    @results_path.setter
+    def results_path(self, resPath: str):
         """Setter of the attribute resPath"""
         self._resPath = resPath
         self._simulationParameters["SYM"]["PATH_RES"] = resPath
 
     @property
-    def simParams(self) -> dict:
+    def sim_params(self) -> dict:
         """Getter of the attribute simulationParameters"""
         return self._simulationParameters
 
     @property
-    def factory(self) -> str:
-        """Getter of the attribute factory"""
-        return self._factory
-
-    @factory.setter
-    def factory(self, factory: str):
-        """Setter of the attribute factory"""
-        if re.search(r"open[\s\-]?cascade", factory.lower()):
-            self._factory = "OpenCASCADE"
-        else:
-            self._factory = "Build-in"
-        # raise(ValueError(f"Given factory '{factory}' was not recognized!"))
-
-    @property
-    def materialDict(self) -> dict[str, list[list[int]]]:
-        """Return the material dict of the script
+    def material_dict(self) -> dict[str, list]:
+        """Material dict of the current model.
 
         Returns:
-            Dict[str, List]: material dictionary having the structure:
-                .. code-block:: python
+            Dict[str, List]: dictionary with two elements. The first "material" is a
+            list of :class:`~pyemmo.script.material.material.Material` objects. And
+            the second "physicalElemID" is a list of lists with the gmsh physical surface
+            ids.
 
-                    {
-                        "material": [ListOfMaterials],
-                        "physicalElemID":  [[physicalIDs],[physicalIDs],...]
-                    }
+        .. code-block:: python
 
-                Every material in the material list has a list of physical
-                element IDs in the physicalElemID-List(=List of lists)
+            {
+                "material": [ListOfMaterials],
+                "physicalElemID":  [[physicalIDs],[physicalIDs],...]
+            }
+
+        Every material in the material list has a list of physical element IDs in the
+        physicalElemID-List(=List of lists).
 
         """
         return self._materialDict
 
     @property
-    def curveList(self) -> list[Line | CircleArc | Spline]:
-        """get the list of curves in the script
-
-        Returns:
-            List[Union[Line,CircleArc,Spline]]: list of curves that have been
-                added to the script
-        """
-        return self._curveList
-
-    @curveList.setter
-    def curveList(self, new_curve_list: list[Line | CircleArc | Spline]) -> None:
-        """set the curve list of the script.
-
-        Args:
-            curveList (List[Union[Line,CircleArc,Spline]]): list of line to be
-                set in the script
-
-        Raises:
-            ValueError: if curve list was not type "list"
-            ValueError: if one element of curve list is not a line of child of
-                class line
-        """
-        if isinstance(new_curve_list, list):
-            for curve in new_curve_list:
-                # check if the element of curveList is neither type "Line" nor
-                # child-class of Line
-                # (e.g. CircleArc)
-                # if type(curve) != Line or Line not in type(curve).__bases__:
-                if not isinstance(curve, Line):
-                    msg = f"Element {curve} of given curve list is not type Line!"
-                    raise ValueError(msg)
-            # if all elements new_curve_listist are valid lines -> set new line list
-            self._curveList = new_curve_list
-            # TODO: normally the point list has to be renewed by now...
-            # But the function should not be used anyway by now.
-        else:
-            raise (
-                ValueError(
-                    f"Given curve list object was not a list, but type '{type(new_curve_list)}'!"
-                )
-            )
-
-    @property
-    def postOperation(self) -> PostOperation:
+    def post_operation(self) -> PostOperation:
         """get the user defined PostOperations
 
         Returns:
             PostOperation
         """
-        return self._postOperation
+        return self._post_operation
 
-    @postOperation.setter
-    def postOperations(self, postOperation: PostOperation) -> None:
+    @post_operation.setter
+    def post_operation(self, postOperation: PostOperation) -> None:
         """set the user defined PostOperation
 
         Args:
             postOperation (PostOperation): PostOperation object
         """
         if isinstance(postOperation, PostOperation):
-            self._postOperation = postOperation
+            self._post_operation = postOperation
             return None
         msg = (
             "Given object was not of type PostOperation: "
@@ -469,14 +390,13 @@ class Script:
         )
         raise TypeError(msg)
 
-    @property
-    def postOperationNames(self) -> list[str]:
+    def get_post_operation_names(self) -> list[str]:
         """Get a list of GetDP PostOperation names defined in Script.
 
         Returns:
             List[str]: List of GetDP PostOperation Names
         """
-        postOperation = self.postOperation
+        postOperation = self.post_operation
         return [POItem.Name for POItem in postOperation.items]
 
     # -------------------------------------------------------------------------
@@ -487,15 +407,17 @@ class Script:
     # -------------------------- START OF PRO FUNCTIONS -----------------------
     # -------------------------------------------------------------------------
 
-    def _addMachineDomains(self):
+    def _add_machine_domains(self):
+        """Add the machine domains created by _create_machine_domains() to the script
+        group and return the domain list."""
         logger = logging.getLogger(__name__)
-        domainList = self._createMachineDomains()
-        for domain in domainList:
+        domain_list = self._create_machine_domains()
+        for domain in domain_list:
             logger.debug("Adding domain %s", domain.name)
-            self._addDomain(domain)
-        return domainList
+            self._add_domain(domain)
+        return domain_list
 
-    def _createMachineDomains(self) -> list[Domain]:
+    def _create_machine_domains(self) -> list[Domain]:
         """
         Create Domain objects from the output (Dict[domainName,
         List[PhysicalElements]]) of rotor and stator sortPhysicals() by linking
@@ -503,108 +425,105 @@ class Script:
         ``rotorDomainDict`` and ``statorDomainDict`` (Dict[statorDomainName,
         magStatDynName])
 
-        Args:
-            machine (Machine): machine to get the physicals from
-                (machine of script)
-
         Returns:
             List[Domain]: Domain list containing domains suitable for the
                 magstatdyn.pro file. The order of that list is important since
                 it dicides which points and lines are created first and which
                 are sorted out!
         """
-        domainList: list[Domain] = []
-        statorPhysicalsDict = self.machine.stator.sortPhysicals()
-        rotor = self.machine.rotor
-        rotorPhysicalsDict = rotor.sortPhysicals()
+        domain_list: list[Domain] = []
+        stator_physicals = self.machine.stator.sortPhysicals()
+        rotor_physicals = self.machine.rotor.sortPhysicals()
         # create (boundary) domains existing in rotor AND stator (primary,
         # secondary lines) These domains MUST be created first, because meshing
         # constraints need to be applied on them and this is only possible if
         # the line IDs of these lines are not sorted out due to identical
         # lines. The domains will be created in the order they appeer in this
         # domain list!
-        for statorDomain in statorPhysicalsDict.keys():
-            if statorDomain in boundaryDomainDict:
-                bndDomain = Domain(
-                    boundaryDomainDict[statorDomain],
-                    statorPhysicalsDict[statorDomain],
+        for domain_name in stator_physicals.keys():
+            if domain_name in boundary_domain_dict:
+                boundary_domain = Domain(
+                    boundary_domain_dict[domain_name],
+                    stator_physicals[domain_name],
                 )
-                if statorDomain in rotorPhysicalsDict.keys():
+                if domain_name in rotor_physicals.keys():
                     # boundary also exists in rotor
-                    bndDomain.addPhysicalElements(rotorPhysicalsDict[statorDomain])
-                domainList.append(bndDomain)
+                    boundary_domain.addPhysicalElements(rotor_physicals[domain_name])
+                domain_list.append(boundary_domain)
 
         # create rotor domains
-        # move domainC to domainCC
-        rotorPhysicalsDict[DOMAIN_NON_CONDUCTING].extend(
-            rotorPhysicalsDict[DOMAIN_CONDUCTING]
+        # move domainC to domainCC because eddy currents are handled in GetDP
+        rotor_physicals[DOMAIN_NON_CONDUCTING].extend(
+            rotor_physicals[DOMAIN_CONDUCTING]
         )
-        rotorPhysicalsDict[DOMAIN_CONDUCTING].clear()
+        rotor_physicals[DOMAIN_CONDUCTING].clear()
 
-        # create Domains
-        domainList.extend(self._createDomains(rotorPhysicalsDict, rotorDomainDict))
+        # create remaining domains
+        domain_list.extend(self._create_domains(rotor_physicals, rotor_domain_dict))
+
         # Create single Bar regions
-        if DOMAIN_BAR in rotorPhysicalsDict:
-            rotorPhysicalsDict[DOMAIN_BAR].sort(key=Slot.get_circumferential_position)
-            for i, region in enumerate(rotorPhysicalsDict[DOMAIN_BAR]):
-                domainList.append(Domain(f"Rotor_Bar_{i+1}", region))
+        if DOMAIN_BAR in rotor_physicals:
+            # sort bars in circumferential direction to make sure their indices are in
+            # the correct order for the use with the external squirrle cage circuit.
+            rotor_physicals[DOMAIN_BAR].sort(key=Slot.get_circumferential_position)
+            for i, region in enumerate(rotor_physicals[DOMAIN_BAR]):
+                domain_list.append(Domain(f"Rotor_Bar_{i+1}", region))
+
         # add additional domains for every movinband part, to specify the
         # Link-boundary in magstatdyn
-        for domain in domainList:
+        for domain in domain_list:
             if domain.name == "Rotor_Bnd_MB":
-                for i, mbPhysical in enumerate(domain.physicals):
-                    domainList.insert(
+                for i, mb_physical in enumerate(domain.physicals):
+                    domain_list.insert(
                         3 + i,
                         Domain(
                             name=f"Rotor_Bnd_MB_{i+1}",
-                            physicalElements=[mbPhysical],
+                            physicalElements=[mb_physical],
                         ),
                     )
                 break
 
         # create stator domains
         # move domainC to domainCC
-        # TODO: Decide which domains should be calculatd with eddy currents.
-        #   -> UPDATE: Decition should be made in .pro file depening on params.
-        statorPhysicalsDict[DOMAIN_NON_CONDUCTING].extend(
-            statorPhysicalsDict[DOMAIN_CONDUCTING]
+        # Decition where eddy currents shall be calculated should be made in .pro file
+        # depening on parameters.
+        stator_physicals[DOMAIN_NON_CONDUCTING].extend(
+            stator_physicals[DOMAIN_CONDUCTING]
         )
-        statorPhysicalsDict[DOMAIN_CONDUCTING].clear()
+        stator_physicals[DOMAIN_CONDUCTING].clear()
 
         # add stator domains to domain list
-        domainList.extend(self._createDomains(statorPhysicalsDict, statorDomainDict))
+        domain_list.extend(self._create_domains(stator_physicals, statorDomainDict))
 
         # create additional slot domains for excitations
-        domainList.extend(self._createWindingDomains(statorPhysicalsDict).values())
+        domain_list.extend(self._create_winding_domains(stator_physicals).values())
 
         # append domains to identify linear and non-linear surfaces
-        nonLinearDomainID = DOMAIN_NON_LINEAR
-        nonLinearDomain = Domain(
+        non_linear_domain = Domain(
             "DomainNL",
-            rotorPhysicalsDict[nonLinearDomainID]
-            + statorPhysicalsDict[nonLinearDomainID],
+            rotor_physicals[DOMAIN_NON_LINEAR] + stator_physicals[DOMAIN_NON_LINEAR],
         )
-        domainList.append(nonLinearDomain)
+        domain_list.append(non_linear_domain)
 
-        linearDomainID = DOMAIN_LINEAR
-        linearDomain = Domain(
+        linear_domain = Domain(
             "DomainL",
-            rotorPhysicalsDict[linearDomainID] + statorPhysicalsDict[linearDomainID],
+            rotor_physicals[DOMAIN_LINEAR] + stator_physicals[DOMAIN_LINEAR],
         )
-        domainList.append(linearDomain)
+        domain_list.append(linear_domain)
 
         # Create default domain for Movingband
         # This needs to be done here since we need to add it to the airgap
-        # material domain. TODO: This could be handled by the pro-file for sure.
+        # material domain.
+        # TODO: This could be handled by the pro-file for sure.
         try:
-            airgap_mat = statorPhysicalsDict[DOMAIN_AIRGAP][0].material
+            airgap_mat = stator_physicals[DOMAIN_AIRGAP][0].material
         # pylint: disable=locally-disabled, broad-exception-caught
         except Exception as exce_1:
             try:
-                airgap_mat = rotorPhysicalsDict[DOMAIN_AIRGAP][0].material
+                airgap_mat = rotor_physicals[DOMAIN_AIRGAP][0].material
             except Exception as exce_2:
                 raise exce_2 from exce_1
-        domainList.append(
+        domain_list.append(
             Domain(
                 name="MovingBand_PhysicalNb",
                 physicalElements=PhysicalElement("", [], airgap_mat, phyID=0),
@@ -614,26 +533,30 @@ class Script:
         # append domain for lamination
         lam_domain = Domain(
             "Domain_Lam",
-            rotorPhysicalsDict[DOMAIN_LAMINATION]
-            + statorPhysicalsDict[DOMAIN_LAMINATION],
+            rotor_physicals[DOMAIN_LAMINATION] + stator_physicals[DOMAIN_LAMINATION],
         )
-        domainList.append(lam_domain)
+        domain_list.append(lam_domain)
 
-        return domainList
+        return domain_list
 
-    def _createDomains(
+    def _create_domains(
         self,
-        physicalsDict: dict[str, list[PhysicalElement]],
-        domainDict: dict[str, str],
+        physicals: dict[str, list[PhysicalElement]],
+        domain_name_dict: dict[str, str],
     ) -> list[Domain]:
         """
-        Create a list of domains
+        Create a list of domains from the Rotor and Stator physicals dict with domain
+        name as key and list of corresponding physical elements as value and a domain
+        dict that associates the default domain names defined in :mod:`pyemmo.script`
+        with the actual GetDP domain names.
+        This ensures that the domain names in the machine_template.pro are independed
+        of the PyEMMO definitions.
 
         Args:
-            physicalsDict (dict): Dict with domain name as key string and a
+            physicals (dict): Dict with domain name as key string and a
                 list of physical elements containing to that domain
                 ["Domain Name", List[PhysicalElements]].
-            domainDict (dict): Dict with domain name as key string and
+            domain_name_dict (dict): Dict with domain name as key string and
                 pro-script domain name as value.
 
                 .. code:: python
@@ -646,25 +569,25 @@ class Script:
 
                 .. code:: python
 
-                    [Domain(name="Pro-Script Name", List[PhysicalElements])]
+                    [Domain(name="Pro-Script Name", List[PhysicalElements]), ...]
         """
-        domainList: list[Domain] = []
-        for domainName in physicalsDict.keys():
-            if domainName in domainDict.keys():
-                if physicalsDict[domainName]:  # if there are physicalElements
-                    domainList.append(
-                        Domain(domainDict[domainName], physicalsDict[domainName])
+        domain_list: list[Domain] = []
+        for domain_name in physicals.keys():
+            if domain_name in domain_name_dict:
+                if physicals[domain_name]:  # if there are physicalElements
+                    domain_list.append(
+                        Domain(domain_name_dict[domain_name], physicals[domain_name])
                     )
                 else:
                     # FIXME: ADD MACHINE SIDE TO DOMAIN NAME
                     logger = logging.getLogger(__name__)
                     logger.debug(
                         "There were no physical elements in domain '%s'.",
-                        domainName,
+                        domain_name,
                     )
-        return domainList
+        return domain_list
 
-    def _createWindingDomains(
+    def _create_winding_domains(
         self, domainDict: dict[str, list[PhysicalElement]]
     ) -> dict[str, Domain]:
         """
@@ -672,153 +595,163 @@ class Script:
         Domain names are: Stator_Ind{A,B,C}{p,n}
         """
         # create dict of slots
-        slotDomainDict: dict[str, Domain] = {}
+        slot_domains: dict[str, Domain] = {}
         # FIXME: use try-except statment instead of for loop!
-        for domain, physicalsList in domainDict.items():
+        for domain, physicals in domainDict.items():
             # for i, (domain, physicalsList) in enumerate(domainDict.items()):
             if domain == "domainS":
                 # TODO: This implies that all slots are in domainS
-                for slot in physicalsList:
+                for slot in physicals:
                     if slot.type == "Slot":
                         slot: Slot = slot
                         # FIXME: This assumes 3-Phase winding!
-                        phaseName = slot.getPhase("ABC")
-                        slotDomainName = (
+                        phase = slot.getPhase("ABC")
+                        slot_domain_name = (
                             "Stator_Ind_"
-                            + phaseName
+                            + phase
                             + ("p" if slot.windDirection == 1 else "m")
                         )
-                        if slotDomainName not in slotDomainDict:
+                        if slot_domain_name not in slot_domains:
                             # add domain to slot dict
-                            slotDomainDict[slotDomainName] = Domain(
-                                slotDomainName, slot
+                            slot_domains[slot_domain_name] = Domain(
+                                slot_domain_name, slot
                             )
                         else:
                             # add slot to existing domain
-                            slotDomainDict[slotDomainName].addPhysicalElements([slot])
+                            slot_domains[slot_domain_name].addPhysicalElements([slot])
                     # else:
                     # FIXME: if physical element in domainS is not type Slot:
                     # should there be an Error or Warning?
-                return slotDomainDict
+                return slot_domains
         return None
 
-    def addPostOperation(self, quantityName: str, name: str, **kwargs) -> None:
+    def add_post_operation(
+        self, quantity_name: str, post_operation: str, **kwargs
+    ) -> None:
         r"""Add a new PostOperation (Print) statement
 
         Args:
-            - quantityName (str): Name of the PostProcessing quantity (eg. a,
-                az, b, bn, hn, b_tangent, b_radial, br, mu, j, js, jz, Vmag,
-                I_n, ir, p_Lam, P_Lam, Inertia,...)
 
-            - name (str, optional): Name of the PostOperation.
+            quantity_name (str): Name of the PostProcessing quantity. See available
+                quantities below.
+            post_operation (str, optional): Name of the PostOperation.
 
-            - \*\*kwargs: kwargs are used to complete the Print statment, so eg.
-                to print Br on the whole Domain the function call would look
-                like:
-                .. code-block:: python
+        Additionally kwargs can be used to complete the Print statment, so eg.
+        to print 'b_radial' on the whole 'Domain' the function call would look
+        like:
 
-                    myScript.addPostOperation("b_radial", "User Defined
-                    PostOperation", OnElementsOf="Domain",
-                    File="Path/To/resFile.pos", LastTimeStepOnly="",)
+        Example:
 
-            A special case is if you want to save something to the
-            parameterized folder "ResDir" (Onelab parameter). In this case you
-            have to specify the following "File" kwarg:
-                '..., File = "CAT_RESDIR/YourResFileName.pos" ...'
-            That way the File kwarg is replaced by:
-                '.., File = StrCat[ResDir,"YourResFileName.pos"] ...'
+            >>> myScript.add_post_operation(
+            >>>     quantity_name = "b_radial",
+            >>>     post_operation = "User Defined PostOperation",
+            >>>     OnElementsO = "Domain",
+            >>>     File = "Path/To/resFile.pos"
+            >>> )
 
-            See
-            https://getdp.info/doc/texinfo/getdp.html#Types-for-PostOperation
-            for more PostOperation options
+        A special case is if you want to save something to the
+        parameterized folder "ResDir" (ONELAB parameter). In this case you
+        have to specify the following "File" argument with the keyword "CAT_RESDIR"::
+
+            ..., File = "CAT_RESDIR/YourResFileName.pos" ...
+
+        That way the "CAT_RESDIR" is replaced by::
+
+            ..., File = StrCat[ResDir,"YourResFileName.pos"] ...
+
+        See `Types-for-PostOperation <https://getdp.info/doc/texinfo/getdp.html#Types-for-PostOperation>`_
+        section in GetDP doc for all PostOperation options.
+
+        Some available *local* (field) quantities are:
+
+            - a: Magnetic vector potential
+            - az: Magnetic vector potential (z component)
+            - b: Magnetic flux density
+            - bn: Norm of magnetic flux density
+            - hn: Magnetic field strengh
+            - b_tangent: Tangential component of flux density
+            - b_radial: Radial component of flux density
+            - br: Remanence flus density (only in magnets)
+            - mu: Relative magnetic permeability
+              (:math:`\mu_r=(\frac{\nu(B)}{\mu_0})^{-1}`)
+            - j: Vector current density
+            - js: Source vector current density
+            - jz: Z component of current density
+
+        Some *global* (integral) quantities are:
+
+            - Flux: Magnetic flux linkage
+            - JouleLosses: Joule losses (only on conducting domains)
+            - Torque_Maxwell_{s/r}: Stator and rotor torque from Maxwell Stress Tensor
+            - InducedVoltage: Induced Voltage (only in conducting and inductor domains)
+            - U: Global voltage drop
+            - I: Global current
+
         """
-        userDefinedPO = self.postOperation
-        postOperationNames = self.postOperationNames
+        po_names = self.get_post_operation_names()
         # search in the user defined PostOperation if there is a PO with that
         # name. Remember: our self._postOperation object of type
         # (PostOperation) has a list of PostOperations ("items") which can have
         # several "Operations" (eg. Prints, Echos,...) defined
 
-        name = clean_name(name)
-        if name in postOperationNames:
+        post_operation = clean_name(post_operation)
+        if post_operation in po_names:
             # if that PostOperation allready exists, get the PostOperationItem
             # with that name
-            poItem = userDefinedPO.items[postOperationNames.index(name)]
+            po_item = self.post_operation.items[po_names.index(post_operation)]
         else:
             # it that PostOperation is not existing, create it
-            poItem = userDefinedPO.add(Name=name, NameOfPostProcessing="MagStaDyn_a_2D")
-        poItem: PostopItem = poItem
-        poItem.add().add(quantity=quantityName, **kwargs)
+            po_item = self.post_operation.add(
+                Name=post_operation, NameOfPostProcessing="MagStaDyn_a_2D"
+            )
+        po_item: PostopItem = po_item
+        po_item.add().add(quantity=quantity_name, **kwargs)
         if "File" in kwargs:
             if "CAT_RESDIR" in kwargs["File"]:
-                resfileStr: str = kwargs["File"]
-                resfileName = resfileStr.lstrip("CAT_RESDIR").lstrip("\\")
-                poItem.item[-1].code = poItem.item[-1].code.replace(
-                    f'"{kwargs["File"]}"', f'StrCat[ResDir,"{resfileName}"]'
+                res_file: str = kwargs["File"]
+                res_file_name = res_file.lstrip("CAT_RESDIR").lstrip("\\")
+                po_item.item[-1].code = po_item.item[-1].code.replace(
+                    f'"{kwargs["File"]}"', f'StrCat[ResDir,"{res_file_name}"]'
                 )
 
     # -------------------------------------------------------------------------
     # -------------------------- END OF PRO FUNCTIONS -------------------------
     # -------------------------------------------------------------------------
 
-    def _addPhysicalElement(self, physicalElement: PhysicalElement) -> None:
+    def _add_physical(self, physical_element: PhysicalElement) -> None:
         """Add a PhysicalElement to the Script.
 
         This calls:
 
-            - :func:`addSurface() <pyemmo.script.script.Script.addSurface>` and
-                 :func:`addCurve() <pyemmo.script.script.Script._addCurve>`
-            - :func:`addMaterial() <pyemmo.script.script.Script._addMaterial>`
-                if Material is not defined yet
-            - addMagnetization() (radial, parallel or tangential) if Physical
-                is a Magnet
+            - :meth:`~pyemmo.script.script.Script._addMaterial`
+              if material is not defined yet.
+            - addMagnetization() (radial, parallel or tangential) if physical
+              is a Magnet.
 
         Args:
-            physicalElement (PhysicalElement): Physical Element to add to
-                Script.
-
+            physical_element (PhysicalElement): Physical Element to add to Script.
         """
-        # if physicalElement.geo_list:
-        #     # if the geo list is not empty
-        #     # remember there can be domains without geometrical elements,
-        #     # like the "MovingBand_PhysicalNb" domain
-        #     code = self._createPhysicalElementCode(physicalElement)
-        #     self.physicalElementCode += code
-
-        if physicalElement not in self.physicalElementArray:
+        if physical_element not in self._physicals:
             # add physical element to array
-            self.physicalElementArray.append(physicalElement)
+            self._physicals.append(physical_element)
             # add material if existing
-            if (
-                physicalElement.material
-            ):  # TODO: Verify if this is really needed because
-                # physical element should allways have material
-                self._addMaterial(physicalElement)
+            # TODO: Verify if this is really needed because physical element should
+            # allways have material
+            if physical_element.material:
+                self._add_material(physical_element)
             # add magnetization if specified
-            if isinstance(physicalElement, Magnet):
-                mag: Magnet = physicalElement
-                typeMag = mag.magType
-                if typeMag == "radial":
-                    self._addMagnetisationRadial(physicalElement)
-                elif typeMag == "parallel":
-                    self._addMagnetisationParallel(physicalElement)
-                elif typeMag == "tangential":
-                    self._addMagnetisationTangential(physicalElement)
-                else:
-                    raise TypeError(
-                        f"Wrong Magnetisation Type: '{typeMag}'."
-                        + "Magnetisation Type must be 'radial', 'parallel' or "
-                        + "'tangential'."
-                    )
+            if isinstance(physical_element, Magnet):
+                mag: Magnet = physical_element
+                self._add_mag_function(mag, mag.magType)
 
-    def _addMaterial(self, physicalElement: PhysicalElement) -> None:
+    def _add_material(self, physical_element: PhysicalElement) -> None:
         """
-        Add the material of a physical element to the material_dict.
+        Add the material of a physical element to the ``material_dict``.
         If the material allready exists in the material dict, its physical
         element ID is added to the physical element list of that material.
 
         Args:
-            physicalElement (PhysicalElement): Physical element (PE) which
+            physical_element (PhysicalElement): Physical element (PE) which
                 material should be added to the script. If the material of the
                 PE is allready in the material dict of the script, the PE-ID is
                 added to the material dict.
@@ -827,84 +760,90 @@ class Script:
             None
         """
         # if the material is not in the material dict
-        matDict = self.materialDict
-        material = physicalElement.material
-        if material not in matDict["material"]:
-            matDict["material"].append(material)
+        mat_dict = self.material_dict
+        material = physical_element.material
+        if material not in mat_dict["material"]:
+            mat_dict["material"].append(material)
             # check that the material has eighter bh curve or permeability
             if material.BH.size == 0 and not material.relPermeability:
                 raise RuntimeError(
                     f"Material {material.name} has neither bh curve nor relative permability!"
                 )
-            matDict["physicalElemID"].append([physicalElement.id])
+            mat_dict["physicalElemID"].append([physical_element.id])
         else:
             # otherwise find the index of the existing material
-            matIndex = matDict["material"].index(material)
+            mat_index = mat_dict["material"].index(material)
             # and append the PhysicalElement to the List[PhysicalElement]
-            matDict["physicalElemID"][matIndex].append(physicalElement.id)
+            mat_dict["physicalElemID"][mat_index].append(physical_element.id)
 
-    def _addMagnetisationRadial(self, magnet: Magnet):
-        magDir = magnet.magDir
-        matName = clean_name(magnet.material.name)
-        self.functionMagnetisation.add(
-            name="br",
-            expression=f"{magDir}*br_{matName} * XYZ[]/Norm[XYZ[]]",
-            region=f"Region[{magnet.id}]",
-        )
+    def _add_mag_function(
+        self,
+        magnet: Magnet,
+        magnetization_type: Literal["radial", "parallel", "tangential"],
+    ):
+        """Add magnetization function to :attr:`function_magnetization` GetDP Functions definition.
 
-    def _addMagnetisationParallel(self, physicalElement: Magnet):
-        matName = clean_name(physicalElement.material.name)
-        magAngle = physicalElement.magAngle
-        magDir = physicalElement.magDir
-        magFunction = (
-            f"{magDir}*br_{matName} * Vector["
-            f"Cos[{magAngle} + RotorPosition[]], "
-            f"Sin[{magAngle} + RotorPosition[]], 0]"
-        )
-        self.functionMagnetisation.add(
-            "br",
-            magFunction,
-            f"Region[{physicalElement.id}]",
-        )
+        Args:
+            magnet (Magnet): Magnet physical object.
+            magnetization_type (Literal[&quot;radial&quot;, &quot;parallel&quot;, &quot;tangential&quot;]): Magnetization type.
+        """
+        mag_dir = magnet.magDir
+        mag_angle = magnet.magAngle
+        mat_name = clean_name(magnet.material.name)
+        if magnetization_type.lower() == "radial":
+            self.function_magnetization.add(
+                name="br",
+                expression=f"{mag_dir}*br_{mat_name} * XYZ[]/Norm[XYZ[]]",
+                region=f"Region[{magnet.id}]",
+            )
+        elif magnetization_type.lower() == "parallel":
+            mag_function = (
+                f"{mag_dir}*br_{mat_name} * Vector["
+                f"Cos[{mag_angle} + RotorPosition[]], "
+                f"Sin[{mag_angle} + RotorPosition[]], 0]"
+            )
+            self.function_magnetization.add(
+                "br",
+                mag_function,
+                f"Region[{magnet.id}]",
+            )
+        elif magnetization_type.lower() == "tangential":
+            mag_function = (
+                f"{mag_dir}*br_{mat_name} * Vector["
+                f"-Sin[{mag_angle} + RotorPosition[]], "
+                f"Cos[{mag_angle} + RotorPosition[]], 0] "
+            )
+            self.function_magnetization.add(
+                "br",
+                mag_function,
+                f"Region[{magnet.id}]",
+            )
+        else:
+            raise ValueError(
+                f"Attribute magnetization_type is invalid: {magnetization_type}. "
+                'Must be "radial", "parallel" or "tangential"!'
+            )
 
-    def _addMagnetisationTangential(self, magnet: Magnet):
-        magAngle = magnet.magAngle
-        magDir = magnet.magDir
-        matName = clean_name(magnet.material.name)
-        magFunction = (
-            f"{magDir}*br_{matName} * Vector["
-            f"-Sin[{magAngle} + RotorPosition[]], "
-            f"Cos[{magAngle} + RotorPosition[]], 0] "
-        )
-        self.functionMagnetisation.add(
-            "br",
-            magFunction,
-            f"Region[{magnet.id}]",
-        )
-
-    def _addDomain(self, domain: Domain):
-        """_addDomain adds a group with the domain name to the script-class
-        getdp-group "_group" """
-        physicalElements: list[PhysicalElement] = domain.physicals
-        physIDs: list[int] = []
-        for physicalElement in physicalElements:
-            self._addPhysicalElement(physicalElement)
-            physIDs.append(physicalElement.id)
+    def _add_domain(self, domain: Domain):
+        """Add a group with the domain name to the getdp-group section."""
+        ids: list[int] = []
+        for physical in domain.physicals:
+            self._add_physical(physical)
+            ids.append(physical.id)
             # allPhysicalName.append(pE.getName())
-        self.group.add(clean_name(domain.name), physIDs)
+        self.group.add(clean_name(domain.name), ids)
 
-    def _printAllMaterial(self):
+    def _create_material_code(self):
         """Generate the GetDP function code for all materials in the material dict"""
-        self.functionMaterial.define(name=["br", "js"])
-        self.functionMaterial.add_params({"mu0": "4.e-7 * Pi"})
+        self.function_material.define(name=["br", "js"])
+        self.function_material.add_params({"mu0": "4.e-7 * Pi"})
 
-        matDict = self.materialDict
-        for i, mat in enumerate(matDict["material"]):
+        for i, mat in enumerate(self.material_dict["material"]):
             mat: Material = mat
             # mat: Material = self._materialDict["material"][i]
             # convert list[int] to list[str]
             physElemIDstr: list[str] = []
-            for physicalElementID in self.materialDict["physicalElemID"][i]:
+            for physicalElementID in self.material_dict["physicalElemID"][i]:
                 physElemIDstr.append(str(physicalElementID))
             # add group for material
             matName = clean_name(mat.name)
@@ -931,7 +870,7 @@ class Script:
                     )
                     matName = matName + "_dup"
                     self.group.add(id="group_" + matName, glist=physElemIDstr)
-            matFun = self.functionMaterial
+            matFun = self.function_material
             matFun.add_comment(f"New Material: {matName}\n", True)
             # add electrical conductivity
             conductivity = mat.conductivity
@@ -1050,7 +989,7 @@ class Script:
                 )
                 matFun.add("density", f"density_{matName}", f"group_{matName}")
 
-    def _createMovingGeoCode(self) -> str:
+    def _create_moving_code(self) -> str:
         """Create the code for plotting the moving geometry in the gmsh GUI.
         This code should be added at the end of the geo file to extract the
         boundary lines and plot them in the post processing.
@@ -1067,17 +1006,7 @@ class Script:
 
         Returns:
             str: Code for the moving geometry.
-
-
         """
-        # rotorPhysicalsList = self.getMachine().getRotor().getPhysicalElements()
-        # # rotorIdList: List[int] = list()
-        # rotorIdStr = ""
-        # for rotorPhys in rotorPhysicalsList:
-        #     if rotorPhys.getGeoElementType() == Surface:
-        #         rotorIdStr += str(rotorPhys.id) + ","
-        # rotorIdStr = rotorIdStr[0:-1]  # erase last comma
-
         # 1. Non-contacting surfaces (at segment boundary)
         rotorPhysDict = self.machine.rotor.sortPhysicals()
         rotorIdStr = ""
@@ -1120,8 +1049,8 @@ class Script:
         )
         return geoCode
 
-    def _createMeshCompoundCode(
-        self, physList: list[PhysicalElement], regionName: str = ""
+    def _create_compound_code(
+        self, physicals: list[PhysicalElement], name: str = ""
     ) -> str:
         """Generate the code for a compound mesh of several surfaces.
         The code looks like:
@@ -1133,68 +1062,64 @@ class Script:
         for the stator airgap surfaces (IDs 27 to 31)
 
         Args:
-            physList (List[PhysicalElement]): list of physical elements to
+            physicals (List[PhysicalElement]): list of physical elements to
                 combine. The IDs are extracted.
-            regionName (str): region name for the comment
+            name (str): region name for the comment
 
         Returns:
             str: Compound mesh code.
         """
         logger = logging.getLogger(__name__)
-        if physList:
-            meshCompCode = ""
-            for physical in physList:
-                if physical.material == physList[0].material:
-                    if physical.geoElementType is Surface:
-                        if len(physical.geo_list) > 1:
-                            for geoElem in physical.geo_list:
-                                meshCompCode += str(geoElem.id) + ","
-                        else:
-                            logger.warning(
-                                'Creation of "Compound Mesh" for domain "%s" failed, because "%s" has only one surface.',
-                                regionName,
-                                physical.name,
-                            )
-                            return ""
-                    else:
-                        logger.warning(
-                            'Creation of "Compound Mesh" for domain "%s" failed, because "%s" is not a surface.',
-                            regionName,
-                            physical.name,
-                        )
-                        return ""
+        if not physicals:
+            return ""
+        comp_code = ""
+        for physical in physicals:
+            if physical.material != physicals[0].material:
+                # domain/region has different materials -> no compound surface
+                # or is not geo type surface
+                logger.warning(
+                    (
+                        "Creation of 'Compound Mesh' for domain '%s' failed, ",
+                        name,
+                    )
+                    + ("because materials of '%s' and ", physicals[0].name)
+                    + ("'%s' don't match.", physical.name)
+                )
+                return ""
+            if physical.geoElementType is Surface:
+                if len(physical.geo_list) > 1:
+                    for geoElem in physical.geo_list:
+                        comp_code += str(geoElem.id) + ","
                 else:
-                    # domain/region has different materials -> no compound surface
-                    # or is not geo type surface
                     logger.warning(
-                        (
-                            "Creation of 'Compound Mesh' for domain '%s' failed, ",
-                            regionName,
-                        )
-                        + ("because materials of '%s' and ", physList[0].name)
-                        + ("'%s' don't match.", physical.name)
+                        'Creation of "Compound Mesh" for domain "%s" failed, because '
+                        '"%s" has only one surface.',
+                        name,
+                        physical.name,
                     )
                     return ""
-
-            # make sure there is code
-            if meshCompCode:
-                meshCompCode = (
-                    "Compound Surface{" + meshCompCode[0:-1]
-                )  # erase last comma
-                meshCompCode += f"}}; // {regionName}\n"  # add closing and comment
-                return meshCompCode
             else:
+                logger.warning(
+                    'Creation of "Compound Mesh" for domain "%s" failed, because "%s" '
+                    "is not a surface.",
+                    name,
+                    physical.name,
+                )
                 return ""
+
+        # make sure there is code
+        if comp_code:
+            comp_code = "Compound Surface{" + comp_code[0:-1]  # erase last comma
+            comp_code += f"}}; // {name}\n"  # add closing and comment
+            return comp_code
         else:
-            # if there are no pEs in that region -> no compound surface
             return ""
 
-    def _createMeshModCode(self) -> str:
-        """Create the code to individually modify the mesh size of the machine
-        domains.
+    def _create_mesh_code(self) -> str:
+        """Create the code to individually modify the mesh size of the machine domains.
 
-        This adds a bunch of code lines to the .geo file to modify the mesh.
-        The main modification are:
+        This adds a bunch of code lines to the .geo file to modify the mesh. The main
+        modification are:
 
         1. Compound Mesh: If "Compound Mesh" is set to 1, gmsh tries to mesh
             the airgap and lamination surfaces of rotor and stator as combined
@@ -1251,64 +1176,60 @@ class Script:
 
         """
         rotor = self.machine.rotor
-        rotorDict = rotor.sortPhysicals()
+        rotor_dict = rotor.sortPhysicals()
 
         stator = self.machine.stator
-        statorDict = stator.sortPhysicals()
+        stator_dict = stator.sortPhysicals()
 
-        meshModCode = "\n// Mesh operations\n\n"
+        mesh_code = "\n// Mesh operations\n\n"
         # 1. add compound mesh for domain
-        meshModCode += (
+        mesh_code += (
             "// Do not switch mesh algorithm on failure, "
             + "because this led to mesh errors in the past.\n"
             + "Mesh.AlgorithmSwitchOnFailure = 0;"
         )
-        meshModCode += (
+        mesh_code += (
             "DefineConstant[Flag_CompoundMesh = {0, "
             + """Name StrCat[INPUT_MESH, "Compound Mesh"], Choices {0,1}, """
             + """Help "Use Compound Mesh to ignore lines between segments while meshing.","""
             + """Visible Flag_ExpertMode}];\n"""
         )
-        meshModCode += """If (Flag_CompoundMesh)\n"""
+        mesh_code += """If (Flag_CompoundMesh)\n"""
         for region in ["domainLam", "airGap"]:
             # for region in ["domainLam"]:
-            physicalsList = rotorDict[region]
-            if physicalsList:
-                meshModCode += self._createMeshCompoundCode(
-                    physicalsList, ("rotor " + region)
-                )
-            physicalsList = statorDict[region]
-            if physicalsList:
-                meshModCode += self._createMeshCompoundCode(
-                    physicalsList, ("stator " + region)
-                )
-        meshModCode += """EndIf // (Flag_CompoundMesh)\n\n"""
+            physicals = rotor_dict[region]
+            if physicals:
+                mesh_code += self._create_compound_code(physicals, ("rotor " + region))
+            physicals = stator_dict[region]
+            if physicals:
+                mesh_code += self._create_compound_code(physicals, ("stator " + region))
+        mesh_code += """EndIf // (Flag_CompoundMesh)\n\n"""
 
         # 2. add mesh size setting via factor
         # Allready done in json API. This would need a other grouping instead
         # of GetDP domains
 
         # 3. add periodic meshing constraint for primary and secondary lines
-        symFactor = self.machine.symmetryFactor
-        if symFactor > 1:
-            primeLines = self.machine.primaryLines
-            secondaryLines = self.machine.getSecondaryLines()
-            if primeLines and secondaryLines:
-                meshModCode += "// Add Periodic Mesh to model symmetry boundary-lines\n"
+        sym_factor = self.machine.symmetryFactor
+        if sym_factor > 1:
+            prime_lines = self.machine.primaryLines
+            secondary_lines = self.machine.getSecondaryLines()
+            if prime_lines and secondary_lines:
+                mesh_code += "// Add Periodic Mesh to model symmetry boundary-lines\n"
                 primeLineIDs = ""
                 primary_tags = []
-                for line in primeLines:
+                for line in prime_lines:
                     primary_tags.append(line.id)
                     primeLineIDs += f"{line.id},"
                 # set primary lines without last comma
-                meshModCode += f"primaryLines = {{{primeLineIDs[0:-1]}}};\n"
+                mesh_code += f"primaryLines = {{{primeLineIDs[0:-1]}}};\n"
                 secondIDs = ""
                 secondary_tags = []
-                for line in secondaryLines:
+                for line in secondary_lines:
                     secondary_tags.append(line.id)
                     secondIDs += f"{line.id},"
                 # set primary lines without last comma
-                meshModCode += f"secondaryLines = {{{secondIDs[0:-1]}}};\n"
+                mesh_code += f"secondaryLines = {{{secondIDs[0:-1]}}};\n"
                 # The following assumes, that the prime lines are located on
                 # the x-axis. Rotation from prime to secondary occure in math.
                 # positive direction!
@@ -1328,54 +1249,48 @@ class Script:
                 #     1, secondary_tags, primary_tags, transformation_matrix.flatten()
                 # )
 
-                meshModCode += (
+                mesh_code += (
                     r"Periodic Curve{secondaryLines[]} = {primaryLines[]} "
                     r"Rotate {{0,0,1}, {0,0,0}, "
-                    f"2*Pi/{symFactor}}};\n\n"
+                    f"2*Pi/{sym_factor}}};\n\n"
                 )
 
         # 4. add mesh size setting for movingband lines
-        movingbandPhysicals = rotor.movingBand  # get list of movingband physicals
-        if movingbandPhysicals:
+        if rotor.movingBand:
             # create line id string for mesh size setting
-            mbLineIDs = ""
-            for physicalMovingband in movingbandPhysicals:
-                if (
-                    physicalMovingband.type == "MovingBand"
-                    and physicalMovingband.geoElementType == Line
-                ):
+            mb_ids = ""
+            for mb in rotor.movingBand:
+                if mb.type == "MovingBand" and mb.geoElementType == Line:
                     # if the mobingband object is type movingband and its
                     # geo-elements are lines
-                    for mbLine in physicalMovingband.geo_list:
+                    for mbLine in mb.geo_list:
                         # mbLine.setMeshLength()
                         # BUG, FIXME: Only add movingband line if the
                         # arc has realy been added to the script!
-                        mbLineIDs += f"{mbLine.id},"  # add the line id
+                        mb_ids += f"{mbLine.id},"  # add the line id
             # get approx. the min mesh length of the rotor movingband
             # (only checking first line of first movingband physical)
-            _, p_tags = gmsh.model.getAdjacencies(
-                1, movingbandPhysicals[0].geo_list[0].id
-            )
-            mbMeshSize = min(gmsh.model.mesh.getSizes([(0, tag) for tag in p_tags]))
-            if mbLineIDs:
-                rRotorMB = rotor.movingBandRadius
-                nbrSeg0 = (2 * pi * rRotorMB / mbMeshSize) - (
-                    2 * pi * rRotorMB / mbMeshSize
+            _, p_tags = gmsh.model.getAdjacencies(1, rotor.movingBand[0].geo_list[0].id)
+            mb_meshsize = min(gmsh.model.mesh.getSizes([(0, tag) for tag in p_tags]))
+            if mb_ids:
+                r_rotor_mb = rotor.movingBandRadius
+                nbr_seg0 = (2 * pi * r_rotor_mb / mb_meshsize) - (
+                    2 * pi * r_rotor_mb / mb_meshsize
                 ) % 10  # calc number of movingband segments by steps of 10
-                max_nbr_segments = max(nbrSeg0, 1440)
+                max_nbr_segments = max(nbr_seg0, 1440)
                 # create parameter code for movingband segment setting
-                meshModCode += "// Add mesh size setting for Movingband lines\n"
-                meshModCode += (
+                mesh_code += "// Add mesh size setting for Movingband lines\n"
+                mesh_code += (
                     "DefineConstant[\n"
                     + (
-                        f"\tNbrMbSegments = {{{nbrSeg0}, "
+                        f"\tNbrMbSegments = {{{nbr_seg0}, "
                         """Name StrCat[INPUT_MESH, "Number of Rotor Movingband Segments"],"""
                         f"Max {max_nbr_segments}, Min 180, Step 10, Help "
                         '"Set the number of mesh segments on the interface between rotor/stator'
                         "airgap and movingband. Value represents number of segments on whole "
                         'circle.", Visible Flag_ExpertMode},\n'
                     )
-                    + f"\tr_MB_R = {rRotorMB}"  # rotor movingband radius as parameter
+                    + f"\tr_MB_R = {r_rotor_mb}"  # rotor movingband radius as parameter
                     # + ",\n"
                     # + """\trotorMBMesh = {360, Name StrCat[INPUT_MESH, "Number of Roto
                     # Movingband Segments"], Min 180, Step 10, Help "Set the number of mesh
@@ -1384,52 +1299,49 @@ class Script:
                     "\n];\n"
                 )
                 # create movingband line id list, because its cleaner
-                meshModCode += f"MB_LinesR = {{{mbLineIDs[0:-1]}}};\n"
+                mesh_code += f"MB_LinesR = {{{mb_ids[0:-1]}}};\n"
                 # set the mesh size for all movingband points
-                meshModCode += (
+                mesh_code += (
                     "MeshSize{ PointsOf{Line{MB_LinesR[]};}} = "
                     "2*Pi*r_MB_R/NbrMbSegments;\n\n"
                 )
             # same thing for stator movingband with number of segments of
             # rotor movingband
-            mbLineIDs = ""  # reset string
-            for physicalMovingband in stator.movingBand:
-                if (
-                    physicalMovingband.type == "MovingBand"
-                    and physicalMovingband.geoElementType == Line
-                ):
+            mb_ids = ""  # reset string
+            for mb in stator.movingBand:
+                if mb.type == "MovingBand" and mb.geoElementType == Line:
                     # if the mobingband object is type movingband and its
                     # geo-elements are lines
-                    for mbLine in physicalMovingband.geo_list:
+                    for mbLine in mb.geo_list:
                         # mbLine.setMeshLength()
-                        mbLineIDs += f"{mbLine.id},"  # add the line id
-            if mbLineIDs:
-                rStatorMB = stator.movingBandRadius
+                        mb_ids += f"{mbLine.id},"  # add the line id
+            if mb_ids:
+                r_stator_mb = stator.movingBandRadius
                 # create movingband line id list, because its cleaner
-                meshModCode += f"MB_LinesS = {{{mbLineIDs[0:-1]}}};\n"
-                meshModCode += (
+                mesh_code += f"MB_LinesS = {{{mb_ids[0:-1]}}};\n"
+                mesh_code += (
                     "MeshSize{ PointsOf{Line{MB_LinesS[]};}} = 2*Pi*"
-                    + str(rStatorMB)
+                    + str(r_stator_mb)
                     + "/NbrMbSegments;\n\n"
                 )  # set the mesh size for all movingband points
-            meshModCode += (
+            mesh_code += (
                 "Mesh.SurfaceFaces = 0; // don't show mesh faces (only edges)\n\n"
             )
-        return meshModCode
+        return mesh_code
 
-    def writeGeo(self, UD_MeshCode: str = "") -> None:
+    def write_geo(self, UD_MeshCode: str = "") -> None:
         """writeGeo generates the .geo-File for the current script.
 
         Args:
             UD_MeshCode (str): User defined code to modify mesh settings. This
-            will be printed *before* the internal mesh settings because
-            otherwise Movingsband-Mesh could be overwritten. Must be conformal
-            with the gmsh syntax!
+                will be printed *before* the internal mesh settings because
+                otherwise Movingband-Mesh could be overwritten. Must be conformal
+                with the gmsh syntax!
         """
         logger = logging.getLogger(__name__)
         # add the code for the mesh settings and mesh modification
-        meshSettingsCode = 'INPUT_MESH = "Input/04Mesh/";\n'
-        meshSettingsCode += (
+        init_mesh_code = 'INPUT_MESH = "Input/04Mesh/";\n'
+        init_mesh_code += (
             "DefineConstant[\n"
             + "\tgmsf = {1, "
             + 'Name StrCat[INPUT_MESH, "00Mesh size factor"], '
@@ -1440,31 +1352,28 @@ class Script:
             )
             + "},\n"
         )
-        meshSettingsCode += (
+        init_mesh_code += (
             "\tFlag_individualColoring = {0,"
             + 'Name StrCat[INPUT_MESH, "09Individual Mesh Coloring"], '
             + "Choices {0, 1}}\n];\n"
         )
-        meshSettingsCode += "Mesh.MeshSizeFactor = gmsf;\n"
+        init_mesh_code += "Mesh.MeshSizeFactor = gmsf;\n"
         # show mesh Lines without lighting
-        meshSettingsCode += (
+        init_mesh_code += (
             "Mesh.SurfaceEdges = 1;\nMesh.Light = 0;\nMesh.SurfaceFaces = 1;\n"
         )
-        meshSettingsCode += "Mesh.Algorithm = 6; // Frontal-Delaunay for 2D meshes\n"
+        init_mesh_code += "Mesh.Algorithm = 6; // Frontal-Delaunay for 2D meshes\n"
         # TODO: This can be removed with a new GetDP version according to:
         # https://gitlab.onelab.info/gmsh/gmsh/-/issues/3194
-        meshSettingsCode += "Mesh.MshFileVersion = 4.0; // Fix bug in mesh file creation for GetDP Version 3.6.0\n"
-        meshSettingsCode += "\n"
+        init_mesh_code += "Mesh.MshFileVersion = 4.0; // Fix bug in mesh file creation for GetDP Version 3.6.0\n"
+        init_mesh_code += "\n"
 
-        meshModCode = ""
+        mesh_code = ""
         movingGeoCode = ""
         if self.machine:
-            # TODO: Check that the geometry in PyEMMO is still up to date with gmsh.
-            #       Probably the ID of surfaces changed due to boolean operations
-            # add the code for mesh modifications
-            meshModCode = self._createMeshModCode()
+            mesh_code = self._create_mesh_code()
             # add the code for plotting the moving boundary in post processing
-            movingGeoCode = self._createMovingGeoCode()
+            movingGeoCode = self._create_moving_code()
 
         # write out all the geometry and physicals code to .geo_unrolled file
 
@@ -1480,7 +1389,7 @@ class Script:
         # tmp_point_tag = gmsh.model.geo.addPoint(0, 0, 0, 1.0)
         # gmsh.model.geo.addPhysicalGroup(0, [tmp_point_tag], name="dummy point")
 
-        geo_unrolled_path = self.geoFilePath + "_unrolled"
+        geo_unrolled_path = self.geo_file_path + "_unrolled"
         gmsh.write(geo_unrolled_path)
         # read in the file content
         with open(geo_unrolled_path, "r+") as fd:
@@ -1490,66 +1399,55 @@ class Script:
             # fd.writelines(contents)  # No need to truncate as we are increasing
         os.remove(geo_unrolled_path)
 
-        with open(self.geoFilePath, "w", encoding="utf-8") as geoScript:
-            geoScript.write(versionStr)  # write the pyemmo version number
+        with open(self.geo_file_path, "w", encoding="utf-8") as geo_file:
+            geo_file.write(versionStr)  # write the pyemmo version number
             # create Expert Mode Flag
-            geoScript.write(
+            geo_file.write(
                 """DefineConstant[\n Flag_ExpertMode = {1,"""
                 + """Name '01View/Expert Mode', Choices {0, 1}}\n];\n\n"""
             )
-            geoScript.write(meshSettingsCode)  # write code for mesh variables
-            geoScript.writelines(geo_code)
-            if self.colorCode:
+            geo_file.write(init_mesh_code)  # write code for mesh variables
+            geo_file.writelines(geo_code)
+            if self.color_code:
                 # TODO: Update to create color code from physical elements,
                 # because the colors set by the gmsh api are not exported to
                 # the geo_unrolled file.
-                geoScript.write(
+                geo_file.write(
                     "\n// Color code\n"
                     + """If (!Flag_individualColoring)\n"""
-                    + self.colorCode
+                    + self.color_code
                     + """EndIf\n"""
                 )
-            geoScript.write(UD_MeshCode)
-            geoScript.write(meshModCode)
+            geo_file.write(UD_MeshCode)
+            geo_file.write(mesh_code)
             # write code to only show physicals
-            geoScript.write(
+            geo_file.write(
                 "Hide {:}\nRecursive Show { Physical Surface{:}; }\n"
                 "Recursive Show { Physical Curve{:}; }\n"
                 "Geometry.PointSize = 3.0;\n\n"
             )
-            geoScript.write(movingGeoCode)
+            geo_file.write(movingGeoCode)
         # set flag that geometry files have been created to true
         self._geo_files_created = True
 
-        logger.debug(
-            "I found %d identical points. There are %d points in the model.",
-            self.nbrIdedentPoints,
-            len(self.pointArray),
-        )
-        logger.debug(
-            "I found %d identical lines. There are %d lines in the model.",
-            self.nbrIdedentLines,
-            len(self.curveList),
-        )
-
     def _setParameters(self):
-        """Set the machine parameters for the script to the
-        ``Script.simParams`` attribute.
+        """
+        Set the machine parameters for the script to the ``Script.simParams``attribute.
         """
         logger = logging.getLogger(__name__)
         machine = self.machine
         if not machine:
-            raise RuntimeError("There was no machine specified. Add machine to script.")
-        simuParamDict = self.simParams
+            raise ValueError("There was no machine specified. Add machine to script.")
+        simu_param_dict = self.sim_params
         # 1. Set geometrical parameters via "machine.getSimParams()"
         #   SYMMETRY_FACTOR, L_AX_R, L_AX_S, NBR_POLE_PAIRS, NBR_TURNS_IN_FACE
-        geometryParams = machine.getSimParams()
+        geo_params = machine.getSimParams()
         # TODO: Improve check here...
         # assert len(geometryParams) == len(simuParamDict.GEO) # assert there
         # is the correct number of parameters
 
         # update machine parameters:
-        simuParamDict["GEO"] = {**simuParamDict["GEO"], **geometryParams}
+        simu_param_dict["GEO"] = {**simu_param_dict["GEO"], **geo_params}
 
         # Create default parameters for rotor and stator airgap field post processing
         for side in ("rotor", "stator"):
@@ -1571,7 +1469,7 @@ class Script:
                     )
                     airgap_radii = [0.0]  # set to zero if no points found
                 # set mean radius default value
-                simuParamDict["GEO"][f"R_{side.upper()}_AIRGAP"] = mean(airgap_radii)
+                simu_param_dict["GEO"][f"R_{side.upper()}_AIRGAP"] = mean(airgap_radii)
 
         # 2. Set simulation parameters
         #   INIT_ROTOR_POS  -> Allready set in __init__
@@ -1581,27 +1479,27 @@ class Script:
         #   ParkAngOffset   -> Allready set in __init__
         #   FLAG_NL
         #   FLAG_CHANGE_ROT_DIR
-        flagCalcNL = 0
-        hasMagnets = False
+        flag_CalcNL = 0
+        has_magnets = False
         # flag_readonly = 0
         for domain in machine.domains:
-            for physicalElement in domain.physicals:
-                if physicalElement.geoElementType == Surface:
-                    mat = physicalElement.material
+            for physical in domain.physicals:
+                if physical.geoElementType == Surface:
+                    mat = physical.material
                     if not mat.linear:
-                        flagCalcNL = 1
+                        flag_CalcNL = 1
                         break  # if one BH curve is found, we can stop the loop
-                    if isinstance(physicalElement, Magnet):
-                        hasMagnets = True
-        simuParamDict["SYM"]["FLAG_NL"] = flagCalcNL
-        if not hasMagnets and simuParamDict["SYM"]["CALC_MAGNET_LOSSES"] == 1:
+                    if isinstance(physical, Magnet):
+                        has_magnets = True
+        simu_param_dict["SYM"]["FLAG_NL"] = flag_CalcNL
+        if not has_magnets and simu_param_dict["SYM"]["CALC_MAGNET_LOSSES"] == 1:
             # if there where no magnet physical elements, set flag to false
             # even if its set to true...
             logger.warning(
                 "Unsetting the flag 'CALC_MAGNET_LOSSES', because"
                 " no magnets where found in the machine."
             )
-            simuParamDict["SYM"]["CALC_MAGNET_LOSSES"] = 0
+            simu_param_dict["SYM"]["CALC_MAGNET_LOSSES"] = 0
 
         # machine.getStator().winding.plot_star('plot_star.png',None,False,True)
         if machine.stator.winding.get_windingfactor_el()[1][0, 0] < 0:
@@ -1611,30 +1509,30 @@ class Script:
             # inverted. The funamental winding factor allways refers to the
             # mechanical order which is equal to the number of pole pairs. (So
             # this is also true for non-fundamental winding configurations)
-            simuParamDict["SYM"]["FLAG_CHANGE_ROT_DIR"] = 1
+            simu_param_dict["SYM"]["FLAG_CHANGE_ROT_DIR"] = 1
         else:
             # Otherwise the rotation direction is ok.
-            simuParamDict["SYM"]["FLAG_CHANGE_ROT_DIR"] = 0
+            simu_param_dict["SYM"]["FLAG_CHANGE_ROT_DIR"] = 0
 
         # if the Park-transformation angle is not set manually, try to
         # calculate it
-        if simuParamDict["SYM"]["ParkAngOffset"] is None:
-            nbrPolePairs = default_param_dict["GEO"]["NBR_POLE_PAIRS"]
-            nbrSlots = default_param_dict["GEO"]["NBR_SLOTS"]
-            slotPitch = 2 * pi / nbrSlots
-            mmfOrder, _, angle = machine.stator.winding.get_MMF_harmonics()
+        if simu_param_dict["SYM"]["ParkAngOffset"] is None:
+            nbr_pole_pairs = default_param_dict["GEO"]["NBR_POLE_PAIRS"]
+            nbr_slots = default_param_dict["GEO"]["NBR_SLOTS"]
+            slot_pitch = 2 * pi / nbr_slots
+            mmf_order, _, angle = machine.stator.winding.get_MMF_harmonics()
             ## DEBUGGING:
             if logger.level <= logging.DEBUG:
-                if not os.path.exists(self.resultsPath):
-                    os.mkdir(self.resultsPath)
+                if not os.path.exists(self.results_path):
+                    os.mkdir(self.results_path)
                 machine.stator.winding.save_to_file(
-                    os.path.join(self.resultsPath, f"winding_{self.name}.wdg")
+                    os.path.join(self.results_path, f"winding_{self.name}.wdg")
                 )
 
             # Stator angle for I_U = 1 p.u., I_V = -1/2, I_W = -1/2 in rad elec
             try:
                 # get index of fundamental MMF electrical order
-                elec_order_index = where(mmfOrder == nbrPolePairs)
+                elec_order_index = where(mmf_order == nbr_pole_pairs)
                 system_offset = float(angle[elec_order_index[0][0]])
                 logger.debug(
                     "Stator north pole angle (elec): %.4f°", rad2deg(system_offset)
@@ -1667,49 +1565,49 @@ class Script:
                     logger.warning(
                         "Tangential magnetization detected! Dq-offset calculation is invalid"
                     )
-                    dqOffset = 0
+                    dq_offset = 0
                 else:
-                    dqOffset = (
-                        -rad2deg(slotPitch / 2 * nbrPolePairs)
+                    dq_offset = (
+                        -rad2deg(slot_pitch / 2 * nbr_pole_pairs)
                         + rad2deg(system_offset)
                         + 270
                     )
             else:
-                dqOffset = 0
-            simuParamDict["SYM"]["ParkAngOffset"] = dqOffset
+                dq_offset = 0
+            simu_param_dict["SYM"]["ParkAngOffset"] = dq_offset
 
-    def _getParamCode(self, paramName: str, paramValue) -> str:
+    def _getParamCode(self, param_name: str, param_value) -> str:
         """
         Get a line of parameter code:
+
         .. code-block:: python
 
             paramCode = f"{paramName} = {paramValue}
         """
-        if isinstance(paramValue, (str)):
-            paramCode = f'{paramName} = "{paramValue}";\n'  # add "" for string value
+        if isinstance(param_value, (str)):
+            param_code = f'{param_name} = "{param_value}";\n'  # add "" for string value
         else:  # isinstance(paramValue,(int, float)):
-            paramCode = f"{paramName} = {paramValue};\n"
-        return paramCode
+            param_code = f"{param_name} = {param_value};\n"
+        return param_code
 
-    def _createParamCode(self) -> str:
+    def _create_param_code(self) -> str:
         """Create the string code for the parameter file"""
         self._setParameters()  # set Parameters to write code
-        paramDict = self.simParams
-        paramCode: str = "// MACHINE SPECIFIC VALUES\n"
-        for paramName, paramValue in paramDict["GEO"].items():
-            paramCode += self._getParamCode(paramName, paramValue)
-        paramCode += "// SIMULATION SPECIFIC VALUES\n"
-        for paramName, paramValue in paramDict["SYM"].items():
-            paramCode += self._getParamCode(paramName, paramValue)
-        paramCode += "// MATERIAL SPECIFIC VALUES\n"
-        for paramName, paramValue in paramDict["MAT"].items():
-            paramCode += self._getParamCode(paramName, paramValue)
-        return paramCode
+        param_code: str = "// MACHINE SPECIFIC VALUES\n"
+        for paramName, paramValue in self.sim_params["GEO"].items():
+            param_code += self._getParamCode(paramName, paramValue)
+        param_code += "// SIMULATION SPECIFIC VALUES\n"
+        for paramName, paramValue in self.sim_params["SYM"].items():
+            param_code += self._getParamCode(paramName, paramValue)
+        param_code += "// MATERIAL SPECIFIC VALUES\n"
+        for paramName, paramValue in self.sim_params["MAT"].items():
+            param_code += self._getParamCode(paramName, paramValue)
+        return param_code
 
-    def writePro(self):
+    def write_pro(self):
         """
         generate pro files.
-        new schema:
+        The main steps are:
 
             1. write parameter file
             2. copy template machine file
@@ -1723,89 +1621,86 @@ class Script:
         logger = logging.getLogger(__name__)
         # Write the code
         #   1. write parameter file
-        machineTempFile = abspath(join(MAIN_DIR, "script", "machine_template.pro"))
+        template_file = abspath(join(MAIN_DIR, "script", "machine_template.pro"))
         # script file name
-        paramFileName = self.name + "_param.geo"
-        paramFilePath = abspath(join(self.scriptPath, paramFileName))
-
-        # get the geometrical and simulation parameters:
-        paramFileCode = self._createParamCode()
+        param_file_name = self.name + "_param.geo"
+        param_file = abspath(join(self.script_path, param_file_name))
 
         # write file content to new file
-        with open(paramFilePath, "w", encoding="utf-8") as file:
+        with open(param_file, "w", encoding="utf-8") as file:
             # also add versionStr to identify pyemmo version
             file.write(versionStr)
-            file.write(paramFileCode)
+            # get the geometrical and simulation parameters:
+            file.write(self._create_param_code())
 
         # 2. copy machine file
-        with open(machineTempFile, encoding="utf-8") as templateFile:
-            machineFileCode = (
-                versionStr + templateFile.read()
+        with open(template_file, encoding="utf-8") as temp_file:
+            machine_file_code = (
+                versionStr + temp_file.read()
             )  # open and read machine template file
 
         # 3. append group code to machine file
         #   3.1 import parameter file
         # replace the place holder "PARAMETER_FILE" with the actual parameter
         # file name
-        machineFileCode = machineFileCode.replace(
-            "PARAMETER_FILE", '"' + paramFileName + '"', 1
+        machine_file_code = machine_file_code.replace(
+            "PARAMETER_FILE", '"' + param_file_name + '"', 1
         )
         #   3.2 add groups and material groups
         #       generate material code in _functionMaterial to account for
         #       material groups
-        self._printAllMaterial()
+        self._create_material_code()
         #       replace the place holder "GROUP_CODE" with actual group code
-        machineFileCode = machineFileCode.replace("GROUP_CODE", self.group.code, 1)
+        machine_file_code = machine_file_code.replace("GROUP_CODE", self.group.code, 1)
 
         #  3.3 function code
-        machineFileCode = machineFileCode.replace(
+        machine_file_code = machine_file_code.replace(
             "FUNCTION_CODE",
-            self.functionMaterial.code + self.functionMagnetisation.code,
+            self.function_material.code + self.function_magnetization.code,
             1,
         )
 
         # 4. copy the magstatdyn file
         # filename of the motor model template of getdp
-        calculationFileName = "machine_magstadyn_a.pro"
+        magstadyn_file_name = "machine_magstadyn_a.pro"
         # filepath to the template calculation file for motor models
-        calcFileTempPath = join(MAIN_DIR, "script", calculationFileName).replace(
+        magstadyn_temp_file = join(MAIN_DIR, "script", magstadyn_file_name).replace(
             "\\", "/"
         )
         # read the template file
-        with open(calcFileTempPath, encoding="utf-8") as templateCalcFile:
-            calcCode = versionStr + templateCalcFile.read()
-
-        calcFilePath = join(self.scriptPath, calculationFileName).replace(
+        with open(magstadyn_temp_file, encoding="utf-8") as calc_file:
+            calcCode = versionStr + calc_file.read()
+        # filepath to the destination of the calculation file
+        magstadyn_dest_file = join(self.script_path, magstadyn_file_name).replace(
             "\\", "/"
-        )  # filepath to the destination of the calculation file
+        )
         # write the magstadyn file to new destination
-        with open(calcFilePath, "w", encoding="utf-8") as calcFile:
-            calcFile.write(calcCode)
+        with open(magstadyn_dest_file, "w", encoding="utf-8") as magstadyn_file:
+            magstadyn_file.write(calcCode)
 
         ## COPY CIRCUIT FILE
         shutil.copy(
             join(MAIN_DIR, "script", "Circuit_SC_ASM.pro"),
-            join(self.scriptPath, "Circuit_SC_ASM.pro"),
+            join(self.script_path, "Circuit_SC_ASM.pro"),
         )
 
         #  6.1 add the PostOperation command code before including the
         # magstatdyn-file
-        postOperation = self.postOperation
-        if postOperation.items:  # if there are Items in PostOperation
+        if self.post_operation.items:  # if there are Items in PostOperation
             # add the code for the compute command including the postoperations
             # TODO: Add option for "-bin" case (user setting)
             # TODO: adapt output verbosity based on internal verbosity
 
-            computeCommandCode = (
+            compute_code = (
                 "DefineConstant[\n\t"
                 """R_ = {"Analysis", Name "GetDP/1ResolutionChoices", Visible Flag_Debug || Flag_ExpertMode},\n\t"""
                 """C_ = {"-solve -v 3 -v2 -pos", Name "GetDP/9ComputeCommand", Visible Flag_Debug || Flag_ExpertMode}\n\t"""
                 """P_ = {\""""
-                + ",".join(self.postOperationNames)
+                + ",".join(self.get_post_operation_names())
                 + """", Name "GetDP/2PostOperationChoices", Visible Flag_Debug || Flag_ExpertMode}\n"""
                 "];\n"
             )
-            machineFileCode += computeCommandCode
+            machine_file_code += compute_code
 
         #   5. import magstatdyn file in machine file
         # # replace the placeholder in the machine script
@@ -1814,35 +1709,35 @@ class Script:
         # )
         # had to replace placeholder method here to add the postoperation
         # command before
-        machineFileCode += f'Include "{calculationFileName}"\n'
+        machine_file_code += f'Include "{magstadyn_file_name}"\n'
 
         # 6.2 add the PostOperation code
-        if postOperation.items:  # if there are Items in PostOperation
-            machineFileCode += self.postOperation.code
+        if self.post_operation.items:  # if there are Items in PostOperation
+            machine_file_code += self.post_operation.code
 
-        proFilePath = join(self.scriptPath, self.name + ".pro")
-        with open(proFilePath, "w", encoding="utf-8") as proScript:
-            proScript.write(machineFileCode)
+        pro_file_path = join(self.script_path, self.name + ".pro")
+        with open(pro_file_path, "w", encoding="utf-8") as proScript:
+            proScript.write(machine_file_code)
 
         # If logging is set to debug, save the winding to a file
         if logger.getEffectiveLevel() <= logging.DEBUG:
-            if not os.path.exists(self.scriptPath):
-                os.mkdir(self.scriptPath)
+            if not os.path.exists(self.script_path):
+                os.mkdir(self.script_path)
             self.machine.stator.winding.save_to_file(
-                os.path.join(self.scriptPath, f"winding_{self.name}.wdg")
+                os.path.join(self.script_path, f"winding_{self.name}.wdg")
             )
         self._pro_files_created = True
 
-    def generateScript(self, mode: int = 0, UD_MeshCode: str = ""):
+    def generate(self, mode: Literal[0, 1, 2] = 0, UD_MeshCode: str = ""):
         """
         generate .geo- and .pro files
 
         Args:
-            mode (int): Decide which scripts to generate:
+            mode (int): Decide which scripts to generate
 
-                        - 0: .geo- und .pro-files (default)
-                        - 1: only .geo-files
-                        - 2: only .pro-files
+                - 0: .geo- und .pro-files (default)
+                - 1: only .geo-files
+                - 2: only .pro-files
 
             UD_MeshCode (str): User defined mesh code. Must be conformal with
                 the gmsh syntax.
@@ -1861,10 +1756,15 @@ class Script:
                 )
                 raise e
         if mode == 0:
-            self.writeGeo(UD_MeshCode=UD_MeshCode)
-            self.writePro()
-
-        elif mode == 1:
-            self.writeGeo(UD_MeshCode=UD_MeshCode)
-        elif mode == 2:
-            self.writePro()
+            self.write_geo(UD_MeshCode=UD_MeshCode)
+            self.write_pro()
+            return
+        if mode == 1:
+            self.write_geo(UD_MeshCode=UD_MeshCode)
+            return
+        if mode == 2:
+            self.write_pro()
+            return
+        raise ValueError(
+            f"Invalid model file generation mode {mode}. Must be 0,1 or 2!"
+        )

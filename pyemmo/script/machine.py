@@ -524,12 +524,16 @@ class Machine:
 
 
 def _get_line_middle_raidus(line: Line) -> float:
-    """Get the radius of the middlepoint of a Line object
+    """
+    Get the radius of the middlepoint of a Line object.
+    Used for sorting primary and secondary lines by their radius.
 
     Args:
         line (Line): Line object
 
     Returns:
         float: Radius of ``Line.middle_point``
+
+    :meta private:
     """
     return line.middle_point.radius

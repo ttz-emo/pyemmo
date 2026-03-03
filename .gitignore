@@ -45,6 +45,7 @@ workingDirectory/private
 .coverage
 .python-version
 matplotlibrc
+.mailmap
 
 # specific files to not ignore
 !tests/data/functions/import_results/SP_fomatted_res_file.pos

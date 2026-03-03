@@ -32,7 +32,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from pyemmo.api.pyleecan.main import main
-from pyemmo.functions.run_onelab import runCalcforCurrent
+from pyemmo.functions.run_onelab import run_simulation
 
 from ... import GETDP_EXE, GMSH_EXE, TEST_DATA_DIR
 from ... import TEST_TEMP_DIR as TESTS_RESULTS_DIR
@@ -115,7 +115,7 @@ class TestRunOnelab(unittest.TestCase):
         """
         res_id = self.timestamp + "_test_backEMF"
         # logging.getLogger("pyemmo.functions.runOnelab").setLevel(logging.WARNING)
-        results = runCalcforCurrent(
+        results = run_simulation(
             {
                 "getdp": {
                     "exe": GETDP_EXE,
@@ -183,7 +183,7 @@ class TestRunOnelab(unittest.TestCase):
         Id, Iq = (-100, 200)
         speed = 1000.0
         nbr_steps = 32
-        results = runCalcforCurrent(
+        results = run_simulation(
             {
                 "getdp": {
                     "exe": GETDP_EXE,

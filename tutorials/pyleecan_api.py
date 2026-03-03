@@ -162,7 +162,7 @@ import time
 
 import numpy as np
 
-from pyemmo.functions.run_onelab import findGetDP, runCalcforCurrent
+from pyemmo.functions.run_onelab import find_getdp, run_simulation
 
 # Simulation parameters
 n = 1500
@@ -173,12 +173,12 @@ resId = "test_simulation"  # result identifier and result folder name
 # create param dict for simulation
 param_dict = {
     # model .pro file path
-    "pro": pyemmo_script.proFilePath,
+    "pro": pyemmo_script.pro_file_path,
     # Gmsh Parameters
     "gmsh": {"exe": r"", "gmsf": 2, "verbosity level": 2},
     # GetDP Parameters
     "getdp": {
-        "exe": findGetDP(),  # GetDP executable, you can use the function findGetDP
+        "exe": find_getdp(),  # GetDP executable, you can use the function findGetDP
         # which tries to find the exe on you PC.
         # change gmsh and getdp verbosity level (0-99)
         # 0 - fatal, 1 - error, 2 - warning, 3 - info, 5 - debug, 99 - extended debug
@@ -194,7 +194,7 @@ param_dict = {
         "Flag_EC_Magnets": 0,  # control magnet eddy current calculation
         #
         ## Result settings
-        "res": pyemmo_script.resultsPath,  # main results folder
+        "res": pyemmo_script.results_path,  # main results folder
         "ResId": resId,  # current simulation result folder ID
         "Flag_PrintFields": 0,  # control field result output (.pos files, only last timestep)
         "Flag_ClearResults": 0,  # remove results if existing, otherwise existing results will be imported
@@ -212,7 +212,7 @@ param_dict = {
 
 # %%
 # run simulation:
-results = runCalcforCurrent(param_dict)
+results = run_simulation(param_dict)
 
 # %% [markdown]
 # After the simulation has finished, pyemmo automatically imports the standard global result values using `pyemmo.functions.import_results.main` function and output the results in a dictionary structure.
@@ -272,7 +272,7 @@ ax.legend()
 # %% [markdown]
 # ## 6. User-defined results
 # Finally lets talk about the definition of some user defined results appart from the standard global results seen in the simulation example before.
-# We can use the ``Script`` method ``addPostOperation`` to add user-defined post operations to the GetDP input scripts.
+# We can use the ``Script`` method ``add_post_operation`` to add user-defined post operations to the GetDP input scripts.
 # This requires some knowledge of the GetDP Syntax for evaluation PostProcessing quantities.
 # You can find all available quantities in the `machine_magstadyn_a.pro` template file in the ``PostProcessing`` section.
 #
@@ -284,9 +284,9 @@ ax.legend()
 # %%
 import gmsh
 
-pyemmo_script.addPostOperation(
-    quantityName="Force_MST",
-    name="Airgap_Force",
+pyemmo_script.add_post_operation(
+    quantity_name="Force_MST",
+    post_operation="Airgap_Force",
     # GetDP keyword arguments for PostOperations
     OnRegion="NodesOf[Stator_Bnd_MB]",
     # alternativly you could use:
@@ -300,9 +300,9 @@ pyemmo_script.addPostOperation(
     Format="Gmsh",
     LastTimeStepOnly="",
 )
-pyemmo_script.addPostOperation(
-    quantityName="Force_MST_Cyl",
-    name="Airgap_Force",
+pyemmo_script.add_post_operation(
+    quantity_name="Force_MST_Cyl",
+    post_operation="Airgap_Force",
     # GetDP keyword arguments for PostOperations
     OnRegion="NodesOf[Stator_Bnd_MB]",
     # alternativly you could use:
@@ -316,7 +316,7 @@ pyemmo_script.addPostOperation(
     Format="Gmsh",
     LastTimeStepOnly="",
 )
-pyemmo_script.generateScript(2)  # recreate pro files with new PostOperation
+pyemmo_script.generate(2)  # recreate pro files with new PostOperation
 
 # %% [markdown]
 # Now we can run another simulation.
@@ -337,7 +337,7 @@ param_dict["getdp"]["ResId"] = "Calc_ForceDensity_noLoad"
 param_dict["PostOp"] = ["Airgap_Force"]
 
 # run simulation:
-results = runCalcforCurrent(param_dict)
+results = run_simulation(param_dict)
 
 # %% [markdown]
 # After the simulation has successfully finished, we can import the results using the pyemmo ``import_results`` module.
@@ -515,7 +515,7 @@ gmsh.fltk.run()
 
 # %%
 # we could further load the created mesh from the mesh file:
-mesh_file = join(pyemmo_script.scriptPath, pyemmo_script.name + ".msh")
+mesh_file = join(pyemmo_script.script_path, pyemmo_script.name + ".msh")
 if os.path.isfile(mesh_file):
     gmsh.merge(mesh_file)
     gmsh.fltk.run()

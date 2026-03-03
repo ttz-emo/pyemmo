@@ -31,7 +31,7 @@ from swat_em import analyse, datamodel
 
 from pyemmo.definitions import RESULT_DIR
 from pyemmo.functions.import_results import plot_all_dat
-from pyemmo.functions.run_onelab import createCmdCommand
+from pyemmo.functions.run_onelab import create_command
 from pyemmo.script.geometry.machineSPMSM import MachineSPMSM
 from pyemmo.script.geometry.point import Point
 
@@ -187,14 +187,14 @@ myScript = Script(
     },
     machine=SPMSM,
 )
-myScript.generateScript()
+myScript.generate()
 
 subprocess.run(
-    createCmdCommand(
-        onelabFile=myScript.proFilePath,
+    create_command(
+        file=myScript.pro_file_path,
         useGUI=True,
-        paramDict={"Flag_ClearResults": 1},
+        params={"Flag_ClearResults": 1},
     )
 )
-plot_all_dat(myScript.resultsPath)
+plot_all_dat(myScript.results_path)
 # %%

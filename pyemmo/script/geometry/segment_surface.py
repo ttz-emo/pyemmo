@@ -223,11 +223,11 @@ class SegmentSurface(Surface):
             linewidth (float): Line width in points. Defaults to 0.5.
             color (list, optional): Line color. Defaults to
                 ``pyemmo.definitions.LINE_COLOR``. See
-                `Matplotlib Colors<https://matplotlib.org/stable/users/explain/colors/colors.html#color-formats>`_
+                `Matplotlib Colors <https://matplotlib.org/stable/users/explain/colors/colors.html#color-formats>`_
                 for more details.
             marker (str, optional): Defaults to None. Examples are '.', 'o', 'x', '+',
                 ... See
-                `Matplotlib Markers<https://matplotlib.org/stable/api/markers_api.html#module-matplotlib.markers>`_
+                `Matplotlib Markers <https://matplotlib.org/stable/api/markers_api.html#module-matplotlib.markers>`_
                 for more details.
             markersize (float, optional): Marker size in points. Defaults to 1.
             tag (bool): Flag to print surface and line namea like "S ("`Surface_Name`")"

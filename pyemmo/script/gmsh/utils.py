@@ -22,28 +22,6 @@
 This module provides various utility functions for geometric calculations
 utilizing the Gmsh library, specifically focused on handling geometrical
 entities such as points, lines, and arcs within a 2D plane.
-
-The main functionalities include:
-- Extracting unique point tags from a list of geometrical dimension tags.
-- Calculating the maximal and minimal radii from a set of dimensional tags.
-- Filtering curves or lines based on their radius or angle relative to the x-axis.
-
-Functions:
-- get_point_tags(dim_tags): Extracts unique point tags from dimension tags.
-- get_max_radius(dim_tags): Finds the maximum radius in a list of dim-tags.
-- get_min_radius(dim_tags): Finds the minimum radius in a list of dim-tags.
-- filter_curves_on_radius(line_list, radius): Filters curves by a specified radius.
-- filter_lines_at_angle(line_list, angle): Filters lines based on their angle to the
-  x-axis.
-
-The module is part of the PyEMMO project, developed by TTZ-EMO at the Technical
-University of Applied Sciences Würzburg-Schweinfurt.
-
-Author:
-    Max Schuler
-
-Note:
-    This docstring was created by OpenAI GPT-4o.
 """
 from __future__ import annotations
 

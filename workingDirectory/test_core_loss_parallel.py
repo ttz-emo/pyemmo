@@ -107,7 +107,7 @@ if __name__ == "__main__":
 
     ##  run simulations
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = executor.map(run_onelab.runCalcforCurrent, paramDictList)
+        results = executor.map(run_onelab.run_simulation, paramDictList)
 
     res_list = [result for result in results]
 

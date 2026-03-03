@@ -49,7 +49,7 @@ for subpackage in ("script", "api", "functions"):
 
 
 # script subpackage class and module diagrams.
-for subpackage in ("geometry", "gmsh", "material"):
+for subpackage in ("geometry", "gmsh", "material", "physicals"):
     subprocess.check_call(
         [
             "pyreverse",

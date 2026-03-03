@@ -134,4 +134,4 @@ class Domain:
         Args:
             script (Script): Skript to add the Domain to.
         """
-        script._addDomain(self)
+        script._add_domain(self)

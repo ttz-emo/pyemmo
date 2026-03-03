@@ -1,0 +1,27 @@
+digraph "classes_PyEMMO.script.physicals" {
+rankdir=BT
+charset="utf-8"
+"pyemmo.script.physicals.airArea.AirArea" [color="black", fontcolor="black", label=<{AirArea|physicalElementType : str<br ALIGN="LEFT"/>|}>, shape="record", style="solid"];
+"pyemmo.script.physicals.airGap.AirGap" [color="black", fontcolor="black", label=<{AirGap|physicalElementType : str<br ALIGN="LEFT"/>|}>, shape="record", style="solid"];
+"pyemmo.script.physicals.bar.Bar" [color="black", fontcolor="black", label=<{Bar|physicalElementType : str<br ALIGN="LEFT"/>|}>, shape="record", style="solid"];
+"pyemmo.script.physicals.limitLine.LimitLine" [color="black", fontcolor="black", label=<{LimitLine|physicalElementType : str<br ALIGN="LEFT"/>|}>, shape="record", style="solid"];
+"pyemmo.script.physicals.magnet.Magnet" [color="black", fontcolor="black", label=<{Magnet|magAngle : float<br ALIGN="LEFT"/>magDir : Literal[-1, 1]<br ALIGN="LEFT"/>magType : Literal['parallel', 'radial', 'tangential']<br ALIGN="LEFT"/>physicalElementType : str<br ALIGN="LEFT"/>|setMagnetisation(magnetisationType: Literal['parallel', 'radial', 'tangential'], magnetisationDirection: Literal[-1, 1])<br ALIGN="LEFT"/>}>, shape="record", style="solid"];
+"pyemmo.script.physicals.movingBand.MovingBand" [color="black", fontcolor="black", label=<{MovingBand|auxiliary : bool<br ALIGN="LEFT"/>physicalElementType : str<br ALIGN="LEFT"/>radius : float<br ALIGN="LEFT"/>|}>, shape="record", style="solid"];
+"pyemmo.script.physicals.physicalElement.PhysicalElement" [color="black", fontcolor="black", label=<{PhysicalElement|geoElementType : Line \| Surface \| None<br ALIGN="LEFT"/>geo_list : list[GmshSurface] \| list[GmshLine]<br ALIGN="LEFT"/>id : int<br ALIGN="LEFT"/>material : Material \| None<br ALIGN="LEFT"/>name : str<br ALIGN="LEFT"/>physicalElementType : str<br ALIGN="LEFT"/>physicalID : int<br ALIGN="LEFT"/>type : str<br ALIGN="LEFT"/>|addToScript(script: Script)<br ALIGN="LEFT"/>get_circumferential_position(): float<br ALIGN="LEFT"/>get_radial_position(): float<br ALIGN="LEFT"/>plot(fig: Figure, linewidth, color, marker, markersize, tag): tuple[Figure, Axes]<br ALIGN="LEFT"/>setColor(colorName: str)<br ALIGN="LEFT"/>}>, shape="record", style="solid"];
+"pyemmo.script.physicals.primaryLine.PrimaryLine" [color="black", fontcolor="black", label=<{PrimaryLine|physicalElementType : str<br ALIGN="LEFT"/>|}>, shape="record", style="solid"];
+"pyemmo.script.physicals.rotorLamination.RotorLamination" [color="black", fontcolor="black", label=<{RotorLamination|physicalElementType : str<br ALIGN="LEFT"/>|}>, shape="record", style="solid"];
+"pyemmo.script.physicals.slaveLine.SlaveLine" [color="black", fontcolor="black", label=<{SlaveLine|physicalElementType : str<br ALIGN="LEFT"/>|}>, shape="record", style="solid"];
+"pyemmo.script.physicals.slot.Slot" [color="black", fontcolor="black", label=<{Slot|nbrTurns : int<br ALIGN="LEFT"/>phase : float<br ALIGN="LEFT"/>physicalElementType : str<br ALIGN="LEFT"/>windDirection : Literal[-1, 1]<br ALIGN="LEFT"/>|getPhase(phaseStr: str): float \| str<br ALIGN="LEFT"/>setColor(colorName: str)<br ALIGN="LEFT"/>}>, shape="record", style="solid"];
+"pyemmo.script.physicals.statorLamination.StatorLamination" [color="black", fontcolor="black", label=<{StatorLamination|physicalElementType : str<br ALIGN="LEFT"/>|}>, shape="record", style="solid"];
+"pyemmo.script.physicals.airArea.AirArea" -> "pyemmo.script.physicals.physicalElement.PhysicalElement" [arrowhead="empty", arrowtail="none"];
+"pyemmo.script.physicals.airGap.AirGap" -> "pyemmo.script.physicals.physicalElement.PhysicalElement" [arrowhead="empty", arrowtail="none"];
+"pyemmo.script.physicals.bar.Bar" -> "pyemmo.script.physicals.physicalElement.PhysicalElement" [arrowhead="empty", arrowtail="none"];
+"pyemmo.script.physicals.limitLine.LimitLine" -> "pyemmo.script.physicals.physicalElement.PhysicalElement" [arrowhead="empty", arrowtail="none"];
+"pyemmo.script.physicals.magnet.Magnet" -> "pyemmo.script.physicals.physicalElement.PhysicalElement" [arrowhead="empty", arrowtail="none"];
+"pyemmo.script.physicals.movingBand.MovingBand" -> "pyemmo.script.physicals.physicalElement.PhysicalElement" [arrowhead="empty", arrowtail="none"];
+"pyemmo.script.physicals.primaryLine.PrimaryLine" -> "pyemmo.script.physicals.physicalElement.PhysicalElement" [arrowhead="empty", arrowtail="none"];
+"pyemmo.script.physicals.rotorLamination.RotorLamination" -> "pyemmo.script.physicals.physicalElement.PhysicalElement" [arrowhead="empty", arrowtail="none"];
+"pyemmo.script.physicals.slaveLine.SlaveLine" -> "pyemmo.script.physicals.physicalElement.PhysicalElement" [arrowhead="empty", arrowtail="none"];
+"pyemmo.script.physicals.slot.Slot" -> "pyemmo.script.physicals.physicalElement.PhysicalElement" [arrowhead="empty", arrowtail="none"];
+"pyemmo.script.physicals.statorLamination.StatorLamination" -> "pyemmo.script.physicals.physicalElement.PhysicalElement" [arrowhead="empty", arrowtail="none"];
+}

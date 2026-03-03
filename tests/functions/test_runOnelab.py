@@ -26,7 +26,12 @@ from os import listdir, makedirs
 from os.path import isdir, isfile, join
 from shutil import copytree, ignore_patterns, rmtree
 
-from pyemmo.functions.run_onelab import findGetDP, findGmsh, runCalcforCurrent
+from pyemmo.functions.run_onelab import (
+    find_getdp,
+    find_gmsh,
+    findGmsh,
+    run_simulation,
+)
 from tests import TEST_DATA_DIR
 from tests import TEST_TEMP_DIR as TESTS_RESULTS_DIR
 
@@ -96,10 +101,12 @@ class TestRunOnelab(unittest.TestCase):
         """
         pass
 
-    def test_findGmsh(self):
-        # Setup
+    def test_find_gmsh(self):
+        GmshExe = find_gmsh()
+        # Verify
+        ...
 
-        # Run
+    def test_findGmsh(self):
         GmshExe = findGmsh()
         # Verify
         ...
@@ -107,10 +114,10 @@ class TestRunOnelab(unittest.TestCase):
     def test_run_ONELAB(self):
 
         res_id = "test_runOnelab"
-        runCalcforCurrent(
+        run_simulation(
             {
                 "getdp": {
-                    "exe": findGetDP(),
+                    "exe": find_getdp(),
                     "IQ_RMS": 10.0,
                     "ID_RMS": 0.0,
                     "RPM": 1000,
@@ -130,7 +137,7 @@ class TestRunOnelab(unittest.TestCase):
                     "res": self.test_sim_dir,  # result folder
                 },
                 "pro": join(self.model_dir, "Toyota_Prius.pro"),  # pro file
-                "gmsh": {"exe": findGmsh()},  # gmsh exe and params
+                "gmsh": {"exe": find_gmsh()},  # gmsh exe and params
                 "info": "",
                 "PostOp": [],  # "GetBOnRadius" - "Get_LocalFields_Post"
             }

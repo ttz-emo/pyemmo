@@ -347,9 +347,9 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
             # resFilePath = abspath(
             #     join(script.getResultsPath(), quantity + "_airgap_" + side + ".pos")
             # )
-            script.addPostOperation(
-                quantityName=quantity,
-                name="GetBOnRadius",
+            script.add_post_operation(
+                quantity_name=quantity,
+                post_operation="GetBOnRadius",
                 OnGrid=(
                     f"{{({radius}*(1{sign}0.0001))*Cos[$A*Pi/180],"
                     f"({radius}*(1{sign}0.0001))*Sin[$A*Pi/180],0}}"
@@ -364,7 +364,7 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
         toothRadius = extendedInfo["r_z"]
         logger.debug("Adding PO for tooth at raidus %.3f mm", toothRadius)
         for quantity in ["b_radial", "b_tangent"]:
-            script.addPostOperation(
+            script.add_post_operation(
                 quantity,
                 "GetBOnRadius",
                 OnGrid=(
@@ -382,7 +382,7 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
         logger.debug("Adding PO for yoke at raidus %.3f mm", yokeRadius)
 
         for quantity in ["b_radial", "b_tangent"]:
-            script.addPostOperation(
+            script.add_post_operation(
                 quantity,
                 "GetBOnRadius",
                 OnGrid=(
@@ -404,14 +404,14 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
         statorIronPhysicalID = [
             str(phys.id) for phys in machine.stator._domainLam.physicals
         ]
-        script.addPostOperation(
+        script.add_post_operation(
             "b",
             "GetBIron",
             OnElementsOf=f"Region[{{{','.join(rotorIronPhysicalID)}}}]",
             File=join("CAT_RESDIR", "b_rotor.pos"),
             Name='"b (rotor)"',
         )
-        script.addPostOperation(
+        script.add_post_operation(
             "b",
             "GetBIron",
             OnElementsOf=f"Region[{{{','.join(statorIronPhysicalID)}}}]",
@@ -434,7 +434,7 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
                 )
                 break
         if allMagConducting:
-            script.addPostOperation(
+            script.add_post_operation(
                 "JouleLosses[Rotor_Magnets]",
                 "GetMagnetLosses",
                 OnGlobal="",
@@ -442,7 +442,7 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
                 File=join("CAT_RESDIR", "Pv_eddy_Mag.dat"),
                 # Name='"p (stator)"',
             )
-            script.simParams["SYM"]["CALC_MAGNET_LOSSES"] = 1
+            script.sim_params["SYM"]["CALC_MAGNET_LOSSES"] = 1
 
 
 # ======================================== START MAIN FUNCTION =====================================
@@ -643,7 +643,6 @@ def main(
         simuParams=simulationParameters,
         machine=machine,
         resultsPath=results,
-        # factory="OpenCascade",
     )
 
     if module_logger.getEffectiveLevel() <= logging.DEBUG:
@@ -657,7 +656,7 @@ def main(
 
     # generate geo and pro files:
     module_logger.info("Creating Gmsh and GetDP input files...")
-    apiScript.generateScript(UD_MeshCode=meshSizeSetCode)
+    apiScript.generate(UD_MeshCode=meshSizeSetCode)
 
     if module_logger.getEffectiveLevel() <= logging.DEBUG:
         t4 = timeit.default_timer()
@@ -720,16 +719,16 @@ def _open_onelab(
     if not gmsh:
         # if gmsh was not provided, try to find it:
         logger.debug("Gmsh path not given. Trying to find Gmsh...")
-        gmsh = run_onelab.findGmsh()
+        gmsh = run_onelab.find_gmsh()
     else:
         # if gmsh was given by the user, check that its valid
         if not isfile(gmsh):
             raise FileNotFoundError(f"Provided gmsh executable was not found: {gmsh}")
-    proFile = apiScript.proFilePath  # path to .pro file
-    command = run_onelab.createCmdCommand(
-        onelabFile=proFile,
-        gmshPath=gmsh,
-        getdpPath=getdp,
+    proFile = apiScript.pro_file_path  # path to .pro file
+    command = run_onelab.create_command(
+        file=proFile,
+        gmsh_path=gmsh,
+        getdp_path=getdp,
         useGUI=True,
     )
     logger.debug("CMD command is: '%s'", command)
@@ -755,7 +754,7 @@ def _open_onelab(
                         textLine.replace("\n", "\n\t"),
                     )
     # iron loss post processing:
-    resPath = apiScript.resultsPath
+    resPath = apiScript.results_path
     # check if resPath exists -> simulation has been run.
     if isdir(resPath):
         logger.debug("Found results path -> Simulation has been run.")
@@ -806,7 +805,7 @@ def _run_core_loss_calculation(resPath, apiScript: Script):
     """
     logger = logging.getLogger(__name__)
     machine = apiScript.machine
-    simulationParameters = apiScript.simParams
+    simulationParameters = apiScript.sim_params
     # FIXME: Implement better check for simulation status
     brFilePath = join(resPath, "b_rotor.pos")
     bsFilePath = join(resPath, "b_stator.pos")

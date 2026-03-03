@@ -110,10 +110,10 @@ def find_onelab_params(text: str) -> dict[str, str]:
     because of the multiply occuring {}-characters.
     This function uses regex to find the start of a parameter string like:
 
-        `name = { ...`
+        `name = { ... }`
 
     then is searches the string until the final closing bracket '}' occurs.
-    Finally is splits the result at the newlines '\\n', trims any whitespaces and
+    Finally is splits the result at the newlines, trims any whitespaces and
     removes comments starting with double slash '//'.
     """
     # start pattern for onelab string

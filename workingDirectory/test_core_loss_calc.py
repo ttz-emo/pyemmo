@@ -126,14 +126,14 @@ for iStrom, stromdq in enumerate(idq.transpose()):
     resDir = os.path.join(RES_DIR, resId)
     if not os.path.isdir(resDir):
         # only run if dir not exists
-        cmdCommand = run_onelab.createCmdCommand(
+        cmdCommand = run_onelab.create_command(
             proFile,
             False,
-            gmshPath=gmshPath,
+            gmsh_path=gmshPath,
             # getdpPath=getdpPath,
-            logFileName=f"gmsh{resId}.log",
-            paramDict=paramDict,
-            postOperations=["GetB"],
+            log_file=f"gmsh{resId}.log",
+            params=paramDict,
+            postops=["GetB"],
         )
         # processList.append(
         #     subprocess.Popen(cmdCommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

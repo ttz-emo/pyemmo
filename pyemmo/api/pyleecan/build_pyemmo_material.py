@@ -91,11 +91,11 @@ def build_pyemmo_material(pyleecan_material: PyleecanMaterial) -> Material:
     try:
         rel_permeability = mag_properties.mur_lin
         if rel_permeability is None:
-            rel_permeability = 0.0
+            rel_permeability = 1.0
         else:
             assert isinstance(rel_permeability, (int, float)), "mue_r must be a number"
     except AttributeError:
-        rel_permeability = 0.0
+        rel_permeability = 1.0
 
     try:
         remanence = mag_properties.Brm20
@@ -134,6 +134,8 @@ def build_pyemmo_material(pyleecan_material: PyleecanMaterial) -> Material:
     # struct props
     try:
         density = pyleecan_material.struct.rho  # type: ignore
+        if density is None:
+            density = 0.0
     except AttributeError:
         density = 0.0
     if bh.size == 0 and not rel_permeability:

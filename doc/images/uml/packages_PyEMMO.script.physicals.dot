@@ -1,0 +1,40 @@
+digraph "packages_PyEMMO.script.physicals" {
+rankdir=BT
+charset="utf-8"
+"pyemmo.script.physicals" [color="black", label=<pyemmo.script.physicals>, shape="box", style="solid"];
+"pyemmo.script.physicals.airArea" [color="black", label=<pyemmo.script.physicals.airArea>, shape="box", style="solid"];
+"pyemmo.script.physicals.airGap" [color="black", label=<pyemmo.script.physicals.airGap>, shape="box", style="solid"];
+"pyemmo.script.physicals.bar" [color="black", label=<pyemmo.script.physicals.bar>, shape="box", style="solid"];
+"pyemmo.script.physicals.limitLine" [color="black", label=<pyemmo.script.physicals.limitLine>, shape="box", style="solid"];
+"pyemmo.script.physicals.magnet" [color="black", label=<pyemmo.script.physicals.magnet>, shape="box", style="solid"];
+"pyemmo.script.physicals.movingBand" [color="black", label=<pyemmo.script.physicals.movingBand>, shape="box", style="solid"];
+"pyemmo.script.physicals.physicalElement" [color="black", label=<pyemmo.script.physicals.physicalElement>, shape="box", style="solid"];
+"pyemmo.script.physicals.primaryLine" [color="black", label=<pyemmo.script.physicals.primaryLine>, shape="box", style="solid"];
+"pyemmo.script.physicals.rotorLamination" [color="black", label=<pyemmo.script.physicals.rotorLamination>, shape="box", style="solid"];
+"pyemmo.script.physicals.slaveLine" [color="black", label=<pyemmo.script.physicals.slaveLine>, shape="box", style="solid"];
+"pyemmo.script.physicals.slot" [color="black", label=<pyemmo.script.physicals.slot>, shape="box", style="solid"];
+"pyemmo.script.physicals.statorLamination" [color="black", label=<pyemmo.script.physicals.statorLamination>, shape="box", style="solid"];
+"pyemmo.script.physicals" -> "pyemmo.script.physicals.airArea" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.physicals" -> "pyemmo.script.physicals.airGap" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.physicals" -> "pyemmo.script.physicals.bar" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.physicals" -> "pyemmo.script.physicals.limitLine" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.physicals" -> "pyemmo.script.physicals.magnet" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.physicals" -> "pyemmo.script.physicals.movingBand" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.physicals" -> "pyemmo.script.physicals.physicalElement" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.physicals" -> "pyemmo.script.physicals.primaryLine" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.physicals" -> "pyemmo.script.physicals.rotorLamination" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.physicals" -> "pyemmo.script.physicals.slaveLine" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.physicals" -> "pyemmo.script.physicals.slot" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.physicals" -> "pyemmo.script.physicals.statorLamination" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.physicals.airArea" -> "pyemmo.script.physicals.physicalElement" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.physicals.airGap" -> "pyemmo.script.physicals.physicalElement" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.physicals.bar" -> "pyemmo.script.physicals.physicalElement" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.physicals.limitLine" -> "pyemmo.script.physicals.physicalElement" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.physicals.magnet" -> "pyemmo.script.physicals.physicalElement" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.physicals.movingBand" -> "pyemmo.script.physicals.physicalElement" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.physicals.primaryLine" -> "pyemmo.script.physicals.physicalElement" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.physicals.rotorLamination" -> "pyemmo.script.physicals.physicalElement" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.physicals.slaveLine" -> "pyemmo.script.physicals.physicalElement" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.physicals.slot" -> "pyemmo.script.physicals.physicalElement" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.physicals.statorLamination" -> "pyemmo.script.physicals.physicalElement" [arrowhead="open", arrowtail="none"];
+}
