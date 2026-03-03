@@ -59,6 +59,7 @@ def main(
     gmsh: str | os.PathLike = "",
     getdp: str | os.PathLike = "",
     use_gui: bool = True,
+    symmetry: int | None = None,
 ):
     """Main of pyleecan api to build a ONELAB model from a pyleecan machine.
 
@@ -78,6 +79,10 @@ def main(
             If none is given, the program tries to find a exe.
         getdp (Union[str, os.PathLike], optional): Path to a Gmsh executable.
             Defaults to "". If none is given, the program tries to find a exe.
+        use_gui (): Flag to open the GUI after the model generation has finished.
+        symmetry (int | None): Manually set symmetry factor. If None the api will
+            calculate and use the highest symmetry from geometry and winding information.
+
 
     Raises:
         ValueError: If incompatible Pyleecan Machine type is given.
@@ -108,7 +113,7 @@ def main(
 
         # Create model parameter dict
         simulation = create_simulation(pyleecan_machine, i_d=0, i_q=0, speed=1000)
-        paramDict = create_param_dict(pyleecan_machine, simulation)
+        paramDict = create_param_dict(pyleecan_machine, simulation, symmetry)
         paramDict["flag_openGUI"] = use_gui
 
         geo_translation_dict = translate_machine(pyleecan_machine)

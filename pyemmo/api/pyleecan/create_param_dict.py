@@ -44,6 +44,7 @@ from .translate_winding import translate_winding
 def create_param_dict(
     machine: PyleecanMachine,
     pyleecan_simulation: PyleecanSimulation,
+    symmetry: int | None = None,
 ) -> dict[str, Any]:
     """
     Builds a dictionary for the usage :mod:`pyemmo.api.json` api with all relevant
@@ -54,10 +55,12 @@ def create_param_dict(
         machine (PyleecanMachine): Pyleecan
             `Machine <https://pyleecan.org/pyleecan.Classes.Machine.html>`_ object.
         pyleecan_simulation (PyleecanSimulation): A Pyleecan
-        `Simulation <https://pyleecan.org/pyleecan.Classes.Simulation.html>`_ object.
+            `Simulation <https://pyleecan.org/pyleecan.Classes.Simulation.html>`_ object.
+        symmetry (int | None): Set the symmetry factor for the model manually. If None,
+            calculate the symmetry from geometry and winding data.
 
     Returns:
-        dict[str, any]: A dictionary containing the parameters for communication
+        dict[str, Any]: A dictionary containing the parameters for communication
         with PyEMMO.
 
     Raises:
@@ -95,6 +98,17 @@ def create_param_dict(
     sym_winding = swatem_winding.get_periodicity_t() * 2
     logger.debug("Symmetry factor winding: %s", {sym_winding})
     sym_factor = min(sym_winding, sym_factor)
+    if symmetry is not None:
+        # force given symmetry factor
+        if not isinstance(symmetry, (int)):
+            raise TypeError(f"Symmetry factor must be integer but is: {symmetry}!")
+        if symmetry > sym_factor:
+            logger.error(
+                "Given symmetry factor (%i) is greater than minimal machine symmetry %i!",
+                symmetry,
+                sym_factor,
+            )
+        sym_factor = symmetry
 
     # -----------------------------------------------------------------------------------
     # If there are magnets, the type of the magnetization type will be safed in
