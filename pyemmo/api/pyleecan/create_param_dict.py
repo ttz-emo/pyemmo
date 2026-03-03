@@ -43,6 +43,7 @@ from .translate_winding import translate_winding
 def create_param_dict(
     machine: PyleecanMachine,
     pyleecan_simulation: PyleecanSimulation,
+    symmetry: int | None = None,
 ) -> dict[str, Any]:
     """
     Builds a dictionary for communication between PYLEECAN, PyEMMO and ONELAB.
@@ -57,16 +58,15 @@ def create_param_dict(
             <https://pyleecan.org/pyleecan.Classes.Machine.html>`_ object.
         pyleecan_simulation (PyleecanSimulation): A Pyleecan `Simulation
             <https://pyleecan.org/pyleecan.Classes.Simulation.html>`_ object.
-        mb_radius (float): The radius of the moving band.
-        magnetization_dict (dict): A dictionary containing the magnet IdExt with
-            corresponding magnetization angle.
+        symmetry (int | None): Set the symmetry factor for the model manually. If None,
+            calculate the symmetry from geometry and winding data.
 
     Raises:
         RuntimeError: Raised when encountering errors during execution.
-        ValueError: Raised when the magnetization type is not 0, 1 or 3
+        ValueError: Raised when the magnetization type is not 0, 1 or 3.
 
     Returns:
-        dict[str, any]: A dictionary containing the parameters for communication
+        dict[str, Any]: A dictionary containing the parameters for communication
         with PyEMMO.
     """
     logger = logging.getLogger(__name__)
@@ -99,6 +99,17 @@ def create_param_dict(
     sym_winding = swatem_winding.get_periodicity_t() * 2
     logger.debug("Symmetry factor winding: %s", {sym_winding})
     sym_factor = min(sym_winding, sym_factor)
+    if symmetry is not None:
+        # force given symmetry factor
+        if not isinstance(symmetry, (int)):
+            raise TypeError(f"Symmetry factor must be integer but is: {symmetry}!")
+        if symmetry > sym_factor:
+            logger.error(
+                "Given symmetry factor (%i) is greater than minimal machine symmetry %i!",
+                symmetry,
+                sym_factor,
+            )
+        sym_factor = symmetry
 
     # -----------------------------------------------------------------------------------
     # If there are magnets, the type of the magnetization type will be safed in
