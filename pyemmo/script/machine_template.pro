@@ -378,7 +378,8 @@ DefineConstant[
             "constant mu_r.")
         },
     eccentricity_static = {
-        0.0, Name StrCat[INPUT_GEO, "Static Eccentricity [mm]"],
+        0.0, Name StrCat[INPUT_GEO, "Static Eccentricity"],
+        Unit "mm",
         ReadOnly SymmetryFactor != 1,
         Help StrCat("The stator will elements be translated by this in -x direction. ",
             "Make sure that the sum of static and dynamic eccentricity are not greater ",
@@ -387,7 +388,8 @@ DefineConstant[
         },
     eccentircity_static_m = eccentricity_static * mm,
     eccentricity_dynamic = {
-        0.0, Name StrCat[INPUT_GEO, "Dynamic Eccentricity [mm]"],
+        0.0, Name StrCat[INPUT_GEO, "Dynamic Eccentricity"],
+        Unit "mm",
         ReadOnly SymmetryFactor != 1,
         Help StrCat("Dynamic eccentircity in mm. The rotor initial position will be ",
             "translated by this in x-direction, while still rotating the rotor elements ",
@@ -396,12 +398,16 @@ DefineConstant[
             "than the movingband height! ",
             "This can only be used in a full model (symmetry = 1).")
         },
+    // tranlate to meter
     eccentricity_dynamic_m = eccentricity_dynamic * mm,
     // Get number of movingband segments from .geo file to use in PostOperations
     NbrMbSegments = GetNumber[StrCat[INPUT_MESH, "Number of Rotor Movingband Segments"], 360],
     GlobalMeshsizeFactor = GetNumber[StrCat[INPUT_MESH, "00Mesh size factor"], 1.0]
 ];
-// tranlate to meter
+Printf("eccentricity_dynamic = %.6e mm", eccentricity_dynamic);
+Printf("eccentricity_static =  %.6e mm", eccentricity_static);
+Printf("Number of Movingband Segments (for PostProcessing) = %.0f", NbrMbSegments);
+Printf("Global mesh size factor (for PostProcessing)= %.0f", GlobalMeshsizeFactor);
 
 //=============================================================================
 //========================== END MACHINE PARAMETERS ===========================
