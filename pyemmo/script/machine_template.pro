@@ -407,7 +407,7 @@ DefineConstant[
 Printf("eccentricity_dynamic = %.6e mm", eccentricity_dynamic);
 Printf("eccentricity_static =  %.6e mm", eccentricity_static);
 Printf("Number of Movingband Segments (for PostProcessing) = %.0f", NbrMbSegments);
-Printf("Global mesh size factor (for PostProcessing)= %.0f", GlobalMeshsizeFactor);
+Printf("Global mesh size factor (for PostProcessing) = %.0f", GlobalMeshsizeFactor);
 
 //=============================================================================
 //========================== END MACHINE PARAMETERS ===========================
