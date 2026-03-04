@@ -539,18 +539,18 @@ def write_simple(
             resFile.write(f"{time[varStep]} {data[varStep]}\n")
 
 
-def calcTimeDerivative(fieldFile: str | os.PathLike):
+def calc_time_derivative(field_file: str | os.PathLike):
     """calculate time derivative and save to file
 
     Args:
-        fieldFile (Union[str, os.PathLike]): pos results file
+        field_file (Union[str, os.PathLike]): pos results file
     """
     finGmsh = False  # determine if gmsh should be closed at the end
     if not gmsh.isInitialized():
         gmsh.initialize()
         finGmsh = True
 
-    elementTags, time, fieldData = importPos(fieldFile)
+    elementTags, time, fieldData = importPos(field_file)
     nbrTimeSteps = len(time)
 
     # init derivative of B
@@ -578,7 +578,7 @@ def calcTimeDerivative(fieldFile: str | os.PathLike):
 
     # save p_hyst-field to file:
     dtFilepath = os.path.join(
-        os.path.dirname(fieldFile), f"Dt_{os.path.basename(fieldFile)}"
+        os.path.dirname(field_file), f"Dt_{os.path.basename(field_file)}"
     )
     gmsh.view.write(divView, dtFilepath)
 

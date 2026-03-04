@@ -20,8 +20,8 @@
 """test module for time derivative calculation"""
 from __future__ import annotations
 
-from pyemmo.functions.core_loss import calcTimeDerivative
+from pyemmo.functions.core_loss import calc_time_derivative
 
 bRotorPath = r"C:\Users\ganser\AppData\Local\Programs\pyemmo\workingDirectory\testCalcDerivative\b_rotor.pos"
 bStatorPath = r"C:\Users\ganser\AppData\Local\Programs\pyemmo\workingDirectory\testCalcDerivative\b_stator.pos"
-calcTimeDerivative(bRotorPath)
+calc_time_derivative(bRotorPath)
