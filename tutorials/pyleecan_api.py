@@ -354,7 +354,7 @@ results = run_simulation(param_dict)
 from matplotlib.patches import Arc
 
 # function to import GetDP "GmshParsed" formatted output files:
-from pyemmo.functions.import_results import import_pos_parsedFormat
+from pyemmo.functions.import_results import import_pos_legacy
 
 # function to transform cartesian to polar coordinates:
 from pyemmo.functions.transform_coords import cart2pol
@@ -365,7 +365,7 @@ from pyemmo.functions.transform_coords import cart2pol
 # of the mesh nodes and their corresponding force density values with xyz components.
 # Due to a inconsistency in GetDP, the results are written out in GmshParsed format
 # instead of newer Gmsh msh-format.
-data_type, nodes, sigma_xyz = import_pos_parsedFormat(
+data_type, nodes, sigma_xyz = import_pos_legacy(
     join(param_dict["getdp"]["res"], param_dict["getdp"]["ResId"], "F_airgap.pos")
 )
 
@@ -424,7 +424,7 @@ ax.plot(
 
 # Second import force density allready transformed in polar components in GetDP:
 
-data_type, nodes, sigma_rphiz = import_pos_parsedFormat(
+data_type, nodes, sigma_rphiz = import_pos_legacy(
     join(param_dict["getdp"]["res"], param_dict["getdp"]["ResId"], "F_airgap_cyl.pos")
 )
 

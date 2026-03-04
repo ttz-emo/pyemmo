@@ -30,8 +30,8 @@ from pyemmo.functions.import_results import (
     freq_from_signal,
     get_result_files,
     import_pos,
-    import_pos_parsedFormat,
-    importSP,
+    import_pos_legacy,
+    import_sp,
     plot_timetable_dat,
     read_RegionValue_dat,
     read_timetable_dat,
@@ -149,7 +149,7 @@ def test_import_SP():
     imported .pos file
     """
     file_path = join(IMP_RES_TEST_DATA_DIR, "btan_test.pos")
-    test_tuple = importSP(file_path)
+    test_tuple = import_sp(file_path)
     assert_tuple = (
         "b_tangent",
         [],
@@ -214,7 +214,7 @@ def test_import_pos_parsed(parsed_pos_file, dType, numElem, numNodes, numDataPoi
         numNodes (int): Number of nodes per element.
         numDataPoints (int): number of data values per node.
     """
-    data_type, nodes, data = import_pos_parsedFormat(parsed_pos_file)
+    data_type, nodes, data = import_pos_legacy(parsed_pos_file)
     assert data_type == dType
     # numNodes * 3 = number of coordinates
     assert nodes.shape == (numElem, numNodes * 3)

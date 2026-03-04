@@ -259,35 +259,41 @@ def plot_all_dat(dir_path: str | os.PathLike) -> None:
         raise RuntimeError(f"Given result foler '{dir_path}'did not exist!")
 
 
-def importSP(
-    posFilePath: str,
+def import_sp(
+    pos_file_path: str,
 ) -> tuple[str, list[float], list[tuple[float, float, float]], list[list[float]]]:
-    """Import values of POS files with the "Scalar Point" (SP) format
+    """Import values of `legacy formatted <https://gmsh.info/doc/texinfo/#Legacy-formats>`_
+    POS files with "Scalar Point" (SP) results. This format can e.g. be achieved by
+    evaluating the radial flux density in the airgap with ``OnGrid``.
+
+    For a general import of legacy formatted result files use function
+    :func:`import_pos_legacy`.
 
     Args:
-        SPFilePath (str): path to pos file in SP format
+        pos_file_path (str): path to pos file in SP format.
 
     Returns:
-        Tuple:
+        tuple[str, list[float], list[tuple[float, float, float]], list[list[float]]]: quantity name, time, positions, values
+
             - str: PostOperation quantity name
             - List[float]: List of time values
             - List[Tuple[float, float, float]]: List of tuple of position
-                coordinates (x,y,z)
+              coordinates (x,y,z)
             - List[List[float]]]: List of List of quantity values for each
-                point, and each timestep
+              point, and each timestep
 
     """
-    _, filename = path.split(posFilePath)
+    _, filename = path.split(pos_file_path)
     filename, ext = filename.split(".")
     if ext != "pos":
-        raise ValueError(f"Given filepath '{posFilePath}' is not a POS-file!")
-    with open(posFilePath, encoding="utf-8") as dataFile:
+        raise ValueError(f"Given filepath '{pos_file_path}' is not a POS-file!")
+    with open(pos_file_path, encoding="utf-8") as dataFile:
         dataLines = dataFile.readlines()
     parsedName = parse.parse('View "{}" {\n', dataLines.pop(0))
     if not isinstance(parsedName, parse.Result):
         raise (
             RuntimeError(
-                f"Given file '{posFilePath}' did not contain correct first "
+                f"Given file '{pos_file_path}' did not contain correct first "
                 """line: 'View "POS NAME" {{'. """
                 "POS name could not be identified"
             )
@@ -324,7 +330,7 @@ def importSP(
         else:
             # if the parse function did not return values, the format was wrong
             raise RuntimeError(
-                f"Given file '{posFilePath}' did not contain SP formatted values!"
+                f"Given file '{pos_file_path}' did not contain SP formatted values!"
             )
     return parsedName[0], time, pos, values
 
@@ -381,7 +387,7 @@ def import_pos(
         This does not work for GetDP
         `legacy formatted <https://gmsh.info/doc/texinfo/#Legacy-formats>`_ pos files
         created e.g. with the GetDP ``OnGrid`` evaluation type!
-        Use function :func:`import_pos_parsedFormat` for those files instead.
+        Use function :func:`import_pos_legacy` for those files instead.
 
     Args:
         pos_file (Union[str, Union[str, os.PathLike]]): .pos post processing result file
@@ -400,7 +406,7 @@ def import_pos(
     if ext != ".pos":
         raise ValueError(f"Given filepath '{pos_file}' is not a POS-file!")
 
-    # Check if pos file is in old GmshParsed format. See function import_pos_parsedFormat!
+    # Check if pos file is in old GmshParsed format. See function import_pos_legacy!
     with open(pos_file) as file:
         if file.readline().startswith("View"):
             logger.warning(
@@ -409,7 +415,7 @@ def import_pos(
                 pos_file,
             )
             logger.info(
-                "Alternativly use function import_pos_parsedFormat(...) to import "
+                "Alternativly use function import_pos_legacy(...) to import "
                 "parsed formatted data!"
             )
             # if function is in GmshParsed format, export as .msh file to update file
@@ -477,7 +483,7 @@ def import_pos(
 # def _import_pos_mshFormat(view_tag: int, step: int): ...
 
 
-def import_pos_parsedFormat(file_path: str) -> tuple[str, np.ndarray, np.ndarray]:
+def import_pos_legacy(file_path: str) -> tuple[str, np.ndarray, np.ndarray]:
     """Import data from older .pos format 'GmshParsed'.
     See this for more info about GetDP legacy file format `here <https://gmsh.info/doc/texinfo/#Legacy-formats>`_
 
@@ -620,7 +626,8 @@ def freq_from_signal(signal: np.ndarray, fs: float) -> float:
 
 def load_param_file(setup_file: str | os.PathLike) -> dict:
     """load the parameter json file create in
-    ``pyemmo.functions.runOnelab.runCalcForCurrent`` function"""
+    :func:`pyemmo.functions.runOnelab.run_simulation` function.
+    """
     if not os.path.isfile(setup_file):
         raise FileNotFoundError(f"Could not find setup.json file: {setup_file}")
     with open(setup_file, encoding="utf-8") as file:
