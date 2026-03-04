@@ -18,12 +18,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module for default config dict. Copied from Pyleecan project!"""
+"""This module creates the default config dict. Copied from Pyleecan project!"""
 from __future__ import annotations
 
 # Default config_dict
 default_config_dict: dict = {"MAIN": {}, "GUI": {}, "PLOT": {}}
+"""Default PyEMMO config dictionary with subdicts MAIN, GUI and PLOT
 
+:meta hide-value:
+"""
 default_config_dict["MAIN"]["MACHINE_DIR"] = ""
 default_config_dict["MAIN"]["MATLIB_DIR"] = ""
 # Name of the color set to use

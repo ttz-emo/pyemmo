@@ -154,9 +154,9 @@ ONELAB Model Parameters
 	*	- Flag_NL
 		- FLAG_NL, Name StrCat[INPUT_MAT_PROPERTIES, "Non-linear B-H curves"],Choices{0, 1},Visible Flag_ExpertMode,Help StrCat("If this parameter is checked (=1), then the non-linear B-H curves ","are used. Otherwise the non-linearity is replaced (extrapolated) by a ","constant mu_r.")
 	*	- eccentricity_static
-		- 0.0, Name StrCat[INPUT_GEO, "Static Eccentricity [mm]"],ReadOnly SymmetryFactor != 1,Help StrCat("The stator will elements be translated by this in -x direction. ","Make sure that the sum of static and dynamic eccentricity are not greater ","than the movingband height! ","This can only be used in a full model (symmetry = 1).")
+		- 0.0, Name StrCat[INPUT_GEO, "Static Eccentricity"],Unit "mm",ReadOnly SymmetryFactor != 1,Help StrCat("The stator will elements be translated by this in -x direction. ","Make sure that the sum of static and dynamic eccentricity are not greater ","than the movingband height! ","This can only be used in a full model (symmetry = 1).")
 	*	- eccentricity_dynamic
-		- 0.0, Name StrCat[INPUT_GEO, "Dynamic Eccentricity [mm]"],ReadOnly SymmetryFactor != 1,Help StrCat("Dynamic eccentircity in mm. The rotor initial position will be ","translated by this in x-direction, while still rotating the rotor elements ","around the origin. ","Make sure that the sum of static and dynamic eccentricity are not greater ","than the movingband height! ","This can only be used in a full model (symmetry = 1).")
+		- 0.0, Name StrCat[INPUT_GEO, "Dynamic Eccentricity"],Unit "mm",ReadOnly SymmetryFactor != 1,Help StrCat("Dynamic eccentircity in mm. The rotor initial position will be ","translated by this in x-direction, while still rotating the rotor elements ","around the origin. ","Make sure that the sum of static and dynamic eccentricity are not greater ","than the movingband height! ","This can only be used in a full model (symmetry = 1).")
 	*	- nbrTurns
 		- NBR_TURNS_IN_FACE,Name StrCat[INPUT_ELEC_WINDINGS, "01Number of wires per slot surface"],Help StrCat("Number of wires in a single slot surface.","If the slot is divided in several surfaces, the value needs to match the ","number of wires in each surface.")
 	*	- NbrParallelPaths

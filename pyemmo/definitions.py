@@ -32,7 +32,7 @@ ROOT_DIR = normpath(abspath(join(dirname(__file__), ".."))).replace(
     "\\", "/"
 )  #: :meta hide-value:
 """Path: ROOT_DIR is "pyemmo" root development directory with "dist", "doc", "pyemmo",
-"tests" and "workingDirectory" as subdirs.
+"tests" and "workingDirectory" as subfolders.
 
 :meta hide-value:
 """
@@ -54,8 +54,8 @@ except ImportError:
     from pyemmo.functions.init_environment import get_config_dict
 
 MAIN_DIR = dirname(realpath(__file__)).replace("\\", "/")  # main dir is pyemmo
-"""Path: MAIN_DIR is "pyemmo" main package directory with "script", "functions" and
-"api" as subpackages
+r"""Path: MAIN_DIR is "pyemmo" main package directory with "script", "functions" and
+"api" as subpackages. Should be ``ROOT_DIR\pyemmo``.
 
 :meta hide-value:
 """
@@ -63,13 +63,16 @@ MAIN_DIR = dirname(realpath(__file__)).replace("\\", "/")  # main dir is pyemmo
 RESULT_DIR = join(USER_DIR, "Results").replace("\\", "/")
 r"""Path: RESULT_DIR is "pyemmo" default result directory to store model files
 and simulation results. For Windows this is something like:
-'C:\\Users\\Username\\AppData\\Roaming\\pyemmo\\Results'
+``'C:\\Users\\Username\\AppData\\Roaming\\pyemmo\\Results'``
+
+For Linux its:
+``'/home/.local/share/Results'``
 
 :meta hide-value:
 """
-
-
 if not isdir(RESULT_DIR):
+    logger.info("Default results directory has not been created or was removed!")
+    logger.info("Creating results folder: RESULT_DIR = %s!", RESULT_DIR)
     mkdir(RESULT_DIR)
 TEST_DIR = join(ROOT_DIR, "tests").replace("\\", "/")
 
