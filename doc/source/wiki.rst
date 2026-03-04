@@ -5,6 +5,6 @@ Here you can find some addition backround information on theory and definitions 
 
 .. toctree::
    :maxdepth: 2
-   
-   wiki.dq.rst
 
+   wiki.dq.rst
+   wiki.force
