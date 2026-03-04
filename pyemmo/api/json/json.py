@@ -472,7 +472,7 @@ def main(
         5. Create the .geo and .pro script files by calling
             :meth:`Script.generateScript() <pyemmo.script.script.Script.generateScript>`
         6. Create command line call for gmsh/getdp with
-            :func:`createCmdCommand() <pyemmo.functions.runOnelab.createCmdCommand>`
+            :func:`~pyemmo.functions.run_onelab.create_command`
             and start with :code:`subprocess.run`
 
 
@@ -790,7 +790,7 @@ def _open_onelab(
                         title=filename,
                         savefig=True,
                         showfig=False,
-                        savePath=None,
+                        savepath=None,
                     )
 
 

@@ -131,11 +131,11 @@ def test_plot_timetable_dat():
 
     plot_list = plot_timetable_dat(
         file_path=file_path,
-        dataLabel="DataLabel",
+        data_label="DataLabel",
         title="Graph",
         savefig=False,
         showfig=False,
-        savePath="",
+        savepath="",
     )
     number_of_figures = 2
     assert (

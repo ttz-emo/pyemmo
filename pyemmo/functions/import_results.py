@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module to import simulation results from GetDP (Onelab)"""
+"""Import results from GetDP simulations"""
 
 from __future__ import annotations
 
@@ -165,30 +165,30 @@ def split_data(
 
 def plot_timetable_dat(
     file_path: str,
-    dataLabel: str = "",
+    data_label: str = "",
     title: str = "",
     savefig: bool = False,
     showfig: bool = True,
-    savePath: str = "",
+    savepath: str = "",
 ) -> list[Figure]:
     """Plot the data in the filePath .dat-file and save the figure optionally.
 
-    There can be several simulations in one .dat file. If so there will be one
+    There can be several simulations in one .dat file. If so, there will be one
     figure for each simulation.
 
     Args:
-        filePath (str): path to the .dat-file in timetable-format
-        dataLabel (str, optional): label of the ploted data on the y-axis.
+        file_path (str): path to the .dat-file in timetable-format
+        data_label (str, optional): label of the ploted data on the y-axis.
             Defaults to "".
         title (str, optional): title of the figure. Defaults to ""
         savefig (bool, optional): flag to determine if the figure should be
             saved. Defaults to False.
         showfig (bool, optional): flag to determine if the figure should be
             displayed. Defaults to True.
-        savePath (str, optional): path with filename and valid extension to
-            save the figure. Defaults to None. E.g. "C:\\Users\\Test\\Pictures
-            \\Test.png". If savePath is None figure will be saved with filePath
-            and .png extension
+        savepath (str, optional): path with filename and valid extension to
+            save the figure. Defaults to "". E.g. ``"/path/to/files/filename.png"``.
+            If savepath is empty figure will be saved with under the results
+            ``file_path`` and .png extension.
 
     Returns:
         List[Figure]: Returns a list of matplotlib Figure objects.
@@ -223,11 +223,11 @@ def plot_timetable_dat(
                 top=maxVal * (1.1 if maxVal > 0 else 0.9),
             )
 
-        axes.set(ylabel=dataLabel, xlabel="time in s", title=title + f"_{sim}")
+        axes.set(ylabel=data_label, xlabel="time in s", title=title + f"_{sim}")
         if savefig:
-            if not savePath:
-                savePath = path.abspath(path.splitext(file_path)[0])
-            fig.savefig(savePath + f"_{sim}" + ".png")
+            if not savepath:
+                savepath = path.abspath(path.splitext(file_path)[0])
+            fig.savefig(savepath + f"_{sim}" + ".png")
         figureList.append(fig)
         # if showfig:
         #     fig.show()
@@ -241,7 +241,7 @@ def plot_all_dat(dir_path: str | os.PathLike) -> None:
     """Plot all .dat files as png in the folder dirPath
 
     Args:
-        dirPath (Union[str, os.PathLike]): Path to the folder containing the .dat files.
+        dir_path (Union[str, os.PathLike]): Path to the folder containing the .dat files.
     """
     if path.isdir(dir_path):
         # if the folder for results exists
@@ -342,8 +342,10 @@ def load_view(pos_file: str) -> tuple[bool, int]:
         pos_file (str): .pos file path
 
     Returns:
-        bool: flag to indicate if gmsh had to be initialized.
-        int: Gmsh view tag.
+        tuple[bool, int]: gmsh was initialized, view tag
+
+            - bool: Flag to indicate if gmsh had to be initialized.
+            - int: Gmsh view tag.
     """
     finalize_gmsh = False
     if not gmsh.isInitialized():
@@ -491,7 +493,8 @@ def import_pos_legacy(file_path: str) -> tuple[str, np.ndarray, np.ndarray]:
         file_path (str): path to result file
 
     Returns:
-        tuple[str,np.ndarray,np.ndarray]:
+        tuple[str,np.ndarray,np.ndarray]: data_type, nodes, results data
+
             - GmshParsed results data type (like SP for scalar point or VL for vector
               line).
             - Node coordinates in shape 'number of elements' x 'number of nodes * 3'.
@@ -626,7 +629,7 @@ def freq_from_signal(signal: np.ndarray, fs: float) -> float:
 
 def load_param_file(setup_file: str | os.PathLike) -> dict:
     """load the parameter json file create in
-    :func:`pyemmo.functions.runOnelab.run_simulation` function.
+    :func:`pyemmo.functions.run_onelab.run_simulation` function.
     """
     if not os.path.isfile(setup_file):
         raise FileNotFoundError(f"Could not find setup.json file: {setup_file}")
@@ -639,17 +642,17 @@ def main(
 ) -> dict[str, np.ndarray | dict[str, np.ndarray]]:
     """Import results for standard GetDP simulation of a model created with PyEMMO.
 
-    You can easily run simulations with the ``pyemmo.functions.runOnelab`` module!
+    You can easily run simulations with the :mod:`pyemmo.functions.run_onelab` module!
 
     Args:
-        sim_param (dict | str | os.PathLike): simulation parameter dict or path to saved
+        sim_param (dict | str | os.PathLike): Simulation parameter dict or path to saved
             parameter dict as json file.
 
     Raises:
         FileNotFoundError: If parameter file is path but given json file is not found.
 
     Returns:
-        dict[str, np.ndarray | dict[str, np.ndarray]]: results for given simulation
+        dict[str, np.ndarray | dict[str, np.ndarray]]: Results for given simulation
     """
     logger = logging.getLogger(__name__)
     if not isinstance(sim_param, dict):

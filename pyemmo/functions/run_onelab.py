@@ -709,7 +709,7 @@ def main(
 
 
 if __name__ == "__main__":
-    # print("running main() of runOnelab.")
+    # print("running main() of run_onelab.")
     # 1. Check that all argvs are valid!
     parser = ArgumentParser(description="Open the given Onelab file with gmsh.")
 
