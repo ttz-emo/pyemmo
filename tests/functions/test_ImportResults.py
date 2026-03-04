@@ -21,22 +21,21 @@
 """Module for testing the import_results module"""
 from __future__ import annotations
 
-import os
-from os.path import join, abspath
+from os.path import abspath, join
 
 import numpy as np
 import pytest
 
 from pyemmo.functions.import_results import (
+    freq_from_signal,
     get_result_files,
+    import_pos,
     import_pos_parsedFormat,
-    importPos,
     importSP,
     plot_timetable_dat,
     read_RegionValue_dat,
     read_timetable_dat,
     split_data,
-    freq_from_signal,
 )
 
 try:
@@ -244,7 +243,7 @@ def test_import_pos():
         (join(IMP_RES_TEST_DATA_DIR, "import_pos_data.npy")),
         allow_pickle=True,
     )
-    imp_mesh_elem, imp_time, imp_data = importPos(test_posFile_path)
+    imp_mesh_elem, imp_time, imp_data = import_pos(test_posFile_path)
     assert np.array_equal(
         mesh_elemt_ids, imp_mesh_elem
     ), "Incorrect Mesh elements Imported!"
@@ -261,7 +260,7 @@ def test_import_pos():
 )
 def test_import_pos_parsed_workaround(test_pos_path):
     """Just make sure the workaround for GmshParsed formatted pos files works"""
-    imp_mesh_elem, imp_time, imp_data = importPos(test_pos_path)
+    imp_mesh_elem, imp_time, imp_data = import_pos(test_pos_path)
 
 
 # @pytest.mark.parametrize(

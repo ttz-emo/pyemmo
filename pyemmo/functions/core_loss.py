@@ -29,7 +29,7 @@ import numpy as np
 import numpy.typing as npt
 
 # from matplotlib import pyplot as plt
-from .import_results import importPos
+from .import_results import import_pos
 
 
 def main(
@@ -92,7 +92,7 @@ def calc_time_domain_core_loss(
         gmsh.initialize()
         close_gmsh = True
 
-    element_tags, time, b_field_data = importPos(b_filepath)
+    element_tags, time, b_field_data = import_pos(b_filepath)
     nbr_timesteps = len(time)
     if save_fields:
         # extract filename from path
@@ -242,7 +242,7 @@ def calc_freq_domain_core_loss(
         gmsh.initialize()
         close_gmsh = True
 
-    elem_tags, time, b_field_data = importPos(b_filepath)
+    elem_tags, time, b_field_data = import_pos(b_filepath)
     ## calculate hysteresis losses
     hyst_loss_factor = loss_factor["hyst"]  # hysteresis loss factor
     # beta = 2  # hysteresis loss exponent
@@ -550,7 +550,7 @@ def calc_time_derivative(field_file: str | os.PathLike):
         gmsh.initialize()
         finGmsh = True
 
-    elementTags, time, fieldData = importPos(field_file)
+    elementTags, time, fieldData = import_pos(field_file)
     nbrTimeSteps = len(time)
 
     # init derivative of B

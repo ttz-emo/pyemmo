@@ -39,15 +39,18 @@ logger = logging.getLogger(__name__)
 
 def read_timetable_dat(file_path: str | os.PathLike) -> tuple[np.ndarray, np.ndarray]:
     """
-    returns the Data from the the .*dat file witten in the TimeTable Format
-    and returns the time and the corresponding data.
+    Import the data from a .dat file witten in the GetDP
+    `TimeTable format <https://getdp.info/doc/texinfo/getdp.html#PostOperation:~:text=and%20values%20columns.-,TimeTable,-Time%20oriented%20column>`_
+    and return the time and the corresponding data.
 
-    TimeTable format is a whitespace separated list of time-value pairs and
-    looks like:
+    `TimeTable format <https://getdp.info/doc/texinfo/getdp.html#PostOperation:~:text=and%20values%20columns.-,TimeTable,-Time%20oriented%20column>`_
+    is a whitespace separated list of time-value pairs and looks like:
 
-        time0 val0_0 (val0_1 ...)\n
-        time1 val1_0 (val1_1 ...)\n
-        ...\n
+    .. code-block:: text
+
+        time0 val0_0 (val0_1 ...)
+        time1 val1_0 (val1_1 ...)
+        ...
 
     For most result types (torque, induced voltage, flux (all integral typ
     results)) there is only one value per time step. But for special results,
@@ -56,7 +59,7 @@ def read_timetable_dat(file_path: str | os.PathLike) -> tuple[np.ndarray, np.nda
 
     Args:
         file_path (str): path to a file with .dat extension containing data in
-        GetDP TimeTable format
+            GetDP TimeTable format
 
     Returns:
         Tuple[np.ndarray, np.ndarray]: time and data array -> (time, data)
@@ -86,19 +89,20 @@ def read_timetable_dat(file_path: str | os.PathLike) -> tuple[np.ndarray, np.nda
 # pylint: disable=locally-disabled, invalid-name
 def read_RegionValue_dat(file_path: str | os.PathLike) -> tuple[np.ndarray, np.ndarray]:
     """
-    Import data from 'RegionValue' formatted .dat-file (GetDP resutl file).
-    This usually only applies to torque results computed with the virtual works
-    method.
+    Import data from 'RegionValue' formatted .dat-file (GetDP result file format).
+    This usually only applies to torque results computed with the virtual works method.
+
     RegionValue format looks like:
 
-        'time0 val0 time1 val1 ...'
+    .. code-block:: text
+
+        time0 val0 time1 val1 ...
 
     Args:
-        file_path (Union[str, os.PathLike]): Path to results file.
+        file_path (Union[str, os.PathLike]): Path to 'RegionValue' formatted result file.
 
     Returns:
-        Tuple[np.ndarray, np.ndarray]: time and data vector with shape:
-        (nbr_timesteps,)
+        Tuple[np.ndarray, np.ndarray]: time and data vectors.
     """
     # make sure dat file exists
     if not os.path.isfile(file_path):
@@ -127,17 +131,17 @@ def split_data(
     time: np.ndarray, data: np.ndarray
 ) -> tuple[int, list[np.ndarray], list[np.ndarray]]:
     """Split up the time-data value pairs if there are multiple time vectors
-    (e.g. time=[0,1,2,3,0,1,2] -> time[0]=[0,1,2,3], time[1]=[0,1,2]).
-    Time-vectors must be increasing.
+    (e.g. ``time=[0,1,2,3,0,1,2]`` -> ``time[0]=[0,1,2,3]`` and ``time[1]=[0,1,2]``).
 
     Args:
-        time (np.ndarray): 1D-Array with time values.
-        data (np.ndarray): 1D- ord 2D-Array with data values.
+        time (np.ndarray): 1D array with time values.
+        data (np.ndarray): 1D or 2D array with data values.
 
     Returns:
-        int: Number of simulations in the data set. (Number of splits).
-        list(np.ndarray): 2D time array.
-        list(np.ndarray): 2D data array.
+        tuple[int, list[np.ndarray], list[np.ndarray]]:
+            - int: Number of simulations in the data set (number of splits).
+            - list(np.ndarray): 2D time array.
+            - list(np.ndarray): 2D data array.
     """
     # make sure time and data are type ndarray
     if not isinstance(time, np.ndarray) or not isinstance(data, np.ndarray):
@@ -364,22 +368,31 @@ def load_view(pos_file: str) -> tuple[bool, int]:
     return finalize_gmsh, view_tags[-1]
 
 
-def importPos(pos_file: str | os.PathLike) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Import POS file via gmsh api.
+def import_pos(
+    pos_file: str | os.PathLike,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Import POS file in Gmsh post processing format via gmsh api.
 
-    .. todo::
+    See `Gmsh File Formats <https://gmsh.info/doc/texinfo/#Gmsh-file-formats>`_ for
+    details.
 
-        Does not work for SP-formatted pos files.
-            -> Use function getListData()
+    .. note::
+
+        This does not work for GetDP
+        `legacy formatted <https://gmsh.info/doc/texinfo/#Legacy-formats>`_ pos files
+        created e.g. with the GetDP ``OnGrid`` evaluation type!
+        Use function :func:`import_pos_parsedFormat` for those files instead.
 
     Args:
-        pos_file (Union[str, Union[str, os.PathLike]]): _description_
+        pos_file (Union[str, Union[str, os.PathLike]]): .pos post processing result file
+            in Gmsh MSH file format.
 
     Returns:
-        Tuple[np.ndarray, List[float], np.ndarray]:
-            - gmsh mesh element tags
-            - time
-            - data array
+        Tuple[np.ndarray, np.ndarray, np.ndarray]:
+            - np.ndarray: gmsh mesh element tags (with size M)
+            - np.ndarray: time vector (with size N)
+            - np.ndarray: data array with size M x N x number of components (=1 for
+              scalar, 3 for vector)
     """
     # check file extension
     path, filename = os.path.split(pos_file)
@@ -388,7 +401,7 @@ def importPos(pos_file: str | os.PathLike) -> tuple[np.ndarray, np.ndarray, np.n
         raise ValueError(f"Given filepath '{pos_file}' is not a POS-file!")
 
     # Check if pos file is in old GmshParsed format. See function import_pos_parsedFormat!
-    with open(pos_file, "r") as file:
+    with open(pos_file) as file:
         if file.readline().startswith("View"):
             logger.warning(
                 "Result file '%s' is in old gmsh parsed format. "
@@ -466,17 +479,18 @@ def importPos(pos_file: str | os.PathLike) -> tuple[np.ndarray, np.ndarray, np.n
 
 def import_pos_parsedFormat(file_path: str) -> tuple[str, np.ndarray, np.ndarray]:
     """Import data from older .pos format 'GmshParsed'.
-    See this for more info about parsed file format:
-    https://gmsh.info/doc/texinfo/gmsh.html#Gmsh-file-formats:~:text=More%20explicitly%2C%20the%20syntax%20for%20a%20parsed%20View%20is%20the%20following
+    See this for more info about GetDP legacy file format `here <https://gmsh.info/doc/texinfo/#Legacy-formats>`_
 
     Args:
         file_path (str): path to result file
 
     Returns:
         tuple[str,np.ndarray,np.ndarray]:
-            - GmshParsed results data type (like SP for scalar point or VL for vector line)
-            - Node coordinates in shape (number of elements, number of nodes * 3)
-            - Data array in shape (number of element, number of simulation steps * number of values per node)
+            - GmshParsed results data type (like SP for scalar point or VL for vector
+              line).
+            - Node coordinates in shape 'number of elements' x 'number of nodes * 3'.
+            - Data array in shape 'number of elements' x 'number of simulation steps *
+              number of values per node'.
     """
     finalize_gmsh, view_tag = load_view(file_path)
 
@@ -582,6 +596,7 @@ def get_result_files(
         logger.warning("No result files found in '%s'", result_folder)
     return dat_file_list, pos_file_list
 
+
 def freq_from_signal(signal: np.ndarray, fs: float) -> float:
     """Calculate the frequency of a signal via FFT.
 
@@ -601,6 +616,7 @@ def freq_from_signal(signal: np.ndarray, fs: float) -> float:
     peak_index = np.argmax(np.abs(fft_values))
     # Return corresponding frequency
     return abs(freqs[peak_index])
+
 
 def load_param_file(setup_file: str | os.PathLike) -> dict:
     """load the parameter json file create in
@@ -727,10 +743,8 @@ def main(
             )
         else:
             logger.warning(
-                (
-                    "MST Torque for rotor and stator diviates more than 10%! "
-                    "Check results carefully!"
-                )
+                "MST Torque for rotor and stator diviates more than 10%! "
+                "Check results carefully!"
             )
 
     # 3. Flux results
