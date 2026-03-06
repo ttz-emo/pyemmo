@@ -271,17 +271,19 @@ def test_get_result_files():
     """Test the function get_result_files"""
     file_path = IMP_RES_TEST_DATA_DIR
     dat_file_list, pos_file_list = get_result_files(file_path)
+    dat_file_list.sort()
     assert np.array_equal(
-        np.array(dat_file_list), ["Ib_test.dat", "region_value_data.dat"]
+        dat_file_list, ["Ib_test.dat", "region_value_data.dat"]
     ), "Incorrect list of .dat files!"
+    pos_file_list.sort()
     assert np.array_equal(
-        np.array(pos_file_list),
+        pos_file_list,
         [
             "AxialeLaenge_test.pos",
-            "btan_test.pos",
-            "SP_fomatted_res_file.pos",
             "SP_GmshParsed_transient.pos",
+            "SP_fomatted_res_file.pos",
             "VL_GmshParsed_static.pos",
+            "btan_test.pos",
         ],
     ), "Incorrect list of .pos files!"
 

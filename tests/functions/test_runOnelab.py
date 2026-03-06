@@ -27,7 +27,7 @@ from os.path import isdir, isfile, join
 from shutil import copytree, ignore_patterns, rmtree
 
 from pyemmo.functions.runOnelab import findGetDP, findGmsh, runCalcforCurrent
-from tests import TEST_DATA_DIR
+from tests import TEST_DATA_DIR, GETDP_EXE, GMSH_EXE
 from tests import TEST_TEMP_DIR as TESTS_RESULTS_DIR
 
 
@@ -110,7 +110,7 @@ class TestRunOnelab(unittest.TestCase):
         runCalcforCurrent(
             {
                 "getdp": {
-                    "exe": findGetDP(),
+                    "exe": GETDP_EXE,
                     "IQ_RMS": 10.0,
                     "ID_RMS": 0.0,
                     "RPM": 1000,
@@ -130,7 +130,7 @@ class TestRunOnelab(unittest.TestCase):
                     "res": self.test_sim_dir,  # result folder
                 },
                 "pro": join(self.model_dir, "Toyota_Prius.pro"),  # pro file
-                "gmsh": {"exe": findGmsh()},  # gmsh exe and params
+                "gmsh": {"exe": GMSH_EXE},  # gmsh exe and params
                 "info": "",
                 "PostOp": [],  # "GetBOnRadius" - "Get_LocalFields_Post"
             }
