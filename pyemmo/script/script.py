@@ -1277,6 +1277,9 @@ class Script:
                 nbr_seg0 = (2 * pi * r_rotor_mb / mb_meshsize) - (
                     2 * pi * r_rotor_mb / mb_meshsize
                 ) % 10  # calc number of movingband segments by steps of 10
+                # TODO: set nbr_seg0 as golbal parameter to make it available in GetDP
+                # for post processing. Like this its only recievable through the GUI,
+                # not by the command line execution.
                 max_nbr_segments = max(nbr_seg0, 1440)
                 # create parameter code for movingband segment setting
                 mesh_code += "// Add mesh size setting for Movingband lines\n"
@@ -1575,6 +1578,8 @@ class Script:
             else:
                 dq_offset = 0
             simu_param_dict["SYM"]["ParkAngOffset"] = dq_offset
+        # TODO: Add parameter for airgap segmentation since it can not be recieved by
+        # GetNumber in GetDP if run from the command line.
 
     def _getParamCode(self, param_name: str, param_value) -> str:
         """
