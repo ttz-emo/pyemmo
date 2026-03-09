@@ -531,8 +531,8 @@ def get_boundary_line_list(surf_dim_tags: list[SurfDimTag]) -> list[GmshLine]:
 
 
 def get_primary_lines(bnd_line_list: list[GmshLine]) -> list[GmshLine]:
-    """Get a list of primary lines from the list of boundary lines by filtering the
-    lines that are on the x-axis (at angle 0.0°).
+    r"""Get a list of primary lines from the list of boundary lines by filtering the
+    lines that are on the x-axis (at angle 0.0\deg).
     The primary lines are removed from the list of boundary lines since the cannot be
     any other boundary.
 

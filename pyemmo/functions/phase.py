@@ -29,12 +29,12 @@ from ..colors import Colors
 
 
 def angle2phase(phase_angle: float, phase_names: tuple[str] = ("u", "v", "w")) -> str:
-    """
+    r"""
     Converts a given phase angle within 0 to 2*pi to its corresponding phase name.
     The function maps a phase angle to a phase name based on evenly distributed
     phase angles derived from the number of phase names provided. For a standard
-    3-phase winding phase angle for phase 1 must be within 0° ± 60°, phase 2 = 120° ±
-    60°, ...
+    3-phase winding phase angle for phase 1 must be within 0\deg ± 60\deg, phase 2 = 120\deg ±
+    60\deg, ...
     If the given phase angle is within a tolerance range of one of the calculated phase
     angles, the corresponding phase name is returned. Otherwise, a ValueError is raised.
 
@@ -51,9 +51,9 @@ def angle2phase(phase_angle: float, phase_names: tuple[str] = ("u", "v", "w")) -
             phase angles within the tolerance range.
 
     Example:
-        >>> angle2phase(np.pi / 3, ["A", "B", "C"]) # 120 °
+        >>> angle2phase(np.pi / 3, ["A", "B", "C"]) # 120 \deg
         'B'
-        >>> angle2phase(np.pi / 100, ["A", "B", "C"]) # 1.8 °
+        >>> angle2phase(np.pi / 100, ["A", "B", "C"]) # 1.8 \deg
         'A'
     """
 

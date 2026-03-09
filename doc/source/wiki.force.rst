@@ -131,8 +131,8 @@ The same thing is true for the tangential component:
 .. figure:: ../images/force/comp_F_tan.png
    :align: center
 
-    Comparison of tangential force density derived from different MST formulations.
-|
+   Comparison of tangential force density derived from different MST formulations.
+
 
 Force Computation by Virtual Works Method
 -----------------------------------------

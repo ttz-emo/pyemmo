@@ -607,7 +607,7 @@ DefineConstant[
 DefineConstant[ //Material definitions
     tempMag = {
         TEMP_MAG,
-        Name StrCat[INPUT_MAT_PROPERTIES_MAGNET, "Magnet temperature [°C]"],
+        Name StrCat[INPUT_MAT_PROPERTIES_MAGNET, "Magnet temperature [degrees C]"],
         Visible Flag_ExpertMode && NbrRegions[Rotor_Magnets] > 0
     }
 ];

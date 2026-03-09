@@ -54,7 +54,7 @@ def create_airgap_surfaces(
     moving_band_radius: float,
     symmetry: int,
 ):
-    """This function can be used to create the airgap surfaces for the current gmsh model.
+    r"""This function can be used to create the airgap surfaces for the current gmsh model.
 
     The algorithm follows these steps for the rotor and stator side:
 
@@ -87,7 +87,7 @@ def create_airgap_surfaces(
         to the surface dictionary.
 
             .. note:: If the symmetry factor is 2, the created arc will be split up into
-                two separate curves, because the gmsh geometry export fails for arcs > 180°.
+                two separate curves, because the gmsh geometry export fails for arcs > 180\deg.
 
     Args:
         surface_dict (dict[str, list[MachineSegmentSurface]]): Actual surface dict used

@@ -351,10 +351,10 @@ class Material:
 
     @property
     def remanence(self) -> float | int:
-        """get remanent flux density at 20°C
+        r"""get remanent flux density at 20\deg C
 
         Returns:
-            Union[float, int]: remanent flux density (Br) in T at 20°C
+            Union[float, int]: remanent flux density (Br) in T at 20\deg C
         """
         return self._remanence
 
@@ -379,11 +379,11 @@ class Material:
 
     @property
     def tempCoefRem(self) -> float | int:
-        """Get the temperature coefficient of the remanent flux density.
-        Formula for remanent flux density at temperature `tempMag` in °C is:
+        r"""Get the temperature coefficient of the remanent flux density.
+        Formula for remanent flux density at temperature `tempMag` in \deg C is:
 
         .. math::
-            B_{r}(tempMag) =  b_{r,20°C} * (1 + ({tempCoef} * (tempMag - 20)))"
+            B_{r}(tempMag) =  b_{r,20\deg C} * (1 + ({tempCoef} * (tempMag - 20)))"
 
         Returns:
             Union[float, int]: temperatur coefficient of remanent flux density in 1/K

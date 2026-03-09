@@ -339,8 +339,8 @@ def get_global_center() -> GmshPoint:
 
 
 def create_disk(radius: float, center: GmshPoint | None = None) -> list[GmshArc]:
-    """Workaround for gmsh.model.occ.addDisk() function, because the original gmsh
-    kernel only supports arcs up to 90°. If we want to export our model as .geo_unrolled
+    r"""Workaround for gmsh.model.occ.addDisk() function, because the original gmsh
+    kernel only supports arcs up to 90\deg. If we want to export our model as .geo_unrolled
     file we need to create these arcs separatly otherwise they will be exported as spline.
 
     Args:

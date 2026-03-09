@@ -70,7 +70,7 @@ def cart2sph(x, y, z=0.0) -> tuple[float, float, float]:
         z (float, optional): z-coordinate of cartesian point. Defaults to 0.0
 
     Returns:
-        tuple[float, float, float]: Radius, elevation angle θ and azimuthal angle φ
+        tuple[float, float, float]: Radius, elevation angle :math:`\\theta` and azimuthal angle :math:`\\phi`
     """
     XsqPlusYsq = x**2 + y**2
     r = m.sqrt(XsqPlusYsq + z**2)  # r

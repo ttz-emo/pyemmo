@@ -196,7 +196,7 @@ ONELAB Model Parameters
 	*	- L_endring_segment
 		- 4.8e-9,Name StrCat[INPUT_ELEC_CIRCUIT_ROTOR,"Circuit/12Inductance of endring segment [H]"],ReadOnly !Flag_Cir_RotorCage,Help StrCat("This must be given for a single endring segment! ","During processing the value is scaled to 1 meter because in ","the electromagnetic formulation the resulting voltage drop given to the ","circuit is in V/m!"),Visible (nbrRotorBars>0)
 	*	- tempMag
-		- TEMP_MAG,Name StrCat[INPUT_MAT_PROPERTIES_MAGNET, "Magnet temperature [°C]"],Visible Flag_ExpertMode && NbrRegions[Rotor_Magnets] > 0
+		- TEMP_MAG,Name StrCat[INPUT_MAT_PROPERTIES_MAGNET, "Magnet temperature [degrees C]"],Visible Flag_ExpertMode && NbrRegions[Rotor_Magnets] > 0
 	*	- freq_stator
 		- (MachineType==SYNCHRONOUS)?(n * NbrPolePairs):freq_rotor + NbrPolePairs * n,Name StrCat[INPUT_ELEC_EXCITATION, "Stator Frequency"],Units "Hz",ReadOnly 1
 	*	- n_sync
