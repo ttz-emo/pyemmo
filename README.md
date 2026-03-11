@@ -24,7 +24,10 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 to write your content. -->
 
 <!-- ![PyEMMO project logo](./doc/images/PyEMMO_Logo.png) -->
-<img src="./doc/images/PyEMMO_Logo.png" width="200">
+<p align="center">
+<img src="https://raw.githubusercontent.com/ttz-emo/pyemmo/master/doc/images/PyEMMO_Logo.png" width="200">
+</p>
+
 
 # PyEMMO
 _**Py**thon **E**lectrical **M**achine **M**odelling in **O**NELAB_
