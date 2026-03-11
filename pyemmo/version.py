@@ -26,6 +26,10 @@ to the ONELAB model files."""
 
 from __future__ import annotations
 
+import logging
+
+logger = logging.getLogger(__file__)
+
 # /!\ Increase the number before a release
 # See https://www.python.org/dev/peps/pep-0440/
 # Examples :
@@ -38,6 +42,13 @@ try:
     import git
 except ModuleNotFoundError:
     sha = ""
+except Exception as e:  # pylint: disable=broad-exception-caught
+    logger.debug(
+        "Importing module git resulted in unexpected exception. "
+        "Cant find git sha code.",
+        exc_info=e,
+    )
+    sha = ""
 else:
     from git import InvalidGitRepositoryError
 
@@ -46,6 +57,9 @@ else:
         sha = repo.head.object.hexsha
     except InvalidGitRepositoryError:
         sha = "Repo not found"
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        logger.debug("Could not get git sha from repository.", exc_info=e)
+        sha = ""
 
 __version__ = "1.5.0dev2"
 """PyEMMO version string.
