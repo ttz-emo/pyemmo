@@ -18,7 +18,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module for Material-class"""
+"""Module for Material-class
+
+.. todo:: Add description of dict structure and save/load mechanism!
+"""
 
 
 from __future__ import annotations

@@ -51,17 +51,18 @@ def import_tab(filepath: str) -> tuple[list[str], np.ndarray]:
         ValueError: If extension is not .tab or file does not exist.
 
     Returns:
-        Tuple[list[str], numpy.ndarray]]: A tuple containing a list of identifiers and
-            a corresponding array of data.
+        list[str],numpy.ndarray: identifiers and data matrix
+
+            - list of identifiers (first line in tab file)
+            - matrix corresponding array of data.
 
     Example usage:
 
     .. code::
 
-        file = f"{RES_DIR}/testExportMaxwellData.tab"
-        ids, data = importTabMaxwell(file)
-        print(ids)  # Should print the list of identifiers
-        print(data)  # Should print the data array
+        from pyemmo.functions.maxwell import import_tab
+
+        ids, data = import_tab("/path/to/tab_data.tab")
     """
     # Check file path
     if not os.path.isfile(filepath):
@@ -99,10 +100,7 @@ def import_csv(filepath: str) -> tuple[list[str], np.ndarray]:
 
     .. code::
 
-        file = 'path_to_your_file.csv'
-        headers, data = import_csv_data(file)
-        print(headers)  # Should print the column headers
-        print(data)     # Should print the rows of data
+        headers, data = import_csv("/path/to/csv_file.csv")
     """
     if not os.path.isfile(filepath):
         raise FileNotFoundError(f"File does not exist: {filepath}")
@@ -124,10 +122,10 @@ def export_BH(material: Material, filepath: str = None) -> None:
     """function to export the BH-Curve in ANSYS Maxwell readable format.
 
     Args:
-        material (Material): TODO
+        material (Material): PyEMMO Material object.
         filepath (str, optional): File path to write the results to. File
             extension must be ".tab"! Defaults to
-            PYEMMO_RESULTS_FOLDER/MATERIAL_NAME_BH.tab .
+            `PYEMMO_RESULTS_FOLDER/MATERIAL_NAME_BH.tab`.
     """
     if material.linear:
         raise ValueError(
@@ -162,8 +160,8 @@ def export_tab(data: list, identifier: list[str], filepath: str) -> None:
         >>> H = [1, 2, 3]  # H field data in A/m
         >>> data = [time_data, h_data]
         >>> ids = ["Time (s)", "H (A_per_meter)"]
-        >>> file = f"{RES_DIR}\\testExportMaxwellData.tab"
-        >>> exportTabMaxwell(data, ids, file)
+        >>> file = "/path/to/new_tab_file.tab"
+        >>> export_tab(data, ids, file)
 
     """
     if len(data) != len(identifier):

@@ -28,10 +28,10 @@ This subpackage contains the software for the two PyEMMO interfaces (api's):
 The :mod:`~pyemmo.api.json` interface is a general purpose interface to create ONELAB models through PyEMMO.
 Therefore it provides a external interface via json formatted input files and can be run through the command line.
 
-The :mod:`~pyemmo.api.pyleecan` api is a addon that allows to create ONELAB models from `Pyleecan <https://pyleecan.org/>`_ machines.
-Pyleecan is a powerful open-source software for the design and analysis of electrical machines.
+The :mod:`~pyemmo.api.pyleecan` api is a addon that allows to create ONELAB models from `PYLEECAN <https://pyleecan.org/>`_ machines.
+PYLEECAN is a powerful open-source software for the design and analysis of electrical machines.
 It provides various parameterized rotor and stator geometries and a graphical user interface to create and edit machine designs.
-The :mod:`~pyemmo.api.pyleecan` api translates Pyleecan machine objects into the geometry and material definitions required by the json api, which then creates the ONELAB model files for simulation.
+The :mod:`~pyemmo.api.pyleecan` api translates PYLEECAN machine objects into the geometry and material definitions required by the json api, which then creates the ONELAB model files for simulation.
 
 Furthermore, the :mod:`~pyemmo.api` package holds the definition for the class :class:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface`, which is a :class:`~pyemmo.script.gmsh.gmsh_segment_surface.GmshSegmentSurface` with additional attributes :attr:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface.part_id` and :attr:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface.material`.
 """
