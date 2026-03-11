@@ -52,11 +52,32 @@ You will need versions of [Gmsh](https://gmsh.info/) and [GetDP](https://getdp.i
 
 ## Usage
 
-The easiest way to start is by using the [Pyleecan](https://github.com/Eomys/pyleecan) project to create a electrical machine instance and feeding it into the PyEMMO-Pyleecan interface.
-- Have a look at the [Pyleecan tutorials](https://pyleecan.org/tutorials.html) on how to use Pyleecan. Especially the tutorial on ["How to define a machine"](https://pyleecan.org/01_tuto_Machine.html).
-- See the [Pyleecan API tutorial](tutorials/pyleecan_api.py) for detailed instructions on how to create a ONELAB model from a Pyleecan machine object.
+The easiest way to start is by using the [PYLEECAN](https://github.com/Eomys/pyleecan) project to create a electrical machine instance and feeding it into the PyEMMO-PYLEECAN interface.
+- Have a look at the [PYLEECAN tutorials](https://pyleecan.org/tutorials.html) on how to use PYLEECAN. Especially the tutorial on ["How to define a machine"](https://pyleecan.org/01_tuto_Machine.html).
+- See the [PYLEECAN API tutorial](tutorials/pyleecan_api.py) for detailed instructions on how to create a ONELAB model from a PYLEECAN machine object.
 
+Here is a small example of the PYLEECAN API:
 
+```python
+from os.path import join
+
+from pyemmo.api.pyleecan import main as pyleecan_api
+from pyleecan.definitions import DATA_DIR
+from pyleecan.Functions.load import load
+
+# load a pyleecan machine
+IPMSM_A = load(join(DATA_DIR, "Machine", "Toyota_Prius.json"))
+
+# Run the main function of the pyleecan api:
+pyemmo_script = pyleecan_api.main(
+    pyleecan_machine=IPMSM_A,
+    model_dir="./Toyota_Prius_ONELAB",  # path for the model files
+    use_gui=True,  # select if you want to open the final model in Gmsh.
+    gmsh="",  # optional gmsh executable.
+    # If use_gui is True, pyemmo will try to find a Gmsh executable on your computer.
+    getdp="",  # optional getdp executable. For simulation in the GUI.
+)
+```
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first
@@ -96,7 +117,7 @@ To create or update the documentation you will need to do:
 
 1. Install the doc requirments with: `pip install -r requirements-doc.txt`.
 2. Make sure pyemmo is found by either creating a *pyemmo.pth* file in the *site-packages* folder or use `pip install -e .`.
-3. To fully build the documentation including the pyleecan api subpackage you need to install pyleecan. Currently we have to use the Github version since the new release is not out yet: `pip install git+https://gitlab.com/Eomys/pyleecan/tree/update-python-version.git`
+3. To fully build the documentation including the PYLEECAN api subpackage you need to install PYLEECAN. Currently we have to use the Github version since there is no new release yet: `pip install git+https://gitlab.com/Eomys/pyleecan/tree/update-python-version.git`
 4. Run Sphinx to build the docs e.g. in html `doc\make.bat html`.
 
 You can run `doc\make.bat` plane to see the build options.
