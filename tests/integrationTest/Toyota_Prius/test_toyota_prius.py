@@ -36,7 +36,7 @@ from pyemmo.functions.run_onelab import run_simulation
 
 from ... import GETDP_EXE, GMSH_EXE, TEST_DATA_DIR
 from ... import TEST_TEMP_DIR as TESTS_RESULTS_DIR
-from ...api.pyleecan import run_pyleecan_sim
+from ...api.pyleecan.testutils import run_pyleecan_sim
 
 
 class TestRunOnelab(unittest.TestCase):

@@ -33,14 +33,11 @@ from pyemmo.api.pyleecan.create_gmsh_lines import create_gmsh_lines
 from pyemmo.script.geometry.circleArc import CircleArc
 from pyemmo.script.geometry.line import Line
 
-from . import initialize_gmsh  # pylint: disable=locally-disabled, unused-import
+from .testutils import (  # noqa # pylint: disable=locally-disabled, unused-import
+    initialize_gmsh,
+)
 
 # pylint: disable=locally-disabled, redefined-outer-name
-
-
-# =======================
-# Declaration of fixtures
-# =======================
 
 
 @pytest.fixture

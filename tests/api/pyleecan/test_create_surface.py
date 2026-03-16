@@ -24,8 +24,6 @@ import pyemmo.api.pyleecan.create_gmsh_surface
 """
 from __future__ import annotations
 
-from typing import List
-
 import gmsh
 import pytest
 from pyleecan.Functions.labels import HOLEM_LAB, HOLEV_LAB, get_obj_from_label
@@ -35,11 +33,16 @@ from pyemmo.api.pyleecan import PyleecanMachine
 from pyemmo.api.pyleecan.build_pyemmo_material import build_pyemmo_material
 from pyemmo.api.pyleecan.create_gmsh_surf import create_gmsh_surface
 
-from . import Toyota_Prius,SYNRM_ZAW, initialize_gmsh  # pylint: disable=W0611
+from .testutils import (  # noqa # pylint: disable=W0611
+    SYNRM_ZAW,
+    Toyota_Prius,
+    initialize_gmsh,
+)
 
 
 @pytest.mark.parametrize(
-    ("machine", "nbr_main_surfs", "nbr_total_surfs"), [("Toyota_Prius", 1, 6),("SYNRM_ZAW",1,4)]
+    ("machine", "nbr_main_surfs", "nbr_total_surfs"),
+    [("Toyota_Prius", 1, 6), ("SYNRM_ZAW", 1, 4)],
 )
 def test_create_gmsh_surface(machine, request, nbr_main_surfs, nbr_total_surfs):
     """Function to test ``pyemmo.api.pyleecan.create_gmsh_surface``"""
@@ -56,7 +59,7 @@ def test_create_gmsh_surface(machine, request, nbr_main_surfs, nbr_total_surfs):
         name=surf.label,
     )
 
-    geometry_list: List[MachineSegmentSurface] = []
+    geometry_list: list[MachineSegmentSurface] = []
     geometry_list.append(lam_surf)
     for surf in rotor_surfs:
         # get pyleecan object for material identification

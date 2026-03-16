@@ -30,7 +30,7 @@ from pyleecan.Classes.Machine import Machine
 from pyleecan.Functions.load import load
 
 from pyemmo.api.pyleecan.translate_winding import translate_winding
-from tests.api.pyleecan import TEST_API_PYLCN_DATA_DIR
+from tests.api.pyleecan.testutils import TEST_API_PYLCN_DATA_DIR
 
 
 @pytest.mark.parametrize(
