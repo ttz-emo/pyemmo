@@ -48,7 +48,7 @@ from ...script.rotor import Rotor
 from ...script.script import Script
 from ...script.stator import Stator
 from ..machine_segment_surface import MachineSegmentSurface
-from . import ROTOR_AIRGAP_IDEXT, STATOR_AIRGAP_IDEXT, apiNameDict
+from . import ROTOR_AIRGAP_IDEXT, STATOR_AIRGAP_IDEXT, api_name_dict
 from . import boundaryJSON as boundary
 from . import default_info_dict, importJSON, modelJSON
 from .create_airgaps import create_airgap_surfaces
@@ -274,7 +274,7 @@ def createMeshSizeGUICode(machineSurfDict: dict[str, list[MachineSegmentSurface]
     # First get all IDs containing idExt into idList (e.g. there could be "LplR" and "LplL"
     # for idExt = "Lpl")
     # FIXME: Rework this since the default IDs will change in the future!
-    for part_id, apiSurfName in apiNameDict.items():
+    for part_id, apiSurfName in api_name_dict.items():
         surfID_List = []
         for surfID in machineSurfDict.keys():
             if part_id in surfID:
