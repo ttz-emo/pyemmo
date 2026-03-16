@@ -49,7 +49,7 @@ if use_pyleecan:
     from .translate_machine import translate_machine
 else:
     raise ModuleNotFoundError(
-        "Pyleecan is not available! Please install pyleecan first."
+        "PYLEECAN is not available! Please install pyleecan first."
     )
 
 
@@ -70,7 +70,7 @@ def main(
     the model by invoking the JSON-API.
 
     Args:
-        pyleecan_machine (PyleecanMachine | str): Pyleecan machine object to translate
+        pyleecan_machine (PyleecanMachine | str): PYLEECAN machine object to translate
             or path to machine json file.
         model_dir (str): Path to the directory where the model files should be
             stored.
@@ -85,7 +85,7 @@ def main(
 
 
     Raises:
-        ValueError: If incompatible Pyleecan Machine type is given.
+        ValueError: If incompatible PYLEECAN Machine type is given.
             Currently only :class:`MachineSIPMSM`, :class:`MachineIPMSM`
             and :class:`MachineSyRM` work.
     """

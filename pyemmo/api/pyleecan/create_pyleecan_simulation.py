@@ -37,7 +37,7 @@ def create_simulation(
     i_q: float = 0.0,
     speed: float = 1000.0,
 ) -> PyleecanSimulation:
-    """Create a Pyleecan Simulation object from a given machine
+    """Create a PYLEECAN Simulation object from a given machine
 
     Args:
         machine (PyleecanMachine): Actual pyleecan machine
@@ -47,7 +47,7 @@ def create_simulation(
 
 
     Returns:
-        PyleecanSimulation: Pyleecan Simulation object
+        PyleecanSimulation: PYLEECAN Simulation object
     """
     simu = Simu1(name="PyEMMO_Simulation", machine=machine)
     # simu.path_result = "path/to/folder" Path to the Result folder to use

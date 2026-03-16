@@ -19,7 +19,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """
-This module provides the function `label2part_id` to translate Pyleecan surface labels
+This module provides the function `label2part_id` to translate PYLEECAN surface labels
 to corresponding part IDs used in the pyemmo API.
 """
 
@@ -49,14 +49,14 @@ from ..json import (
 
 # pylint: disable=too-few-public-methods, too-many-arguments, too-many-locals
 def label2part_id(label: str) -> str:
-    """Translate the Pyleecan surface label to the corresponding part ID in the pyemmo
+    """Translate the PYLEECAN surface label to the corresponding part ID in the pyemmo
     api. If the surface has no api relevant label the original label is returned.
 
     Args:
-        label (str): Pyleecan surface label
+        label (str): PYLEECAN surface label
 
     Returns:
-        str: Part ID from pyemmo.api.json. For example, Pyleecan Rotor Lamination with
+        str: Part ID from pyemmo.api.json. For example, PYLEECAN Rotor Lamination with
         label "Rotor-0 Lamination" will be translated to "rotor lamination".
     """
     label_dict = decode_label(label)
@@ -91,5 +91,5 @@ def label2part_id(label: str) -> str:
     if "Frame" in label:
         return label
     raise ValueError(
-        f"Pyleecan surface label did not contain rotor or stator lamination label: {label}"
+        f"PYLEECAN surface label did not contain rotor or stator lamination label: {label}"
     )

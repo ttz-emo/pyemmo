@@ -73,7 +73,7 @@ def build_pyemmo_material(pyleecan_material: PyleecanMaterial) -> Material:
         # TODO: Check if material really missing magnetic properies
         logger.warning(
             "Material 'Copper1' used without magnetic properties. "
-            "Replacing it with Pyleecan default material 'Copper2'"
+            "Replacing it with PYLEECAN default material 'Copper2'"
         )
         pyleecan_material = copper2
     # elec props

@@ -41,10 +41,10 @@ def create_gmsh_surface(
     name: str = "",
 ) -> MachineSegmentSurface:
     """
-    Translates Pyleecan SurfLine surfaces into pyemmo MachineSegmentSurface objects.
+    Translates PYLEECAN SurfLine surfaces into pyemmo MachineSegmentSurface objects.
 
     Args:
-        surface (pyleecan.Classes.SurfLine.SurfLine): Pyleecan surface.
+        surface (pyleecan.Classes.SurfLine.SurfLine): PYLEECAN surface.
         nbr_segments (int): Number of segments for the surface.
         material (Material): Material for the surface.
         name str: Optional name for the surface. Defaults to "".

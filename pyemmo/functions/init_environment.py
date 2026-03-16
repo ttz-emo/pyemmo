@@ -20,7 +20,7 @@
 #
 """Inits the program environment in the PCs operating system.
 
-The code is copied from the Pyleecan project and adapted for the use with
+The code is copied from the PYLEECAN project and adapted for the use with
 PyEMMO. See https://github.com/Eomys/pyleecan for the original code."""
 
 from __future__ import annotations

@@ -44,13 +44,13 @@ if __name__ == "__main__":
     # 1. Check that all argvs are valid!
     parser = argparse.ArgumentParser(
         description=(
-            "Process Pyleecan machine data (saved as JSON file) to generate "
+            "Process PYLEECAN machine data (saved as JSON file) to generate "
             "a Onelab Simulation."
         )
     )
     parser.add_argument(
         "file",
-        help="Path to the Pyleecan-Machine-JSON file",
+        help="Path to the PYLEECAN-Machine-JSON file",
         type=str,
     )
     # parser.add_argument(

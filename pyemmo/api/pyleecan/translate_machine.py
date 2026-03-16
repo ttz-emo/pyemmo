@@ -36,7 +36,7 @@ def translate_machine(machine: PyleecanMachine) -> dict[str, MachineSegmentSurfa
     to create a geometry dictionary.
 
     Args:
-        machine (PyleecanMachine): Pyleecan Machine object.
+        machine (PyleecanMachine): PYLEECAN Machine object.
 
     Returns:
         dict[str, MachineSegmentSurface]: json-api compatible geometry dictionary with

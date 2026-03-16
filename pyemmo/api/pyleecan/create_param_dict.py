@@ -52,9 +52,9 @@ def create_param_dict(
     section in documentation for further details.
 
     Args:
-        machine (PyleecanMachine): Pyleecan
+        machine (PyleecanMachine): PYLEECAN
             `Machine <https://pyleecan.org/pyleecan.Classes.Machine.html>`_ object.
-        pyleecan_simulation (PyleecanSimulation): A Pyleecan
+        pyleecan_simulation (PyleecanSimulation): A PYLEECAN
             `Simulation <https://pyleecan.org/pyleecan.Classes.Simulation.html>`_ object.
         symmetry (int | None): Set the symmetry factor for the model manually. If None,
             calculate the symmetry from geometry and winding data.

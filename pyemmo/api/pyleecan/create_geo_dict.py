@@ -21,7 +21,7 @@
 """This module provides the function :func:`pyemmo.api.pyleecan.create_geo_dict.create_geo_dict` to convert geometries from pyleecan to pyemmo format.
 
 Example:
-    >>> machine = MachineIPMSM(...)  # Pyleecan machine object
+    >>> machine = MachineIPMSM(...)  # PYLEECAN machine object
     >>> geometry_dict = create_geo_dict(machine)
 
 """
@@ -61,7 +61,7 @@ def create_geo_dict(
 ) -> dict[str, MachineSegmentSurface]:
     """
     Creates a dictionary containing geometry information for communication between
-    Pyleecan and pyemmo.
+    PYLEECAN and pyemmo.
 
     This function translates the machine geometry into a format suitable for
     communication with pyemmo.
@@ -80,7 +80,7 @@ def create_geo_dict(
     rotor_sym = machine.rotor.comp_periodicity_geo()[0]
     # NOTE: We need to extract the additional holes here, because they can cause the
     # lamination contour to be open if they lie on the boundary. This is something thats
-    # different in Gmsh compared to FEMM (Pyleecan).
+    # different in Gmsh compared to FEMM (PYLEECAN).
     # Since the holes are not part of the machine then anymore, we cant find their
     # material using `get_obj_from_label`. Thats why we create them separatly after the
     # laminations.

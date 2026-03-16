@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""This module creates the default config dict. Copied from Pyleecan project!"""
+"""This module creates the default config dict. Copied from PYLEECAN project!"""
 from __future__ import annotations
 
 # Default config_dict
