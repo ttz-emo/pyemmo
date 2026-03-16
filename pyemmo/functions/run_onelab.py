@@ -51,6 +51,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import platform
 import subprocess
 import sys
 import time as time_module
@@ -154,7 +155,8 @@ def find_exe(exe_name: str, verbosity: bool = True) -> str:
         "Could not find %s from command line. Trying to find it in python-path...",
         exe_name,
     )
-    # second option: try to find gmsh in python path. (Should work since gmsh module is installed!)
+    # second option: try to find gmsh in python path. (Should work since gmsh python
+    # module is installed!)
     for path in sys.path:
         if isdir(path):
             for file in os.listdir(path):
@@ -170,7 +172,7 @@ def find_exe(exe_name: str, verbosity: bool = True) -> str:
     )
     # third option: try to find {executableName} in user/local/programs
     # and subfolders. Takes time to iterate through all files
-    if sys.platform.startswith("win32"):
+    if platform.system() == "Windows":
         # is system windows; user-program-path:
         user_dir = normpath(join(expanduser("~"), "appdata", "local", "programs"))
         # try to find {executableName} in user programm path
@@ -184,15 +186,34 @@ def find_exe(exe_name: str, verbosity: bool = True) -> str:
                 "%s could not be found in home program folder '%s'", exe_name, user_dir
             )
         else:
-            logger.debug("Can't find home directory.")
+            logger.debug(
+                "Windows user programs directory '%s' does not exist...", user_dir
+            )
+    elif platform.system() == "Linux":
+        # is system windows; user-program-path:
+        user_dir = normpath(join(expanduser("~"), ""))
+        # try to find {executableName} in user programm path
+        if isdir(user_dir):
+            for root, _, files in os.walk(user_dir):
+                if files == f"{exe_name}.exe":
+                    logger.debug("Found %s in '%s'! :)", exe_name, root)
+                    return join(root, f"{exe_name}.exe")
+            # if exe was not found in home dir
+            logger.debug(
+                "%s could not be found in home program folder '%s'", exe_name, user_dir
+            )
+        else:
+            logger.debug("Windows home directory '%s' does not exist...", user_dir)
     else:
         raise SystemError(
-            f"sys.platform is {sys.platform}, not 'win32'. Could not find home directory"
+            f"Platform is {platform.system()}, not 'Windows' or 'Linux'. "
+            "Could not find home directory."
         )
     if not exe_path:
         raise FileNotFoundError(
-            f"Can not find {exe_name} on your system! Please install {exe_name} or set "
-            "PATH Variable."
+            f"Can not find {exe_name} on your system! "
+            f"Give the path to the executable manually or install {exe_name} and set "
+            "your systems PATH variable."
         )
 
 
