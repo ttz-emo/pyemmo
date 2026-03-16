@@ -3,7 +3,7 @@ Getting Started
 
 Python and Compatible Versions
 ------------------------------
-PyEMMO is tested and works for Python versions from 3.8 to 3.14.
+PyEMMO is tested and works for Python versions from 3.9 to 3.14.
 The current development version is Python 3.12.10.
 You can `get the latest Python versions here <https://www.python.org/downloads/>`_.
 If you have never used Python before we recommend you get familiar with the basics of programming in Python.
@@ -35,14 +35,22 @@ But keep in mind that this will also uninstall and reinstall the libraries that 
 
 .. note:: **The PYLEECAN package is currently only a optional dependency of PyEMMO**
 
-    This is because pyleecan depends on various older packages including GUI package `PySide2`.
+    This is because pyleecan depends on various older packages including GUI package *PySide2*.
     Thats why the `latest version 1.5.2 <https://pypi.org/project/pyleecan/1.5.2/>`_ is only compatible with ``Python<3.11``.
-    While the process to update PYLEECAN to ``PySide6`` and upgrade futher dependencies is allready finished, these updates are currently not available in a new release. See `Issue 732 <https://github.com/Eomys/pyleecan/issues/732>`_ for the current state of the update process.
+    While the process to update PYLEECAN to *PySide6* and upgrade futher dependencies is allready finished, these updates are currently not available in a new release. See `Issue 732 <https://github.com/Eomys/pyleecan/issues/732>`_ for the current state of the update process.
     To use PyEMMO with PYLEECAN you will currently need to install the PYLEECAN development version from Github:
 
     .. code-block:: console
 
-        $ pip install pip install git+https://gitlab.com/Eomys/pyleecan/tree/update-python-version.git
+        $ pip install git+https://gitlab.com/Eomys/pyleecan/tree/update-python-version.git
+
+    You will also need to install *SciDataTool* package from my Github for now:
+
+    .. code-block:: console
+
+        $ pip uninstall scidatatool
+        $ pip install git+https://github.com/mxgnsr/SciDataTool.git@update-reqs
+
 
 
 Getting ONELAB
