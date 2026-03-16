@@ -88,6 +88,11 @@ def build_pyemmo_material(pyleecan_material: PyleecanMaterial) -> Material:
 
     # mag props
     mag_properties: MatMagnetics = pyleecan_material.mag  # type: ignore
+    if mag_properties is None:
+        raise ValueError(
+            f"No magnetic properties in PYLEECAN material {pyleecan_material.name}. "
+            "Please set with `material.mag = MatMagnetics(...)`"
+        )
     try:
         rel_permeability = mag_properties.mur_lin
         if rel_permeability is None:
