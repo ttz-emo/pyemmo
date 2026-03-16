@@ -50,7 +50,7 @@ def translate_winding(machine: PyleecanMachine) -> swat_em.datamodel:
         ``swat-em.datamodel``: The datamodel object representing the winding.
     """
     swat_emm_winding = swat_em.datamodel()
-    # FIXME: genwdg() can fail for pyleecan WindingUD. Try to use
+    # FIXME: genwdg() can fail for PYLEECAN WindingUD. Try to use
     # machine.stator.winding.wind_mat to directly set swatem winding layout.
     swat_emm_winding.genwdg(
         Q=machine.stator.slot.Zs,
@@ -68,7 +68,7 @@ def translate_winding(machine: PyleecanMachine) -> swat_em.datamodel:
     try:
         if wind_swat is None:
             raise RuntimeError(
-                f"Could not translate winding of pyleecan machine {machine.name}",
+                f"Could not translate winding of PYLEECAN machine {machine.name}",
             )
     except RuntimeError as exce:
         logger = logging.getLogger(__name__)

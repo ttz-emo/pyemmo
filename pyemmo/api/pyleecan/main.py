@@ -19,8 +19,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """
-Core module of pyleecan api which contains the :func:`main` function to build a ONELAB
-model from a pyleecan machine object.
+Core module of PYLEECAN api which contains the :func:`main` function to build a ONELAB
+model from a PYLEECAN machine object.
 """
 
 from __future__ import annotations
@@ -49,7 +49,7 @@ if use_pyleecan:
     from .translate_machine import translate_machine
 else:
     raise ModuleNotFoundError(
-        "PYLEECAN is not available! Please install pyleecan first."
+        "PYLEECAN is not available! Please install PYLEECAN first."
     )
 
 
@@ -61,7 +61,7 @@ def main(
     use_gui: bool = True,
     symmetry: int | None = None,
 ):
-    """Main of pyleecan api to build a ONELAB model from a pyleecan machine.
+    """Main of PYLEECAN api to build a ONELAB model from a PYLEECAN machine.
 
     This uses the
     :func:`~pyemmo.api.pyleecan.translate_machine.translate_machine`

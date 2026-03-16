@@ -20,7 +20,7 @@
 #
 """
 This module provides the function ``create_gmsh_lines`` which translates a list of
-pyleecan curves into a list of pyemmo :class:`~pyemmo.script.gmsh.gmsh_line.GmshLine`.
+PYLEECAN curves into a list of pyemmo :class:`~pyemmo.script.gmsh.gmsh_line.GmshLine`.
 
 Example:
     >>> pyleecan_line_list = [Segment(...), Arc1(...), ...]
@@ -42,9 +42,9 @@ from .create_gmsh_point import create_gmsh_point
 def create_gmsh_lines(
     pyleecan_lines: list[Segment | Arc1 | Arc2 | Arc3],
 ) -> list[GmshLine | GmshArc]:
-    """Translates a list of pyleecan curves into a list of pyemmo curves.
+    """Translates a list of PYLEECAN curves into a list of pyemmo curves.
 
-    This function translates a list of pyleecan curves (Segment, Arc1, Arc2, Arc3)
+    This function translates a list of PYLEECAN curves (Segment, Arc1, Arc2, Arc3)
     into a list of pyemmo curves (Line, CircleArc).
 
     Args:

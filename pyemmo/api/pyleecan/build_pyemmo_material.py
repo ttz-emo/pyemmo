@@ -20,7 +20,7 @@
 #
 """
 Define function :func:`~pyemmo.api.pyleecan.build_pyemmo_material.build_pyemmo_material`
-to convert pyleecan materials to pyemmo materials.
+to convert PYLEECAN materials to pyemmo materials.
 """
 
 from __future__ import annotations
@@ -36,7 +36,7 @@ from pyleecan.Classes.MatMagnetics import MatMagnetics
 from ...script.material.material import Material
 
 try:
-    # try to load pyleecan copper material to catch error with copper1
+    # try to load PYLEECAN copper material to catch error with copper1
     from os.path import join
 
     from pyleecan.definitions import DATA_DIR
@@ -51,20 +51,20 @@ except Exception:  # pylint: disable=W0718
 
 # FIXME: Need to implement ElectricalSteel creation for loss data and lamination thickness!
 def build_pyemmo_material(pyleecan_material: PyleecanMaterial) -> Material:
-    """Translates a pyleecan material into a pyemmo material.
+    """Translates a PYLEECAN material into a pyemmo material.
 
-    This function translates a pyleecan material into a pyemmo material.
+    This function translates a PYLEECAN material into a pyemmo material.
 
     Args:
-        pyleecan_material (PyleecanMaterial): The pyleecan material to be translated.
+        pyleecan_material (PyleecanMaterial): The PYLEECAN material to be translated.
 
     Returns:
         Material: The translated pyemmo material.
 
     Notes:
         - Conductivity, relPermeability, remanence, tempCoefRem, BH, and density
-          are extracted from the pyleecan material to construct the pyemmo material.
-        - If any attribute is missing from the pyleecan material, it is set to its
+          are extracted from the PYLEECAN material to construct the pyemmo material.
+        - If any attribute is missing from the PYLEECAN material, it is set to its
           default value in the pyemmo material.
 
     """

@@ -69,7 +69,7 @@ The :func:`~pyemmo.api.pyleecan.main` function returns a PyEMMO :class:`~pyemmo.
     from pyemmo.api.pyleecan import main as pyleecan_api
 
     IPMSM_A = load(join(DATA_DIR, "Machine", "Toyota_Prius.json"))
-    # Run the main function of the pyleecan api:
+    # Run the main function of the PYLEECAN api:
     pyemmo_script = pyleecan_api.main(
         pyleecan_machine=IPMSM_A,
         model_dir=join(RESULT_DIR, "Toyota_Prius_ONELAB"),  # path for the model files
@@ -79,7 +79,7 @@ The :func:`~pyemmo.api.pyleecan.main` function returns a PyEMMO :class:`~pyemmo.
         getdp="",  # optional getdp executable. For simulation in the GUI.
     )
 
-See the pyleecan api tutorial for a more detailed walkthrough of the workflow and the expected input and output structures.
+See the PYLEECAN api tutorial for a more detailed walkthrough of the workflow and the expected input and output structures.
 
 .. todo:: add link to tutorial or transfer tutorial copy to doc
 
@@ -93,7 +93,7 @@ The following design and geometry limitations are known for the coupling to PYLE
 - Wound rotor machines, like electrically excited synchronous machines or wound induction machines.
 - Multi-cage induction motors.
 - No multi-layered surface subtractions (you cannot cut out of tool surfaces in the api).
-- No overlaping surfaces, e.g. air box overlaping magnet (does not work in pyleecan aswell).
+- No overlaping surfaces, e.g. air box overlaping magnet (does not work in PYLEECAN aswell).
 """
 
 from __future__ import annotations

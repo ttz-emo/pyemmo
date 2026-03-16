@@ -40,7 +40,7 @@ def create_simulation(
     """Create a PYLEECAN Simulation object from a given machine
 
     Args:
-        machine (PyleecanMachine): Actual pyleecan machine
+        machine (PyleecanMachine): Actual PYLEECAN machine
         id (float): Length axis (d-axis) current in A (eff). Defaults to 0.
         iq (float): Quadrature axis (q-axis) current in A (eff). Defaults to 0.
         speed (float): Initial speed for simulation in rpm. Defaults to 1000.0.

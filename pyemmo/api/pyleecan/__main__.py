@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Main module of pyleecan api
+"""Main module of PYLEECAN api
 TODO
 """
 
@@ -40,7 +40,7 @@ pyemmoLogger = logging.getLogger("pyemmo")
 
 if __name__ == "__main__":
     if not use_pyleecan:
-        raise ModuleNotFoundError("Please install pyleecan!")
+        raise ModuleNotFoundError("Please install PYLEECAN!")
     # 1. Check that all argvs are valid!
     parser = argparse.ArgumentParser(
         description=(

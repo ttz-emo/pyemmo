@@ -19,7 +19,7 @@
 #
 """
 This module provides the function ``create_gmsh_point`` which translates the coordinates
-of a point in pyleecan into a pyemmo :class:`~pyemmo.script.gmsh.gmsh_point.GmshPoint`.
+of a point in PYLEECAN into a pyemmo :class:`~pyemmo.script.gmsh.gmsh_point.GmshPoint`.
 """
 
 from __future__ import annotations
@@ -28,7 +28,7 @@ from ...script.gmsh.gmsh_point import GmshPoint
 
 
 def create_gmsh_point(pyleecan_point: complex, meshLength: float = 1e-3) -> GmshPoint:
-    """Translates the coordinates of a point in pyleecan into a pyemmo point.
+    """Translates the coordinates of a point in PYLEECAN into a pyemmo point.
 
     Args:
         pyleecan_point (complex): coordinates of point in pyleecan.

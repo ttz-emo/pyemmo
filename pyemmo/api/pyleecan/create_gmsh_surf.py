@@ -62,7 +62,7 @@ def create_gmsh_surface(
     # create line loop:
     curves: list[GmshLine] = create_gmsh_lines(surface.get_lines())
     # create gmsh surface
-    # FIXME: The line list of a pyleecan surface does not have to be closed. This
+    # FIXME: The line list of a PYLEECAN surface does not have to be closed. This
     # happens for example in case of holes on the boundary of a surface. In this case,
     # the curve loop is open at the part where the hole intersects.
     pyemmo_surf = MachineSegmentSurface.from_curve_loop(

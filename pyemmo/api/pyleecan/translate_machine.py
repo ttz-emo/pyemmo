@@ -19,7 +19,7 @@
 #
 """
 This module defines the function :func:`~pyemmo.api.pyleecan.translate_machine.translate_machine`
-to convert a given pyleecan machine object to a geometry dictionary in pyemmo json-api
+to convert a given PYLEECAN machine object to a geometry dictionary in pyemmo json-api
 format.
 """
 
@@ -31,7 +31,7 @@ from .create_geo_dict import create_geo_dict
 
 
 def translate_machine(machine: PyleecanMachine) -> dict[str, MachineSegmentSurface]:
-    """Convert a given pyleecan machine to a geometry dict for use in pyemmo json-api.
+    """Convert a given PYLEECAN machine to a geometry dict for use in pyemmo json-api.
     This uses the :func:`~pyemmo.api.pyleecan.create_geo_dict.create_geo_dict` function
     to create a geometry dictionary.
 

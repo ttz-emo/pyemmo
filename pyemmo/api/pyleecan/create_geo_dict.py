@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""This module provides the function :func:`pyemmo.api.pyleecan.create_geo_dict.create_geo_dict` to convert geometries from pyleecan to pyemmo format.
+"""This module provides the function :func:`pyemmo.api.pyleecan.create_geo_dict.create_geo_dict` to convert geometries from PYLEECAN to pyemmo format.
 
 Example:
     >>> machine = MachineIPMSM(...)  # PYLEECAN machine object

@@ -123,7 +123,7 @@ pyemmo_package_logger.info(
 # outputs...
 logging.getLogger("matplotlib.font_manager").setLevel(logging.WARNING)
 
-# check if pyleecan is available
+# check if PYLEECAN is available
 try_pyleecan = True  # set this to False to never use pyleecan
 use_pyleecan = False
 if try_pyleecan:
