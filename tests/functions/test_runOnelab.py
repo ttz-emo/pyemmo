@@ -109,11 +109,15 @@ class TestRunOnelab(unittest.TestCase):
     def test_findGmsh(self):
         GmshExe = findGmsh()
         # Verify
-        ...
 
-    def test_run_ONELAB(self):
-
-        res_id = "test_runOnelab"
+    def test_find_getdp(self):
+        """Test the find_getdp function and make sure sure getdp can be found for test_run_simulation"""
+        exe = find_getdp()
+        # Verify
+        # logger = logging.getLogger(__file__)
+        logging.getLogger(__file__).info("Found GetDP in %s", exe)
+        assert exe.lower().endswith(".exe")
+        assert isfile(exe)
         run_simulation(
             {
                 "getdp": {
