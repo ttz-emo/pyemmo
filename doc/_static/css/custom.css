@@ -32,3 +32,19 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 .wy-nav-side {
     background: #1a1a1a;
 }
+
+/* Set Language */
+/* h = header */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: 'Open Sans', Arial, sans-serif;
+}
+/* p = paragraph (content),  a = links */
+p,
+a {
+    font-family: 'Open Sans', Arial, sans-serif;
+}

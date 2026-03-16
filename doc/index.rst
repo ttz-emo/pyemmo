@@ -35,8 +35,8 @@ Current features are:
 
 * Fully coupled to ONELAB to perform **static, harmonic and transient electromagnetic simulations**. Model files (.geo for Gmsh and .pro for GetDP) can be created through
 
-   * **universal interface** either from user defined scripted geometry definition or based on json-formatted input files.
-   * coupling to `Pyleecan project <https://pyleecan.org/>`_.
+   * **Universal interface** either from user defined scripted geometry definition or based on json-formatted input files.
+   * Coupling to `Pyleecan project <https://pyleecan.org/>`_.
 
 * Built-in material database.
 * Various functions to:
