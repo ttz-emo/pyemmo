@@ -21,10 +21,13 @@
 from __future__ import annotations
 
 import fnmatch
+import logging
 import unittest
 from os import listdir, makedirs
 from os.path import isdir, isfile, join
 from shutil import copytree, ignore_patterns, rmtree
+
+import pytest
 
 from pyemmo.functions.run_onelab import (
     find_getdp,
@@ -102,13 +105,21 @@ class TestRunOnelab(unittest.TestCase):
         pass
 
     def test_find_gmsh(self):
-        GmshExe = find_gmsh()
+        """Test function find_gmsh"""
+        gmsh_path = find_gmsh()
         # Verify
-        ...
+        logging.getLogger(__file__).info("Found Gmsh in %s", gmsh_path)
+        assert gmsh_path.lower().endswith(".exe") or gmsh_path.lower().endswith(".bat")
+        assert isfile(gmsh_path)
 
     def test_findGmsh(self):
-        GmshExe = findGmsh()
+        """Test old findGmsh notation for function find_gmsh."""
+        with pytest.warns(DeprecationWarning):
+            gmsh_path = findGmsh()
         # Verify
+        logging.getLogger(__file__).info("Found Gmsh in %s", gmsh_path)
+        assert gmsh_path.lower().endswith(".exe") or gmsh_path.lower().endswith(".bat")
+        assert isfile(gmsh_path)
 
     def test_find_getdp(self):
         """Test the find_getdp function and make sure sure getdp can be found for test_run_simulation"""
@@ -118,6 +129,12 @@ class TestRunOnelab(unittest.TestCase):
         logging.getLogger(__file__).info("Found GetDP in %s", exe)
         assert exe.lower().endswith(".exe")
         assert isfile(exe)
+
+    def test_run_simulation(self):
+        """Test the run_simulation function with default parameters for the Toyota Prius."""
+        # make sure simulation folder starts with "test_" so the teardown function
+        # removes it.
+        res_id = "test_run_simulation_func"
         run_simulation(
             {
                 "getdp": {
@@ -141,7 +158,10 @@ class TestRunOnelab(unittest.TestCase):
                     "res": self.test_sim_dir,  # result folder
                 },
                 "pro": join(self.model_dir, "Toyota_Prius.pro"),  # pro file
-                "gmsh": {"exe": find_gmsh()},  # gmsh exe and params
+                "gmsh": {
+                    "exe": find_gmsh(),
+                    "verbosity level": 2,
+                },  # gmsh exe and params
                 "info": "",
                 "PostOp": [],  # "GetBOnRadius" - "Get_LocalFields_Post"
             }
