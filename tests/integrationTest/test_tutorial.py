@@ -21,18 +21,22 @@
 from __future__ import annotations
 
 import logging
-
-# import os
 import subprocess
 import sys
-from os.path import abspath, join, normpath
+from os.path import abspath, dirname, join, normpath
 
 import pytest
 
 from pyemmo.definitions import ROOT_DIR
 
+from .. import GETDP_EXE
+
 TUTORIAL_DIR = normpath(abspath(join(ROOT_DIR, "tutorials")))
 tutorial_files = ["pyleecan_api.py"]
+
+# make sure GetDP can be found on the path!
+if dirname(GETDP_EXE) not in sys.path:
+    sys.path.append(dirname(GETDP_EXE))
 
 
 @pytest.mark.parametrize(("tutorial_file"), tutorial_files)
