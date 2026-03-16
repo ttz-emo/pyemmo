@@ -29,33 +29,10 @@ import numbers
 from typing import Any, Literal
 
 import numpy as np
-from numpy.linalg import norm
 
 from ...functions.clean_name import clean_name
 from ...script.material.electricalSteel import ElectricalSteel
 from ...script.material.material import Material
-from .. import air
-
-
-# ================================ START EXTENDED INFO FUNCTIONS ===================================
-class InvalidSheetThicknessError(Exception):
-    """
-    Exception raised for errors in the sheet thickness input.
-    Attributes:
-        sheet_thickness (any): The invalid sheet thickness value that caused the error.
-        message (str): Explanation of the error. Defaults to "Invalid sheet thickness provided".
-    Methods:
-        __str__(): Returns a string representation of the error, including the message
-        and the invalid input value.
-    """
-
-    def __init__(self, sheet_thickness, message="Invalid sheet thickness provided"):
-        self.input_value = sheet_thickness
-        self.message = message
-        super().__init__(self.message)
-
-    def __str__(self):
-        return f"{self.message}: {self.input_value}"
 
 
 def load_info_dict(extInfoPath: str) -> dict:
@@ -90,19 +67,6 @@ def get_mag_type(extendedInfo: dict) -> str:
     raise KeyError(
         "Magnetization direction (magType) is missing from extended info dict!"
     )
-
-
-def getCurrentAmpl(extendedInfo: dict) -> float:
-    """Return the amplitude of the current vector from d and q component
-
-    Args:
-        extendedInfo (dict): dict with additional information for the simulation.
-
-    Returns:
-        float: norm of d and q component. Amplitude of the current phasor.
-    """
-    dCurrent, qCurrent = getCurrentdq(extendedInfo)
-    return norm([dCurrent, qCurrent])
 
 
 def getCurrentdq(extendedInfo: dict) -> tuple[float]:
@@ -172,7 +136,7 @@ def get_nbr_of_turns(extendedInfo: dict) -> float:
     )
 
 
-def getRotFreq(extendedInfo: dict, unit: str = "Hz") -> float:
+def get_mech_speed(extendedInfo: dict, unit: str = "Hz") -> float:
     """Get the mechanical rotation frequency of the rotor from the extended info dict.
 
     Args:
@@ -249,13 +213,6 @@ def get_nbr_of_slots(extendedInfo: dict) -> int:
     raise KeyError(f"number of slots ('{nppKey}') missing from extended info dict!")
 
 
-def getElecFreq(extendedInfo: dict) -> float:
-    r"""calcElecFreq calculates the electrical frequency in Hz from the extended info dict by
-    :math:`f_\mathrm{el} = f_\mathrm{mech} \cdot pp`, where :math:`pp` is the number of pole
-    pairs"""
-    return getRotFreq(extendedInfo, "Hz") * get_nbr_of_pole_pairs(extendedInfo)
-
-
 def get_axial_length(extendedInfo: dict) -> dict[str, float]:
     """get the axial length in meter of rotor and stator from the extended info dict"""
     if "axLen_S" in extendedInfo.keys() and "axLen_R" in extendedInfo.keys():
@@ -270,7 +227,7 @@ def get_axial_length(extendedInfo: dict) -> dict[str, float]:
     raise KeyError(msg)
 
 
-def getMagTemperature(extendedInfo: dict) -> float:
+def get_magnet_temperature(extendedInfo: dict) -> float:
     """get the magnet temperature from the extended info dict. Key is "tempMag".
 
     Args:
@@ -305,13 +262,13 @@ def get_simulation_params(extendedInfo: dict) -> dict[str, dict[str, float]]:
             "FINAL_ROTOR_POS": endPos,
             "Id_eff": idq[0],
             "Iq_eff": idq[1],
-            "SPEED_RPM": getRotFreq(extendedInfo, "rpm"),
+            "SPEED_RPM": get_mech_speed(extendedInfo, "rpm"),
             "ParkAngOffset": extendedInfo["parkAngleOffset"],
             "ANALYSIS_TYPE": extendedInfo["analysisType"],
             "NBR_PARALLEL_PATHS": extendedInfo["NpP"],
         },
         "MAT": {
-            "TEMP_MAG": getMagTemperature(extendedInfo),
+            "TEMP_MAG": get_magnet_temperature(extendedInfo),
         },
     }
     return simuParams
@@ -363,10 +320,7 @@ def get_MB_radius(extendedInfo: dict) -> float:
     mbKey = "movingband_r"
     if mbKey in extendedInfo.keys():
         return float(extendedInfo[mbKey])
-    else:
-        raise KeyError(
-            f"Movingband radius ('{mbKey}') missing from extended info dict!"
-        )
+    raise KeyError(f"Movingband radius ('{mbKey}') missing from extended info dict!")
 
 
 def get_nbr_of_parallel_paths(extendedInfo: dict) -> int:
@@ -463,21 +417,3 @@ def create_material(mat_dict: dict[str, dict[Literal["wert"], Any]]) -> Material
             logger.debug("Removing parameter lossParams from material dict!")
             mat_dict.pop("lossParams")
     return Material.from_dict(mat_dict)
-
-
-def isAir(materialName: str):
-    """
-    isAir checks if the material name contains "air" or "luft" and returns True if it does so
-    """
-    if isinstance(materialName, str):
-        if "air" in materialName.lower() or "luft" in materialName.lower():
-            return True
-        return False
-    if isinstance(materialName, list):
-        if not materialName:  # if materialName is empty
-            return True
-        raise TypeError("Imported material name is unempty list, not string!")
-    raise TypeError("Imported material name has type" + str(type(materialName)))
-
-
-# ======================================= END MATERIAL FUNCTIONS ===================================
