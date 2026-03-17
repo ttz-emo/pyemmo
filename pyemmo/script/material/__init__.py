@@ -17,11 +17,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Material Package"""
+""":todo: doc"""
 from __future__ import annotations
 
 import os
 
 from ...definitions import ROOT_DIR
 
-DATABASE_PATH = os.path.join(ROOT_DIR, "pyemmo/script/material/material_json")
+DATABASE_PATH = os.path.join(ROOT_DIR, "pyemmo", "script", "material", "material_json")
+"""Path to pyemmo material database folder.
+
+:meta hide-value:
+"""

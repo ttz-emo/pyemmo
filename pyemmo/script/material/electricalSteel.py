@@ -18,7 +18,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""This module holds the electrical steel lamination Material-class definition"""
+"""
+This module defines the class :class:`ElectricalSteel` for electrical steel materials
+used in electromagnetic power transfomation.
+"""
 from __future__ import annotations
 
 import json
@@ -61,15 +64,19 @@ class ElectricalSteel(Material):
             relPermeability (float, optional): Relative magnetic permeability (no unit).
             BH (numpy.ndarray, optional): B-H curve data as a NumPy array.
                 Where B is the flux density in T and H is the magnetic field strength in A/m.
+                Must be given by shape (X,2) as pairs of B and H:
+                :code:`[[B1, H1],[B2, H2],[B3, H3],...]`.
             density (float, optional): Density of the material in kg/m³.
             thermalConductivity (float, optional): Thermal conductivity in W/(m·K).
             thermalCapacity (float, optional): Thermal capacity in J/(kg·K).
             lossParams (Tuple[float, float, float], optional): Loss parameters,
                 possibly recalculated based on reference frequency and flux density in W/m³.
                 The order in the tuple is:
+
                 - hysteresis loss
                 - eddy current loss
                 - excess loss
+
                 If the values are given in a range for W/kg (hysteresis value < 20 AND
                 eddy current value < 5), the values will be adapted by the
                 material density (kg/m³) to obtain the values in W/m³.
@@ -78,12 +85,6 @@ class ElectricalSteel(Material):
                 if they are given in W/kg.
             referenceFluxDensity (float, optional): Reference flux density for
                 loss calculations in T.
-
-        Notes:
-            - The lossParams parameter should be set last, as it may depend on
-              referenceFrequency and referenceFluxDensity for recalculation
-              (e.g., if given in W/kg).
-
         """
         super().__init__(
             name,
