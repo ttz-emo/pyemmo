@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -17,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module for primary boundary Line"""
+"""Module for primary boundary line"""
 from __future__ import annotations
 
 from ..geometry.circleArc import CircleArc
@@ -28,9 +29,14 @@ from .physicalElement import Material, PhysicalElement
 
 class PrimaryLine(PhysicalElement):
     """
-    Eine Instanz der Klasse MasterLine beschreibt die Masterkante eines Teilmodells einer zu
-    simulierenden elektischen Maschine.\n
-        \\image html masterLine.png
+    The :class:`PrimaryLine` and :class:`~pyemmo.script.physicals.secondaryLine.SecondaryLine`
+    classes descript the boundary lines at symmetry axes of the machine model where
+    the field results are mirror.
+
+    .. image:: ../../images/primary_line.svg
+        :scale:  100%
+        :alt: Example for a ``PrimaryLine`` physical curve.
+        :align: center
     """
 
     def __init__(

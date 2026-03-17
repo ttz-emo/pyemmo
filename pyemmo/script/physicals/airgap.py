@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module for AirArea Physical Element"""
+""""""
 from __future__ import annotations
 
 from ..geometry.surface import Surface
@@ -27,14 +27,20 @@ from .physicalElement import PhysicalElement
 
 class AirGap(PhysicalElement):
     """
-    An instance of ``AirGap`` is the part of the airgap of an electric machine model.
+    An instance of :class:`AirGap` is the part of the airgap of an electric machine model.
     This class describes both the airgap surface on the rotor side and on the stator
     side.
     The airgap physical surface of rotor and stator are used for the force and torque
-    calculation in the ONELAB simulation and act as the interface to the ``Movingband``
+    calculation in the ONELAB simulation and act as the interface to the
+    :class:`~pyemmo.script.phyiscals.movingband.MovingBand`
     which allows for the rotational movement in transient simulations.
 
     .. image:: ../../images/class_airGap.png
+        :scale:  100%
+        :alt: Example for a ``Airgap`` physical surfaces.
+        :align: center
+
+    |
     """
 
     def __init__(

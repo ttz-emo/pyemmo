@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module for class Magnet"""
+"""Module for class :class:`Magnet`"""
 from __future__ import annotations
 
 from typing import Literal
@@ -31,12 +31,13 @@ from .physicalElement import PhysicalElement
 
 
 class Magnet(PhysicalElement):
-    """Eine Instanz der Klasse Magnet beschreibt Magnetteile der elektrischen Maschine im
-    dreidimensionalen Raum. Als optische Identifikation der Nord- und Südpole dienen die Farben
-    Rot (Nord) und Grün (Süd) des Netzes.
+    """:class:`Magnet` describe permanent magnet surfaces with a additional boundary
+    condition for the remanence flux density :math:`B_r`.
 
-        \\image html magnet.png
-
+    .. image:: ../../images/magnet.png
+        :scale:  100%
+        :alt: Example for a ``Magnet`` physical surface.
+        :align: center
     """
 
     def __init__(
@@ -61,7 +62,7 @@ class Magnet(PhysicalElement):
             magType (str): magnetization type ("parallel", "radial",
                 "tangential")
             magVectorAngle (float): magnetization vector angle in rad. See
-                ``Magnet.magAngle`` for more details. Defaults to None
+                :attr:`magAngle` for more details. Defaults to None
             phyID (int): physical ID (Default: None)
         """
         super().__init__(name, geoElements, material, phyID)

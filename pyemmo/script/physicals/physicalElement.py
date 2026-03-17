@@ -46,29 +46,28 @@ if TYPE_CHECKING:
 
 class PhysicalElement:
     """
-    Eine Instanz der Klasse PhysicalElement ist die Gruppierung von Flächen/Linien im
-    dreidimensionalen Raum.\n
-    Input:
-        name : string
-        geo_list : [GmshLine] oder [GmshSurface]
-        material : Material
+    PhyicalElement objects represent groups of geometric elements according to the
+    `Gmsh/GetDP definition <https://gmsh.info/doc/texinfo/#Elementary-entities-vs-physical-groups>`_.
+    This means groups of geometric objects, e.g. surfaces with assigned physical
+    properties like material properties or curves with boundary conditions.
 
-    Beispiel:
-        from pyemmo import *\n
-        P1 = Point('P1', 0, 0, 0, 1)\n
-        P2 = Point('P2', 1, 0, 0, 1)\n
-        P3 = Point('P3', 1, 1, 0, 1)\n
-        P4 = Point('P4', 0, 1, 0, 1)\n
-        L1 = Line('L1', P1, P2)\n
-        L2 = Line('L2', P2, P3)\n
-        L3 = Line('L3', P3, P4)\n
-        L4 = Line('L4', P4, P1)\n
-        S1 = Surface('S1', [L1, L3, L2, L4])\n
-        Blech1 = PhysicalElement('Blech1', [S1], steel1010)\n
+    While :class:`PhysicalElement` is the basic representation of such a object, there
+    are some child classes for different usual parts of an electrical machine model in
+    the  :mod:`~pyemmo.script.physicals` package.
+
+    Example:
+        >>> from pyemmo.script.physicals.physicalElement import PhysicalElement
+        >>> P1 = GmshPoint.from_coordinates('P1', 0, 0, 0, 1)
+        >>> P2 = GmshPoint.from_coordinates('P2', 1, 0, 0, 1)
+        >>> P3 = GmshPoint.from_coordinates('P3', 1, 1, 0, 1)
+        >>> P4 = GmshPoint.from_coordinates('P4', 0, 1, 0, 1)
+        >>> L1 = GmshLine.from_points('L1', P1, P2)
+        >>> L2 = GmshLine.from_points('L2', P2, P3)
+        >>> L3 = GmshLine.from_points('L3', P3, P4)
+        >>> L4 = GmshLine.from_points('L4', P4, P1)
+        >>> S1 = GmshSurface.from_curves('Core Surf', [L1, L3, L2, L4])
+        >>> Blech1 = PhysicalElement('Core', [S1], steel1010)
     """
-
-    # Statische Variable zur ID-Verwaltung
-    physicalID: int = 1000
 
     def __init__(
         self,
@@ -81,7 +80,8 @@ class PhysicalElement:
         self.physicalElementType = "PhysicalElement"
 
         self.name = name
-        self.geo_list = geo_list  # set geo list to determine geo_type
+        # set private here since geo_list setter raises RuntimeError!
+        self._geo_list = geo_list
 
         geo_type = 1 if self.geoElementType == Line else 2  # geo_type is Line or Surf
         tag_list = [elem.id for elem in geo_list]  # tag list for gmsh physical group
@@ -93,7 +93,6 @@ class PhysicalElement:
             )
         self.material = material
 
-    # ----- properties -----
     def __repr__(self):
         return f"{type(self)} - '{self.name}' - GmshID:{self.id} "
 
@@ -119,12 +118,12 @@ class PhysicalElement:
 
     @property
     def type(self) -> str:
-        """The function getType of PhysicalElement returns a string with the PhysicalElement-Type"""
+        """Returns the PhysicalElement-Type"""
         return self._physicalElementType
 
     @property
     def name(self) -> str:
-        """Phyiscal element name
+        """Returns the name
 
         Returns:
             str: name
@@ -198,18 +197,21 @@ class PhysicalElement:
         Args:
             geo_list (Union[List[Surface], List[Line]]): Geometrical elements
         """
-        # FIXME: PhysicalElement.geo_list can not be updated in Gmsh once the physical
+        # PhysicalElement.geo_list can not be updated in Gmsh once the physical
         # is created! This should probably raise an error or delete and recreate the
         # physical group in Gmsh!
-        # FIXME: No type checking implemented!
+        raise RuntimeError(
+            "Cannot reset geometric elements of physicals in Gmsh. "
+            "Create new PhysicalElement instead!"
+        )
         self._geo_list = geo_list
         # run element type funtion to ensure there are not lines AND surfaces at the same time
-        self.geoElementType
+        _ = self.geoElementType
 
     # FIXME: TODO Rename geoElementType -> geo_type like in init!
     @property
     def geoElementType(self) -> Line | Surface | None:
-        """get type of geometry elements.
+        """Returns the type of the geometric elements (Surface or Line).
 
         Raises:
             ValueError: If geometry element type is neither line nor surface.
@@ -217,7 +219,7 @@ class PhysicalElement:
             Exception: If element type could not be evaluated.
 
         Returns:
-            Union[Line, Surface, None]: Type of geometric elements in geo list.
+            Union[Line, Surface, None]: Type of geometric elements in :attr:`geo_list`.
         """
         if len(self.geo_list) == 0:
             # if list is empty return None
@@ -246,38 +248,13 @@ class PhysicalElement:
             return Surface
         raise TypeError("GeoElement-Type was neither Line nor Surface...")
 
-    # ---------- methods ----------
-
-    def _getNewID(self):
-        """Wird eine Instanz erzeugt, bekommt sie automatisch eine eindeutige ID zugewiesen.
-        Mit getNewID() wird eine neue ID erzeugt."""
-        PhysicalElement.physicalID = PhysicalElement.physicalID + 1
-        return PhysicalElement.physicalID
-
-    ###
-    # Mit addToScript wird das PhysicalElement zum Skriptobjekt übergeben und in gmsh-Syntax
-    # übersetzt. Diese Methode sollte stets nur in Kombination mit generateScript (Klassenmethode
-    # von Script) verwendet werden.
-    #
-    #   Input:
-    #
-    #       script : Script
-    #
-    #   Output:
-    #
-    #       None
-    #
-    #   Beispiel:
-    #
-    #       myScript = Script(...)
-    #       PhysicalElement1.addToScript(myScript)
-    #
-    ###
-    def addToScript(self, script: Script):
+    def _addToScript(self, script: Script):
         """old add to script method
 
         Args:
             script (Script)
+
+        :meta private:
         """
         script._add_physical(self)
 

@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module for AirArea Physical Element"""
+""""""
 from __future__ import annotations
 
 from ..geometry.surface import Surface
@@ -27,28 +27,18 @@ from .physicalElement import PhysicalElement
 
 class AirArea(PhysicalElement):
     """
-    Eine Instanz der Klasse AirArea beschreibt jeden beliebigen Luftraum innerhalb der
-    elektrischen Maschine im dreidimensionalen Raum. Für den Luftspalt existiert eine eigene
-    Klasse AirGap. Diese Klasse ist eine abgeleitete Klasse der Basisklasse PhysicalElement.
-    Beim Verwenden vom Baukasten muss der Luftspalt vom Nutzer nicht manuell definiert werden.
-    Die Ergänzung vom Luftraum muss bei der Erstellung vom Rotor bzw. Stator automatisch erfolgen
-    (siehe RotorSPMSM.py).
+    An instance of the class :class:`AirArea` describes any air space within the
+    electric machine.
+    A separate class :class:`~pyemmo.script.physicals.airgap.AirGap` exists for the
+    airgap between rotor and stator.
 
-        \\image html class_airArea.png
+        .. image:: ../../images/class_airArea.png
+            :scale:  100%
+            :alt: Example for a ``AirArea`` physical surface.
+            :align: center
 
     """
 
-    ###
-    # Konstruktor der Klasse AirArea.
-    #
-    #   Attribute:
-    #
-    #       ID : Integer
-    #       name : String
-    #       material : Material
-    #       geo_list : [Surface]
-    #
-    ###
     def __init__(
         self,
         name: str,
@@ -58,10 +48,11 @@ class AirArea(PhysicalElement):
         """AirArea is any area defined with material air except from the Airgap surface
 
         Args:
-            - name (str): Domain name
-            - geo_list (List[Union[Surface, Line, CircleArc, Spline]):
-            List of geometry objects
-            - material (Material, optional): Material of AirArea. Should be "air". Defaults to None.
+            name (str): Domain name
+            geo_list (List[Union[Surface, Line, CircleArc, Spline]):
+                List of geometry objects
+            material (Material, optional): Material of AirArea. Should be "air".
+                Defaults to None.
         """
         PhysicalElement.__init__(
             self,

@@ -31,7 +31,9 @@ from .physicalElement import PhysicalElement
 
 class Bar(PhysicalElement):
     """
-    TODO
+    :class:`Bar` represents the rotor bar of a squirrel cage induction machine.
+    It is treated separately because in the simulation the bars should be connected via
+    a electrical circuit boundary condition to accound for the endring segments.
     """
 
     def __init__(
@@ -43,10 +45,9 @@ class Bar(PhysicalElement):
         """Bar defines a rotor bar for a induction machine
 
         Args:
-            - name (str): Bar name
-            - geo_list (Union[Surface, List[Surface]]):
-                List of geometry objects
-            - material (Material): Material of . Should be "air". Defaults to None.
+            name (str): Bar name
+            geo_list (Union[Surface, List[Surface]]): List of geometry objects
+            material (Material): Material of the rotor bar. Defaults to None.
         """
         # convert Surface to list of Surface for PhysicalElement init
         if isinstance(geo_list, Surface):

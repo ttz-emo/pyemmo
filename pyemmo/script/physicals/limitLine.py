@@ -28,10 +28,14 @@ from .physicalElement import PhysicalElement
 
 
 class LimitLine(PhysicalElement):
-    """Eine Instanz der Klasse LimitLine beschreibt jede beliebige Linie, die die Grenze des
-    Systems der elektrischen Maschine definiert bspw. die Außenkante vom Stator.
-    Beim Verwenden vom Baukasten werden die Grenzlinien automatisch definiert.
-    \\image html outerLimit.png
+    """:class:`LimitLine` defines a outer or inner boundary line of the machine model.
+    These lines will get the boundary condition :math:`A_z = 0` so no magnetic flux goes
+    across them.
+
+    .. image:: ../../images/outerLimit.png
+        :scale:  100%
+        :alt: Example for a outer ``LimitLine`` physical curve.
+        :align: center
     """
 
     def __init__(
