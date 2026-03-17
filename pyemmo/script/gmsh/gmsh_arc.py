@@ -40,7 +40,6 @@ Usage:
 Example:
     >>> from module_name import GmshArc, GmshPoint
     >>> import numpy as np
-
     >>> center = GmshPoint.from_coordinates(coords=np.array([0.0, 0.0, 0.0]))
     >>> start = GmshPoint.from_coordinates(coords=np.array([1.0, 0.0, 0.0]))
     >>> end = GmshPoint.from_coordinates(coords=np.array([0.0, 1.0, 0.0]))
@@ -53,12 +52,6 @@ Example:
     )
     >>> # Print line details
     >>> print(line)
-
-Author:
-    Max Schuler
-
-Note:
-    This docstring was created by ChatGPT.
 """
 
 from __future__ import annotations

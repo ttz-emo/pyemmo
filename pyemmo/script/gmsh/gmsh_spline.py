@@ -19,16 +19,9 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """
-TODO: Update
-Module for defining and manipulating geometric lines in 3D space, specifically for use
-with Gmsh.
-
-This module includes the `GmshSpline` class, which represents a curved segment in 3D space.
+This module includes the :class:`GmshSpline` class, which represents a curved segment in 3D space.
 The class allows for the definition of a line with a unique tag, start and end points,
 a name, and a type.
-
-Author:
-    Max Schuler
 """
 
 from __future__ import annotations
@@ -46,9 +39,7 @@ from .gmsh_point import GmshPoint
 
 
 class GmshSpline(GmshLine, Spline):
-    """
-    TODO
-    """
+    """GmshSpline represents a spline type curve through the gmsh api."""
 
     def __init__(
         self,
@@ -226,9 +217,9 @@ class GmshSpline(GmshLine, Spline):
             GmshLine: A copy of the spline.
 
         Example:
-            from pyemmo.script.gmsh.gmsh_line import GmshLine\n
-            L1 = GmshSpline.from_points([P1, P2, P3],'Line 1')\n
-            L2 = L1.duplicate("new name")\n
+            >>> from pyemmo.script.gmsh.gmsh_line import GmshLine\n
+            >>> L1 = GmshSpline.from_points([P1, P2, P3],'Line 1')\n
+            >>> L2 = L1.duplicate("new name")\n
         """
 
         dim_tags: list[DimTag] = gmsh.model.occ.copy([(1, self.id)])

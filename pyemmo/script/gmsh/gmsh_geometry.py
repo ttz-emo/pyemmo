@@ -56,11 +56,6 @@ class GmshGeometry(ABC):
             >>> p = GmshPoint.from_coordinates(coords=[0.0, 1.0, 2.0])
             >>> print(p)
             GmshPoint(tag=1, coords=(0.0, 1.0, 2.0))
-
-    Examples:
-
-
-
     """
 
     @property

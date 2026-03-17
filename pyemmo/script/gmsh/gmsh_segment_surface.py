@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module for GmshSegmentSurface class"""
+""""""
 from __future__ import annotations
 
 import logging
@@ -73,8 +73,9 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
 
         ``tools`` has NO SETTER, because is only accessed by method ``cutOut()``
 
-        NOTE: Needed to reimplement property in GmshSegmentSurface class, because
-        otherwise type hint for properties of tools are missing.
+        :note:
+            Needed to reimplement property in GmshSegmentSurface class, because
+            otherwise type hint for properties of tools are missing.
 
         Returns:
             list: List of tool surfaces

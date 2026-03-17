@@ -42,8 +42,6 @@ from .gmsh_arc import GmshArc
 from .gmsh_line import GmshLine
 from .gmsh_point import GmshPoint
 
-# TODO: add tests for misc functions!!
-
 
 def get_dim_tags(geo_list: list[Line | Surface | PhysicalElement]) -> list[DimTag]:
     """
@@ -70,8 +68,6 @@ def get_dim_tags(geo_list: list[Line | Surface | PhysicalElement]) -> list[DimTa
         RuntimeError: If an element in the geo_list is neither a `Surface` nor a `Line`.
 
     Example:
-
-    ..code::
 
         >>> elements = [Line(id=1), Surface(id=2), PhysicalElement(geo_list=[Line(id=3)])]
         >>> dim_tags = get_dim_tags(elements)

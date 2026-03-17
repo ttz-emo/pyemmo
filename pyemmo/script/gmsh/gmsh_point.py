@@ -44,12 +44,6 @@ Usage:
     The GmshPoint class can be used as part of a larger system where points in 3D space need
     to be managed, tagged, and manipulated. This is particularly useful in mesh generation
     and geometric modeling tasks.
-
-Author:
-    Max Schuler
-
-Note:
-    This docstring was created by ChatGPT.
 """
 from __future__ import annotations
 
