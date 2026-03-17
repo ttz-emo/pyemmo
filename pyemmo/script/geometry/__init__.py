@@ -17,7 +17,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""init of geometry package"""
+"""
+The :mod:`~pyemmo.script.geometry` subpackage provides classes for **basic geometric
+objects**, like the :class:`~pyemmo.script.geometry.line.Line` class, which are the
+basis for the :class:`~pyemmo.script.gmsh.gmsh_geometry.GmshGeometry` classes in the
+:mod:`~pyemmo.script.gmsh` subpackage.
+"""
 
 from __future__ import annotations
 

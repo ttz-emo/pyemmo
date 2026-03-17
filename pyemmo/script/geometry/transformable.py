@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module for abstract class Transformable"""
+""""""
 from __future__ import annotations
 
 # import abstrac base class (abc)
@@ -25,13 +25,7 @@ from abc import ABC, abstractmethod
 
 
 class Transformable(ABC):
-    """Abstract class Transformable for geometry entities.
-    Das Interface Transformable dient als abstrakte Klasse für alle geometrischen
-    Elemente und beinhaltet somit ausschließlich abstrakte Methoden.
-
-    Args:
-        abc (_type_): _description_
-    """
+    """Abstract class Transformable for geometry entities."""
 
     ###Gibt den Namen einer Transformable zurück.
     @property
@@ -75,19 +69,3 @@ class Transformable(ABC):
     @abstractmethod
     def mirror(self, planePoint, planeVector1, planeVector2):
         pass
-
-    # ###Mit addToScript() wird ein Objekt im Skript in Gmsh Syntax erzeugt.
-    # @classmethod
-    # @abstractmethod
-    # def addToScript(self, script):
-    #     pass
-
-    # ###Gibt die ID des Objektes zurück.
-    # @abstractmethod
-    # def getID(self):
-    #     pass
-
-    # ###Überschreibt die existierende ID mit einer neuen ID.
-    # @abstractmethod
-    # def _setID(self, newID):
-    #     pass

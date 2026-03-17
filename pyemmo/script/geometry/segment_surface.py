@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module for class SegmentSurface"""
+""""""
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
@@ -53,7 +53,8 @@ class SegmentSurface(Surface):
            |                 | Should be 2*Pi/nbrSegments  |                 |
            +-----------------+-----------------------------+-----------------+
 
-
+    It describes a surface segement which can be circulary repeated around the center
+    point.
     """
 
     def __init__(
@@ -62,8 +63,7 @@ class SegmentSurface(Surface):
         curves: list[Line],
         nbr_segments: int,
     ):
-        """init of surface for API. This type of surface is special,
-        because it allways forms a machine segment or a part of a segment.
+        """Initialize segmented surface with curve loop and number of segments.
 
         Args:
             name (str): name of the surface
@@ -78,7 +78,7 @@ class SegmentSurface(Surface):
     @property
     def angle(self) -> float:
         """Get the angle of one surface segmen in radians. This equals:
-            2 * Pi / self.nbrSegments
+            :math:`\\frac{2\\cdot\\pi}{\\mathrm{nbr_segments}}`
 
         Returns:
             float: segment angle of that surface in rad.

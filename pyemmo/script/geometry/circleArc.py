@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module for CircleArc Geometry"""
+""""""
 from __future__ import annotations
 
 from math import atan2, cos, isclose, sin
@@ -34,19 +34,16 @@ from .point import Point
 
 
 class CircleArc(Line):
-    """Eine Instanz der Unterklasse CircleArc ist ein Kreissegment, zwischen zwei Punkten
-      (Objekte der Klasse Point) mit einem Mittelpunkt, im dreidimensionalen Raum.
+    """CircleArc is a circle arc segement between two points around a center point.
 
-    Beispiel:
+    Example:
 
-    .. code::
-
-        from pyemmo.script.geometry.point import Point
-        from pyemmo.script.geometry.point import CircleArc
-        C = Point('c', 0, 0, 0, 0.3)
-        P1 = Point('p1', 1, 0, 0, 0.3)
-        P2 = Point('p2', 0, 1, 0, 0.3)
-        CA1 = CircleArc('ca1', P1, C, P2)
+        >>> from pyemmo.script.geometry.point import Point
+        >>> from pyemmo.script.geometry.point import CircleArc
+        >>> C = Point('center', 0, 0, 0)
+        >>> P1 = Point('start point', 1, 0, 0)
+        >>> P2 = Point('end point', 0, 1, 0)
+        >>> CA1 = CircleArc('arc name', P1, C, P2)
 
     """
 
@@ -57,7 +54,7 @@ class CircleArc(Line):
         centerPoint: Point,
         endPoint: Point,
     ):
-        """CircleArc
+        """Initialize from start, end and center point.
 
         Args:
             - name (str): Name of arc.
@@ -95,7 +92,7 @@ class CircleArc(Line):
 
     @property
     def center(self) -> Point:
-        """Die Methode center gibt den Mittelpunkt der Kreiskurve zurück.
+        """Returns the center point of the arc.
 
         Returns:
             Point: Center point of circle arc
@@ -104,7 +101,7 @@ class CircleArc(Line):
 
     @center.setter
     def center(self, newCenterPoint: Point) -> None:
-        """setter of center point
+        """Set new center point
 
         Args:
             newP (Point): New center point of CircleArc
@@ -131,52 +128,51 @@ class CircleArc(Line):
         return abs(r * theta)
 
     def translate(self, dx: float, dy: float, dz: float) -> None:
-        """Mit translate() kann ein Kreisbogen linear verschoben werden. Die
-        Inputvariablen dx, dy und dz beschreiben die Verschiebungsfaktoren in der
-        x-, y- und z- Richtung.
+        """Linear translation of the arc by dx, dy and dz.
 
         Args:
             dx (float): x translation [m]
             dy (float): y translation [m]
             dz (float): z translation [m]
 
-        Beispiel:
-          CA1 = ('ca1', P1, C, P2)\n
-          CA1.translate(0, 1, 0)\n
+        Example:
+
+            >>> CA1 = ('ca1', P1, C, P2)
+            >>> CA1.translate(0, 1, 0)
         """
         self.start_point.translate(dx, dy, dz)
         self.end_point.translate(dx, dy, dz)
         self._center.translate(dx, dy, dz)
 
     def rotateX(self, rotationPoint: Point, angle: float):
-        """Mit rotateX() wird ein Kreisbogen um einen Rotationspunkt
-        (rotationPoint) und die X-Achse mit einem definierten Winkel rotiert.
+        """Rotation around x-axis by angle in radians.
 
         Args:
             rotationPoint (Point): rotation center point
             angle (float): rotation angle in rad
 
-        Beispiel:
-            from math import pi\n
-            CA1 = Line('ca1', P1, C, P2)\n
-            CA1.rotateX(P0, pi)\n
+        Example:
+
+            >>> from math import pi
+            >>> CA1 = Line('ca1', P1, C, P2)
+            >>> CA1.rotateX(P0, pi)
         """
         self.start_point.rotateX(rotationPoint, angle)
         self.end_point.rotateX(rotationPoint, angle)
         self._center.rotateX(rotationPoint, angle)
 
     def rotateY(self, rotationPoint: Point, angle: float) -> None:
-        """Mit rotateY() wird ein Kreisbogen um einen Rotationspunkt
-        (rotationPoint) und die Y-Achse mit einem definierten Winkel rotiert.
+        """Rotation of the arc around the y-axis.
 
         Args:
-            - rotationPoint (Point): rotation center point
-            - angle (float): rotation angle in rad
+            rotationPoint (Point): rotation center point
+            angle (float): rotation angle in rad
 
-        Beispiel:
-            from math import pi\n
-            CA1 = Line('ca1', P1, C, P2)\n
-            CA1.rotateY(P0, pi)\n
+        Example:
+
+            >>> from math import pi\n
+            >>> CA1 = Line('ca1', P1, C, P2)\n
+            >>> CA1.rotateY(P0, pi)\n
 
         """
         self.start_point.rotateY(rotationPoint, angle)
@@ -184,37 +180,38 @@ class CircleArc(Line):
         self._center.rotateY(rotationPoint, angle)
 
     def rotateZ(self, rotationPoint=defaultCenterPoint, angle=0.0) -> None:
-        """Mit rotateZ() wird ein Kreisbogen um einen Rotationspunkt
-        (rotationPoint) und die Z-Achse mit einem definierten Winkel rotiert.
+        """Rotation around the z-axis by ``angle`` in radians.
+        The default rotation center point it the model origin
+        (:obj:`~pyemmo.script.geometry.defaultCenterPoint`).
 
         Args:
-            - rotationPoint (_type_, optional): Rotation Center Point.
-            Defaults to Point("tmpCenterPoint", 0, 0, 0, 1).
-            - angle (float, optional): Rotation angle in rad. Defaults to 0.0.
+            rotationPoint (_type_, optional): Rotation Center Point.
+                Defaults to Point("tmpCenterPoint", 0, 0, 0, 1).
+            angle (float, optional): Rotation angle in rad. Defaults to 0.0.
 
-        Beispiel:
+        Example:
 
-            from math import pi
-            CA1 = Line('ca1', P1, C, P2)
-            CA1.rotateZ(P0, pi)
+            >>> from math import pi
+            >>> CA1 = Line('ca1', P1, C, P2)
+            >>> CA1.rotateZ(P0, pi)
         """
         self.start_point.rotateZ(rotationPoint, angle)
         self.end_point.rotateZ(rotationPoint, angle)
         self._center.rotateZ(rotationPoint, angle)
 
     def duplicate(self, name="") -> CircleArc:
-        """Mit duplicate() wird einer Kreisbogen mit gleichen Eigenschaften zum
-        Originalen erzeugt. Diese Kurve hat jedoch eine unterschiedliche ID.
+        """Create a copy of the circle arc.
 
         Args:
-            name (str, optional): Name of duplicte. Defaults to "".
+            name (str, optional): Name of duplicte. Defaults to "{arc name}_dup".
 
         Returns:
             CircleArc: Duplicate of CircleArc Object
 
-        Beispiel:
-            CA1 = Point('ca1', P1, C, P2)\n
-            CA2 = CA1.duplicate()\n
+        Example:
+
+            >>> CA1 = Point('ca1', P1, C, P2)
+            >>> CA2 = CA1.duplicate()
         """
         startPoint = self.start_point.duplicate()
         centerPoint = self._center.duplicate()
@@ -237,21 +234,18 @@ class CircleArc(Line):
         planeVector2: Line,
         name: str = "",
     ) -> CircleArc:
-        """Mit mirror() kann ein Kreisbogen an einer definierten Ebene gespiegelt
-        werden. Bildpunkte werden hierbei generiert und eine Kurve zwischen den Punkten
-        erzeugt. Die Spiegelebene wird durch einen Aufpunkt (planePoint) und 2 Vektoren
-        (planeVector1 und planeVector2) beschrieben.
+        """Mirror a circle arc by a plane.
 
         Args:
-            planePoint (Point): Aufpunkt der Ebene
-            planeVector1 (Line): Erster Ebenenvektor.
-            planeVector2 (Line): Zweiter Ebenenvektor.
-            name (str, optional): Name der neuen Linie. Defaults to "".
+            planePoint (Point): Start point of the plane
+            planeVector1 (Line): First plane vector.
+            planeVector2 (Line): Second plane vector.
+            name (str, optional): New name of the arc. Defaults to "".
 
         Returns:
             CircleArc: Mirrored CircleArc object
 
-        Beispiel:
+        Example:
 
         .. code:: python
 
@@ -281,8 +275,8 @@ class CircleArc(Line):
         in rad or deg.
 
         Args:
-            - inDeg (bool, optional): Return the angle in degree.
-            Defaults to False (-> radians).
+            inDeg (bool, optional): Return the angle in degree.
+                Defaults to False (-> radians).
 
         Returns:
             Tuple(float, float): angle of start and end point to the horizontal axis
@@ -299,7 +293,7 @@ class CircleArc(Line):
 
         Args:
             inDeg (bool, optional): Return the angle in degree. Defaults to False
-            (-> radians).
+                (-> radians).
 
         Returns:
             float: angle between start and end point of the circle arc in [-180, 180].
@@ -314,7 +308,7 @@ class CircleArc(Line):
 
     @property
     def radius(self) -> float:
-        """Return the distance between the center point and the start point (P1) of the
+        """Return the distance between the center point and the start/end point of the
         CircleArc (= radius).
 
         Returns:
@@ -352,7 +346,7 @@ class CircleArc(Line):
         color=LINE_COLOR,
         tag=False,
     ):
-        """Circle Arc plot
+        """Plot the circle arc
 
         Args:
             fig (pyplot.Figure, optional): Defaults to None.
@@ -361,7 +355,7 @@ class CircleArc(Line):
             linewidth (float): Defaults to 0.5.
             color (list, optional): Defaults to [random() for i in range(3)].
             tag (bool): Flag to print name like "C ("`L_Name`")"
-            and point tags if marker is not None.
+                and point tags if marker is not None.
         """
         # pylint: disable=locally-disabled, too-many-locals, too-many-arguments
         centerPoint = self.center
@@ -441,11 +435,9 @@ class CircleArc(Line):
         """combine two arcs and return them as new CircleArc
 
         Args:
-            - addLine (CircleArc): line to combine with this line
-            - dockingPoint (Point): Point where the lines touch each other. Defaults to
-            None. Trying to identify the point if its not given.
-
-
+            addLine (CircleArc): line to combine with this line
+            touchPoint (Point): Point where the lines touch each other. Defaults to
+                None. Trying to identify the point if its not given.
         """
         if self == addLine:
             return self
