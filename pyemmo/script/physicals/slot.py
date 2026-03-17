@@ -71,7 +71,7 @@ class Slot(PhysicalElement):
         self.physicalElementType = "Slot"  # the physical element type can be used to identify physical elements
         ###Liste aus Flächen (Objekte der Klasse Surface).
         if self.geo_list:  # if list is not empty
-            if self.geoElementType == Line:
+            if self.geo_type == Line:
                 raise TypeError(
                     "Physical element type 'Slot' should only contain "
                     "Surface Elements but got type Line!"

@@ -23,6 +23,7 @@
 from __future__ import annotations
 
 import logging
+import warnings
 from typing import TYPE_CHECKING
 
 import gmsh
@@ -83,7 +84,7 @@ class PhysicalElement:
         # set private here since geo_list setter raises RuntimeError!
         self._geo_list = geo_list
 
-        geo_type = 1 if self.geoElementType == Line else 2  # geo_type is Line or Surf
+        geo_type = 1 if self.geo_type == Line else 2  # geo_type is Line or Surf
         tag_list = [elem.id for elem in geo_list]  # tag list for gmsh physical group
         if phyID is None:
             self.id = gmsh.model.addPhysicalGroup(geo_type, tag_list, name=name)
@@ -206,11 +207,19 @@ class PhysicalElement:
         )
         self._geo_list = geo_list
         # run element type funtion to ensure there are not lines AND surfaces at the same time
-        _ = self.geoElementType
+        _ = self.geo_type
 
-    # FIXME: TODO Rename geoElementType -> geo_type like in init!
     @property
     def geoElementType(self) -> Line | Surface | None:
+        warnings.warn(
+            "GeoElementType was renamed geo_type and will be removed soon!",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.geo_type
+
+    @property
+    def geo_type(self) -> Line | Surface | None:
         """Returns the type of the geometric elements (Surface or Line).
 
         Raises:
@@ -269,15 +278,15 @@ class PhysicalElement:
         """
         radius_list: list[float] = []
         for elem in self.geo_list:
-            if self.geoElementType == Surface:
+            if self.geo_type == Surface:
                 centerPoint = elem.calcCOG()
                 radius_list.append(centerPoint.radius)
-            elif self.geoElementType == Line:
+            elif self.geo_type == Line:
                 radius_list.append(elem.middle_point.radius)
             else:
                 raise ValueError(
                     f"Can't determine radial position of physical {self.name}, because "
-                    f"geometry element type is {self.geoElementType}. "
+                    f"geometry element type is {self.geo_type}. "
                     "Must be Surface or Line!"
                 )
         return np.mean(radius_list)
@@ -294,15 +303,15 @@ class PhysicalElement:
             raise RuntimeError("No geometry to determine slot position.")
         angle_list: list[float] = []
         for elem in self.geo_list:
-            if self.geoElementType == Surface:
+            if self.geo_type == Surface:
                 centerPoint = elem.calcCOG()
                 angle_list.append(centerPoint.getAngleToX())
-            elif self.geoElementType == Line:
+            elif self.geo_type == Line:
                 angle_list.append(elem.middle_point.getAngleToX())
             else:
                 raise ValueError(
                     f"Can't determine circumferential position of physical {self.name}, "
-                    f"because geometry element type is {self.geoElementType}. "
+                    f"because geometry element type is {self.geo_type}. "
                     "Must be Surface or Line!"
                 )
         return np.mean(angle_list)
@@ -365,7 +374,7 @@ class PhysicalElement:
             )
 
         if tag:
-            if self.geoElementType == Surface:
+            if self.geo_type == Surface:
                 for surf in self.geo_list:
                     cog = surf.calcCOG().coordinate
                     ax.annotate(

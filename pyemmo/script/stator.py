@@ -439,7 +439,7 @@ class Stator:
         phy_slaveLine = []  # Teilmodell Slavekante
         limit_Line = []
         for physicalElement in self._physicalElements:
-            geoType = physicalElement.geoElementType
+            geoType = physicalElement.geo_type
             if geoType == Surface:
                 # domainC, domainL & domainNL
                 material = physicalElement.material

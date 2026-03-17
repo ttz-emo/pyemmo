@@ -32,11 +32,11 @@ class AirArea(PhysicalElement):
     A separate class :class:`~pyemmo.script.physicals.airgap.AirGap` exists for the
     airgap between rotor and stator.
 
-        .. image:: ../../images/class_airArea.png
-            :scale:  100%
-            :alt: Example for a ``AirArea`` physical surface.
-            :align: center
-
+    .. image:: ../../images/class_airArea.png
+        :scale:  100%
+        :alt: Example for a ``AirArea`` physical surface.
+        :align: center
+    |
     """
 
     def __init__(

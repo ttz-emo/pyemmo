@@ -297,7 +297,7 @@ class Rotor:
         # slaveLines = []  # Teilmodell Slavekante
         # limitLines = []  # Randlinien ohne Primär- und Sekundärkanten
         for physElem in self.physicalElements:
-            geoType = physElem.geoElementType
+            geoType = physElem.geo_type
             if geoType == Surface:
                 # domainC, domainL & domainNL
                 material = physElem.material

@@ -331,7 +331,7 @@ class Machine:
         physicalPrimeLines = rotorDict["primary"] + statorDict["primary"]
         primeLines: list[Line] = list()
         for physicalPrimeLine in physicalPrimeLines:
-            if physicalPrimeLine.geoElementType == Line:
+            if physicalPrimeLine.geo_type == Line:
                 primeLines.extend(physicalPrimeLine.geo_list)
             else:
                 raise (
@@ -353,7 +353,7 @@ class Machine:
         physicalSecLines = rotorDict["slave"] + statorDict["slave"]
         secondaryLines: list[Line] = list()
         for physicalSecLine in physicalSecLines:
-            if physicalSecLine.geoElementType == Line:
+            if physicalSecLine.geo_type == Line:
                 secondaryLines.extend(physicalSecLine.geo_list)
             else:
                 raise (

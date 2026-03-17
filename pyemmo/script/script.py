@@ -1013,7 +1013,7 @@ class Script:
         geoCode = "// Create boundary lines for moving rotor contour plot\n"
         for domainName in ["domainS", "domainM"]:  # only surface domains
             for rotorPhys in rotorPhysDict[domainName]:
-                if rotorPhys.geoElementType == Surface:
+                if rotorPhys.geo_type == Surface:
                     rotorIdStr += str(rotorPhys.id) + ","
         if rotorIdStr:
             rotorIdStr = rotorIdStr[0:-1]
@@ -1022,7 +1022,7 @@ class Script:
         for domainName in ["domainLam", "airGap"]:  # only surface domains
             rotorIdStr = ""
             for rotorPhys in rotorPhysDict[domainName]:
-                if rotorPhys.geoElementType == Surface:
+                if rotorPhys.geo_type == Surface:
                     rotorIdStr += str(rotorPhys.id) + ","
             if rotorIdStr:
                 rotorIdStr = rotorIdStr[0:-1]
@@ -1086,7 +1086,7 @@ class Script:
                     + ("'%s' don't match.", physical.name)
                 )
                 return ""
-            if physical.geoElementType is Surface:
+            if physical.geo_type is Surface:
                 if len(physical.geo_list) > 1:
                     for geoElem in physical.geo_list:
                         comp_code += str(geoElem.id) + ","
@@ -1260,7 +1260,7 @@ class Script:
             # create line id string for mesh size setting
             mb_ids = ""
             for mb in rotor.movingBand:
-                if mb.type == "MovingBand" and mb.geoElementType == Line:
+                if mb.type == "MovingBand" and mb.geo_type == Line:
                     # if the mobingband object is type movingband and its
                     # geo-elements are lines
                     for mbLine in mb.geo_list:
@@ -1312,7 +1312,7 @@ class Script:
             # rotor movingband
             mb_ids = ""  # reset string
             for mb in stator.movingBand:
-                if mb.type == "MovingBand" and mb.geoElementType == Line:
+                if mb.type == "MovingBand" and mb.geo_type == Line:
                     # if the mobingband object is type movingband and its
                     # geo-elements are lines
                     for mbLine in mb.geo_list:
@@ -1487,7 +1487,7 @@ class Script:
         # flag_readonly = 0
         for domain in machine.domains:
             for physical in domain.physicals:
-                if physical.geoElementType == Surface:
+                if physical.geo_type == Surface:
                     mat = physical.material
                     if not mat.linear:
                         flag_CalcNL = 1

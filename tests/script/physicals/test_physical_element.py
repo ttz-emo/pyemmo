@@ -81,7 +81,7 @@ class TestSurfacePhysical:
         physical = PhysicalElement(name, [test_surface], material=air)
         assert physical.name == name
         assert physical.geo_list == [test_surface]
-        assert physical.geoElementType == Surface
+        assert physical.geo_type == Surface
         assert physical.material == air
 
     def test_init(self):
@@ -94,7 +94,7 @@ class TestSurfacePhysical:
         physical = PhysicalElement(name, [test_surface], material=air)
         assert physical.name == name
         assert physical.geo_list == [test_surface]
-        assert physical.geoElementType == Surface
+        assert physical.geo_type == Surface
         assert physical.material == air
 
     def teardown_method(self):
