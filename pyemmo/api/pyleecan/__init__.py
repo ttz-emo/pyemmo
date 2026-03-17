@@ -29,14 +29,14 @@ helpers that translate PYLEECAN machines into PyEMMO/Gmsh objects live here.
 
 This is only available if the PYLEECAN package is installed!
 
-Primary responsibilities
+Primary Responsibilities
 ------------------------
 - Translate PYLEECAN machine structures so they can form the input to the PyEMMO :ref:`json api <section-pyemmo.api.json-package>`.
 - Map PYLEECAN materials into PyEMMO :class:`~pyemmo.script.material.material.Material` objects and provide a default air material for geometry surfaces without explicit material references.
 - Produce geometry dictionaries and Gmsh primitives (points, lines, surfaces) used for the json api model generation workflow.
 - Provide utilities to map PYLEECAN surface labels to PyEMMO api part identifiers (``part_id``).
 
-Module list
+Module List
 -----------
 The subpackage contains focused modules that implement pieces of the translation workflow. Key modules (exposed in the docs toctree) are:
 
@@ -50,13 +50,13 @@ The subpackage contains focused modules that implement pieces of the translation
 - :mod:`~pyemmo.api.pyleecan.label2part_id`: map `PYLEECAN surface label strings <https://www.pyleecan.org/_modules/pyleecan/Functions/labels.html>`_ to :ref:`part identifiers <section-pyemmo.api.json>` used in the json api.
 - :mod:`~pyemmo.api.pyleecan.main`: Main function to trigger model translation and call the json api to create the ONELAB model files.
 
-PYLEECAN API workflow
+PYLEECAN API Workflow
 ---------------------
 1. Create default machine and simulation parameters for the :mod:`~pyemmo.api.json` api using :func:`~pyemmo.api.pyleecan.create_param_dict.create_param_dict`. See the `Model Properties Structure <section-pyemmo.api.json-param>`_ section for details.
 2. Translate the PYLEECAN machine object to the `geometry input dictionary <section-pyemmo.api.json-geo>`_ for the PyEMMO :mod:`~pyemmo.api.json` api using :func:`~pyemmo.api.pyleecan.create_geo_dict.create_geo_dict`. This function executes the core mapping between PYLEECAN surface and material definitions and the PyEMMO :class:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface` and :class:`~pyemmo.script.material.material.Material` objects. Therefore its using the ``create_gmsh_*`` helpers and :func:`~pyemmo.api.pyleecan.build_pyemmo_material.build_pyemmo_material`. It also handles the geometry symmetries and subtraction of tool surfaces independently for rotor and stator.
 3. Call the :mod:`~pyemmo.api.json` api to create the Gmsh and GetDP model files. See `json api section <section-pyemmo.api.json-package>`_ for details on the expected input structures and file generation workflow.
 
-Minimal usage sketch
+Minimal Usage Sketch
 --------------------
 The :func:`~pyemmo.api.pyleecan.main` function returns a PyEMMO :class:`~pyemmo.script.script.Script` object.
 

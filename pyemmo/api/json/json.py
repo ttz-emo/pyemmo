@@ -480,7 +480,9 @@ def main(
         geo (str or dict): File path to JSON formatted geometry file OR segment
             surface dict with IdExt as keys and MachineSegmentSurface objects as values.
         extInfo (str or dict): File path to JSON formatted extended information
-            file or directly given info dict.
+            file or directly given info dict. See
+            :ref:`Model Properties <section-pyemmo.api.json-param>`
+            section in doc for parameters description.
         model (str): Folder path where the resulting model files should be
             placed.
         gmsh (str, optional): Gmsh executable path. If nothing is provieded the
