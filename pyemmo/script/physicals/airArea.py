@@ -20,7 +20,7 @@
 """"""
 from __future__ import annotations
 
-from ..geometry.surface import Surface
+from ..gmsh.gmsh_surface import GmshSurface
 from ..material.material import Material
 from .physical_element import PhysicalElement
 
@@ -42,15 +42,14 @@ class AirArea(PhysicalElement):
     def __init__(
         self,
         name: str,
-        geo_list: list[Surface],
+        geo_list: list[GmshSurface],
         material: Material = None,
     ):
         """AirArea is any area defined with material air except from the Airgap surface
 
         Args:
-            name (str): Domain name
-            geo_list (List[Union[Surface, Line, CircleArc, Spline]):
-                List of geometry objects
+            name (str): Physical name
+            geo_list (list[GmshSurface]): List of surfaces.
             material (Material, optional): Material of AirArea. Should be "air".
                 Defaults to None.
         """

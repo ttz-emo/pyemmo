@@ -22,10 +22,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from ..geometry.circleArc import CircleArc
-from ..geometry.line import Line
-from ..geometry.spline import Spline
-from ..geometry.surface import Surface
+from ..gmsh.gmsh_surface import GmshSurface
 from ..material.material import Material
 from .physical_element import PhysicalElement
 
@@ -43,7 +40,7 @@ class Magnet(PhysicalElement):
     def __init__(
         self,
         name: str,
-        geoElements: list[Surface | Line | CircleArc | Spline],
+        geoElements: list[GmshSurface],
         material: Material,
         magDirection: Literal[-1, 1],
         magType: str,

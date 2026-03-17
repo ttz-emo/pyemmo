@@ -21,7 +21,7 @@
 """Module for class MovingBand"""
 from __future__ import annotations
 
-from ..geometry.circleArc import CircleArc
+from ..gmsh.gmsh_arc import GmshArc
 from ..material.material import Material
 from ..script import DEFAULT_GEO_TOL
 from .physical_element import PhysicalElement
@@ -57,7 +57,7 @@ class MovingBand(PhysicalElement):
     def __init__(
         self,
         name: str,
-        geo_list: list[CircleArc],
+        geo_list: list[GmshArc],
         material: Material = None,
         auxiliary: bool = False,
     ):
@@ -65,7 +65,7 @@ class MovingBand(PhysicalElement):
 
         Args:
             name (str): Moving band segment name
-            geo_list (List[CircleArc]): List of arc segments to build the mb segment.
+            geo_list (list[GmshArc]): List of arc segments to build the mb segment.
             material (Material, optional): Airgap material. Defaults to None.
             auxiliary (bool, optional): Flag to determine if given rotor moving band
                 segment is inside the model symmetry or outside (auxiliary).

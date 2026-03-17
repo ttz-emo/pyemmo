@@ -19,10 +19,7 @@
 #
 from __future__ import annotations
 
-from ..geometry.circleArc import CircleArc
-from ..geometry.line import Line
-from ..geometry.spline import Spline
-from ..material.material import Material
+from ..gmsh.gmsh_line import GmshLine
 from .physical_element import PhysicalElement
 
 
@@ -46,13 +43,17 @@ class SlaveLine(PhysicalElement):
     def __init__(
         self,
         name: str,
-        geo_list: list[Line | CircleArc | Spline],
-        material: Material = None,
+        geo_list: list[GmshLine],
     ):
+        """Inititialize secondary line.
+
+        Args:
+            name (str): Name.
+            geo_list (list[GmshLine]): Line list.
+        """
         PhysicalElement.__init__(
             self,
             name=name,
-            material=material,
             geo_list=geo_list,
         )
 

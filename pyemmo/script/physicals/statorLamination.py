@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -20,7 +21,7 @@
 """Module for class StatorLamination"""
 from __future__ import annotations
 
-from ..geometry.surface import Surface
+from ..gmsh.gmsh_surface import GmshSurface
 from ..material.material import Material
 from .physical_element import PhysicalElement
 
@@ -36,7 +37,7 @@ class StatorLamination(PhysicalElement):
     def __init__(
         self,
         name: str,
-        geo_list: list[Surface],
+        geo_list: list[GmshSurface],
         material: Material,
         phyID=None,
     ):
@@ -44,10 +45,10 @@ class StatorLamination(PhysicalElement):
 
         Args:
             name (str): Lamination name.
-            machineDict (dict): Machine parameter dict.
-            geo_list (list[Surface]): List of surface elements that form the lamination.
+            geo_list (list[GmshSurface]): List of surface elements that form the lamination.
             material (Material): Lamination material.
-
+            phyID (int | None, optional): Gmsh physical element index. Defaults to next
+                available index in current gmsh model. Get ID with :attr:`id`.
         """
         super().__init__(
             name=name,

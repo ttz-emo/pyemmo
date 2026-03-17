@@ -20,7 +20,7 @@
 """"""
 from __future__ import annotations
 
-from ..geometry.surface import Surface
+from ..gmsh.gmsh_surface import GmshSurface
 from ..material.material import Material
 from .physical_element import PhysicalElement
 
@@ -46,7 +46,7 @@ class AirGap(PhysicalElement):
     def __init__(
         self,
         name: str,
-        geo_list: list[Surface],
+        geo_list: list[GmshSurface],
         material: Material = None,
     ):
         """Construct a airgap from a list of Surfaces.

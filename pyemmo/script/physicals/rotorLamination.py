@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -19,28 +20,39 @@
 #
 from __future__ import annotations
 
-from ..geometry.surface import Surface
+from ..gmsh.gmsh_surface import GmshSurface
 from ..material.material import Material
 from .physical_element import PhysicalElement
 
 
-###
-# Eine Instanz der RotorLamination ist das Blechpaket des Rotors. Eine beliebige Geometrie kann mit der Klasse RotorLamination definiert werden.
-# Diese Klasse sollte nur im Expertenmodus angewandt werden.
-# Dies kann beispielsweise beim Import und Weiterverarbeitung von Step-Dateien geschehen.
-# Eine einfachere Anwendung bietet der Maschinenbaukasten von pyemmo.
-# \image html RotorBlech.png
-###
 class RotorLamination(PhysicalElement):
-    """Class for rotor lamination"""
+    """
+    Class for rotor lamination
+
+    .. image:: ../../images/RotorBlech.svg
+        :scale:  100%
+        :alt: Example for a ``PrimaryLine`` physical curve.
+        :align: center
+
+
+    """
 
     def __init__(
         self,
         name: str,
-        geo_list: list[Surface],
+        geo_list: list[GmshSurface],
         material: Material,
         phyID: int = None,
     ):
+        """Initialize like standard PhysicalElement
+
+        Args:
+            name (str): Name.
+            geo_list (list[GmshSurface]): Surface list.
+            material (Material): Core material.
+            phyID (int, optional): Physical ID to be set in Gmsh.
+                Defaults to next available id.
+        """
         super().__init__(
             name=name,
             material=material,

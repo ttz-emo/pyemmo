@@ -24,7 +24,7 @@ from __future__ import annotations
 
 import logging
 
-from ..geometry.surface import Surface
+from ..gmsh.gmsh_surface import GmshSurface
 from ..material.material import Material
 from .physical_element import PhysicalElement
 
@@ -39,7 +39,7 @@ class Bar(PhysicalElement):
     def __init__(
         self,
         name: str,
-        geo_list: Surface | list[Surface],
+        geo_list: GmshSurface | list[GmshSurface],
         material: Material,
     ):
         """Bar defines a rotor bar for a induction machine
@@ -50,7 +50,7 @@ class Bar(PhysicalElement):
             material (Material): Material of the rotor bar. Defaults to None.
         """
         # convert Surface to list of Surface for PhysicalElement init
-        if isinstance(geo_list, Surface):
+        if isinstance(geo_list, GmshSurface):
             geo_list = [geo_list]
         # make sure conductivity is defined for induced currents
         if not material.conductivity:

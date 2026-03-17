@@ -25,7 +25,7 @@ from math import degrees, isclose, pi
 from typing import Literal
 
 from ..geometry.line import Line
-from ..geometry.surface import Surface
+from ..gmsh.gmsh_surface import GmshSurface
 from ..material.material import Material
 from .physical_element import PhysicalElement
 
@@ -42,7 +42,7 @@ class Slot(PhysicalElement):
     def __init__(
         self,
         name: str,
-        geo_list: list[Surface],
+        geo_list: list[GmshSurface],
         material: Material,
         windingDir: Literal[-1, 1] = 1,
         phase: float = 0,
@@ -54,13 +54,13 @@ class Slot(PhysicalElement):
 
         Args:
             name (str): slot name
-            geo_list (List[Surface]): List of surface(s) forming the slot
+            geo_list (List[GmshSurface]): List of surface(s) forming the slot
             material (Material): Slot material
             windingDir (Literal[1,-1]): Winding direction. Defaults to None.
             phase (float): winding phase angle in radians. Defaults to None.
             nbrTurns (int): number of winding turns in slot. Defaults to None.
-            phyID (int): Physical Surface ID for Onelab Script. Defaults to None and will be set unique automatically.
-
+            phyID (int): Physical Surface ID in current gmsh model.
+                Defaults to None and will be set unique automatically.
         """
         super().__init__(
             name=name,

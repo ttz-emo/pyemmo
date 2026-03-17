@@ -21,9 +21,7 @@
 """Module for primary boundary line"""
 from __future__ import annotations
 
-from ..geometry.circleArc import CircleArc
-from ..geometry.line import Line
-from ..geometry.spline import Spline
+from ..gmsh.gmsh_line import GmshLine
 from .physical_element import Material, PhysicalElement
 
 
@@ -42,14 +40,14 @@ class PrimaryLine(PhysicalElement):
     def __init__(
         self,
         name: str,
-        geo_list: list[Line | CircleArc | Spline],
+        geo_list: list[GmshLine],
         material: Material = None,
     ):
         """init of PrimaryLine boundary PhysicalElement
 
         Args:
             name (str)
-            geo_list (List[Line | CircleArc | Spline])
+            geo_list (list[GmshLine])
             material (Material, optional): Defaults to None.
         """
         # FIXME: Material hat keinen Einfluss... Sollte standardmaeßig auf None gesetzt werden

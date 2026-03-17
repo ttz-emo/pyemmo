@@ -33,11 +33,11 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
 from ...definitions import LINE_COLOR
-from ..geometry.circleArc import CircleArc
 from ..geometry.line import Line
-from ..geometry.spline import Spline
 from ..geometry.surface import Surface
+from ..gmsh.gmsh_arc import GmshArc
 from ..gmsh.gmsh_line import GmshLine
+from ..gmsh.gmsh_spline import GmshSpline
 from ..gmsh.gmsh_surface import GmshSurface
 from ..material.material import Material
 
@@ -73,10 +73,20 @@ class PhysicalElement:
     def __init__(
         self,
         name: str,
-        geo_list: list[GmshSurface] | list[GmshLine],
+        geo_list: list[GmshArc | GmshLine | GmshSpline] | list[GmshSurface],
         material: Material | None = None,
         phyID: int | None = None,
     ):
+        """_summary_
+
+        Args:
+            name (str): group name.
+            geo_list (list[GmshArc | GmshLine | GmshSpline] | list[GmshSurface]):
+                Geometry list.
+            material (Material | None, optional): Surface material. Defaults to None.
+            phyID (int | None, optional): Gmsh physical element index. Defaults to next
+                available index in current gmsh model. Get ID with :attr:`id`.
+        """
         # the physical element type can be used to identify physical elements
         self.physicalElementType = "PhysicalElement"
 
@@ -239,7 +249,7 @@ class PhysicalElement:
         for GeoElement in self.geo_list:
             if isinstance(GeoElement, Surface):
                 isSurface = True
-            elif isinstance(GeoElement, (Line, CircleArc, Spline)):
+            elif isinstance(GeoElement, Line):
                 isLine = True
             else:
                 raise ValueError(
@@ -386,7 +396,7 @@ class PhysicalElement:
                     )
             else:
                 # line plot
-                curves: list[Line, CircleArc, Spline] = self.geo_list
+                curves: list[GmshLine] = self.geo_list
                 center = np.mean([c.middle_point.coordinate for c in curves], axis=0)
                 ax.annotate(
                     f"""{self.__class__.__name__}: {self.name}""",

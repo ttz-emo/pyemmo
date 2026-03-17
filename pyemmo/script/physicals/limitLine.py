@@ -20,9 +20,9 @@
 """Module for Class LimitLine"""
 from __future__ import annotations
 
-from ..geometry.circleArc import CircleArc
-from ..geometry.line import Line
-from ..geometry.spline import Spline
+from ..gmsh.gmsh_arc import GmshArc
+from ..gmsh.gmsh_line import GmshLine
+from ..gmsh.gmsh_spline import GmshSpline
 from ..material.material import Material
 from .physical_element import PhysicalElement
 
@@ -41,14 +41,14 @@ class LimitLine(PhysicalElement):
     def __init__(
         self,
         name: str,
-        geo_list: list[Line | CircleArc | Spline],
+        geo_list: list[GmshArc | GmshLine | GmshSpline],
         material: Material = None,
     ):
         """Create a boundary line
 
         Args:
             name (str): Name of boundary line. E.g. "OuterLimitLine"
-            geo_list (List[Union[Line, CircleArc, Spline]]): List of geo curves
+            geo_list (list[GmshArc | GmshLine | GmshSpline]): List of geo curves
             material (Material, optional): Material of boundary. Defaults to None.
         """
         PhysicalElement.__init__(
