@@ -26,7 +26,7 @@ import logging
 
 from ..geometry.surface import Surface
 from ..material.material import Material
-from .physicalElement import PhysicalElement
+from .physical_element import PhysicalElement
 
 
 class Bar(PhysicalElement):

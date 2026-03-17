@@ -35,7 +35,7 @@ from .gmsh.utils import get_dim_tags, get_point_tags
 from .material.electricalSteel import ElectricalSteel
 from .physicals.airgap import AirGap
 from .physicals.movingband import MovingBand
-from .physicals.physicalElement import PhysicalElement
+from .physicals.physical_element import PhysicalElement
 from .physicals.slot import Slot
 
 # from ... import calc_phaseangle_starvoltageV2

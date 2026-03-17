@@ -22,7 +22,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from .physicals.physicalElement import PhysicalElement
+from .physicals.physical_element import PhysicalElement
 
 if TYPE_CHECKING:
     from .script import Script

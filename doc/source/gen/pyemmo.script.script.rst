@@ -40,7 +40,7 @@ When initializing the :class:`~script.Script` with a :class:`~machine.Machine` o
 
 the :class:`~.domain.Domain` creation processs will be started.
 This creates all groups of surfaces and boundary lines needed with the *model_name*.pro and machine\_magstadyn\_a.pro file.
-So e.g. all :class:`~physicals.physicalElement.PhysicalElement` objects with a non-linear magnetic material definition (BH curve) are grouped in a Domain called ``domainNL``.
+So e.g. all :class:`~physicals.physical_element.PhysicalElement` objects with a non-linear magnetic material definition (BH curve) are grouped in a Domain called ``domainNL``.
 These domain names are defined in the GetDP machine model template and are linked to GetDP in the :mod:`~pyemmo.script` module by predefined constants.
 In GetDP this are so called "Group" definitions and are located in a ``Group`` section.
 See `GetDP Group <https://getdp.info/doc/texinfo/getdp.html#Group>`_ in the documentation.

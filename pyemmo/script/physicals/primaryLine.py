@@ -24,7 +24,7 @@ from __future__ import annotations
 from ..geometry.circleArc import CircleArc
 from ..geometry.line import Line
 from ..geometry.spline import Spline
-from .physicalElement import Material, PhysicalElement
+from .physical_element import Material, PhysicalElement
 
 
 class PrimaryLine(PhysicalElement):

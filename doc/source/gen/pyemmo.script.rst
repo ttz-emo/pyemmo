@@ -26,11 +26,11 @@ models.
    (= surfaces with phyiscal properties, e.g. :class:`~pyemmo.script.geometry.slot.Slot`
    , or boundary curves, e.g. :class:`~pyemmo.script.physicals.limitLine.LimitLine`).
 6. The :class:`~pyemmo.script.domain.Domain` class represents groups of
-   :class:`~pyemmo.script.geometry.physicalElement.PhysicalElement` objects with shared
+   :class:`~pyemmo.script.geometry.physical_element.PhysicalElement` objects with shared
    properties. These mirror the object structure of ONELAB models. See
    `GetDP Groups <https://getdp.info/doc/texinfo/getdp.html#Group>`_ documentation
    section for more details.
-7. The :class:`~pyemmo.script.machine.Machine`, :class:`~pyemmo.script.rotor.Rotor` and :class:`~pyemmo.script.stator.Stator` classes act as containers for the :class:`~pyemmo.script.phyicals.physicalElement.PhysicalElement` objects of a model and implement the logic to create the :class:`~pyemmo.script.domain.Domain` objects needed in the :class:`~pyemmo.script.script.Script`.
+7. The :class:`~pyemmo.script.machine.Machine`, :class:`~pyemmo.script.rotor.Rotor` and :class:`~pyemmo.script.stator.Stator` classes act as containers for the :class:`~pyemmo.script.phyicals.physical_element.PhysicalElement` objects of a model and implement the logic to create the :class:`~pyemmo.script.domain.Domain` objects needed in the :class:`~pyemmo.script.script.Script`.
 
 For a visual overview of the package structure see the graph below.
 

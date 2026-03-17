@@ -24,7 +24,7 @@ from __future__ import annotations
 from ..geometry.circleArc import CircleArc
 from ..material.material import Material
 from ..script import DEFAULT_GEO_TOL
-from .physicalElement import PhysicalElement
+from .physical_element import PhysicalElement
 
 
 class MovingBand(PhysicalElement):

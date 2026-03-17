@@ -27,7 +27,7 @@ from ..geometry.line import Line
 from ..geometry.spline import Spline
 from ..geometry.surface import Surface
 from ..material.material import Material
-from .physicalElement import PhysicalElement
+from .physical_element import PhysicalElement
 
 
 class Magnet(PhysicalElement):

@@ -29,7 +29,7 @@ from pyemmo.script.geometry.line import Line
 from pyemmo.script.geometry.point import Point
 from pyemmo.script.geometry.surface import Surface
 from pyemmo.script.gmsh.gmsh_point import GmshPoint
-from pyemmo.script.physicals.physicalElement import PhysicalElement
+from pyemmo.script.physicals.physical_element import PhysicalElement
 
 from ..gmsh.test_utils import add_circle
 

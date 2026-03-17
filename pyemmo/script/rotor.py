@@ -55,7 +55,7 @@ from .gmsh.utils import get_dim_tags, get_point_tags
 from .material.electricalSteel import ElectricalSteel
 from .physicals.magnet import Magnet
 from .physicals.movingband import MovingBand
-from .physicals.physicalElement import PhysicalElement
+from .physicals.physical_element import PhysicalElement
 
 
 class Rotor:

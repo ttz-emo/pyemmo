@@ -36,7 +36,7 @@ from ..geometry import defaultCenterPoint
 from ..geometry.circleArc import CircleArc
 from ..geometry.line import Line
 from ..geometry.surface import Surface
-from ..physicals.physicalElement import PhysicalElement
+from ..physicals.physical_element import PhysicalElement
 from . import DimTag
 from .gmsh_arc import GmshArc
 from .gmsh_line import GmshLine
@@ -83,7 +83,7 @@ def get_dim_tags(geo_list: list[Line | Surface | PhysicalElement]) -> list[DimTa
         elif isinstance(element, Line):
             dim_tags.append((1, element.id))
         else:
-            raise RuntimeError("Geometry not Surface or Line!")
+            raise RuntimeError(f"Geometry not Surface or Line, but {type(element)}!")
     return dim_tags
 
 

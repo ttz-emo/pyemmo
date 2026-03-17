@@ -57,7 +57,7 @@ class PhysicalElement:
     the  :mod:`~pyemmo.script.physicals` package.
 
     Example:
-        >>> from pyemmo.script.physicals.physicalElement import PhysicalElement
+        >>> from pyemmo.script.physicals.physical_element import PhysicalElement
         >>> P1 = GmshPoint.from_coordinates('P1', 0, 0, 0, 1)
         >>> P2 = GmshPoint.from_coordinates('P2', 1, 0, 0, 1)
         >>> P3 = GmshPoint.from_coordinates('P3', 1, 1, 0, 1)

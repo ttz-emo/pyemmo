@@ -37,7 +37,7 @@ from pyemmo.script.gmsh.utils import (  # is_straigt
     get_min_radius,
     get_point_tags,
 )
-from pyemmo.script.physicals.physicalElement import PhysicalElement
+from pyemmo.script.physicals.physical_element import PhysicalElement
 
 from .test_gmsh_surface import add_circle
 

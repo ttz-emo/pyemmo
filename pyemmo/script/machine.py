@@ -30,7 +30,7 @@ from . import default_param_dict
 from .domain import Domain
 from .geometry.line import Line
 from .physicals.movingband import MovingBand
-from .physicals.physicalElement import PhysicalElement
+from .physicals.physical_element import PhysicalElement
 from .rotor import Rotor
 from .stator import Stator
 

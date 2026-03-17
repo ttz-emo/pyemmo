@@ -60,7 +60,7 @@ from .geometry.line import Line
 from .geometry.surface import Surface
 from .material.electricalSteel import ElectricalSteel
 from .physicals.magnet import Magnet
-from .physicals.physicalElement import PhysicalElement
+from .physicals.physical_element import PhysicalElement
 from .physicals.slot import Slot
 
 if TYPE_CHECKING:

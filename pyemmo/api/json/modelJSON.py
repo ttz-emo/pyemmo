@@ -43,7 +43,7 @@ from ...script.material.material import Material
 from ...script.physicals.airgap import AirGap
 from ...script.physicals.bar import Bar
 from ...script.physicals.magnet import Magnet
-from ...script.physicals.physicalElement import PhysicalElement
+from ...script.physicals.physical_element import PhysicalElement
 from ...script.physicals.rotorLamination import RotorLamination
 from ...script.physicals.slot import Slot
 from ...script.physicals.statorLamination import StatorLamination

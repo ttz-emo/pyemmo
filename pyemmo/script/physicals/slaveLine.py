@@ -23,7 +23,7 @@ from ..geometry.circleArc import CircleArc
 from ..geometry.line import Line
 from ..geometry.spline import Spline
 from ..material.material import Material
-from .physicalElement import PhysicalElement
+from .physical_element import PhysicalElement
 
 
 ###
