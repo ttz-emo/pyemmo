@@ -33,8 +33,6 @@ class RotorLamination(PhysicalElement):
         :scale:  100%
         :alt: Example for a ``PrimaryLine`` physical curve.
         :align: center
-
-
     """
 
     def __init__(

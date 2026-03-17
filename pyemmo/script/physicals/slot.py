@@ -37,7 +37,11 @@ from .physical_element import PhysicalElement
 # \image html slot.png
 ###
 class Slot(PhysicalElement):
-    """Class Slot"""
+    """A Slot area of the machine model hold the winding turns and acts as source
+    boundary condition by current or voltage specification.
+    Therefore a slot has additional properties for winding configuration like, phase,
+    winding direction and number of winding turns in the face.
+    """
 
     def __init__(
         self,

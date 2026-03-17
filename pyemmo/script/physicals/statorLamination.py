@@ -26,14 +26,15 @@ from ..material.material import Material
 from .physical_element import PhysicalElement
 
 
-###
-# Eine Instanz der StatorLamination ist das Blechpaket des Stators. Eine beliebige Geometrie kann mit der Klasse StatorLamination definiert werden.
-# Diese Klasse sollte man nur im Expertenmodus verwenden.
-# Dies kann beispielsweise beim Import und Weiterverarbeitung von Step-Dateien geschehen.
-# Eine einfachere Anwendung bietet der Maschinenbaukasten von pyemmo.
-# \image html statorBlech.png
-###
 class StatorLamination(PhysicalElement):
+    """Class for stator lamination
+
+    .. image:: ../../images/StatorBlech.png
+        :scale: 100%
+        :alt: Example for a ``StatorLamination`` physical surface.
+        :align: center
+    """
+
     def __init__(
         self,
         name: str,
@@ -41,7 +42,7 @@ class StatorLamination(PhysicalElement):
         material: Material,
         phyID=None,
     ):
-        """Konstruktor der Klasse StatorLamination.
+        """Create a object of StatorLamination.
 
         Args:
             name (str): Lamination name.
