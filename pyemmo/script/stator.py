@@ -33,7 +33,7 @@ from .geometry.surface import Surface
 from .gmsh.gmsh_point import GmshPoint
 from .gmsh.utils import get_dim_tags, get_point_tags
 from .material.electricalSteel import ElectricalSteel
-from .physicals.airGap import AirGap
+from .physicals.airgap import AirGap
 from .physicals.movingBand import MovingBand
 from .physicals.physicalElement import PhysicalElement
 from .physicals.slot import Slot

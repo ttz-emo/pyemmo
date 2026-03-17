@@ -1,6 +1,14 @@
 pyemmo.script.physicals package
 ===============================
 
+Module contents
+---------------
+
+.. automodule:: pyemmo.script.physicals
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 Submodules
 ----------
 
@@ -8,7 +16,7 @@ Submodules
    :maxdepth: 4
 
    pyemmo.script.physicals.airArea
-   pyemmo.script.physicals.airGap
+   pyemmo.script.physicals.airgap
    pyemmo.script.physicals.bar
    pyemmo.script.physicals.limitLine
    pyemmo.script.physicals.magnet
@@ -19,11 +27,3 @@ Submodules
    pyemmo.script.physicals.slaveLine
    pyemmo.script.physicals.slot
    pyemmo.script.physicals.statorLamination
-
-Module contents
----------------
-
-.. automodule:: pyemmo.script.physicals
-   :members:
-   :show-inheritance:
-   :undoc-members:

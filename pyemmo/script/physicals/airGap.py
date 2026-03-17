@@ -20,8 +20,6 @@
 """Module for AirArea Physical Element"""
 from __future__ import annotations
 
-from ..geometry.circleArc import CircleArc, Line
-from ..geometry.spline import Spline
 from ..geometry.surface import Surface
 from ..material.material import Material
 from .physicalElement import PhysicalElement
@@ -29,30 +27,27 @@ from .physicalElement import PhysicalElement
 
 class AirGap(PhysicalElement):
     """
-    Eine Instanz der AirGap ist ein Teil des Luftspalts einer elektrischen Maschine im
-    dreidimensionalen Raum. Diese Klasse beschreibt sowohl den Luftraum auf der Rotor sowie auf
-    der Stator-Seite.
+    An instance of ``AirGap`` is the part of the airgap of an electric machine model.
+    This class describes both the airgap surface on the rotor side and on the stator
+    side.
+    The airgap physical surface of rotor and stator are used for the force and torque
+    calculation in the ONELAB simulation and act as the interface to the ``Movingband``
+    which allows for the rotational movement in transient simulations.
 
-        \\image html class_airGap.png
-
-    Beim Verwenden vom Baukasten muss der Luftspalt vom Nutzer nicht manuell definiert werden.
-    Die Ergänzung vom Luftraum muss bei der Erstellung vom Rotor bzw. Stator automatisch erfolgen
-    (siehe RotorSPMSM.py).
-
+    .. image:: ../../images/class_airGap.png
     """
 
     def __init__(
         self,
         name: str,
-        geo_list: list[Surface | Line | CircleArc | Spline],
+        geo_list: list[Surface],
         material: Material = None,
     ):
-        """AirGap
+        """Construct a airgap from a list of Surfaces.
 
         Args:
-            name (str): Physical Element Name
-            geo_list (List[Union[Surface, Line, CircleArc, Spline]]):
-            List of geo elements
+            name (str): Airgap name.
+            geo_list (List[Union[Surface]]): List of surfaces.
             material (Material, optional): Material of airgap. Defaults to None.
         """
         PhysicalElement.__init__(

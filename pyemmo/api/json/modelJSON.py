@@ -40,7 +40,7 @@ from ...script.gmsh.gmsh_line import GmshLine
 from ...script.gmsh.gmsh_point import GmshPoint
 from ...script.gmsh.gmsh_spline import GmshSpline
 from ...script.material.material import Material
-from ...script.physicals.airGap import AirGap
+from ...script.physicals.airgap import AirGap
 from ...script.physicals.bar import Bar
 from ...script.physicals.magnet import Magnet
 from ...script.physicals.physicalElement import PhysicalElement
