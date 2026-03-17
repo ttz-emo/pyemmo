@@ -42,7 +42,7 @@ except Exception as exce:
 
 # Define domain names globally
 DOMAIN_PRIMARY = "primary"
-DOMAIN_SECONDARY = "slave"
+DOMAIN_SECONDARY = "secondary"
 DOMAIN_LIMIT = "limit"
 DOMAIN_MOVINGBAND = "mb_all"
 DOMAIN_MOVINGBAND_AUX = "mb_Mbaux"

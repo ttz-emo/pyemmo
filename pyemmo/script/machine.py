@@ -350,7 +350,7 @@ class Machine:
         """
         rotorDict = self.rotor.sortPhysicals()
         statorDict = self.stator.sortPhysicals()
-        physicalSecLines = rotorDict["slave"] + statorDict["slave"]
+        physicalSecLines = rotorDict["secondary"] + statorDict["secondary"]
         secondaryLines: list[Line] = list()
         for physicalSecLine in physicalSecLines:
             if physicalSecLine.geo_type == Line:

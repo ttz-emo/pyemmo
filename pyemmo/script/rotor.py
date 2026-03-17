@@ -237,7 +237,7 @@ class Rotor:
         ###primarykante vom Rotor.
         self._domainPrimary = Domain("PrimaryRegion_Rotor", allPhy["primary"])
         ###Slavekante vom Rotor.
-        self._domainSlave = Domain("SlaveRegion_Rotor", allPhy["slave"])
+        self._domainSlave = Domain("SlaveRegion_Rotor", allPhy["secondary"])
         ###Innengrenze der elektrischen Maschine (Welle).
         self._domainInnerLimit = Domain("InnerLimit_Rotor", allPhy["limit"])
 
@@ -264,7 +264,7 @@ class Rotor:
                 "mb_Mbaux": mb_Mbaux,
                 "airGap": phy_airgap,
                 "primary": phy_primaryLine,
-                "slave": phy_slaveLine,
+                "secondary": phy_slaveLine,
                 "limit": limit_Line,
             }
 
@@ -377,7 +377,7 @@ class Rotor:
                     domain_dict[DOMAIN_PRIMARY].append(physElem)
                     continue
 
-                if physElem.type == "SlaveLine":
+                if physElem.type == "SecondaryLine":
                     domain_dict[DOMAIN_SECONDARY].append(physElem)
                     continue
 

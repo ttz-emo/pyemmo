@@ -390,7 +390,7 @@ class Stator:
         ###primarykante vom Stator.
         self._domainPrimary = Domain("PrimaryRegion_Stator", allPhy["primary"])
         ###Slavekante vom Stator.
-        self._domainSlave = Domain("SlaveRegion_Stator", allPhy["slave"])
+        self._domainSlave = Domain("SlaveRegion_Stator", allPhy["secondary"])
         ###Außengrenze der elektrischen Maschine (Rotoraußenkante).
         self._domainOuterLimit = Domain("OuterLimit_Stator", allPhy["limit"])
 
@@ -415,7 +415,7 @@ class Stator:
                     "domainL": phy_domainL,
                     "airGap": phy_airgap,
                     "primary": phy_primaryLine,
-                    "slave": phy_slaveLine,
+                    "secondary": phy_slaveLine,
                     "limit": limit_Line,
                 }
 
@@ -436,7 +436,7 @@ class Stator:
         phy_airgap: list[AirGap] = []  # Luftspalt im Rotor
 
         phy_primaryLine = []  # Teilmodell primarykante
-        phy_slaveLine = []  # Teilmodell Slavekante
+        phy_secondaryLine = []  # Teilmodell secondary lines
         limit_Line = []
         for physicalElement in self._physicalElements:
             geoType = physicalElement.geo_type
@@ -487,15 +487,15 @@ class Stator:
                 elif physicalElement.type == "PrimaryLine":
                     phy_primaryLine.append(physicalElement)
                     continue
-                elif physicalElement.type == "SlaveLine":
-                    phy_slaveLine.append(physicalElement)
+                elif physicalElement.type == "SecondaryLine":
+                    phy_secondaryLine.append(physicalElement)
                     continue
                 elif physicalElement.type == "LimitLine":
                     limit_Line.append(physicalElement)
 
         sortedPhy = {
             "primary": phy_primaryLine,
-            "slave": phy_slaveLine,
+            "secondary": phy_secondaryLine,
             "limit": limit_Line,
             "mb_all": mb_all,
             "airGap": phy_airgap,

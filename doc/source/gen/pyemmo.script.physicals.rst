@@ -24,6 +24,6 @@ Submodules
    pyemmo.script.physicals.physical_element
    pyemmo.script.physicals.primaryLine
    pyemmo.script.physicals.rotorLamination
-   pyemmo.script.physicals.slaveLine
+   pyemmo.script.physicals.secondary_line
    pyemmo.script.physicals.slot
    pyemmo.script.physicals.statorLamination

@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -19,42 +20,17 @@
 #
 from __future__ import annotations
 
-from ..gmsh.gmsh_line import GmshLine
-from .physical_element import PhysicalElement
+import warnings
 
+from .secondary_line import SecondaryLine
 
-###
-# TODO: Rename SLAVE -> LINKED/LINK
-# Eine Instanz der Klasse SlaveLine beschreibt die Slavekante eines Teilmodells einer zu simulierenden elektischen Maschine.
-# \image html slaveLine.png
-###
-class SlaveLine(PhysicalElement):
-    ###
-    # Konstruktor der Klasse SlaveLine.
-    #
-    #   Attribute:
-    #
-    #       ID : Integer
-    #       name : String
-    #       material : Material
-    #       geo_list : [Line]
-    #
-    ###
-    def __init__(
-        self,
-        name: str,
-        geo_list: list[GmshLine],
-    ):
-        """Inititialize secondary line.
+# class SlaveLine(PhysicalElement):
+#     pass
 
-        Args:
-            name (str): Name.
-            geo_list (list[GmshLine]): Line list.
-        """
-        PhysicalElement.__init__(
-            self,
-            name=name,
-            geo_list=geo_list,
-        )
+warnings.warn(
+    "Class SlaveLine was renamed SecondaryLine! Name SlaveLine will be removed soon.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 
-        self.physicalElementType = "SlaveLine"  # the physical element type can be used to identify physical elements
+SlaveLine = SecondaryLine

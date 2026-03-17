@@ -50,7 +50,7 @@ from ...script.physicals.limitLine import LimitLine
 from ...script.physicals.movingband import MovingBand
 from ...script.physicals.physical_element import PhysicalElement
 from ...script.physicals.primaryLine import PrimaryLine
-from ...script.physicals.slaveLine import SlaveLine
+from ...script.physicals.secondary_line import SecondaryLine
 from .. import air
 from ..machine_segment_surface import MachineSegmentSurface
 from . import STATOR_AIRGAP_IDEXT, globalCenterPoint
@@ -453,7 +453,7 @@ def get_boundaries(
             PrimaryLine("Primary Line Rotor", get_primary_lines(rotor_bnd_line_list))
         )
         rotor_boundary.append(
-            SlaveLine(
+            SecondaryLine(
                 "Secondary Line Rotor",
                 get_secondary_lines(rotor_bnd_line_list, symFactor),
             )
@@ -462,7 +462,7 @@ def get_boundaries(
             PrimaryLine("Primary Line Stator", get_primary_lines(stator_bnd_line_list))
         )
         stator_boundary.append(
-            SlaveLine(
+            SecondaryLine(
                 "Secondary Line Stator",
                 get_secondary_lines(stator_bnd_line_list, symFactor),
             )
