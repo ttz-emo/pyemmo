@@ -36,6 +36,7 @@ class AirArea(PhysicalElement):
         :scale:  100%
         :alt: Example for a ``AirArea`` physical surface.
         :align: center
+
     |
     """
 

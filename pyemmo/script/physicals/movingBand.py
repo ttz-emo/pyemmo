@@ -44,13 +44,16 @@ class MovingBand(PhysicalElement):
         :scale:  100%
         :alt: Example for the rotor Movingband physical curve.
         :align: center
+
     |
+
     For the stator side a symmetry segment is enough:
 
     .. image:: ../../images/mb_Stator.png
         :scale:  100%
         :alt: Example for the stator Movingband physical curve.
         :align: center
+
     |
     """
 
