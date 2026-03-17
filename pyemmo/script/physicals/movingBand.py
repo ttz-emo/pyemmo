@@ -29,28 +29,31 @@ from .physicalElement import PhysicalElement
 
 class MovingBand(PhysicalElement):
     """
-    Eine Instanz der Klasse MovingBand beschreibt das Band im Luftspalt, die bei der Movingband-
-    Simulationsmethode für die Drehung des Netzes verwendet wird. Das Movingband muss auf der Rotor-
-    Seite einen Vollkreis beschreiben, ist jedoch auf der Stator-Seite nicht nötig.
+    The :class:`MovingBand` describes the boundary lines on rotor and stator side used
+    as the interface the the Movingband object in the airgap of the machine model.
+    The Movingband method allows for the rotation of the rotor in a transient analysis
+    by remeshing the interface between rotor and stator airgap, when the interface
+    mesh elements get distorted too much.
+    See `this message record <https://onelab.info/pipermail/getdp/2020/002191.html>`_ or
+    the `implementation <https://gitlab.onelab.info/getdp/getdp/-/blob/master/src/kernel/MovingBand2D.cpp>`_
+    for more details.
 
-        \\image html mb_Rotor.png
+    The Movingband must describe a full circle on the rotor side:
 
-        \\image html mb_Stator.png
+    .. image:: ../../images/mb_Rotor.png
+        :scale:  100%
+        :alt: Example for the rotor Movingband physical curve.
+        :align: center
+    |
+    For the stator side a symmetry segment is enough:
 
+    .. image:: ../../images/mb_Stator.png
+        :scale:  100%
+        :alt: Example for the stator Movingband physical curve.
+        :align: center
+    |
     """
 
-    ###
-    # Konstruktor der Klasse MovingBand.
-    #
-    #   Attribute:
-    #
-    #       ID : Integer
-    #       name : String
-    #       material : Material
-    #       geo_list : [CircleArc]
-    #       auxiliary : Boolean
-    #
-    ###
     def __init__(
         self,
         name: str,
@@ -64,8 +67,9 @@ class MovingBand(PhysicalElement):
             name (str): Moving band segment name
             geo_list (List[CircleArc]): List of arc segments to build the mb segment.
             material (Material, optional): Airgap material. Defaults to None.
-            auxiliary (bool, optional): Flag to determine if given moving band segment is auxillar.
-            Defaults to False.
+            auxiliary (bool, optional): Flag to determine if given rotor moving band
+                segment is inside the model symmetry or outside (auxiliary).
+                Defaults to False.
         """
         super().__init__(name=name, geo_list=geo_list, material=material)
         # call radius to make sure all geo elements are circle arcs with the same radius
@@ -77,11 +81,9 @@ class MovingBand(PhysicalElement):
 
     @property
     def auxiliary(self) -> bool:
-        """Gibt den Nutzer die Information zurück (Boolean), ob es sich bei dem Objekt um eine
-        Hilfslinie handelt.
-
+        """
         Returns:
-            bool: If MovingBand object is outside model segment (case symmetry) or not.
+            bool: If MovingBand object is outside model segment (symmetry) or not.
         """
         return self._auxiliary
 

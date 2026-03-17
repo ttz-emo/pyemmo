@@ -1,7 +1,7 @@
-pyemmo.script.physicals.movingBand module
+pyemmo.script.physicals.movingband module
 =========================================
 
-.. automodule:: pyemmo.script.physicals.movingBand
+.. automodule:: pyemmo.script.physicals.movingband
    :members:
    :show-inheritance:
    :undoc-members:

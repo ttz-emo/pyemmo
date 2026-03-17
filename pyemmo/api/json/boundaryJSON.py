@@ -47,7 +47,7 @@ from ...script.gmsh.utils import (
 )
 from ...script.material.material import Material
 from ...script.physicals.limitLine import LimitLine
-from ...script.physicals.movingBand import MovingBand
+from ...script.physicals.movingband import MovingBand
 from ...script.physicals.physicalElement import PhysicalElement
 from ...script.physicals.primaryLine import PrimaryLine
 from ...script.physicals.slaveLine import SlaveLine

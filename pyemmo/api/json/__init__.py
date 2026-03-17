@@ -88,7 +88,7 @@ ROTOR_AIRGAP_IDEXT = "rotor airgap"
 (:attr:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface.part_id`)
 for the rotor airgap. The rotor airgap in pyemmo is defined as the most outer rotor
 surface interfacing the movingband. See
-:class:`~pyemmo.script.physicals.movingBand.MovingBand` or
+:class:`~pyemmo.script.physicals.movingband.MovingBand` or
 :mod:`~pyemmo.api.json.create_airgaps` for futher information."""
 STATOR_SLOT_IDEXT = "stator slot"
 """Literal part identifier
@@ -103,7 +103,7 @@ STATOR_AIRGAP_IDEXT = "stator airgap"
 (:attr:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface.part_id`)
 for stator airgap. The stator airgap in pyemmo is defined as the most inner stator
 surface interfacing the movingband. See
-:class:`~pyemmo.script.physicalsgeometry.movingBand.MovingBand` or
+:class:`~pyemmo.script.physicalsgeometry.movingband.MovingBand` or
 :mod:`~pyemmo.api.json.create_airgaps` for futher information."""
 
 # order defines user defined mesh setting order!
