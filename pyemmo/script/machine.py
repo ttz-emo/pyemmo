@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -17,9 +18,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+"""Module for Class Machine"""
 from __future__ import annotations
 
 import logging
+import warnings
 from math import gcd
 from typing import Literal
 
@@ -36,6 +39,18 @@ from .stator import Stator
 
 
 class Machine:
+    """The :class:`Machine` class represents a container for all :class:`PhysicalElement`
+    objects of the ONELAB model and interfaces them from Gmsh to GetDP by prefined
+    :class:`Domain` instances.
+    E.g. all :class:`Slot` objects of the machine stator will be placed in Domain
+    \"DomainS\" (defined by the PyEMMO machine model template) for model regions with
+    imposed current density boundary.
+    All predefined domains names can be found in :mod:`pyemmo.script`.
+
+    Furthermore the :class:`Machine` class gathers all relevant machine parameters for
+    the initialization of the ONELAB model.
+    """
+
     def __init__(
         self,
         nbrPolePairs: int,
@@ -50,51 +65,63 @@ class Machine:
         Args:
             nbrPolePairs (int): Number of pole pairs of machine.
             rotor (Rotor): PyEMMO Rotor class object
-            rotor (Stator): PyEMMO Stator class object
+            stator (Stator): PyEMMO Stator class object
             name (str, optional): Machine name. Defaults to "machine".
             symmetryFactor (Union[int, None]): Fixed given symmetry factor. If
-                None is given. The symmetry factor will be calculated by number
+                None is given, the symmetry factor will be calculated by number
                 of slots and poles.
 
         """
-        ###Name des Objektes.
         self.name = name if name else "machine"
         self.nbrPolePairs = nbrPolePairs
-        ###Objekt der Klasse Rotor.
         self.rotor = rotor
-        ###Objekt der Klasse Stator.
         self.stator = stator
-        # Setting outer given symmetry factor. Will only be used if not None.
-        self._symmetryFactor = symmetryFactor
-        if rotor and stator:
-            self.createMachineDomains()
 
-    def getSimParams(self) -> dict:
+        # Setting outer given symmetry factor. Will only be used if not None.
+        if not isinstance(symmetryFactor, (int, float)):
+            raise TypeError(
+                f"Symmetry factor must be integer but is {type(symmetryFactor)}"
+            )
+        if symmetryFactor % 1 != 0:
+            raise ValueError(
+                f"Symmetry factor must be integer number but is: {symmetryFactor}"
+            )
+        self._symmetry_factor = symmetryFactor
+        # if rotor and stator are given, create machine domains
+        if rotor and stator:
+            self.create_domains()
+
+    def get_sim_params(self) -> dict:
         """
-        Return geometical simulation parameters as dict
-        - SYMMETRY_FACTOR
-        - L_AX_R
-        - L_AX_S
-        - NBR_POLE_PAIRS
-        - NBR_TURNS_IN_FACE
-        - R_AIRGAP
+        Return the machines **geometical** simulation parameters as dict with parameter
+        names as keys:
+
+            - SYMMETRY_FACTOR
+            - L_AX_R
+            - L_AX_S
+            - NBR_POLE_PAIRS
+            - NBR_TURNS_IN_FACE
+            - R_AIRGAP
         """
         paramDict = default_param_dict["GEO"]
-        paramDict["SYMMETRY_FACTOR"] = self.symmetryFactor
-        paramDict["L_AX_R"] = self.rotor.axialLength
-        paramDict["L_AX_S"] = self.stator.axialLength
+        paramDict["SYMMETRY_FACTOR"] = self.symmetry_factor
+        paramDict["L_AX_R"] = self.rotor.axial_length
+        paramDict["L_AX_S"] = self.stator.axial_length
         paramDict["NBR_POLE_PAIRS"] = self.nbrPolePairs
-        paramDict["NBR_SLOTS"] = self.stator.nbrSlots
+        paramDict["NBR_SLOTS"] = self.stator.nbr_slots
         nbr_turns = self.stator.winding.get_turns()
         if isinstance(nbr_turns, (int, float)):
             paramDict["NBR_TURNS_IN_FACE"] = nbr_turns
         else:
-            raise ValueError("PyEMMO cant handle individual number of turns per Coil!")
-        paramDict["R_AIRGAP"] = self.rotor.movingBand[0].radius
+            raise ValueError(
+                "PyEMMO cant handle individual number of turns per Coil!"
+                "Number of winding turns must be single value in swat-em datamodel"
+            )
+        paramDict["R_AIRGAP"] = self.rotor.movingband[0].radius
         return paramDict
 
-    def createMachineDomains(self) -> None:
-        """Create the different Machine Domains"""
+    def create_domains(self) -> None:
+        """Create the different Machine Domains for the PyEMMO machine model template."""
         rotor = self.rotor
         stator = self.stator
         ###DomainS beinhaltet alle Physical Elements, die bestromt werden.
@@ -176,8 +203,8 @@ class Machine:
             "OuterLimitLine", stator._domainOuterLimit.physicals
         )
 
-    def domainsCreated(self) -> bool:
-        """check if the machine domains have been created.
+    def domains_created(self) -> bool:
+        """Check if the machine domains have been created.
 
         Returns:
             bool: True, if domains have been created; else False.
@@ -202,19 +229,19 @@ class Machine:
             raise TypeError(f"Given name was not type str, but '{type(nameVal)}'")
 
     @property
-    def symmetryFactor(self) -> int:
+    def symmetry_factor(self) -> int:
         """Getter of Symmetry Factor
 
         Returns:
             int: Symmetry Factor
         """
-        if self._symmetryFactor:
+        if self._symmetry_factor:
             # if external symmetry factor is given:
-            return self._symmetryFactor
+            return self._symmetry_factor
         # if sym is not given, try to calculate it
         if self.rotor and self.stator:
             nbr_poles = self.nbrPolePairs * 2
-            sym_machine = gcd(self.stator.nbrSlots, nbr_poles)
+            sym_machine = gcd(self.stator.nbr_slots, nbr_poles)
             sym_winding = self.stator.winding.get_periodicity_t() * 2
             # logger.debug("Symmetry factor winding: %s",{sym_winding})
             sym_factor = min(sym_winding, sym_machine)
@@ -266,9 +293,9 @@ class Machine:
     def rotor(self, newRotor: Rotor):
         if isinstance(newRotor, Rotor):
             self._rotor = newRotor
-            if self.domainsCreated():
+            if self.domains_created():
                 # if domains have been created before, recreate them.
-                self.createMachineDomains()
+                self.create_domains()
         elif newRotor is None:
             self._rotor = None
         else:
@@ -283,9 +310,9 @@ class Machine:
     def stator(self, newStator: Stator):
         if isinstance(newStator, Stator):
             self._stator = newStator
-            if self.domainsCreated():
+            if self.domains_created():
                 # if domains have been created before, recreate them.
-                self.createMachineDomains()
+                self.create_domains()
         elif newStator is None:
             self._stator = None
         else:
@@ -293,7 +320,11 @@ class Machine:
 
     @property
     def domains(self) -> list[Domain]:
-        """Return all Domains of the machine as list"""
+        """Return all Domains of the machine as list
+
+        Returns:
+            list(Domain)
+        """
         domainList: list[Domain] = []
         # Add primary and slave lines first!
         if self._domainPrimary != None:
@@ -320,8 +351,8 @@ class Machine:
         return domainList
 
     @property
-    def primaryLines(self) -> list[Line]:
-        """get a list of primary lines of rotor and stator
+    def primary_lines(self) -> list[Line]:
+        """Get a list of primary lines of rotor and stator
 
         Returns:
             List[Line]: list of primary line geometrical elements
@@ -329,93 +360,115 @@ class Machine:
         rotorDict = self.rotor.sortPhysicals()
         statorDict = self.stator.sortPhysicals()
         physicalPrimeLines = rotorDict["primary"] + statorDict["primary"]
-        primeLines: list[Line] = list()
+        primeLines: list[Line] = []
         for physicalPrimeLine in physicalPrimeLines:
             if physicalPrimeLine.geo_type == Line:
                 primeLines.extend(physicalPrimeLine.geo_list)
             else:
                 raise (
-                    TypeError(
-                        f"Physical Element (Primary Line) must only contain Line objects!"
-                    )
+                    TypeError("PrimaryLine physicals must only contain Line objects!")
                 )
         primeLines.sort(key=_get_line_middle_raidus)
         return primeLines
 
-    def getSecondaryLines(self) -> list[Line]:
-        """get a list of secondary lines of rotor and stator
+    def get_secondary_lines(self) -> list[Line]:
+        """Get a list of secondary lines of rotor and stator
 
         Returns:
             List[Line]: list of secondary line geometrical elements
         """
         rotorDict = self.rotor.sortPhysicals()
         statorDict = self.stator.sortPhysicals()
-        physicalSecLines = rotorDict["secondary"] + statorDict["secondary"]
-        secondaryLines: list[Line] = list()
-        for physicalSecLine in physicalSecLines:
-            if physicalSecLine.geo_type == Line:
-                secondaryLines.extend(physicalSecLine.geo_list)
+        secondary_physicals = rotorDict["secondary"] + statorDict["secondary"]
+        lines: list[Line] = []
+        for secondary_phys in secondary_physicals:
+            if secondary_phys.geo_type == Line:
+                lines.extend(secondary_phys.geo_list)
             else:
                 raise (
-                    TypeError(
-                        f"Physical Element (Primary Line) must only contain Line objects!"
-                    )
+                    TypeError("SecondaryLine physicals must only contain Line objects!")
                 )
-        secondaryLines.sort(key=_get_line_middle_raidus)
-
-        return secondaryLines
+        lines.sort(key=_get_line_middle_raidus)
+        return lines
 
     @property
-    def physicalElements(self) -> list[PhysicalElement]:
+    def physicals(self) -> list[PhysicalElement]:
         """Get a list of all physical elements
 
         Returns:
             List[PhysicalElement]: List of physical elements
         """
-        return self.stator.physicalElements + self.rotor.physicalElements
+        return self.stator.physicals + self.rotor.physicals
 
     def setFunctionMesh(
         self,
-        functionType: Literal["linear", "quad"] = None,
-        meshGainFactor: float = None,
         basisMeshsize: float = None,
+        meshGainFactor: float = None,
+        functionType: Literal["linear", "quad"] = None,
     ):
-        """add functional mesh size setting for machine if you don't want to
-        specify mesh sizes individually. Mesh size is set to increase from
-        airgap to both sides (rotor and stator). Maximal mesh size will be
-        basisMeshsize * meshGainFactor.
-        If basisMeshsize is not given, its set to
-        2 * Pi * Rotor_Movingband_Radius / 360.
+        """**Old function name for** ``set_function_mesh()``.
 
         Args:
-            functionType (Literal[&quot;linear&quot;, &quot;quad&quot;]):
-                linear or quadratic function for mesh size.
-            meshGainFactor (float): Gain factor for mesh size from airgap to
-                outer machine limit.
             basisMeshsize (float, optional): Basis mesh size to use near the
                 airgap (minimal mesh size).
                 Defaults to 2 * Pi * Rotor_Movingband_Radius / 360.
+            meshGainFactor (float): Gain factor for mesh size from airgap to
+                outer machine limit. Defaults to (r_in / basisMeshsize / 3) or 30.
+            functionType (Literal[&quot;linear&quot;, &quot;quad&quot;]):
+                linear or quadratic function for mesh size. Defaults to linear
+
+        :meta private:
+        """
+        warnings.warn(
+            "Function setFunctionMesh() was renamed set_function_mesh()",
+            DeprecationWarning,
+        )
+        # TODO: Remove in future.
+        self.set_function_mesh(basisMeshsize, meshGainFactor, functionType)
+
+    def set_function_mesh(
+        self,
+        basis_size: float = None,
+        gain_factor: float = None,
+        function_type: Literal["linear", "quad"] = None,
+    ):
+        """Add functional mesh size setting for machine if you don't want to
+        specify mesh sizes individually. Mesh size is set to increase from
+        airgap to both sides (rotor and stator). Maximal mesh size will be
+        basis_size * gain_factor.
+        If basis_size is not given, its set to:
+
+        :attr:`basis_size` = :math:`\\frac{2\\pi}{360} \\cdot r_\\mathrm{MB,Rotor}`.
+
+        Args:
+            basis_size (float, optional): Basis mesh size to use near the
+                airgap (minimal mesh size).
+                Defaults to 2 * Pi * Rotor_Movingband_Radius / 360.
+            gain_factor (float): Gain factor for mesh size from airgap to
+                outer machine limit.
+            function_type (Literal[&quot;linear&quot;, &quot;quad&quot;]):
+                linear or quadratic function for mesh size.
         """
         logger = logging.getLogger(__name__)
         logger.debug("Using automatic mesh generation.")
-        if not basisMeshsize:
+        if not basis_size:
             # calc movingband hight
-            h_mb = abs(self.rotor.movingBandRadius - self.stator.movingBandRadius)
-            basisMeshsize = h_mb
+            h_mb = abs(self.rotor.movingband_radius - self.stator.movingband_radius)
+            basis_size = h_mb
             logger.debug(
                 "Setting basis mesh size to movingband hight = %.3e",
                 h_mb,
             )
 
-        self.rotor.setFunctionMesh(
-            basisMeshsize=basisMeshsize,
-            meshGainFactor=meshGainFactor,
-            functionType=functionType,
+        self.rotor.set_function_mesh(
+            basis_size=basis_size,
+            gain_factor=gain_factor,
+            function_type=function_type,
         )
-        self.stator.setFunctionMesh(
-            basisMeshsize=basisMeshsize,
-            meshGainFactor=meshGainFactor,
-            functionType=functionType,
+        self.stator.set_function_mesh(
+            basis_size=basis_size,
+            gain_factor=gain_factor,
+            function_type=function_type,
         )
         # # get max. stator radius:
         # rS = 0
@@ -498,7 +551,7 @@ class Machine:
                         color=[0, 0, 0],
                     )
         # # Set axes limits
-        if self.symmetryFactor > 1 and not plot_mb:
+        if self.symmetry_factor > 1 and not plot_mb:
             ## offset y axis
             # calc most upper point:
             #   TODO: Find a universal solution for the bounding box... Maybe with a
@@ -518,7 +571,7 @@ class Machine:
                 bottom=-self.stator.outer_radius / 20,
                 top=self.stator.outer_radius * 1.05,
             )
-            if self.symmetryFactor > 2:
+            if self.symmetry_factor > 2:
                 ax.set_xlim(left=0)
         return fig
 

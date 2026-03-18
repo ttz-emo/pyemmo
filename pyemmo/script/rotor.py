@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -23,8 +24,9 @@ from __future__ import annotations
 
 import copy
 import logging
+import warnings
 from math import pi
-from typing import *
+from typing import Literal
 
 import gmsh
 from matplotlib import pyplot as plt
@@ -60,20 +62,17 @@ from .physicals.physical_element import PhysicalElement
 
 class Rotor:
     """
-    An instance of the Rotor class describes the rotor of an electrical
-    machine in three-dimensional space. This class is used in conjunction with
-    the class Machine. The user himself defines the type of machine by
-    defining his physical elements. This class should only be used if the
-    geometry of the machine is further processed as an import (e.g. Step). To
-    use the construction kit, it makes sense to specify the machine first. You
-    should therefore use specific classes for this, e.g. machineSPMSM (for
-    surface magnets) and the associated class RotorSPMSM.
-
+    An instance of the Rotor class describes the rotor of an electrical machine.
+    The :class:`Rotor` and :class:`~pyemmo.script.stator.Stator` in PyEMMO are used as
+    a container for the :class:`~pyemmo.script.domain.Domain` objects (groups of
+    PhysicalElements) used in the PyEMMO GetDP machine model template.
+    This class is used in the :class:`~pyemmo.script.machine.Machine` class to create
+    all relevant Domains for the ONELAB model.
     """
 
     def __init__(
         self,
-        physicalElementList: List[PhysicalElement],
+        physicals: list[PhysicalElement],
         name: str = "",
         axLen: float = 1.0,
     ):
@@ -81,17 +80,17 @@ class Rotor:
         Constructor of class Rotor
 
         Args:
-            physicalElements (List[PhysicalElement]): List of PhysicalElement
-                objects defining geometry and materials.
+            physicals (List[PhysicalElement]): List of PhysicalElement
+                objects constructing the rotor.
             name (str): Defaults to \"\".
-            axLen (float): Active axial length of stator lamination in [m].
+            axLen (float): Active axial length of rotor lamination in [m].
                 Defaults to 1.0
 
         """
         self.logger = logging.getLogger(__name__)
         self.name = name if name else "Rotor"  # rotor name
-        self.physicalElements = physicalElementList  # rotor physical elements
-        self.axialLength = axLen  # active axial length
+        self.physicals = physicals  # rotor physical elements
+        self.axial_length = axLen  # active axial length
         self._createDomainForRotor()  # create rotor domains
 
     @property
@@ -99,7 +98,7 @@ class Rotor:
         """Getter of rotor name
 
         Returns:
-            str: _name
+            str
         """
         return self._name
 
@@ -115,81 +114,106 @@ class Rotor:
             self._name = name
 
     @property
-    def axialLength(self) -> float:
-        """Getter of rotor axLen [m]
+    def axial_length(self) -> float:
+        """Axial length of active core in meter.
+        This does not include a stacking factor.
 
         Returns:
-            float: _axLen
+            float: Axial length in meter.
         """
 
         return self._axLen
 
-    @axialLength.setter
-    def axialLength(self, axLen: Union[float, int]) -> None:
-        """Setter of rotor axial length axLen [m]
+    @axial_length.setter
+    def axial_length(self, length: float | int) -> None:
+        """Setter of rotor axial length [m]
 
         Args:
-            axLen (Union[float, int]): _description_
-
-        Raises:
-            TypeError: _description_
+            axLen (float | int): Axial length in meter.
         """
 
-        if isinstance(axLen, (float, int)):
-            self._axLen = axLen
+        if isinstance(length, (float, int)):
+            self._axLen = length
         else:
             raise TypeError(
-                f"Given axial length axLen was not numeric but {type(axLen)}."
+                f"Given axlengthength axLen was not numeric but {type(length)}."
             )
 
     @property
-    def physicalElements(self) -> List[PhysicalElement]:
-        """Getter of PhysicalElements-list
+    def physicalElements(self) -> list[PhysicalElement]:
+        """Old name for rotor phyiscals
 
-        Returns:
-            List[PhysicalElement]: _physicalElements
+        :meta private:
         """
-
-        return self._physicalElements
+        warnings.warn(
+            "Rotor property physicalElements was renamed physicals", DeprecationWarning
+        )
+        return self._physical_elements
 
     @physicalElements.setter
-    def physicalElements(self, physicalElementsList: List[PhysicalElement]) -> None:
-        """Setter of PhysicalElements-List
+    def physicalElements(self, new_physicals):
+        """Old setter for physicals"""
+        warnings.warn(
+            "Rotor property physicalElements was renamed physicals", DeprecationWarning
+        )
+        # use new setter:
+        self.physicals = new_physicals
 
-        Args:
-            physicalElementsList (List[PhysicalElement]): _description_
-
-        Raises:
-            TypeError: _description_
+    @property
+    def physicals(self) -> list[PhysicalElement]:
+        """PhysicalElements list.
 
         Returns:
-            _type_: _description_
+            List[PhysicalElement]
         """
 
-        if isinstance(physicalElementsList, List):
-            self._physicalElements = physicalElementsList
+        return self._physical_elements
+
+    @physicals.setter
+    def physicals(self, new_physicals: list[PhysicalElement]) -> None:
+        """Setter of PhysicalElements list. This will remove all previously set
+        physicals and recreate the rotor domains!
+
+        Args:
+            new_physicals (List[PhysicalElement]): List of new physical elements.
+
+        Raises:
+            TypeError: if given PhysicalElements are not list of ``PhysicalElement`` or
+            ``PhysicalElement``
+        """
+
+        if isinstance(new_physicals, list):
+            self._physical_elements = new_physicals
             # pylint: disable=locally-disabled,  pointless-statement
             self._createDomainForRotor()  # recreate domains for rotor with new elements
             return None
-        if isinstance(physicalElementsList, PhysicalElement):
-            self._physicalElements = [physicalElementsList]
+        if isinstance(new_physicals, PhysicalElement):
+            self._physical_elements = [new_physicals]
             self._createDomainForRotor()  # recreate domains for rotor with new elements
             return None
-        raise TypeError(f"physicalElementList- type: {type(physicalElementsList)}.")
+        raise TypeError(
+            f"Wrong type for list of PhysicalElement: {type(new_physicals)}."
+        )
 
-    def addPhysicalElements(self, physicalElementList: List[PhysicalElement]):
+    def addPhysicalElements(self, physicalElementList: list[PhysicalElement]):
         """Append PhysicalElements to the rotor and recreate domains"""
+        # TODO: Rename to snake_case
         if isinstance(physicalElementList, list):
             for physicalElem in physicalElementList:
-                if physicalElem not in self._physicalElements:
-                    self._physicalElements.append(physicalElem)
+                if physicalElem not in self._physical_elements:
+                    self._physical_elements.append(physicalElem)
             # pylint: disable=locally-disabled,  pointless-statement
             self._createDomainForRotor()  # recreate domains for rotor with new elements
         else:
             raise ValueError("'physicalElementList' was not type list!")
 
-    ###Automatische Zuweisung der PhysicalElemente zu den passenden Domainen.
     def _createDomainForRotor(self) -> None:
+        """This function creates all relevant domains for the PyEMMO electromagentic
+        machine model for the current PhysicalElements of the rotor.
+
+        :meta private:
+        """
+        # TODO: Rename to snake_case
         allPhy = self.sortPhysicals()
 
         ###DomainC beinhaltet alle Physical Elements, die leitend sind.
@@ -241,12 +265,12 @@ class Rotor:
         ###Innengrenze der elektrischen Maschine (Welle).
         self._domainInnerLimit = Domain("InnerLimit_Rotor", allPhy["limit"])
 
-    ###Sortierfunktion der PhysicalElements.
-    def sortPhysicals(self) -> Dict[str, List[PhysicalElement]]:
+    def sortPhysicals(self) -> dict[str, list[PhysicalElement]]:
         """
         Create a dict with the physical elements sorted into different domains with
         domain names as keys.
-        The dict will look like
+        The Domain names are defined in the :mod:`pyemmo.script` module by
+        :obj:`pyemmo.script.default_domain_dict`.
 
         .. code-block:: python
 
@@ -269,34 +293,15 @@ class Rotor:
             }
 
         Returns:
-            Dict[str, List[PhysicalElement]]: Sorted Physicals Dict
+            Dict[str, List[PhysicalElement]]: Sorted PhysicalElements dict.
 
         """
-        domain_dict: Dict[str, List[PhysicalElement]] = copy.deepcopy(
+        # TODO: Rename to snake_case
+        domain_dict: dict[str, list[PhysicalElement]] = copy.deepcopy(
             default_domain_dict
         )
-        # domainS = []  # Eingeprägte Ströme
-        # domainM = []  # Magnete
-        # domainLam = []  # Lamination (part with material specified lamination)
-        # domainBar = []  # Conducting rotor bars of ASM
-        # domainC = []  # Leitende Flächen z. B. Stäbe ASM
-        # domainCC = []  # alle elektrisch nicht leitenden Flächen
-        # allMbLines = []  # Moving Band
 
-        # domain = []  # Alle Flächen
-        # domainNL = []  # Alle nicht linearen Flächen
-        # domainL = []  # Alle linearen Flächen
-
-        # domainMoving = (
-        # []
-        # )  # Alle Teile die sich drehen, inkl. Moving Band (alle)
-        # movingBandAux = []  # Bei Teilmodell -> die restlichen Moving Band
-        # domainAirgap = []  # Luftspalt im Rotor
-
-        # primaryLines = []  # Teilmodell primarykante
-        # slaveLines = []  # Teilmodell Slavekante
-        # limitLines = []  # Randlinien ohne Primär- und Sekundärkanten
-        for physElem in self.physicalElements:
+        for physElem in self.physicals:
             geoType = physElem.geo_type
             if geoType == Surface:
                 # domainC, domainL & domainNL
@@ -386,17 +391,38 @@ class Rotor:
         return domain_dict
 
     @property
-    def movingBand(self) -> List[MovingBand]:
+    def movingBand(self) -> list[MovingBand]:
+        """Old prop name for movingband physicals
+
+        Returns:
+            list[MovingBand]
+
+        :meta private:
+        """
+        warnings.warn("Property movingBand was renamed movingband", DeprecationWarning)
+        return self.movingband
+
+    @property
+    def movingband(self) -> list[MovingBand]:
         """Getter of MovingBand physical elements
 
         Returns:
-            List[MovingBand]: _description_
+            List[MovingBand]
         """
         domainMB = self._mb
         return domainMB.physicals
 
     @property
-    def movingBandRadius(self) -> float:
+    def movingBandRadius(self):
+        """Old getter for movinband radius
+
+        :meta private:
+        """
+        warnings.warn("Property movingBand was renamed movingband", DeprecationWarning)
+        return self.movingband_radius
+
+    @property
+    def movingband_radius(self) -> float:
         """determine the moving band radius.
         This is done by checking the radius of all moving band PhysicalElements for equality.
 
@@ -407,7 +433,7 @@ class Rotor:
             ValueError: If there are no moving band objects.
             ValueError: If radius of different moving band arcs is not equal.
         """
-        physicalMBList = self.movingBand
+        physicalMBList = self.movingband
         if physicalMBList:
             mbRadius = physicalMBList[0].radius
             for physicalMB in physicalMBList:
@@ -429,8 +455,9 @@ class Rotor:
 
     @property
     def inner_radius(self) -> float:
-        """determine the most inner radius.
-        This is done by checking the domain InnerLimit for the smallest radius.
+        """Determine the most inner radius.
+        This is done by checking the elements of the ``InnerLimit`` domain for the
+        smallest radius.
 
         Returns:
             float: Most inner radius in meter.
@@ -440,36 +467,32 @@ class Rotor:
         if not inner_limits:
             # no inner limit
             return 0.0
-        else:
-            r_in = inner_limits[0].geo_list[0].points[0].radius
-            for phys in inner_limits:
-                for geo in phys.geo_list:
-                    if isinstance(geo, Line):
-                        for p in geo.points:
-                            if p.radius < r_in:
-                                r_in = p.radius
-        return r_in
 
-    # def getMovingBand(self) -> List[AirGap]:
-    #     """get the MovingBand physical elements"""
-    #     domainMB = self._mb
-    #     return domainMB.physicals
+        r_in = inner_limits[0].geo_list[0].points[0].radius
+        for phys in inner_limits:
+            for geo in phys.geo_list:
+                if isinstance(geo, Line):
+                    for p in geo.points:
+                        if p.radius < r_in:
+                            r_in = p.radius
+        return r_in
 
     def plot(self, fig=None, symFactor: int = None, **kwargs) -> None:
         """
         2D Line plot of the rotor physical elements
 
         Args:
-            fig (matplotlib.Figure): Figure object to plot rotor on. If None is given, the
-            function will automatically create one. Defaults to None.
+            fig (matplotlib.Figure): Figure object to plot rotor on. If None is given,
+                the function will automatically create one. Defaults to None.
             symFactor (int): If symmetry factor is given, the plot will be cutted to the
-            correspoinding symmmetry (neglecting auxilliary moving band)
-            **kwargs
+                correspoinding symmetry (neglecting auxilliary moving band)
+            **kwargs: All keyword arguments available for a Matplotlib line plot.
 
-        Default kwargs:
-            linewidth: 0.5
-            marker: "."
-            markersize: 1
+        Default ``kwargs``:
+
+            - linewidth: 0.5
+            - marker: "."
+            - markersize: 1
         """
         if "linewidth" not in kwargs:
             kwargs["linewidth"] = 0.5
@@ -483,11 +506,11 @@ class Rotor:
             fig.set_dpi(300)
             axis.set_aspect("equal", adjustable="box")
         kwargs["fig"] = fig
-        for phys in self.physicalElements:
+        for phys in self.physicals:
             for geoElem in phys.geo_list:
                 geoElem.plot(**kwargs)
         if symFactor:
-            radius = self.movingBandRadius
+            radius = self.movingband_radius
             if symFactor == 4:
                 lim = -0.01 * radius
                 axis.set_xlim(left=lim)
@@ -518,31 +541,67 @@ class Rotor:
                 outer machine limit. Defaults to (r_in / basisMeshsize / 3) or 30.
             functionType (Literal[&quot;linear&quot;, &quot;quad&quot;]):
                 linear or quadratic function for mesh size. Defaults to linear
+
+        :meta private:
+        """
+        warnings.warn(
+            "Fucntion setFunctionMesh() was renamed set_function_mesh()",
+            DeprecationWarning,
+        )
+        # TODO: Remove in future.
+        self.set_function_mesh(basisMeshsize, meshGainFactor, functionType)
+
+    def set_function_mesh(
+        self,
+        basis_size: float = None,
+        gain_factor: float = None,
+        function_type: Literal["linear", "quad"] = None,
+    ):
+        """add functional mesh size setting for machine if you don't want to
+        specify mesh sizes individually. Mesh size is set to increase from
+        airgap rotor inner radius. Maximal mesh size will be
+        ``basis_size`` * ``gain_factor``.
+        If  ``basis_size`` is not given, its set to
+
+        :math:`ms_\\mathrm{basis} = \\frac{2\\pi}{360} \\cdot r_\\mathrm{MB,Rotor}`.
+
+        If ``gain_factor`` is not given it will be derived from a empirically
+        determined algorithm that rates the ratio of inner radius and basis
+        mesh size. (This works best if  ``basis_size`` = Movingband hight!)
+
+        Args:
+            basis_size (float, optional): Basis mesh size to use near the
+                airgap (minimal mesh size).
+                Defaults to 2 * Pi * Rotor_Movingband_Radius / 360.
+            gain_factor (float): Gain factor for mesh size from airgap to
+                outer machine limit. Defaults to (r_in / basisMeshsize / 3) or 30.
+            function_type (\"linear\" | \"quad\"):
+                linear or quadratic function for mesh size. Defaults to \"linear\"
         """
         self.logger.debug("Started automatic mesh generation on rotor.")
         # get most inner radius
         r_in = self.inner_radius
-        if not basisMeshsize:
+        if not basis_size:
             # get max. outer radius = moving band radius:
-            basisMeshsize = 2 * pi * self.movingBandRadius / 360
+            basis_size = 2 * pi * self.movingband_radius / 360
             self.logger.debug(
                 "Setting basis mesh size to 2 * pi * self.movingBandRadius / 360 = %.3e",
-                basisMeshsize,
+                basis_size,
             )
         # set mesh gain factor to empirically developed default
-        if not meshGainFactor:
-            if r_in / basisMeshsize > 60:
-                meshGainFactor = r_in / basisMeshsize / 3
+        if not gain_factor:
+            if r_in / basis_size > 60:
+                gain_factor = r_in / basis_size / 3
             else:
-                meshGainFactor = 30
+                gain_factor = 30
             self.logger.debug(
                 "Setting mesh gain factor to = %.1f",
-                meshGainFactor,
+                gain_factor,
             )
-        if functionType == "linear" or functionType == None:
-            self._set_linear_mesh(meshGainFactor, basisMeshsize)
+        if function_type == "linear" or function_type == None:
+            self._set_linear_mesh(gain_factor, basis_size)
         else:
-            self._set_quad_mesh(meshGainFactor, basisMeshsize)
+            self._set_quad_mesh(gain_factor, basis_size)
         gmsh.model.occ.synchronize()
 
     def _get_points(self) -> list[GmshPoint]:
@@ -551,15 +610,19 @@ class Rotor:
 
         Returns:
             list[GmshPoint]: List of points belonging to stator physicals
+
+        :meta private:
         """
-        phys_dim_tags = get_dim_tags(self.physicalElements)
+        phys_dim_tags = get_dim_tags(self.physicals)
         p_tags = get_point_tags(phys_dim_tags)
         return [GmshPoint(tag=p_tag) for p_tag in p_tags]
 
     def _set_linear_mesh(self, meshGainFactor: float, basisMeshsize: float):
+        """Set linear mesh function for rotor"""
+
         # calculate linear mesh size functions (ax+b)
         self.logger.debug("Setting linear mesh on rotor.")
-        a1 = (1 - meshGainFactor) / self.movingBandRadius
+        a1 = (1 - meshGainFactor) / self.movingband_radius
         b1 = meshGainFactor
         # a2 = (meshGainFactor - 1) / (self.movingBandRadius - self.inner_radius)
         # b2 = meshGainFactor - a2 * self.movingBandRadius
@@ -571,13 +634,14 @@ class Rotor:
             point.meshLength = pMeshSize
 
     def _set_quad_mesh(self, meshGainFactor: float, basisMeshsize: float):
+        """Set quadtratic mesh function for rotor"""
         self.logger.debug("Setting quadratic mesh on rotor.")
         # calculate function coefficients for ax^2+bx+c
         # c = meshGainFactor
         # b = -2 * c / self.inner_radius
         # a = -b / 2 / self.inner_radius
         r_in = self.inner_radius
-        r_mb = self.movingBandRadius
+        r_mb = self.movingband_radius
         f1 = r_in**2 - 2 * r_in * r_mb + r_mb**2
         a = (meshGainFactor - 1) / f1
         b = -2 * a * r_mb
@@ -590,12 +654,10 @@ class Rotor:
             point.meshLength = gain_factor * basisMeshsize
 
     def addToScript(self, script):
-        """Mit addToScript wird der Rotor zum Skriptobjekt übergeben und in gmsh-Syntax übersetzt.
-        Diese Methode sollte stets nur in Kombination mit generateScript (Klassenmethode von Script)
-        verwendet werden.
+        """This adds all the current rotor domains to the given :class:`Script`.
+        This should only be used for development and testing!
 
-        Args:
-            script (_type_): _description_
+        :meta private:
         """
         self._domainS.addToScript(script)
         self._domainM.addToScript(script)

@@ -17,12 +17,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""main of pyemmo package. There is no commandline interface yet."""
+"""Main of pyemmo package. There is no commandline interface yet."""
 
 from __future__ import annotations
 
-from sys import argv
 import logging
+from sys import argv
 
 logger = logging.getLogger(__name__)
 

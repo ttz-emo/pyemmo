@@ -194,7 +194,7 @@ def createMachine(
     logger.info("Creating rotor object...")
     rotorAPI = Rotor(
         name="rotor created via json api",
-        physicalElementList=rotorPhysicals,
+        physicals=rotorPhysicals,
         axLen=axLen["rotor"],
     )
 
@@ -202,8 +202,8 @@ def createMachine(
     logger.info("Creating stator object...")
     statorAPI = Stator(
         name="stator created via json api",
-        nbrSlots=windingSWAT.get_num_slots(),
-        physicalElements=statorPhysicals,
+        nbr_slots=windingSWAT.get_num_slots(),
+        physicals=statorPhysicals,
         axLen=axLen["stator"],
         winding=windingSWAT,
     )
@@ -334,8 +334,8 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
     )
     machine = script.machine
     # 1. Airgap flux density
-    rotorAirgapRadius = machine.rotor.movingBandRadius
-    statorAirgapRadius = machine.stator.movingBand[0].radius
+    rotorAirgapRadius = machine.rotor.movingband_radius
+    statorAirgapRadius = machine.stator.movingband[0].radius
     for side, radius in {
         "rotor": rotorAirgapRadius,
         "stator": statorAirgapRadius,
@@ -634,7 +634,7 @@ def main(
     if "useFunctionMesh" in extendedInfo.keys():
         if extendedInfo["useFunctionMesh"]:
             module_logger.info("Creating automatic, function based mesh sizes...")
-            machine.setFunctionMesh()
+            machine.set_function_mesh()
 
     # get the simulation pareameters
     simulationParameters = importJSON.get_simulation_params(extendedInfo)
@@ -842,8 +842,8 @@ def _run_core_loss_calculation(resPath, apiScript: Script):
                 "eddy": lossParams[1],
                 "exc": lossParams[2],
             },
-            sym_factor=machine.symmetryFactor,
-            axial_length=machine.rotor.axialLength,
+            sym_factor=machine.symmetry_factor,
+            axial_length=machine.rotor.axial_length,
         )
         lossParams = statorMat.lossParams
         ironLossS, time = core_loss.main(
@@ -853,8 +853,8 @@ def _run_core_loss_calculation(resPath, apiScript: Script):
                 "eddy": lossParams[1],
                 "exc": lossParams[2],
             },
-            sym_factor=machine.symmetryFactor,
-            axial_length=machine.stator.axialLength,
+            sym_factor=machine.symmetry_factor,
+            axial_length=machine.stator.axial_length,
         )
         core_loss.write_simple(join(resPath, "Pv_hyst_R.dat"), time, ironLossR["hyst"])
         core_loss.write_simple(join(resPath, "Pv_hyst_S.dat"), time, ironLossS["hyst"])

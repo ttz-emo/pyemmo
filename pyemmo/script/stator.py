@@ -17,9 +17,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+"""Module for class Stator"""
 from __future__ import annotations
 
 import logging
+import warnings
 from typing import Literal
 
 import gmsh
@@ -38,23 +40,21 @@ from .physicals.movingband import MovingBand
 from .physicals.physical_element import PhysicalElement
 from .physicals.slot import Slot
 
-# from ... import calc_phaseangle_starvoltageV2
 
-
-# analyse.calc_phaseangle_starvoltage = calc_phaseangle_starvoltageV2
-###
-# Eine Instanz der Klasse Stator beschreibt den Stator eine elektrische Maschine im dreidimensionalen Raum.
-# Diese Klasse wird in Verbindung mit der Klasse Machine verwendet.
-# Um welchen Type Maschine es sich handelt, definiert der Nutzer selbst, durch die Definition seiner Physical Elements.
-# Diese Klasse sollte man nur verwenden, wenn die Geometrie der Maschine als Import (bspw. Step) weiter verarbeitet wird.
-# Für die Verwendung des Baukastens, ist die Spezifizierung der Maschine zunächst sinnvoll.
-# Hierfür sollte man deshalb spezifische Klassen bspw. machineSPMSM (für Oberflächenmagnete) benutzen und die dazugehörige Klasse StatorSPMSM verwenden.
-###
 class Stator:
+    """
+    An instance of the Stator class describes the stator of an electrical machine.
+    The :class:`Stator` and :class:`~pyemmo.script.rotor.Rotor` in PyEMMO are used as
+    a container for the :class:`~pyemmo.script.domain.Domain` objects (groups of
+    PhysicalElements) used in the PyEMMO GetDP machine model template.
+    This class is used in the :class:`~pyemmo.script.machine.Machine` class to create
+    all relevant Domains for the ONELAB model.
+    """
+
     def __init__(
         self,
-        nbrSlots: int,
-        physicalElements: list[PhysicalElement] = list(),
+        nbr_slots: int,
+        physicals: list[PhysicalElement] = [],
         name: str = "",
         axLen: float = 1.0,
         winding: datamodel = None,
@@ -63,27 +63,22 @@ class Stator:
         Constructor of class Stator
 
         Args:
-            nbrSlots (int): number of stator slots (Qs).
-            physicalElements (List[PhysicalElement]): list of physical elements of the stator.
+            nbr_slots (int): number of stator slots (Qs).
+            physicals (List[PhysicalElement]): list of physical elements of the stator.
             name (str): name of the stator. Defaults to "".
-            axLen (float): active axial length of stator lamination in meter. Defaults to 1.
-            winding (swat_em.datamodel): winding object from swat_em module. Defaults to None.
-
-
-        Returns:
-            Stator: the stator object.
-
-        Raises:
-            Nothing
+            axLen (float): active axial length of stator lamination in meter. Defaults
+                to 1.
+            winding (swat_em.datamodel): winding object from swat_em module. Defaults
+                to None.
         """
         self.logger = logging.getLogger(__name__)
         self.name = name if name else "Stator"  # name of the stator
-        self.nbrSlots = nbrSlots
-        self.axialLength = axLen  # active axial length
+        self.nbr_slots = nbr_slots
+        self.axial_length = axLen  # active axial length
         self.winding = winding
-        self.physicalElements = physicalElements
+        self.physicals = physicals
         # only generate domains if they are physical elements
-        if self.physicalElements:
+        if self.physicals:
             self._createDomainForStator()
 
     @property
@@ -107,19 +102,16 @@ class Stator:
             raise TypeError(f"Given name was not type str, but '{type(name)}'")
 
     @property
-    def nbrSlots(self) -> int:
+    def nbr_slots(self) -> int:
         """Getter of number of slots (Qs)"""
         return self._nbrSlots
 
-    @nbrSlots.setter
-    def nbrSlots(self, nbrSlots: int) -> None:
+    @nbr_slots.setter
+    def nbr_slots(self, nbrSlots: int) -> None:
         """Setter for the Number of Slots
 
         Args:
-            nbrSlots (int): _description_
-
-        Raises:
-            TypeError: _description_
+            nbrSlots (int)
         """
         if isinstance(nbrSlots, (int, float)):
             self._nbrSlots = nbrSlots
@@ -129,19 +121,16 @@ class Stator:
             )
 
     @property
-    def axialLength(self) -> float:
-        """Getter of axLen [m]"""
+    def axial_length(self) -> float:
+        """Axial length in meter"""
         return self._axLen
 
-    @axialLength.setter
-    def axialLength(self, axLen: float | int) -> None:
+    @axial_length.setter
+    def axial_length(self, axLen: float | int) -> None:
         """Setter for axLen [m]
 
         Args:
-            axLen (Union[float, int]): _description_
-
-        Raises:
-            TypeError: _description_
+            axLen (Union[float, int])
         """
         if isinstance(axLen, (float, int)):
             self._axLen = axLen
@@ -152,55 +141,60 @@ class Stator:
 
     @property
     def physicalElements(self) -> list[PhysicalElement]:
-        """Getter of PhysicalElements-list"""
-        return self._physicalElements
+        """Old name for rotor phyiscals
 
-    @physicalElements.setter
-    def physicalElements(self, physicalElementsList: list[PhysicalElement]) -> None:
+        :meta private:
+        """
+        warnings.warn(
+            "Rotor property physicalElements was renamed physicals", DeprecationWarning
+        )
+        return self._physical_elements
+
+    @property
+    def physicals(self) -> list[PhysicalElement]:
+        """Getter of PhysicalElements-list"""
+        return self._physical_elements
+
+    @physicals.setter
+    def physicals(self, physicalElementsList: list[PhysicalElement]) -> None:
         """Setter of PhysicalElement-List
 
         Args:
-            physicalElementsList (List[PhysicalElement]): _description_
-
-        Raises:
-            TypeError: _description_
-
-        Returns:
-            _type_: _description_
+            physicalElementsList (List[PhysicalElement])
         """
         if isinstance(physicalElementsList, list):
-            self._physicalElements = physicalElementsList
+            self._physical_elements = physicalElementsList
             self._createDomainForStator()
             return None
-        elif isinstance(physicalElementsList, PhysicalElement):
-            self._physicalElements = [physicalElementsList]
+        if isinstance(physicalElementsList, PhysicalElement):
+            self._physical_elements = [physicalElementsList]
             self._createDomainForStator()
             return None
-        else:
-            raise TypeError(
-                f"Given attribute physicalElementList was not type List or PhysicalElement but {type(physicalElementsList)}."
-            )
+        raise TypeError(
+            "Given attribute physicalElementList was not type List or PhysicalElement "
+            f"but {type(physicalElementsList)}."
+        )
 
     def addPhysicalElements(self, physicalElementList: list[PhysicalElement]):
         """Append PhysicalElements to the stator and recreate domains"""
         if type(physicalElementList) == list:
             for physicalElem in physicalElementList:
-                if physicalElem not in self._physicalElements:
-                    self._physicalElements.append(physicalElem)
+                if physicalElem not in self._physical_elements:
+                    self._physical_elements.append(physicalElem)
             self._createDomainForStator()  # recreate domains for stator with new elements
         else:
             raise ValueError(f"Argument 'physicalElementList' was not type list!")
 
     @property
     def slots(self) -> list[Slot]:
-        """getSlots returns a list of physical elements of type slot in stator.physicalElementList.
-        The List is sortet in circumferderal (mathematically positive) and radial direction so the
-        first slot in the list is the one closest to the x-axis
+        """Get a list of all slot PhysicalElements in ``stator.physicals``.
+        These are sorted in circumferderal (mathematically positive) and radial
+        direction so the first slot in the list is the one closest to the x-axis.
 
         Returns:
-            List[Slot]: List of slots
+            List[Slot]
         """
-        physicalElements = self.physicalElements
+        physicalElements = self.physicals
         slotList: list[Slot] = []
         for physElem in physicalElements:
             if physElem.type == "Slot":
@@ -227,18 +221,39 @@ class Stator:
 
     @property
     def movingBand(self) -> list[MovingBand]:
+        """Old prop name for movingband physicals
+
+        Returns:
+            list[MovingBand]
+
+        :meta private:
+        """
+        warnings.warn("Property movingBand was renamed movingband", DeprecationWarning)
+        return self.movingband
+
+    @property
+    def movingband(self) -> list[MovingBand]:
         """get the MovingBand physical elements"""
         domainMB = self._mb
         return domainMB.physicals
 
     @property
-    def movingBandRadius(self) -> float:
-        """Getter for the Moving Band radius
+    def movingBandRadius(self):
+        """Old getter for movinband radius
+
+        :meta private:
+        """
+        warnings.warn("Property movingBand was renamed movingband", DeprecationWarning)
+        return self.movingband_radius
+
+    @property
+    def movingband_radius(self) -> float:
+        """Get the stator moovingband radius
 
         Returns:
-            float: Moving Band radius
+            float
         """
-        physicalMBList = self.movingBand
+        physicalMBList = self.movingband
         if physicalMBList:
             mbRadius = physicalMBList[0].radius
             for physicalMB in physicalMBList:
@@ -260,12 +275,12 @@ class Stator:
 
     @property
     def outer_radius(self) -> float:
-        """Stator most outer radius determined from domain OuterLimit
+        """Stator most outer radius determined from domain ``OuterLimit``.
 
         Returns:
-            float: Most outer radius in meter.
+            float: Most outer radius of stator geometry in meter.
         """
-        if not self.physicalElements:
+        if not self.physicals:
             raise RuntimeError(
                 "Cannot determine outer radius since there are no physical elements in Stator."
             )
@@ -299,7 +314,7 @@ class Stator:
             TypeError: If winding is not type swat_em.datamodel
         """
         if isinstance(winding, datamodel):
-            if winding.get_num_slots() == self.nbrSlots:
+            if winding.get_num_slots() == self.nbr_slots:
                 try:
                     if (
                         not winding.get_fundamental_windingfactor()
@@ -314,7 +329,7 @@ class Stator:
             else:
                 raise (
                     ValueError(
-                        f"Given Winding object (Qs={winding.get_num_slots()}) doesn't have the same number of slots as the stator (Qs={self.nbrSlots})."
+                        f"Given Winding object (Qs={winding.get_num_slots()}) doesn't have the same number of slots as the stator (Qs={self.nbr_slots})."
                     )
                 )
         else:
@@ -335,6 +350,7 @@ class Stator:
             - Winding phase: u, v or w
             - Number of winding turns
 
+        :meta private:
         """
         # get_layers returns right/upper and left/lower slot side as
         # list of phases (1,2 or 3) and winding direction (+ or -)
@@ -363,7 +379,7 @@ class Stator:
             slot.setColor()
 
     def _createDomainForStator(self):
-        """Automatische Zuweisung der PhysicalElements zu den passenden Domainen"""
+        """Create all domains for the stator."""
         self._setWindingParamInSlots()
         allPhy = self.sortPhysicals()
         ###DomainS beinhaltet alle Physical Elements, die bestromt werden.
@@ -397,33 +413,38 @@ class Stator:
         ###DomainLam beinhaltet alle Physical Elements, die geblecht sind.
         self._domainLam = Domain("DomainLam_Stator", allPhy["domainLam"])
 
-    ###Sortierfunktion der PhysicalElements.
     def sortPhysicals(self) -> dict[str, list[PhysicalElement]]:
-        """Create a dict with the physical elements sorted into different domains with domain names as keys
-            The dict will look like
+        """
+        Create a dict with the physical elements sorted into different domains with
+        domain names as keys.
+        The Domain names are defined in the :mod:`pyemmo.script` module by
+        :obj:`pyemmo.script.default_domain_dict`.
 
-            .. code-block:: python
+        The dict will look like:
 
-                {
-                    "domainS": phy_domainS,
-                    "domainLam": phy_domainLam,
-                    "domainC": phy_domainC,
-                    "domainCC": phy_domainCC,
-                    "mb_all": mb_all,
-                    "domain": phy_domain,
-                    "domainNL": phy_domainNL,
-                    "domainL": phy_domainL,
-                    "airGap": phy_airgap,
-                    "primary": phy_primaryLine,
-                    "secondary": phy_slaveLine,
-                    "limit": limit_Line,
-                }
+        .. code-block:: python
+
+            {
+                "domainS": phy_domainS,
+                "domainLam": phy_domainLam,
+                "domainC": phy_domainC,
+                "domainCC": phy_domainCC,
+                "mb_all": mb_all,
+                "domain": phy_domain,
+                "domainNL": phy_domainNL,
+                "domainL": phy_domainL,
+                "airGap": phy_airgap,
+                "primary": phy_primaryLine,
+                "secondary": phy_slaveLine,
+                "limit": limit_Line,
+            }
 
         Raises:
-            Exception: If material of a surface is unknown or None. Surface physical element must have material.
+            Exception: If material of a surface is unknown or None. Surface physical
+                element must have material.
 
         Returns:
-            Dict[str, List[PhysicalElement]]: dict with sorted physical elements
+            Dict[str, List[PhysicalElement]]
         """
         phy_domainS: list[Slot] = []  # Eingeprägte Ströme
         phy_domainLam = []  # lamination
@@ -438,7 +459,7 @@ class Stator:
         phy_primaryLine = []  # Teilmodell primarykante
         phy_secondaryLine = []  # Teilmodell secondary lines
         limit_Line = []
-        for physicalElement in self._physicalElements:
+        for physicalElement in self._physical_elements:
             geoType = physicalElement.geo_type
             if geoType == Surface:
                 # domainC, domainL & domainNL
@@ -525,7 +546,7 @@ class Stator:
             fig.set_dpi(300)
             ax.set_aspect("equal")
             # ax.set_aspect("equal", adjustable="box")
-        for phys in self.physicalElements:
+        for phys in self.physicals:
             for geoElem in phys.geo_list:
                 geoElem.plot(
                     fig=fig,
@@ -533,59 +554,76 @@ class Stator:
                     marker=marker,
                     markersize=markersize,
                 )
-        lim = 0.01 * self.movingBandRadius
+        lim = 0.01 * self.movingband_radius
         ax.set_xlim(left=-lim)
         ax.set_ylim(bottom=-lim)
 
     def setFunctionMesh(
         self,
         basisMeshsize: float = None,
-        functionType: Literal["linear", "quad"] = None,
         meshGainFactor: float = None,
+        functionType: Literal["linear", "quad"] = None,
+    ):
+        """Old function name for ``set_function_mesh``.
+
+        :meta private:
+        """
+        warnings.warn(
+            "Fucntion setFunctionMesh() was renamed set_function_mesh()",
+            DeprecationWarning,
+        )
+        # TODO: Remove in future.
+        self.set_function_mesh(basisMeshsize, meshGainFactor, functionType)
+
+    def set_function_mesh(
+        self,
+        basis_size: float = None,
+        gain_factor: float = None,
+        function_type: Literal["linear", "quad"] = None,
     ):
         """add functional mesh size setting for stator if you don't want to
         specify mesh sizes individually. Mesh size is set to increase from
         airgap to stator outer radius. Maximal mesh size will be
-        basisMeshsize * meshGainFactor.
-        If basisMeshsize is not given, its set to
+        basis_size * gain_factor.
+        If basis_size is not given, its set to
         2 * Pi * Movingband_Radius / 360.
 
         Args:
-            functionType (Literal[&quot;linear&quot;, &quot;quad&quot;]):
-                linear or quadratic function for mesh size.
-            meshGainFactor (float): Gain factor for mesh size from airgap to
-                outer machine limit.
-            basisMeshsize (float, optional): Basis mesh size to use near the
+            basis_size (float, optional): Basis mesh size to use near the
                 airgap (minimal mesh size).
                 Defaults to 2 * Pi * Movingband_Radius / 360.
+            gain_factor (float): Gain factor for mesh size from airgap to
+                outer machine limit.
+            function_type (Literal[&quot;linear&quot;, &quot;quad&quot;]):
+                linear or quadratic function for mesh size.
         """
         self.logger.debug("Started automatic mesh generation on stator.")
         # get max. outer radius:
         r_out = self.outer_radius
-        if not basisMeshsize:
-            basisMeshsize = 2 * np.pi * self.movingBandRadius / 360
+        if not basis_size:
+            basis_size = 2 * np.pi * self.movingband_radius / 360
             self.logger.debug(
                 "Setting basis mesh size to 2 * np.pi * self.movingBandRadius / 360 = %.3e",
-                basisMeshsize,
+                basis_size,
             )
         # set mesh gain factor to empirically developed default
-        if not meshGainFactor:
-            if r_out / basisMeshsize > 100:
-                meshGainFactor = r_out / basisMeshsize / 20
-                if not functionType:
-                    functionType = "linear"
+        if not gain_factor:
+            if r_out / basis_size > 100:
+                gain_factor = r_out / basis_size / 20
+                if not function_type:
+                    function_type = "linear"
             else:
-                meshGainFactor = 20
-                if not functionType:
-                    functionType = "quad"
+                gain_factor = 20
+                if not function_type:
+                    function_type = "quad"
             self.logger.debug(
                 "Setting mesh gain factor to = %.1f",
-                meshGainFactor,
+                gain_factor,
             )
-        if functionType == "linear":
-            self._set_linear_mesh(meshGainFactor, basisMeshsize)
+        if function_type == "linear":
+            self._set_linear_mesh(gain_factor, basis_size)
         else:
-            self._set_quad_mesh(meshGainFactor, basisMeshsize)
+            self._set_quad_mesh(gain_factor, basis_size)
         gmsh.model.occ.synchronize()
 
     def _get_points(self) -> list[GmshPoint]:
@@ -595,14 +633,14 @@ class Stator:
         Returns:
             list[GmshPoint]: List of points belonging to stator physicals
         """
-        phys_dim_tags = get_dim_tags(self.physicalElements)
+        phys_dim_tags = get_dim_tags(self.physicals)
         p_tags = get_point_tags(phys_dim_tags)
         return [GmshPoint(tag=p_tag) for p_tag in p_tags]
 
     def _set_linear_mesh(self, meshGainFactor: float, basisMeshsize: float):
         self.logger.debug("Setting linear mesh on stator.")
         # calculate linear mesh size functions (ax+b)
-        a = (meshGainFactor - 1) / (self.outer_radius - self.movingBandRadius)
+        a = (meshGainFactor - 1) / (self.outer_radius - self.movingband_radius)
         b = meshGainFactor - a * self.outer_radius
         for point in self._get_points():
             rP = point.radius
@@ -613,12 +651,12 @@ class Stator:
         """set mesh by parabolic function.
 
         Args:
-            meshGainFactor (float): _description_
-            basisMeshsize (float): _description_
+            meshGainFactor (float)
+            basisMeshsize (float)
         """
         self.logger.debug("Setting quadratic mesh on stator.")
         # calculate function coefficients for ax^2+bx+c
-        r_mb = self.movingBandRadius
+        r_mb = self.movingband_radius
         c = meshGainFactor
         b = -2 * c / r_mb
         a = -b / 2 / r_mb
@@ -629,20 +667,12 @@ class Stator:
             gain_factor = 1 if gain_factor < 1 else gain_factor
             point.meshLength = gain_factor * basisMeshsize
 
-    ###
-    # Mit addToScript wird der Stator zum Skriptobjekt übergeben und in gmsh-Syntax übersetzt.
-    # Diese Methode sollte stets nur in Kombination mit generateScript (Klassenmethode von Script) verwendet werden.
-    #
-    #   Input:
-    #
-    #       script : Script
-    #
-    #   Output:
-    #
-    #       None
-    #
-    ###
     def addToScript(self, script):
+        """This adds all the current rotor domains to the given :class:`Script`.
+        This should only be used for development and testing!
+
+        :meta private:
+        """
         self._domainS.addToScript(script)
         self._domainC.addToScript(script)
         self._mb.addToScript(script)

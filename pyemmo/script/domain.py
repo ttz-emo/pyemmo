@@ -20,6 +20,7 @@
 """Module for Class Domain"""
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING
 
 from .physicals.physical_element import PhysicalElement
@@ -30,17 +31,11 @@ if TYPE_CHECKING:
 
 
 class Domain:
-    """Eine Instanz der Klasse Domain ist die Gruppierung von PhysicalElement-Objekten.
-
-    Input:
-        name : string
-        physicalElement : [PhysicalElement]
-
-    Beispiel:
-        Diese Magnetdomaine (siehe Bild) besteht aus 2 PhysicalElements-Objekten und 4
-        Surface-Objekten.
-
-        \\image html domain_Magnet.png
+    """A Domain groups physical elements together, like :class:`PhysicalElement` objects
+    group geometric entities.
+    Domain objects are used to create ``Group`` elements for the GetDP model
+    templates. See `Group section <https://getdp.info/doc/texinfo/getdp.html#Group>`_ in
+    GetDP documentation for further details.
     """
 
     def __init__(
@@ -48,6 +43,13 @@ class Domain:
         name: str,
         physicalElements: list[PhysicalElement] | PhysicalElement,
     ):
+        """Initialize a Domain with a domain name and a list of physical elements.
+
+        Args:
+            name (str): Domain name
+            physicalElements (list[PhysicalElement] | PhysicalElement): List of
+                PhysicalElements
+        """
         self.name = name
         self.physicals = physicalElements
 
@@ -109,29 +111,16 @@ class Domain:
         else:
             raise ValueError("Argument 'physicalElementList' was not type list!")
 
-    ###
-    # Mit addToScript wird die Domain zum Skriptobjekt übergeben und in gmsh-Syntax übersetzt.
-    # Diese Methode sollte stets nur in Kombination mit generateScript (Klassenmethode von Script) verwendet werden.
-    #
-    #   Input:
-    #
-    #       script : Script
-    #
-    #   Output:
-    #
-    #       None
-    #
-    #   Beispiel:
-    #
-    #       myScript = Script(...)
-    #       Domain1.addToScript(myScript)
-    #
-    ###
     def addToScript(self, script: Script):
-        """call script._addDomain().
-        Function is for development and testing reasons.
+        """
+        Function is for development and testing reasons only!
 
         Args:
-            script (Script): Skript to add the Domain to.
+            script (Script): Script object to add the Domain to.
+
+        :meta private:
         """
+        logging.getLogger(__file__).debug(
+            "Called Domain.addToScript() in %s", self.name
+        )
         script._add_domain(self)

@@ -1031,7 +1031,7 @@ class Script:
                     f"Physical Surface{{ {rotorIdStr} }}; }};\n"
                 )
 
-        statorPhysList = self.machine.stator.physicalElements
+        statorPhysList = self.machine.stator.physicals
         statorIdStr = ""
         for statorPhys in statorPhysList:
             statorIdStr += str(statorPhys.id) + ","
@@ -1210,10 +1210,10 @@ class Script:
         # of GetDP domains
 
         # 3. add periodic meshing constraint for primary and secondary lines
-        sym_factor = self.machine.symmetryFactor
+        sym_factor = self.machine.symmetry_factor
         if sym_factor > 1:
-            prime_lines = self.machine.primaryLines
-            secondary_lines = self.machine.getSecondaryLines()
+            prime_lines = self.machine.primary_lines
+            secondary_lines = self.machine.get_secondary_lines()
             if prime_lines and secondary_lines:
                 mesh_code += "// Add Periodic Mesh to model symmetry boundary-lines\n"
                 primeLineIDs = ""
@@ -1256,10 +1256,10 @@ class Script:
                 )
 
         # 4. add mesh size setting for movingband lines
-        if rotor.movingBand:
+        if rotor.movingband:
             # create line id string for mesh size setting
             mb_ids = ""
-            for mb in rotor.movingBand:
+            for mb in rotor.movingband:
                 if mb.type == "MovingBand" and mb.geo_type == Line:
                     # if the mobingband object is type movingband and its
                     # geo-elements are lines
@@ -1270,10 +1270,10 @@ class Script:
                         mb_ids += f"{mbLine.id},"  # add the line id
             # get approx. the min mesh length of the rotor movingband
             # (only checking first line of first movingband physical)
-            _, p_tags = gmsh.model.getAdjacencies(1, rotor.movingBand[0].geo_list[0].id)
+            _, p_tags = gmsh.model.getAdjacencies(1, rotor.movingband[0].geo_list[0].id)
             mb_meshsize = min(gmsh.model.mesh.getSizes([(0, tag) for tag in p_tags]))
             if mb_ids:
-                r_rotor_mb = rotor.movingBandRadius
+                r_rotor_mb = rotor.movingband_radius
                 nbr_seg0 = (2 * pi * r_rotor_mb / mb_meshsize) - (
                     2 * pi * r_rotor_mb / mb_meshsize
                 ) % 10  # calc number of movingband segments by steps of 10
@@ -1311,7 +1311,7 @@ class Script:
             # same thing for stator movingband with number of segments of
             # rotor movingband
             mb_ids = ""  # reset string
-            for mb in stator.movingBand:
+            for mb in stator.movingband:
                 if mb.type == "MovingBand" and mb.geo_type == Line:
                     # if the mobingband object is type movingband and its
                     # geo-elements are lines
@@ -1319,7 +1319,7 @@ class Script:
                         # mbLine.setMeshLength()
                         mb_ids += f"{mbLine.id},"  # add the line id
             if mb_ids:
-                r_stator_mb = stator.movingBandRadius
+                r_stator_mb = stator.movingband_radius
                 # create movingband line id list, because its cleaner
                 mesh_code += f"MB_LinesS = {{{mb_ids[0:-1]}}};\n"
                 mesh_code += (
@@ -1444,7 +1444,7 @@ class Script:
         simu_param_dict = self.sim_params
         # 1. Set geometrical parameters via "machine.getSimParams()"
         #   SYMMETRY_FACTOR, L_AX_R, L_AX_S, NBR_POLE_PAIRS, NBR_TURNS_IN_FACE
-        geo_params = machine.getSimParams()
+        geo_params = machine.get_sim_params()
         # TODO: Improve check here...
         # assert len(geometryParams) == len(simuParamDict.GEO) # assert there
         # is the correct number of parameters
