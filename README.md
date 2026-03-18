@@ -38,7 +38,7 @@ The goal of the project is to automate model creation and the simulation workflo
 
 
 ## Installation
-
+Currently you will need to install PyEMMO from this Github repository.
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install PyEMMO.
 
 ```bash
