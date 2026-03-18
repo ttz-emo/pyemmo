@@ -102,6 +102,12 @@ install-hooks.bat
 ```
 These hooks make sure you have formatted your files correctly.
 
+## 🙏 Acknowledgements
+
+- Thanks to all contributors who helped improve this project.
+- Special thanks to *Siemens Electric Motor Plant Bad Neustadt a. d. Saale* for supporting the development.
+- This project has received funding from the *[Bavarian Ministry of Economic Affairs, Regional Development and Energy](https://www.stmwi.bayern.de/)* through the *TherCom* research project.
+
 ## License
 
 [GPLv3](https://www.gnu.org/licenses/gpl-3.0.html)
