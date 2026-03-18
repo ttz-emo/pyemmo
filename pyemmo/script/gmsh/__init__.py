@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of
 # Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -30,7 +30,7 @@ to directly create geometrical entities in current Gmsh model.
 """
 from __future__ import annotations
 
-from typing import Literal, Tuple
+from typing import Literal
 
-DimTag = Tuple[Literal[0, 1, 2], int]
-SurfDimTag = Tuple[Literal[2], int]
+DimTag = tuple[Literal[0, 1, 2], int]
+SurfDimTag = tuple[Literal[2], int]
