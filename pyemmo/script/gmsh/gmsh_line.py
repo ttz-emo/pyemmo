@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of
 # Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -50,12 +50,6 @@ Example:
     >>>     end_point=end,
     >>>     name="Diagonal",
     >>> )
-
-Author:
-    Max Schuler
-
-Note:
-    This docstring was created by ChatGPT.
 """
 
 
@@ -233,7 +227,7 @@ class GmshLine(GmshGeometry, Line):
 
     def rotateZ(self, rotationPoint=defaultCenterPoint, angle=0.0):
         """rotate line around z-axis
-        
+
         Args:
             rotationPoint (Point, optional): Rotation center point.
                 Defaults to Point("tmpCenterPoint", 0, 0, 0, 1).

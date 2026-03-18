@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO, Technical University of Applied Sciences
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of Applied Sciences
 # Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -32,21 +32,21 @@ from numpy import pi, sign
 from swat_em import datamodel
 
 from ...functions.phase import phase2color
-from ...script.geometry.airGap import AirGap
-from ...script.geometry.bar import Bar
 from ...script.geometry.circleArc import CircleArc, Line
-from ...script.geometry.magnet import Magnet
-from ...script.geometry.physicalElement import PhysicalElement
-from ...script.geometry.rotorLamination import RotorLamination
-from ...script.geometry.slot import Slot
 from ...script.geometry.spline import Spline
-from ...script.geometry.statorLamination import StatorLamination
 from ...script.geometry.surface import Point
 from ...script.gmsh.gmsh_arc import GmshArc
 from ...script.gmsh.gmsh_line import GmshLine
 from ...script.gmsh.gmsh_point import GmshPoint
 from ...script.gmsh.gmsh_spline import GmshSpline
 from ...script.material.material import Material
+from ...script.physicals.airgap import AirGap
+from ...script.physicals.bar import Bar
+from ...script.physicals.magnet import Magnet
+from ...script.physicals.physical_element import PhysicalElement
+from ...script.physicals.rotorLamination import RotorLamination
+from ...script.physicals.slot import Slot
+from ...script.physicals.statorLamination import StatorLamination
 from ..machine_segment_surface import MachineSegmentSurface
 from . import (
     ROTOR_AIRGAP_IDEXT,

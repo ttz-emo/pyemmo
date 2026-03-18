@@ -29,7 +29,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from pyemmo.definitions import ROOT_DIR
-from pyemmo.functions.calcIronLoss import write_simple
+from pyemmo.functions.core_loss import write_simple
 
 # %%
 gmsh.initialize(sys.argv)

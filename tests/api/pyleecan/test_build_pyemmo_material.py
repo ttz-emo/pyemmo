@@ -48,6 +48,7 @@ import numpy as np
 import pytest
 from pyleecan.Classes.ImportMatrixVal import ImportMatrixVal
 from pyleecan.Classes.Material import Material as PyleecanMaterial
+from pyleecan.Classes.MatMagnetics import MatMagnetics
 from pyleecan.definitions import DATA_DIR
 from pyleecan.Functions.load import load  # pylint: disable=no-name-in-module
 
@@ -119,8 +120,21 @@ def test_nonMag_material_error():
     """Make sure build_material raises ValueError if no magnetic properties given"""
     # Material without magnetic properties:
     pyleecan_mat = load(join(DATA_DIR, "Material", "Insulator1.json"))
-    with pytest.raises(ValueError) as excinfo:
+    pyleecan_mat.mag = None
+    with pytest.raises(
+        ValueError,
+        match="No magnetic properties in PYLEECAN material",
+    ):
         _ = build_pyemmo_material(pyleecan_mat)
-        assert "No magnetic properties (mue_r and BH curve) defined in material" in str(
-            excinfo.value
-        )
+
+
+def test_default_mag_material():
+    """Make sure build_material raises ValueError if no magnetic properties given"""
+    # Material without magnetic properties:
+    pyleecan_mat = load(join(DATA_DIR, "Material", "Insulator1.json"))
+    pyleecan_mat.mag = MatMagnetics()
+    mat = build_pyemmo_material(pyleecan_mat)
+    assert mat.relPermeability == 1.0
+    np.testing.assert_array_equal(mat.BH, np.array([]))
+    assert mat.linear is True
+    assert mat.remanence == 0.0

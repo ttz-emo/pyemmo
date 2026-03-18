@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO,
 # Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -19,6 +19,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Module to transform coordinates between systems:
+
 - Cartesian XYZ
 - Polar RPhiZ
 - RadTanZ
@@ -69,7 +70,7 @@ def cart2sph(x, y, z=0.0) -> tuple[float, float, float]:
         z (float, optional): z-coordinate of cartesian point. Defaults to 0.0
 
     Returns:
-        tuple[float, float, float]: Radius, elevation angle θ and azimuthal angle φ
+        tuple[float, float, float]: Radius, elevation angle :math:`\\theta` and azimuthal angle :math:`\\phi`
     """
     XsqPlusYsq = x**2 + y**2
     r = m.sqrt(XsqPlusYsq + z**2)  # r

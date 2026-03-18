@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of Applied Sciences
 # Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -56,11 +56,6 @@ class GmshGeometry(ABC):
             >>> p = GmshPoint.from_coordinates(coords=[0.0, 1.0, 2.0])
             >>> print(p)
             GmshPoint(tag=1, coords=(0.0, 1.0, 2.0))
-
-    Examples:
-
-
-
     """
 
     @property

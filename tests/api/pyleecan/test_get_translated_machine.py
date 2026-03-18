@@ -24,13 +24,14 @@ from __future__ import annotations
 import pytest
 
 from pyemmo.api.pyleecan.translate_machine import translate_machine
-from . import (
-    Toyota_Prius,
+
+from .testutils import (  # noqa # pylint: disable=W0611
     IPMSM,
     SIPMSM_1,
     SYNRM_ZAW,
+    Toyota_Prius,
     initialize_gmsh,
-)  # pylint: disable=W0611
+)
 
 
 @pytest.mark.parametrize("machine", ["Toyota_Prius", "IPMSM", "SIPMSM_1", "SYNRM_ZAW"])

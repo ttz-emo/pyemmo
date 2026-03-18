@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -18,15 +18,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """
-This module provides functions for translating points between different geometric libraries.
-
-Functions:
-    -   ``build_pyemmo_point``: Translates the coordinates of a point in pyleecan
-        into a pyemmo point.
-
-Classes:
-    ``Point``: Represents a point in 3D space.
-
+This module provides the function ``create_gmsh_point`` which translates the coordinates
+of a point in PYLEECAN into a pyemmo :class:`~pyemmo.script.gmsh.gmsh_point.GmshPoint`.
 """
 
 from __future__ import annotations
@@ -35,7 +28,7 @@ from ...script.gmsh.gmsh_point import GmshPoint
 
 
 def create_gmsh_point(pyleecan_point: complex, meshLength: float = 1e-3) -> GmshPoint:
-    """Translates the coordinates of a point in pyleecan into a pyemmo point.
+    """Translates the coordinates of a point in PYLEECAN into a pyemmo point.
 
     Args:
         pyleecan_point (complex): coordinates of point in pyleecan.

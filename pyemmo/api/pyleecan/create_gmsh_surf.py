@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO,
 # Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -19,13 +19,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """
-Module: create_gmsh_surface
-
-This module provides functions for translating surfaces from pyleecan format to
-pyemmo format.
-
-Functions:
-    -   ``create_gmsh_surface``: Translates pyleecan surfaces into pyemmo surfaces.
+This module provides the function ``create_gmsh_surface`` which translates pyleecan
+surfaces into pyemmo :class:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface`.
 """
 
 from __future__ import annotations
@@ -46,13 +41,16 @@ def create_gmsh_surface(
     name: str = "",
 ) -> MachineSegmentSurface:
     """
-    Translates Pyleecan SurfLine surfaces into pyemmo GmshSurface objects.
+    Translates PYLEECAN SurfLine surfaces into pyemmo MachineSegmentSurface objects.
 
     Args:
-        surface (pyleecan.Classes.SurfLine.SurfLine): Pyleecan surface.
+        surface (pyleecan.Classes.SurfLine.SurfLine): PYLEECAN surface.
+        nbr_segments (int): Number of segments for the surface.
+        material (Material): Material for the surface.
+        name str: Optional name for the surface. Defaults to "".
 
     Returns:
-        GmshSurface: PyEMMO surface in Gmsh.
+        MachineSegmentSurface: PyEMMO machine segment surface in Gmsh.
     """
     if not hasattr(surface, "get_lines"):
         raise TypeError(
@@ -64,7 +62,7 @@ def create_gmsh_surface(
     # create line loop:
     curves: list[GmshLine] = create_gmsh_lines(surface.get_lines())
     # create gmsh surface
-    # FIXME: The line list of a pyleecan surface does not have to be closed. This
+    # FIXME: The line list of a PYLEECAN surface does not have to be closed. This
     # happens for example in case of holes on the boundary of a surface. In this case,
     # the curve loop is open at the part where the hole intersects.
     pyemmo_surf = MachineSegmentSurface.from_curve_loop(

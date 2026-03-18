@@ -21,17 +21,17 @@
 """Module for testing the import_results module"""
 from __future__ import annotations
 
-import os
-from os.path import join, abspath
+from os.path import abspath, join
 
 import numpy as np
 import pytest
 
 from pyemmo.functions.import_results import (
+    freq_from_signal,
     get_result_files,
-    import_pos_parsedFormat,
-    importPos,
-    importSP,
+    import_pos,
+    import_pos_legacy,
+    import_sp,
     plot_timetable_dat,
     read_RegionValue_dat,
     read_timetable_dat,
@@ -131,11 +131,11 @@ def test_plot_timetable_dat():
 
     plot_list = plot_timetable_dat(
         file_path=file_path,
-        dataLabel="DataLabel",
+        data_label="DataLabel",
         title="Graph",
         savefig=False,
         showfig=False,
-        savePath="",
+        savepath="",
     )
     number_of_figures = 2
     assert (
@@ -149,7 +149,7 @@ def test_import_SP():
     imported .pos file
     """
     file_path = join(IMP_RES_TEST_DATA_DIR, "btan_test.pos")
-    test_tuple = importSP(file_path)
+    test_tuple = import_sp(file_path)
     assert_tuple = (
         "b_tangent",
         [],
@@ -214,7 +214,7 @@ def test_import_pos_parsed(parsed_pos_file, dType, numElem, numNodes, numDataPoi
         numNodes (int): Number of nodes per element.
         numDataPoints (int): number of data values per node.
     """
-    data_type, nodes, data = import_pos_parsedFormat(parsed_pos_file)
+    data_type, nodes, data = import_pos_legacy(parsed_pos_file)
     assert data_type == dType
     # numNodes * 3 = number of coordinates
     assert nodes.shape == (numElem, numNodes * 3)
@@ -243,7 +243,7 @@ def test_import_pos():
         (join(IMP_RES_TEST_DATA_DIR, "import_pos_data.npy")),
         allow_pickle=True,
     )
-    imp_mesh_elem, imp_time, imp_data = importPos(test_posFile_path)
+    imp_mesh_elem, imp_time, imp_data = import_pos(test_posFile_path)
     assert np.array_equal(
         mesh_elemt_ids, imp_mesh_elem
     ), "Incorrect Mesh elements Imported!"
@@ -260,7 +260,7 @@ def test_import_pos():
 )
 def test_import_pos_parsed_workaround(test_pos_path):
     """Just make sure the workaround for GmshParsed formatted pos files works"""
-    imp_mesh_elem, imp_time, imp_data = importPos(test_pos_path)
+    imp_mesh_elem, imp_time, imp_data = import_pos(test_pos_path)
 
 
 # @pytest.mark.parametrize(
@@ -286,6 +286,21 @@ def test_get_result_files():
             "btan_test.pos",
         ],
     ), "Incorrect list of .pos files!"
+
+
+def test_freq_from_signal():
+    """Test the function freq_from_signal"""
+    # Test signal with known frequency
+    fs = 1000  # Sampling frequency
+    f = 5  # Frequency of the signal
+    t = np.arange(0, 1, 1 / fs)  # Time vector of 1 second
+    # Generate sine wave signal with noise:
+    signal = np.sin(2 * np.pi * f * t) + 0.1 * np.random.normal(0, 1, len(t))
+
+    estimated_freq = freq_from_signal(signal, fs)
+    assert np.isclose(
+        estimated_freq, f, atol=0.5
+    ), "Estimated frequency is not close to actual frequency!"
 
 
 # if __name__ == "__main__":

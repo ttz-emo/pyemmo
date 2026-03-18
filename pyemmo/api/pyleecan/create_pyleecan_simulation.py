@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -17,8 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""This module defines the function generate_simulation to generate a pyleecan
-simulation object to use in pyleecan-api."""
+"""This module defines the function `create_simulation` to generate a default pyleecan
+simulation object to use in the api."""
 
 from __future__ import annotations
 
@@ -37,17 +37,17 @@ def create_simulation(
     i_q: float = 0.0,
     speed: float = 1000.0,
 ) -> PyleecanSimulation:
-    """Create a Pyleecan Simulation object from a given machine
+    """Create a PYLEECAN Simulation object from a given machine
 
     Args:
-        machine (PyleecanMachine): Actual pyleecan machine
+        machine (PyleecanMachine): Actual PYLEECAN machine
         id (float): Length axis (d-axis) current in A (eff). Defaults to 0.
         iq (float): Quadrature axis (q-axis) current in A (eff). Defaults to 0.
         speed (float): Initial speed for simulation in rpm. Defaults to 1000.0.
 
 
     Returns:
-        PyleecanSimulation: Pyleecan Simulation object
+        PyleecanSimulation: PYLEECAN Simulation object
     """
     simu = Simu1(name="PyEMMO_Simulation", machine=machine)
     # simu.path_result = "path/to/folder" Path to the Result folder to use

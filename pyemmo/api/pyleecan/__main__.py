@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO,
 # Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Main module of pyleecan api
+"""Main module of PYLEECAN api
 TODO
 """
 
@@ -40,17 +40,17 @@ pyemmoLogger = logging.getLogger("pyemmo")
 
 if __name__ == "__main__":
     if not use_pyleecan:
-        raise ModuleNotFoundError("Please install pyleecan!")
+        raise ModuleNotFoundError("Please install PYLEECAN!")
     # 1. Check that all argvs are valid!
     parser = argparse.ArgumentParser(
         description=(
-            "Process Pyleecan machine data (saved as JSON file) to generate "
+            "Process PYLEECAN machine data (saved as JSON file) to generate "
             "a Onelab Simulation."
         )
     )
     parser.add_argument(
         "file",
-        help="Path to the Pyleecan-Machine-JSON file",
+        help="Path to the PYLEECAN-Machine-JSON file",
         type=str,
     )
     # parser.add_argument(

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of Applied
 # Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -18,6 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+""""""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -39,29 +40,26 @@ if TYPE_CHECKING:
 
 
 class Surface(Transformable):
-    """Eine Instanz der Klasse Surface ist eine Fläche im dreidimensionalen Raum.
+    """General surface from list of boundary curves.
 
-    Input:
+    Example:
 
-        name : string
-        curves : [Line]
-
-    Beispiel:
-
-        from pyemmo import *
-        P1 = Point('P1', 0, 0, 0, 1)
-        P2 = Point('P2', 1, 0, 0, 1)
-        P3 = Point('P3', 1, 1, 0, 1)
-        P4 = Point('P4', 0, 1, 0, 1)
-        L1 = Line('L1', P1, P2)
-        L2 = Line('L2', P2, P3)
-        L3 = Line('L3', P3, P4)
-        L4 = Line('L4', P4, P1)
-        S1 = Surface('S1', [L1, L3, L2, L4])
+        >>> from pyemmo.script.geometry.point import Point
+        >>> from pyemmo.script.geometry.line import Line
+        >>> from pyemmo.script.geometry.surface import Surface
+        >>> P1 = Point('P1', 0, 0, 0, 1)
+        >>> P2 = Point('P2', 1, 0, 0, 1)
+        >>> P3 = Point('P3', 1, 1, 0, 1)
+        >>> P4 = Point('P4', 0, 1, 0, 1)
+        >>> L1 = Line('L1', P1, P2)
+        >>> L2 = Line('L2', P2, P3)
+        >>> L3 = Line('L3', P3, P4)
+        >>> L4 = Line('L4', P4, P1)
+        >>> S1 = Surface('S1', [L1, L3, L2, L4])
     """
 
     def __init__(self, name: str, curves: list[Line | CircleArc | Spline]):
-        """Create a surface object.
+        """Create a surface from a list of boundary curves (curve loop).
 
         Args:
             name (str): Surface name
@@ -128,19 +126,6 @@ class Surface(Transformable):
         """
         self._curve = curves
 
-    # @property
-    # def delete(self) -> bool:
-    #     """Get the delete-status of the surface"""
-    #     return self._delete
-
-    # @delete.setter
-    # def delete(self, status: bool) -> None:
-    #     """Delete Surface at the end of script generation"""
-    #     if isinstance(status, bool):
-    #         self._delete = status
-    #     else:
-    #         raise TypeError("Delete status was not type bool!")
-
     @property
     def points(self) -> list[Point]:
         """Get all Points on the contour of a Surface
@@ -166,7 +151,7 @@ class Surface(Transformable):
         """Get all Points of a Surface (including rotation points of circle arcs)
 
         Returns:
-            List[Point]: _description_
+            List[Point]: List of all points associated with the surface.
         """
         LineLoop = self.curve
         PointList: list[Point] = []
@@ -204,9 +189,7 @@ class Surface(Transformable):
     # --------- methods ----------
 
     def translate(self, dx: float, dy: float, dz: float):
-        """Mit translate() kann eine Fläche linear verschoben werden.
-        Die Inputvariablen dx, dy und dz beschreiben die Verschiebungsfaktoren
-        in der x-, y- und z- Richtung.
+        """Linear translation by dx, dy and dz.
 
         Args:
             dx (float): x-offset in m
@@ -217,17 +200,17 @@ class Surface(Transformable):
             p.translate(dx, dy, dz)
 
     def rotateZ(self, rotationPoint: Point, angle: float):
-        """Mit rotateZ() wird eine Fläche um einen Rotationspunkt
-        (rotationPoint) und die Z-Achse mit einem definierten Winkel rotiert.
-
-        Beispiel:
-            from math import pi
-            S1 = ('S1', [L1, L2, L3, L4])
-            S1.rotateZ(P0, pi)
+        """Rotation around z-axis by angle in radians.
 
         Args:
             rotationPoint (Point): Center point for rotation.
             angle (float): rotation angle in rad.
+
+        Example:
+
+            >>> from math import pi
+            >>> S1 = ('S1', [L1, L2, L3, L4])
+            >>> S1.rotateZ(P0, pi)
         """
         # rotate the parent surf
         for c in self.curve:
@@ -237,14 +220,7 @@ class Surface(Transformable):
             tool.rotateZ(rotationPoint, angle)
 
     def rotateX(self, rotationPoint: Point, angle: float):
-        """Mit rotateX() wird eine Fläche um einen Rotationspunkt
-        (rotationPoint) und die X-Achse mit einem definierten Winkel rotiert.
-
-        Beispiel:
-            from math import pi
-            S1 = ('S1', [L1, L2, L3, L4])
-            S1.rotateX(P0, pi)
-
+        """Rotation around x-axis by angle in radians.
 
         Args:
             rotationPoint (Point): Center point for rotation.
@@ -255,14 +231,7 @@ class Surface(Transformable):
             p.rotateX(rotationPoint, angle)
 
     def rotateY(self, rotationPoint: Point, angle: float):
-        """Mit rotateY() wird eine Fläche um einen Rotationspunkt
-        (rotationPoint) und die Y-Achse mit einem definierten Winkel rotiert.
-
-        Beispiel:
-            from math import pi
-            S1 = ('S1', [L1, L2, L3, L4])
-            S1.rotateY(P0, pi)
-
+        """Rotation around y-axis by angle in radians.
 
         Args:
             rotationPoint (Point): Center point for rotation.
@@ -273,19 +242,11 @@ class Surface(Transformable):
             p.rotateY(rotationPoint, angle)
 
     def duplicate(self, name="") -> Surface:
-        """Mit duplicate() wird eine neue Fläche mit gleichen Eigenschaften zur
-        Originalen erzeugt. Diese Fläche hat jedoch eine unterschiedliche ID.
-
-        Beispiel:
-            S1 = ('S1', [L1, L2, L3, L4])
-            S2 = S1.duplicate()
-
-        Akutelle ID von S1 und S2:
-            >> S1: ID = 1
-            >> S2: ID = 2
+        """Create a copy of the surface
 
         Args:
-            name (str, optional): New surface name. Defaults to "".
+            name (str, optional): New surface name. Defaults to previous surface name
+                + "_dup".
 
         Returns:
             Surface: Duplicated surface.
@@ -315,18 +276,13 @@ class Surface(Transformable):
         planeVector2: Line,
         name: str = "",
     ) -> Surface:
-        """Mit mirror() kann eine Fläche an einer definierten Ebene gespiegelt
-        werden.
-        Bildpunkte werden hierbei generiert und eine Linie zwischen den Punkten
-        erzeugt.
-        Die Spiegelebene wird durch einen Aufpunkt (planePoint) und 2 Vektoren
-        (planeVector1 und planeVector2) beschrieben.
+        """Mirror a circle surface by a plane.
 
         Args:
-            planePoint (Point): Mirror start point
-            planeVector1 (Line): First direction vector for mirror plane.
-            planeVector2 (Line): Second direction vector for mirror plane.
-            name (str, optional): New Surface name. Defaults to "".
+            planePoint (Point): Start point of the plane
+            planeVector1 (Line): First plane vector.
+            planeVector2 (Line): Second plane vector.
+            name (str, optional): New name of the surface. Defaults to "".
 
         Returns:
             Surface: Mirrored surface.
@@ -444,9 +400,6 @@ class Surface(Transformable):
     def recombineCurves(self) -> None:
         """Recombine the curves bounding the surface to a loop with minimal number of
         curves. This recombines straight lines and arcs.
-
-        Returns:
-            _type_: _description_
         """
         oldLoop = self.curve
         newLoop: list[Line | CircleArc | Spline] = []
@@ -486,8 +439,7 @@ class Surface(Transformable):
         return self._is_tool
 
     def sortCurves(self) -> None:
-        """sortiert die Kurven einer geschlossenen Fläche neu, um eine Curve
-        Loop in Gmsh zu erstellen
+        """sort the curve loop of the surface by start and end points.
 
         Returns:
             List[Union[Line, CircleArc, Spline]]: New sorted line loop
@@ -532,8 +484,7 @@ class Surface(Transformable):
         return None
 
     def replaceCurve(self, oldCurve: Line, newCurve: Line) -> None:
-        """Die Methode replaceCurve() tauscht eine Kurve in der Liste gegen
-        eine neue Kurve aus.
+        """Replace a curve in the curve loop.
 
         Args:
             oldCurve (Line): Curve to be replaced.
@@ -561,17 +512,14 @@ class Surface(Transformable):
 
     def calcCOG(self) -> Point:
         """
-        DEMO-VERSION!!! Calculate the geometric "Center of Gravity" (COG)
-        Actually the algorithm just retruns the mean value of all point
-        coordinates (Not the real center!) FIXME
+        :note: This just calculates the mean of all points on the boundary curve loop!
 
-        Args:
+        Calculate the geometric "Center of Gravity" (COG).
+        Actually the algorithm just retruns the mean value of all point
+        coordinates (Not the real center!)
 
         Returns:
-            CenterPoint: Point
-
-        Raises:
-            Nothing
+            Point: COG of the surface.
         """
         points = self.points
         x = []
@@ -644,13 +592,15 @@ class Surface(Transformable):
     def getBoundingBox(
         self, scalingFactor: float = 1.0
     ) -> tuple[list[float], list[float]]:
-        """Get the minimum and maximum x and y values of the points
+        """Get the minimum and maximum x and y values of the points.
 
         Args:
-            scalingFactor (float, optional): _description_. Defaults to 1.0.
+            scalingFactor (float, optional): Add a scaling factor to increase the
+                bounding box. Defaults to 1.0.
 
         Returns:
-            Tuple[List[float], List[float]]: _description_
+            Tuple[List[float], List[float]]: Bounding box matrix with
+            [[min x, max x],[min y, max y]]
         """
         minx, maxx, miny, maxy = 0.0, 0.0, 0.0, 0.0
         for point in self.points:

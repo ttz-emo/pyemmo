@@ -27,7 +27,7 @@ import sys
 from os.path import join
 
 from pyemmo.definitions import MAIN_DIR
-from pyemmo.functions.onelab_paramters import extract_onelab_parameters
+from pyemmo.functions.onelab_parameters import extract_onelab_parameters
 from pyemmo.version import __version__
 
 if not MAIN_DIR in sys.path:
@@ -60,6 +60,7 @@ extensions = [
     # "sphinx.ext.autosectionlabel", # fix warning of duplicate label.
     "sphinx.ext.todo",  # enable todo directive
     "sphinx_rtd_theme",
+    "sphinx.ext.graphviz",
 ]
 
 templates_path = ["_templates"]
@@ -67,6 +68,7 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 autodoc_default_options = {
     "member_order": "bysource",
+    "apidoc_module_first": True,
 }
 # Autosummary settings
 autosummary_generate = True  # Turn on sphinx.ext.autosummary
@@ -74,9 +76,9 @@ autosummary_generate = True  # Turn on sphinx.ext.autosummary
 # Napolen settings
 # Napoleon settings
 napoleon_google_docstring = True
-napoleon_numpy_docstring = True
+napoleon_numpy_docstring = False
 napoleon_include_init_with_doc = True
-napoleon_include_private_with_doc = True
+napoleon_include_private_with_doc = False
 napoleon_include_special_with_doc = True
 napoleon_use_admonition_for_examples = False
 napoleon_use_admonition_for_notes = False
@@ -93,25 +95,23 @@ todo_include_todos = True
 html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
 html_logo = "_static/PyEMMO_Logo_2_small.png"
-
+html_css_files = ["css/custom.css"]  # change colors of theme
 ## default theme options
 html_theme_options = {
     "version_selector": True,
     "language_selector": True,
-    #     'analytics_id': 'G-XXXXXXXXXX',  #  Provided by Google in your dashboard
-    #     'analytics_anonymize_ip': False,
-    #     'logo_only': False,
-    # "display_version": True,
-    #     'prev_next_buttons_location': 'bottom',
-    #     'style_external_links': True,
-    #     'vcs_pageview_mode': '',
-    #     'style_nav_header_background': 'white',
+    # 'analytics_id': 'G-XXXXXXXXXX',  #  Provided by Google in your dashboard
+    # 'analytics_anonymize_ip': False,
+    # 'logo_only': False,
+    # 'prev_next_buttons_location': 'bottom',
+    "style_external_links": True,
+    # 'vcs_pageview_mode': '',
     # Toc options
-    "collapse_navigation": True,
-    "sticky_navigation": False,
-    #     'navigation_depth': 4,
-    #     'includehidden': True,
-    #     'titles_only': False
+    "collapse_navigation": False,
+    "sticky_navigation": True,
+    "navigation_depth": 7,
+    # 'includehidden': True,
+    # 'titles_only': False
 }
 
 # parameter to control if a new pyemmo.onelab_parameters.rst file should be created.
@@ -153,7 +153,6 @@ if create_param_file:
             # TODO: Extract "Help" from code and put in separate column
             line = f"\t*\t- {name}\n\t\t- {code}"
             rst_file.write(line + "\n")
-        rst_file.write("\n")
 
 
 def run_apidoc(app):
@@ -175,5 +174,3 @@ def run_apidoc(app):
 
 def setup(app):
     app.connect("builder-inited", run_apidoc)
-    # change color of theme
-    app.add_css_file("css/custom.css")

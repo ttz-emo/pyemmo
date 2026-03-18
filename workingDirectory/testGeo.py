@@ -24,7 +24,7 @@ from __future__ import annotations
 import subprocess
 
 from pyemmo.definitions import RESULT_DIR
-from pyemmo.functions.runOnelab import createCmdCommand
+from pyemmo.functions.run_onelab import create_command
 from pyemmo.script.geometry.line import Line
 from pyemmo.script.geometry.point import Point
 from pyemmo.script.geometry.spline import Spline
@@ -75,7 +75,5 @@ spline.addControlPoint(p8, 1)
 # %%
 spline.addToScript(myScript)
 
-myScript.generateScript(mode=1)  # only geo file
-subprocess.run(
-    createCmdCommand(onelabFile=myScript.geoFilePath, useGUI=True), check=False
-)
+myScript.generate(mode=1)  # only geo file
+subprocess.run(create_command(file=myScript.geo_file_path, useGUI=True), check=False)

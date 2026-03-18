@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO,
 # Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -18,13 +18,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Main module of pyleecan api"""
+"""
+Core module of PYLEECAN api which contains the :func:`main` function to build a ONELAB
+model from a PYLEECAN machine object.
+"""
 
 from __future__ import annotations
 
 import logging
 import os
-from typing import Union
 
 import gmsh as gmsh_api
 
@@ -47,28 +49,28 @@ if use_pyleecan:
     from .translate_machine import translate_machine
 else:
     raise ModuleNotFoundError(
-        "Pyleecan is not available! Please install pyleecan first."
+        "PYLEECAN is not available! Please install PYLEECAN first."
     )
 
 
 def main(
-    pyleecan_machine: Union[PyleecanMachine, str],
+    pyleecan_machine: PyleecanMachine | str,
     model_dir: str,
     gmsh: str | os.PathLike = "",
     getdp: str | os.PathLike = "",
     use_gui: bool = True,
     symmetry: int | None = None,
 ):
-    """Main of pyleecan api.
+    """Main of PYLEECAN api to build a ONELAB model from a PYLEECAN machine.
 
     This uses the
-    :func:`~pyemmo.api.pyleecan.get_translated_machine.get_translated_machine`
+    :func:`~pyemmo.api.pyleecan.translate_machine.translate_machine`
     function to create the geometry and simulation dicts for the
     :mod:`PyEMMO JSON-API <pyemmo.api.json.json>` interface and directly build
     the model by invoking the JSON-API.
 
     Args:
-        pyleecan_machine (PyleecanMachine | str): Pyleecan machine object to translate
+        pyleecan_machine (PyleecanMachine | str): PYLEECAN machine object to translate
             or path to machine json file.
         model_dir (str): Path to the directory where the model files should be
             stored.
@@ -83,7 +85,7 @@ def main(
 
 
     Raises:
-        ValueError: If incompatible Pyleecan Machine type is given.
+        ValueError: If incompatible PYLEECAN Machine type is given.
             Currently only :class:`MachineSIPMSM`, :class:`MachineIPMSM`
             and :class:`MachineSyRM` work.
     """

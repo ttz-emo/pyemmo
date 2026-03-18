@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO, Technical University of
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of
 # Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -29,7 +29,7 @@ GmshArc or GmshSpline object from a gmsh curve tag (ID). It especially handles t
 of a OpenCascade (OCC) TrimmedCurve object and tries to detect its line type.
 TrimmedCurve object can result from boolean operations in OCC.
 
-We needed to move this function to a separate module instead of putting it into 
+We needed to move this function to a separate module instead of putting it into
 :py:mod:`pyemmo.script.gmsh.utils`, because it lead to a circular import with
 GmshSurface and PhysicalElement.
 """
@@ -63,7 +63,8 @@ def create_curve(gmsh_id: int) -> GmshLine | GmshArc | GmshSpline:
         return GmshArc(tag=gmsh_id)
     if line_type == "TrimmedCurve":
         # check if its a straight line or arc by comparing length with point distance
-        test_line = GmshLine(gmsh_id)  # create test object (not sure if its really a line)
+        # create test object (not sure if its really a line):
+        test_line = GmshLine(gmsh_id)
         line_length = gmsh.model.occ.getMass(1, gmsh_id)  # get length of TrimmedCurve
         if np.isclose(test_line.getPointDist(), line_length, atol=DEFAULT_GEO_TOL):
             # its a straight line, because length = distance between start and end point

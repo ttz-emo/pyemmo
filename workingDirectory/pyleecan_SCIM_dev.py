@@ -27,14 +27,13 @@ import logging
 # %%
 import os
 
-from numpy import deg2rad
 from pyleecan.Classes.MachineSCIM import MachineSCIM
 from pyleecan.definitions import DATA_DIR
 from pyleecan.Functions import load
 
 from pyemmo.api.pyleecan import main as pyleecanAPI
 from pyemmo.definitions import ROOT_DIR
-from pyemmo.functions.runOnelab import findGetDP, findGmsh, runCalcforCurrent
+from pyemmo.functions.run_onelab import find_getdp, find_gmsh, run_simulation
 
 # disable messages of matplotlib
 logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
@@ -118,14 +117,14 @@ if False:
             "ResId": resid,
             "Flag_PrintFields": 0,
             "Flag_Debug": 0,
-            "exe": findGetDP(),
+            "exe": find_getdp(),
         },
         "ResId": resid,
         "pro": pro_file,
         "res": sim_res_dir,
-        "gmsh": {"exe": findGmsh()},
+        "gmsh": {"exe": find_gmsh()},
         # "hyst": 0, # loss coefficient
         # "eddy": 0, # loss coefficient
         # "exc": 0, # loss coefficient
     }
-    runCalcforCurrent(param_dict)
+    run_simulation(param_dict)

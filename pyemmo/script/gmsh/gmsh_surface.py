@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO, Technical University of
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of
 # Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module gmsh_surface.py for the class GmshSurface."""
+"""Module for the class :class:`GmshSurface`."""
 
 from __future__ import annotations
 
@@ -33,11 +33,11 @@ from ..geometry import defaultCenterPoint
 from ..geometry.point import Point
 from ..geometry.surface import Surface
 from ..gmsh import DimTag
+from .create_gmsh_curve import create_curve
 from .gmsh_arc import GmshArc
 from .gmsh_geometry import GmshGeometry
 from .gmsh_line import GmshLine
 from .gmsh_point import GmshPoint
-from .create_gmsh_curve import create_curve
 
 
 class GmshSurface(GmshGeometry, Surface):
@@ -83,7 +83,6 @@ class GmshSurface(GmshGeometry, Surface):
             >>> square_id = gmsh.model.occ.addRectangle(0, 0, 0, 1, 1)
             >>> # init GmshSurface with tag:
             >>> square_surf = GmshSurface(tag = square_id)
-
             >>> # init with curve loop
             >>> # ... create lines that form a closed loop in `line_list`
             >>> gmsh_surf = GmshSurface.from_curve_loop(curve_loop = line_list)
@@ -343,7 +342,7 @@ class GmshSurface(GmshGeometry, Surface):
             angle (float): The angle in degrees by which the surface should be rotated.
                 Defaults to 0.0.
 
-        .. example:
+        Example:
             >>> from pyemmo.script.geometry.gmsh.gmsh_surface import (
             >>>     GmshSurface,
             >>>     GmshPoint,
@@ -614,6 +613,8 @@ class GmshSurface(GmshGeometry, Surface):
             )
 
     def calcCOG(self) -> Point:
-        # TODO: test this works
+        """Calculate the center of gravity of the surface by
+        :code:`gmsh.model.occ.get_center_of_mass` function.
+        """
         x, y, z = gmsh.model.occ.get_center_of_mass(2, self.id)
         return Point(f"COG of Surface {self.id}", x, y, z)

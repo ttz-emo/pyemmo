@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO,
 # Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -18,20 +18,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module: create_geo_dict
-
-This module provides functions to convert geometry elements from pyleecan to pyemmo format.
-
-Functions:
-    -   ``create_geo_dict``: Creates a dictionary containing geometry
-        information for communication between Pyleecan and pyemmo.
+"""This module provides the function :func:`pyemmo.api.pyleecan.create_geo_dict.create_geo_dict` to convert geometries from PYLEECAN to pyemmo format.
 
 Example:
-    >>> machine = MachineIPMSM(...)  # Pyleecan machine object
+    >>> machine = MachineIPMSM(...)  # PYLEECAN machine object
     >>> geometry_dict = create_geo_dict(machine)
 
-Raises:
-    TypeError: If unable to generate contours of the given machine type.
 """
 
 from __future__ import annotations
@@ -47,24 +39,12 @@ from pyleecan.Classes.Shaft import Shaft
 from pyleecan.Classes.SurfLine import SurfLine
 from pyleecan.Classes.SurfRing import SurfRing
 from pyleecan.Functions.Geometry.transform_hole_surf import transform_hole_surf
-from pyleecan.Functions.labels import AIRBOX_LAB  # "Airbox"
-from pyleecan.Functions.labels import AIRGAP_LAB  # "Airgap"
 from pyleecan.Functions.labels import BAR_LAB  # "Bar"
-from pyleecan.Functions.labels import BORE_LAB  # "Bore"
 from pyleecan.Functions.labels import HOLEM_LAB  # "HoleMag"
 from pyleecan.Functions.labels import HOLEV_LAB  # "HoleVoid"
-from pyleecan.Functions.labels import KEY_LAB  # "Key"
-from pyleecan.Functions.labels import LAM_LAB  # "Lamination"
-from pyleecan.Functions.labels import MAG_LAB  # "Magnet"
-from pyleecan.Functions.labels import NO_MESH_LAB  # "NoMesh"
-from pyleecan.Functions.labels import NOTCH_LAB  # "Notch"
-from pyleecan.Functions.labels import SLID_LAB  # "SlidingBand"
 from pyleecan.Functions.labels import SOP_LAB  # "SlotOpening"
-from pyleecan.Functions.labels import TOOTH_LAB  # "Tooth"
-from pyleecan.Functions.labels import VENT_LAB  # "Ventilation"
 from pyleecan.Functions.labels import WEDGE_LAB  # "SlotWedge"
 from pyleecan.Functions.labels import WIND_LAB  # "Winding"
-from pyleecan.Functions.labels import YOKE_LAB  # "Yoke"
 from pyleecan.Functions.labels import (
     get_obj_from_label,
 )
@@ -80,31 +60,27 @@ def create_geo_dict(
     machine: PyleecanMachine,
 ) -> dict[str, MachineSegmentSurface]:
     """
-    Creates a dictionary containing geometry information for communication
-    between Pyleecan and pyemmo.
+    Creates a dictionary containing geometry information for communication between
+    PYLEECAN and pyemmo.
 
     This function translates the machine geometry into a format suitable for
     communication with pyemmo.
-    It generates geometry objects, contour lines, and magnetization dictionaries for the machine.
 
     Args:
-        machine (PyleecanMachine): The machine object to translate into pyemmo-compatible geometry.
-        is_internal_rotor (bool): True if the rotor is internal, False otherwise.
+        machine (PyleecanMachine): The machine object to translate into
+            pyemmo-compatible geometry.
 
     Returns:
-        tuple: A tuple containing:
-            - list[SurfaceAPI]: List of geometry surfaces.
-            - list[Union[Line, CircleArc]]: List of rotor contour lines.
-            - list[Union[Line, CircleArc]]: List of stator contour lines.
-            - Point: Rightmost point of the rotor contour.
-            - Point: Leftmost point of the rotor contour.
-            - dict: Dictionary containing magnetization information.
+        dict[str, MachineSegmentSurface]: A dict with part_id as key and the
+        corresponding MachineSegmentSurface object as value. See
+        `Geometry input <section-pyemmo.api.json-geo>`_ section in docs for details
+        on the structure of the geometry dictionary.
     """
     logger = logging.getLogger(__name__)
     rotor_sym = machine.rotor.comp_periodicity_geo()[0]
     # NOTE: We need to extract the additional holes here, because they can cause the
     # lamination contour to be open if they lie on the boundary. This is something thats
-    # different in Gmsh compared to FEMM (Pyleecan).
+    # different in Gmsh compared to FEMM (PYLEECAN).
     # Since the holes are not part of the machine then anymore, we cant find their
     # material using `get_obj_from_label`. Thats why we create them separatly after the
     # laminations.

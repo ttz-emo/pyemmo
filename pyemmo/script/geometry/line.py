@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of Applied
 # Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module of geometry class Line"""
+""""""
 
 from __future__ import annotations
 
@@ -41,7 +41,7 @@ if TYPE_CHECKING:
 class Line(Transformable):
     """
     An instance of the class Line is a straight line between two points (objects of the
-    class Point) in three-dimensional space.
+    class Point).
 
     Example:
         >>> from pyemmo.script.geometry.point import Point
@@ -57,6 +57,13 @@ class Line(Transformable):
         start_point: Point,
         end_point: Point,
     ):
+        """Init from start and end point
+
+        Args:
+            name (str): Name of the line
+            start_point (Point): Start point.
+            end_point (Point): End point.
+        """
         if not start_point.isEqual(end_point):
             ###Startpunkt des Kreisbogens.
             self.start_point = start_point
@@ -204,18 +211,15 @@ class Line(Transformable):
         self.end_point.translate(dx, dy, dz, flag_gmsh=False)
 
     def rotateZ(self, rotationPoint=defaultCenterPoint, angle=0.0):
-        """Mit rotateZ() wird eine Gerade um einen Rotationspunkt (rotationPoint) und die
-        Z-Achse mit einem definierten Winkel rotiert.
+        """Rotation around the z-axis by ``angle`` in radians.
+        The default rotation center point it the model origin
+        (:obj:`~pyemmo.script.geometry.defaultCenterPoint`).
 
         Args:
-            - rotationPoint (Point, optional): Rotation center point.
-            Defaults to Point("tmpCenterPoint", 0, 0, 0, 1).
-            - angle (float, optional): Rotation angle in rad. Defaults to 0.0.
-
-        Beispiel:
-            from math import pi\n
-            L1 = Line('l1', P1, P2)\n
-            L1.rotateZ(P0, pi)\n
+            rotationPoint (Point, optional): Rotation center point.
+                Defaults to :obj:`defaultCenterPoint` =
+                Point("tmpCenterPoint", 0, 0, 0, 1).
+            angle (float, optional): Rotation angle in rad. Defaults to 0.0.
         """
         if not isinstance(rotationPoint, Point):
             raise TypeError("Rotation point must be a Point object!")
@@ -225,19 +229,11 @@ class Line(Transformable):
         self.end_point.rotateZ(rotationPoint, angle)
 
     def rotateY(self, rotationPoint: Point, angle: float):
-        """
-        Mit rotateY() wird eine Gerade um einen Rotationspunkt (rotationPoint) und die
-        Y-Achse mit einem definierten Winkel rotiert.
+        """Rotation of the line around the y-axis.
 
         Args:
-           - rotationPoint (Point): rotation center point
-           - angle (float): rotation angle in rad
-
-        Beispiel:
-            from math import pi\n
-            L1 = Line('l1', P1, P2)\n
-            L1.rotateY(P0, pi)\n
-
+           rotationPoint (Point): rotation center point
+           angle (float): rotation angle in rad
         """
         if not isinstance(rotationPoint, Point):
             raise TypeError("Rotation point must be a Point object!")
@@ -247,19 +243,11 @@ class Line(Transformable):
         self.end_point.rotateY(rotationPoint, angle)
 
     def rotateX(self, rotationPoint: Point, angle: float):
-        """
-        Mit rotateX() wird eine Gerade um einen Rotationspunkt (rotationPoint) und die
-        X-Achse mit einem definierten Winkel rotiert.
+        """Rotation around x-axis by angle in radians.
 
         Args:
-           - rotationPoint (Point): rotation center point
-           - angle (float): rotation angle in rad
-
-        Beispiel:
-            from math import pi\n
-            L1 = Line('l1', P1, P2)\n
-            L1.rotateX(P0, pi)\n
-
+           rotationPoint (Point): rotation center point
+           angle (float): rotation angle in rad
         """
         if not isinstance(rotationPoint, Point):
             raise TypeError("Rotation point must be a Point object!")
@@ -269,15 +257,13 @@ class Line(Transformable):
         self.end_point.rotateX(rotationPoint, angle)
 
     def duplicate(self, name=""):
-        """Mit duplicate() wird eine Kurve mit gleichen Eigenschaften zum Originalen
-        erzeugt. Diese Kurve hat jedoch eine unterschiedliche ID.\n
+        """Create a copy of the line
+
         Args:
-            name (str, optional): Name of duplicte. Defaults to "".\n
+            name (str, optional): Name of duplicte. Defaults to "".
+
         Returns:
-            CircleArc: Duplicate of CircleArc Object\n
-        Beispiel:
-            CA1 = Point('ca1', P1, C, P2)\n
-            CA2 = CA1.duplicate()\n
+            CircleArc: Duplicate of CircleArc object
         """
         newP1 = self.start_point.duplicate()
         newP2 = self.end_point.duplicate()
@@ -292,29 +278,16 @@ class Line(Transformable):
         return dupLine
 
     def mirror(self, planePoint, planeVector1, planeVector2, name=""):
-        """Mit mirror() kann eine Kurve an einer definierten Ebene gespiegelt
-        werden. Bildpunkte werden hierbei generiert und eine Kurve zwischen den Punkten
-        erzeugt. Die Spiegelebene wird durch einen Aufpunkt (planePoint) und 2 Vektoren
-        (planeVector1 und planeVector2) beschrieben.
+        """Mirror a circle arc by a plane.
 
         Args:
-            planePoint (Point): Aufpunkt der Ebene
-            planeVector1 (Line): Erster Ebenenvektor.
-            planeVector2 (Line): Zweiter Ebenenvektor.
-            name (str, optional): Name der neuen Linie. Defaults to "".\n
-        Returns:
-            CircleArc: Mirrored CircleArc object\n
-        Beispiel:
-            P0 = Point('P0', 0, 0, 0, 1)\n
-            Py = Point('Py', 0, 1, 0, 1)\n
-            Pz = Point('Pz', 0, 0, 1, 1)\n
-            yAxis = Line(P0, Py)\n
-            zAxis = Line(P0, Pz)\n
-            P1 = Point('P1', 1, 0, 0, 0.3)\n
-            P2 = Point('P1', 2, 0, 0, 0.3)\n
-            L1 = Line('L1', P1, P2)\n
-            L2 = L1.mirror(P0, yAxis, zAxis)\n
+            planePoint (Point): Start point of the plane
+            planeVector1 (Line): First plane vector.
+            planeVector2 (Line): Second plane vector.
+            name (str, optional): New name of the arc. Defaults to "".
 
+        Returns:
+            CircleArc: Mirrored CircleArc object
         """
         p1 = self.start_point.mirror(planePoint, planeVector1, planeVector2)
         p2 = self.end_point.mirror(planePoint, planeVector1, planeVector2)
@@ -349,7 +322,7 @@ class Line(Transformable):
             linewidth (float): Defaults to 0.5.
             color (list, optional): Defaults to [random() for i in range(3)].
             tag (bool): Flag to print line id and name like "L `L_ID` ("`L_Name`")"
-            and point tags if `marker` is given.
+                and point tags if `marker` is given.
         """
         start_point = self.start_point
         end_point = self.end_point
@@ -424,32 +397,13 @@ class Line(Transformable):
                 return True
         return False
 
-    def setMeshLength(self, meshLength: float) -> None:
-        """set mesh length of start and end_point
-
-        Args:
-            meshLength (float): Mesh length in meter
-        """
-        pStart, pEnd = self.points
-        pStart.meshLength = meshLength
-        pEnd.meshLength = meshLength
-
-    def getMinMeshLength(self) -> float:
-        """get the minimum mesh length of start and end point
-
-        Returns:
-            float: min mesh length of start and end point
-        """
-        pStart, pEnd = self.points
-        return min(pStart.meshLength, pEnd.meshLength)
-
     def combine(self, addLine: Line, touchPoint: Point | None = None) -> Line:
         """combine two lines and return them as new line
 
         Args:
             addLine (Line): line to combine with this line
             touchPoint (Point): Point where the lines touch each other. Defaults to None.
-            Trying to identify the point if its not given.
+                Trying to identify the point if its not given.
         """
         # pylint: disable=locally-disabled, unidiomatic-typecheck
         if not type(addLine) == type(self):  # make sure the line types are equal
@@ -504,8 +458,8 @@ class Line(Transformable):
         return combined_line
 
     def containsPoint(self, refPoint: Point, tol: float = DEFAULT_GEO_TOL) -> bool:
-        """This function checks if start or end point coordinates are equal to the given reference
-        point.
+        """This function checks if start or end point coordinates are equal to the given
+        reference point.
 
         Args:
             refPoint (Point): Reference point to check for.
@@ -523,8 +477,11 @@ class Line(Transformable):
                 return True
         return False
 
-    def angle_to_middle(self):
+    def angle_to_middle(self) -> float:
         """Return the angle of the middle point of the curve to the x-axis
+        This can be used to sort lists of curve in circumferential direction.
 
-        This can be used to sort lists of curve in circumferential direction"""
+        Returns:
+            float: Angle of the line middle point to x axis.
+        """
         return self.middle_point.getAngleToX()

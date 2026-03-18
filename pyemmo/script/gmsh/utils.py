@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of
 # Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -22,28 +22,6 @@
 This module provides various utility functions for geometric calculations
 utilizing the Gmsh library, specifically focused on handling geometrical
 entities such as points, lines, and arcs within a 2D plane.
-
-The main functionalities include:
-- Extracting unique point tags from a list of geometrical dimension tags.
-- Calculating the maximal and minimal radii from a set of dimensional tags.
-- Filtering curves or lines based on their radius or angle relative to the x-axis.
-
-Functions:
-- get_point_tags(dim_tags): Extracts unique point tags from dimension tags.
-- get_max_radius(dim_tags): Finds the maximum radius in a list of dim-tags.
-- get_min_radius(dim_tags): Finds the minimum radius in a list of dim-tags.
-- filter_curves_on_radius(line_list, radius): Filters curves by a specified radius.
-- filter_lines_at_angle(line_list, angle): Filters lines based on their angle to the
-  x-axis.
-
-The module is part of the PyEMMO project, developed by TTZ-EMO at the Technical
-University of Applied Sciences Würzburg-Schweinfurt.
-
-Author:
-    Max Schuler
-
-Note:
-    This docstring was created by OpenAI GPT-4o.
 """
 from __future__ import annotations
 
@@ -57,14 +35,12 @@ from ...definitions import DEFAULT_GEO_TOL
 from ..geometry import defaultCenterPoint
 from ..geometry.circleArc import CircleArc
 from ..geometry.line import Line
-from ..geometry.physicalElement import PhysicalElement
 from ..geometry.surface import Surface
+from ..physicals.physical_element import PhysicalElement
 from . import DimTag
 from .gmsh_arc import GmshArc
 from .gmsh_line import GmshLine
 from .gmsh_point import GmshPoint
-
-# TODO: add tests for misc functions!!
 
 
 def get_dim_tags(geo_list: list[Line | Surface | PhysicalElement]) -> list[DimTag]:
@@ -93,8 +69,6 @@ def get_dim_tags(geo_list: list[Line | Surface | PhysicalElement]) -> list[DimTa
 
     Example:
 
-    ..code::
-
         >>> elements = [Line(id=1), Surface(id=2), PhysicalElement(geo_list=[Line(id=3)])]
         >>> dim_tags = get_dim_tags(elements)
         >>> print(dim_tags)
@@ -109,7 +83,7 @@ def get_dim_tags(geo_list: list[Line | Surface | PhysicalElement]) -> list[DimTa
         elif isinstance(element, Line):
             dim_tags.append((1, element.id))
         else:
-            raise RuntimeError("Geometry not Surface or Line!")
+            raise RuntimeError(f"Geometry not Surface or Line, but {type(element)}!")
     return dim_tags
 
 
@@ -361,8 +335,8 @@ def get_global_center() -> GmshPoint:
 
 
 def create_disk(radius: float, center: GmshPoint | None = None) -> list[GmshArc]:
-    """Workaround for gmsh.model.occ.addDisk() function, because the original gmsh
-    kernel only supports arcs up to 90°. If we want to export our model as .geo_unrolled
+    r"""Workaround for gmsh.model.occ.addDisk() function, because the original gmsh
+    kernel only supports arcs up to 90\deg. If we want to export our model as .geo_unrolled
     file we need to create these arcs separatly otherwise they will be exported as spline.
 
     Args:

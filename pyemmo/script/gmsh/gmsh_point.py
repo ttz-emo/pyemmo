@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO, Technical University of
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of
 # Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -44,12 +44,6 @@ Usage:
     The GmshPoint class can be used as part of a larger system where points in 3D space need
     to be managed, tagged, and manipulated. This is particularly useful in mesh generation
     and geometric modeling tasks.
-
-Author:
-    Max Schuler
-
-Note:
-    This docstring was created by ChatGPT.
 """
 from __future__ import annotations
 

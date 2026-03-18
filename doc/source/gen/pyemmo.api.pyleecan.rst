@@ -1,11 +1,19 @@
 pyemmo.api.pyleecan package
 ===========================
 
+.. Module contents
+.. ---------------
+
+.. automodule:: pyemmo.api.pyleecan
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 Submodules
 ----------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 1
 
    pyemmo.api.pyleecan.build_pyemmo_material
    pyemmo.api.pyleecan.create_geo_dict
@@ -18,11 +26,3 @@ Submodules
    pyemmo.api.pyleecan.main
    pyemmo.api.pyleecan.translate_machine
    pyemmo.api.pyleecan.translate_winding
-
-Module contents
----------------
-
-.. automodule:: pyemmo.api.pyleecan
-   :members:
-   :show-inheritance:
-   :undoc-members:

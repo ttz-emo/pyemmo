@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO, Technical University of Applied Sciences
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of Applied Sciences
 # Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module for class SegmentSurface"""
+""""""
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
@@ -53,7 +53,8 @@ class SegmentSurface(Surface):
            |                 | Should be 2*Pi/nbrSegments  |                 |
            +-----------------+-----------------------------+-----------------+
 
-
+    It describes a surface segement which can be circulary repeated around the center
+    point.
     """
 
     def __init__(
@@ -62,8 +63,7 @@ class SegmentSurface(Surface):
         curves: list[Line],
         nbr_segments: int,
     ):
-        """init of surface for API. This type of surface is special,
-        because it allways forms a machine segment or a part of a segment.
+        """Initialize segmented surface with curve loop and number of segments.
 
         Args:
             name (str): name of the surface
@@ -78,7 +78,7 @@ class SegmentSurface(Surface):
     @property
     def angle(self) -> float:
         """Get the angle of one surface segmen in radians. This equals:
-            2 * Pi / self.nbrSegments
+            :math:`\\frac{2\\cdot\\pi}{\\mathrm{nbr_segments}}`
 
         Returns:
             float: segment angle of that surface in rad.
@@ -223,11 +223,11 @@ class SegmentSurface(Surface):
             linewidth (float): Line width in points. Defaults to 0.5.
             color (list, optional): Line color. Defaults to
                 ``pyemmo.definitions.LINE_COLOR``. See
-                `Matplotlib Colors<https://matplotlib.org/stable/users/explain/colors/colors.html#color-formats>`_
+                `Matplotlib Colors <https://matplotlib.org/stable/users/explain/colors/colors.html#color-formats>`_
                 for more details.
             marker (str, optional): Defaults to None. Examples are '.', 'o', 'x', '+',
                 ... See
-                `Matplotlib Markers<https://matplotlib.org/stable/api/markers_api.html#module-matplotlib.markers>`_
+                `Matplotlib Markers <https://matplotlib.org/stable/api/markers_api.html#module-matplotlib.markers>`_
                 for more details.
             markersize (float, optional): Marker size in points. Defaults to 1.
             tag (bool): Flag to print surface and line namea like "S ("`Surface_Name`")"

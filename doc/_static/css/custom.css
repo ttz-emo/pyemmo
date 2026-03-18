@@ -19,4 +19,32 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
 /* Set theme styling options for sphinx.rdt_theme */
-.wy-side-nav-search{ background-color:#ff6a00 }
+/* -> is set via `style_nav_header_background` in conf.py  */
+.wy-side-nav-search {
+    background-color: #ff6a00;
+}
+
+.wy-nav-top {
+    background: #ff6a00;
+    /* your color */
+}
+
+.wy-nav-side {
+    background: #1a1a1a;
+}
+
+/* Set Language */
+/* h = header */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: 'Open Sans', Arial, sans-serif;
+}
+/* p = paragraph (content),  a = links */
+p,
+a {
+    font-family: 'Open Sans', Arial, sans-serif;
+}

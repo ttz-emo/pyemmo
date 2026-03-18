@@ -1181,19 +1181,22 @@ PostProcessing {
       }}
       { Name Force_MST;
         Value{
-          Term{ [ T_max[{Curl a}] * XYZ[] ] ; In Region[{Rotor_Airgap, Stator_Airgap}]; Jacobian Vol; }
+          // sigma = T_max * \hat{n}
+          // force density in xyz equals maxwell stress tensor T_max multiplied by unity vector to cylindrical airgap surface/line
+          // FIXME: \hat{n} = Unit[XYZ[]] is only true for 2D Simulation! z component must be 0 for 3D evaluation aswell.
+          Term{ [ T_max[{Curl a}] * Unit[XYZ[]] ] ; In Region[{Rotor_Airgap, Stator_Airgap}]; Jacobian Vol; }
       }}
       { Name Force_MST_Cyl;
         Value{
-          Term{ [ Cart2Cyl[XYZ[]] * T_max[{Curl a}] * XYZ[] ] ; In Region[{Rotor_Airgap, Stator_Airgap}]; Jacobian Vol; }
+          Term{ [ Cart2Cyl[XYZ[]] * T_max[{Curl a}] * Unit[XYZ[]] ] ; In Region[{Rotor_Airgap, Stator_Airgap}]; Jacobian Vol; }
       }}
       { Name Force_MST_Rad;
         Value{
-          Term{ [ CompRad[T_max[{Curl a}] * XYZ[]] ] ; In Region[{Rotor_Airgap, Stator_Airgap}]; Jacobian Vol; }
+          Term{ [ CompRad[T_max[{Curl a}] * Unit[XYZ[]]] ] ; In Region[{Rotor_Airgap, Stator_Airgap}]; Jacobian Vol; }
       }}
       { Name Force_MST_Tan;
         Value{
-          Term{ [ CompTan[T_max[{Curl a}] * XYZ[]] ] ; In Region[{Rotor_Airgap, Stator_Airgap}]; Jacobian Vol; }
+          Term{ [ CompTan[T_max[{Curl a}] * Unit[XYZ[]]] ] ; In Region[{Rotor_Airgap, Stator_Airgap}]; Jacobian Vol; }
       }}
       { Name Torque_Maxwell_r ;
         // Torque computation via Maxwell stress tensor

@@ -42,7 +42,7 @@ if ROOT_DIR not in sys.path:
 from pyemmo.api import json
 
 # from pyemmo.functions import importResults as imp
-from pyemmo.functions import calcIronLoss, runOnelab
+from pyemmo.functions import core_loss, run_onelab
 
 RES_DIR = (
     r"C:\Users\ganser\AppData\Roaming\pyemmo\Results\res_Test_1FE1051-4HF11_TherCom"
@@ -75,13 +75,13 @@ def runCalcforCurrent(stromdq):
     resDir = os.path.join(RES_DIR, resId)
     if not os.path.isdir(resDir):
         # only run if dir not exists
-        cmdCommand = runOnelab.createCmdCommand(
+        cmdCommand = run_onelab.create_command(
             proFile,
             useGUI=False,
             # gmshPath=gmshPath,
             # getdpPath=getdpPath,
-            paramDict=paramDict,
-            postOperations=["GetB"],
+            params=paramDict,
+            postops=["GetB"],
         )
         print("cmd command is: ", cmdCommand)
         n = 0
@@ -105,7 +105,7 @@ def runCalcforCurrent(stromdq):
     for side in ["rotor", "stator"]:
         bFilePath = os.path.join(resDir, f"b_{side}.pos")
         try:
-            ironLoss, _ = calcIronLoss.main(
+            ironLoss, _ = core_loss.main(
                 bFilePath,
                 loss_factor={"hyst": 172.04, "eddy": 1.05, "exc": 0},
                 sym_factor=4,
@@ -138,7 +138,7 @@ if __name__ == "__main__":
         os.mkdir(RES_DIR)
     # create mesh file:
     if not os.path.exists(mshFile):
-        meshCommand = runOnelab.createCmdCommand(geoFile, useGUI=False)
+        meshCommand = run_onelab.create_command(geoFile, useGUI=False)
         subprocess.run(meshCommand)
 
     ## simulation parameters

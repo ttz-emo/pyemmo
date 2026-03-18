@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO, Technical University of Applied
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of Applied
 # Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -37,17 +37,18 @@ from pprint import pformat
 
 import gmsh as gmsh_api
 import numpy as np
+from matplotlib import pyplot as plt
 
 from ... import log_formatter
-from ...functions import calcIronLoss, clean_name, import_results, runOnelab
-from ...script.geometry.machineAllType import MachineAllType
-from ...script.geometry.rotor import Rotor
-from ...script.geometry.stator import Stator
+from ...functions import clean_name, core_loss, import_results, plot, run_onelab
 from ...script.gmsh.utils import fix_missing_mesh_sizes
+from ...script.machine import Machine
 from ...script.material.electricalSteel import ElectricalSteel
+from ...script.rotor import Rotor
 from ...script.script import Script
+from ...script.stator import Stator
 from ..machine_segment_surface import MachineSegmentSurface
-from . import ROTOR_AIRGAP_IDEXT, STATOR_AIRGAP_IDEXT, apiNameDict
+from . import ROTOR_AIRGAP_IDEXT, STATOR_AIRGAP_IDEXT, api_name_dict
 from . import boundaryJSON as boundary
 from . import default_info_dict, importJSON, modelJSON
 from .create_airgaps import create_airgap_surfaces
@@ -61,7 +62,7 @@ pyemmoLogger = logging.getLogger("pyemmo")
 
 def createMachine(
     segmentSurfDict: dict[str, MachineSegmentSurface], extendedInfo: dict
-) -> tuple[MachineAllType, dict[str, list[MachineSegmentSurface]]]:
+) -> tuple[Machine, dict[str, list[MachineSegmentSurface]]]:
     """create a pyemmo Machine object from a list of surfaces forming one machine segment
     (imported from matlab).
 
@@ -73,7 +74,7 @@ def createMachine(
             length.
 
     Returns:
-        Tuple[MachineAllType, Dict[str, List[MachineSegmentSurface]]]: Resulting machine object and Machine
+        Tuple[Machine, Dict[str, List[MachineSegmentSurface]]]: Resulting machine object and Machine
         surface dict with IdExt as keys and list of MachineSegmentSurface objects as items.
     """
     symFactor = importJSON.get_sym_factor(extendedInfo)
@@ -193,7 +194,7 @@ def createMachine(
     logger.info("Creating rotor object...")
     rotorAPI = Rotor(
         name="rotor created via json api",
-        physicalElementList=rotorPhysicals,
+        physicals=rotorPhysicals,
         axLen=axLen["rotor"],
     )
 
@@ -201,8 +202,8 @@ def createMachine(
     logger.info("Creating stator object...")
     statorAPI = Stator(
         name="stator created via json api",
-        nbrSlots=windingSWAT.get_num_slots(),
-        physicalElements=statorPhysicals,
+        nbr_slots=windingSWAT.get_num_slots(),
+        physicals=statorPhysicals,
         axLen=axLen["stator"],
         winding=windingSWAT,
     )
@@ -212,7 +213,7 @@ def createMachine(
     modelName = importJSON.get_model_name(extendedInfo)
 
     logger.info("Creating Machine object for model %s...", modelName)
-    machineSiemens = MachineAllType(
+    machineSiemens = Machine(
         rotor=rotorAPI,
         stator=statorAPI,
         name=f"Machine from json interface ({modelName})",
@@ -273,7 +274,7 @@ def createMeshSizeGUICode(machineSurfDict: dict[str, list[MachineSegmentSurface]
     # First get all IDs containing idExt into idList (e.g. there could be "LplR" and "LplL"
     # for idExt = "Lpl")
     # FIXME: Rework this since the default IDs will change in the future!
-    for part_id, apiSurfName in apiNameDict.items():
+    for part_id, apiSurfName in api_name_dict.items():
         surfID_List = []
         for surfID in machineSurfDict.keys():
             if part_id in surfID:
@@ -333,8 +334,8 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
     )
     machine = script.machine
     # 1. Airgap flux density
-    rotorAirgapRadius = machine.rotor.movingBandRadius
-    statorAirgapRadius = machine.stator.movingBand[0].radius
+    rotorAirgapRadius = machine.rotor.movingband_radius
+    statorAirgapRadius = machine.stator.movingband[0].radius
     for side, radius in {
         "rotor": rotorAirgapRadius,
         "stator": statorAirgapRadius,
@@ -346,13 +347,13 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
             # resFilePath = abspath(
             #     join(script.getResultsPath(), quantity + "_airgap_" + side + ".pos")
             # )
-            script.addPostOperation(
-                quantityName=quantity,
-                name="GetBOnRadius",
+            script.add_post_operation(
+                quantity_name=quantity,
+                post_operation="GetBOnRadius",
                 OnGrid=(
                     f"{{({radius}*(1{sign}0.0001))*Cos[$A*Pi/180],"
                     f"({radius}*(1{sign}0.0001))*Sin[$A*Pi/180],0}}"
-                    "{0:360/SymmetryFactor:360/SymmetryFactor/NbrMbSegments*GlobalMeshsizeFactor,0,0}"
+                    "{0:360/SymmetryFactor:360/NbrMbSegments*GlobalMeshsizeFactor,0,0}"
                 ),
                 File=resFilePath,
                 Name=f'"{quantity} (airgap {side})"',
@@ -363,7 +364,7 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
         toothRadius = extendedInfo["r_z"]
         logger.debug("Adding PO for tooth at raidus %.3f mm", toothRadius)
         for quantity in ["b_radial", "b_tangent"]:
-            script.addPostOperation(
+            script.add_post_operation(
                 quantity,
                 "GetBOnRadius",
                 OnGrid=(
@@ -381,7 +382,7 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
         logger.debug("Adding PO for yoke at raidus %.3f mm", yokeRadius)
 
         for quantity in ["b_radial", "b_tangent"]:
-            script.addPostOperation(
+            script.add_post_operation(
                 quantity,
                 "GetBOnRadius",
                 OnGrid=(
@@ -403,14 +404,14 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
         statorIronPhysicalID = [
             str(phys.id) for phys in machine.stator._domainLam.physicals
         ]
-        script.addPostOperation(
+        script.add_post_operation(
             "b",
             "GetBIron",
             OnElementsOf=f"Region[{{{','.join(rotorIronPhysicalID)}}}]",
             File=join("CAT_RESDIR", "b_rotor.pos"),
             Name='"b (rotor)"',
         )
-        script.addPostOperation(
+        script.add_post_operation(
             "b",
             "GetBIron",
             OnElementsOf=f"Region[{{{','.join(statorIronPhysicalID)}}}]",
@@ -433,7 +434,7 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
                 )
                 break
         if allMagConducting:
-            script.addPostOperation(
+            script.add_post_operation(
                 "JouleLosses[Rotor_Magnets]",
                 "GetMagnetLosses",
                 OnGlobal="",
@@ -441,7 +442,7 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
                 File=join("CAT_RESDIR", "Pv_eddy_Mag.dat"),
                 # Name='"p (stator)"',
             )
-            script.simParams["SYM"]["CALC_MAGNET_LOSSES"] = 1
+            script.sim_params["SYM"]["CALC_MAGNET_LOSSES"] = 1
 
 
 # ======================================== START MAIN FUNCTION =====================================
@@ -471,7 +472,7 @@ def main(
         5. Create the .geo and .pro script files by calling
             :meth:`Script.generateScript() <pyemmo.script.script.Script.generateScript>`
         6. Create command line call for gmsh/getdp with
-            :func:`createCmdCommand() <pyemmo.functions.runOnelab.createCmdCommand>`
+            :func:`~pyemmo.functions.run_onelab.create_command`
             and start with :code:`subprocess.run`
 
 
@@ -479,7 +480,9 @@ def main(
         geo (str or dict): File path to JSON formatted geometry file OR segment
             surface dict with IdExt as keys and MachineSegmentSurface objects as values.
         extInfo (str or dict): File path to JSON formatted extended information
-            file or directly given info dict.
+            file or directly given info dict. See
+            :ref:`Model Properties <section-pyemmo.api.json-param>`
+            section in doc for parameters description.
         model (str): Folder path where the resulting model files should be
             placed.
         gmsh (str, optional): Gmsh executable path. If nothing is provieded the
@@ -599,6 +602,26 @@ def main(
         t1 = timeit.default_timer()
         module_logger.debug("Time for loading geometry: %.2fs", t1 - t0)
 
+    # add plot of given geometry
+    if module_logger.getEffectiveLevel() <= logging.DEBUG - 1:
+        # show boundary line plot
+        fig, ax = plt.subplots()
+        surfs = [elem for _, elem in segmentSurfDict.items()]
+        # get colors from colormap 'rainbow'
+        colors = plt.cm.get_cmap("rainbow")(np.linspace(0, 1, len(surfs)), 1)
+        # plot each boundary with own color
+        for surf, color in zip(surfs, colors):
+            plot.plot([surf], fig=fig, tag=False, color=color)
+            if surf.tools:
+                for tool in surf.tools:
+                    plot.plot([tool], fig=fig, tag=False, color=color)
+        ax.set_aspect("equal")
+        ax.grid(True)
+        ax.set_xlabel("x Axis")
+        ax.set_ylabel("y Axis")
+        ax.set_title("Model Geometry Input")
+        fig.show()
+
     # generate the machine geometry
     module_logger.info("Creating complete model from segmented input...")
     machine, machineSurfDict = createMachine(segmentSurfDict, extendedInfo)
@@ -611,7 +634,7 @@ def main(
     if "useFunctionMesh" in extendedInfo.keys():
         if extendedInfo["useFunctionMesh"]:
             module_logger.info("Creating automatic, function based mesh sizes...")
-            machine.setFunctionMesh()
+            machine.set_function_mesh()
 
     # get the simulation pareameters
     simulationParameters = importJSON.get_simulation_params(extendedInfo)
@@ -622,7 +645,6 @@ def main(
         simuParams=simulationParameters,
         machine=machine,
         resultsPath=results,
-        # factory="OpenCascade",
     )
 
     if module_logger.getEffectiveLevel() <= logging.DEBUG:
@@ -636,7 +658,7 @@ def main(
 
     # generate geo and pro files:
     module_logger.info("Creating Gmsh and GetDP input files...")
-    apiScript.generateScript(UD_MeshCode=meshSizeSetCode)
+    apiScript.generate(UD_MeshCode=meshSizeSetCode)
 
     if module_logger.getEffectiveLevel() <= logging.DEBUG:
         t4 = timeit.default_timer()
@@ -664,7 +686,9 @@ def _check_symmetry(
 
     Raises:
         ValueError: If the symmetry factor is not compatible with the minimal symmetry
-        of the machine.
+            of the machine.
+
+    :meta private:
     """
     logger = logging.getLogger(__name__)
     logger.debug("Checking symmetry for given model...")
@@ -689,22 +713,24 @@ def _open_onelab(
 ):
     """
     Private function to open ONELAB simulation in GUI and evaluate results
+
+    :meta private:
     """
     logger = logging.getLogger(__name__)
     # check if gmsh was provided
     if not gmsh:
         # if gmsh was not provided, try to find it:
         logger.debug("Gmsh path not given. Trying to find Gmsh...")
-        gmsh = runOnelab.findGmsh()
+        gmsh = run_onelab.find_gmsh()
     else:
         # if gmsh was given by the user, check that its valid
         if not isfile(gmsh):
             raise FileNotFoundError(f"Provided gmsh executable was not found: {gmsh}")
-    proFile = apiScript.proFilePath  # path to .pro file
-    command = runOnelab.createCmdCommand(
-        onelabFile=proFile,
-        gmshPath=gmsh,
-        getdpPath=getdp,
+    proFile = apiScript.pro_file_path  # path to .pro file
+    command = run_onelab.create_command(
+        file=proFile,
+        gmsh_path=gmsh,
+        getdp_path=getdp,
         useGUI=True,
     )
     logger.debug("CMD command is: '%s'", command)
@@ -730,7 +756,7 @@ def _open_onelab(
                         textLine.replace("\n", "\n\t"),
                     )
     # iron loss post processing:
-    resPath = apiScript.resultsPath
+    resPath = apiScript.results_path
     # check if resPath exists -> simulation has been run.
     if isdir(resPath):
         logger.debug("Found results path -> Simulation has been run.")
@@ -766,7 +792,7 @@ def _open_onelab(
                         title=filename,
                         savefig=True,
                         showfig=False,
-                        savePath=None,
+                        savepath=None,
                     )
 
 
@@ -776,10 +802,12 @@ def _run_core_loss_calculation(resPath, apiScript: Script):
     Args:
         resPath (str): Path to the results directory.
         apiScript (Script): Script object.
+
+    :meta private:
     """
     logger = logging.getLogger(__name__)
     machine = apiScript.machine
-    simulationParameters = apiScript.simParams
+    simulationParameters = apiScript.sim_params
     # FIXME: Implement better check for simulation status
     brFilePath = join(resPath, "b_rotor.pos")
     bsFilePath = join(resPath, "b_stator.pos")
@@ -807,41 +835,33 @@ def _run_core_loss_calculation(resPath, apiScript: Script):
     ):
         # FIXME: Material properties should be given valid
         lossParams = rotorMat.lossParams
-        ironLossR, _ = calcIronLoss.main(
+        ironLossR, _ = core_loss.main(
             brFilePath,
             loss_factor={
                 "hyst": lossParams[0],
                 "eddy": lossParams[1],
                 "exc": lossParams[2],
             },
-            sym_factor=machine.symmetryFactor,
-            axial_length=machine.rotor.axialLength,
+            sym_factor=machine.symmetry_factor,
+            axial_length=machine.rotor.axial_length,
         )
         lossParams = statorMat.lossParams
-        ironLossS, time = calcIronLoss.main(
+        ironLossS, time = core_loss.main(
             bsFilePath,
             loss_factor={
                 "hyst": lossParams[0],
                 "eddy": lossParams[1],
                 "exc": lossParams[2],
             },
-            sym_factor=machine.symmetryFactor,
-            axial_length=machine.stator.axialLength,
+            sym_factor=machine.symmetry_factor,
+            axial_length=machine.stator.axial_length,
         )
-        calcIronLoss.write_simple(
-            join(resPath, "Pv_hyst_R.dat"), time, ironLossR["hyst"]
-        )
-        calcIronLoss.write_simple(
-            join(resPath, "Pv_hyst_S.dat"), time, ironLossS["hyst"]
-        )
-        calcIronLoss.write_simple(
-            join(resPath, "Pv_eddy_R.dat"), time, ironLossR["eddy"]
-        )
-        calcIronLoss.write_simple(
-            join(resPath, "Pv_eddy_S.dat"), time, ironLossS["eddy"]
-        )
-        calcIronLoss.write_simple(join(resPath, "Pv_exc_R.dat"), time, ironLossR["exc"])
-        calcIronLoss.write_simple(join(resPath, "Pv_exc_S.dat"), time, ironLossS["exc"])
+        core_loss.write_simple(join(resPath, "Pv_hyst_R.dat"), time, ironLossR["hyst"])
+        core_loss.write_simple(join(resPath, "Pv_hyst_S.dat"), time, ironLossS["hyst"])
+        core_loss.write_simple(join(resPath, "Pv_eddy_R.dat"), time, ironLossR["eddy"])
+        core_loss.write_simple(join(resPath, "Pv_eddy_S.dat"), time, ironLossS["eddy"])
+        core_loss.write_simple(join(resPath, "Pv_exc_R.dat"), time, ironLossR["exc"])
+        core_loss.write_simple(join(resPath, "Pv_exc_S.dat"), time, ironLossS["exc"])
     else:
         logger.warning(
             "IRON LOSS CALCULATION: field file 'b_rotor.pos' or 'b_stator.pos'"
@@ -859,6 +879,8 @@ def is_single_transient(res_dir: str) -> bool:
 
     Returns:
         bool: True if nbr_sims = 1 && nbr_timesteps > 1 otherwise False.
+
+    :meta private:
     """
     # This function checks a results folder for .dat results files and
     # determines if the results are transient

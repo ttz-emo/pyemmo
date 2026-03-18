@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO,
 # Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -27,19 +27,12 @@ import logging
 import gmsh
 import numpy as np
 from matplotlib import pyplot as plt
-import matplotlib.colors as mcolors
 
 from ...definitions import DEFAULT_GEO_TOL
 from ...functions.plot import plot
 from ...script.geometry import physicalsDict
 from ...script.geometry.circleArc import CircleArc
-from ...script.geometry.limitLine import LimitLine
 from ...script.geometry.line import Line
-from ...script.geometry.movingBand import MovingBand
-from ...script.geometry.physicalElement import PhysicalElement
-from ...script.geometry.primaryLine import PrimaryLine
-from ...script.geometry.slaveLine import SlaveLine
-from ...script.geometry.transformable import Transformable
 from ...script.gmsh import SurfDimTag
 from ...script.gmsh.create_gmsh_curve import create_curve
 from ...script.gmsh.gmsh_arc import GmshArc
@@ -53,156 +46,16 @@ from ...script.gmsh.utils import (
     get_min_radius,
 )
 from ...script.material.material import Material
+from ...script.physicals.limitLine import LimitLine
+from ...script.physicals.movingband import MovingBand
+from ...script.physicals.physical_element import PhysicalElement
+from ...script.physicals.primaryLine import PrimaryLine
+from ...script.physicals.secondary_line import SecondaryLine
 from .. import air
 from ..machine_segment_surface import MachineSegmentSurface
 from . import STATOR_AIRGAP_IDEXT, globalCenterPoint
 
-
-def findLine(lineName: str, lineIDList) -> bool:
-    """
-    findLine is a recursive function that checks if a list of IDs is in lineName.
-    It returns true only if all IDs are valid.
-    LineIDList can look like ["ID1",["ID21","ID22"],...], so lineName has to contain
-    either "ID1" or "ID21" and "ID22".
-
-    Args:
-        lineName: line name to check.
-        LineIDList: list of strings to check for in the line name.
-
-    Returns:
-        bool: True if a member of lineIDList (Point ID) was found in a line.
-    """
-    nbrLineIDs = 0
-    for lineIDs in lineIDList:
-        if isinstance(lineIDs, str):  # if the line ID is a string
-            # just determine if the string is in the linename
-            if lineIDs in lineName:
-                nbrLineIDs += 1
-        # if LineIDs is a list of lineIDs (type str) call function again
-        elif isinstance(lineIDs, list):
-            if findLine(lineName, lineIDs):
-                return True
-    if nbrLineIDs == len(lineIDList):
-        return True
-    return False
-
-
-def findLines(
-    segmentSurfDict: dict[str, MachineSegmentSurface],
-    surfID: str,
-    lineIDList: list[list[str] | str],
-) -> tuple[list[Line], MachineSegmentSurface]:
-    """
-    findLines looks for a surface in segmentSurfDict by the SurfID and checks if this
-    surface has lines containing the LindIDList IDs.
-    (LineIDList can look like ["ID1",["ID21","ID22"],...], so linename has to contain
-    either "ID1" or "ID21" and "ID22". See function "findLine" for more details)
-
-    Args:
-        segmentSurfDict (Dict[str, MachineSegmentSurface]): Segment Surface dict with short IDs (IdExt)
-            as keys and MachineSegmentSurface objects as values
-        SurfID (str): ID of the surface to search for in the MachineSurfaceList
-        LineIDList (List[Union[List[str],str]]): List of line IDs or List of LineIDs to
-            search for in the surface line list ()
-
-    Returns:
-        Tuple[List[Line], MachineSegmentSurface] | Tuple[None, None]: List of identified lines and the
-        surface where the lines where found. Both tuple members will be None if the surface
-        was not in the surface list.
-
-    Raises:
-        UserWarning: If SurfID is not found in the MachineSurfList
-        ValueError: If SurfID is found more than once in the surface list
-    """
-    areaOfSurfID = [area for area in segmentSurfDict.values() if (surfID == area.idExt)]
-    if not areaOfSurfID:  # SurfID not in Surface Dict
-        logger = logging.getLogger(__name__)
-        logger.warning("Surface ID '%s' not found in machine surface list.", surfID)
-        return None, None
-    if len(areaOfSurfID) != 1:
-        # there should only be one area in the list "areaOfSurfID"
-        msg = f"Surface with ID '{surfID}' was found more than once in the list of machine surfaces"
-        raise ValueError(msg)
-    lineList: list[Line] = []
-    for line in areaOfSurfID[0].curve:
-        linename = line.name
-        if findLine(linename, lineIDList):
-            lineList.append(line)
-    return lineList, areaOfSurfID[0]
-
-
-def getBoundaryLines(
-    segmentSurfDict: dict[str, MachineSegmentSurface],
-    surfID: str,
-    lineIDList: str | list[str],
-    symFactor: int,
-) -> list[Line] | None:
-    """
-    getBoundaryLines can be used to get specific boundary lines for a Onelab model out of the
-    machine surfaces by identifying them through surface ID and a list of related line IDs
-
-    Args:
-        segmentSurfDict (Dict[str, MachineSegmentSurface]): Segment Surface dict with short IDs (IdExt) as keys
-            and MachineSegmentSurface objects as values
-        surfID (str): Surface ID to search for in the machine surface list.
-        lineIDList (str | List[str]): Line ID or list of line IDs to search for in the lineloop of
-            the surface with "surfID".
-        symFactor (int): symmetry factor for duplicating the found lines if necessary.
-
-    Returns:
-        List[Line] | None: List of found (and duplicated) boundary lines or None
-        if no lines where found.
-
-    """
-    lineList, boundarySurface = findLines(segmentSurfDict, surfID, lineIDList)
-    if lineList:  # if there are lines in linelist
-        dupLines: list[Line] = []
-        angle = boundarySurface.angle
-        # number of segments in symmetry:
-        nbrSegments = boundarySurface.nbr_segments / symFactor
-        for line in lineList:
-            for i in range(1, int(nbrSegments)):
-                dupLines.append(line.duplicate())
-                dupLines[-1].rotateZ(angle=i * angle)
-        return lineList + dupLines
-    return None
-
-
 ############################## START MOVINGBAND CREATION ##############################
-
-
-def createMBLines(
-    movingBandLineDict: dict,
-    segmentSurfDict: dict[str, MachineSegmentSurface],
-    symFactor: int,
-) -> list[Line]:
-    """
-    createMBLines finds the inner Movingband lines in the list of MachineSegmentSurface objects by the IDs
-    in MBLineDict and generates the corresponding number of movingband lines for the given symmetry
-    by duplicate and rotate.
-
-    Args:
-        MBLineDict (Dict[str, List[str]]): Dict identifying the surface IDs to search for as
-            dict keys and a list of corresponding line IDs to search for as values.
-            e.g.: {"StLu": ["LuA", "LuM"] }
-        segmentSurfDict (Dict[str, MachineSegmentSurface]): Segment Surface dict with short IDs (IdExt)
-            as keys and MachineSegmentSurface objects as values
-        SymFactor (int): symmetry factor
-
-    Returns:
-        List(Line): Moving band lines
-    """
-    # mbLines = list()
-    for surfaceID in movingBandLineDict.keys():
-        mbLines = getBoundaryLines(
-            segmentSurfDict=segmentSurfDict,
-            surfID=surfaceID,
-            lineIDList=movingBandLineDict[surfaceID],
-            symFactor=symFactor,
-        )
-        if mbLines is not None:  # Break loop if boundary line was found
-            break
-    return mbLines
 
 
 def createMBAux(
@@ -316,17 +169,24 @@ def createMBAux(
     return mb_aux_list
 
 
-def createMB(
+def create_MB(
     rotor_bnd_lines: list[GmshLine],
     stator_bnd_lines: list[GmshLine],
     symFactor: int,
     material: Material = air,
 ) -> tuple[MovingBand, MovingBand, list[MovingBand] | None]:
     """
-    createMB generates all PyEMMO Movingband objects needed for a simulation.
+    Generates all PyEMMO Movingband objects needed for a simulation.
+    This is done by finding the most inner radius of the stator/most outer radius of the
+    rotor and extracting the movingband curves from their. This assumes that the
+    movingband interface is allready a uniform circle or arc.
+    The auxillary rotor movingband object(s) are constructed afterwards.
 
     Args:
-        TODO
+        rotor_bnd_lines (list[GmshLine]): List of current rotor boundary lines.
+        stator_bnd_lines (list[GmshLine]): List of current stator boundary lines.
+        symFactor (int): Model symmetry factor.
+        material (Material): Airgap material. Defaults to ``pyemmo.api.air``.
 
     Returns:
         tuple:
@@ -392,7 +252,8 @@ def createMB(
 
     # This was unnecessary since remove_all_duplicates() just removes instances
     # belonging to highest order instances (= surfaces in our case)...
-    # gmsh.model.occ.remove_all_duplicates()  # call to remove duplicate points of moving band interfaces
+    # gmsh.model.occ.remove_all_duplicates()  # call to remove duplicate points of moving
+    # band interfaces
 
     if logger.getEffectiveLevel() <= logging.DEBUG - 1:
         logger.debug("Show moving band in gmsh...")
@@ -419,43 +280,6 @@ def createMB(
 
 
 ############################### END MOVINGBAND CREATION ###############################
-
-
-def getLimitLines(
-    limitLineDict: dict[str, list[str]],
-    machineSurfList: list[MachineSegmentSurface],
-    symFactor: int,
-) -> list[Line] | None:
-    """
-    getLimitLines identifies the inner or outer boundary lines from the machine surfaces by the
-    line-IDs in LimitLineDict and duplicates them if needed.
-
-    Args:
-        limitLineDict (Dict[str, List[str]]): Is a predefined dict with surface IDs as keys and
-            List of line IDs as values. The order of the surface IDs matters since the function
-            directly returns the found lines! So the dict must be defined most outer to the most
-            inner limit line. E.g. for the inner limit lines the limit lines dict would look like
-
-                TODO: Create example for inner limit line dict
-
-        machineSurfList (List[MachineSegmentSurface]): List of all surfaces that should be searched
-        symFactor (int): symmetry factor for duplication.
-
-    Returns:
-        Union[List[Line], None]: List of limit lines if they could be identified by the surface and
-        line IDs in the limitLineDict or None if no limit lines where found.
-    """
-    for surfaceID in limitLineDict.keys():
-        limitLineList = getBoundaryLines(
-            segmentSurfDict=machineSurfList,
-            surfID=surfaceID,
-            lineIDList=limitLineDict[surfaceID],
-            symFactor=symFactor,
-        )
-        if limitLineList is not None:  # Break loop if boundary line was found
-            return limitLineList
-    # if no limit line was found:
-    return None
 
 
 def get_rotor_stator_dim_tags(
@@ -532,8 +356,8 @@ def get_boundary_line_list(surf_dim_tags: list[SurfDimTag]) -> list[GmshLine]:
 
 
 def get_primary_lines(bnd_line_list: list[GmshLine]) -> list[GmshLine]:
-    """Get a list of primary lines from the list of boundary lines by filtering the
-    lines that are on the x-axis (at angle 0.0°).
+    r"""Get a list of primary lines from the list of boundary lines by filtering the
+    lines that are on the x-axis (at angle 0.0\deg).
     The primary lines are removed from the list of boundary lines since the cannot be
     any other boundary.
 
@@ -629,7 +453,7 @@ def get_boundaries(
             PrimaryLine("Primary Line Rotor", get_primary_lines(rotor_bnd_line_list))
         )
         rotor_boundary.append(
-            SlaveLine(
+            SecondaryLine(
                 "Secondary Line Rotor",
                 get_secondary_lines(rotor_bnd_line_list, symFactor),
             )
@@ -638,7 +462,7 @@ def get_boundaries(
             PrimaryLine("Primary Line Stator", get_primary_lines(stator_bnd_line_list))
         )
         stator_boundary.append(
-            SlaveLine(
+            SecondaryLine(
                 "Secondary Line Stator",
                 get_secondary_lines(stator_bnd_line_list, symFactor),
             )
@@ -663,7 +487,7 @@ def get_boundaries(
         movingBandStator,
         movingBandRotorInner,
         movingBandRotorAuxList,
-    ] = createMB(
+    ] = create_MB(
         rotor_bnd_lines=rotor_bnd_line_list,
         stator_bnd_lines=stator_bnd_line_list,
         symFactor=symFactor,
@@ -744,32 +568,18 @@ def get_boundaries(
         fig, ax = plt.subplots()
         # get colors from colormap 'rainbow'
         colors = plt.cm.get_cmap("rainbow")(
-            np.linspace(0, 1, len(rotor_boundary + stator_boundary)),1
+            np.linspace(0, 1, len(rotor_boundary + stator_boundary)), 1
         )
         # plot each boundary with own color
         for boundary, color in zip(rotor_boundary + stator_boundary, colors):
             plot([boundary], fig=fig, tag=True, color=color)
-        
+
         ax.set_aspect("equal")
         ax.grid(True)
         ax.title("Model Boundary Curves")
         fig.show()
 
     return rotor_boundary, stator_boundary
-
-
-def geoElemList(
-    physElemList: list[PhysicalElement] | PhysicalElement,
-) -> list[Transformable]:
-    """Create a list of geometrical elements (type Transformable) from a list of PhysicalElements"""
-    geoList = []
-    if isinstance(physElemList, list):
-        for phys in physElemList:
-            geoList.extend(phys.geo_list)
-        return geoList
-    if isinstance(physElemList, PhysicalElement):
-        return physElemList
-    raise ValueError(physElemList)
 
 
 # ===================================== END BOUNDARY FUNCTIONS ====================================

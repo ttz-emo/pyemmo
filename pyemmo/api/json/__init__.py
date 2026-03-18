@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO,
 # Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -27,68 +27,11 @@ for the values of :attr:`~pyemmo.api.machine_segment_surface.MachineSegmentSurfa
 
 from __future__ import annotations
 
-from ...script.geometry import defaultCenterPoint
 import datetime
 
-# TODO: Clean up unused definitions here!
+from ...script.geometry import defaultCenterPoint
 
 globalCenterPoint = defaultCenterPoint
-# Movingband line Identification dicts
-RotorMBLineDict = {
-    "LuR2": [
-        ["MB_CurveRotor"],
-        ["LuA2", "LuM2"],
-        ["LuAa", "LuBa"],
-    ],  # double airgap
-    "RoLu2": ["LuA2", "LuM2"],  # double airgap
-    "RoLu": ["LuA", "LuM"],  # single airgap
-    "LuR": ["LuAa", "LuBa"],  # single airgap
-}
-StatorMBLineDict = {
-    "StLu2": [["MB_CurveStator"], ["LuA2", "LuM2"]],
-    "StLu": ["LuA", "LuM"],
-}
-
-# Outer limit lines
-OuterLimitLineDict = {
-    "Geh": [  # first case: no inner shaft radius; second case: with radius
-        ["OuterLimit"],
-        ["G1", "G3"],  # first case: zylindrical housing
-        [
-            [
-                "G1",
-                "G2a",
-            ],  # second case: quadratic or "kreuzprofil" with rounding
-            ["G2a", "G2e"],
-            ["G2e", "G3"],
-            ["G2", "G1"],  # without rounding
-            ["G2", "G3"],
-        ],
-    ],
-    # if there is no housing, use stator iron outer line
-    "StNut": [
-        ["OuterLimit"],
-        ["InnerLimit"],
-        ["SZ", "SN"],
-    ],
-}
-
-# Inner limit lines
-InnerLimitLineDict = {
-    "Wel": [
-        ["InnerLimit"],
-        # ["W2", "MP"], # first case: no inner shaft radius -> no limit line!
-        ["W4", "W3"],  # second case: with radius -> inner limit line
-    ],
-    "Hul": ["H3", "H4"],
-    "Pol": [
-        ["InnerLimit"],
-        ["OuterLimit"],
-        ["RMi", "RI"],  # first case:IPM
-        ["RndI", "RndM"],  # second case:APM
-    ],
-    "RoNut": ["SZ", "SN"],
-}
 
 default_info_dict = {
     "winding": "auto",  # auto = try to create winding from number of slots and poles
@@ -128,11 +71,14 @@ ROTOR_BAR_IDEXT = "rotor bar"
 (:attr:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface.part_id`)
 for rotor bars of a squirel cage induction motor."""
 ROTOR_SLOT_IDEXT = "rotor slot"
-"""NOTE: Not taken into account by API yet because rotor winding system not implemented!
+"""
 Literal part identifier
 (:attr:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface.part_id`)
 for rotor slots of either a wound rotor induction motor or a electrical excitation
-system."""
+system.
+
+NOTE: Not taken into account by API yet because rotor winding system not implemented!
+"""
 ROTOR_LAM_IDEXT = "rotor lamination"
 """Literal part identifier
 (:attr:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface.part_id`)
@@ -142,7 +88,7 @@ ROTOR_AIRGAP_IDEXT = "rotor airgap"
 (:attr:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface.part_id`)
 for the rotor airgap. The rotor airgap in pyemmo is defined as the most outer rotor
 surface interfacing the movingband. See
-:class:`~pyemmo.script.geometry.movingBand.MovingBand` or
+:class:`~pyemmo.script.physicals.movingband.MovingBand` or
 :mod:`~pyemmo.api.json.create_airgaps` for futher information."""
 STATOR_SLOT_IDEXT = "stator slot"
 """Literal part identifier
@@ -157,11 +103,11 @@ STATOR_AIRGAP_IDEXT = "stator airgap"
 (:attr:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface.part_id`)
 for stator airgap. The stator airgap in pyemmo is defined as the most inner stator
 surface interfacing the movingband. See
-:class:`~pyemmo.script.geometry.movingBand.MovingBand` or
+:class:`~pyemmo.script.physicalsgeometry.movingband.MovingBand` or
 :mod:`~pyemmo.api.json.create_airgaps` for futher information."""
 
-# order defines user defined mesh setting order.
-apiNameDict = {
+# order defines user defined mesh setting order!
+api_name_dict = {
     # rotor
     "shaft": "Shaft",
     "hole": "Holes",
@@ -177,3 +123,10 @@ apiNameDict = {
     STATOR_AIRGAP_IDEXT: "Stator Airgap",  # case 3 airgap segments
     "stator air": "Stator Air",  # case 5 airgap segments
 }
+"""
+Dict to connect json api
+:attr:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface.part_id` to readable
+name
+
+:meta private:
+"""

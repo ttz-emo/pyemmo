@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -19,6 +19,8 @@
 #
 from __future__ import annotations
 
+from typing import Any
+
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
@@ -34,14 +36,34 @@ from ..script.geometry.surface import Surface
 def plot(
     geoList: list[Surface | Line | CircleArc | Spline | Point],
     fig: Figure = None,
-    linewidth=0.5,
-    color=None,
-    marker=".",
-    markersize=1,
-    tag=False,
+    linewidth: float = 0.5,
+    color: Any = None,
+    marker: str = ".",
+    markersize: float = 1.0,
+    tag: bool = False,
 ) -> tuple[Figure, Axes]:
     """
-    2D Line plot of the surface
+    General plot function for a iterable of :class:`~pyemmo.script.geometry.surface.Surface` and
+    :class:`~pyemmo.script.geometry.line.Line` objects to easily plot different geometries.
+
+    Args:
+        geoList (list[Surface  |  Line  |  CircleArc  |  Spline  |  Point]): List of
+            geometry objects.
+        fig (Figure, optional): :class:`matplotlib.figure.Figure` or None. If None a new Figure
+            will be created through :func:`matplotlib.pyplot.subplots`.
+        linewidth (float, optional): Line width in pt. Defaults to 0.5.
+        color (Any, optional): Line or Point color. Defaults to default line or point
+            color defined in :mod:`pyemmo.definitions`. See matplotlibs
+            `Specifying colors <https://matplotlib.org/stable/users/explain/colors/colors.html>`_
+        marker (str, optional): Point markers. Defaults to ``"."``. See
+            `matplotlib markers <https://matplotlib.org/stable/api/markers_api.html>`_
+            for all options.
+        markersize (float, optional): Markersize in pt. Defaults to 1.0.
+        tag (bool, optional): If True, show instance names. Defaults to False.
+
+    Returns:
+        tuple[matplotlib.figure.Figure, matplotlib.axes.Axes]: Matplotlib Figure and
+        Axes object.
     """
     if not isinstance(geoList, (list, tuple)):
         msg = f"Given object for geometry list was not type list, but {type(geoList)}"

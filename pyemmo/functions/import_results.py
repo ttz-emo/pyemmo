@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO, Technical University of Applied
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of Applied
 # Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module to import simulation results from GetDP (Onelab)"""
+"""Import results from GetDP simulations"""
 
 from __future__ import annotations
 
@@ -39,15 +39,18 @@ logger = logging.getLogger(__name__)
 
 def read_timetable_dat(file_path: str | os.PathLike) -> tuple[np.ndarray, np.ndarray]:
     """
-    returns the Data from the the .*dat file witten in the TimeTable Format
-    and returns the time and the corresponding data.
+    Import the data from a .dat file witten in the GetDP
+    `TimeTable format <https://getdp.info/doc/texinfo/getdp.html#PostOperation:~:text=and%20values%20columns.-,TimeTable,-Time%20oriented%20column>`_
+    and return the time and the corresponding data.
 
-    TimeTable format is a whitespace separated list of time-value pairs and
-    looks like:
+    `TimeTable format <https://getdp.info/doc/texinfo/getdp.html#PostOperation:~:text=and%20values%20columns.-,TimeTable,-Time%20oriented%20column>`_
+    is a whitespace separated list of time-value pairs and looks like:
 
-        time0 val0_0 (val0_1 ...)\n
-        time1 val1_0 (val1_1 ...)\n
-        ...\n
+    .. code-block:: text
+
+        time0 val0_0 (val0_1 ...)
+        time1 val1_0 (val1_1 ...)
+        ...
 
     For most result types (torque, induced voltage, flux (all integral typ
     results)) there is only one value per time step. But for special results,
@@ -56,7 +59,7 @@ def read_timetable_dat(file_path: str | os.PathLike) -> tuple[np.ndarray, np.nda
 
     Args:
         file_path (str): path to a file with .dat extension containing data in
-        GetDP TimeTable format
+            GetDP TimeTable format
 
     Returns:
         Tuple[np.ndarray, np.ndarray]: time and data array -> (time, data)
@@ -86,19 +89,20 @@ def read_timetable_dat(file_path: str | os.PathLike) -> tuple[np.ndarray, np.nda
 # pylint: disable=locally-disabled, invalid-name
 def read_RegionValue_dat(file_path: str | os.PathLike) -> tuple[np.ndarray, np.ndarray]:
     """
-    Import data from 'RegionValue' formatted .dat-file (GetDP resutl file).
-    This usually only applies to torque results computed with the virtual works
-    method.
+    Import data from 'RegionValue' formatted .dat-file (GetDP result file format).
+    This usually only applies to torque results computed with the virtual works method.
+
     RegionValue format looks like:
 
-        'time0 val0 time1 val1 ...'
+    .. code-block:: text
+
+        time0 val0 time1 val1 ...
 
     Args:
-        file_path (Union[str, os.PathLike]): Path to results file.
+        file_path (Union[str, os.PathLike]): Path to 'RegionValue' formatted result file.
 
     Returns:
-        Tuple[np.ndarray, np.ndarray]: time and data vector with shape:
-        (nbr_timesteps,)
+        Tuple[np.ndarray, np.ndarray]: time and data vectors.
     """
     # make sure dat file exists
     if not os.path.isfile(file_path):
@@ -127,17 +131,17 @@ def split_data(
     time: np.ndarray, data: np.ndarray
 ) -> tuple[int, list[np.ndarray], list[np.ndarray]]:
     """Split up the time-data value pairs if there are multiple time vectors
-    (e.g. time=[0,1,2,3,0,1,2] -> time[0]=[0,1,2,3], time[1]=[0,1,2]).
-    Time-vectors must be increasing.
+    (e.g. ``time=[0,1,2,3,0,1,2]`` -> ``time[0]=[0,1,2,3]`` and ``time[1]=[0,1,2]``).
 
     Args:
-        time (np.ndarray): 1D-Array with time values.
-        data (np.ndarray): 1D- ord 2D-Array with data values.
+        time (np.ndarray): 1D array with time values.
+        data (np.ndarray): 1D or 2D array with data values.
 
     Returns:
-        int: Number of simulations in the data set. (Number of splits).
-        list(np.ndarray): 2D time array.
-        list(np.ndarray): 2D data array.
+        tuple[int, list[np.ndarray], list[np.ndarray]]:
+            - int: Number of simulations in the data set (number of splits).
+            - list(np.ndarray): 2D time array.
+            - list(np.ndarray): 2D data array.
     """
     # make sure time and data are type ndarray
     if not isinstance(time, np.ndarray) or not isinstance(data, np.ndarray):
@@ -161,30 +165,30 @@ def split_data(
 
 def plot_timetable_dat(
     file_path: str,
-    dataLabel: str = "",
+    data_label: str = "",
     title: str = "",
     savefig: bool = False,
     showfig: bool = True,
-    savePath: str = "",
+    savepath: str = "",
 ) -> list[Figure]:
     """Plot the data in the filePath .dat-file and save the figure optionally.
 
-    There can be several simulations in one .dat file. If so there will be one
+    There can be several simulations in one .dat file. If so, there will be one
     figure for each simulation.
 
     Args:
-        filePath (str): path to the .dat-file in timetable-format
-        dataLabel (str, optional): label of the ploted data on the y-axis.
+        file_path (str): path to the .dat-file in timetable-format
+        data_label (str, optional): label of the ploted data on the y-axis.
             Defaults to "".
         title (str, optional): title of the figure. Defaults to ""
         savefig (bool, optional): flag to determine if the figure should be
             saved. Defaults to False.
         showfig (bool, optional): flag to determine if the figure should be
             displayed. Defaults to True.
-        savePath (str, optional): path with filename and valid extension to
-            save the figure. Defaults to None. E.g. "C:\\Users\\Test\\Pictures
-            \\Test.png". If savePath is None figure will be saved with filePath
-            and .png extension
+        savepath (str, optional): path with filename and valid extension to
+            save the figure. Defaults to "". E.g. ``"/path/to/files/filename.png"``.
+            If savepath is empty figure will be saved with under the results
+            ``file_path`` and .png extension.
 
     Returns:
         List[Figure]: Returns a list of matplotlib Figure objects.
@@ -219,11 +223,11 @@ def plot_timetable_dat(
                 top=maxVal * (1.1 if maxVal > 0 else 0.9),
             )
 
-        axes.set(ylabel=dataLabel, xlabel="time in s", title=title + f"_{sim}")
+        axes.set(ylabel=data_label, xlabel="time in s", title=title + f"_{sim}")
         if savefig:
-            if not savePath:
-                savePath = path.abspath(path.splitext(file_path)[0])
-            fig.savefig(savePath + f"_{sim}" + ".png")
+            if not savepath:
+                savepath = path.abspath(path.splitext(file_path)[0])
+            fig.savefig(savepath + f"_{sim}" + ".png")
         figureList.append(fig)
         # if showfig:
         #     fig.show()
@@ -237,7 +241,7 @@ def plot_all_dat(dir_path: str | os.PathLike) -> None:
     """Plot all .dat files as png in the folder dirPath
 
     Args:
-        dirPath (Union[str, os.PathLike]): Path to the folder containing the .dat files.
+        dir_path (Union[str, os.PathLike]): Path to the folder containing the .dat files.
     """
     if path.isdir(dir_path):
         # if the folder for results exists
@@ -255,35 +259,41 @@ def plot_all_dat(dir_path: str | os.PathLike) -> None:
         raise RuntimeError(f"Given result foler '{dir_path}'did not exist!")
 
 
-def importSP(
-    posFilePath: str,
+def import_sp(
+    pos_file_path: str,
 ) -> tuple[str, list[float], list[tuple[float, float, float]], list[list[float]]]:
-    """Import values of POS files with the "Scalar Point" (SP) format
+    """Import values of `legacy formatted <https://gmsh.info/doc/texinfo/#Legacy-formats>`_
+    POS files with "Scalar Point" (SP) results. This format can e.g. be achieved by
+    evaluating the radial flux density in the airgap with ``OnGrid``.
+
+    For a general import of legacy formatted result files use function
+    :func:`import_pos_legacy`.
 
     Args:
-        SPFilePath (str): path to pos file in SP format
+        pos_file_path (str): path to pos file in SP format.
 
     Returns:
-        Tuple:
+        tuple[str, list[float], list[tuple[float, float, float]], list[list[float]]]: quantity name, time, positions, values
+
             - str: PostOperation quantity name
             - List[float]: List of time values
             - List[Tuple[float, float, float]]: List of tuple of position
-                coordinates (x,y,z)
+              coordinates (x,y,z)
             - List[List[float]]]: List of List of quantity values for each
-                point, and each timestep
+              point, and each timestep
 
     """
-    _, filename = path.split(posFilePath)
+    _, filename = path.split(pos_file_path)
     filename, ext = filename.split(".")
     if ext != "pos":
-        raise ValueError(f"Given filepath '{posFilePath}' is not a POS-file!")
-    with open(posFilePath, encoding="utf-8") as dataFile:
+        raise ValueError(f"Given filepath '{pos_file_path}' is not a POS-file!")
+    with open(pos_file_path, encoding="utf-8") as dataFile:
         dataLines = dataFile.readlines()
     parsedName = parse.parse('View "{}" {\n', dataLines.pop(0))
     if not isinstance(parsedName, parse.Result):
         raise (
             RuntimeError(
-                f"Given file '{posFilePath}' did not contain correct first "
+                f"Given file '{pos_file_path}' did not contain correct first "
                 """line: 'View "POS NAME" {{'. """
                 "POS name could not be identified"
             )
@@ -320,7 +330,7 @@ def importSP(
         else:
             # if the parse function did not return values, the format was wrong
             raise RuntimeError(
-                f"Given file '{posFilePath}' did not contain SP formatted values!"
+                f"Given file '{pos_file_path}' did not contain SP formatted values!"
             )
     return parsedName[0], time, pos, values
 
@@ -332,8 +342,10 @@ def load_view(pos_file: str) -> tuple[bool, int]:
         pos_file (str): .pos file path
 
     Returns:
-        bool: flag to indicate if gmsh had to be initialized.
-        int: Gmsh view tag.
+        tuple[bool, int]: gmsh was initialized, view tag
+
+            - bool: Flag to indicate if gmsh had to be initialized.
+            - int: Gmsh view tag.
     """
     finalize_gmsh = False
     if not gmsh.isInitialized():
@@ -364,22 +376,31 @@ def load_view(pos_file: str) -> tuple[bool, int]:
     return finalize_gmsh, view_tags[-1]
 
 
-def importPos(pos_file: str | os.PathLike) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Import POS file via gmsh api.
+def import_pos(
+    pos_file: str | os.PathLike,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Import POS file in Gmsh post processing format via gmsh api.
 
-    .. todo::
+    See `Gmsh File Formats <https://gmsh.info/doc/texinfo/#Gmsh-file-formats>`_ for
+    details.
 
-        Does not work for SP-formatted pos files.
-            -> Use function getListData()
+    .. note::
+
+        This does not work for GetDP
+        `legacy formatted <https://gmsh.info/doc/texinfo/#Legacy-formats>`_ pos files
+        created e.g. with the GetDP ``OnGrid`` evaluation type!
+        Use function :func:`import_pos_legacy` for those files instead.
 
     Args:
-        pos_file (Union[str, Union[str, os.PathLike]]): _description_
+        pos_file (Union[str, Union[str, os.PathLike]]): .pos post processing result file
+            in Gmsh MSH file format.
 
     Returns:
-        Tuple[np.ndarray, List[float], np.ndarray]:
-            - gmsh mesh element tags
-            - time
-            - data array
+        Tuple[np.ndarray, np.ndarray, np.ndarray]:
+            - np.ndarray: gmsh mesh element tags (with size M)
+            - np.ndarray: time vector (with size N)
+            - np.ndarray: data array with size M x N x number of components (=1 for
+              scalar, 3 for vector)
     """
     # check file extension
     path, filename = os.path.split(pos_file)
@@ -387,8 +408,8 @@ def importPos(pos_file: str | os.PathLike) -> tuple[np.ndarray, np.ndarray, np.n
     if ext != ".pos":
         raise ValueError(f"Given filepath '{pos_file}' is not a POS-file!")
 
-    # Check if pos file is in old GmshParsed format. See function import_pos_parsedFormat!
-    with open(pos_file, "r") as file:
+    # Check if pos file is in old GmshParsed format. See function import_pos_legacy!
+    with open(pos_file) as file:
         if file.readline().startswith("View"):
             logger.warning(
                 "Result file '%s' is in old gmsh parsed format. "
@@ -396,7 +417,7 @@ def importPos(pos_file: str | os.PathLike) -> tuple[np.ndarray, np.ndarray, np.n
                 pos_file,
             )
             logger.info(
-                "Alternativly use function import_pos_parsedFormat(...) to import "
+                "Alternativly use function import_pos_legacy(...) to import "
                 "parsed formatted data!"
             )
             # if function is in GmshParsed format, export as .msh file to update file
@@ -464,19 +485,21 @@ def importPos(pos_file: str | os.PathLike) -> tuple[np.ndarray, np.ndarray, np.n
 # def _import_pos_mshFormat(view_tag: int, step: int): ...
 
 
-def import_pos_parsedFormat(file_path: str) -> tuple[str, np.ndarray, np.ndarray]:
+def import_pos_legacy(file_path: str) -> tuple[str, np.ndarray, np.ndarray]:
     """Import data from older .pos format 'GmshParsed'.
-    See this for more info about parsed file format:
-    https://gmsh.info/doc/texinfo/gmsh.html#Gmsh-file-formats:~:text=More%20explicitly%2C%20the%20syntax%20for%20a%20parsed%20View%20is%20the%20following
+    See this for more info about GetDP legacy file format `here <https://gmsh.info/doc/texinfo/#Legacy-formats>`_
 
     Args:
         file_path (str): path to result file
 
     Returns:
-        tuple[str,np.ndarray,np.ndarray]:
-            - GmshParsed results data type (like SP for scalar point or VL for vector line)
-            - Node coordinates in shape (number of elements, number of nodes * 3)
-            - Data array in shape (number of element, number of simulation steps * number of values per node)
+        tuple[str,np.ndarray,np.ndarray]: data_type, nodes, results data
+
+            - GmshParsed results data type (like SP for scalar point or VL for vector
+              line).
+            - Node coordinates in shape 'number of elements' x 'number of nodes * 3'.
+            - Data array in shape 'number of elements' x 'number of simulation steps *
+              number of values per node'.
     """
     finalize_gmsh, view_tag = load_view(file_path)
 
@@ -583,9 +606,31 @@ def get_result_files(
     return dat_file_list, pos_file_list
 
 
+def freq_from_signal(signal: np.ndarray, fs: float) -> float:
+    """Calculate the frequency of a signal via FFT.
+
+    Args:
+        signal (np.ndarray): 1D array with signal values.
+        fs (float): Sampling frequency in Hz.
+
+    Returns:
+        float: Frequency of the signal in Hz.
+    """
+    # Number of samples in signal
+    N = len(signal)
+    # Perform FFT and get frequencies
+    freqs = np.fft.fftfreq(N, d=1 / fs)
+    fft_values = np.fft.fft(signal)
+    # Get index of peak in FFT
+    peak_index = np.argmax(np.abs(fft_values))
+    # Return corresponding frequency
+    return abs(freqs[peak_index])
+
+
 def load_param_file(setup_file: str | os.PathLike) -> dict:
     """load the parameter json file create in
-    ``pyemmo.functions.runOnelab.runCalcForCurrent`` function"""
+    :func:`pyemmo.functions.run_onelab.run_simulation` function.
+    """
     if not os.path.isfile(setup_file):
         raise FileNotFoundError(f"Could not find setup.json file: {setup_file}")
     with open(setup_file, encoding="utf-8") as file:
@@ -597,17 +642,17 @@ def main(
 ) -> dict[str, np.ndarray | dict[str, np.ndarray]]:
     """Import results for standard GetDP simulation of a model created with PyEMMO.
 
-    You can easily run simulations with the ``pyemmo.functions.runOnelab`` module!
+    You can easily run simulations with the :mod:`pyemmo.functions.run_onelab` module!
 
     Args:
-        sim_param (dict | str | os.PathLike): simulation parameter dict or path to saved
+        sim_param (dict | str | os.PathLike): Simulation parameter dict or path to saved
             parameter dict as json file.
 
     Raises:
         FileNotFoundError: If parameter file is path but given json file is not found.
 
     Returns:
-        dict[str, np.ndarray | dict[str, np.ndarray]]: results for given simulation
+        dict[str, np.ndarray | dict[str, np.ndarray]]: Results for given simulation
     """
     logger = logging.getLogger(__name__)
     if not isinstance(sim_param, dict):
@@ -708,10 +753,8 @@ def main(
             )
         else:
             logger.warning(
-                (
-                    "MST Torque for rotor and stator diviates more than 10%! "
-                    "Check results carefully!"
-                )
+                "MST Torque for rotor and stator diviates more than 10%! "
+                "Check results carefully!"
             )
 
     # 3. Flux results

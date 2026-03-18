@@ -1,7 +1,8 @@
 Welcome to the PyEMMO documentation!
 =====================================
+
 **PyEMMO is a Python based software for generating finite element models of
-electrical machines in** `ONELAB <https://www.onelab.info/>`_.
+electrical machines in** `ONELAB <onelab_link>`_.
 
 .. figure:: images/PyEMMO_Workflow.png
    :scale: 40 %
@@ -13,10 +14,11 @@ electrical machines in** `ONELAB <https://www.onelab.info/>`_.
 
 What is PyEMMO
 ==============
-**PyEMMO is a Python library for the automated modeling of electrical machines in the
-Open-Source finite element software** `ONELAB <https://onelab.info/>`_.
 
-The projects motivation is to **reduce license costs** and accelerate standard tasks 
+**PyEMMO is a Python library for the automated modeling of electrical machines in the
+Open-Source finite element software** `ONELAB <onelab_link>`_.
+
+The projects motivation is to **reduce license costs** and accelerate standard tasks
 through **parallelization of calculations**.
 
 Its goal is to create a **Open-Source alternative for the calculation of electrical
@@ -33,8 +35,8 @@ Current features are:
 
 * Fully coupled to ONELAB to perform **static, harmonic and transient electromagnetic simulations**. Model files (.geo for Gmsh and .pro for GetDP) can be created through
 
-   * **universal interface** either from user defined scripted geometry definition or based on json-formatted input files.
-   * coupling to `Pyleecan project <https://pyleecan.org/>`_.
+   * **Universal interface** either from user defined scripted geometry definition or based on json-formatted input files.
+   * Coupling to `Pyleecan project <https://pyleecan.org/>`_.
 
 * Built-in material database.
 * Various functions to:
@@ -52,9 +54,18 @@ Current features are:
    source/gen/pyemmo
    source/wiki
 
+Publications
+============
+
+- `PyEMMO - a Python based software for the finite element modelling of electrical machines in ONELAB <https://nbn-resolving.org/urn:nbn:de:bvb:863-opus-55489>`_
+
+
 Indices and tables
 ==================
 
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+.. _onelab_link: https://www.onelab.info/
+.. _Pyleecan: https://pyleecan.org/

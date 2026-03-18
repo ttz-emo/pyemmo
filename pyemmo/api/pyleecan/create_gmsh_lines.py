@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO, Technical University of Applied Sciences
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of Applied Sciences
 # Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -18,30 +18,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module: create_gmsh_lines
-
-This module provides functions to convert geometry elements from pyleecan to pyemmo format.
-
-Module dependencies:
-    - pyleecan.Classes.Segment.Segment
-    - pyleecan.Classes.Arc1.Arc1
-    - pyleecan.Classes.Arc2.Arc2
-    - pyleecan.Classes.Arc3.Arc3
-    - ...script.geometry.line.Line
-    - ...script.geometry.circleArc.CircleArc
-    - .build_pyemmo_point.build_pyemmo_point
-
-Functions:
-    -   ``create_gmsh_lines``: Translates a list of pyleecan curves into a
-        list of pyemmo curves.
+"""
+This module provides the function ``create_gmsh_lines`` which translates a list of
+PYLEECAN curves into a list of pyemmo :class:`~pyemmo.script.gmsh.gmsh_line.GmshLine`.
 
 Example:
     >>> pyleecan_line_list = [Segment(...), Arc1(...), ...]
     >>> pyemmo_line_list = create_gmsh_lines(pyleecan_line_list)
-
-Raises:
-    TypeError: If pyleecan_line_list is not of type 'list'.
-    IndexError: If pyleecan_line_list is empty.
 """
 
 from __future__ import annotations
@@ -59,9 +42,9 @@ from .create_gmsh_point import create_gmsh_point
 def create_gmsh_lines(
     pyleecan_lines: list[Segment | Arc1 | Arc2 | Arc3],
 ) -> list[GmshLine | GmshArc]:
-    """Translates a list of pyleecan curves into a list of pyemmo curves.
+    """Translates a list of PYLEECAN curves into a list of pyemmo curves.
 
-    This function translates a list of pyleecan curves (Segment, Arc1, Arc2, Arc3)
+    This function translates a list of PYLEECAN curves (Segment, Arc1, Arc2, Arc3)
     into a list of pyemmo curves (Line, CircleArc).
 
     Args:
@@ -72,20 +55,16 @@ def create_gmsh_lines(
         list[Union[Line, CircleArc]]: A list of curves for the pyemmo-surface.
 
     Raises:
-        TypeError: If pyleecan_lines is not of type 'list'.
-        IndexError: If pyleecan_lines is empty.
+        TypeError: If :attr:`pyleecan_lines` is not of type 'list'.
+        IndexError: If :attr:`pyleecan_lines` is empty.
     """
     pyemmo_line_list = []
 
     if not isinstance(pyleecan_lines, list):
-        raise TypeError(
-            "Type of pyleecan_line_list is not 'list'. No translation possible."
-        )
+        raise TypeError("Type of pyleecan_line_list is not 'list'.")
 
     if len(pyleecan_lines) == 0:
-        raise IndexError(
-            "The pyleecan_line_list provided is empty. No translation possible."
-        )
+        raise IndexError("The pyleecan_line_list provided is empty.")
 
     for line in pyleecan_lines:
         if isinstance(line, Segment):

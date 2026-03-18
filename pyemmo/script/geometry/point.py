@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of Applied
 # Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module for geometry element Point"""
+""""""
 from __future__ import annotations
 
 from math import atan2, cos, degrees, sin
@@ -40,15 +40,16 @@ if TYPE_CHECKING:
 
 class Point(Transformable):
     """
-    Eine Instanz der Klasse Point ist ein Punkt im dreidimensionalen Raum.
+    Simple point with cartesian coordinates.
 
-    Beispiel:
-        import pyemmo as pyd
-        P1 = pyd.Point(name = 'P1', x = 0.0, y = 1.0, z = 0.0)
+    Example:
+
+        >>> from pyemmo.script.geometry.point import Point
+        >>> P1 = Point(name = 'P1', x = 0.0, y = 1.0, z = 0.0)
     """
 
     def __init__(self, name: str, x: float, y: float, z: float):
-        """Konstruktor der Klasse Point.
+        """Init point with name and coordinates.
 
         Args:
             name (str): Name of Point
@@ -146,7 +147,7 @@ class Point(Transformable):
 
     @property
     def coordinate(self) -> tuple[float, float, float]:
-        """Die Methode getCoordinate() gibt die x- y- und z-Koordinaten eines Punktes zurück.
+        """Returns the coordinates of the point as tuple.
 
         Returns:
             Tuple[float, float, float]: x,y and z-coordinates
@@ -155,7 +156,7 @@ class Point(Transformable):
 
     @coordinate.setter
     def coordinate(self, coordinate: tuple[float, float, float]):
-        """Die Methode setCoordinate() setzt die x- y- und z-Koordinaten eines Punktes.
+        """Setter of coordinates by tuple.
 
         Args:
             coordinate (Tuple[float, float, float]): New point coordinates.
@@ -188,7 +189,7 @@ class Point(Transformable):
         self._z = self._z + dz
 
     def rotateZ(self, rotationPoint: Point, angle: float):
-        """rotate a point around a rotation point and the Z-axis with a defined angle.
+        """rotate a point around a rotation point and the Z-axis by angle.
 
         Args:
             rotationPoint (Point): Centerpoint of rotation.
@@ -204,8 +205,7 @@ class Point(Transformable):
         self.translate(x, y, 0)
 
     def rotateX(self, rotationPoint: Point, angle: float):
-        """Mit rotateX() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die
-        X-Achse mit einem definierten Winkel rotiert.
+        """Rotation around x-axis by angle in radians.
 
         Args:
             rotationPoint (Point): Centerpoint of rotation.
@@ -221,8 +221,7 @@ class Point(Transformable):
         self.translate(rotPointCoords[0], rotPointCoords[1], rotPointCoords[2])
 
     def rotateY(self, rotationPoint: Point, angle: float):
-        """Mit rotateY() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die
-        Y-Achse mit einem definierten Winkel rotiert.
+        """Rotation around y-axis by angle in radians
 
         Args:
             rotationPoint (Point): Centerpoint of rotation.
@@ -239,7 +238,7 @@ class Point(Transformable):
         self.translate(rotPointCoords[0], rotPointCoords[1], rotPointCoords[2])
 
     def duplicate(self, name="") -> Point:
-        """Mit duplicate() wird ein neuer Punkt mit gleichen Koordinaten erzeugt.
+        """Create a copy of the point.
 
         Args:
             name (str, optional): Name of new Point. Defaults to original point name +
@@ -267,28 +266,27 @@ class Point(Transformable):
         planeVector2: Line,
         name: str = None,
     ) -> Point:
-        """Mit mirror() kann ein Punkt an einer definierten Ebene gespiegelt werden.
-        Ein Bildpunkt wird hierbei erzeugt. Die Spiegelebene wird durch einen Aufpunkt
-        (planePoint) und 2 Vektoren (planeVector1 und planeVector2) beschrieben.
+        """Mirror a circle arc by a plane.
 
         Args:
-            planePoint (Point)
-            planeVector1 (Line)
-            planeVector2 (Line)
-            name (str, optional): Name of new mirrored point. Defaults to None.
+            planePoint (Point): Start point of the plane
+            planeVector1 (Line): First plane vector.
+            planeVector2 (Line): Second plane vector.
+            name (str, optional): New name of the arc. Defaults to "".
 
         Returns:
             Point or None: Mirrored point or None if no mirror plane could be created
             (plane vetors parallel)
 
-        Beispiel:
-            P0 = Point('P0', 0, 0, 0) \n
-            Py = Point('Py', 0, 1, 0) \n
-            Pz = Point('Pz', 0, 0, 1) \n
-            yAxis = Line(P0, Py) \n
-            zAxis = Line(P0, Pz) \n
-            P1 = Point('P1', 1, 0, 0) \n
-            P2 = P1.mirror(P0, yAxis, zAxis) \n
+        Example:
+
+            >>> P0 = Point('P0', 0, 0, 0)
+            >>> Py = Point('Py', 0, 1, 0)
+            >>> Pz = Point('Pz', 0, 0, 1)
+            >>> yAxis = Line(P0, Py)
+            >>> zAxis = Line(P0, Pz)
+            >>> P1 = Point('P1', 1, 0, 0)
+            >>> P2 = P1.mirror(P0, yAxis, zAxis)
         """
         # 1. Normalenvektor der Ebene E bestimmen (Ebene aus den beiden Inputvektoren und Aufpunkt)
         # 2. Ebenengleichung in Koordinatenform aufstellen: ax1 + bx2 = c

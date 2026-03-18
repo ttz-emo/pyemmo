@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO, Technical University of Applied Sciences
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of Applied Sciences
 # Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module for GmshSegmentSurface class"""
+""""""
 from __future__ import annotations
 
 import logging
@@ -73,8 +73,9 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
 
         ``tools`` has NO SETTER, because is only accessed by method ``cutOut()``
 
-        NOTE: Needed to reimplement property in GmshSegmentSurface class, because
-        otherwise type hint for properties of tools are missing.
+        :note:
+            Needed to reimplement property in GmshSegmentSurface class, because
+            otherwise type hint for properties of tools are missing.
 
         Returns:
             list: List of tool surfaces
@@ -130,8 +131,8 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
     def rotate_duplicate(self, segment: int) -> GmshSegmentSurface:
         """
         Create a copy of the give surface and its tools surfaces + rotate it by
-        :attr:`angle`.
-        This also sets the property :attr:`segment_nbr` to the given segment value.
+        :math:`\\frac{2 \\pi}{\\mathrm{self.nbr\\_segments}}\\cdot\\mathrm{segment}`.
+        This also sets the property :attr:`segment_nbr` to the given ``segment`` value.
 
         Args:
             segment (float): Segment number.
@@ -246,6 +247,7 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
         additionally handles the case where the tool intersects the parent surface
         partly. In this case the remaining tool part will be rotated by the parent
         segment angle and subtracted again.
+
         Args:
             tool (GmshSegmentSurface): Tool surface to cut out.
             keep_tool (bool, optional): If True, the tool surface will not be removed
@@ -372,6 +374,7 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
         self, outer_tool: GmshSegmentSurface, tool: GmshSegmentSurface
     ) -> None:
         """Handle outer tool surface after subtraction:
+
         - If the tool intersects in **negative** circumferential direction,
           rotate and subtract the original tool and subtract from the parent
           surface again.
