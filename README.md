@@ -35,7 +35,7 @@ The goal of the project is to automate model creation and the simulation workflo
 
 
 ## Installation
-
+Currently you will need to install PyEMMO from this Github repository.
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install PyEMMO.
 
 ```bash
@@ -45,7 +45,7 @@ pip install https://github.com/ttz-emo/pyemmo.git
 You will need versions of [Gmsh](https://gmsh.info/) and [GetDP](https://getdp.info/) executables. While Gmsh can be directly installed from pip with the Gmsh Python-API, you will need to download GetDP individually.
 > [!WARNING]
 > Models created with PyEMMO fail with current GetDP version 3.6.0 due to mesh import error!
-> You can check your GetDP version wirh  ``getdp --version``
+> You can check your GetDP version with  ``getdp --version``
 
 ## Usage
 
@@ -63,7 +63,7 @@ Please make sure to update tests as appropriate.
 
 ### Setup
 
-After cloning the repository, run the following command to install Git hooks:
+After cloning the repository, you can run the following command to install the project Git hooks:
 
 ```sh
 ./workingDirectory/install-hooks.sh
