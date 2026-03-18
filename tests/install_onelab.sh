@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Hochschule für angewandte Wissenschaften Würzburg-Schweinfurt.
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Hochschule für angewandte Wissenschaften Würzburg-Schweinfurt.
 #
 # Dieses Skript ist Teil von PyEMMO
 # (siehe https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
 #
 # Dieses Programm ist freie Software: Sie können es weiterverbreiten und/oder ändern
-# unter den Bedingungen der GNU General Public License, wie sie von der Free Software Foundation veröffentlicht wurde, 
+# unter den Bedingungen der GNU General Public License, wie sie von der Free Software Foundation veröffentlicht wurde,
 # entweder in der Version 3 der Lizenz oder (nach Ihrer Wahl) jeder späteren Version.
 #
 # Dieses Programm wird in der Hoffnung verteilt, dass es nützlich ist,
@@ -56,7 +56,7 @@ else
 
     zip_filepath="$store_path/onelab.zip"
     echo "Zip-Dateipfad ist: $zip_filepath"
-    
+
     if [ -f "$zip_filepath" ]; then
         echo "onelab.zip wurde bereits heruntergeladen."
     else

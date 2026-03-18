@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO,
 # Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -26,6 +26,8 @@ Most of the metadata is defined by the pyproject.toml file.
 Still using setup.py file for depenencies and version instead of pyproject.toml
 because we want to access the version number in the script generation process
 """
+
+from __future__ import annotations
 
 import setuptools
 

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO,
 # Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -22,6 +22,8 @@
 This module tests the create_gmsh_point function from the create_gmsh_point.py module.
 It verifies the conversion of pyleecan points to pyemmo points using the GmshPoint class.
 """
+
+from __future__ import annotations
 
 import gmsh
 import numpy

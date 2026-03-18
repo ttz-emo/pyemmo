@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO,
 # Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -22,6 +22,7 @@
 from __future__ import annotations
 
 import logging
+
 import numpy as np
 import pytest
 

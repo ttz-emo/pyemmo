@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO,
 # Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -38,7 +38,6 @@ from pyemmo.api.pyleecan.main import main
 from ... import TEST_TEMP_DIR
 
 # from pyleecan.Classes.MachineLSPM
-
 
 
 MODEL_RES_DIR = join(TEST_TEMP_DIR, "pyleecanAPI")

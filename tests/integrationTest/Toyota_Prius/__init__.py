@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO,
 # Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -20,7 +20,7 @@
 #
 """Package for running an integration test using the Toyota Prius electrical machine
 as an example.
-Machine and result data can be found e.g. from  
+Machine and result data can be found e.g. from
 "Burress, T A, C L Coomer, S L Campbell, et.al. "Evaluation of the 2007 Toyota Camry
 Hybrid Synergy Drive System". ORNL/TM-2007/190, Revised, 928684. 2008.
 https://doi.org/10.2172/928684.
