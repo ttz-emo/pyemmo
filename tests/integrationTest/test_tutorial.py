@@ -24,8 +24,10 @@ import logging
 import os
 import subprocess
 import sys
-from os import environ
+from os import environ, mkdir
 from os.path import abspath, dirname, join, normpath
+from shutil import rmtree
+from uuid import uuid4
 
 import pytest
 
@@ -58,14 +60,26 @@ def test_run_tutorial_script(tutorial_file):
     logger.debug("copy and modify tutorial script %s to not open GUI.", tuto_path)
     with open(tuto_path, encoding="utf-8") as tuto_file:
         code = tuto_file.readlines()
-        # remove lines with GUI call to run tutorial without UI
-        logger.debug("Removing 'gmsh.fltk.run' lines.")
-        _ = [code.remove(line) for line in code if "gmsh.fltk.run" in line]
-        # remove get_ipython
-        logger.debug("Removing 'get_ipython' lines.")
-        _ = [code.remove(line) for line in code if "get_ipython" in line]
+    # create separate test folder with unique id
+    uuid = str(uuid4())  # create unique id
+    tutorial_test_dir = join(TEST_TEMP_DIR, uuid)
+    mkdir(tutorial_test_dir)
+    # remove lines with GUI call to run tutorial without UI
+    for line in code:
+        if "gmsh.fltk.run" in line:
+            logger.debug("Removing 'gmsh.fltk.run' lines.")
+            code.remove(line)
+        if "get_ipython" in line:
+            # remove get_ipython
+            logger.debug("Removing 'get_ipython' lines.")
+            code.remove(line)
+        if "from pyemmo.definitions import RESULT_DIR" in line:
+            logger.debug("Replacing 'RESULT_DIR'.")
+            i = code.index(line)
+            code[i] = f"""RESULT_DIR = r"{tutorial_test_dir}" """
 
-    tuto_path = join(TEST_TEMP_DIR, tutorial_file)
+    # create copy of modified tutorial file in test folder:
+    tuto_path = normpath(join(tutorial_test_dir, tutorial_file))
     logger.debug("Copy remaining code to file %s", tuto_path)
     with open(tuto_path, "w", encoding="utf-8") as tuto_file:
         tuto_file.writelines(code)
@@ -74,4 +88,7 @@ def test_run_tutorial_script(tutorial_file):
     retcode = subprocess.call(
         [sys.executable, tuto_path], shell=False, env=modified_env
     )
+    # remove copied file
+    logger.warning("Removing tutorial test folder %s", tutorial_test_dir)
+    rmtree(tutorial_test_dir)
     assert retcode == 0, "Tutorial failed..."

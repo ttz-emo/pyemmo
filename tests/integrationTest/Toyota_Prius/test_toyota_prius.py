@@ -23,10 +23,10 @@ from __future__ import annotations
 import fnmatch
 import logging
 import unittest
-from datetime import datetime
-from os import listdir, makedirs
+from os import listdir, makedirs, rmdir
 from os.path import isdir, join
 from shutil import rmtree
+from uuid import uuid4
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -55,13 +55,16 @@ class TestRunOnelab(unittest.TestCase):
         Specifically, for example, loading predefined, verified test geometry.
         """
         logger = logging.getLogger(__name__)
+        # set global and pyemmo log level
         logger.setLevel(logging.INFO)
         logging.getLogger("pyemmo").setLevel(logging.INFO)
+
         cls.pyleecan_model_file = join(
             TEST_DATA_DIR, "api", "pyleecan", "Toyota_Prius.json"
         )
         # folder to store temporary model data and simulation results
-        cls.timestamp = datetime.now().strftime(r"%Y%m%d_%H%M%S")
+        # cls.timestamp = datetime.now().strftime(r"%Y%m%d_%H%M%S")
+        cls.timestamp = str(uuid4())
         cls.main_test_dir = join(TESTS_RESULTS_DIR, "TestToyotaPrius")
         if not isdir(cls.main_test_dir):
             makedirs(cls.main_test_dir)
@@ -90,6 +93,9 @@ class TestRunOnelab(unittest.TestCase):
         for folder in listdir(cls.main_test_dir):
             if fnmatch.fnmatch(folder, "*_test_*"):
                 rmtree(join(cls.main_test_dir, folder))
+        # remove temporary test folder if empty
+        if len(listdir(cls.main_test_dir)) == 0:
+            rmdir(cls.main_test_dir)
 
     def setUp(self):
         """
