@@ -25,6 +25,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import warnings
 from cmath import isclose
 from os import path
 
@@ -39,7 +40,7 @@ logger = logging.getLogger(__name__)
 
 def read_timetable_dat(file_path: str | os.PathLike) -> tuple[np.ndarray, np.ndarray]:
     """
-    Import the data from a .dat file witten in the GetDP
+    Import the data from a .dat file written in the GetDP
     `TimeTable format <https://getdp.info/doc/texinfo/getdp.html#PostOperation:~:text=and%20values%20columns.-,TimeTable,-Time%20oriented%20column>`_
     and return the time and the corresponding data.
 
@@ -335,6 +336,19 @@ def import_sp(
     return parsedName[0], time, pos, values
 
 
+def importSP(
+    pos_file_path: str,
+) -> tuple[str, list[float], list[tuple[float, float, float]], list[list[float]]]:
+    """Use function ``import_sp()`` now!
+
+    :meta private:
+    """
+    warnings.warn(
+        "Function importSP() has been renamed import_sp()!", DeprecationWarning
+    )
+    return import_sp(pos_file_path)
+
+
 def load_view(pos_file: str) -> tuple[bool, int]:
     """Load view from post processing file (ending .pos)
 
@@ -479,6 +493,17 @@ def import_pos(
         # if gmsh wasn't init before:
         gmsh.finalize()
     return element_tags, np.array(time), data
+
+
+def importPos(pos_file: str | os.PathLike) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Use ``import_pos()`` instead!
+
+    :meta private:
+    """
+    warnings.warn(
+        "Function importPos() has been renamed import_pos()!", DeprecationWarning
+    )
+    return import_pos(pos_file)
 
 
 # TODO: move implementation of importPos to this function:
