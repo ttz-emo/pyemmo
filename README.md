@@ -55,7 +55,9 @@ You will need versions of [Gmsh](https://gmsh.info/) and [GetDP](https://getdp.i
 The easiest way to start is by using the [PYLEECAN](https://github.com/Eomys/pyleecan) project to create a electrical machine instance and feeding it into the PyEMMO-PYLEECAN interface.
 - Have a look at the [PYLEECAN tutorials](https://pyleecan.org/tutorials.html) on how to use PYLEECAN. Especially the tutorial on ["How to define a machine"](https://pyleecan.org/01_tuto_Machine.html).
 - See the [PYLEECAN API tutorial](tutorials/pyleecan_api.py) for detailed instructions on how to create a ONELAB model from a PYLEECAN machine object.
+- See the [PyEMMO documentation](https://ttz-emo.thws.de/arbeitsgruppen/elektrische-maschinen/pyemmo/) for details.
 
+<!-- TODO: Link to our tutorials folder / doc -->
 Here is a small example of the PYLEECAN API:
 
 ```python
@@ -105,8 +107,7 @@ These hooks make sure you have formatted your files correctly.
 ## 🙏 Acknowledgements
 
 - Thanks to all contributors who helped improve this project.
-- Special thanks to *Siemens Electric Motor Plant Bad Neustadt a. d. Saale* for supporting the development.
-- This project has received funding from the *[Bavarian Ministry of Economic Affairs, Regional Development and Energy](https://www.stmwi.bayern.de/)* through the *TherCom* research project.
+- This project has received funding from the *[Bavarian Ministry of Economic Affairs, Regional Development and Energy](https://www.stmwi.bayern.de/)* through the *TherCom* research project. Special thanks to *Siemens Electric Motor Plant Bad Neustadt a. d. Saale* for supporting it.
 
 ## License
 
