@@ -4,18 +4,104 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [unreleased] - 2023-xx-xx
+
+## [unreleased] - 2026-xx-xx
 ### Added
-- 
+-
 
 ### Changed
-- Moved methods `get_radial_position` and `get_circumferential_position` from `Slot` to `PhysicalElement`.
+-
 
 ### Fixed
-- 
+-
 
 ### Removed
-- 
+-
+
+## [1.6.0] - 2026-03-19
+### Added
+- New option to supply user defined symmetry to PYLEECAN api `api.pyleecan.main()` via new attribute `symmetry`. Otherwise symmetry will be calculated from geometry and winding in `api.pyleecan.create_param_dict()`.
+- New function `functions.import_results.freq_from_signal` to extract fundamental frequency from signal.
+- Added GetDP parameter `GlobalMeshsizeFactor = GetNumber[StrCat[INPUT_MESH, "00Mesh size factor"], 1.0]` to adjust evaluation of airgap field (OnGrid).
+- Script `convert_ipynb_tutorials.sh` to convert tutorials to .py files using `nbconvert` package.
+- Updated and release current version of the documentation. See *README.md* for details.
+
+### Changed
+- Min. Python version is 3.9 now.
+- Updated requirement files.
+- Moved methods `get_radial_position` and `get_circumferential_position` from `Slot` to `PhysicalElement`.
+- Renamed/moved modules (python files):
+  - `functions.calcIronLoss` -> `functions.core_loss`.
+  - `functions.runOnelab` -> `functions.run_onelab`.
+  - `geometry.slaveLine` -> `physicals.secondary_line`.
+  - `geometry.airGap` -> `physicals.airgap`.
+  - `geometry.physicalElement` -> `physicals.physical_element`.
+  - `script.geometry.domain` -> `script.domain`.
+  - `script.geometry.machineAllType` -> `script.machine`.
+  - `script.geometry.rotor` -> `script.rotor`.
+  - `script.geometry.stator` -> `script.stator`.
+- United modules `functions.exportMaxwell` and `functions.import_maxwell` -> `functions.maxwell` for ANSYS Maxwell IO.
+- Renamed functions:
+  - In `pyemmo.api.json.boundaryJSON`:
+    - `createMB` -> `create_MB`.
+    - `getRotFreq` -> `get_mech_speed`.
+    - `getMagTemperature` -> `get_magnet_temperature`.
+  - In `functions.core_loss`: `calcTimeDerivative` -> `calc_time_derivative`.
+  - In `functions.import_results`:
+    - `importSP` -> `import_sp`.
+    - `importPos` -> `import_pos`.
+    - `import_pos_parsedFormat` -> `import_pos_legacy`.
+  - In `functions.run_onelab` (previous `runOnelab`):
+    - `findGmsh` -> `find_gmsh`.
+    - `findGetDP` -> `find_getdp`.
+    - `findExe` -> `find_exe`.
+    - `createCmdCommand` -> `create_command`.
+    - `createGMSHCommand` -> `create_gmsh_command`.
+    - `runCalcforCurrent` -> `run_simulation`.
+- Moved `PhysicalElement` class implementations from `pyemmo.script.geometry` to separate subpackage `pyemmo.script.physicals`. This includes class modules: `airArea`,`airgap`,`bar`,`limitLine`,`magnet`,`movingband`,`physical_element`,`primaryLine`,`rotorLamination`,`secondary_line`,`slaveLine`,`slot`,`statorLamination`.
+- Renamed `PhysicalElement` boundary line class `Slaveline` to `SecondaryLine` in module `pyemmo.script.physicals.secondary_line`.
+- Renamed `PhysicalElement` attribute `PhysicalElement.geoElementType` to `PhysicalElement.geo_type`.
+- Renamed machine container class `MachineAllType` to `Machine`.
+  - Renamed machine methods:
+    - `createMachineDomains` -> `create_domains`.
+    - `domainsCreated` -> `domains_created`.
+    - `symmetryFactor` -> `symmetry_factor`.
+    - `primaryLines` -> `primary_lines`.
+    - `getSecondaryLines` -> `get_secondary_lines`.
+    - `physicalElements` -> `physicals`.
+    - `setFunctionMesh` -> `set_function_mesh`.
+- Moved GetDP Parameter *NbrMbSegments* from *machine_magstadyn_a.pro* to *machine_template.pro*.
+- Renamed properties/methods in `Script` class:
+  - `scriptPath` -> `script_path`.
+  - `resultsPath` -> `results_path`.
+  - `colorCode` -> `color_code`.
+  - `functionMaterial` -> `function_material`.
+  - `functionMagnetisation` -> `function_magnetization`.
+  - `proFilePath` -> `pro_file_path`.
+  - `geoFilePath` -> `geo_file_path`.
+  - `simParams` -> `sim_params`.
+  - `materialDict` -> `material_dict`.
+  - `postOperation` -> `post_operation`.
+  - `postOperationNames` -> `get_post_operation_names()` (function now).
+  - `addPostOperation()` -> `add_post_operation()`.
+  - `writeGeo()` -> `write_geo()`.
+  - `writePro()` -> `write_pro()`.
+  - `generateScript()` -> `generate()`.
+
+### Fixed
+
+- Sort induction machine rotor bar physicals in json api ``modelJSON.createSlot()`` in circumferential direction to make sure they are connected correctly in the rotor squirrel cage circuit.
+- `api.pyleecan.build_pyemmo_material()` sets default values for Material properties instead of None.
+- Extraction of winding direction in `pyemmo.api.json.modelJSON.getSlotPhase()` dependent on single or double layer.
+- Fix bug in Git hash extraction if GitPython installed, but repository not found.
+
+### Removed
+- Removed unused functions:
+  - In `pyemmo.api.json.boundaryJSON`: `findLine`, `findLines`, `getBoundaryLines`, `createMBLines`, `getLimitLines`, `geoElemList`
+  - In `pyemmo.api.json.importJSON`: `InvalidSheetThicknessError`, `getCurrentAmpl`, `getElecFreq`, `isAir`
+- Removed unused toolkit `PhysicalElement` subclasses: `MachineASM`, `MachineIPMSM`, `MachineSPMSM`, `MagnetSlot01`, `MagnetSurface01`, `MagnetSurface02`, `MagnetSurface03`, ...
+- Unused properties in `Script` class: `pointCode`, `pointArray`, `curveCode`, `curveList`, `areaCode`, `areaArray`, `physicalElementCode`, `physicalElementArray`, `factory`.
+-
 
 ## [1.5.0dev2] - 2026-02-03
 ### Added
@@ -25,8 +111,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Reworked Pyleecan API to run for new Gmsh api workflow in PyEMMO**
 ### Added
 - Raise error in api if number of stator winding phases != 3, because GetDP template assumes 3 phases for now.
-- Completly reworked pyleecan api with new general workflow:
-  - Core is the `create_geo_dict` function that created minimal segments of the pyleecan model surfaces from the geometry symmetry and handles all surfaces depended on type and pyleecan surface labels. Rotor and stator holes (vents) are handles separatly after the other surfaces, aswell as shaft and frame.
+- Completely reworked pyleecan api with new general workflow:
+  - Core is the `create_geo_dict` function that created minimal segments of the pyleecan model surfaces from the geometry symmetry and handles all surfaces depended on type and pyleecan surface labels. Rotor and stator holes (vents) are handles separately after the other surfaces, as well as shaft and frame.
   - New function `create_gmsh_surface` to translate pyleecan surfaces to `MachineSegmentSurface` via `create_gmsh_lines` for curve loop.
   - New function `label2part_id` handles relevant `part_id`s for json api.
   - Added tutorial script for pyleecan api usage.
@@ -47,12 +133,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Extended logging. Log messages are more verbose now and contain module and function information.
-- Setting default airgap mesh size to bandheigt in `create_airgaps`.
+- Setting default airgap mesh size to band height in `create_airgaps`.
 - Material creation in json api with `create_material` is now based on `Material.from_dict`.
-- Suppress gmsh terminal output by setting `General.Terminal = 0` in gmsh options, because gmsh allways raises an error if the model of occ and internal is not synchronized.
+- Suppress gmsh terminal output by setting `General.Terminal = 0` in gmsh options, because gmsh always raises an error if the model of occ and internal is not synchronized.
 
 ### Fixed
-- Check start and enpoints of airgap interface curve for homogentity in `create_airgaps` to also account for bore shape.
+- Check start and endpoints of airgap interface curve for homogeneity in `create_airgaps` to also account for bore shape.
 
 ### Removed
 - Removed some now unused pyleecan api modules.
@@ -60,7 +146,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.4.1a2] - 2026-11-24
 ### Added
-- Static and dynamic exccentricities in GetDP model template using inital `ChangeOfCoordinates` to change initial mesh coordinates of stator/rotor. The eccentricity is controlled by new parameters `eccentricity_static` and `eccentricity_dynamic` in mm.
+- Static and dynamic eccentricities in GetDP model template using initial `ChangeOfCoordinates` to change initial mesh coordinates of stator/rotor. The eccentricity is controlled by new parameters `eccentricity_static` and `eccentricity_dynamic` in mm.
 - Added rotor bar flux linkage PostOperation in GetDP template.
 
 ### Fixed
@@ -122,7 +208,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Python minimal version increased to 3.8 due to issues with setuptools package.
 
 ### Fixed
-- Gmsh points potentionally loosing their mesh sizes due to boolean options in json api. Fixed that by `gmsh.utils.fix_missing_mesh_sizes()` function. It loops through all points and tries to find the next closest points mesh size if one is missing.
+- Gmsh points potentially loosing their mesh sizes due to boolean options in json api. Fixed that by `gmsh.utils.fix_missing_mesh_sizes()` function. It loops through all points and tries to find the next closest points mesh size if one is missing.
 - Adapted `filter_lines_at_angle` function to also account for center point, because angle to x-axis is allways 0 for center point.
 
 ### Removed
@@ -130,9 +216,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.4.0rc1] - 2025-07-08
 Integration of new API workflow using gmsh Python package.
-The new subpackage `pyemmo.script.gmsh` implements the utility to create PyEMMO machine models live throught the [Gmsh Python api](https://gmsh.info/doc/texinfo/gmsh.html#Gmsh-application-programming-interface).
+The new subpackage `pyemmo.script.gmsh` implements the utility to create PyEMMO machine models live through the [Gmsh Python api](https://gmsh.info/doc/texinfo/gmsh.html#Gmsh-application-programming-interface).
 This enables faster model creation, because the very time consuming filter process in the `Script` class for duplicated Points and Lines can be replace by the `gmsh.model.remove_duplicates()` algorithm.
-But this change involves massive changes in the overall modell creation workflow, especially for the JSON and Pyleecan APIs, since the geometries are now created at runtime.
+But this change involves massive changes in the overall model creation workflow, especially for the JSON and Pyleecan APIs, since the geometries are now created at runtime.
 Before they were only created when `Script.generate()` was invoked.
 Additionally this extends modelling capabilities by using the boolean operations available in the [OpenCASCADE](https://dev.opencascade.org/project/gmsh) kernel of Gmsh.
 **Pyleecan api was not reworked yet and doesn't work in the current version.**
@@ -195,7 +281,7 @@ Additionally this extends modelling capabilities by using the boolean operations
 This version was not really a release but was added for better organization of changes.
 ### Added
 - Export of simulation parameter setup as json file in `runOnelab.runCalcForCurrent()` and new function `import_results.load_param_file()` to load it.
-- Separate function `import_results.main()` to correctly import default results as dict according to `runOnelab` parameters.  
+- Separate function `import_results.main()` to correctly import default results as dict according to `runOnelab` parameters.
 - Added module `functions.import_maxwell` to import ANSYS Maxwell result files.
 - New function `phase.angle2phase()`.
 - `plot` method for `PhysicalElement`s.
@@ -209,13 +295,13 @@ This version was not really a release but was added for better organization of c
 ### Fixed
 - Induction machine circuit by scaling equivalent circuit components of squirrel cage circuit by axial length, because internal voltage quantity is in V/m.
 - Reset axes limits in `MachineAllType.plot()` for symmetry > 1 and no Movingband
-- Induction machine circuit for uneven number of poles greater than 1. 
+- Induction machine circuit for uneven number of poles greater than 1.
 
 ### Removed
 - Additional wrong DC bar resistance from induction machine circuit.
 - Dynamic bar resistance evaluation in GetDP template Resolution.
 - Bar resistance PostProcessing and PostOperation definition.
-- Removed pyleecan package from requirements due to issue with Python compability (only \<3.10 possible)
+- Removed pyleecan package from requirements due to issue with Python compatibility (only \<3.10 possible)
 
 ## [1.3.2] - 2024-10-15
 ### Added
@@ -238,13 +324,13 @@ This version was not really a release but was added for better organization of c
   - **n_sync** for ASM simulation.
   - **slip** for ASM simulation.
 - Added GetDP PostOperation `Get_I_Bar` for rotor bar currents.
-- Added mag. `Flux` and `InducedVoltage` PostProcessing for *DomainC* (induced currents). 
+- Added mag. `Flux` and `InducedVoltage` PostProcessing for *DomainC* (induced currents).
 - Added bar resistance PostProcessing `Resistance` for DC resistance and `R_Bar_{index}` for time depended AC resistance.
 - Added function `json.get_min_coilspan.get_min_coilspan()`to calculate the minimal coil span from a SWAT-EM winding layout and the total number of slots. Used in `modelJSON.create_winding()`
 - Several changes to `runOnelab` module:
   - Added function `log_subprocess_output()` to log the Gmsh/GetDP command-line outputs.
   - Added option to use existing .msh mesh file for calculations with `"msh"` parameter keyword. Otherwise trigger mesh creation.
-  - Added option to controll subprocess output verbosity by parameter keyword `"verbosity level"`.
+  - Added option to control subprocess output verbosity by parameter keyword `"verbosity level"`.
   - Added option to delete previous result files by parameter keyword `"Flag_ClearResults"`.
   - Added option to execute additional post operations by parameter keyword `"PostOp"` with list of GetDP  PostOperation names.
   - Split gmsh and getdp commands in `createCmdCommand()`.
@@ -259,12 +345,12 @@ This version was not really a release but was added for better organization of c
 ### Changed
 - Calculate property `symmetryFactor` of Machine classes by geometry and winding symmetries. Option in `MachineAllType` to force set `symmetryFactor` stays.
 - Type annotations of standard containers (Dict, List, Tuple, Union) changes from `typing.Dict` to `dict`. Added `from __future__ import annotations` to all files to allow for compability with Python 3.7+ versions.
-- JSON api creates standard `Material` for ElectricalSteel material `sheetThickness` value greater 5 mm. 
+- JSON api creates standard `Material` for ElectricalSteel material `sheetThickness` value greater 5 mm.
 - Refactored function `json._open_onelab()` and `json._run_core_loss_calculation()` from `json.main()`.
 - Moved adaption of core loss parameters from `json` package to `ElectricalSteel` class `lossParams` getter.
 - Remove ArgumentParser from `runOnelab.main()` and moved it to `if __name__ == "__main__"` section
 - Automatic mesh size algorithm:
-  - Implementation moved from `MachineAllType` to `Rotor` and `Stator` to set mesh size individually. 
+  - Implementation moved from `MachineAllType` to `Rotor` and `Stator` to set mesh size individually.
   - Parameters `functionType` and `meshGainFactor` of `MachineAllType.setFunctionMesh()` are optional now.
 - Renamed `Slot.getRadialPosition()` -> `Slot.get_radial_position()`.
 - Automatically sort slots in circumferential and radial position in getter `Stator.slots`.
@@ -273,21 +359,21 @@ This version was not really a release but was added for better organization of c
 - No need to provide of have Gmsh instance installed to use JSON api, since gmsh Python package comes with a small version of the executable.
 - Some bug fixed and optimizations in PyleecanAPI, but still limited interface capabilities.
 - Bug fix when adding materials with equal name but different properties in `Script`
-- Bug in pro file by adding newlines in BH curve data export, because for highly resolved BH curves getdp fails to read all data from a single line. 
+- Bug in pro file by adding newlines in BH curve data export, because for highly resolved BH curves getdp fails to read all data from a single line.
 
 ## [1.3.1.b1] - 2024-03-05
 ### Added
 - First version of API to [Pyleecan project](https://pyleecan.org/)
-- New hysteresis loss calulation algorithm. 3 options for hysteresis loss calculation:
+- New hysteresis loss calculation algorithm. 3 options for hysteresis loss calculation:
   - sin-wave H field
   - H field trace as scales differentiation of B field
   - UCP method (default)
 - `runOnelab.runCalcForCurrent` function to start subprocess calculation of ONELAB model based on input parameter dict and import default results.
 - New option *useFunctionMesh* in json api parameter dict to trigger usage of `MachineAllType.setFunctionMesh()` method.
-- Property `Line.middelPoint`
+- Property `Line.middlePoint`
 
 ### Changed
-- `Material.isLinear()` method to property `Material.linear`  
+- `Material.isLinear()` method to property `Material.linear`
 - Renamed modules, functions and methods from CamelCase to snake_case
   - `functions.importResults` -> `functions.import_results`
   - `import_results.getResFileList()` -> `import_results.get_result_files()`
@@ -361,7 +447,7 @@ This version was not really a release but was added for better organization of c
 
 ## [1.3.0.post1] - 2023-06-12
 ### Changed
-- Check if Script-obj. name is valid file name at init time. 
+- Check if Script-obj. name is valid file name at init time.
 
 ### Fixed
 - Bug in global center point generation (using float instead of int!).
@@ -423,7 +509,7 @@ This version was not really a release but was added for better organization of c
 ### Changed
 - Workaround for including of Onelab parameter ResDir in user defined post operation for B field on line export.
 - Sign of rotor virtual work post processing. Post operation returned oposite torque result compared to the other 3 calculation methods.
-- Setting of center point to single, global center point defined before geometry import. 
+- Setting of center point to single, global center point defined before geometry import.
 
 ### Fixed
 - Bug in center point mesh due to global center point.
@@ -441,7 +527,7 @@ This version was not really a release but was added for better organization of c
 
 ### Fixed
 - Inner limit line setting in case of shaft without inner radius in json api.
- 
+
 
 ## [1.2.8.post2]  - 2022-10-28
 ### Added
@@ -453,7 +539,7 @@ This version was not really a release but was added for better organization of c
 - Function to automatically generate a uml diagram.
 
 ### Changed
-- Project structure to meet recomendation from https://stackoverflow.com/questions/193161/what-is-the-best-project-structure-for-a-python-application. 
+- Project structure to meet recomendation from https://stackoverflow.com/questions/193161/what-is-the-best-project-structure-for-a-python-application.
 - Split up code of json api into several files.
 
 ### Fixed
@@ -487,7 +573,7 @@ This version was not really a release but was added for better organization of c
 - copying of mesh from primary to secondary boundary line in case of symmetry.
 - parametric mesh size setting of movingband lines by 'number of mesh segments in movingband'.
 - PhysicalElement parent class init in child classes.
-- Change of stator field rotation direction to allways rotate CCW. 
+- Change of stator field rotation direction to allways rotate CCW.
 - Periodic mesh constraint for boundary lines (Primeary, Secondary and Movingband lines).
 - Radius attribute to Movingband class.
 - Functions to combine lines and surfaces.
@@ -509,7 +595,7 @@ This version was not really a release but was added for better organization of c
 - import of POS files in SP (scalar point) format.
 - Script function to return pro file path.
 - Plot for Machine class.
-- Spline curves. 
+- Spline curves.
 
 ### Changed
 - Key name for surface mesh size setting in api from "MeshSize" to "Meshsize"
@@ -554,7 +640,7 @@ This version was not really a release but was added for better organization of c
 - overloaded isequal operation in Material.
 
 ### Changed
-- API data exchange via JSON file instead of csv files. Geometry and simulation parameters are exchanged via two separate JSON files now. 
+- API data exchange via JSON file instead of csv files. Geometry and simulation parameters are exchanged via two separate JSON files now.
 - Simulation information by dict for easier parameter handling.
 - function plotAllTimeTableDat to opionally not show the generated figures (just saving).
 - defintion of BH-curve via ndarray in Material.
@@ -585,7 +671,7 @@ This version was not really a release but was added for better organization of c
 - bug when generating circle arc with points of different radius (start and endpoint dont have the same distance to the given center point)
 
 ### Removed
-- unused variables and attributes in Script class. 
+- unused variables and attributes in Script class.
 
 ## [1.2.4.post2] - 2022-02-01
 ### Added
@@ -643,7 +729,7 @@ This version was not really a release but was added for better organization of c
 - Moved some slot parameters to simulation parameters (like current and frequency).
 
 ## [1.2.0] - 2021-12-08
-### Added 
+### Added
 - new script generation process. Script now consists of template pro file, parameter geo file and magstadyn file. Script calls addMachine which creates the machine domains and adds the physical elements to the script instance. Groups are defined so the match the magstadyn file groups.
 
 ### Changed
@@ -715,7 +801,7 @@ The reason is due to rotation and duplication interface points and lines are dup
 
 ## [1.1.1] - 2021-09-08
 ### Added
-- functions for material import in pydraft 
+- functions for material import in pydraft
 
 ### Removed
 - function for start and endpoint in CircleArc because its allready defined in line (unnecessary redefinition)
@@ -725,7 +811,7 @@ The reason is due to rotation and duplication interface points and lines are dup
 ### Added
 - own export function for lineloops to be able to export different line lengths.
 - new python sub-package "api" in pydraft.
-- importResults module 
+- importResults module
 
 ### Changed
 - export csv function to additionally export material name, angle and quantity of surface.
@@ -778,8 +864,8 @@ The reason is due to rotation and duplication interface points and lines are dup
 - test for step import.
 
 ### Changed
-- material allocation; moved it from surface to group class. 
-- database import from xls to sql 
+- material allocation; moved it from surface to group class.
+- database import from xls to sql
 
 
 ## [1.0.0] - 2020-06-09

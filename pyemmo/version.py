@@ -61,7 +61,7 @@ else:
         logger.debug("Could not get git sha from repository.", exc_info=e)
         sha = ""
 
-__version__ = "1.5.0dev2"
+__version__ = "1.6.0"
 """PyEMMO version string.
 
 See `Version Specifiers <https://packaging.python.org/en/latest/specifications/version-specifiers/#version-specifiers>`_
