@@ -45,6 +45,8 @@ project = "PyEMMO"
 copyright = "2026, Technologietransferzentrum Elektromobilität TTZ-EMO"
 author = "TTZ-EMO AG-EM"
 release = __version__
+github_url = "https://github.com/ttz-emo/pyemmo"
+
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
@@ -113,7 +115,13 @@ html_theme_options = {
     # 'includehidden': True,
     # 'titles_only': False
 }
-
+html_context = {
+    "display_github": True,  # Integrate GitHub
+    "github_user": "ttz-emo",  # Username
+    "github_repo": "pyemmo",  # Repo name
+    "github_version": "master",  # Version
+    "conf_py_path": "/doc/",  # Path in the checkout to the docs root
+}
 # parameter to control if a new pyemmo.onelab_parameters.rst file should be created.
 create_param_file = True
 
