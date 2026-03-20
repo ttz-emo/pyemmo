@@ -29,7 +29,6 @@ import datetime
 import json
 import logging
 import os
-import subprocess
 import timeit
 from os import makedirs
 from os.path import isdir, isfile, join
@@ -40,7 +39,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from ... import log_formatter
-from ...functions import clean_name, core_loss, import_results, plot, run_onelab
+from ...functions import clean_name, core_loss, import_results, plot
 from ...script.gmsh.utils import fix_missing_mesh_sizes
 from ...script.machine import Machine
 from ...script.material.electricalSteel import ElectricalSteel
@@ -485,7 +484,7 @@ def main(
             section in doc for parameters description.
         model (str): Folder path where the resulting model files should be
             placed.
-        gmsh (str, optional): Gmsh executable path. If nothing is provieded the
+        gmsh (str, optional): Gmsh executable path. If nothing is provided the
             executable will be searched.
         getdp (str, optional): GetDP executable path. Defaults to "".
         results (str, optional): Folder path to store the simulation results.
@@ -494,7 +493,7 @@ def main(
     module_logger = logging.getLogger(__name__)
     if module_logger.getEffectiveLevel() <= logging.DEBUG:
         t0 = timeit.default_timer()
-    # create dir for model files if it doesnt exist
+    # create dir for model files if it doesn't exist
     makedirs(model, exist_ok=True)
     # Set logging path to model dir
     jsonLogFileHandler = logging.FileHandler(
@@ -576,7 +575,7 @@ def main(
         module_logger.debug(
             "Assert that the given surfaces are created in the current gmsh model"
         )
-        module_logger.debug(f"Current gmsh model is: {gmsh_api.model.getCurrent()}")
+        module_logger.debug("Current gmsh model is: %s", gmsh_api.model.getCurrent())
         gmsh_api.model.occ.synchronize()
         surf_dim_tags = gmsh_api.model.get_entities(2)
         surf_tags = [dim_tag[1] for dim_tag in surf_dim_tags]
@@ -666,7 +665,7 @@ def main(
 
     if importJSON.get_flag_open_gui(extendedInfo) is True:
         module_logger.debug("Open Gmsh GUI to show model")
-        _open_onelab(apiScript, extendedInfo, gmsh, getdp)
+        _open_onelab(apiScript, extendedInfo)
 
     pyemmoLogger.removeHandler(jsonLogFileHandler)
     jsonLogFileHandler.close()  # close log file handler!
@@ -693,8 +692,8 @@ def _check_symmetry(
     logger = logging.getLogger(__name__)
     logger.debug("Checking symmetry for given model...")
     # Check if the symmetry factor given from extendedInfo is valid:
-    reqested_sym = importJSON.get_sym_factor(extendedInfo)
-    logger.debug("Given symmetry factor from extended info dict is %.1f", reqested_sym)
+    requested_sym = importJSON.get_sym_factor(extendedInfo)
+    logger.debug("Given symmetry factor from extended info dict is %.1f", requested_sym)
     # get number of segments of the first surface to init symmetry check
     highest_sym = list(segmentSurfDict.values())[0].nbr_segments
     # get maximal symmetry for all segment surface:
@@ -702,66 +701,34 @@ def _check_symmetry(
         highest_sym = np.gcd(highest_sym, seg_surf.nbr_segments)
     logger.debug("Highest symmetry factor from current surfaces is %.1f", highest_sym)
     # symFactor must be a multiple of the highest symmetry (sym)
-    if (highest_sym / reqested_sym) % 1 != 0:
+    if (highest_sym / requested_sym) % 1 != 0:
         raise ValueError(
-            f"Given symmetry factor {reqested_sym} is not compatible with the minimal symmetry {highest_sym}."
+            f"Given symmetry factor {requested_sym} is not compatible with the minimal symmetry {highest_sym}."
         )
 
 
-def _open_onelab(
-    apiScript: Script, extendedInfo: dict, gmsh: str = "", getdp: str = ""
-):
+def _open_onelab(apiScript: Script, extendedInfo: dict):
     """
     Private function to open ONELAB simulation in GUI and evaluate results
 
     :meta private:
     """
     logger = logging.getLogger(__name__)
-    # check if gmsh was provided
-    if not gmsh:
-        # if gmsh was not provided, try to find it:
-        logger.debug("Gmsh path not given. Trying to find Gmsh...")
-        gmsh = run_onelab.find_gmsh()
-    else:
-        # if gmsh was given by the user, check that its valid
-        if not isfile(gmsh):
-            raise FileNotFoundError(f"Provided gmsh executable was not found: {gmsh}")
-    proFile = apiScript.pro_file_path  # path to .pro file
-    command = run_onelab.create_command(
-        file=proFile,
-        gmsh_path=gmsh,
-        getdp_path=getdp,
-        useGUI=True,
-    )
-    logger.debug("CMD command is: '%s'", command)
-    calcInfo = subprocess.run(
-        command,
-        capture_output=True,  # not importJSON.getFlagOpenGui(extendedInfo),
-        text=True,
-        check=False,
-        shell=False,
-    )
-    # print(f"StdOut:\n{calcInfo.stdout}")
-    if calcInfo.stderr:
-        for textLine in calcInfo.stderr.split("\n"):
-            if "error" in textLine.lower():
-                logger.error(
-                    "Onelab call issued the following error: \n\t%s",
-                    textLine.replace("\n", "\n\t"),
-                )
-            else:
-                if textLine:  # if textline is not empty
-                    logger.warning(
-                        "Onelab call issued the following warning: \n\t%s",
-                        textLine.replace("\n", "\n\t"),
-                    )
-    # iron loss post processing:
-    resPath = apiScript.results_path
+    # use gmsh api to initialize and run gmsh GUI
+    try:
+        gmsh_api.initialize([apiScript.pro_file_path], run=True)
+    except Exception as exception:
+        raise RuntimeError(
+            "Gmsh GUI could not be opened or resulted in error."
+        ) from exception
+    # core loss post processing:
+    res_path = apiScript.results_path
     # check if resPath exists -> simulation has been run.
-    if isdir(resPath):
-        logger.debug("Found results path -> Simulation has been run.")
+    if isdir(res_path):
+        logger.debug("Found results path %s -> Simulation has been run.", res_path)
+        # FIXME: This only works if "res_id" was not set in the GUI (no sub-res-folder).
         # check if the simulation that has been run is a single transient simulation:
-        sim_is_transient = is_single_transient(resPath)
+        sim_is_transient = is_single_transient(res_path)
         if importJSON.get_flag_core_loss_calc(extendedInfo):
             if sim_is_transient:
                 logger.info(
@@ -769,7 +736,7 @@ def _open_onelab(
                     "Trying to run core loss calculation"
                 )
                 # if core loss flag and simulation is transient, calc core loss:
-                _run_core_loss_calculation(resPath, apiScript)
+                _run_core_loss_calculation(res_path, apiScript)
             else:
                 logger.warning(
                     "Iron loss calculation cannot be done for static or multi transient "
@@ -783,11 +750,11 @@ def _open_onelab(
             # avoid matplotlib debug infos
             import_results.plt.set_loglevel(level="info")
 
-            for file in os.listdir(resPath):
+            for file in os.listdir(res_path):
                 filename, fileExt = os.path.splitext(file)
                 if fileExt == ".dat":
                     import_results.plot_timetable_dat(
-                        os.path.abspath(join(resPath, file)),
+                        os.path.abspath(join(res_path, file)),
                         filename,
                         title=filename,
                         savefig=True,
