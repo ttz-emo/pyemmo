@@ -9,7 +9,7 @@ GitPython
 splines
 # to use pyleecan with the recent python versions we have to stick to the development
 # state of the package for now.
-SciDataTool @ git+https://github.com/mxgnsr/SciDataTool.git@update-reqs
+SciDataTool @ git+https://github.com/eomys/SciDataTool.git
 pyleecan @ git+https://github.com/eomys/pyleecan.git@upgrade-python-version
 
 # for doc

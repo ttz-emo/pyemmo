@@ -7,5 +7,5 @@ gmsh>=4.10.3,<4.14 # block newest version due to issue with .geo export: https:/
 splines
 ## Use updated version of PYLEECAN from dev branch, because it will not install otherwise.
 # Use my SciDataTool version for
-SciDataTool @ git+https://github.com/mxgnsr/SciDataTool.git@update-reqs
+SciDataTool @ git+https://github.com/eomys/SciDataTool.git
 pyleecan @ git+https://github.com/eomys/pyleecan.git@upgrade-python-version
