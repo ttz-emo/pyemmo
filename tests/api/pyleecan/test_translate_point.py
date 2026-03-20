@@ -31,7 +31,6 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from pyemmo.api.pyleecan.create_gmsh_point import create_gmsh_point
-from pyemmo.script.geometry.point import Point
 
 
 class TestGmshPyleecan2GmshPoint:
@@ -55,7 +54,7 @@ class TestGmshPyleecan2GmshPoint:
     )
     def test_translate_point(self, pyleecan_point: complex) -> None:
         """test function to build pyemmo point from pyleecan point (np.complex)"""
-        pyemmo_point: Point = create_gmsh_point(pyleecan_point=pyleecan_point)
+        pyemmo_point = create_gmsh_point(pyleecan_point=pyleecan_point)
         assert pyemmo_point.coordinate[0] == numpy.real(pyleecan_point)
         assert pyemmo_point.coordinate[1] == numpy.imag(pyleecan_point)
         assert pyemmo_point.coordinate[2] == 0
