@@ -12,7 +12,7 @@ authors = [
 maintainers = [{ name = "Max Schuler", email = "agem.ttz-emo@thws.de" }]
 readme = "README.md"
 description = "PyEMMO is a interface for modeling electrical machines in the open-source FEA software Onelab"
-urls = { Repository = "https://gitlab.ttz-emo.thws.de/ag-em/pyemmo" }
+urls = { github = "https://github.com/ttz-emo/pyemmo", documentation = "https://ttz-emo.thws.de/arbeitsgruppen/elektrische-maschinen/pyemmo/" , homepage = "https://ttz-emo.thws.de/arbeitsgruppen/elektrische-maschinen/" }
 requires-python = ">= 3.9"
 license = "GPL-3.0-or-later"
 license-files = ["LICEN[CS]E*", "AUTHORS.md"]
@@ -31,6 +31,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Operating System :: OS Independent",
 ]
 
