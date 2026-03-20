@@ -12,6 +12,8 @@ splines
 SciDataTool @ git+https://github.com/eomys/SciDataTool.git
 pyleecan @ git+https://github.com/eomys/pyleecan.git@upgrade-python-version
 
+ipykernel # to run tutorial IPython Notebook
+
 # for doc
 Sphinx>=7.2.6
 sphinx-rtd-theme
