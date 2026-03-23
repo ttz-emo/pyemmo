@@ -86,7 +86,8 @@ def main(
 
     Raises:
         ValueError: If incompatible PYLEECAN Machine type is given.
-            Currently only :class:`MachineSIPMSM`, :class:`MachineIPMSM`
+            Currently only :class:`MachineSIPMSM`, :class:`MachineIPMSM`,
+            :class:`MachineSCIM`, :class:`MachineLSPM`
             and :class:`MachineSyRM` work.
     """
     logger = logging.getLogger(__name__)
