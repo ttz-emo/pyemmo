@@ -1,5 +1,6 @@
 <!--
-Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+Copyright (c) 2018-2026 M. Schuler,TTZ-EMO,
+Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 
 This file is part of PyEMMO
 (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -122,10 +123,10 @@ These hooks make sure you have formatted your files correctly.
 
 To create or update the documentation you will need to do:
 
-1. Install the doc requirments with: `pip install -r requirements-doc.txt`.
+1. Install the doc requirements with: `pip install -r requirements-doc.txt`.
 2. Make sure pyemmo is found by either creating a *pyemmo.pth* file in the *site-packages* folder or use `pip install -e .`.
 3. To fully build the documentation including the PYLEECAN api subpackage you need to install PYLEECAN. Currently we have to use the Github version since there is no new release yet: `pip install git+https://gitlab.com/Eomys/pyleecan/tree/update-python-version.git`
 4. Run Sphinx to build the docs e.g. in html `doc\make.bat html`.
 
 You can run `doc\make.bat` plane to see the build options.
-Futher information on building the documentation can be found in the [Sphinx documentation](https://www.sphinx-doc.org/en/master/tutorial/index.html).
+Further information on building the documentation can be found in the [Sphinx documentation](https://www.sphinx-doc.org/en/master/tutorial/index.html).
