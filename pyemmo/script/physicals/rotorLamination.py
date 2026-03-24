@@ -29,7 +29,7 @@ class RotorLamination(PhysicalElement):
     """
     Class for rotor lamination
 
-    .. image:: ../../images/RotorBlech.svg
+    .. image:: ../../images/rotorBlech.svg
         :scale:  100%
         :alt: Example for a ``PrimaryLine`` physical curve.
         :align: center

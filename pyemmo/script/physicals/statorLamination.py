@@ -29,7 +29,7 @@ from .physical_element import PhysicalElement
 class StatorLamination(PhysicalElement):
     """Class for stator lamination
 
-    .. image:: ../../images/StatorBlech.png
+    .. image:: ../../images/statorBlech.png
         :scale: 100%
         :alt: Example for a ``StatorLamination`` physical surface.
         :align: center
