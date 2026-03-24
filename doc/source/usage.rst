@@ -72,5 +72,13 @@ Just make sure the executables can be found on your system by setting the `PATH`
     `this comment <https://gitlab.onelab.info/gmsh/gmsh/-/blob/master/src/geo/GModelIO_GEO.cpp?ref_type=heads#L1840>`_
     on the ONELAB GitLab website for more information.
 
-.. Usage
-.. =====
+Tutorials
+---------
+You can view and download the tutorial files from our `GitHub Repository <https://github.com/ttz-emo/pyemmo/tree/master/tutorials>`_.
+The contents of those tutorials are included in the following:
+
+.. toctree::
+    :maxdepth: 2
+
+    tutorials/pyleecan_api.rst
+    .. tutorials/core_loss.rst

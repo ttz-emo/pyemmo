@@ -26,12 +26,21 @@ import subprocess
 import sys
 from os.path import join
 
-from pyemmo.definitions import MAIN_DIR
+from pyemmo.definitions import MAIN_DIR, ROOT_DIR
 from pyemmo.functions.onelab_parameters import extract_onelab_parameters
 from pyemmo.version import __version__
 
 if not MAIN_DIR in sys.path:
     sys.path.insert(0, os.path.abspath("../pyemmo/"))
+
+# call jupyter nbconvert on tutorials
+from os.path import abspath, join
+try:
+    from nbconvert import RSTExporter
+    HAVE_NBCONVERT = True
+
+except ImportError:
+    HAVE_NBCONVERT = False
 
 # Configuration file for the Sphinx documentation builder.
 #
@@ -163,6 +172,27 @@ if create_param_file:
             rst_file.write(line + "\n")
 
 
+def convert_tutorials(app):
+    """Convert ipynb tutorial files to rst to include them in doc"""
+    
+    tutorial_folder = abspath(os.path.join(ROOT_DIR, "tutorials"))
+    for infile in os.listdir(tutorial_folder):
+        if infile.endswith(".ipynb"):
+            filename = infile.removesuffix(".ipynb")
+            tutorial_file = abspath(
+                os.path.join(ROOT_DIR, "tutorials", filename+".ipynb")
+                )
+            # jake_notebook = nbformat.reads(tutorial_file, as_version=4)
+            rst_exporter = RSTExporter()
+            # Convert the notebook to RST format
+            (body, resources) = rst_exporter.from_file(tutorial_file)
+            out_file = abspath(
+                os.path.join(app.srcdir, "source","tutorials",filename+".rst")
+            )
+            with open(out_file, "w", encoding="utf-8") as rstFile:
+                rstFile.write(body)
+
+
 def run_apidoc(app):
     """This function is connected to sphinx using its api. See :py:function::`setup`
 
@@ -182,3 +212,5 @@ def run_apidoc(app):
 
 def setup(app):
     app.connect("builder-inited", run_apidoc)
+    if HAVE_NBCONVERT:
+        app.connect("builder-inited", convert_tutorials)
