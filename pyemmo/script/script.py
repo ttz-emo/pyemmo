@@ -1195,7 +1195,7 @@ class Script:
             + """Visible Flag_ExpertMode}];\n"""
         )
         mesh_code += """If (Flag_CompoundMesh)\n"""
-        for region in ["domainLam", "airGap"]:
+        for region in [DOMAIN_LAMINATION, DOMAIN_AIRGAP]:
             # for region in ["domainLam"]:
             physicals = rotor_dict[region]
             if physicals:
