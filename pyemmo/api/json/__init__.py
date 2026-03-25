@@ -89,7 +89,13 @@ ROTOR_AIRGAP_IDEXT = "rotor airgap"
 for the rotor airgap. The rotor airgap in pyemmo is defined as the most outer rotor
 surface interfacing the movingband. See
 :class:`~pyemmo.script.physicals.movingband.MovingBand` or
-:mod:`~pyemmo.api.json.create_airgaps` for futher information."""
+:mod:`~pyemmo.api.json.create_airgaps` for further information."""
+ROTOR_AIRAREA_IDEXT = "rotor air area"
+"""Literal part identifier
+(:attr:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface.part_id`)
+for the rotor air area between the airgap and the rotor lamination. See
+:mod:`~pyemmo.api.json.create_airgaps` in case of 5 airgap segments for further
+information."""
 STATOR_SLOT_IDEXT = "stator slot"
 """Literal part identifier
 (:attr:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface.part_id`)
@@ -103,9 +109,14 @@ STATOR_AIRGAP_IDEXT = "stator airgap"
 (:attr:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface.part_id`)
 for stator airgap. The stator airgap in pyemmo is defined as the most inner stator
 surface interfacing the movingband. See
-:class:`~pyemmo.script.physicalsgeometry.movingband.MovingBand` or
-:mod:`~pyemmo.api.json.create_airgaps` for futher information."""
-
+:class:`~pyemmo.script.physicals.movingband.MovingBand` or
+:mod:`~pyemmo.api.json.create_airgaps` for further information."""
+STATOR_AIRAREA_IDEXT = "stator air area"
+"""Literal part identifier
+(:attr:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface.part_id`)
+for the staor air area between the stator airgap and the stator lamination. See
+:mod:`~pyemmo.api.json.create_airgaps` in case of 5 airgap segments for further
+information."""
 # order defines user defined mesh setting order!
 api_name_dict = {
     # rotor
@@ -114,14 +125,14 @@ api_name_dict = {
     ROTOR_MAG_IDEXT: "Magnet",
     ROTOR_BAR_IDEXT: "Rotor Slot",
     ROTOR_LAM_IDEXT: "Rotor Lamination",
+    ROTOR_AIRAREA_IDEXT: "Rotor Air",
     ROTOR_AIRGAP_IDEXT: "Rotor Airgap",  # case 3 airgap segments
-    "rotor air": "Rotor Air",
     # stator
     "housing": "Housing",
     STATOR_SLOT_IDEXT: "Stator Slot",
     STATOR_LAM_IDEXT: "Stator Lamination",
+    STATOR_AIRAREA_IDEXT: "Stator Air",  # case 5 airgap segments
     STATOR_AIRGAP_IDEXT: "Stator Airgap",  # case 3 airgap segments
-    "stator air": "Stator Air",  # case 5 airgap segments
 }
 """
 Dict to connect json api
