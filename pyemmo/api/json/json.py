@@ -270,45 +270,41 @@ def createMeshSizeGUICode(machineSurfDict: dict[str, list[MachineSegmentSurface]
         + "\tDefineConstant[\n"
     )
     mscSetSize = ""
-    # First get all IDs containing idExt into idList (e.g. there could be "LplR" and "LplL"
-    # for idExt = "Lpl")
-    # FIXME: Rework this since the default IDs will change in the future!
-    for part_id, apiSurfName in api_name_dict.items():
-        surfID_List = []
-        for surfID in machineSurfDict.keys():
-            if part_id in surfID:
-                surfID_List.append(surfID)
-        # if there were ids containing idExt
-        if surfID_List:
-            # create a List of all surfaces with idExt in it -> surfList
-            surfList: list[MachineSegmentSurface] = []
-            for surfID in surfID_List:
-                surfList.extend(machineSurfDict[surfID])
-            # get the mesh size
-            meshSize = surfList[0].meanMeshLength
-            # if meshsize in MachineSegmentSurface was 0, get the mean mesh size of the points
-            if not meshSize:
-                meshSize = surfList[0].meanMeshLength
-            meshSize = round(meshSize * 1e3, 3)
-            try:
-                # try to get the real name from the api name dict
-                surfName = apiSurfName
-            except KeyError:
-                # if idExt not in api name dict, use surface name
-                surfName = surfList[0].name()
-            except Exception as exce:
-                raise exce
-            # create the mesh size parameter name
-            param_name = clean_name.clean_name(part_id) + "_msf"
-            mscDefConst += (
-                f"""\t\t{param_name} = {{{meshSize},"""
-                + f""" Name StrCat[INPUT_MESH, "05Mesh Size/{surfName} [mm]"],"""
-                + f"""Min {meshSize/10}, Max {meshSize * 10}, Step 0.1,"""
-                + "Visible Flag_SpecifyMeshSize},\n"
-            )
-            surfIds = [str(surf.id) for surf in surfList]
-            # pylint: disable=locally-disabled,  line-too-long
-            mscSetSize += f"\tMeshSize {{ PointsOf {{Surface{{ {','.join(surfIds)} }};}} }} = {param_name}*mm;\n"
+
+    # 1. create a list of part_ids starting with the arbitrary ones and ending with the
+    # relevant parts defined in api_name_dict.
+    part_ids: list[str] = []
+    machine_dict_keys = list(machineSurfDict.keys())
+    for part_id in api_name_dict:
+        if part_id in machine_dict_keys:
+            part_ids.append(machine_dict_keys.pop(machine_dict_keys.index(part_id)))
+    # insert remaining "irrelevant" surface names at the beginning
+    part_ids = machine_dict_keys + part_ids
+
+    for i, part_id in enumerate(part_ids):
+        # create a List of all surfaces with idExt in it -> surfList
+        surf_list: list[MachineSegmentSurface] = machineSurfDict[part_id]
+        # get the mesh size
+        mesh_size = np.mean([surf.meanMeshLength for surf in surf_list])
+        # if meshsize in MachineSegmentSurface was 0, get the mean mesh size of the points
+        if not mesh_size:
+            mesh_size = surf_list[0].meanMeshLength
+        mesh_size = round(mesh_size * 1e3, 3)
+        # try to get the real name from the api_name_dict, if part_id not in
+        # api_name_dict, use part_id name itself
+        surfName = api_name_dict.get(part_id, part_id)
+
+        # create the mesh size parameter name
+        param_name = clean_name.clean_name(part_id) + "_msf"
+        mscDefConst += (
+            f"""\t\t{param_name} = {{{mesh_size},"""
+            + f""" Name StrCat[INPUT_MESH, "05Mesh Size/{i:02d}{surfName} [mm]"],"""
+            + f"""Min {mesh_size/10}, Max {mesh_size * 10}, Step 0.1,"""
+            + "Visible Flag_SpecifyMeshSize},\n"
+        )
+        surfIds = [str(surf.id) for surf in surf_list]
+        # pylint: disable=locally-disabled,  line-too-long
+        mscSetSize += f"\tMeshSize {{ PointsOf {{Surface{{ {','.join(surfIds)} }};}} }} = {param_name}*mm;\n"
     # At the end remove last comma and close bracket
     if mscDefConst[-2] == ",":
         mscDefConst = mscDefConst[0 : len(mscDefConst) - 2] + "\n\t];\n"
@@ -716,7 +712,8 @@ def _open_onelab(apiScript: Script, extendedInfo: dict):
     logger = logging.getLogger(__name__)
     # use gmsh api to initialize and run gmsh GUI
     try:
-        gmsh_api.initialize([apiScript.pro_file_path], run=True)
+        gmsh_api.open(apiScript.pro_file_path)
+        gmsh_api.fltk.run()
     except Exception as exception:
         raise RuntimeError(
             "Gmsh GUI could not be opened or resulted in error."
