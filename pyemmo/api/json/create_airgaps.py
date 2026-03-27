@@ -45,7 +45,12 @@ from ...script.gmsh.utils import (
 )
 from .. import air
 from ..machine_segment_surface import MachineSegmentSurface
-from . import ROTOR_AIRGAP_IDEXT, STATOR_AIRGAP_IDEXT
+from . import (
+    ROTOR_AIRAREA_IDEXT,
+    ROTOR_AIRGAP_IDEXT,
+    STATOR_AIRAREA_IDEXT,
+    STATOR_AIRGAP_IDEXT,
+)
 from . import boundaryJSON as boundary
 
 
@@ -211,11 +216,11 @@ def create_airgap_surfaces(
                     symmetry,
                 )
                 logger.debug("Creating MachineSegmentSurface 'Stator Air (PyEMMO)'")
-                surface_dict["Stator Air"] = [
+                surface_dict[STATOR_AIRAREA_IDEXT] = [
                     MachineSegmentSurface.from_curve_loop(
                         airgap_curve_loop,
                         symmetry,
-                        "Stator Air",
+                        part_id=STATOR_AIRAREA_IDEXT,
                         material=air,
                         name="Stator Air (PyEMMO)",
                     )
@@ -247,11 +252,11 @@ def create_airgap_surfaces(
                 r_max = r_max - band_height  # reset for airgap creation
                 air_area, air_interface = _create_band_surf(air_interface, r_max)
                 logger.debug("Creating MachineSegmentSurface 'Stator Air (PyEMMO)'")
-                surface_dict["Stator Air"] = [
+                surface_dict[STATOR_AIRAREA_IDEXT] = [
                     MachineSegmentSurface(
                         tag=air_area.id,
                         nbr_segments=1,
-                        part_id="Stator Air",
+                        part_id=STATOR_AIRAREA_IDEXT,
                         material=air,
                         name="Stator Air (PyEMMO)",
                     )
@@ -384,11 +389,11 @@ def create_airgap_surfaces(
                     symmetry,
                 )
                 logger.debug("Creating MachineSegmentSurface 'Rotor Air (PyEMMO)'")
-                surface_dict["Rotor Air"] = [
+                surface_dict[ROTOR_AIRAREA_IDEXT] = [
                     MachineSegmentSurface.from_curve_loop(
                         airgap_curve_loop,
                         symmetry,
-                        "Rotor",
+                        ROTOR_AIRAREA_IDEXT,
                         material=air,
                         name="Rotor Air (PyEMMO)",
                     )
@@ -418,11 +423,11 @@ def create_airgap_surfaces(
                 )
                 r_max = r_max + band_height  # reset r_max for airgap
                 logger.debug("Creating MachineSegmentSurface 'Rotor Air (PyEMMO)'")
-                surface_dict["Rotor Air"] = [
+                surface_dict[ROTOR_AIRAREA_IDEXT] = [
                     MachineSegmentSurface(
                         tag=air_area.id,
                         nbr_segments=1,
-                        part_id="Rotor Air",
+                        part_id=ROTOR_AIRAREA_IDEXT,
                         material=air,
                         name="Rotor Air (PyEMMO)",
                     )
