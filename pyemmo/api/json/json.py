@@ -271,29 +271,42 @@ def createMeshSizeGUICode(machineSurfDict: dict[str, list[MachineSegmentSurface]
     )
     mscSetSize = ""
 
-    # 1. create a list of part_ids starting with the arbitrary ones and ending with the
-    # relevant parts defined in api_name_dict.
-    part_ids: list[str] = []
-    machine_dict_keys = list(machineSurfDict.keys())
+    # Create a new surface dict with the arbitrary part_ids at the beginning and ending
+    # with the predefined parts defined in api_name_dict.
+    machine_dict_keys = list(machineSurfDict.keys())  # extract dict keys as list
+    # create separate dict to handle indexed part_ids with single part_id
+    surf_dict: dict[str, list[MachineSegmentSurface]] = {}
+    # first handle the known part_ids
     for part_id in api_name_dict:
         if part_id in machine_dict_keys:
-            part_ids.append(machine_dict_keys.pop(machine_dict_keys.index(part_id)))
-    # insert remaining "irrelevant" surface names at the beginning
-    part_ids = machine_dict_keys + part_ids
-
-    for i, part_id in enumerate(part_ids):
-        # create a List of all surfaces with idExt in it -> surfList
-        surf_list: list[MachineSegmentSurface] = machineSurfDict[part_id]
+            # if part_id in machine_dict_keys as it is, add it to surf dict
+            surf_dict[part_id] = machineSurfDict[part_id]
+            machine_dict_keys.remove(part_id)
+        elif any(part_id in key for key in machine_dict_keys):
+            # collect all parts that have indices (eg. slots or magnets) separately
+            # and combine them in single surface list.
+            surf_dict[part_id] = []  # init surface list
+            # use copy here for loop with `remove` call in loop. Otherwise elements in
+            # loop are skipped!
+            for key in machine_dict_keys.copy():
+                # loop through remaining keys and search for current part_id.
+                if part_id in key:
+                    # if part_id is part of key (eg. 'stator slot' in 'stator slot1')
+                    surf_dict[part_id].extend(machineSurfDict[key])
+                    machine_dict_keys.remove(key)
+    # insert remaining surface names at the beginning of the dict
+    for key in machine_dict_keys:
+        surf_dict = {key: machineSurfDict[key]} | surf_dict
+    for i, (part_id, surf_list) in enumerate(surf_dict.items()):
+        # create mesh code in correct order since surf_dict is ordered correctly.
         # get the mesh size
         mesh_size = np.mean([surf.meanMeshLength for surf in surf_list])
-        # if meshsize in MachineSegmentSurface was 0, get the mean mesh size of the points
+        # if mesh size in MachineSegmentSurface was 0, get the mean mesh size of the points
         if not mesh_size:
             mesh_size = surf_list[0].meanMeshLength
-        mesh_size = round(mesh_size * 1e3, 3)
-        # try to get the real name from the api_name_dict, if part_id not in
-        # api_name_dict, use part_id name itself
+        mesh_size = round(mesh_size * 1e3, 3)  # convert to mm for easier use in UI
+        # try to get the real name from the api_name_dict, otherwise use part_id itself
         surfName = api_name_dict.get(part_id, part_id)
-
         # create the mesh size parameter name
         param_name = clean_name.clean_name(part_id) + "_msf"
         mscDefConst += (
@@ -303,8 +316,10 @@ def createMeshSizeGUICode(machineSurfDict: dict[str, list[MachineSegmentSurface]
             + "Visible Flag_SpecifyMeshSize},\n"
         )
         surfIds = [str(surf.id) for surf in surf_list]
-        # pylint: disable=locally-disabled,  line-too-long
-        mscSetSize += f"\tMeshSize {{ PointsOf {{Surface{{ {','.join(surfIds)} }};}} }} = {param_name}*mm;\n"
+        mscSetSize += (
+            f"\tMeshSize {{ PointsOf {{Surface{{ {','.join(surfIds)} }};}} }} = "
+            f"{param_name}*mm;\n"
+        )
     # At the end remove last comma and close bracket
     if mscDefConst[-2] == ",":
         mscDefConst = mscDefConst[0 : len(mscDefConst) - 2] + "\n\t];\n"
