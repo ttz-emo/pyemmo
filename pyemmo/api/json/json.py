@@ -350,7 +350,7 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
         "rotor": rotorAirgapRadius,
         "stator": statorAirgapRadius,
     }.items():
-        logger.debug("Adding PO for %s airgap at raidus %.3f mm", side, radius)
+        logger.debug("Adding PO for %s airgap at raidus %.3f mm", side, radius * 1e3)
         for quantity in ["b_radial", "b_tangent"]:
             sign = "-" if side == "rotor" else "+"
             resFilePath = join("CAT_RESDIR", quantity + "_airgap_" + side + ".pos")

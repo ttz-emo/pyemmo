@@ -227,8 +227,9 @@ def create_param_dict(
         "parkAngleOffset": None,  # park transformation offset angle in elec. ° (STANDARD = None)
         "analysisType": 0,  # 0=static; 1=transient (STANDARD = 1)
         "tempMag": 20,  # magnet temperature °C (STANDARD = 20°C)
-        "r_z": 0.7,  # tooth radius in meterm (STANDARD = None)
-        "r_j": 0.9,  # yoke radius in meter (STANDARD = None)
+        # TODO: Calculate radii from model
+        # "r_z": 0.0,  # tooth radius in meterm (STANDARD = None)
+        # "r_j": 0.0,  # yoke radius in meter (STANDARD = None)
         "id": i_d,  # d-axis current in A
         "iq": i_q,  # q-axis current in A
         "modelName": machine.name,  # name of the model files
