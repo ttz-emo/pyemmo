@@ -32,6 +32,8 @@ from pyleecan.Classes.ImportMatrixVal import ImportMatrixVal
 from pyleecan.Classes.MatElectrical import MatElectrical
 from pyleecan.Classes.Material import Material as PyleecanMaterial
 from pyleecan.Classes.MatMagnetics import MatMagnetics
+from pyleecan.Classes.MatStructural import MatStructural
+from pyleecan.Functions.Load.load_json import LoadMissingFileError
 
 from ...script.material.material import Material
 
@@ -42,11 +44,21 @@ try:
     from pyleecan.definitions import DATA_DIR
     from pyleecan.Functions.load import load  # pylint: disable=no-name-in-module
 
-    copper1: PyleecanMaterial = load(join(DATA_DIR, "Material", "Copper1.json"))
     copper2: PyleecanMaterial = load(join(DATA_DIR, "Material", "Copper2.json"))
-except Exception:  # pylint: disable=W0718
-    copper1 = None
+except (FileNotFoundError, LoadMissingFileError):
+    # if file could not be found in DATA_DIR, create it by hand. Happens in exe case.
+    copper2 = PyleecanMaterial(
+        name="Copper2",
+        mag=MatMagnetics(mur_lin=1),
+        elec=MatElectrical(rho=2.2e-08, alpha=0.003),
+        struct=MatStructural(
+            rho=8900.0, Ex=115000000000, Ey=115000000000, Ez=115000000000
+        ),
+    )
+except ImportError:
     copper2 = None
+except Exception as exce:
+    raise exce
 
 
 # FIXME: Need to implement ElectricalSteel creation for loss data and lamination thickness!
@@ -69,13 +81,18 @@ def build_pyemmo_material(pyleecan_material: PyleecanMaterial) -> Material:
 
     """
     logger = logging.getLogger(__name__)
-    if "Copper1" in pyleecan_material.name and copper2 is not None:
-        # TODO: Check if material really missing magnetic properies
-        logger.warning(
-            "Material 'Copper1' used without magnetic properties. "
-            "Replacing it with PYLEECAN default material 'Copper2'"
-        )
-        pyleecan_material = copper2
+    if "Copper1" in pyleecan_material.name:
+        if copper2 is not None:
+            # TODO: Check if material really missing magnetic properies
+            logger.warning(
+                "Material 'Copper1' used without magnetic properties. "
+                "Replacing it with PYLEECAN default material 'Copper2'"
+            )
+            pyleecan_material = copper2
+        else:
+            raise RuntimeError(
+                "Got PYLEECAN material 'Copper1' but missing 'Copper2' alternative!"
+            )
     # elec props
     try:
         elec_prop: MatElectrical = pyleecan_material.elec  # type: ignore
