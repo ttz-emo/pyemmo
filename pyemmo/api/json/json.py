@@ -29,6 +29,7 @@ import datetime
 import json
 import logging
 import os
+import subprocess
 import timeit
 from os import makedirs
 from os.path import isdir, isfile, join
@@ -39,7 +40,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from ... import log_formatter
-from ...functions import clean_name, core_loss, import_results, plot
+from ...functions import clean_name, core_loss, import_results, plot, run_onelab
 from ...script.gmsh.utils import fix_missing_mesh_sizes
 from ...script.machine import Machine
 from ...script.material.electricalSteel import ElectricalSteel
@@ -676,7 +677,7 @@ def main(
 
     if importJSON.get_flag_open_gui(extendedInfo) is True:
         module_logger.debug("Open Gmsh GUI to show model")
-        _open_onelab(apiScript, extendedInfo)
+        _open_onelab(apiScript, extendedInfo, gmsh)
 
     pyemmoLogger.removeHandler(jsonLogFileHandler)
     jsonLogFileHandler.close()  # close log file handler!
@@ -718,21 +719,63 @@ def _check_symmetry(
         )
 
 
-def _open_onelab(apiScript: Script, extendedInfo: dict):
+def _open_onelab(apiScript: Script, extendedInfo: dict, gmsh: str = ""):
     """
     Private function to open ONELAB simulation in GUI and evaluate results
 
     :meta private:
     """
     logger = logging.getLogger(__name__)
-    # use gmsh api to initialize and run gmsh GUI
-    try:
-        gmsh_api.open(apiScript.pro_file_path)
-        gmsh_api.fltk.run()
-    except Exception as exception:
-        raise RuntimeError(
-            "Gmsh GUI could not be opened or resulted in error."
-        ) from exception
+    # check if gmsh was provided
+    if not gmsh:
+        # if gmsh was not provided, try to find it:
+        logger.debug("Gmsh path not given. Trying to find Gmsh...")
+        gmsh = run_onelab.find_gmsh()
+    else:
+        # if gmsh was given by the user, check that its valid
+        if not isfile(gmsh):
+            raise FileNotFoundError(f"Provided gmsh executable was not found: {gmsh}")
+    command = run_onelab.create_command(
+        file=apiScript.pro_file_path,
+        gmsh_path=gmsh,
+        useGUI=True,
+    )
+    logger.debug("Command for subprocess to start Gmsh is: '%s'", command)
+    calcInfo = subprocess.run(command, capture_output=True, text=True, check=False)
+    if calcInfo.stderr:
+        for textLine in calcInfo.stderr.split("\n"):
+            if "error" in textLine.lower():
+                logger.error(
+                    "Onelab call issued the following error: \n\t%s",
+                    textLine.replace("\n", "\n\t"),
+                )
+            else:
+                if textLine:  # if textline is not empty
+                    logger.warning(
+                        "Onelab call issued the following warning: \n\t%s",
+                        textLine.replace("\n", "\n\t"),
+                    )
+    # Some other options to open the model in the Gmsh GUI without starting a subprocess
+    # this works, but system is not recommended due to shell injection risk!
+    # system("gmsh.exe " + apiScript.pro_file_path)
+
+    # This also works, but runs in a client process through a socket. Only works
+    # if ONELAB is downloaded from onelab.info and onelab.py file is available on
+    # the system!
+    # oc = onelab.client()
+    # oc.run("gmsh", "gmsh", apiScript.pro_file_path)
+    # oc.finalize()
+
+    # You can start the simulation through the gmsh.onelab interface, but opening
+    # the model (geo+pro) in the GUI did not work for me. If there is no mesh file,
+    # the "Run" action results in an error. There must be some trick in the setup
+    # when opening a pro file directly throught the GUI since the meshing is done
+    # automatically then...
+    # gmsh_api.onelab.run(
+    #     "",
+    #     f"gmsh.exe {apiScript.pro_file_path} -merge {apiScript.geo_file_path}",
+    # )
+
     # core loss post processing:
     res_path = apiScript.results_path
     # check if resPath exists -> simulation has been run.
