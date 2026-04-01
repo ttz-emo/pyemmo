@@ -31,11 +31,11 @@ from __future__ import annotations
 
 import logging
 
-import swat_em
 from pyleecan.Classes.Machine import Machine as PyleecanMachine
+from swat_em.datamodel import datamodel
 
 
-def translate_winding(machine: PyleecanMachine) -> swat_em.datamodel:
+def translate_winding(machine: PyleecanMachine) -> datamodel:
     """
     Translates the winding from PYLEECAN to PyEMMO.
     This uses the `genwdg` method of the `datamodel` class in SWAT-EM to generate the winding
@@ -49,7 +49,7 @@ def translate_winding(machine: PyleecanMachine) -> swat_em.datamodel:
     Returns:
         ``swat-em.datamodel``: The datamodel object representing the winding.
     """
-    swat_emm_winding = swat_em.datamodel()
+    swat_emm_winding = datamodel()
     # FIXME: genwdg() can fail for PYLEECAN WindingUD. Try to use
     # machine.stator.winding.wind_mat to directly set swatem winding layout.
     swat_emm_winding.genwdg(

@@ -27,7 +27,7 @@ from typing import Literal
 import gmsh
 import numpy as np
 from matplotlib import pyplot as plt
-from swat_em import datamodel
+from swat_em.datamodel import datamodel
 
 from .domain import Domain
 from .geometry.line import Line

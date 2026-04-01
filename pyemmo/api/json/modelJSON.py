@@ -29,7 +29,7 @@ from typing import Literal
 import gmsh
 import numpy as np
 from numpy import pi, sign
-from swat_em import datamodel
+from swat_em.datamodel import datamodel
 
 from ...functions.phase import phase2color
 from ...script.geometry.circleArc import CircleArc, Line
