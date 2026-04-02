@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of
 # Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -25,10 +25,11 @@ import gmsh
 import numpy as np
 import pytest
 
-from pyemmo.script.geometry.physicalElement import PhysicalElement
+from pyemmo.script.gmsh.gmsh_arc import GmshArc
 from pyemmo.script.gmsh.gmsh_line import GmshLine, GmshPoint
 from pyemmo.script.gmsh.gmsh_surface import GmshSurface
 from pyemmo.script.gmsh.utils import (  # is_straigt
+    create_disk,
     filter_curves_on_radius,
     filter_lines_at_angle,
     get_dim_tags,
@@ -36,6 +37,7 @@ from pyemmo.script.gmsh.utils import (  # is_straigt
     get_min_radius,
     get_point_tags,
 )
+from pyemmo.script.physicals.physical_element import PhysicalElement
 
 from .test_gmsh_surface import add_circle
 
@@ -202,3 +204,11 @@ def test_filter_lines_at_angle():
     result = filter_lines_at_angle(lines, angle=np.pi)
     assert len(result) == 1
     assert result[0] == lines[4]
+
+
+def test_create_disk():
+    radius = 0.2
+    contour = create_disk(radius)  # ceate circle at origin
+    assert len(contour) == 4
+    assert all(isinstance(line, GmshArc) for line in contour)
+    assert all(arc.radius == radius for arc in contour)

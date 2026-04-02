@@ -1,0 +1,8 @@
+digraph "packages_PyEMMO.script.material" {
+rankdir=BT
+charset="utf-8"
+"pyemmo.script.material" [color="black", label=<pyemmo.script.material>, shape="box", style="solid"];
+"pyemmo.script.material.electricalSteel" [color="black", label=<pyemmo.script.material.electricalSteel>, shape="box", style="solid"];
+"pyemmo.script.material.material" [color="black", label=<pyemmo.script.material.material>, shape="box", style="solid"];
+"pyemmo.script.material.electricalSteel" -> "pyemmo.script.material.material" [arrowhead="open", arrowtail="none"];
+}

@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -17,7 +18,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Main module of pyleecan api"""
+"""Main module of PYLEECAN api
+TODO
+"""
 
 from __future__ import annotations
 
@@ -26,23 +29,28 @@ import logging
 import os
 
 from ...definitions import RESULT_DIR
-from .. import ch, logger
 from . import use_pyleecan
 from .main import main
 
 if use_pyleecan:
     from pyleecan.Functions import load
+
+logger = logging.getLogger(__name__)
+pyemmoLogger = logging.getLogger("pyemmo")
+
 if __name__ == "__main__":
+    if not use_pyleecan:
+        raise ModuleNotFoundError("Please install PYLEECAN!")
     # 1. Check that all argvs are valid!
     parser = argparse.ArgumentParser(
         description=(
-            "Process Pyleecan machine data (saved as JSON file) to generate "
+            "Process PYLEECAN machine data (saved as JSON file) to generate "
             "a Onelab Simulation."
         )
     )
     parser.add_argument(
         "file",
-        help="Path to the Pyleecan-Machine-JSON file",
+        help="Path to the PYLEECAN-Machine-JSON file",
         type=str,
     )
     # parser.add_argument(
@@ -79,19 +87,21 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # remove commandline handler if verbose
-    if args.v:
-        logger.removeHandler(ch)
+    # remove commandline handler if not verbose
+    if not args.v:
+        for handler in logging.getLogger().handlers:
+            if isinstance(handler, logging.StreamHandler):
+                pyemmoLogger.removeHandler(handler)
 
     # set log level
     loglevel = args.log
     logLevelNum = getattr(logging, loglevel.upper(), None)
     if not isinstance(logLevelNum, int):
         raise ValueError(f"Invalid log level: {loglevel}")
-    logger.setLevel(logLevelNum)
+    pyemmoLogger.setLevel(logLevelNum)
 
     main(
-        pyleecan_machine=load.load(args.file),
+        pyleecan_machine=load.load(args.file),  # pylint: disable=no-member,E0606
         model_dir=args.mod,
         gmsh=args.gmsh,
         getdp=args.getdp,

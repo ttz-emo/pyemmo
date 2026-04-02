@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -23,9 +23,9 @@ import argparse
 import logging
 
 from ...definitions import RESULT_DIR
-from .. import ch, logger
 from .json import main
 
+logger = logging.getLogger("pyemmo.api.json.__main__")
 # 1. Check that all argvs are valid!
 parser = argparse.ArgumentParser(
     description="Process Motor-JSON files to generate a Onelab Simulation."
@@ -61,14 +61,12 @@ parser.add_argument(
     type=str,
     default="",
 )
-
 parser.add_argument(
     "--log",
     help="logging level for execution. Options are: error, warning, info, debug. default is warning",
     type=str,
     default="WARNING",
 )
-
 parser.add_argument(
     "-v",
     help="set execution to verbose. Verbosity level equals logging level.",
@@ -76,17 +74,25 @@ parser.add_argument(
 )
 
 args = parser.parse_args()
-
-# remove commandline handler if verbose
-if args.v:
-    logger.removeHandler(ch)
+# remove commandline handler if not verbose
+if not args.v:
+    for handler in logger.handlers:
+        if isinstance(handler, logging.StreamHandler):
+            logger.info("Removing log handler %s", handler.name)
+            logger.removeHandler(handler)
 
 # set log level
 loglevel = args.log
 logLevelNum = getattr(logging, loglevel.upper(), None)
 if not isinstance(logLevelNum, int):
     raise ValueError(f"Invalid log level: {loglevel}")
-logger.setLevel(logLevelNum)
+# set log level of top level pyemmo logger:
+pyemmoLogger = logging.getLogger("pyemmo")
+pyemmoLogger.setLevel(logLevelNum)
+
+logger.info("Set global log level to '%s'", loglevel)
+logger.info("Running pyemmo.json.api.main()")
+# TODO: Log arguments
 
 main(
     geo=args.geo,

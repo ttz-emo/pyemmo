@@ -1,5 +1,5 @@
 # %%
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of Applied
 # Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -27,14 +27,13 @@ import logging
 # %%
 import os
 
-from numpy import deg2rad
 from pyleecan.Classes.MachineSCIM import MachineSCIM
 from pyleecan.definitions import DATA_DIR
 from pyleecan.Functions import load
 
 from pyemmo.api.pyleecan import main as pyleecanAPI
 from pyemmo.definitions import ROOT_DIR
-from pyemmo.functions.runOnelab import findGetDP, findGmsh, runCalcforCurrent
+from pyemmo.functions.run_onelab import find_getdp, find_gmsh, run_simulation
 
 # disable messages of matplotlib
 logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
@@ -59,19 +58,35 @@ if not os.path.isdir(resFolder):
 # pylint: disable=locally-disabled, no-member
 pyleecan_machine: MachineSCIM = load.load(machine_file_path)  # load machine obj
 
-# %%
 # FIX: rotor bar material
 CuMat = load.load(os.path.join(DATA_DIR, "Material", "Copper2.json"))
 pyleecan_machine.rotor.winding.conductor.cond_mat = CuMat
 pyleecan_machine.stator.winding.conductor.cond_mat = CuMat
 
 # FIX: stator slot type
-from pyleecan.Classes.SlotW22 import SlotW22
+# from pyleecan.Classes.SlotW22 import SlotW22
 
-pyleecan_machine.stator.slot = SlotW22(
-    W0=deg2rad(2), W2=deg2rad(3.75), H0=1e-3, H2=27.5 * 1e-3
+
+# pyleecan_machine.stator.slot = SlotW22(
+#     W0=deg2rad(2), W2=deg2rad(3.75), H0=1e-3, H2=27.5 * 1e-3
+# )
+
+from pyleecan.Classes.SlotDC import SlotDC  # double cage rotor slot
+
+pyleecan_machine.rotor.slot = SlotDC(
+    Zs=pyleecan_machine.rotor.slot.Zs,
+    W1=1.0e-3,
+    W2=1.0e-3,
+    H1=3.0e-3,
+    H2=5.0e-3,
+    H3=6.0e-3,
+    D1=3.0e-3,
+    D2=4.0e-3,
+    R3=1e-3,
 )
-
+pyleecan_machine.rotor.Rint = 23e-3
+pyleecan_machine.plot(is_max_sym=True)
+# %%
 # Call pyleecan api main function
 # This triggers the translation process via the pyemmo json api, creates the
 # model file for Gmsh and GetDP + opens the model in the Gmsh GUI.
@@ -84,8 +99,8 @@ pyleecanAPI.main(pyleecan_machine, model_dir=model_folder)
 #
 geo_file = os.path.join(model_folder, pyleecan_machine.name + ".geo")
 pro_file = os.path.join(model_folder, pyleecan_machine.name + ".pro")
-# folder where simulation results will be stored
 if False:
+    # folder where simulation results will be stored
     sim_res_dir = os.path.join(model_folder, f"res_{pyleecan_machine.name}")
 
     # define simulation params
@@ -102,14 +117,14 @@ if False:
             "ResId": resid,
             "Flag_PrintFields": 0,
             "Flag_Debug": 0,
-            "exe": findGetDP(),
+            "exe": find_getdp(),
         },
         "ResId": resid,
         "pro": pro_file,
         "res": sim_res_dir,
-        "gmsh": {"exe": findGmsh()},
+        "gmsh": {"exe": find_gmsh()},
         # "hyst": 0, # loss coefficient
         # "eddy": 0, # loss coefficient
         # "exc": 0, # loss coefficient
     }
-    runCalcforCurrent(param_dict)
+    run_simulation(param_dict)

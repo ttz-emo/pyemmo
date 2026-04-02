@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -17,8 +18,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""This module only contains the pyemmo package version"""
+"""This module only contains the pyemmo package version.
+
+This was separated from the pyproject.toml file for the PyEMMO project to make the
+version available during the model generation process. The version number will be added
+to the ONELAB model files."""
+
 from __future__ import annotations
+
+import logging
+
+logger = logging.getLogger(__file__)
 
 # /!\ Increase the number before a release
 # See https://www.python.org/dev/peps/pep-0440/
@@ -32,6 +42,13 @@ try:
     import git
 except ModuleNotFoundError:
     sha = ""
+except Exception as e:  # pylint: disable=broad-exception-caught
+    logger.debug(
+        "Importing module git resulted in unexpected exception. "
+        "Cant find git sha code.",
+        exc_info=e,
+    )
+    sha = ""
 else:
     from git import InvalidGitRepositoryError
 
@@ -40,5 +57,24 @@ else:
         sha = repo.head.object.hexsha
     except InvalidGitRepositoryError:
         sha = "Repo not found"
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        logger.debug("Could not get git sha from repository.", exc_info=e)
+        sha = ""
 
-__version__ = "1.4.0rc2"
+__version__ = "1.6.0"
+"""PyEMMO version string.
+
+See `Version Specifiers <https://packaging.python.org/en/latest/specifications/version-specifiers/#version-specifiers>`_
+for info about version specifications.
+
+Examples:
+
+    - Development version of the release 0.1.0 : 0.1.0dev1
+    - First alpha of the release 0.1.0 : 0.1.0a1
+    - First beta of the release 1.0.0 : 1.0.0b1
+    - Second release candidate of the release 2.6.4 : 2.6.4rc2
+    - Release 1.1.0 : 1.1.0
+    - First post release of the release 1.1.0 : 1.1.0.post1
+
+:meta hide-value:
+"""

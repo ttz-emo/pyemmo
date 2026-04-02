@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of
 # Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -107,7 +107,6 @@ def test_gmsh_line_str(gmsh_line: GmshLine):
         f"start_point=({gmsh_line.start_point.x:.1e}, {gmsh_line.start_point.y:.1e}, {gmsh_line.start_point.z:.1e}), "
         f"end_point=({gmsh_line.end_point.x:.1e}, {gmsh_line.end_point.y:.1e}, {gmsh_line.end_point.z:.1e}))"
     )
-    logging.debug(str(gmsh_line))
     assert str(gmsh_line) == expected_str
 
 
@@ -158,7 +157,8 @@ def test_combine(gmsh_line: GmshLine):
         name="test_line2",
     )
     combined_line = gmsh_line.combine(gmsh_line2)
-    logging.info(f"Combined line: {combined_line}")
+    logger = logging.getLogger(__name__)
+    logger.debug(f"Combined line: {combined_line}")
     assert isinstance(combined_line, GmshLine)
     assert combined_line.start_point.coordinate in [(0.0, 0.0, 0.0), (2.0, 2.0, 0.0)]
     assert combined_line.end_point.coordinate in [(0.0, 0.0, 0.0), (2.0, 2.0, 0.0)]

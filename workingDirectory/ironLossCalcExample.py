@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -29,7 +29,7 @@ import gmsh
 import numpy as np
 from matplotlib import pyplot as plt
 
-from pyemmo.functions.calcIronLoss import write_simple
+from pyemmo.functions.core_loss import write_simple
 
 viewPos = [2, 3, 4, 5]
 

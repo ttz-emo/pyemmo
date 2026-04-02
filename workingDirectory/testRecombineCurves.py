@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -25,7 +25,7 @@ from math import pi
 from subprocess import run
 
 from pyemmo.definitions import RESULT_DIR
-from pyemmo.functions.runOnelab import createCmdCommand
+from pyemmo.functions.run_onelab import create_command
 from pyemmo.script.geometry.circleArc import CircleArc
 from pyemmo.script.geometry.line import Line
 from pyemmo.script.geometry.point import Point
@@ -100,9 +100,9 @@ surfSeg.plot()
 # %%
 recombineScript = Script("testRecombineSurfs", scriptPath=RESULT_DIR, simuParams={})
 surfSeg.addToScript(recombineScript)
-recombineScript.generateScript(mode=1)  # only geo file
+recombineScript.generate(mode=1)  # only geo file
 run(
-    createCmdCommand(onelabFile=recombineScript.getGeoFilePath(), useGUI=True),
+    create_command(file=recombineScript.getGeoFilePath(), useGUI=True),
     check=True,
 )
 

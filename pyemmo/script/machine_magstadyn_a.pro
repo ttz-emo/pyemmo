@@ -64,7 +64,6 @@ EndIf
 Printf("ResId is %s", ResId());
 
 DefineConstant[
-  NbrMbSegments = GetNumber["Input/03Mesh/Number of Rotor Movingband Segments", 360],
 
   sigma_al = 3.72e7, // conductivity of aluminum [S/m]
   sigma_cu = 5.8e7  // conductivity of copper [S/m]
@@ -310,10 +309,17 @@ Function {
   T_max[] = ( SquDyadicProduct[$1] - SquNorm[$1] * TensorDiag[0.5, 0.5, 0.5] ) / mu0 ;
 
   // This function returns the angle with respect to the x axis of the point that is being evaluated
-  AngularPosition[] = (Atan2[$Y,$X]#7 >= 0.)? #7 : #7+2*Pi ;
+  AngularPosition[] = (Atan2[$Y,$X]#7 >= 0.)? #7 : #7+2*Pi;
+  CompRad[] = $1 * Vector[  Cos[AngularPosition[]#4], Sin[#4], 0.];
+  CompTan[] = $1 * Vector[ -Sin[AngularPosition[]#4], Cos[#4], 0.];
 
   // Function to rotate the points around the z axis
   RotatePZ[] = Rotate[ Vector[$X,$Y,$Z], 0, 0, $1 ] ;
+  // Function to translate the points of the ROTOR once for dynamic eccentricity
+  MoveEccentDynamic[] = Vector[$X,$Y,$Z] + Vector[eccentricity_dynamic_m,0,0];
+  // Function to translate the points of the STATOR once for static eccentricity
+  MoveEccentStatic[]  = Vector[$X,$Y,$Z] + Vector[-eccentircity_static_m,0,0];
+
 
   // The inductance is calculated using the frozen permeability method.
   // Further details on this method can be found under
@@ -812,8 +818,21 @@ Resolution {
         DeleteFile[StrCat[ResDir,"Flux_a",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Flux_b",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Flux_c",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Flux_d",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Flux_q",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Flux_0",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Ia",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Ib",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Ic",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"InducedVoltageA",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"InducedVoltageB",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"InducedVoltageC",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Ld",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Lq",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Ldq",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"LossesMagnets",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"ParkAngle_deg",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Pec_Lam",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"PMFlux_d",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"PMFlux_q",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"RotorPos_deg",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Surf_Phase_A_pos",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"temp",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Tr",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Ts",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Tmb",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Ua",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Ub",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Uc",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"JL",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"JL_Fe",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"P",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"V",ExtGnuplot]];;DeleteFile[StrCat[ResDir,"Irotor",ExtGnuplot]];
       EndIf
       */
-
-      ChangeOfCoordinates[ NodesOf[Rotor_Moving], RotatePZ[initrotor_pos*Pi/180]]; // Rotation must occure before MovingBand meshing!
+      If (Flag_ClearViews)
+        PostOperation[DeleteViews] ;
+      EndIf
+      // Rotation must occure before MovingBand meshing!
+      If (initrotor_pos != 0)
+        ChangeOfCoordinates[ NodesOf[Rotor_Moving], RotatePZ[initrotor_pos*Pi/180]];
+      EndIf
+      // Move rotor for dynamic excentricity
+      If (eccentricity_dynamic != 0)
+        ChangeOfCoordinates[ NodesOf[Rotor_Moving], MoveEccentDynamic[] ];
+      EndIf
+      // Move stator for static excentricity
+      If (eccentricity_static != 0)
+        ChangeOfCoordinates[ NodesOf[Stator], MoveEccentStatic[] ];
+      EndIf
       InitMovingBand2D[MB] ;
       MeshMovingBand2D[MB] ;
       InitSolution[A];
@@ -840,7 +859,7 @@ Resolution {
       If(Flag_ParkTransformation && Flag_SrcType_Stator == CURRENT_SOURCE)
         PostOperation[ThetaPark_IABC] ;
       EndIf
-
+      Print[{$RPos}, Format "Executing first static simulation at rotor position %f deg"];
       If(!Flag_NL)
         Generate[A] ; Solve[A] ;
       EndIf
@@ -910,9 +929,9 @@ Resolution {
           ChangeOfCoordinates[ NodesOf[Rotor_Moving], RotatePZ[delta_theta[]]];
           Print[
             {
-              Floor[$Time/delta_time]+1,
+              Floor[$Time/delta_time],
               Ceil[(timemax-time0)/delta_time],
-              ((Floor[$Time/delta_time]+1) / Ceil[(timemax-time0)/delta_time])*100
+              ((Floor[$Time/delta_time]) / Ceil[(timemax-time0)/delta_time])*100
             },
             Format "Step %.0f / %.0f  -  %.1f percent"];
           // Print[{$Time}, Format "Time: %f"];
@@ -1127,37 +1146,24 @@ PostProcessing {
       { Name domain ; Value { Term { [ 1 ] ; In Domain ; Jacobian Vol ; } } }
       { Name boundary ; Value { Term { [ 1 ] ; In DomainPlotMovingGeo ; Jacobian Vol ; } } } // Dummy value - for visualization
       { Name surf; Value{ Integral { [ 1 ]; In Domain; Jacobian Vol; Integration I1; } } }
-
       { Name intAxLen; Value{ Integral { [ axialLength[]/SurfaceArea[] ]; In Domain; Jacobian Vol; Integration I1; } } }
       { Name axLen ; Value { Term { [ axialLength[] ] ; In Domain ; Jacobian Vol ; } } } // Dummy value - for visualization
-      // { Name axLenValue; Value{ Term { Type Global; [ axialLength[] ]; In DomainDummy; Jacobian Vol; Integration I1; } } } // This does NOT work...
-
       { Name surfCoil; Value{ Term { Type Global; [ SurfCoil[] ]; In DomainDummy; Jacobian Vol; Integration I1; } } }
       // { Name surfCoil; Value{ Integral { [ SurfCoil[]/SurfaceArea[] ]; In Domain; Jacobian Vol; Integration I1; } } }
-
-      { Name a  ; Value { Term { [ {a} ] ; In Domain ; Jacobian Vol ; } } }
-      { Name az ; Value { Term { [ CompZ[{a}] ] ; In Domain ; Jacobian Vol ; } } }
+      { Name a  ; Value {
+        Term { [ {a} ] ; In Domain ; Jacobian Vol ; }
+        Term { [ {a} ] ; In Region[{Rotor_Bnd_MB, Stator_Bnd_MB}] ; Jacobian Sur ; }
+      }}
+      { Name az ; Value {
+        Term { [ CompZ[{a}] ]; In Domain; Jacobian Vol; }
+        Term { [ CompZ[{a}] ]; In Region[{Rotor_Bnd_MB, Stator_Bnd_MB}]; Jacobian Sur; }
+      }}
       // Here we plot the b field on a per element basis (local quantity) since  b is defined as b=curl a. We state that the Term is {d a}. We could also have written {Curl a}. In GetDP the d operator takes the correct differential operator (div, curl, rot) depending on the differential form on which it is applied. (See function space above, or search for Tonti diagram):
       { Name b  ; Value { Term { [ {d a} ] ; In Domain ; Jacobian Vol ; } } }
       { Name bn  ; Value { Term { [ Norm[{d a}] ] ; In Domain ; Jacobian Vol ; } } }
       { Name hn  ; Value { Term { [ Norm[nu[{d a}]*{d a}] ] ; In Domain ; Jacobian Vol ; } } }
-      {
-        Name b_radial ;
-        Value {
-          Term { [ {d a}* Vector[  Cos[AngularPosition[]#4], Sin[#4], 0.] ] ;
-            In Domain ; Jacobian Vol ; }
-          Term { [ {d a}* Vector[  Cos[AngularPosition[]#4], Sin[#4], 0.] ] ;
-            In Region[{Rotor_Bnd_MB,Stator_Bnd_MB}] ; Jacobian Sur ; }
-        }
-      }
-      { Name b_tangent ;
-        Value {
-          Term { [ {d a}* Vector[ -Sin[AngularPosition[]#4], Cos[#4], 0.] ] ;
-            In Domain ; Jacobian Vol ; }
-          Term { [ {d a}* Vector[ -Sin[AngularPosition[]#4], Cos[#4], 0.] ] ;
-            In Region[{Rotor_Bnd_MB, Stator_Bnd_MB}] ; Jacobian Sur ; }
-        }
-      }
+      { Name b_radial; Value { Term { [ CompRad[{d a}] ]; In Domain; Jacobian Vol; } }}
+      { Name b_tangent; Value { Term { [ CompTan[{d a}] ] ; In Domain ; Jacobian Vol ; }}}
       { Name br ; Value { Term { [ br[] ] ;      In DomainM ; Jacobian Vol ; } } }
       { Name mu ; Value { Term { [ 1/nu[{d a}]/(mu0) ] ; In Domain ; Jacobian Vol ; } } }
       { Name ur  ; Value { Term { [ {ur} ]; In DomainC ; Jacobian Vol ; } } }
@@ -1197,87 +1203,79 @@ PostProcessing {
       { Name P_Lam ; Value { Integral { [ SymmetryFactor*axialLength[]*Fac_Lam[]*SquNorm[Dt[{d a}]] ]; In Domain_Lam ; Jacobian Vol ; Integration I1 ; } } }
       // Inertia
 	    { Name Inertia; Value { Integral { [ SymmetryFactor*SquNorm[XYZ[]]*density[]*axialLength[] ]; In Rotor; Jacobian Vol; Integration I1;}}}
-      {
-        Name JouleLosses ;
-        Value {
+      { Name JouleLosses; Value {
           Integral { [ SymmetryFactor*axialLength[]*sigma[] * SquNorm[ Dt[{a}]+{ur} ] ] ; In DomainC ; Jacobian Vol ; Integration I1 ; }
           Integral { [ 1./sigma[]*SquNorm[ IA[]*{ir} ] ] ; In PhaseA ; Jacobian Vol ; Integration I1 ; }
           Integral { [ 1./sigma[]*SquNorm[ IB[]*{ir} ] ] ; In PhaseB  ; Jacobian Vol ; Integration I1 ; }
           Integral { [ 1./sigma[]*SquNorm[ IC[]*{ir} ] ] ; In PhaseC  ; Jacobian Vol ; Integration I1 ; }
-        }
-      }
-      {
-        Name p_Joule ;
-        Value {
+      }}
+      { Name p_Joule;Value {
           Term { [ sigma[] * SquNorm[ Dt[{a}]+{ur} ] ] ; In Region[{DomainC}] ; Jacobian Vol ;}
-        }
-      }
-      {
-        Name Flux ;
-        Value {
+      }}
+      { Name Flux; Value {
           Integral { [ SymmetryFactor*axialLength[]*Idir[]*NbWires[]/SurfCoil[]/NbrParallelPaths* CompZ[{a}] ] ; In Inds  ; Jacobian Vol ; Integration I1 ; }
           Integral { [ axialLength[] * CompZ[{a}] / SurfaceArea[]] ; In DomainC  ; Jacobian Vol ; Integration I1 ; }
-
-        }
-      }
+      }}
       // Force computation by Virtual Works
-      { Name Force_vw ;
-        Value { Integral { Type Global ; [ 0.5 * nu[] * VirtualWork [{d a}] * axialLength[] ]; In ElementsOf[Rotor_Airgap, OnOneSideOf Rotor_Bnd_MB]; Jacobian Vol ; Integration I1 ; }}
-      }
-
-      {
-        Name Torque_vw ; Value {
-	        // Torque computation via Virtual Works
-          Integral {
-            Type Global ; [ - SymmetryFactor * CompZ[ 0.5 * nu[] * XYZ[] /\ VirtualWork[{d a}] ] * axialLength[] ];
-            In ElementsOf[Rotor_Airgap, OnOneSideOf Rotor_Bnd_MB]; Jacobian Vol ; Integration I1 ;
-          }
-        }
-      }
-      {
-        Name Torque_vw_s ; Value {
-          // Torque computation via Virtual Works
-          Integral {
-            Type Global ; [ SymmetryFactor * CompZ[ 0.5 * nu[] * XYZ[] /\ VirtualWork[{d a}] ] * axialLength[] ];
-            In ElementsOf[Stator_Airgap, OnOneSideOf Stator_Bnd_MB]; Jacobian Vol ; Integration I1 ;
-          }
-        }
-      }
-      {
-        Name Torque_Maxwell_r ;
+      { Name Force_vw ; Value {
+        Integral { Type Global ; [ 0.5 * nu[] * VirtualWork [{d a}] * axialLength[] ]; In ElementsOf[Rotor_Airgap, OnOneSideOf Rotor_Bnd_MB]; Jacobian Vol ; Integration I1 ; }
+      }}
+      { Name Torque_vw ; Value {
+	      // Torque computation via Virtual Works
+         Integral { Type Global ; [ - SymmetryFactor * CompZ[ 0.5 * nu[] * XYZ[] /\ VirtualWork[{d a}] ] * axialLength[] ];
+         In ElementsOf[Rotor_Airgap, OnOneSideOf Rotor_Bnd_MB]; Jacobian Vol ; Integration I1 ; }
+      }}
+      { Name Torque_vw_s ; Value {
+        // Torque computation via Virtual Works
+        Integral { Type Global ; [ SymmetryFactor * CompZ[ 0.5 * nu[] * XYZ[] /\ VirtualWork[{d a}] ] * axialLength[] ];
+        In ElementsOf[Stator_Airgap, OnOneSideOf Stator_Bnd_MB]; Jacobian Vol ; Integration I1 ; }
+      }}
+      { Name Force_MST;
+        Value{
+          // sigma = T_max * \hat{n}
+          // force density in xyz equals maxwell stress tensor T_max multiplied by unity vector to cylindrical airgap surface/line
+          // FIXME: \hat{n} = Unit[XYZ[]] is only true for 2D Simulation! z component must be 0 for 3D evaluation aswell.
+          Term{ [ T_max[{Curl a}] * Unit[XYZ[]] ] ; In Region[{Rotor_Airgap, Stator_Airgap}]; Jacobian Vol; }
+      }}
+      { Name Force_MST_Cyl;
+        Value{
+          Term{ [ Cart2Cyl[XYZ[]] * T_max[{Curl a}] * Unit[XYZ[]] ] ; In Region[{Rotor_Airgap, Stator_Airgap}]; Jacobian Vol; }
+      }}
+      { Name Force_MST_Rad;
+        Value{
+          Term{ [ CompRad[T_max[{Curl a}] * Unit[XYZ[]]] ] ; In Region[{Rotor_Airgap, Stator_Airgap}]; Jacobian Vol; }
+      }}
+      { Name Force_MST_Tan;
+        Value{
+          Term{ [ CompTan[T_max[{Curl a}] * Unit[XYZ[]]] ] ; In Region[{Rotor_Airgap, Stator_Airgap}]; Jacobian Vol; }
+      }}
+      { Name Torque_Maxwell_r ;
         // Torque computation via Maxwell stress tensor
         Value {
           Integral {
             // \int_S (\vec{r} \times (T_max \vec{n}) ) / ep
             // with ep = |S| / (2\pi r_avg)
             [ CompZ [ (XYZ[]-RotCenter_Current[]) /\ (T_max[{Curl a}] * (XYZ[]-RotCenter_Current[])) ] * 2*Pi*axialLength[]/SurfaceArea[] ] ;
-            In Domain ; Jacobian Vol  ; Integration I1;
-          }
-        }
-      }
-
-      {
-        Name Torque_Maxwell_s ;
-        // Torque computation via Maxwell stress tensor
+            In Domain ; Jacobian Vol  ; Integration I1; }
+      }}
+      { Name Torque_Maxwell_s ;
+         // Torque computation via Maxwell stress tensor
         Value {
           Integral {
             // \int_S (\vec{r} \times (T_max \vec{n}) ) / ep
             // with ep = |S| / (2\pi r_avg)
             [ CompZ [ XYZ[] /\ (T_max[{Curl a}] * XYZ[]) ] * 2*Pi*axialLength[]/SurfaceArea[] ] ;
             //  [ CompZ [ (XYZ[]-RotCenter_Current[]) /\ (T_max[{Curl a}] * (XYZ[]-RotCenter_Current[])) ] * 2*Pi*axialLength[]/SurfaceArea[] ] ;
-            In Domain ; Jacobian Vol  ; Integration I1;
-          }
-        }
-      }
-      {
-        Name InducedVoltage  ;
+            In Domain ; Jacobian Vol  ; Integration I1; }
+      }}
+      { Name InducedVoltage  ;
         Value {
-          Integral { [ SymmetryFactor * axialLength[] * Idir[] * NbWires[] / SurfCoil[] / NbrParallelPaths * Dt[CompZ[{a}]] ] ; In Inds  ; Jacobian Vol ; Integration I1 ; }
-          Integral { [ axialLength[] * Dt[CompZ[{a}]] / SurfaceArea[]] ; In DomainC  ; Jacobian Vol ; Integration I1 ; }
-        }
-      }
-      {
-        Name ComplexPower ;
+          Integral { [ SymmetryFactor * axialLength[] * Idir[] * NbWires[] / SurfCoil[] / NbrParallelPaths * Dt[CompZ[{a}]] ] ;
+             In Inds  ; Jacobian Vol ; Integration I1 ; }
+          Integral { [ axialLength[] * Dt[CompZ[{a}]] / SurfaceArea[]] ;
+            In DomainC  ; Jacobian Vol ; Integration I1 ; }
+      }}
+       { Name ComplexPower ;
         // TODO: Check if implementation of power is valid for nonlinear definition
         // in DomainC!
         // S = P + i*Q
@@ -1337,7 +1335,6 @@ PostProcessing {
       { Name Flux_0  ; Value { Term { Type Global; [ CompZ[Flux_dq0[]] ] ; In DomainDummy ; } } }
    }
  }
-
 }
 
 //-------------------------------------------------------------------------------------------
@@ -1483,6 +1480,17 @@ PostOperation Get_LocalFields UsingPost MagStaDyn_a_2D {
   ] ;
 
   Print[
+    az, OnElementsOf Domain, File StrCat[ResDir,"az",ExtGmsh], LastTimeStepOnly,
+    AppendTimeStepToFileName Flag_SaveAllSteps
+  ] ;
+  Echo[ Str[
+      "l=PostProcessing.NbViews-1;", "View[l].IntervalsType = 1;", "View[l].NbIso = 30;", "View[l].Light = 0;", "View[l].LineWidth = 2;"
+    ],
+    File StrCat[ResDir,"tmp.geo"],
+    LastTimeStepOnly
+  ];
+
+  Print[
     b,  OnElementsOf Domain, File StrCat[ResDir,"b",ExtGmsh], Format Gmsh,
     LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps
   ] ;
@@ -1497,16 +1505,8 @@ PostOperation Get_LocalFields UsingPost MagStaDyn_a_2D {
     AppendTimeStepToFileName Flag_SaveAllSteps
   ] ;
 
+If (Flag_Lam)
   Print[
-    az, OnElementsOf Domain, File StrCat[ResDir,"az",ExtGmsh], LastTimeStepOnly,
-    AppendTimeStepToFileName Flag_SaveAllSteps
-  ] ;
-  Echo[ Str["l=PostProcessing.NbViews-1;", "View[l].IntervalsType = 1;", "View[l].NbIso = 30;", "View[l].Light = 0;", "View[l].LineWidth = 2;"],
-    File StrCat[ResDir,"tmp.geo"], LastTimeStepOnly
-  ] ;
-
-  If (Flag_Lam)
-    Print[
       p_Lam, OnElementsOf Domain_Lam, File StrCat[ResDir,"p_Lam.pos"],
       LastTimeStepOnly, AppendTimeStepToFileName Flag_SaveAllSteps
     ];
@@ -1780,9 +1780,31 @@ PostOperation Get_GlobalQuantities UsingPost MagStaDyn_a_2D {
       U, OnRegion Rotor_Bar_1, Format ValueOnly, LastTimeStepOnly,
       SendToServer StrCat[poV,"0Rotor Bar 1"]{0}, Color "LightYellow"
     ];
+    For iBar In {1:nbrRotorBars}
+      Print[
+        Flux[Rotor_Bar~{iBar}], OnGlobal, Format TimeTable,
+        File > StrCat[ResDir,"Flux_Rotor_Bar_", Sprintf["%.0f",iBar] ,ExtGnuplot],
+        LastTimeStepOnly, SendToServer StrCat[poV,"ROTOR"]{0}, Color "LightYellow"
+      ];
+    EndFor
+    // Print[
+    //   I_S[PhaseA], OnGlobal, Format TimeTable, LastTimeStepOnly,
+    //   File>StrCat[ResDir,"Ia",ExtGnuplot],
+    //   SendToServer StrCat[poI,"A"]{0}, Color "Pink"
+    // ];
+    // Print[
+    //   I_S[PhaseB], OnRegion DomainDummy, Format Table, LastTimeStepOnly,
+    //   File>StrCat[ResDir,"Ib",ExtGnuplot],
+    //   SendToServer StrCat[poI,"B"]{0}, Color "Yellow"
+    // ];
+    // Print[
+    //   I_S[PhaseC], OnRegion DomainDummy, Format Table, LastTimeStepOnly,
+    //   File>StrCat[ResDir,"Ic",ExtGnuplot],
+    //   SendToServer StrCat[poI,"C"]{0}, Color "LightGreen"
+    // ];
   EndIf
 
-  // Calculate the Flux linkage
+  // Calculate the Flux[Rotor_ars] linkage
   // In this case we have an integration quantity. The Region over which we should integrate is given between the brackets.
   // We would read: Print the Flux integrated over Phase A (rememeber that the flux was defined for Inds, for which PhaseX is a subregion) as a global quantity to the file StrCat[ResDir,"Flux_a",ExtGnuplot] (in this case since we have File > ... the quantity is appended, without the ">" it would be erased) for the last timestep only, store the result in the runtime variable $Flux_a (since we need it to calculate the dq0 fluxes) and send the value to the onelab server (GUI) in and include it under StrCat[poF,"A"]{0} with a color "Pink".
   Print[ Flux[PhaseA], OnGlobal, Format TimeTable,
@@ -1951,5 +1973,22 @@ If (Flag_Inductance)
     Print [ Lq , OnRegion DomainDummy, Format Table, LastTimeStepOnly,
       File> StrCat[ResDir,"Lq",ExtGnuplot],
       SendToServer StrCat[poF,"Lq [H]"]{0}, Color "LightYellow"];
+  }
+EndIf
+
+If (Flag_ClearViews)
+  PostOperation DeleteViews UsingPost MagStaDyn_a_2D {
+    Echo[
+      Str[
+        "If (PostProcessing.NbViews != 0)",
+        "  Printf('Number of views is %.0f', PostProcessing.NbViews);",
+        "  For k In {0:PostProcessing.NbViews-1}",
+        "      Delete View[0];",
+        "  EndFor",
+        "EndIf"
+      ],
+      File StrCat[ResDir,"tmp.geo"],
+      LastTimeStepOnly
+    ];
   }
 EndIf

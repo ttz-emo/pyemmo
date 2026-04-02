@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -17,16 +17,40 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Init for API subpackage"""
+"""
+Overview
+========
+This subpackage contains the software for the two PyEMMO interfaces (api's):
+
+- :mod:`~pyemmo.api.json`
+- :mod:`~pyemmo.api.pyleecan`
+
+The :mod:`~pyemmo.api.json` interface is a general purpose interface to create ONELAB models through PyEMMO.
+Therefore it provides a external interface via json formatted input files and can be run through the command line.
+
+The :mod:`~pyemmo.api.pyleecan` api is a addon that allows to create ONELAB models from `PYLEECAN <https://pyleecan.org/>`_ machines.
+PYLEECAN is a powerful open-source software for the design and analysis of electrical machines.
+It provides various parameterized rotor and stator geometries and a graphical user interface to create and edit machine designs.
+The :mod:`~pyemmo.api.pyleecan` api translates PYLEECAN machine objects into the geometry and material definitions required by the json api, which then creates the ONELAB model files for simulation.
+
+Furthermore, the :mod:`~pyemmo.api` package holds the definition for the class :class:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface`, which is a :class:`~pyemmo.script.gmsh.gmsh_segment_surface.GmshSegmentSurface` with additional attributes :attr:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface.part_id` and :attr:`~pyemmo.api.machine_segment_surface.MachineSegmentSurface.material`.
+"""
 from __future__ import annotations
 
 import logging
 
-from .. import logFmt, rootLogger
+import gmsh
+
 from ..script.material.material import Material
+
+logger = logging.getLogger(__name__)
 
 try:
     air = Material.load("Air")
+    """Default air material to be used in pyemmo api.
+
+    :meta private:
+    """
     air.density = 1.2041
 except FileNotFoundError:
     air = Material(
@@ -40,9 +64,8 @@ except FileNotFoundError:
     )
 air.name = "PYEMMO_AIR"
 
-
-logger = rootLogger  # test to get script.py log in local model log file
-# logger = logging.getLogger("pyemmo.api.json")  # init module logger
-ch = logging.StreamHandler()
-ch.setFormatter(logFmt)
-logger.addHandler(ch)
+if not gmsh.is_initialized():
+    gmsh.initialize()
+    if logger.getEffectiveLevel() < logging.DEBUG:
+        # use fine resolution for arcs in debugging
+        gmsh.option.setNumber("Geometry.NumSubEdges", 360)

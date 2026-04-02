@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO,
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO,
 # Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -20,6 +20,8 @@
 #
 
 from __future__ import annotations
+
+import logging
 
 import numpy as np
 import pytest
@@ -128,11 +130,26 @@ def test_linear_property():
 
 def test_BH_setter_and_getter():
     m = Material(name="Steel")
-    arr = np.array([[0, 0], [1, 1]])
+    arr = np.array([[0, 0.0], [1.0, 1]])
     m.BH = arr
     np.testing.assert_array_equal(m.BH, arr)
     # Should set linear to False
     assert m.linear is False
+
+
+def test_BH_setter_transposed(caplog):
+    """Test that setting BH curve also works if transposed"""
+    # using pytest caplog fixture to capture logging messages from pyemmo logger to make
+    # sure warning message is raised.
+    caplog.set_level(logging.DEBUG, logger="pyemmo")
+    m = Material(name="Steel")
+    arr = np.array([[0, 0.0], [1.0, 1], [100, 1.1]])
+    m.BH = arr.T  # transpose array to see if its correctly retransposed
+    np.testing.assert_array_equal(m.BH, arr)
+    # Should set linear to False
+    assert m.linear is False
+    # following only works if log level is debug
+    assert "Transposing given BH curve" in caplog.text
 
 
 def test_set_BH_with_list():
@@ -140,6 +157,16 @@ def test_set_BH_with_list():
     bh_list = [[0, 0], [1, 1]]
     m.set_BH(bh_list)
     np.testing.assert_array_equal(m.BH, np.array(bh_list))
+
+
+def test_set_BH_without_origin():
+    m = Material(name="Steel")
+    arr = np.array([[1.0, 1], [2, 2], [2.2, 300]])
+    m.BH = arr
+    exp_arr = np.array([[0, 0], [1.0, 1], [2, 2], [2.2, 300]])
+    np.testing.assert_array_equal(m.BH, exp_arr)
+    # Should set linear to False
+    assert m.linear is False
 
 
 def test_str_and_print(capsys):

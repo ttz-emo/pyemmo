@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO, Technical University of
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of
 # Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -74,7 +74,8 @@ def fixture_gmsh_circle():
 
 
 def create_segment():
-    """Default test 8th-segment gmsh surface"""
+    """Default test 8th-segment gmsh surface with inner radius 1 meter and outer radius
+    1.3 meter"""
     center_point = GmshPoint.from_coordinates(name="Center point", coords=(0, 0, 0))
     nbr_segments = 8
     angle = 2 * np.pi / nbr_segments

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO, Technical University of
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of
 # Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -36,6 +36,25 @@ from pyemmo.script.gmsh.gmsh_surface import GmshSurface
 
 from ..script.gmsh.test_gmsh_seg_surface import create_segment
 from ..script.gmsh.test_gmsh_surface import add_circle as add_gmsh_circle
+
+
+def add_machine_seg_circ(
+    center: GmshPoint, radius: float, nbr_segments: int
+) -> MachineSegmentSurface:
+    """Helper function to add a circular MachineSegmentSurface to the gmsh model. The
+    circle is created with the given center and radius and is discretized with the
+    given number of segments.
+
+    Args:
+        center (GmshPoint): Center point of the circle.
+        radius (float): Radius of the circle.
+        nbr_segments (int): Number of segments to discretize the circle.
+
+    Returns:
+        MachineSegmentSurface: The created circular MachineSegmentSurface.
+    """
+    circ = add_gmsh_circle(center, radius)
+    return MachineSegmentSurface("circ_part_id", air, circ.id, nbr_segments)
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -83,19 +102,6 @@ def fixture_gmsh_circle():
     """Default test circle with radius 1 meter."""
     centerpoint = GmshPoint.from_coordinates(coords=(0, 0, 0))
     return add_gmsh_circle(centerpoint, 1)
-
-
-def add_circle(
-    center: GmshPoint, radius: float, nbr_segments: int
-) -> MachineSegmentSurface:
-    circ = add_gmsh_circle(center, radius)
-    return MachineSegmentSurface(
-        part_id="Circle",
-        material=air,
-        tag=circ.id,
-        name=circ.name,
-        nbr_segments=nbr_segments,
-    )
 
 
 def test_init_with_id():
@@ -218,7 +224,7 @@ def test_rotate_z(machine_seg_surf: MachineSegmentSurface):
     # rotate surf by 90 degrees around z-axis
     center = Point("center point", 0, 0, 0)
     machine_seg_surf.rotateZ(center, np.pi / 2)
-    gmsh.model.occ.synchronize()  # synchronize model to apply changes
+    gmsh.model.occ.synchronize()  # NOTE: Need to sync to update the coordinates
     new_angle = 3 * np.pi / 4
     exspected_coords = [
         (0, 1, 0),
@@ -295,7 +301,7 @@ def test_cut_out_inside(machine_seg_surf: MachineSegmentSurface):
     center = GmshPoint.from_coordinates(
         name="Center", coords=machine_seg_surf.calcCOG().coordinate
     )
-    circ = add_circle(
+    circ = add_machine_seg_circ(
         center,
         radius=machine_seg_surf.curve[0].length / 4,
         nbr_segments=machine_seg_surf.nbr_segments,
@@ -316,7 +322,7 @@ def test_cut_out_overlap(machine_seg_surf: MachineSegmentSurface):
     ].middle_point  # center point between start and
     circ_center = GmshPoint.from_coordinates(coords=circ_center.coordinate)
     # end point
-    circ = add_circle(
+    circ = add_machine_seg_circ(
         circ_center,
         radius=machine_seg_surf.curve[0].length / 4,
         nbr_segments=machine_seg_surf.nbr_segments,
@@ -332,8 +338,10 @@ def test_cut_out_noIntersect(machine_seg_surf: MachineSegmentSurface):
     """Test cutOut() method for circle that **does not intersect** the parent
     surface -> Nothing should happen to the parent surface parameters."""
     circ_center = machine_seg_surf.points[0]
-    circ = add_circle(
-        circ_center, radius=0.1, nbr_segments=machine_seg_surf.nbr_segments
+    circ = add_machine_seg_circ(
+        circ_center,
+        radius=0.1,
+        nbr_segments=machine_seg_surf.nbr_segments,
     )
     circ.translate(0, -0.3, 0)  # move circle out of parent surface
     machine_seg_surf.cutOut(circ)
@@ -350,7 +358,7 @@ def test_cut_out_greaterSymTool(machine_seg_surf: MachineSegmentSurface):
     center = GmshPoint.from_coordinates(
         name="Center", coords=machine_seg_surf.calcCOG().coordinate
     )
-    circ = add_circle(
+    circ = add_machine_seg_circ(
         center,
         radius=machine_seg_surf.curve[0].length / 4,
         nbr_segments=3 * machine_seg_surf.nbr_segments,
@@ -376,7 +384,7 @@ def test_cut_out_lowerSymTool(machine_seg_surf: MachineSegmentSurface):
     center = GmshPoint.from_coordinates(
         name="Center", coords=machine_seg_surf.calcCOG().coordinate
     )
-    circ = add_circle(
+    circ = add_machine_seg_circ(
         center,
         radius=machine_seg_surf.curve[0].length / 4,
         nbr_segments=machine_seg_surf.nbr_segments / 2,
@@ -412,10 +420,10 @@ def test_2_layer_subtract(machine_seg_surf: MachineSegmentSurface):
     center = GmshPoint.from_coordinates(
         name="Center", coords=machine_seg_surf.calcCOG().coordinate
     )
-    circ_big = add_circle(
+    circ_big = add_machine_seg_circ(
         center, radius=0.25 / 2, nbr_segments=machine_seg_surf.nbr_segments
     )
-    circ_small = add_circle(
+    circ_small = add_machine_seg_circ(
         center, radius=0.1 / 2, nbr_segments=machine_seg_surf.nbr_segments
     )
     circ_big.cutOut(circ_small)  # SECOND LAYER CUT
@@ -428,6 +436,10 @@ def test_rotate_duplicate(machine_seg_surf: MachineSegmentSurface):
     """Test rotate_duplicate() method"""
     # create a duplicate of the rotated surface
     dup_surf = machine_seg_surf.rotate_duplicate(1)
+    assert dup_surf.segment_nbr == 1
+    assert dup_surf.name == machine_seg_surf.name + " (Seg.: 1)"
+    assert dup_surf.nbr_segments == machine_seg_surf.nbr_segments
+    assert dup_surf.material == machine_seg_surf.material
 
 
 def test_rotate_duplicate_wrongSym(machine_seg_surf: MachineSegmentSurface):

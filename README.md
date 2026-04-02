@@ -1,5 +1,6 @@
 <!--
-Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+Copyright (c) 2018-2026 M. Schuler,TTZ-EMO,
+Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 
 This file is part of PyEMMO
 (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -24,12 +25,15 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 to write your content. -->
 
 <!-- ![PyEMMO project logo](./doc/images/PyEMMO_Logo.png) -->
-<img src="./doc/images/PyEMMO_Logo.png" width="200">
+<p align="center">
+<img src="https://raw.githubusercontent.com/ttz-emo/pyemmo/master/doc/images/PyEMMO_Logo.png" width="200">
+</p>
+
 
 # PyEMMO
 _**Py**thon **E**lectrical **M**achine **M**odelling in **O**NELAB_
 
-PyEMMO is a interface for modeling electrical machines in the open-source FEA software [Onelab](https://onelab.info/).
+PyEMMO is a interface for modeling electrical machines in the open-source FEA software [ONELAB](https://onelab.info/).
 The goal of the project is to automate model creation and the simulation workflow for electrical machines with ONELAB.
 <!-- That's why it name stands for **Py**thon **E**lectrical **M**achine **M**odelling in **O**NELAB -->
 
@@ -45,15 +49,38 @@ pip install pyemmo
 You will need versions of [Gmsh](https://gmsh.info/) and [GetDP](https://getdp.info/) executables. While Gmsh can be directly installed from pip with the Gmsh Python-API, you will need to download GetDP individually.
 > [!WARNING]
 > Models created with PyEMMO fail with current GetDP version 3.6.0 due to mesh import error!
-> You can check your GetDP version wirh  ``getdp --version``
+> You can check your GetDP version with  ``getdp --version``
 
 ## Usage
 
-The easiest way to start is by using the [Pyleecan](https://github.com/Eomys/pyleecan) project to create a electrical machine instance and feeding it into the PyEMMO-Pyleecan interface.
-- Have a look at the [Pyleecan tutorials](https://pyleecan.org/tutorials.html) on how to use Pyleecan. Especially the tutorial on ["How to define a machine"](https://pyleecan.org/01_tuto_Machine.html).
-- See the [Pyleecan API tutorial](tutorials/tutorial_pyleecan_api.py) for detailed instructions on how to create a ONELAB model from a Pyleecan machine object.
+The easiest way to start is by using the [PYLEECAN](https://github.com/Eomys/pyleecan) project to create a electrical machine instance and feeding it into the PyEMMO-PYLEECAN interface.
+- Have a look at the [PYLEECAN tutorials](https://pyleecan.org/tutorials.html) on how to use PYLEECAN. Especially the tutorial on ["How to define a machine"](https://pyleecan.org/01_tuto_Machine.html).
+- See the [PYLEECAN API tutorial](tutorials/pyleecan_api.py) for detailed instructions on how to create a ONELAB model from a PYLEECAN machine object.
+- See the [PyEMMO documentation](https://ttz-emo.thws.de/arbeitsgruppen/elektrische-maschinen/pyemmo/) for details.
 
+<!-- TODO: Link to our tutorials folder / doc -->
+Here is a small example of the PYLEECAN API:
 
+```python
+from os.path import join
+
+from pyemmo.api.pyleecan import main as pyleecan_api
+from pyleecan.definitions import DATA_DIR
+from pyleecan.Functions.load import load
+
+# load a pyleecan machine
+IPMSM_A = load(join(DATA_DIR, "Machine", "Toyota_Prius.json"))
+
+# Run the main function of the pyleecan api:
+pyemmo_script = pyleecan_api.main(
+    pyleecan_machine=IPMSM_A,
+    model_dir="./Toyota_Prius_ONELAB",  # path for the model files
+    use_gui=True,  # select if you want to open the final model in Gmsh.
+    gmsh="",  # optional gmsh executable.
+    # If use_gui is True, pyemmo will try to find a Gmsh executable on your computer.
+    getdp="",  # optional getdp executable. For simulation in the GUI.
+)
+```
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first
@@ -63,7 +90,9 @@ Please make sure to update tests as appropriate.
 
 ### Setup
 
-After cloning the repository, run the following command to install Git hooks:
+After cloning the repository you should install pre-commit package using ``pip install pre-commit``.
+After that please update the ``INSTALL_PYTHON`` path in the pre-commit hook under "./workingDirectory/pre-commit".
+Then run the following command to install the Git hooks:
 
 ```sh
 ./workingDirectory/install-hooks.sh
@@ -74,7 +103,30 @@ Or if you are on Windows:
 ```sh
 install-hooks.bat
 ```
+These hooks make sure you have formatted your files correctly.
+
+## 🙏 Acknowledgements
+
+- Thanks to all contributors who helped improve this project.
+- This project has received funding from the *[Bavarian Ministry of Economic Affairs, Regional Development and Energy](https://www.stmwi.bayern.de/)* through the *TherCom* research project. Special thanks to *Siemens Electric Motor Plant Bad Neustadt a. d. Saale* for supporting it.
 
 ## License
 
 [GPLv3](https://www.gnu.org/licenses/gpl-3.0.html)
+
+## Publications
+
+- [2023: PyEMMO - a Python based software for the finite element modelling of electrical machines in ONELAB](https://nbn-resolving.org/urn:nbn:de:bvb:863-opus-55489)
+
+
+## Run Sphinx to create Documentation
+
+To create or update the documentation you will need to do:
+
+1. Install the doc requirements with: `pip install -r requirements-doc.txt`.
+2. Make sure pyemmo is found by either creating a *pyemmo.pth* file in the *site-packages* folder or use `pip install -e .`.
+3. To fully build the documentation including the PYLEECAN api subpackage you need to install PYLEECAN. Currently we have to use the Github version since there is no new release yet: `pip install git+https://gitlab.com/Eomys/pyleecan/tree/update-python-version.git`
+4. Run Sphinx to build the docs e.g. in html `doc\make.bat html`.
+
+You can run `doc\make.bat` plane to see the build options.
+Further information on building the documentation can be found in the [Sphinx documentation](https://www.sphinx-doc.org/en/master/tutorial/index.html).

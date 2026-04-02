@@ -1,5 +1,5 @@
 # %%
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of
 # Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -22,6 +22,7 @@
 from __future__ import annotations
 
 import os
+from fnmatch import fnmatch
 from os.path import isdir, join
 
 
@@ -33,17 +34,30 @@ def check_model_files(model_dir: os.PathLike, model_name: str):
     2. model_name + ".geo"
     3. model_name + ".pro"
     4. "machine_magstadyn_a"
+    5. "Circuit_SC_ASM.pro"
 
     Args:
         model_dir (os.PathLike): File path to model directory.
         model_name (str): Model name to identify the model files.
     """
-    model_file = join(model_dir, model_name + "_param.geo")
-    assert os.path.isfile(model_file), f"Model file {model_file} did not exist."
+    # check for param file
+    found_param_file = False
+    for file in os.listdir(model_dir):
+        if fnmatch(file, model_name + "*_param.geo"):
+            found_param_file = True
+            break
+    assert found_param_file, f"Model file {model_name}*_param.geo did not exist."
+
     for ext in ("geo", "pro"):
-        model_file = join(model_dir, model_name + "." + ext)
-        assert os.path.isfile(model_file), f"Model file {model_file} did not exist."
+        if not any(
+            fnmatch(file, model_name + "*." + ext) for file in os.listdir(model_dir)
+        ):
+            raise FileNotFoundError(
+                f"Model file {model_name}*.{ext} did not exist in {model_dir}."
+            )
+
     model_file = join(model_dir, "machine_magstadyn_a.pro")
+    model_file = join(model_dir, "Circuit_SC_ASM.pro")
     assert os.path.isfile(model_file)
 
 
@@ -66,8 +80,12 @@ def check_model_result_files(
         process.
     """
     for ext in ("msh", "pre", "res"):
-        model_file = join(model_dir, model_name + "." + ext)
-        assert os.path.isfile(model_file), f"ONELAB file {model_file} did not exist."
+        if not any(
+            fnmatch(file, model_name + "*." + ext) for file in os.listdir(model_dir)
+        ):
+            raise FileNotFoundError(
+                f"Result file {model_name}*.{ext} did not exist in {model_dir}."
+            )
     if not result_dir_name:
         result_dir_name = "res_" + model_name
     assert isdir(

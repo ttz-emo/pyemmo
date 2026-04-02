@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -75,11 +75,11 @@ myScript = Script(
     default_param_dict,
     None,
 )
-myScript.addPostOperation(
-    quantityName="b",
-    name="User Defined PostOperation",
+myScript.add_post_operation(
+    quantity_name="b",
+    post_operation="User Defined PostOperation",
     OnGrid="{(r_AG)*Sin[Pi/nbSlots-$A*Pi/180],(r_AG)*Cos[Pi/nbSlots-$A*Pi/180],0}{0:360/SymmetryFactor,0,0}",
     File=path.abspath(path.join(myScript.getResultsPath(), "b_OnRadius.pos")),
 )
-print(myScript.postOperation.code)
+print(myScript.post_operation.code)
 # %%

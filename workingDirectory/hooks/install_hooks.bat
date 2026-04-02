@@ -1,5 +1,5 @@
 @REM
-@REM  Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of
+@REM  Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of
 @REM  Applied Sciences Wuerzburg-Schweinfurt.
 @REM
 @REM  This file is part of PyEMMO

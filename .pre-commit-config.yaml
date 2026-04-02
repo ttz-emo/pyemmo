@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of Applied
 # Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -67,7 +67,7 @@ repos:
     rev: v3.20.0
     hooks:
       - id: pyupgrade
-        args: [--py36-plus]
+        args: [--py39-plus]
 
   # Upgrade documentation files: pyupgrade-docs provides a single executable
   # (pyupgrade-docs) which will modify .rst / .md / .tex files in place.
@@ -75,7 +75,7 @@ repos:
     rev: v0.3.0
     hooks:
       - id: pyupgrade-docs
-        args: [--py36-plus]
+        args: [--py39-plus]
 
   # # security issues python (Guard rails):
   # - repo: https://github.com/PyCQA/bandit

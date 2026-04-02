@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -160,10 +160,10 @@ for surf in surfList:
     else:
         print("Unknown surface name to set mesh length")
 
-from pyemmo.functions import runOnelab
+from pyemmo.functions import run_onelab
+from pyemmo.script.domain import Domain
 from pyemmo.script.geometry.airArea import AirArea
 from pyemmo.script.geometry.airGap import AirGap
-from pyemmo.script.geometry.domain import Domain
 from pyemmo.script.geometry.magnet import Magnet
 
 # %% Dummy Objekte zum befüllen
@@ -194,9 +194,9 @@ for surf in surfList:
 
 domTest = Domain("domTest", allPhysical)
 domTest.addToScript(myScript)
-myScript.generateScript(mode=1)
+myScript.generate(mode=1)
 # %% Run gmsh
-command = runOnelab.createCmdCommand(myScript.geoFilePath, useGUI=True)
+command = run_onelab.create_command(myScript.geo_file_path, useGUI=True)
 subprocess.run(command)
 
 # %%

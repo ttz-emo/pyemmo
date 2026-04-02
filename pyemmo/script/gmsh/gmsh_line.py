@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of
 # Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -39,30 +39,17 @@ Usage:
 
 Example:
 
-.. python:
-
-    from module_name import GmshLine, GmshPoint
-    import numpy as np
-
-    # Create GmshPoint instances
-    start = GmshPoint.from_coordinates(coords=np.array([0.0, 0.0, 0.0]))
-    end = GmshPoint.from_coordinates(coords=np.array([1.0, 1.0, 1.0]))
-
-    # Define a line using GmshLine
-    line = GmshLine.from_points(
-        start_point=start,
-        end_point=end,
-        name="Diagonal",
-    )
-
-    # Print line details
-    print(line)
-
-Author:
-    Max Schuler
-
-Note:
-    This docstring was created by ChatGPT.
+    >>> from pyemmo.script.gmsh.gmsh_line import GmshLine, GmshPoint
+    >>> import numpy as np
+    >>> # Create GmshPoint instances
+    >>> start = GmshPoint.from_coordinates(coords=np.array([0.0, 0.0, 0.0]))
+    >>> end = GmshPoint.from_coordinates(coords=np.array([1.0, 1.0, 1.0]))
+    >>> # Define a line using GmshLine
+    >>> line = GmshLine.from_points(
+    >>>     start_point=start,
+    >>>     end_point=end,
+    >>>     name="Diagonal",
+    >>> )
 """
 
 
@@ -84,14 +71,6 @@ class GmshLine(GmshGeometry, Line):
     Represents a Gmsh line in 3D space defined by a start and end point, with a unique
     identifier (tag), a name. The start and end points are instances of
     GmshPoint.
-
-    Attributes:
-        tag (int): The unique identifier for the line.
-        start_point (GmshPoint): The starting point of the line.
-        end_point (GmshPoint): The ending point of the line.
-        points (list[GmshPoint]): A list containing the start and end points of the line.
-        length (float): The length of the line.
-        name (str): The name of the line.
     """
 
     @property
@@ -247,53 +226,48 @@ class GmshLine(GmshGeometry, Line):
         gmsh.model.occ.translate([(1, self.id)], dx, dy, dz)
 
     def rotateZ(self, rotationPoint=defaultCenterPoint, angle=0.0):
-        """Mit rotateZ() wird eine Gerade um einen Rotationspunkt (rotationPoint) und die
-        Z-Achse mit einem definierten Winkel rotiert.
+        """rotate line around z-axis
 
         Args:
-            - rotationPoint (Point, optional): Rotation center point.
-            Defaults to Point("tmpCenterPoint", 0, 0, 0, 1).
-            - angle (float, optional): Rotation angle in rad. Defaults to 0.0.
+            rotationPoint (Point, optional): Rotation center point.
+                Defaults to Point("tmpCenterPoint", 0, 0, 0, 1).
+            angle (float, optional): Rotation angle in rad. Defaults to 0.0.
 
-        Beispiel:
-            from math import pi\n
-            L1 = Line(-1, 'l1', P1, P2)\n
-            L1.rotateZ(P0, pi)\n
+        Example:
+            >>> from math import pi
+            >>> L1 = GmshLine.from_points(P1, P2)
+            >>> L1.rotateZ(P0, pi)
         """
         x, y, z = rotationPoint.coordinate
         gmsh.model.occ.rotate([(1, self.id)], x, y, z, 0, 0, 1, angle=angle)
 
     def rotateY(self, rotationPoint: Point, angle: float):
-        """
-        Mit rotateY() wird eine Gerade um einen Rotationspunkt (rotationPoint) und die
-        Y-Achse mit einem definierten Winkel rotiert.
+        """Rotate line around y-axis
 
         Args:
-           - rotationPoint (Point): rotation center point
-           - angle (float): rotation angle in rad
+           rotationPoint (Point): rotation center point
+           angle (float): rotation angle in rad
 
-        Beispiel:
-            from math import pi\n
-            L1 = Line('l1', P1, P2)\n
-            L1.rotateY(P0, pi)\n
+        Example:
+            >>> from math import pi
+            >>> L1 = GmshLine.from_points(P1, P2)
+            >>> L1.rotateY(P0, pi)
 
         """
         x, y, z = rotationPoint.coordinate
         gmsh.model.occ.rotate((1, self.id), x, y, z, 0, 1, 0, angle=angle)
 
     def rotateX(self, rotationPoint: Point, angle):
-        """
-        Mit rotateX() wird eine Gerade um einen Rotationspunkt (rotationPoint) und die
-        X-Achse mit einem definierten Winkel rotiert.
+        """Rotate line around x-axis
 
         Args:
-           - rotationPoint (Point): rotation center point
-           - angle (float): rotation angle in rad
+            rotationPoint (Point): rotation center point
+            angle (float): rotation angle in rad
 
-        Beispiel:
-            from math import pi\n
-            L1 = Line('l1', P1, P2)\n
-            L1.rotateX(P0, pi)\n
+        Example:
+            >>> from math import pi
+            >>> L1 = Line('l1', P1, P2)
+            >>> L1.rotateX(P0, pi)
 
         """
         x, y, z = rotationPoint.coordinate
@@ -310,9 +284,9 @@ class GmshLine(GmshGeometry, Line):
             GmshLine: A copy of the line.
 
         Example:
-            from pyemmo.script.gmsh.gmsh_line import GmshLine\n
-            L1 = GmshLine.from_points(P1, P2,'Line 1')\n
-            L2 = L1.duplicate("new name")\n
+            >>> from pyemmo.script.gmsh.gmsh_line import GmshLine
+            >>> L1 = GmshLine.from_points(P1, P2, "Line 1")
+            >>> L2 = L1.duplicate("new name")
         """
 
         dim_tags: list[DimTag] = gmsh.model.occ.copy([(1, self.id)])
@@ -340,10 +314,10 @@ class GmshLine(GmshGeometry, Line):
             GmshLine: Combined line.
 
         Example:
-            from pyemmo.script.gmsh.gmsh_line import GmshLine\n
-            L1 = GmshLine.from_points(P1, P2,'Line 1')\n
-            L1 = GmshLine.from_points(P1, P2,'Line 1')\n
-            L3 = L1.combine(L2, "L3")\n
+            >>> from pyemmo.script.gmsh.gmsh_line import GmshLine
+            >>> L1 = GmshLine.from_points(P1, P2,'Line 1')
+            >>> L3 = GmshLine.from_points(P2, P3,'Line 2')
+            >>> L3 = L1.combine(L2, "L3")
         """
         out_dim_tags, out_dim_tags_map = gmsh.model.occ.fuse(
             [(1, self.id)], [(1, line.id)]

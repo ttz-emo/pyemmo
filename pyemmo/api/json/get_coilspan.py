@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -20,11 +20,15 @@
 """Function to get coil span from winding layout"""
 from __future__ import annotations
 
+import logging
+
 import numpy as np
 
 
 def get_min_coilspan(wind_layout: list[list[int]], nbrSlots: int) -> int:
     """Calculate the minimal coil span from a winding layout"""
+    logger = logging.getLogger(__name__)
+    logger.debug("Calculating minimal coil span from winding layout")
     if wind_layout[0][1]:
         # if second slot side list is NOT empty -> 2 layer winding
         wind_array = np.array(wind_layout, dtype=object)
@@ -45,4 +49,5 @@ def get_min_coilspan(wind_layout: list[list[int]], nbrSlots: int) -> int:
     for i in range(1, nbrSlots):
         # loop through distance to first slot and check if that slot is in a
         if i in a or nbrSlots - i in a:
+            logger.debug("Minimal coil span is: %i", i)
             return i

@@ -220,16 +220,16 @@ DefineConstant[
         Name StrCat[
             INPUT_ANA_SETTINGS_OUTPUT, "02Results folder path"
         ],
-        Help "Main results folder path where the results of the simulation
-            will be stored. This folder will be created by GetDP if it does not
-            exist yet. Use 'Results folder name' to create a result subfolder."
+        Help StrCat("Main results folder path where the results of the simulation ",
+            "will be stored. This folder will be created by GetDP if it does not ",
+            "exist yet. Use 'Results folder name' to create a result subfolder.")
     }
 
     ResId = {
         "/", Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "03Results folder name"],
-        Help "Name of the directory inside the results folder, where the result
-            files of THIS simulation should be stored. This directory will be
-            automatically created by GetDP."
+        Help StrCat("Name of the directory inside the results folder, where the result ",
+            "files of THIS simulation should be stored. This directory will be ",
+            "automatically created by GetDP.")
     },
 
     Flag_ClearResults = {
@@ -239,14 +239,21 @@ DefineConstant[
         Choices {0,1}
     },
 
+    Flag_ClearViews = {
+        1,
+        Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "05Delete all field plots"],
+        Choices{0,1}
+    },
+
+
     Flag_PrintFields = {
-        0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "05Show Local Fields"],
+        0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "06Show Local Fields"],
         Choices{0, 1}
     },
 
     Flag_Calculate_ONELAB = {
         1, Name StrCat[
-            INPUT_ANA_SETTINGS_OUTPUT, "06Calculate torque: Arrkios method"
+            INPUT_ANA_SETTINGS_OUTPUT, "07Calculate torque: Arrkios method"
         ],
         Choices {0,1},
         Help "ONELAB implementation of Arrkios method.",
@@ -255,25 +262,25 @@ DefineConstant[
 
     Flag_Calculate_VW = {
         0, Name StrCat[
-            INPUT_ANA_SETTINGS_OUTPUT, "07Calculate torque: Virtual Work"
+            INPUT_ANA_SETTINGS_OUTPUT, "08Calculate torque: Virtual Work"
         ],
         Choices {0,1},
         Visible Flag_ExpertMode
     },
 
     Flag_Inductance = {
-        0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "08Compute inductances"],
+        0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "09Compute inductances"],
         Choices{0, 1}
     },
 
     Flag_diffInductance = {
-        1, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "09Inductance Computation Type"],
+        1, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "10Inductance Computation Type"],
         Choices{0 = "Apparent", 1 = "Incremental"},
         Visible Flag_Inductance
     },
 
     Flag_SaveSolution = {
-        0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "10Save Solution"],
+        0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "11Save Solution"],
         Choices{0, 1},
         Visible Flag_ExpertMode,
         Help StrCat[
@@ -337,8 +344,7 @@ DefineConstant[
     stop_criterion = {
         1e-7, Name StrCat[INPUT_SOLVER_SETTINGS_NL, "Stopping criterion"],
         //   Visible Flag_NL,
-        Help "Stop criterion for Newton-Raphson method.
-         Solver will stop when Norm((Ax-b)/x) < stop_criterion."
+        Help "Stop criterion for Newton-Raphson method. Solver will stop when Norm((Ax-b)/x) < stop_criterion."
     },
 
     // In the newton raphson method, the relaxation factor determines the new x
@@ -384,33 +390,46 @@ DefineConstant[
                      Help "Axial length of the rotor active material in m",
                      Units "m"},
 
-    // d_Lam_i = {0.5,
-    //            Name StrCat[INPUT_MAT_PROPERTIES, "Lamination thickness [mm]"],
-    //            Units "mm",
-    //            Visible Flag_Lam &&Flag_ExpertMode,
-    //            Help "Lamination Thickness"},
-    // d_Lam = d_Lam_i * mm, // conversion to SI
-
     // determine if we want to calculate using a linear or non-linear material
     Flag_NL = {
         FLAG_NL, Name StrCat[INPUT_MAT_PROPERTIES, "Non-linear B-H curves"],
         Choices{0, 1},
         Visible Flag_ExpertMode,
-        Help "If this parameter is checked (=1), then the non-linear B-H curves
-             are used. Otherwise the non-linearity is replaced (extrapolated) by
-             a constant mu_r."
-        }
-
-    // dens_Lam = {
-    //     VALUE_DENSITY_LAM,
-    //     Name StrCat[INPUT_MAT_PROPERTIES, "Lamination density [kg/m³]"],
-    //     Units "kg m^-3",
-    //     Visible Flag_Lam &&Flag_ExpertMode,
-    //     Help "density of the lammination part where eddy current losses should be calculated"}
-
+        Help StrCat("If this parameter is checked (=1), then the non-linear B-H curves ",
+            "are used. Otherwise the non-linearity is replaced (extrapolated) by a ",
+            "constant mu_r.")
+        },
+    eccentricity_static = {
+        0.0, Name StrCat[INPUT_GEO, "Static Eccentricity"],
+        Unit "mm",
+        ReadOnly SymmetryFactor != 1,
+        Help StrCat("The stator will elements be translated by this in -x direction. ",
+            "Make sure that the sum of static and dynamic eccentricity are not greater ",
+            "than the movingband height! ",
+            "This can only be used in a full model (symmetry = 1).")
+        },
+    eccentircity_static_m = eccentricity_static * mm,
+    eccentricity_dynamic = {
+        0.0, Name StrCat[INPUT_GEO, "Dynamic Eccentricity"],
+        Unit "mm",
+        ReadOnly SymmetryFactor != 1,
+        Help StrCat("Dynamic eccentircity in mm. The rotor initial position will be ",
+            "translated by this in x-direction, while still rotating the rotor elements ",
+            "around the origin. ",
+            "Make sure that the sum of static and dynamic eccentricity are not greater ",
+            "than the movingband height! ",
+            "This can only be used in a full model (symmetry = 1).")
+        },
+    // tranlate to meter
+    eccentricity_dynamic_m = eccentricity_dynamic * mm,
+    // Get number of movingband segments from .geo file to use in PostOperations
+    NbrMbSegments = GetNumber[StrCat[INPUT_MESH, "Number of Rotor Movingband Segments"], 360],
+    GlobalMeshsizeFactor = GetNumber[StrCat[INPUT_MESH, "00Mesh size factor"], 1.0]
 ];
-
-// Printf("%g d_lam", d_Lam);
+Printf("eccentricity_dynamic = %.6e mm", eccentricity_dynamic);
+Printf("eccentricity_static =  %.6e mm", eccentricity_static);
+Printf("Number of Movingband Segments (for PostProcessing) = %.0f", NbrMbSegments);
+Printf("Global mesh size factor (for PostProcessing) = %.0f", GlobalMeshsizeFactor);
 
 //=============================================================================
 //========================== END MACHINE PARAMETERS ===========================
@@ -427,14 +446,19 @@ DefineConstant[
         NBR_TURNS_IN_FACE,Name StrCat[
             INPUT_ELEC_WINDINGS, "01Number of wires per slot surface"
         ],
-        Help "Number of wires in a single slot surface"
+        Help StrCat(
+            "Number of wires in a single slot surface.",
+            "If the slot is divided in several surfaces, the value needs to match the ",
+            "number of wires in each surface."
+            )
     },
 
     NbrParallelPaths = {
         NBR_PARALLEL_PATHS, Name StrCat[
             INPUT_ELEC_WINDINGS, "02Number of parallel paths per phase"
         ],
-        ReadOnly !Flag_ExpertMode
+        ReadOnly !Flag_ExpertMode,
+        Help "Number of parallel paths per phase."
     },
 
     FillFactor_Winding = {
@@ -460,7 +484,8 @@ DefineConstant[
             INPUT_ELEC_EXCITATION, "05Invert rotation Direction"
         ],
         Choices{0, 1},
-        Visible Flag_ExpertMode
+        Visible Flag_ExpertMode,
+        Help "Invert the stator field rotation direction by changing phase offset in source definition."
     },
     // IF SYNCHRONOUS
     ID_RMS = {
@@ -502,7 +527,8 @@ DefineConstant[
             INPUT_ELEC_EXCITATION, "06Stator dq-System Offset [deg elec]"
         ],
         Min -360, Max 360, Step 10,
-        Visible Flag_ExpertMode && MachineType==SYNCHRONOUS
+        Visible Flag_ExpertMode && MachineType==SYNCHRONOUS,
+        Help "Stator dq0 offset angle to align with rotor dq0 axis."
     },
     // Else if MachineType is ASYNCHRONOUS
     // For async we define rotor frequency and rms phase current
@@ -511,7 +537,8 @@ DefineConstant[
             INPUT_ELEC_EXCITATION, "00Stator Phase Current (RMS)"
         ],
         Units "A",
-        Visible Flag_SrcType_Stator == 1 && MachineType==ASYNCHRONOUS
+        Visible Flag_SrcType_Stator == 1 && MachineType==ASYNCHRONOUS,
+        Help "Stator phase current (rms)"
     },
 
     freq_rotor = {
@@ -519,7 +546,8 @@ DefineConstant[
             INPUT_ELEC_EXCITATION, "01Rotor Frquency"
         ],
         Units "Hz",
-        Visible MachineType==ASYNCHRONOUS
+        Visible MachineType==ASYNCHRONOUS,
+        Help "Electrical rotor frequency for induction machine."
     },
 
 
@@ -535,6 +563,7 @@ DefineConstant[
 
     // Use the Park transformation
     Flag_ParkTransformation = {
+        // current source and synchronous machine
         Flag_SrcType_Stator == TRANSIENT && MachineType==SYNCHRONOUS,
         Name StrCat[INPUT_ELEC_EXCITATION, "Use Clark-Park-Transformation"],
         Choices {0,1},
@@ -552,7 +581,9 @@ DefineConstant[
     R_wire = {
         500e-3, Name StrCat[INPUT_ELEC_EXCITATION, "Connection (Wire-)Resistance"],
         Units "Ohm",
-        Visible Flag_Cir
+        Visible Flag_Cir,
+        Help StrCat("Connection resistance between voltage source and machine ",
+            "(cable and connection resistance).")
     },
 
     R_terminal = {
@@ -572,7 +603,8 @@ DefineConstant[
             STAR_CONNECTION = "Star Connection", // 0
             DELTA_CONNECTION = "Delta Connection" // 1
         },
-        Visible Flag_Cir
+        Visible Flag_Cir,
+        Help "Voltage source circuit connection type"
     },
 
     // Phase angle of the voltage
@@ -590,14 +622,16 @@ DefineConstant[
     pC = pA + 2 * Pi / 3,
     Va = VV,
     Vb = VV,
-    Vc = VV
+    Vc = VV,
 
     // ROTOR CIRCUIT
     Flag_Cir_RotorCage = {(nbrRotorBars > 0) , Choices{0,1},
-        Name StrCat(
-            INPUT_ELEC_CIRCUIT_ROTOR,"Circuit/10Use circuit in rotor cage"
-            ),
-        Visible (nbrRotorBars > 0)
+        Name StrCat(INPUT_ELEC_CIRCUIT_ROTOR,"Circuit/10Use circuit in rotor cage"),
+        Visible (nbrRotorBars > 0),
+        Help StrCat(
+            "Use circuit to connect rotor bars with endring resistance and inductance. ",
+            "Otherwise the bars will be ideally connected (without any reactance)."
+            )
         // ReadOnly (Flag_SrcType_Stator==1)
     },
 
@@ -607,10 +641,10 @@ DefineConstant[
             "Circuit/11Resistance of endring segment [Ohm]"
         ],
         ReadOnly !Flag_Cir_RotorCage,
-        Help "This must be given for a single endring segment!
-        During processing the value is scaled to 1 meter because in
-        the electromagnetic formulation the resulting voltage drop given to the
-        circuit is in V/m!",
+        Help StrCat("This must be given for a single endring segment! ",
+            "During processing the value is scaled to 1 meter because in ",
+            "the electromagnetic formulation the resulting voltage drop given to the ",
+            "circuit is in V/m!"),
         Visible (nbrRotorBars>0)
     },
     L_endring_segment = {4.8e-9,
@@ -619,10 +653,10 @@ DefineConstant[
             "Circuit/12Inductance of endring segment [H]"
         ],
         ReadOnly !Flag_Cir_RotorCage,
-        Help "This must be given for a single endring segment!
-        During processing the value is scaled to 1 meter because in
-        the electromagnetic formulation the resulting voltage drop given to the
-        circuit is in V/m!",
+        Help StrCat("This must be given for a single endring segment! ",
+            "During processing the value is scaled to 1 meter because in ",
+            "the electromagnetic formulation the resulting voltage drop given to the ",
+            "circuit is in V/m!"),
         Visible (nbrRotorBars>0)
     }
 ];
@@ -637,8 +671,8 @@ DefineConstant[
 DefineConstant[ //Material definitions
     tempMag = {
         TEMP_MAG,
-        Name StrCat[INPUT_MAT_PROPERTIES_MAGNET, "Magnet temperature [°C]"],
-        Visible NbrRegions[Rotor_Magnets] > 0
+        Name StrCat[INPUT_MAT_PROPERTIES_MAGNET, "Magnet temperature [degrees C]"],
+        Visible Flag_ExpertMode && NbrRegions[Rotor_Magnets] > 0
     }
 ];
 
@@ -913,9 +947,6 @@ Function{
     // start time
     time0 = 0;
 
-    // Number of steps: ALLREADY DEFINED IN PARAMETERS
-    // NbSteps = Ceil[(thetaMax - theta0) / (d_theta * deg2rad) + 1];
-
     // variable containing the current rotor position => required to calculate the
     // magnetization direction of the magnets in rad. $Time is an internal variable
     // containing the current time
@@ -932,6 +963,7 @@ Function{
     // FIXME: fix Fac_Lam calculation!
     // Fac_Lam[] = 0.043255350884945; // = sigma_Lam*d_Lam^2/12/density_Lam ;
     // Fac_Lam[] = sigma[]*d_Lam[]^2/12/density[] ;
+
     // In the case of a static eccentricity the initial rotor center is offset in the y axis
     // RotCenter_i[] = Vector[0, EccentSta, 0];
     RotCenter_i[] = Vector[0, 0, 0];

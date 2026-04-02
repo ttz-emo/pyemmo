@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO, Technical University of Applied Sciences
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of Applied Sciences
 # Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module for GmshSegmentSurface class"""
+""""""
 from __future__ import annotations
 
 import logging
@@ -65,6 +65,7 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
         SegmentSurface.__init__(
             self, name=self.name, curves=self.curve, nbr_segments=nbr_segments
         )
+        self.logger = logging.getLogger(__name__)
 
     @property
     def tools(self) -> list[GmshSegmentSurface]:
@@ -72,8 +73,9 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
 
         ``tools`` has NO SETTER, because is only accessed by method ``cutOut()``
 
-        NOTE: Needed to reimplement property in GmshSegmentSurface class, because
-        otherwise type hint for properties of tools are missing.
+        :note:
+            Needed to reimplement property in GmshSegmentSurface class, because
+            otherwise type hint for properties of tools are missing.
 
         Returns:
             list: List of tool surfaces
@@ -112,7 +114,7 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
                 Defaults to previous surface name + "_dup" for duplicate.
 
         Returns:
-            SurfaceAPI: Duplicate of SurfaceAPI object.
+            GmshSegmentSurface: Duplicate of GmshSegmentSurface object.
         """
         # duplicate surface in Gmsh
         dup_gmsh_surf = GmshSurface.duplicate(self, name)
@@ -129,8 +131,8 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
     def rotate_duplicate(self, segment: int) -> GmshSegmentSurface:
         """
         Create a copy of the give surface and its tools surfaces + rotate it by
-        :attr:`angle`.
-        This also sets the property :attr:`segment_nbr` to the given segment value.
+        :math:`\\frac{2 \\pi}{\\mathrm{self.nbr\\_segments}}\\cdot\\mathrm{segment}`.
+        This also sets the property :attr:`segment_nbr` to the given ``segment`` value.
 
         Args:
             segment (float): Segment number.
@@ -158,6 +160,8 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
             # class. rotate_duplicate() is the only method that sets the segment number!
             # update tool:
             for tool_surf in dup_surf.tools:
+                # set tool segment number and name
+                tool_surf._segment_number = segment  # pylint: disable=protected-access
                 tool_surf.name = f"{tool_surf.name} (Seg.: {segment})"
 
             return dup_surf
@@ -185,7 +189,7 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
                 tag=tool.id,
                 name=tool.name,
             )
-        logging.debug(
+        self.logger.debug(
             "Cutting out tool (%s) with %i segments from surface (%s) with %i segments!",
             tool.name,
             tool.nbr_segments,
@@ -196,14 +200,14 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
         if tool.nbr_segments != self.nbr_segments:
             # calculate total number of segments
             symmetry = np.gcd(tool.nbr_segments, self.nbr_segments)
-            logging.debug(
+            self.logger.debug(
                 "New symmetry for GmshSegmentSurface (%s): %i", self.name, symmetry
             )
             if (self.nbr_segments / symmetry) > 1:
                 # create nbrSegments/symmetry copies
                 parent_name = self.name  # save name to update it later
                 dup_surfs: list[GmshSegmentSurface] = []  # list of duplicate surfaces
-                logging.debug(
+                self.logger.debug(
                     "Rotating and duplicating %s %i times",
                     self.name,
                     int(self.nbr_segments / symmetry),
@@ -216,7 +220,7 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
                 self._id = comb_surf.id
                 self._cut = comb_surf.tools  # update tools
                 self.nbr_segments = symmetry  # update number of segments
-                logging.debug(
+                self.logger.debug(
                     "New number of segments for GmshSegmentSurface (%s): %i",
                     parent_name,
                     self.nbr_segments,
@@ -243,6 +247,7 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
         additionally handles the case where the tool intersects the parent surface
         partly. In this case the remaining tool part will be rotated by the parent
         segment angle and subtracted again.
+
         Args:
             tool (GmshSegmentSurface): Tool surface to cut out.
             keep_tool (bool, optional): If True, the tool surface will not be removed
@@ -369,6 +374,7 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
         self, outer_tool: GmshSegmentSurface, tool: GmshSegmentSurface
     ) -> None:
         """Handle outer tool surface after subtraction:
+
         - If the tool intersects in **negative** circumferential direction,
           rotate and subtract the original tool and subtract from the parent
           surface again.
@@ -431,7 +437,7 @@ class GmshSegmentSurface(GmshSurface, SegmentSurface):
             # fragment it again, because the fragmented tool surface can have a
             # arbitrary shape and is difficult to handle for OCC. So in the case
             # every tool part that is outside the parent segment will be removed.
-            logging.warning(
+            self.logger.warning(
                 "Tool surface (%s) is outside parent surface in positive circumferential "
                 "direction! Removing outer tool part!",
                 outer_tool,

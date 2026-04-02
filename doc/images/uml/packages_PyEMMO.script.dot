@@ -1,0 +1,55 @@
+digraph "packages_PyEMMO.script" {
+rankdir=BT
+charset="utf-8"
+"pyemmo.script" [color="black", label=<pyemmo.script>, shape="box", style="solid"];
+"pyemmo.script.domain" [color="black", label=<pyemmo.script.domain>, shape="box", style="solid"];
+"pyemmo.script.geometry" [color="black", label=<pyemmo.script.geometry>, shape="box", style="solid"];
+"pyemmo.script.geometry.circleArc" [color="black", label=<pyemmo.script.geometry.circleArc>, shape="box", style="solid"];
+"pyemmo.script.geometry.line" [color="black", label=<pyemmo.script.geometry.line>, shape="box", style="solid"];
+"pyemmo.script.geometry.point" [color="black", label=<pyemmo.script.geometry.point>, shape="box", style="solid"];
+"pyemmo.script.geometry.segment_surface" [color="black", label=<pyemmo.script.geometry.segment_surface>, shape="box", style="solid"];
+"pyemmo.script.geometry.spline" [color="black", label=<pyemmo.script.geometry.spline>, shape="box", style="solid"];
+"pyemmo.script.geometry.surface" [color="black", label=<pyemmo.script.geometry.surface>, shape="box", style="solid"];
+"pyemmo.script.geometry.transformable" [color="black", label=<pyemmo.script.geometry.transformable>, shape="box", style="solid"];
+"pyemmo.script.gmsh" [color="black", label=<pyemmo.script.gmsh>, shape="box", style="solid"];
+"pyemmo.script.gmsh.create_gmsh_curve" [color="black", label=<pyemmo.script.gmsh.create_gmsh_curve>, shape="box", style="solid"];
+"pyemmo.script.gmsh.gmsh_arc" [color="black", label=<pyemmo.script.gmsh.gmsh_arc>, shape="box", style="solid"];
+"pyemmo.script.gmsh.gmsh_geometry" [color="black", label=<pyemmo.script.gmsh.gmsh_geometry>, shape="box", style="solid"];
+"pyemmo.script.gmsh.gmsh_line" [color="black", label=<pyemmo.script.gmsh.gmsh_line>, shape="box", style="solid"];
+"pyemmo.script.gmsh.gmsh_point" [color="black", label=<pyemmo.script.gmsh.gmsh_point>, shape="box", style="solid"];
+"pyemmo.script.gmsh.gmsh_segment_surface" [color="black", label=<pyemmo.script.gmsh.gmsh_segment_surface>, shape="box", style="solid"];
+"pyemmo.script.gmsh.gmsh_spline" [color="black", label=<pyemmo.script.gmsh.gmsh_spline>, shape="box", style="solid"];
+"pyemmo.script.gmsh.gmsh_surface" [color="black", label=<pyemmo.script.gmsh.gmsh_surface>, shape="box", style="solid"];
+"pyemmo.script.gmsh.utils" [color="black", label=<pyemmo.script.gmsh.utils>, shape="box", style="solid"];
+"pyemmo.script.machine" [color="black", label=<pyemmo.script.machine>, shape="box", style="solid"];
+"pyemmo.script.material" [color="black", label=<pyemmo.script.material>, shape="box", style="solid"];
+"pyemmo.script.material.electricalSteel" [color="black", label=<pyemmo.script.material.electricalSteel>, shape="box", style="solid"];
+"pyemmo.script.material.material" [color="black", label=<pyemmo.script.material.material>, shape="box", style="solid"];
+"pyemmo.script.physicals" [color="black", label=<pyemmo.script.physicals>, shape="box", style="solid"];
+"pyemmo.script.physicals.airArea" [color="black", label=<pyemmo.script.physicals.airArea>, shape="box", style="solid"];
+"pyemmo.script.physicals.airGap" [color="black", label=<pyemmo.script.physicals.airGap>, shape="box", style="solid"];
+"pyemmo.script.physicals.bar" [color="black", label=<pyemmo.script.physicals.bar>, shape="box", style="solid"];
+"pyemmo.script.physicals.limitLine" [color="black", label=<pyemmo.script.physicals.limitLine>, shape="box", style="solid"];
+"pyemmo.script.physicals.magnet" [color="black", label=<pyemmo.script.physicals.magnet>, shape="box", style="solid"];
+"pyemmo.script.physicals.movingBand" [color="black", label=<pyemmo.script.physicals.movingBand>, shape="box", style="solid"];
+"pyemmo.script.physicals.physicalElement" [color="black", label=<pyemmo.script.physicals.physicalElement>, shape="box", style="solid"];
+"pyemmo.script.physicals.primaryLine" [color="black", label=<pyemmo.script.physicals.primaryLine>, shape="box", style="solid"];
+"pyemmo.script.physicals.rotorLamination" [color="black", label=<pyemmo.script.physicals.rotorLamination>, shape="box", style="solid"];
+"pyemmo.script.physicals.slaveLine" [color="black", label=<pyemmo.script.physicals.slaveLine>, shape="box", style="solid"];
+"pyemmo.script.physicals.slot" [color="black", label=<pyemmo.script.physicals.slot>, shape="box", style="solid"];
+"pyemmo.script.physicals.statorLamination" [color="black", label=<pyemmo.script.physicals.statorLamination>, shape="box", style="solid"];
+"pyemmo.script.rotor" [color="black", label=<pyemmo.script.rotor>, shape="box", style="solid"];
+"pyemmo.script.script" [color="black", label=<pyemmo.script.script>, shape="box", style="solid"];
+"pyemmo.script.stator" [color="black", label=<pyemmo.script.stator>, shape="box", style="solid"];
+"pyemmo.script.domain" -> "pyemmo.script.physicals.physicalElement" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.geometry" -> "pyemmo.script.geometry.point" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.geometry.circleArc" -> "pyemmo.script.geometry.line" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.geometry.circleArc" -> "pyemmo.script.geometry.point" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.geometry.line" -> "pyemmo.script.geometry.point" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.geometry.line" -> "pyemmo.script.geometry.transformable" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.geometry.point" -> "pyemmo.script.geometry.transformable" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.geometry.segment_surface" -> "pyemmo.script.geometry.line" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.geometry.segment_surface" -> "pyemmo.script.geometry.surface" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.geometry.spline" -> "pyemmo.script.geometry.line" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.geometry.spline" -> "pyemmo.script.geometry.point" [arrowhead="open", arrowtail="none"];
+}

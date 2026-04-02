@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO,
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO,
 # Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -63,9 +63,9 @@ circArc.plot(fig)
 test_arc_script = Script("TestCircleArc", RESULT_DIR, {})
 circArc.addToScript(test_arc_script)
 
-test_arc_script.writeGeo()
+test_arc_script.write_geo()
 import subprocess
 
-subprocess.run("gmsh " + test_arc_script.geoFilePath)
+subprocess.run("gmsh " + test_arc_script.geo_file_path)
 
 # %%

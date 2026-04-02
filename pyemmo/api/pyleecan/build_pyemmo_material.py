@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -17,76 +18,155 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module: pyemmo_material_conversion"""
+"""
+Define function :func:`~pyemmo.api.pyleecan.build_pyemmo_material.build_pyemmo_material`
+to convert PYLEECAN materials to pyemmo materials.
+"""
 
 from __future__ import annotations
 
-from numpy import Inf
+import logging
+
+from numpy import empty, inf
+from pyleecan.Classes.ImportMatrixVal import ImportMatrixVal
+from pyleecan.Classes.MatElectrical import MatElectrical
 from pyleecan.Classes.Material import Material as PyleecanMaterial
 from pyleecan.Classes.MatMagnetics import MatMagnetics
+from pyleecan.Classes.MatStructural import MatStructural
+from pyleecan.Functions.Load.load_json import LoadMissingFileError
 
 from ...script.material.material import Material
 
+try:
+    # try to load PYLEECAN copper material to catch error with copper1
+    from os.path import join
 
+    from pyleecan.definitions import DATA_DIR
+    from pyleecan.Functions.load import load  # pylint: disable=no-name-in-module
+
+    copper2: PyleecanMaterial = load(join(DATA_DIR, "Material", "Copper2.json"))
+except (FileNotFoundError, LoadMissingFileError):
+    # if file could not be found in DATA_DIR, create it by hand. Happens in exe case.
+    copper2 = PyleecanMaterial(
+        name="Copper2",
+        mag=MatMagnetics(mur_lin=1),
+        elec=MatElectrical(rho=2.2e-08, alpha=0.003),
+        struct=MatStructural(
+            rho=8900.0, Ex=115000000000, Ey=115000000000, Ez=115000000000
+        ),
+    )
+except ImportError:
+    copper2 = None
+except Exception as exce:
+    raise exce
+
+
+# FIXME: Need to implement ElectricalSteel creation for loss data and lamination thickness!
 def build_pyemmo_material(pyleecan_material: PyleecanMaterial) -> Material:
-    """Translates a pyleecan material into a pyemmo material.
+    """Translates a PYLEECAN material into a pyemmo material.
 
-    This function translates a pyleecan material into a pyemmo material.
+    This function translates a PYLEECAN material into a pyemmo material.
 
     Args:
-        pyleecan_material (PyleecanMaterial): The pyleecan material to be translated.
+        pyleecan_material (PyleecanMaterial): The PYLEECAN material to be translated.
 
     Returns:
         Material: The translated pyemmo material.
 
     Notes:
         - Conductivity, relPermeability, remanence, tempCoefRem, BH, and density
-          are extracted from the pyleecan material to construct the pyemmo material.
-        - If any attribute is missing from the pyleecan material, it is set to None
-          in the pyemmo material.
+          are extracted from the PYLEECAN material to construct the pyemmo material.
+        - If any attribute is missing from the PYLEECAN material, it is set to its
+          default value in the pyemmo material.
 
     """
+    logger = logging.getLogger(__name__)
+    if "Copper1" in pyleecan_material.name:
+        if copper2 is not None:
+            # TODO: Check if material really missing magnetic properies
+            logger.warning(
+                "Material 'Copper1' used without magnetic properties. "
+                "Replacing it with PYLEECAN default material 'Copper2'"
+            )
+            pyleecan_material = copper2
+        else:
+            raise RuntimeError(
+                "Got PYLEECAN material 'Copper1' but missing 'Copper2' alternative!"
+            )
     # elec props
     try:
-        conductivity = pyleecan_material.elec.get_conductivity()
-        if conductivity is Inf:
+        elec_prop: MatElectrical = pyleecan_material.elec  # type: ignore
+        conductivity = elec_prop.get_conductivity()
+        if not isinstance(conductivity, (int, float)) or conductivity == inf:
             # case when rho = 0
-            conductivity = None
+            conductivity = 0.0
     except AttributeError:
-        conductivity = None
+        conductivity = 0.0
 
     # mag props
-    mag_properties: MatMagnetics = pyleecan_material.mag
+    mag_properties: MatMagnetics = pyleecan_material.mag  # type: ignore
+    if mag_properties is None:
+        raise ValueError(
+            f"No magnetic properties in PYLEECAN material {pyleecan_material.name}. "
+            "Please set with `material.mag = MatMagnetics(...)`"
+        )
     try:
         rel_permeability = mag_properties.mur_lin
+        if rel_permeability is None:
+            rel_permeability = 1.0
+        else:
+            assert isinstance(rel_permeability, (int, float)), "mue_r must be a number"
     except AttributeError:
-        rel_permeability = None
+        rel_permeability = 1.0
 
     try:
         remanence = mag_properties.Brm20
+        if remanence is None:
+            remanence = 0
+        else:
+            assert isinstance(remanence, (int, float)), "Br must be a number"
     except AttributeError:
-        remanence = None
+        remanence = 0.0
 
     try:
         alpha_br = mag_properties.alpha_Br
+        if alpha_br is None:
+            alpha_br = 0.0
+        else:
+            assert isinstance(
+                alpha_br, (int, float)
+            ), "parameter alpha_Br must be a number"
+
     except AttributeError:
-        alpha_br = None
+        alpha_br = 0.0
 
     try:
-        # switch b and h axis for pyemmo
-        bh = mag_properties.BH_curve.value[:, [1, 0]]
-    except AttributeError:
-        bh = None
+        # BH_curve can have type ImportMatrixVal, None
+        if mag_properties.BH_curve is None:
+            bh = empty(0)
+        else:
+            assert isinstance(
+                mag_properties.BH_curve, ImportMatrixVal
+            ), "BH_curve is not of type pyleecan.ImportMatrixVal"
+            # switch b and h axis for pyemmo
+            # BH_curve.value is a numpy array
+            bh = mag_properties.BH_curve.value[:, [1, 0]]  # type: ignore
+    except (AssertionError, AttributeError):
+        bh = empty(0)
     # struct props
     try:
-        density = pyleecan_material.struct.rho
+        density = pyleecan_material.struct.rho  # type: ignore
+        if density is None:
+            density = 0.0
     except AttributeError:
-        density = None
-    if bh is None and rel_permeability is None:
+        density = 0.0
+    if bh.size == 0 and not rel_permeability:
         # pylint: disable=locally-disabled, line-too-long
         raise ValueError(
             f"No magnetic properties (mue_r and BH curve) defined in material '{pyleecan_material.name}'"
         )
+    assert isinstance(pyleecan_material.name, str)
+
     pyemmo_material = Material(
         name=pyleecan_material.name,
         conductivity=conductivity,
@@ -95,8 +175,8 @@ def build_pyemmo_material(pyleecan_material: PyleecanMaterial) -> Material:
         tempCoefRem=alpha_br,
         BH=bh,
         density=density,
-        thermalConductivity=None,
-        thermalCapacity=None,
+        thermalConductivity=0.0,
+        thermalCapacity=0.0,
     )
 
     return pyemmo_material

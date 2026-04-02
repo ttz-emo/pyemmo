@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO,
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO,
 # Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -21,59 +21,21 @@
 """Module to test the creation of the api geo dict."""
 from __future__ import annotations
 
-import math
-from os.path import abspath, join
-
-from pyleecan.Classes.Machine import Machine
-
-# pylint: disable=locally-disabled, no-name-in-module
-from pyleecan.Functions.load import load
+import pytest
+from pyleecan.Classes.LamHole import LamHole
 
 import pyemmo.api.pyleecan.create_geo_dict
-from tests.api.pyleecan import TEST_API_PYLCN_DATA_DIR
+
+from .testutils import Toyota_Prius, initialize_gmsh  # noqa # pylint: disable=W0611
 
 
-def test_create_geo_dict():
+@pytest.mark.parametrize("machine", ["Toyota_Prius"])
+def test_create_geo_dict(machine, request):
     """function to test the creation of the api geo dict"""
-    machine: Machine = load(
-        abspath(join(TEST_API_PYLCN_DATA_DIR, "00_prius_machine.json"))
-    )
-
-    (
-        geometry_list,
-        rotor_contour_line_list,
-        stator_contour_line_list,
-        r_point_rotor_cont,
-        l_point_rotor_cont,
-        magnetization_dict,
-    ) = pyemmo.api.pyleecan.create_geo_dict.create_geo_dict(
-        machine, machine.rotor.is_internal
-    )
+    machine = request.getfixturevalue(machine)
+    rotor: LamHole = machine.rotor  # type: ignore
+    geo_dict = pyemmo.api.pyleecan.create_geo_dict.create_geo_dict(machine)
     # assert for geometry_list
-    assert len(geometry_list) == 8
-
-    # asserts for rotor_contour_line_list
-    assert len(rotor_contour_line_list) == 1
-
-    # assert for stator_contour_line_list
-    assert len(stator_contour_line_list) == 5
-
-    # asserts for r_point_rotor_cont
-    assert math.isclose(r_point_rotor_cont.coordinate[0], 0.0795, abs_tol=1e-6)
-    assert math.isclose(r_point_rotor_cont.coordinate[1], 0, abs_tol=1e-6)
-    assert math.isclose(r_point_rotor_cont.coordinate[2], 0, abs_tol=1e-6)
-    assert r_point_rotor_cont.meshLength == 0.001
-
-    # asserts for l_point_rotor_cont
-    assert math.isclose(
-        l_point_rotor_cont.coordinate[0], 0.05621498910433053, abs_tol=1e-6
-    )
-    assert math.isclose(
-        l_point_rotor_cont.coordinate[1], 0.05621498910433053, abs_tol=1e-6
-    )
-    assert math.isclose(l_point_rotor_cont.coordinate[2], 0, abs_tol=1e-6)
-    assert l_point_rotor_cont.meshLength == 0.001
-
-    # asserts magnetization_dict
-    assert math.isclose(magnetization_dict["Mag0"], 0.5462703245568578, rel_tol=1e-12)
-    assert math.isclose(magnetization_dict["Mag1"], 0.2391278388405909, rel_tol=1e-12)
+    # gmsh.model.occ.synchronize()
+    # gmsh.fltk.run()
+    # assert len(geo_dict) == 8

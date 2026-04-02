@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -33,6 +33,7 @@ except ImportError:
 else:
     configuration.set_hypothesis_home_dir(os.path.join(TEST_DIR, ".hypothesis_venv"))
 
+logger = logging.getLogger(__name__)
 TEST_DATA_DIR = os.path.join(TEST_DIR, "data")
 
 # # add pyemmo to path
@@ -58,7 +59,7 @@ if platform.system() == "Windows":
         )
     except subprocess.CalledProcessError as e:
         # subprocess failed -> no determination of executables
-        logging.warning(
+        logger.warning(
             "Failed to execute 'install_onelab.ps1' properly due to %s. "
             "Could not determine ONELAB executables for testing!",
             e,
@@ -68,19 +69,50 @@ if platform.system() == "Windows":
             output = [x for x in p.stdout.decode().split("\r\n") if len(x) > 1]
             GMSH_EXE = os.path.abspath(output[-2])
             GETDP_EXE = os.path.abspath(output[-1])
-            logging.info(
+            logger.info(
                 "Found Gmsh and GetDP executables for testing.\n%s\n%s",
                 GMSH_EXE,
                 GETDP_EXE,
             )
         else:
             # additional check because ps does not return non-zero for typos...
-            logging.warning(
+            logger.warning(
+                "Failed to execute 'install_onelab.ps1' properly. Error:\n%s",
+                p.stderr,
+            )
+elif platform.system() == "Linux":
+    # Download and install the newest ONELAB installation for testing
+    try:
+        p = subprocess.run(
+            ["sh", os.path.join(TEST_DIR, "install_onelab.sh")],
+            check=True,
+            capture_output=True,
+        )
+    except subprocess.CalledProcessError as e:
+        # subprocess failed -> no determination of executables
+        logger.warning(
+            "Failed to execute 'install_onelab.sh' properly due to %s. "
+            "Could not determine ONELAB executables for testing!",
+            e,
+        )
+    else:
+        if p.returncode == 0:
+            output = [x for x in p.stdout.decode().split("\n") if len(x) > 1]
+            GMSH_EXE = os.path.abspath(output[-2])
+            GETDP_EXE = os.path.abspath(output[-1])
+            logger.info(
+                "Found Gmsh and GetDP executables for testing.\n%s\n%s",
+                GMSH_EXE,
+                GETDP_EXE,
+            )
+        else:
+            # additional check because ps does not return non-zero for typos...
+            logger.warning(
                 "Failed to execute 'install_onelab.ps1' properly. Error:\n%s",
                 p.stderr,
             )
 else:
-    logging.warning(
+    logger.warning(
         "Determination of ONELAB executables for testing not implemented "
         "for non-Windows distibution yet!"
     )

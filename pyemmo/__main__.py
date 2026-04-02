@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -17,12 +17,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+"""Main of pyemmo package. There is no commandline interface yet."""
 
 from __future__ import annotations
 
-# # -*- coding: utf-8 -*-
-"""main of pyemmo package. There is no commandline interface yet."""
+import logging
 from sys import argv
 
+logger = logging.getLogger(__name__)
+
 if __name__ == "__main__":
-    print("This is the main() of pyemmo. Nothing done here yet!\n", argv)
+    logger.info("This is the main() of pyemmo. Nothing done here yet!")
+    logger.debug("Main argv: %s", argv)

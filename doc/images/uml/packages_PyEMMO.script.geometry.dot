@@ -1,0 +1,28 @@
+digraph "packages_PyEMMO.script.geometry" {
+rankdir=BT
+charset="utf-8"
+"pyemmo.script.geometry" [color="black", label=<pyemmo.script.geometry>, shape="box", style="solid"];
+"pyemmo.script.geometry.circleArc" [color="black", label=<pyemmo.script.geometry.circleArc>, shape="box", style="solid"];
+"pyemmo.script.geometry.line" [color="black", label=<pyemmo.script.geometry.line>, shape="box", style="solid"];
+"pyemmo.script.geometry.point" [color="black", label=<pyemmo.script.geometry.point>, shape="box", style="solid"];
+"pyemmo.script.geometry.segment_surface" [color="black", label=<pyemmo.script.geometry.segment_surface>, shape="box", style="solid"];
+"pyemmo.script.geometry.spline" [color="black", label=<pyemmo.script.geometry.spline>, shape="box", style="solid"];
+"pyemmo.script.geometry.surface" [color="black", label=<pyemmo.script.geometry.surface>, shape="box", style="solid"];
+"pyemmo.script.geometry.transformable" [color="black", label=<pyemmo.script.geometry.transformable>, shape="box", style="solid"];
+"pyemmo.script.geometry" -> "pyemmo.script.geometry.point" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.geometry.circleArc" -> "pyemmo.script.geometry.line" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.geometry.circleArc" -> "pyemmo.script.geometry.point" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.geometry.line" -> "pyemmo.script.geometry.point" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.geometry.line" -> "pyemmo.script.geometry.transformable" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.geometry.point" -> "pyemmo.script.geometry.transformable" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.geometry.segment_surface" -> "pyemmo.script.geometry.line" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.geometry.segment_surface" -> "pyemmo.script.geometry.surface" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.geometry.spline" -> "pyemmo.script.geometry.line" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.geometry.spline" -> "pyemmo.script.geometry.point" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.geometry.surface" -> "pyemmo.script.geometry.circleArc" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.geometry.surface" -> "pyemmo.script.geometry.line" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.geometry.surface" -> "pyemmo.script.geometry.point" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.geometry.surface" -> "pyemmo.script.geometry.spline" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.geometry.surface" -> "pyemmo.script.geometry.transformable" [arrowhead="open", arrowtail="none"];
+"pyemmo.script.geometry.point" -> "pyemmo.script.geometry.line" [arrowhead="open", arrowtail="none", style="dashed"];
+}

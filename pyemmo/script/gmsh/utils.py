@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of
 # Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -22,28 +22,6 @@
 This module provides various utility functions for geometric calculations
 utilizing the Gmsh library, specifically focused on handling geometrical
 entities such as points, lines, and arcs within a 2D plane.
-
-The main functionalities include:
-- Extracting unique point tags from a list of geometrical dimension tags.
-- Calculating the maximal and minimal radii from a set of dimensional tags.
-- Filtering curves or lines based on their radius or angle relative to the x-axis.
-
-Functions:
-- get_point_tags(dim_tags): Extracts unique point tags from dimension tags.
-- get_max_radius(dim_tags): Finds the maximum radius in a list of dim-tags.
-- get_min_radius(dim_tags): Finds the minimum radius in a list of dim-tags.
-- filter_curves_on_radius(line_list, radius): Filters curves by a specified radius.
-- filter_lines_at_angle(line_list, angle): Filters lines based on their angle to the
-  x-axis.
-
-The module is part of the PyEMMO project, developed by TTZ-EMO at the Technical
-University of Applied Sciences Würzburg-Schweinfurt.
-
-Author:
-    Max Schuler
-
-Note:
-    This docstring was created by OpenAI GPT-4o.
 """
 from __future__ import annotations
 
@@ -57,13 +35,12 @@ from ...definitions import DEFAULT_GEO_TOL
 from ..geometry import defaultCenterPoint
 from ..geometry.circleArc import CircleArc
 from ..geometry.line import Line
-from ..geometry.physicalElement import PhysicalElement
 from ..geometry.surface import Surface
+from ..physicals.physical_element import PhysicalElement
 from . import DimTag
+from .gmsh_arc import GmshArc
 from .gmsh_line import GmshLine
 from .gmsh_point import GmshPoint
-
-# TODO: add tests for misc functions!!
 
 
 def get_dim_tags(geo_list: list[Line | Surface | PhysicalElement]) -> list[DimTag]:
@@ -92,8 +69,6 @@ def get_dim_tags(geo_list: list[Line | Surface | PhysicalElement]) -> list[DimTa
 
     Example:
 
-    ..code::
-
         >>> elements = [Line(id=1), Surface(id=2), PhysicalElement(geo_list=[Line(id=3)])]
         >>> dim_tags = get_dim_tags(elements)
         >>> print(dim_tags)
@@ -108,7 +83,7 @@ def get_dim_tags(geo_list: list[Line | Surface | PhysicalElement]) -> list[DimTa
         elif isinstance(element, Line):
             dim_tags.append((1, element.id))
         else:
-            raise RuntimeError("Geometry not Surface or Line!")
+            raise RuntimeError(f"Geometry not Surface or Line, but {type(element)}!")
     return dim_tags
 
 
@@ -234,12 +209,12 @@ def filter_curves_on_radius(line_list: list[GmshLine], radius: float) -> list[Gm
 
 
 def filter_lines_at_angle(line_list: list[Line], angle: float) -> list[Line]:
-    """Filter all lines from a list of lines that are on a specific ``angle`` to the
-    x-axis in the xy-plane.
+    """Filter all lines from a list of lines that are on a specific ``angle`` [rad] to
+    the x-axis in the xy-plane.
 
     Args:
         line_list (list[Line]): List of (boundary) lines.
-        angle (float): Angle of axis in xy-plane to filter.
+        angle (float): Angle of axis in xy-plane to filter in radians.
 
     Returns:
         list[Line]: List of lines that are on the specified axis.
@@ -299,9 +274,11 @@ def fix_missing_mesh_sizes() -> None:
     """
     nbr_fixed = 0
     all_points = gmsh.model.getEntities(0)
+    logger = logging.getLogger(__name__)
     for dim_tag in all_points:
         p = GmshPoint(dim_tag[1])
         if p.meshLength == 0:
+            logger.debug("Point %s with missing mesh size.", p)
             dim_tags = []
             xmin, ymin, _, xmax, ymax, _ = gmsh.model.getBoundingBox(-1, -1)
             # initial value is 1/1000 of whole bounding box
@@ -317,14 +294,71 @@ def fix_missing_mesh_sizes() -> None:
                     zmax=1,
                     dim=0,
                 )
-                dim_tags.remove(
-                    (0, p.id)
-                )  # remove point itself because its allways found
+                # remove point itself because its allways found:
+                dim_tags.remove((0, p.id))
                 dl *= 2  # increase search radius
                 nbr_loops += 1
+            logger.debug("Bounding box size where next point(s) were found: %e", dl)
             p.meshLength = gmsh.model.mesh.getSizes(dimTags=[dim_tags[0]])[0]
-            logging.debug(
-                f"Fixed mesh size of point {p.id} to {p.meshLength} after {nbr_loops} iterations."
+            logger.debug(
+                "Set mesh size of point %i to %.3e of point %i after %i iterations.",
+                p.id,
+                p.meshLength,
+                dim_tags[0][1],
+                nbr_loops,
             )
             nbr_fixed += 1
-    logging.debug(f"Fixed {nbr_fixed} points with missing mesh sizes.")
+    logger.debug("Fixed %i points with missing mesh size.", nbr_fixed)
+
+
+def get_global_center() -> GmshPoint:
+    """Get the global center point (coordinates (0,0,0) by using
+    gmsh.model.getEntitiesInBoundingBox(..) on point in origin or create the center
+    point.
+
+    Returns:
+        GmshPoint: Center point for current gmsh model.
+    """
+    try:
+        center_dimTags = gmsh.model.getEntitiesInBoundingBox(
+            -DEFAULT_GEO_TOL,
+            -DEFAULT_GEO_TOL,
+            -DEFAULT_GEO_TOL,
+            DEFAULT_GEO_TOL,
+            DEFAULT_GEO_TOL,
+            DEFAULT_GEO_TOL,
+            0,
+        )
+        return GmshPoint(center_dimTags[0][1])
+    except:  # pylint: disable=bare-except
+        return GmshPoint.from_coordinates((0, 0), name="CenterPoint")
+
+
+def create_disk(radius: float, center: GmshPoint | None = None) -> list[GmshArc]:
+    r"""Workaround for gmsh.model.occ.addDisk() function, because the original gmsh
+    kernel only supports arcs up to 90\deg. If we want to export our model as .geo_unrolled
+    file we need to create these arcs separatly otherwise they will be exported as spline.
+
+    Args:
+        radius (float): Circle radius
+        center (GmshPoint | None, optional): Circle center point. Defaults to global
+            center point at (0,0).
+
+    Returns:
+        list[GmshArc]: List of four GmshArc object forming the contour of a circle.
+    """
+    if not center:
+        # get or create default center point
+        center = get_global_center()
+    # create first point by x = center.x + radius
+    p0 = GmshPoint.from_coordinates((center.x + radius, center.y, center.z))
+    p1 = p0  # save p0 for later to construct last arc
+    arcs = []  # init arc list
+    for _ in range(3):
+        # duplicate and rotate p1 by 90°
+        p2 = p1.duplicate()
+        p2.rotateZ(center, np.pi / 2)
+        arcs.append(GmshArc.from_points(p1, center, p2))  # create arc
+        p1 = p2  # update p1 for next iteration
+    arcs.append(GmshArc.from_points(p1, center, p0))  # create final arc using p0
+    return arcs

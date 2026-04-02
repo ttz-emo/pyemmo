@@ -1,6 +1,6 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied
-# Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO,
+# Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -18,66 +18,41 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module to translate winding data from Pyleecan to PyEMMO.
+"""
+This module provides function `translate_winding` to convert the winding from PYLEECAN
+to SWAT-EM format for pyemmo.
 
-This module provides functions to translate winding data from Pyleecan, to
-PyEMMO by the SWAT-EM package.
-
-Functions:
-    -   ``translate_winding``: Translates the winding from Pyleecan to PyEMMO
-        format.
-
-Note:
-    The winding translation process involves generating a winding data model
-    using the PyEMMO `datamodel` class, extracting winding information from the
-    Pyleecan machine object, and formatting it according to the SWAT-EM
-    conventions.
-
-    TODO: Perhaps return only the data model object and call the
-    ``get_phases()`` function directly in ``createParamDict``.
+The winding translation process involves generating a winding data model
+using the PyEMMO `datamodel` class, extracting winding information from the
+PYLEECAN machine object, and formatting it according to the SWAT-EM conventions.
 """
 
 from __future__ import annotations
 
-import swat_em
-from pyleecan.Classes.Machine import Machine
+import logging
+
+from pyleecan.Classes.Machine import Machine as PyleecanMachine
+from swat_em.datamodel import datamodel
 
 
-def translate_winding(
-    machine: Machine,
-) -> tuple[
-    swat_em.datamodel,
-    list[
-        (
-            list[list[int] | list[int]]
-            | list[list[int] | list[int]]
-            | list[list[int] | list[int]]
-        )
-    ],
-]:
+def translate_winding(machine: PyleecanMachine) -> datamodel:
     """
-    Translates the winding from Pyleecan to PyEMMO.
+    Translates the winding from PYLEECAN to PyEMMO.
+    This uses the `genwdg` method of the `datamodel` class in SWAT-EM to generate the winding
+    data model based on the winding parameters extracted from the PYLEECAN machine object.
+
+    .. note:: This can fail for ``WindingUD`` objects!
 
     Args:
-        machine (Machine): The Pyleecan machine.
+        machine (PyleecanMachine): PYLEECAN machine object
 
     Returns:
-        tuple: A tuple containing the following elements:
-
-            - ``swat-em.datamodel``: The datamodel object representing the winding.
-            - list: A list containing information about the winding in a list of
-              lists representing the winding layout for each phase. Each inner
-              list contains:
-
-                * List of integers: Positive integers representing active slots.
-
-                * List of integers: Negative integers representing inactive slots.
+        ``swat-em.datamodel``: The datamodel object representing the winding.
     """
-    # TODO: It might be possible to only return the data model object and
-    # then call the 'get_phases()' function directly in 'createParamDict'.
-    winding = swat_em.datamodel()
-
-    winding.genwdg(
+    swat_emm_winding = datamodel()
+    # FIXME: genwdg() can fail for PYLEECAN WindingUD. Try to use
+    # machine.stator.winding.wind_mat to directly set swatem winding layout.
+    swat_emm_winding.genwdg(
         Q=machine.stator.slot.Zs,
         P=machine.stator.winding.p * 2,
         m=machine.stator.winding.qs,
@@ -89,39 +64,27 @@ def translate_winding(
         layers=machine.stator.winding.Nlayer,
         turns=machine.stator.winding.Ntcoil,
     )
-    wind_swat = winding.get_phases()
-    # wind_test = machine.stator.winding.wind_mat
-    # is_dbl_layer = bool(winding.get_num_layers() == 2)
-    # if is_dbl_layer:
-    #     wind_test_swat = [[[], []], [[], []], [[], []]]
-    #     for a in wind_test:
-    #         for slot, conductor in enumerate(a[0]):
-    #             if conductor[0] > 0:
-    #                 wind_test_swat[0][0].append(slot + 1)
-    #             elif conductor[0] < 0:
-    #                 wind_test_swat[0][1].append(-(slot + 1))
-    #             elif conductor[1] > 0:
-    #                 wind_test_swat[1][0].append(slot + 1)
-    #             elif conductor[1] < 0:
-    #                 wind_test_swat[1][1].append(-(slot + 1))
-    #             elif conductor[2] > 0:
-    #                 wind_test_swat[2][0].append(slot + 1)
-    #             elif conductor[2] < 0:
-    #                 wind_test_swat[2][1].append(-(slot + 1))
-    # else:
-    #     wind_test_swat = [[], [], []]
-    #     for a in wind_test:
-    #         for slot, conductor in enumerate(a[0]):
-    #             if conductor[0] > 0:
-    #                 wind_test_swat[0].append(slot + 1)
-    #             elif conductor[0] < 0:
-    #                 wind_test_swat[0].append(-(slot + 1))
-    #             elif conductor[1] > 0:
-    #                 wind_test_swat[1].append(slot + 1)
-    #             elif conductor[1] < 0:
-    #                 wind_test_swat[1].append(-(slot + 1))
-    #             elif conductor[2] > 0:
-    #                 wind_test_swat[2].append(slot + 1)
-    #             elif conductor[2] < 0:
-    #                 wind_test_swat[2].append(-(slot + 1))
-    return winding, wind_swat
+    wind_swat = swat_emm_winding.get_phases()
+    try:
+        if wind_swat is None:
+            raise RuntimeError(
+                f"Could not translate winding of PYLEECAN machine {machine.name}",
+            )
+    except RuntimeError as exce:
+        logger = logging.getLogger(__name__)
+        logger.error(
+            "Winding data: Q=%i, p=%i, m=%i, w=%i, layers=%i, turns=%.1f - PYLEECAN winding type: %s",
+            machine.stator.slot.Zs,
+            machine.stator.winding.p,
+            machine.stator.winding.qs,
+            machine.stator.winding.coil_pitch,
+            machine.stator.winding.Nlayer,
+            machine.stator.winding.Ntcoil,
+            str(type(machine.stator.winding).__name__),
+            exc_info=True,
+        )
+        raise exce
+    except Exception as exce:
+        raise exce
+
+    return swat_emm_winding

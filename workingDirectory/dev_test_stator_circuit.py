@@ -19,6 +19,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Test stator voltage input"""
+from __future__ import annotations
+
 import datetime
 import json
 import logging
@@ -35,7 +37,7 @@ from pyemmo.functions.import_results import (
     read_RegionValue_dat,
     read_timetable_dat,
 )
-from pyemmo.functions.runOnelab import runCalcforCurrent
+from pyemmo.functions.run_onelab import run_simulation
 
 MODEL_NAME = "IPMSM_Muster_1"
 MODEL_DIR = r"D:\pyemmo\Results\pyleecanAPI\prius_debug"
@@ -133,7 +135,7 @@ paramDict = {
     "PostOp": [],
 }
 
-results = runCalcforCurrent(paramDict)
+results = run_simulation(paramDict)
 stop = time.perf_counter()
 sim_duration = stop - start
 logging.info("Simulation took %s", str(datetime.timedelta(seconds=sim_duration)))

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of
 # Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module gmsh_surface.py for the class GmshSurface."""
+"""Module for the class :class:`GmshSurface`."""
 
 from __future__ import annotations
 
@@ -33,79 +33,24 @@ from ..geometry import defaultCenterPoint
 from ..geometry.point import Point
 from ..geometry.surface import Surface
 from ..gmsh import DimTag
+from .create_gmsh_curve import create_curve
 from .gmsh_arc import GmshArc
 from .gmsh_geometry import GmshGeometry
 from .gmsh_line import GmshLine
 from .gmsh_point import GmshPoint
-from .gmsh_spline import GmshSpline
-
-
-def create_curve(id: int) -> GmshLine | GmshArc:
-    """Create a curve object based on the given id.
-
-    Args:
-        id (int): The id of the curve in the Gmsh model.
-
-    Returns:
-        Union[GmshLine, GmshArc]: The created curve object.
-
-    Raises:
-        ValueError: If the line with the given id is not of type Line or Circle.
-    """
-    # TODO Add support for 'TrimmedCurve' curve type
-    if gmsh.model.getType(1, id) in ("Line", "TrimmedCurve"):
-        return GmshLine(tag=id)
-    if gmsh.model.getType(1, id) == "Circle":
-        return GmshArc(tag=id)
-    if gmsh.model.getType(1, id) in ("BSpline", "Bezier", "Spline"):
-        return GmshSpline(tag=id)
-    raise ValueError(f"Line with tag {id} is not of type Line or Circle!")
 
 
 class GmshSurface(GmshGeometry, Surface):
-    """GmshSurface is a class that represents a 2D surface in the Gmsh model. It provides
+    """
+    GmshSurface is a class that represents a 2D surface in the Gmsh model. It provides
     methods for creating, manipulating, and querying surfaces in the Gmsh geometry kernel.
-    Attributes:
-        dim (int): The dimension of the surface, which is always 2.
-        curve (list[Union[GmshLine, GmshArc]]): The list of curves that form the surface.
-        meanMeshLength (float): The mean mesh length of all points of the surface.
-        area (float): The area of the surface as calculated by Gmsh.
-    Methods:
-        __init__(tag: int, name: str = ""):
-            Initializes a GmshSurface object with a given tag and optional name.
-        from_curve_loop(curve_loop: list[Union[GmshLine, GmshArc]], name: str = "") -> "GmshSurface":
-            Creates a GmshSurface from a list of curves that form a closed loop.
-        _get_lineloop(tag: int) -> list[Union[GmshLine, GmshArc]]:
-            Retrieves the line loop of the surface from the Gmsh model.
-        __str__() -> str:
-            Returns a string representation of the GmshSurface object.
-        setMeshLength(meshLength: float) -> None:
-            Sets the mesh length of all points of the surface.
-        getMinMeshLength() -> float:
-            Retrieves the minimum mesh length of all points of the surface.
-        translate(dx: float, dy: float, dz: float) -> None:
-            Translates the surface by the specified distances in the x, y, and z directions.
-        rotateZ(rotationPoint: Point, angle: float) -> None:
-            Rotates the surface around the z-axis by a specified angle.
-        rotateX(rotationPoint: Point, angle: float) -> None:
-            Rotates the surface around the x-axis by a specified angle.
-        rotateY(rotationPoint: Point, angle: float) -> None:
-            Rotates the surface around the y-axis by a specified angle.
-        duplicate(name: str = "") -> "GmshSurface":
-            Duplicates the surface and returns the new surface.
-        mirror(planePoint: Point, planeVector1: Point, planeVector2: Point, name: str = "") -> None:
-            Not implemented. Intended to mirror the surface across a plane.
-        combine(addSurf: "GmshSurface", removeObject: bool = True, removeTool: bool = True) -> "GmshSurface":
-            Combines the current surface with another surface to create a new surface.
-        sortCurves() -> None:
-            No-op method. Curves are already sorted when retrieved from Gmsh.
-        replaceCurve(oldCurve: GmshLine, newCurve: GmshLine) -> None:
-            Raises an error. Replacing curves is not supported for GmshSurface.
-        cutOut(tool: "GmshSurface", keepTool: bool = True) -> None:
-            Cuts out a tool surface from the parent surface using a Boolean difference.
-        calcCOG() -> Point:
-            Calculates the center of gravity (COG) of the surface.
-    Examples:
+
+    Example:
+        >>> import gmsh
+        >>> from pyemmo.script.gmsh.gmsh_surface import GmshSurface
+        >>> gmsh.initialize()
+        >>> gmsh.model.add("surface example")
+        >>> gmsh_surface_tag = gmsh.model.occ.addRectangle(0,0,0,1,1)
         >>> square_surf = GmshSurface(tag=gmsh_surface_tag)
     """
 
@@ -138,7 +83,6 @@ class GmshSurface(GmshGeometry, Surface):
             >>> square_id = gmsh.model.occ.addRectangle(0, 0, 0, 1, 1)
             >>> # init GmshSurface with tag:
             >>> square_surf = GmshSurface(tag = square_id)
-
             >>> # init with curve loop
             >>> # ... create lines that form a closed loop in `line_list`
             >>> gmsh_surf = GmshSurface.from_curve_loop(curve_loop = line_list)
@@ -322,10 +266,11 @@ class GmshSurface(GmshGeometry, Surface):
             except ValueError as exce:
                 if "Invalid RGBA argument" in str(exce):
                     # if color name is not valid, use random color
-                    logging.warning(str(exce))
+                    logger = logging.getLogger(__name__)
+                    logger.warning(str(exce))
                     rgba = np.random.random(4)  # use random color
                     rgba[3] = 1.0  # set alpha to 1.0
-                    logging.warning(
+                    logger.warning(
                         "Setting color of GmshSurface %s (ID: %d) to random color.",
                         self.name,
                         self.id,
@@ -341,15 +286,26 @@ class GmshSurface(GmshGeometry, Surface):
             rgba = color
         # we need to test if the surface exists in the current model, because
         # gmsh.model.setColor() will not raise an error if the surface does not exist!
-        if (self.dim, self.id) not in gmsh.model.getEntities(self.dim):
-            raise RuntimeError(f"Surface {self.id=} does not exist!")
-        gmsh.model.setColor(
-            [(self.dim, self.id)],
-            int(rgba[0] * 255),
-            int(rgba[1] * 255),
-            int(rgba[2] * 255),
-            int(rgba[3] * 255),
-        )
+        try:
+            gmsh.model.setColor(
+                [(self.dim, self.id)],
+                int(rgba[0] * 255),
+                int(rgba[1] * 255),
+                int(rgba[2] * 255),
+                int(rgba[3] * 255),
+            )
+        except Exception as exce:
+            if "does not exist" in exce.args[0]:
+                gmsh.model.occ.synchronize()
+                gmsh.model.setColor(
+                    [(self.dim, self.id)],
+                    int(rgba[0] * 255),
+                    int(rgba[1] * 255),
+                    int(rgba[2] * 255),
+                    int(rgba[3] * 255),
+                )
+            else:
+                raise exce
 
     def setMeshLength(self, meshLength: float) -> None:
         """set the meshLength of all points of a surface.
@@ -386,8 +342,11 @@ class GmshSurface(GmshGeometry, Surface):
             angle (float): The angle in degrees by which the surface should be rotated.
                 Defaults to 0.0.
 
-        example:
-            >>> from pyemmo.gmsh import GmshSurface, GmshPoint
+        Example:
+            >>> from pyemmo.script.geometry.gmsh.gmsh_surface import (
+            >>>     GmshSurface,
+            >>>     GmshPoint,
+            >>> )
             >>> from math import pi
             >>> surface = GmshSurface(...)
             >>> rotationPoint = GmshPoint(...)
@@ -433,8 +392,33 @@ class GmshSurface(GmshGeometry, Surface):
             dup_surf.setTool()
         return dup_surf
 
-    def mirror(self, planePoint, planeVector1, planeVector2, name=""):
-        raise NotImplementedError("Method not implemented yet!")
+    def mirror(self, plane_normal: tuple[float, float, float], offset=0.0, name=""):
+        """Mirror a surface across a plane defined by a normal vector and an offset.
+
+        The general equation of a plane is ax + by + cz + d = 0, where (a, b, c) are the
+        components of the normal vector (a vector perpendicular to the plane), and at
+        least one of a, b, or c must be non-zero. The offset d moves the plane along its
+        normal vector.
+
+        Be aware that the mirror function in Gmsh creates TrimmedCurve objects for the
+        boundary lines of the new surface!
+
+        Args:
+            plane_normal (tuple[float, float, float]): The normal vector of the plane
+            offset (float, optional): Plane offset along the normal. Defaults to 0.0.
+            name (str, optional): Name of the mirrored surface. Defaults to "".
+        """
+        mirror_surf = self.duplicate(name=name)  # duplicate surface and tools
+        a, b, c = plane_normal  # unpack normal vector
+        # mirror surface and tools
+        gmsh.model.occ.mirror(
+            [(2, mirror_surf.id)] + [(2, tool.id) for tool in mirror_surf.tools],
+            a,
+            b,
+            c,
+            offset,
+        )
+        return mirror_surf
 
     def combine(
         self,
@@ -528,8 +512,9 @@ class GmshSurface(GmshGeometry, Surface):
 
     def cutOut(self, tool: GmshSurface, keepTool: bool = True) -> None:
         """Cut out a Tool Surface from the Parent surface by Boolean Difference"""
-        self._cut.append(tool)
-        tool.setTool()  # set to the tool surface
+        if keepTool:
+            self._cut.append(tool)
+            tool.setTool()  # set to the tool surface
         cut_dim_tags: list[DimTag] = [(2, tool.id)]
         # cut out tools of tools aswell!
         if tool.tools:
@@ -559,8 +544,10 @@ class GmshSurface(GmshGeometry, Surface):
         #   [[(2,1),(2,2)],[(2,2),(2,3)]]
         # This means e.g. that the original surface with old tag 1 is build by the new
         # surfaces 1 and 2.
+        # NOTE: We allways use removeTool = False, because somehow the tool is never
+        # removed even if removeTool = True. So we need to remove the tool manually.
         out_dim_tags, out_dim_tags_map = gmsh.model.occ.fragment(
-            [(2, self.id)], cut_dim_tags, removeTool=not keepTool
+            [(2, self.id)], cut_dim_tags, removeTool=False
         )
         if len(out_dim_tags) == 1:
             # single output surface -> new surface should be the = ParentSurface-Tool
@@ -574,6 +561,8 @@ class GmshSurface(GmshGeometry, Surface):
                     self.name = gmsh.model.getEntityName(self.dim, old_id)
                     # # remove old surface
                     # gmsh.model.occ.remove([(2, old_id)])
+                if not keepTool:
+                    gmsh.model.occ.remove(cut_dim_tags)
                 return None
             else:
                 raise RuntimeError("Unhandled fragment output!")
@@ -594,6 +583,8 @@ class GmshSurface(GmshGeometry, Surface):
                 # update name of new tool
                 tool.name = gmsh.model.getEntityName(self.dim, old_id)
                 gmsh.model.occ.remove([(2, old_id)])  # remove old tool surface
+            if not keepTool:
+                gmsh.model.occ.remove([2, tool.id])
             return None
         if len(out_dim_tags) > 2:
             # extra surface(s) was/were created (additional to parent and tool), so
@@ -622,6 +613,8 @@ class GmshSurface(GmshGeometry, Surface):
             )
 
     def calcCOG(self) -> Point:
-        # TODO: test this works
+        """Calculate the center of gravity of the surface by
+        :code:`gmsh.model.occ.get_center_of_mass` function.
+        """
         x, y, z = gmsh.model.occ.get_center_of_mass(2, self.id)
         return Point(f"COG of Surface {self.id}", x, y, z)

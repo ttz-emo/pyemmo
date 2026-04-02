@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO,
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO,
 # Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -27,9 +27,15 @@ from os.path import abspath, dirname, isdir, join, normpath, realpath
 
 from matplotlib import font_manager
 
-ROOT_DIR = normpath(abspath(join(dirname(__file__), ".."))).replace("\\", "/")
+logger = logging.getLogger(__name__)
+ROOT_DIR = normpath(abspath(join(dirname(__file__), ".."))).replace(
+    "\\", "/"
+)  #: :meta hide-value:
 """Path: ROOT_DIR is "pyemmo" root development directory with "dist", "doc", "pyemmo",
-"tests" and "workingDirectory" as subdirs. """
+"tests" and "workingDirectory" as subfolders.
+
+:meta hide-value:
+"""
 
 # Further import
 try:
@@ -48,15 +54,25 @@ except ImportError:
     from pyemmo.functions.init_environment import get_config_dict
 
 MAIN_DIR = dirname(realpath(__file__)).replace("\\", "/")  # main dir is pyemmo
-"""Path: MAIN_DIR is "pyemmo" main package directory with "script", "functions" and
-"api" as subpackages """
+r"""Path: MAIN_DIR is "pyemmo" main package directory with "script", "functions" and
+"api" as subpackages. Should be ``ROOT_DIR\pyemmo``.
+
+:meta hide-value:
+"""
 
 RESULT_DIR = join(USER_DIR, "Results").replace("\\", "/")
 r"""Path: RESULT_DIR is "pyemmo" default result directory to store model files
 and simulation results. For Windows this is something like:
-'C:\\Users\\Username\\AppData\\Roaming\\pyemmo\\Results' """
+``'C:\\Users\\Username\\AppData\\Roaming\\pyemmo\\Results'``
 
+For Linux its:
+``'/home/.local/share/Results'``
+
+:meta hide-value:
+"""
 if not isdir(RESULT_DIR):
+    logger.info("Default results directory has not been created or was removed!")
+    logger.info("Creating results folder: RESULT_DIR = %s!", RESULT_DIR)
     mkdir(RESULT_DIR)
 TEST_DIR = join(ROOT_DIR, "tests").replace("\\", "/")
 
@@ -74,4 +90,6 @@ config_dict = get_config_dict()
 
 # default absolute geometric tolerance to check wheter points or distances are equal.
 DEFAULT_GEO_TOL = 1e-7  # in [m]
-logging.debug("Default geometric tolerance is set to %e meter.", DEFAULT_GEO_TOL)
+"""Pyemmo default geometric tolerance e.g. used when checking for equality of
+coordinates."""
+logger.debug("Default geometric tolerance is set to %e meter.", DEFAULT_GEO_TOL)

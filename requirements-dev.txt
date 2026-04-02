@@ -1,18 +1,21 @@
 # Standard modules
 matplotlib>=3.3.4
 numpy>=1.23.1
-pandas>=1.2.4
 parse>=1.19.0
 pygetdp>=1.0.0
 swat_em>=0.6.3
-# pyleecan friendly version of swat:
-# git+https://gitlab.com/CedMrnl/swat-em.git
-gmsh>=4.10.3,<4.14
+gmsh>=4.10.3,<4.14 # block newest version due to issue with .geo export: https://gitlab.onelab.info/gmsh/gmsh/-/issues/3214
 GitPython
 splines
+# to use pyleecan with the recent python versions we have to stick to the development
+# state of the package for now.
+SciDataTool @ git+https://github.com/eomys/SciDataTool.git
+pyleecan @ git+https://github.com/eomys/pyleecan.git@upgrade-python-version
+
+ipykernel # to run tutorial IPython Notebook
 
 # for doc
-Sphinx>=7.2.6 # for doc
+Sphinx>=7.2.6
 sphinx-rtd-theme
 
 # for tests
@@ -28,21 +31,3 @@ setuptools>=42
 
 # for formatting
 black
-
-## PYLEECAN DEPS...
-# pyleecan>=1.5.1
-
-# with the restricted pyleecan deps:
-# cloudpickle>=1.3.0
-# ezdxf==0.14.2
-# h5py>=3.2.1
-# # matplotlib>=3.3.2,<=3.3.4 -> outdated
-# meshio>=4.0.15,<=4.4.6
-# # numpy>1.19.5,<=1.23.1 -> outdated
-# # pandas>=1.0.3 -> outdated
-# pyfemm>=0.1.3
-# PySide2>=5.15.2
-# pyuff>=1.25
-# pyvista>=0.25.3,<=0.31.3
-# SciDataTool>=2.5.0
-# scipy>=1.4.1

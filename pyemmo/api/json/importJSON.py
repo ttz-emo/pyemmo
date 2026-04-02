@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -24,40 +24,18 @@ from json files
 from __future__ import annotations
 
 import json
+import logging
 import numbers
 from typing import Any, Literal
 
 import numpy as np
-from numpy.linalg import norm
 
 from ...functions.clean_name import clean_name
 from ...script.material.electricalSteel import ElectricalSteel
 from ...script.material.material import Material
-from .. import air, logger
 
 
-# ================================ START EXTENDED INFO FUNCTIONS ===================================
-class InvalidSheetThicknessError(Exception):
-    """
-    Exception raised for errors in the sheet thickness input.
-    Attributes:
-        sheet_thickness (any): The invalid sheet thickness value that caused the error.
-        message (str): Explanation of the error. Defaults to "Invalid sheet thickness provided".
-    Methods:
-        __str__(): Returns a string representation of the error, including the message
-        and the invalid input value.
-    """
-
-    def __init__(self, sheet_thickness, message="Invalid sheet thickness provided"):
-        self.input_value = sheet_thickness
-        self.message = message
-        super().__init__(self.message)
-
-    def __str__(self):
-        return f"{self.message}: {self.input_value}"
-
-
-def importExtInfo(extInfoPath: str) -> dict:
+def load_info_dict(extInfoPath: str) -> dict:
     """import the extended info JSON file as dict
 
     Args:
@@ -77,8 +55,7 @@ def importExtInfo(extInfoPath: str) -> dict:
     return extInfo
 
 
-# FIXME: Rename this to get_mag_TYPE!
-def getMagDir(extendedInfo: dict) -> str:
+def get_mag_type(extendedInfo: dict) -> str:
     """Retrun the magnetization direction (parallel, radial, ...) from the extendedInfo dict"""
     magDirKey = "magType"
     if magDirKey in extendedInfo.keys():
@@ -90,19 +67,6 @@ def getMagDir(extendedInfo: dict) -> str:
     raise KeyError(
         "Magnetization direction (magType) is missing from extended info dict!"
     )
-
-
-def getCurrentAmpl(extendedInfo: dict) -> float:
-    """Return the amplitude of the current vector from d and q component
-
-    Args:
-        extendedInfo (dict): dict with additional information for the simulation.
-
-    Returns:
-        float: norm of d and q component. Amplitude of the current phasor.
-    """
-    dCurrent, qCurrent = getCurrentdq(extendedInfo)
-    return norm([dCurrent, qCurrent])
 
 
 def getCurrentdq(extendedInfo: dict) -> tuple[float]:
@@ -120,7 +84,7 @@ def getCurrentdq(extendedInfo: dict) -> tuple[float]:
 # ------------------------------------------------------------------------------
 
 
-def getWindingList(extendedInfo: dict) -> list[list[list[int]]]:
+def get_winding_layout(extendedInfo: dict) -> list[list[list[int]]]:
     """Get winding layout from extended info dict. The layout must be in form of
     the SWAT-EM winding layout. The layout looks something like:
 
@@ -151,7 +115,7 @@ def getWindingList(extendedInfo: dict) -> list[list[list[int]]]:
     return windList
 
 
-def getNbrOfTurns(extendedInfo: dict) -> float:
+def get_nbr_of_turns(extendedInfo: dict) -> float:
     """
     getNbrOfTurns return the number of winding turns in one slot side.
     The identifier in extendedInfo dict must be Ntps (number of turns per slot side).
@@ -172,7 +136,7 @@ def getNbrOfTurns(extendedInfo: dict) -> float:
     )
 
 
-def getRotFreq(extendedInfo: dict, unit: str = "Hz") -> float:
+def get_mech_speed(extendedInfo: dict, unit: str = "Hz") -> float:
     """Get the mechanical rotation frequency of the rotor from the extended info dict.
 
     Args:
@@ -206,7 +170,7 @@ def getRotFreq(extendedInfo: dict, unit: str = "Hz") -> float:
     )
 
 
-def getSymFactor(extendedInfo: dict) -> int:
+def get_sym_factor(extendedInfo: dict) -> int:
     """getSymFactor returns the symmetry factor from the extended info dict"""
     symFactorKey = "symFactor"
     if symFactorKey in extendedInfo.keys():
@@ -222,7 +186,7 @@ def getSymFactor(extendedInfo: dict) -> int:
     )
 
 
-def getNbrPolePairs(extendedInfo: dict) -> int:
+def get_nbr_of_pole_pairs(extendedInfo: dict) -> int:
     """getNbrPolePairs returns the the number of pole pairs from the extended info dict.
     Identifier is 'z_pp'."""
     nppKey = "z_pp"
@@ -238,7 +202,7 @@ def getNbrPolePairs(extendedInfo: dict) -> int:
     )
 
 
-def getNbrSlots(extendedInfo: dict) -> int:
+def get_nbr_of_slots(extendedInfo: dict) -> int:
     """returns the the number of stator slots from the extended info dict. Identifier is 'Qs'."""
     nppKey = "Qs"
     if nppKey in extendedInfo.keys():
@@ -249,14 +213,7 @@ def getNbrSlots(extendedInfo: dict) -> int:
     raise KeyError(f"number of slots ('{nppKey}') missing from extended info dict!")
 
 
-def getElecFreq(extendedInfo: dict) -> float:
-    r"""calcElecFreq calculates the electrical frequency in Hz from the extended info dict by
-    :math:`f_\mathrm{el} = f_\mathrm{mech} \cdot pp`, where :math:`pp` is the number of pole
-    pairs"""
-    return getRotFreq(extendedInfo, "Hz") * getNbrPolePairs(extendedInfo)
-
-
-def getAxialLength(extendedInfo: dict) -> dict[str, float]:
+def get_axial_length(extendedInfo: dict) -> dict[str, float]:
     """get the axial length in meter of rotor and stator from the extended info dict"""
     if "axLen_S" in extendedInfo.keys() and "axLen_R" in extendedInfo.keys():
         return {
@@ -270,7 +227,7 @@ def getAxialLength(extendedInfo: dict) -> dict[str, float]:
     raise KeyError(msg)
 
 
-def getMagTemperature(extendedInfo: dict) -> float:
+def get_magnet_temperature(extendedInfo: dict) -> float:
     """get the magnet temperature from the extended info dict. Key is "tempMag".
 
     Args:
@@ -290,7 +247,7 @@ def getMagTemperature(extendedInfo: dict) -> float:
     return 20.0
 
 
-def getSimuParams(extendedInfo: dict) -> dict[str, dict[str, float]]:
+def get_simulation_params(extendedInfo: dict) -> dict[str, dict[str, float]]:
     """
     Return the simulation parameter dictionary needed for script class. See class :class:`Script
     <pyemmo.script.script.Script>` for details about the simulation dict.
@@ -305,19 +262,19 @@ def getSimuParams(extendedInfo: dict) -> dict[str, dict[str, float]]:
             "FINAL_ROTOR_POS": endPos,
             "Id_eff": idq[0],
             "Iq_eff": idq[1],
-            "SPEED_RPM": getRotFreq(extendedInfo, "rpm"),
+            "SPEED_RPM": get_mech_speed(extendedInfo, "rpm"),
             "ParkAngOffset": extendedInfo["parkAngleOffset"],
             "ANALYSIS_TYPE": extendedInfo["analysisType"],
             "NBR_PARALLEL_PATHS": extendedInfo["NpP"],
         },
         "MAT": {
-            "TEMP_MAG": getMagTemperature(extendedInfo),
+            "TEMP_MAG": get_magnet_temperature(extendedInfo),
         },
     }
     return simuParams
 
 
-def getModelName(extendedInfo: dict) -> str:
+def get_model_name(extendedInfo: dict) -> str:
     """Return the model name from the extended info dict
 
     Args:
@@ -337,7 +294,7 @@ def getModelName(extendedInfo: dict) -> str:
     raise KeyError(f"Name of model files ('{mNKey}') missing from extended info dict!")
 
 
-def getFlagOpenGui(extendedInfo: dict) -> bool:
+def get_flag_open_gui(extendedInfo: dict) -> bool:
     """Return the flag openGUI from the extended info dict
 
     Args:
@@ -355,7 +312,7 @@ def getFlagOpenGui(extendedInfo: dict) -> bool:
     raise KeyError(f"Name of model files ('{fogKey}') missing from extended info dict!")
 
 
-def getMovingbandRadius(extendedInfo: dict) -> float:
+def get_MB_radius(extendedInfo: dict) -> float:
     """
     return the the movingband radius from the extended info dict.
     Identifier is 'movingband_r'.
@@ -363,14 +320,11 @@ def getMovingbandRadius(extendedInfo: dict) -> float:
     mbKey = "movingband_r"
     if mbKey in extendedInfo.keys():
         return float(extendedInfo[mbKey])
-    else:
-        raise KeyError(
-            f"Movingband radius ('{mbKey}') missing from extended info dict!"
-        )
+    raise KeyError(f"Movingband radius ('{mbKey}') missing from extended info dict!")
 
 
-def getNbrParalellPaths(extendedInfo: dict) -> int:
-    """getNbrParalellPaths returns the number of parallel winding paths per strand
+def get_nbr_of_parallel_paths(extendedInfo: dict) -> int:
+    """get_nbr_of_parallel_paths returns the number of parallel winding paths per strand
     from the extended info dict. Identifier is 'NpP'."""
     mbKey = "NpP"
     if mbKey in extendedInfo.keys():
@@ -385,7 +339,7 @@ def getNbrParalellPaths(extendedInfo: dict) -> int:
     raise KeyError(msg)
 
 
-def getFlagCalcIronLoss(extendedInfo: dict) -> bool:
+def get_flag_core_loss_calc(extendedInfo: dict) -> bool:
     """getIronLossFlag returns true if the iron loss calculation post processing
     should be started. Identifier is 'calcIronLoss'."""
     mbKey = "calcIronLoss"
@@ -401,13 +355,14 @@ def getFlagCalcIronLoss(extendedInfo: dict) -> bool:
         )
         raise TypeError(msg)
     # core loss calculation flag not in info
+    logger = logging.getLogger(__name__)
     logger.warning(
         "Iron loss calculation flag ('%s') missing from extended info dict!", mbKey
     )
     return False
 
 
-def getMagAngle(extendedInfo: dict) -> dict:
+def get_mag_angle(extendedInfo: dict) -> dict:
     """Returns the magnetization angle dictionary.\n
     This dictionary defines the *magnetization vector angle in rad* with the
     magnet surface IdExt as key. Identifier is 'magAngle'.
@@ -438,7 +393,7 @@ def getMagAngle(extendedInfo: dict) -> dict:
 # ====================================== START MATERIAL FUNCTIONS ==================================
 
 
-def createMaterial(matDict: dict[str, dict[Literal["wert"], Any]]) -> Material:
+def create_material(mat_dict: dict[str, dict[Literal["wert"], Any]]) -> Material:
     """create a pyemmo material object based on matDict format
 
     Args:
@@ -447,194 +402,18 @@ def createMaterial(matDict: dict[str, dict[Literal["wert"], Any]]) -> Material:
     Returns:
         Material: Material object generated from Matlab dict.
     """
-    name = matDict["name"]["wert"]
-    if isAir(name):
-        return air
-    if "elektromagnetik" in matDict.keys():
-        # TODO: Optimize code by introducing default mat dict and iterating
-        #  over its elements!
-        magMatDict: dict = matDict["elektromagnetik"]
-        conductivity = magMatDict.get("el_lw", {}).get("wert")
-        if not isinstance(conductivity, (int, float)):
-            conductivity = 0
-        # linear magnetic permerability
-        permeability = magMatDict.get("mue_r", {}).get("wert")
-        if not isinstance(permeability, (int, float)):
-            if permeability is not None:
-                logger.warning(
-                    "Bad value for permeability of Material %s: %s. Resetting to 1.0!",
-                    name,
-                    permeability,
-                )
-            permeability = 1  # default value
-        # remanent flux density [T]
-        remanence = magMatDict.get("b_rem", {}).get("wert")
-        if not isinstance(remanence, (int, float)):
-            remanence = 0
-            remanenceTempCoef = 0
-        else:
-            if "tk_rem_100" in magMatDict.keys():
-                remanenceTempCoef = magMatDict["tk_rem_100"]["wert"]
-                if not isinstance(remanenceTempCoef, (int, float)):
-                    # if not valid value for temperature coefficient of remanence
-                    remanenceTempCoef = 0  # set to None
-        # BH Curve
-        bhCurve = np.empty(0)
-        if "bh_kl" in magMatDict.keys():
-            bhDict: dict = magMatDict["bh_kl"]
-            if isinstance(bhDict["wert"], list):
-                # one BH-curve
-                nbrBasePoints = len(bhDict["wert"])
-                if nbrBasePoints > 0:
-                    bhCurve = np.zeros((nbrBasePoints, 2))
-                    for i, hbArray in enumerate(bhDict["wert"]):
-                        bhCurve[i] = [hbArray[1], hbArray[0]]
-                # else:
-                # raise ValueError(f"BH-Curve of Material '{name}' is empty!")
-            elif isinstance(bhDict["wert"], memoryview):
-                # workaround from coupling with matlab. class memoryview is only used
-                # for matrices (not vectors).
-                bhDict["wert"] = bhDict["wert"].tolist()  # convert memoryview to list
-                nbrBasePoints = len(bhDict["wert"])
-                if nbrBasePoints > 0:
-                    bhCurve = np.zeros((nbrBasePoints, 2))
-                    for i, hbArray in enumerate(bhDict["wert"]):
-                        bhCurve[i] = [hbArray[1], hbArray[0]]
-
-            elif "kl_1" in bhDict.keys():
-                ...  # TODO: add temperatur depended BH curve to material
-            else:
-                msg = (
-                    f"No valid keys for bh curve in material dict for material '{name}'."
-                    f"Keys are {bhDict.keys()}"
-                )
-                raise KeyError(msg)
-        if bhCurve.size == 0:
-            # check that there is a magnetic property
-            if not permeability:
-                msg = (
-                    f"Material '{name}' does not have magnetic properties!"
-                    "(neither relative permeability nor BH-Curve)"
-                )
-                raise AttributeError(msg)
-            if permeability < 1:
-                # pylint: disable=locally-disabled,  line-too-long
-                logger.warning(
-                    "Permeability of material '%s' is smaller than 1! Resetting it to 1 for model.",
-                    name,
-                    exc_info=1,
-                )
-                permeability = 1.0
-    else:
-        raise ValueError(f"Material '{name}' missing 'elektromagnetik' section!")
-
-    density = matDict.get("dichte", {}).get("wert")
-    if not isinstance(density, (int, float)):
-        density = None
-    # check for sheet thickness
-    # if valid value (>0, <5e-3) for thickness is given -> create steel mat
-    try:
-        sheetThickness = matDict["d"]["wert"]
-        if not isinstance(sheetThickness, (int, float)):
-            raise InvalidSheetThicknessError(
-                sheetThickness,
-                f"Invalid sheet thickness type {type(sheetThickness)}",
+    logger = logging.getLogger(__name__)
+    logger.debug("Creating material object for %s", mat_dict["name"])
+    if "sheetThickness" in mat_dict:
+        if mat_dict["sheetThickness"] != 0:
+            logger.debug(
+                "Parameter sheetThickness in material dict! Creating ElectricalSteel "
+                "object..."
             )
-        if sheetThickness > 5e-3:
-            # add warning to log and raise InvalidSheetThicknessError (which is catched
-            # by try-except statment) to create standard material
-            logger.warning(
-                """Sheet thickness of material %s is greater 5mm: %f meter!
-                Creating standard material instead of electrical steel material!""",
-                name,
-                sheetThickness,
-            )
-            raise InvalidSheetThicknessError(sheetThickness)
-        mat = createSteelMaterial(
-            matDict,
-            name,
-            conductivity,
-            permeability,
-            bhCurve,
-            density,
-            sheetThickness,
-        )
-    except (KeyError, InvalidSheetThicknessError):
-        mat = Material(
-            name=name,
-            conductivity=conductivity,
-            relPermeability=permeability,
-            remanence=remanence,
-            tempCoefRem=remanenceTempCoef,
-            BH=bhCurve,
-            density=density,
-        )
-    except Exception as exce:
-        raise exce
-    return mat
-
-
-def createSteelMaterial(
-    materialDict,
-    name,
-    conductivity,
-    permeability,
-    bhCurve,
-    density,
-    sheetThickness,
-) -> ElectricalSteel:
-    emDict: dict = materialDict["elektromagnetik"]
-    try:
-        lossParams = []
-        for lossChar in ("h", "w", "z"):
-            lossParam = emDict["sigma_" + lossChar]["wert"]
-            if not isinstance(lossParam, float):
-                # TODO: Add warning
-                lossParams.append(0)
-            else:
-                lossParams.append(lossParam)
-    except KeyError as keyErr:
-        raise KeyError(
-            "Missing loss parameter from material dict for material " + name
-        ) from keyErr
-    except Exception as exc:
-        raise exc
-
-    try:
-        refInd = emDict["bez_ind"]["wert"]
-    except KeyError as keyErr:
-        raise KeyError(
-            f"Missing reference induction from material dict for material '{name}'."
-        ) from keyErr
-    except Exception as exc:
-        raise exc
-
-    return ElectricalSteel(
-        name=name,
-        conductivity=conductivity,
-        relPermeability=permeability,
-        BH=bhCurve,
-        density=density,
-        sheetThickness=sheetThickness,
-        lossParams=lossParams,
-        referenceFluxDensity=refInd,
-        referenceFrequency=50,  # setting to 50Hz allways
-    )
-
-
-def isAir(materialName: str):
-    """
-    isAir checks if the material name contains "air" or "luft" and returns True if it does so
-    """
-    if isinstance(materialName, str):
-        if "air" in materialName.lower() or "luft" in materialName.lower():
-            return True
-        return False
-    if isinstance(materialName, list):
-        if not materialName:  # if materialName is empty
-            return True
-        raise TypeError("Imported material name is unempty list, not string!")
-    raise TypeError("Imported material name has type" + str(type(materialName)))
-
-
-# ======================================= END MATERIAL FUNCTIONS ===================================
+            return ElectricalSteel.from_dict(mat_dict)
+        logger.debug("Parameter sheetThickness is 0. Removing it from material dict!")
+        mat_dict.pop("sheetThickness")
+        if "lossParams" in mat_dict:
+            logger.debug("Removing parameter lossParams from material dict!")
+            mat_dict.pop("lossParams")
+    return Material.from_dict(mat_dict)

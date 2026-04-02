@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of
 # Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -18,18 +18,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""
-This module inits the gmsh subpackage of PyEMMO.
+"""Gmsh subpackage of PyEMMO defining classes and functions to interface the
+:mod:`~pyemmo.script.geometry` package with the
+`Gmsh-Python-API <https://gmsh.info/doc/texinfo/gmsh.html#Gmsh-application-programming-interface>`_
+to directly create geometrical entities in current Gmsh model.
 
-The module is part of the PyEMMO project, developed by TTZ-EMO at the Technical
-University of Applied Sciences Würzburg-Schweinfurt.
 
-Author:
-    Max Schuler
+.. graphviz:: ../../images/uml/classes_PyEMMO.script.gmsh.dot
+    :caption: `gmsh` subpackage class diagram
+
 """
 from __future__ import annotations
 
-from typing import Literal, Tuple
+from typing import Literal
 
-DimTag = Tuple[Literal[0, 1, 2], int]
-SurfDimTag = Tuple[Literal[2], int]
+DimTag = tuple[Literal[0, 1, 2], int]
+SurfDimTag = tuple[Literal[2], int]

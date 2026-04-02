@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO,
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO,
 # Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -18,13 +18,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module for Material-class"""
+"""Module for :class:`Material` class
+
+.. todo:: Add description of dict structure and save/load mechanism!
+"""
 
 
 from __future__ import annotations
 
 # pylint: disable=line-too-long
 import json
+import logging
 import os
 import warnings
 
@@ -32,15 +36,20 @@ import numpy as np
 from matplotlib import pyplot as plt
 from numpy.typing import NDArray
 
-from ... import rootLogger as logger
-from ...definitions import RESULT_DIR
-from ...functions.clean_name import clean_name
-from ...functions.exportMaxwell import exportTabMaxwell
 from . import DATABASE_PATH
 
 
 class Material:
-    """Class Material defines a material for the simulation with onelab"""
+    """Class Material defines a material for the simulation with ONELAB.
+
+    You can create a :class:`Material` from its attributes like:
+    >>> Material(name="Example Mat", relPermeability=1000,...)
+    Or you can load materials from the PyEMMO material database by:
+    >>> Material.load("aluminium")
+    Where "aluminium" is the material name of the material in the database. You can find
+    all available materials under :const:`pyemmo.script.material.DATABASE_PATH` as json
+    formatted data files.
+    """
 
     def __init__(
         self,
@@ -54,6 +63,25 @@ class Material:
         thermalConductivity: float = 0.0,
         thermalCapacity: float = 0.0,
     ):
+        """Initialize a material from its electrical, magnetic, structural and thermal
+        parameters.
+
+        Args:
+            name (str): Material name.
+            conductivity (float, optional): Electrical conductivity in S/m.
+                Defaults to 0.0.
+            relPermeability (float, optional): Relative magnetic permeability without
+                unit. Defaults to 1.0.
+            remanence (float, optional): Magnetic remanence flux density for permanent
+                magnet materials in T. Defaults to 0.0.
+            tempCoefRem (float, optional): Temperature coefficient of remanence flux
+                density in 1/K. Defaults to 0.0.
+            BH (NDArray, optional): Nonlinear magnetic BH curve. Defaults to np.empty(0).
+            density (float, optional): Density in kg/m³. Defaults to 0.0.
+            thermalConductivity (float, optional): Thermal conductivity in W/m/K.
+                Defaults to 0.0.
+            thermalCapacity (float, optional): Thermal capacity in J/K. Defaults to 0.0.
+        """
         self.name = name
         self.conductivity = conductivity
         self.relPermeability = relPermeability
@@ -121,12 +149,9 @@ class Material:
             materialName (str): Material name to load the Material from the
                 database.
 
-        FIXME: save/load methods do not pay attention to properties:
-            - tempCoefRem
-            - density
-            - thermalConductivity
-            - thermalCapacity
-
+        FIXME: save/load methods do not pay attention to properties
+        :attr:`tempCoefRem`, :attr:`densit`, :attr:`thermalConductivit`,
+        :attr:`thermalCapacity`.
         """
         if mat_name == "":
             raise ValueError("Material name must not be empty!")
@@ -157,6 +182,7 @@ class Material:
         return cls(**mat_dict)
 
     def as_dict(self) -> dict:
+        """Return material object as dict with attributes as keys."""
         mat_dict = {}
         mat_dict["name"] = self.name
         mat_dict["conductivity"] = self.conductivity
@@ -180,6 +206,11 @@ class Material:
         `pyemmo.script.material.DATABASE_PATH`.
 
         The default save path is 'DATABASE_PATH/*MATERIAL_NAME*.json'
+
+        Warning:
+            Implement algorithm at package installation that keeps user defined
+            materials. Right now new materials will be overwritten by software update!
+
         """
         if self.name == "":
             raise RuntimeError("Material needs to have a name!")
@@ -193,13 +224,19 @@ class Material:
             json.dump(mat_dict, file, indent="\t")
 
     def delete(self):
+        """Delete material from the database folder."""
         json_path = os.path.join(DATABASE_PATH, f"{self.name}.json")
         print(json_path)
         try:
             # pathlib.Path.unlink(json_path)
             os.remove(json_path)
         except FileNotFoundError:
-            logger.warning(f"{self.name}.json is already deleted or does not exist.")
+            logger = logging.getLogger(__name__)
+            logger.warning(
+                "%s is already deleted or does not exist.",
+                json_path,
+                exc_info=True,
+            )
 
     # def addBHCurveFromFile(
     #     self, data, update_db: bool = False
@@ -228,12 +265,15 @@ class Material:
     def plotBHCurve(self, temp=None):
         """
         Function to plot BH curve
+
         Args:
-            temp: chosen temperature for the curve. can be "default", or a specific temp.
-                - if none is defined, all BH curves for all temps will be plotted
+            temp: Chosen temperature for the curve. Can be "default", or a specific
+                temperature. If none is defined, all BH curves for all temps will be
+                plotted.
         """
+        logger = logging.getLogger(__name__)
         if self.linear:
-            warnings.warn("Material is linear, there is no BH-curve")
+            logger.warning("Material is linear, there is no BH-curve")
             return
         if temp is None:
             for t in self.BH.keys():
@@ -348,10 +388,10 @@ class Material:
 
     @property
     def remanence(self) -> float | int:
-        """get remanent flux density at 20°C
+        r"""get remanent flux density at 20\deg C
 
         Returns:
-            Union[float, int]: remanent flux density (Br) in T at 20°C
+            Union[float, int]: remanent flux density (Br) in T at 20\deg C
         """
         return self._remanence
 
@@ -376,11 +416,11 @@ class Material:
 
     @property
     def tempCoefRem(self) -> float | int:
-        """Get the temperature coefficient of the remanent flux density.
-        Formula for remanent flux density at temperature `tempMag` in °C is:
+        r"""Get the temperature coefficient of the remanent flux density.
+        Formula for remanent flux density at temperature `tempMag` in \deg C is:
 
         .. math::
-            B_{r}(tempMag) =  b_{r,20°C} * (1 + ({tempCoef} * (tempMag - 20)))"
+            B_{r}(tempMag) =  b_{r,20\deg C} * (1 + ({tempCoef} * (tempMag - 20)))"
 
         Returns:
             Union[float, int]: temperatur coefficient of remanent flux density in 1/K
@@ -410,10 +450,14 @@ class Material:
     @property
     def BH(self) -> NDArray:
         """getter property of BH
+
         Returns:
-            numpy.ndarray: _description_:
-        NOTE: This only returns BH curve for default temperature. Use get_BH() to get BH
-        curve for specifc temperature instead!
+            numpy.ndarray: BH curve data for default temperature (20 deg C) in shape
+                (X,2): :code:`[[B1, H1],[B2, H2],[B3, H3],...]`.
+
+        Note:
+            This only returns BH curve for default temperature. Use :meth:`get_BH` to
+            get BH curve for specifc temperature instead!
         """
         return self.get_BH()
         # if self._BH.ndim < 3:
@@ -428,14 +472,17 @@ class Material:
         # TODO: implement temperature depended bh curve
 
     def get_BH(self, temperature: float = None):
-        """getter of BH
+        """Returns BH curve for specific temperature or default BH curve if no
+        temperature is given.
 
         Args:
-            temperature (float, optional): _description_. Defaults to None.
+            temperature (float, optional): Temperature in deg C. Defaults to None.
 
         Returns:
-            numpy.ndarray: _description_
+            numpy.ndarray: BH curve data materix with shape (X,2) ->
+            :code:`[[B1, H1],[B2, H2],[B3, H3],...]`.
         """
+        logger = logging.getLogger(__name__)
         if not temperature:
             return np.array(self._BH["default"])
         try:
@@ -540,54 +587,80 @@ class Material:
             temperature (float): temperature of the curve. defaults to None (meaning
                 default temperature).
         """
+        logger = logging.getLogger(__name__)
+
         if not hasattr(self, "_BH"):
+            # init BH curve private attribute
             self._BH = {}
+
         if not temp:
+            # if no temperature given, set default curve
             temp_key = "default"
         else:
             temp_key = temp
+
         if newBH is None:
             raise TypeError("BH curve cant be of type None")
+
         if not isinstance(newBH, (np.ndarray, list)):
             raise TypeError("BH curve must be numpy.ndarray or list of lists")
+
         if len(newBH) == 0:
             # if BH is None, set empty array
             self._BH[temp_key] = np.empty(0)
             if temp_key == "default":
                 self.linear = True
-        elif isinstance(newBH, list):
-            # if list is given, set numpy array
-            # RECALL SETTER to check valid BH shape
-            # self.linear = False # no need to set here because setter is
-            # recalled
-            self._BH[temp_key] = np.array(newBH)
-            self.linear = False
-        elif isinstance(newBH, np.ndarray):
+            return
+
+        if isinstance(newBH, list):
+            # if list is given, create numpy array
+            newBH = np.array(newBH)
+
+        if isinstance(newBH, np.ndarray) and not newBH.size == 0:
+            # make sure newBH is numpy array now and is not empty
             if newBH.ndim == 2:
                 # number of dimensions must be 2
-                if newBH.shape[1] == 2:
+                if any(shape == 2 for shape in newBH.shape):
                     # number of coloums must be 2 for B and H
+                    if newBH.shape[1] != 2:
+                        # switch rows and coloums
+                        logger.debug(
+                            "Transposing given BH curve of shape (%i,%i)",
+                            newBH.shape[0],
+                            newBH.shape[1],
+                        )
+                        newBH = newBH.T
                     if newBH.shape[0] < 2:
                         raise ValueError(
                             (
-                                "Too few points in BH curve of material %s! At least specify 2 value pairs.",
+                                "Too few points in BH curve of material %s! "
+                                "At least specify 2 value pairs.",
                                 self.name,
                             )
                         )
                     if newBH.shape[0] < 6:
                         logger.warning(
-                            "Only %i point in BH curve of material %s! Results might be inaccurate.",
+                            "Only %i point in BH curve of material %s! "
+                            "Results might be inaccurate.",
                             newBH.shape[0],
                             self.name,
                         )
+                    if not np.array_equal(newBH[0], [0, 0]):
+                        logger.warning(
+                            "BH curve must start with origin B=0, H=0! "
+                            "Adding origin to BH curve of material %s",
+                            self.name,
+                        )
+                        newBH = np.concatenate([[[0.0, 0.0]], newBH], axis=0)
                     # set BH curve
                     self._BH[temp_key] = newBH
                     self.linear = False
                 else:
                     raise (
                         ValueError(
-                            f"Wrong shape of array BH. Must be (X,2) but is {newBH.shape}. "
-                            + "BH must look like [[B1, H1],[B2, H2],[B3, H3],...]"
+                            "Wrong shape of array BH. Must be (X,2) or (2,X) but is "
+                            f"{newBH.shape}. BH must look like "
+                            "[[B1, H1],[B2, H2],[B3, H3],...]"
                         )
                     )
             else:
@@ -736,6 +809,7 @@ class Material:
         """
         if isinstance(is_linear, bool):
             if is_linear and self.BH.size != 0:
+                logger = logging.getLogger(__name__)
                 logger.warning(
                     "Material %s was set linear and has BH curve!", self.name
                 )

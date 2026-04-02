@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -21,7 +21,7 @@ from __future__ import annotations
 
 from os import remove
 
-from pyemmo.functions.exportMaxwell import exportTabMaxwell
+from pyemmo.functions.maxwell import export_tab
 
 data = [[1, 2, 3], [4, 5, 6]]
 ids = ["H (A_per_meter)", "otherVal (W)"]
@@ -30,12 +30,12 @@ file = (
     r"C:\Users\ganser\AppData\Local\Programs\pyemmo\Results\testExportMaxwellData.tab"
 )
 try:
-    exportTabMaxwell(data, ids, file)
+    export_tab(data, ids, file)
 except AssertionError as assErr:
     assert "Given .tab file allready exists: " in assErr.args[0]
     print("File allready existed. Removing file and trying again...")
     remove(file)
-    exportTabMaxwell(data, ids, file)
+    export_tab(data, ids, file)
     print("Worked.\nDone.")
 except Exception as exce:
     raise exce

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO, Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
 # (see https://gitlab.ttz-emo.thws.de/ag-em/pyemmo).
@@ -34,7 +34,7 @@ NBR_INTERPOLATION_POINTS = 100
 
 
 class Spline(Line):
-    """Class Spline Child of class line"""
+    """Spline type curve from start, end and list of control points."""
 
     def __init__(
         self,
@@ -44,7 +44,12 @@ class Spline(Line):
         control_points: list[Point],
         spline_type: Literal[0, 1, 2] = 0,
     ):
-        """Konstruktor der Klasse Spline
+        """Create a spline from start point, end point, list of control points and
+        a spline type. Where spline type can be:
+
+        - 0 : C2 BSpline
+        - 1 : Beziercurve
+        - 2 : Basic spline
 
         Args:
             name (str): Name of the Spline
@@ -52,11 +57,11 @@ class Spline(Line):
             p2 (Point): end_point
             control_points (List[Point]): List of controll points
             spline_type (Literal[0, 1, 2], optional): There are 3 different types of Splines
-             that can be generated with Gmsh. Defaults to 0 (Spline):
+                that can be generated with Gmsh. Defaults to 0 (Spline):
 
-                0 : Catmull-Rom Spline (Build-in Kernel) or C2 BSpline (OpenCASCADE Kernel)
-                1 : Bezierkurve
-                2 : Basis-Spline
+                0 : C2 BSpline
+                1 : Beziercurve
+                2 : Basic spline
 
         """
         super().__init__(name=name, start_point=start_point, end_point=end_point)
@@ -70,13 +75,13 @@ class Spline(Line):
         """get Spline type.
         There are 3 different types of Splines that can be generated with Gmsh:
 
-            0 : Catmull-Rom Spline (Build-in Kernel) or C2 BSpline (OpenCASCADE Kernel)
-            1 : Bezierkurve
-            2 : Basis-Spline
+            0 : C2 BSpline
+            1 : Beziercurve
+            2 : Basic spline
 
         Returns:
 
-            Literal[0,1,2]: Spline type
+            Literal[0,1,2]: Spline type (C2 BSpline, Beziercurve, Basic spline)
         """
         return self._spline_type
 
@@ -91,21 +96,20 @@ class Spline(Line):
 
     @control_points.setter
     def control_points(self, new_control_points: list[Point]):
-        """Mit setControlPoints können neue Kontrollpunkte der Spline definiert werden.
+        """Set new control points.
 
         Args:
-            newControlPointList (List[Point]): List of new controll points
+            newControlPointList (List[Point]): List of new control points
         """
         self._control_points = new_control_points
 
     def addControlPoint(self, new_control_point: Point, position: int | None = None):
-        """Mit addControlPoint() kann an einer definierten Postion ein weitere
-        Kontrollpunkt in die Liste der Kontrollpunkte ergänzt werden.
+        """Add new control point to list.
 
         Args:
-            new_control_point (Point): New controll point
-            position (int): Position in controll point list Defaults to None. If None,
-                controll point is appended to the controll point list.
+            new_control_point (Point): New control point
+            position (int): Position in control point list Defaults to None. If None,
+                control point is appended to the control point list.
         """
         if isinstance(position, int):
             self.control_points.insert(position, new_control_point)
@@ -113,11 +117,10 @@ class Spline(Line):
             self.control_points.append(new_control_point)
 
     def removeControlPoint(self, point: Point):
-        """Mit removeControlPoint() kann ein definierter Punkt aus der Liste der
-        Kontrollpunkte entfernt werden.
+        """Remove control point from list
 
         Args:
-            point (Point): Controll point that should be removed.
+            point (Point): Control point that should be removed.
         """
         cpList = self.control_points
         if point in cpList:
@@ -144,8 +147,7 @@ class Spline(Line):
         return points
 
     def translate(self, dx: float, dy: float, dz: float):
-        """Mit translate() wird das Objekt linear verschoben. Die Inputvariablen dx, dy
-        und dz beschreiben die Verschiebungsfaktoren in der x-, y- und z- Richtung.
+        """Linear translation of the spline by dx, dy and dz.
 
         Args:
             dx (float): x offset
@@ -158,8 +160,7 @@ class Spline(Line):
             p.translate(dx, dy, dz)
 
     def rotateX(self, rotationPoint: Point, angle):
-        """Mit rotateX() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die
-        X-Achse mit einem definierten Winkel rotiert.
+        """Rotation around x-axis by angle in radians.
 
         Args:
             rotationPoint (Point): Centerpoint of rotation.
@@ -171,8 +172,7 @@ class Spline(Line):
             p.rotateX(rotationPoint, angle)
 
     def rotateY(self, rotationPoint, angle):
-        """Mit rotateY() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die
-        Y-Achse mit einem definierten Winkel rotiert.
+        """Rotation around y-axis by angle in radians.
 
         Args:
             rotationPoint (Point): Centerpoint of rotation.
@@ -185,8 +185,7 @@ class Spline(Line):
             p.rotateY(rotationPoint, angle)
 
     def rotateZ(self, rotationPoint: Point = defaultCenterPoint, angle: float = 0.0):
-        """Mit rotateZ() wird ein Punkt um einen Rotationspunkt (rotationPoint) und die
-        Z-Achse mit einem definierten Winkel rotiert.
+        """Rotation around z-axis by angle in radians.
 
         Args:
             rotationPoint (Point): Centerpoint of rotation.
@@ -198,18 +197,18 @@ class Spline(Line):
             p.rotateZ(rotationPoint, angle)
 
     def duplicate(self, name="") -> Spline:
-        """Mit duplicate() wird eine Spline mit gleichen Eigenschaften zur Originalen
-        erzeugt. Diese Spline hat jedoch eine unterschiedliche ID.
-                Beispiel:
-                    SP1 = Spline('sp1', P1, P2, [P3, P4, P5])
-                    SP2 = SP1.duplicate()
+        """Copy the spline object.
 
         Args:
             name (str, optional): Name of new spline. Defaults to \"\".
 
         Returns:
-            Spline: Duplicate of the current Spline
+            Spline: Copy of the current Spline
 
+        Example:
+
+            >>> spline1 = Spline('sp1', P1, P2, [P3, P4, P5])
+            >>> spline2 = SP1.duplicate()
         """
         newP1 = self.start_point.duplicate()
         newP2 = self.end_point.duplicate()
@@ -233,27 +232,26 @@ class Spline(Line):
         return dupSpline
 
     def mirror(self, planePoint, planeVector1, planeVector2, name=""):
-        """Mit mirror() kann ein Punkt an einer definierten Ebene gespiegelt werden. Ein
-        Bildpunkt wird hierbei erzeugt. Die Spiegelebene wird durch einen Aufpunkt
-        (planePoint) und 2 Vektoren (planeVector1 und planeVector2) beschrieben.
+        """Mirror a circle spline by a plane.
 
         Args:
-            planePoint (Point): _description_
-            planeVector1 (Line): _description_
-            planeVector2 (Line): _description_
-            name (str, optional): Name of new mirrored point. Defaults to None.
+            planePoint (Point): Start point of the plane
+            planeVector1 (Line): First plane vector.
+            planeVector2 (Line): Second plane vector.
+            name (str, optional): New name of the spline. Defaults to "".
 
         Returns:
             Point: mirrored point
 
-        Beispiel:
-            P0 = Point('P0', 0, 0, 0, 1) \n
-            Py = Point('Py', 0, 1, 0, 1) \n
-            Pz = Point('Pz', 0, 0, 1, 1) \n
-            yAxis = Line(P0, Py) \n
-            zAxis = Line(P0, Pz) \n
-            P1 = Point('P1', 1, 0, 0, 0.3) \n
-            P2 = P1.mirror(P0, yAxis, zAxis) \n
+        Example:
+
+            >>> P0 = Point('P0', 0, 0, 0, 1)
+            >>> Py = Point('Py', 0, 1, 0, 1)
+            >>> Pz = Point('Pz', 0, 0, 1, 1)
+            >>> yAxis = Line(P0, Py)
+            >>> zAxis = Line(P0, Pz)
+            >>> P1 = Point('P1', 1, 0, 0, 0.3)
+            >>> P2 = P1.mirror(P0, yAxis, zAxis)
         """
         p1 = self.start_point.mirror(planePoint, planeVector1, planeVector2)
         p2 = self.end_point.mirror(planePoint, planeVector1, planeVector2)
@@ -279,7 +277,7 @@ class Spline(Line):
         markersize: float = 1,
         tag: bool = False,
     ):
-        """TODO
+        """Plot the spoine.
 
         Depended on the spline type the correct spline type in the ``splines``
         module will be selected:
@@ -295,11 +293,13 @@ class Spline(Line):
         +-------+-----------------------------------+------------------------+
 
         Args:
-            fig (_type_, optional): _description_. Defaults to None.
-            linewidth (float, optional): _description_. Defaults to 0.5.
-            color (_type_, optional): _description_. Defaults to LINE_COLOR.
-            marker (_type_, optional): _description_. Defaults to None.
-            markersize (int, optional): _description_. Defaults to 1.
+            fig (pyplot.Figure, optional): Defaults to None.
+            marker (str, optional): Defaults to None.
+            markersize (float, optional): Defaults to 1.
+            linewidth (float): Defaults to 0.5.
+            color (list, optional): Defaults to [random() for i in range(3)].
+            tag (bool): Flag to print name like "Spline ("Spline name")"
+                and point tags if marker is not None.
         """
         all_points = self.points
         xy_list = []
@@ -338,11 +338,17 @@ class Spline(Line):
             )
         # if marker not None: Plot points
         if marker:
+            # need to check color for str, because can also be list/np.ndarray
+            if isinstance(color, str) and color == LINE_COLOR:
+                # if color is default value
+                p_color = POINT_COLOR
+            else:
+                p_color = color
             for p in all_points:
                 p.plot(
                     fig,
                     marker,
                     markersize,
-                    color=color if color != LINE_COLOR else POINT_COLOR,
+                    color=p_color,
                     tag=tag,
                 )

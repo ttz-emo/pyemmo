@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 M. Schuler, TTZ-EMO,
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO,
 # Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -18,16 +18,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""This module holds the electrical steel lamination Material-class definition"""
+"""
+This module defines the class :class:`ElectricalSteel` for electrical steel materials
+used in electromagnetic power transfomation.
+"""
 from __future__ import annotations
 
 import json
+import logging
 import operator
 import os
 
 import numpy as np
 
-from ... import rootLogger
 from . import DATABASE_PATH
 from .material import Material
 
@@ -61,15 +64,19 @@ class ElectricalSteel(Material):
             relPermeability (float, optional): Relative magnetic permeability (no unit).
             BH (numpy.ndarray, optional): B-H curve data as a NumPy array.
                 Where B is the flux density in T and H is the magnetic field strength in A/m.
+                Must be given by shape (X,2) as pairs of B and H:
+                :code:`[[B1, H1],[B2, H2],[B3, H3],...]`.
             density (float, optional): Density of the material in kg/m³.
             thermalConductivity (float, optional): Thermal conductivity in W/(m·K).
             thermalCapacity (float, optional): Thermal capacity in J/(kg·K).
             lossParams (Tuple[float, float, float], optional): Loss parameters,
                 possibly recalculated based on reference frequency and flux density in W/m³.
                 The order in the tuple is:
+
                 - hysteresis loss
                 - eddy current loss
                 - excess loss
+
                 If the values are given in a range for W/kg (hysteresis value < 20 AND
                 eddy current value < 5), the values will be adapted by the
                 material density (kg/m³) to obtain the values in W/m³.
@@ -78,12 +85,6 @@ class ElectricalSteel(Material):
                 if they are given in W/kg.
             referenceFluxDensity (float, optional): Reference flux density for
                 loss calculations in T.
-
-        Notes:
-            - The lossParams parameter should be set last, as it may depend on
-              referenceFrequency and referenceFluxDensity for recalculation
-              (e.g., if given in W/kg).
-
         """
         super().__init__(
             name,
@@ -288,7 +289,7 @@ class ElectricalSteel(Material):
             # range. Typically hysteresis loss value is between 1.0...5.0 W/kg;
             # eddy current value is between 0.2...2.0 W/kg.
             if newLossParams[0] < 20 and newLossParams[1] < 5:
-                rootLogger.warning(
+                logging.getLogger(__name__).warning(
                     (
                         "Looks like the loss parameters for material %s are "
                         "given in W/kg (not W/m³). "

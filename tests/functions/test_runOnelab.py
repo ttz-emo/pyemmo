@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO,
 # Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -21,13 +21,22 @@
 from __future__ import annotations
 
 import fnmatch
+import logging
 import unittest
-from os import listdir, makedirs
+from os import listdir, makedirs, rmdir
 from os.path import isdir, isfile, join
 from shutil import copytree, ignore_patterns, rmtree
+from uuid import uuid4
 
-from pyemmo.functions.runOnelab import findGetDP, findGmsh, runCalcforCurrent
-from tests import TEST_DATA_DIR
+import pytest
+
+from pyemmo.functions.run_onelab import (
+    find_getdp,
+    find_gmsh,
+    findGmsh,
+    run_simulation,
+)
+from tests import GETDP_EXE, TEST_DATA_DIR
 from tests import TEST_TEMP_DIR as TESTS_RESULTS_DIR
 
 
@@ -41,16 +50,16 @@ class TestRunOnelab(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """
-        Vordefinierte Setup Funktion die einmalig am Anfang der Testprozedur ausgeführt wird.
-        Nützlich für beispielsweise zeitintensives Setup von Dingen die nicht verändert werden.
-        Konkret z.B. Laden von vordefinierter, verifizierter Testgeometrie
+        A predefined setup function that is executed once at the beginning of the test
+        procedure. This is useful, for example, for time-consuming setup of elements
+        that will not be changed.
+        Specifically, for example, loading predefined, verified test geometry.
         """
+        proc_id = uuid4()
         # copy model data and set actual model directory
-        original_model_dir = join(
-            TEST_DATA_DIR, "api", "pyleecan", "comparison_base", "Toyota_Prius"
-        )
+        original_model_dir = join(TEST_DATA_DIR, "onelab", "Toyota_Prius")
         # folder to store temporary model data and simulation results
-        cls.test_sim_dir = join(TESTS_RESULTS_DIR, "TestRunOnelab")
+        cls.test_sim_dir = join(TESTS_RESULTS_DIR, "TestRunOnelab_" + str(proc_id))
         if not isdir(cls.test_sim_dir):
             makedirs(cls.test_sim_dir)
         # copy model data to test simulation results directory
@@ -73,46 +82,67 @@ class TestRunOnelab(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         """
-        Vordefinierte teardown Funktion die einmalig am Ende der Testprozedur ausgeführt wird.
-        Nützlich für beispielsweise Löschen von in Test erzeugten Datein und Ordnern.
-        Konkret z.B. Löschen von abgespeicherten Geometrien
+        A predefined teardown function that is executed once at the end of the test procedure.
+        Useful, for example, for deleting files and folders created during testing.
+        Specifically, for example, deleting saved geometries.
         """
         rmtree(cls.model_dir)
         # remove any results folders that match the test res_id pattern
         for folder in listdir(cls.test_sim_dir):
             if fnmatch.fnmatch(folder, "test_*"):
                 rmtree(join(cls.test_sim_dir, folder))
+        # remove temporary test folder if empty
+        if len(listdir(cls.test_sim_dir)) == 0:
+            rmdir(cls.test_sim_dir)
 
     def setUp(self):
         """
-        Vordefinierte Setup Funktion von Unittest
-        Die Schreibweise "setUp" muss beachtet werden.
-        Setup wird vor jeder Testmethode der Klasse TestRotorIPMSM ausgeführt
+        Predefined setup function of unit tests. The syntax "setUp" must be preserved.
+        setUp is executed before each test method of the test class.
         """
 
     def tearDown(self):
         """
-        Vordefinierte Reset Funktion von Unittest
-        Die Schreibweise "tearDown" muss beachtet werden!
-        teardown wird nach jeder Testmethode der Klasse TestRotorIPMSM ausgeführt
+        Predefined teardown function of unit tests. The syntax "tearDown" must be
+        preserved. tearDown is executed after each test method of the test class.
         """
         pass
 
-    def test_findGmsh(self):
-        # Setup
-
-        # Run
-        GmshExe = findGmsh()
+    def test_find_gmsh(self):
+        """Test function find_gmsh"""
+        gmsh_path = find_gmsh()
         # Verify
-        ...
+        logging.getLogger(__file__).info("Found Gmsh in %s", gmsh_path)
+        assert gmsh_path.lower().endswith(".exe") or gmsh_path.lower().endswith(".bat")
+        assert isfile(gmsh_path)
 
-    def test_run_ONELAB(self):
+    def test_findGmsh(self):
+        """Test old findGmsh notation for function find_gmsh."""
+        with pytest.warns(DeprecationWarning):
+            gmsh_path = findGmsh()
+        # Verify
+        logging.getLogger(__file__).info("Found Gmsh in %s", gmsh_path)
+        assert gmsh_path.lower().endswith(".exe") or gmsh_path.lower().endswith(".bat")
+        assert isfile(gmsh_path)
 
-        res_id = "test_runOnelab"
-        runCalcforCurrent(
+    def test_find_getdp(self):
+        """Test the find_getdp function and make sure sure getdp can be found for test_run_simulation"""
+        exe = find_getdp()
+        # Verify
+        # logger = logging.getLogger(__file__)
+        logging.getLogger(__file__).info("Found GetDP in %s", exe)
+        assert exe.lower().endswith(".exe")
+        assert isfile(exe)
+
+    def test_run_simulation(self):
+        """Test the run_simulation function with default parameters for the Toyota Prius."""
+        # make sure simulation folder starts with "test_" so the teardown function
+        # removes it.
+        res_id = "test_run_simulation_func"
+        run_simulation(
             {
                 "getdp": {
-                    "exe": findGetDP(),
+                    "exe": GETDP_EXE,
                     "IQ_RMS": 10.0,
                     "ID_RMS": 0.0,
                     "RPM": 1000,

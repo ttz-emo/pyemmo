@@ -1,28 +1,20 @@
 [build-system]
-requires = [
-    "setuptools>=75.3.2",
-    "wheel",
-] # setuptools==75.3.2 is the latest version that support python 3.8
+requires = ["setuptools>=77.0.3", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyemmo"
 authors = [
-    { name = "AG-EM TTZ-EMO" },
     { name = "Max Schuler", email = "agem.ttz-emo@thws.de" },
+    { name = "Max Schuler" },
     { name = "Sasithon Koenig" },
 ]
 maintainers = [{ name = "Max Schuler", email = "agem.ttz-emo@thws.de" }]
 readme = "README.md"
-description = "PyEMMO is a interface for modeling electrical machines in the open-source FEA software Onelab"
-urls = { Repository = "https://gitlab.ttz-emo.thws.de/ag-em/pyemmo" }
-requires-python = ">= 3.8"
-license = { file = "LICENSE" } # license keyword: Newer setuptool versions expect only
-# the license string here, not a dict type! But to make it testable with py38 we need to
-# stick to the former expression since the actual setuptools verisions are not available
-# for 3.8
-# license = { text = "GPL-3.0-or-later" }
-# license-files = ["LICENSE"] # skip the license-files keyword due to the expl. given above!
+description = "PyEMMO is a interface for modeling electrical machines in the open-source FEA software ONELAB"
+requires-python = ">= 3.9"
+license = "GPL-3.0-or-later"
+license-files = ["LICEN[CS]E*", "AUTHORS.md"]
 keywords = [
     "electrical machine",
     "simulation",
@@ -33,22 +25,23 @@ keywords = [
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Operating System :: OS Independent",
 ]
 
 dependencies = [
-    "swat_em>=0.6.3",
-    "pygetdp>=1.0.0",
     "gmsh>=4.10.3,<4.14",
     "matplotlib>=3.3.4",
     "numpy>=1.23.1",
     "parse>=1.19.0",
+    "pygetdp>=1.0.0",
     "splines>=0.3.2",
+    "swat_em>=0.6.3",
 ]
 
 # get version from setup.py via pyemmo/version.py
@@ -57,6 +50,11 @@ dynamic = ["version"]
 # Optional dependencies
 [project.optional-dependencies]
 PYLEECAN = ['pyleecan>=1.5.1; python_version<"3.10"']
+
+[project.urls]
+GitHub = "https://github.com/ttz-emo/pyemmo"
+Documentation = "https://ttz-emo.thws.de/arbeitsgruppen/elektrische-maschinen/pyemmo/"
+Homepage = "https://ttz-emo.thws.de/arbeitsgruppen/elektrische-maschinen/"
 
 [tool.setuptools]
 include-package-data = true
@@ -67,6 +65,14 @@ where = ["."]
 include = ["pyemmo*"]
 # exclude = ["additional*"]`
 namespaces = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+log_cli = true
+log_cli_level = "INFO"
+# log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)"
+# log_cli_date_format = "%Y-%m-%d %H:%M:%S"
+# addopts = "--cov=pyemmo --cov=tests"
 
 [tool.isort]
 multi_line_output = 3
@@ -81,13 +87,14 @@ add_imports = ["from __future__ import annotations"]
 [tool.black]
 line-length = 88
 
-[tool.pytest.ini_options]
-testpaths = ["tests/functions", "tests/script"]
-log_cli = true
-log_cli_level = "WARNING"
-# log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)"
-# log_cli_date_format = "%Y-%m-%d %H:%M:%S"
-addopts = "--cov=pyemmo --cov=tests"
+[tool.pylint.'MESSAGES CONTROL']
+# Disable specific checks by their symbolic name or PEP 8 code.
+disable = [
+    "line-too-long", # Missing module docstring
+    # "C0115",  # Missing class docstring
+    # "C0116",  # Missing function or method docstring
+    # "R0903",  # Too few public methods
+]
 
 [tool.bandit]
 skips = ["B311", "B404", "B603"]

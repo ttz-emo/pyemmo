@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2025 M. Schuler, TTZ-EMO,
+# Copyright (c) 2018-2026 M. Schuler, TTZ-EMO,
 # Technical University of Applied Sciences Wuerzburg-Schweinfurt.
 #
 # This file is part of PyEMMO
@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Module for PyEMMO api MachineSegmentSurface class"""
+"""Module for PyEMMO api class :class:`MachineSegmentSurface`"""
 from __future__ import annotations
 
 import logging
@@ -35,8 +35,11 @@ from ..script.material.material import Material
 class MachineSegmentSurface(GmshSegmentSurface):
     """
     MachineSegmentSurface is a segmented surface object in Gmsh with additional
-    physical property ``material`` and a ``part_id`` specifing the machine part it
-    is representing (e.g. "rotor lamination", "mag" for magent or "stator slot").
+    physical property :attr:`material`, :attr:`nbr_segments` and a :attr:`part_id`
+    specifing the machine part
+    it is representing (e.g. "rotor lamination", "magnet" or "stator slot").
+    You can find the definiton for the values of the :attr:`part_id` in the
+    :mod:`pyemmo.api.json` module.
 
 
         .. MachineSegmentSurface_Params_Table:
@@ -73,20 +76,25 @@ class MachineSegmentSurface(GmshSegmentSurface):
         nbr_segments: int,
         name: str = "",
     ):
-        """init of surface for API. This type of surface is special,
-        because it allways forms a machine segment or a part of a segment.
+        """Initialize a MachineSegmentSurface object from a existing Gmsh surface and
+        its corresponding tag. You can use the classmethod :func:`from_curve_loop` to
+        create a MachineSegmentSurface directly from a curve loop (list of GmshLine
+        objects forming the boundary of the surface).
 
         Args:
-            part_id (str):
-            material (Material): surface material in simulation.
-            tag (int, optional): GMSH tag of the surface.
-            nbr_segments (int): number of segments in the full machine.
-            name (str, optional): name of the surface
+            part_id (str): Identifier for the type of machine part. Definitions can be
+                found in the :mod:`pyemmo.api.json` module. If the specified part does
+                not match any of the definitions its value is arbitrary (the value
+                doesn't matter because it does not need to be individually recognized).
+            material (Material): Material of the machine part for the simulation.
+            tag (int, optional): GMSH surface tag.
+            nbr_segments (int): Number of segments to form the full machine.
+            name (str, optional): Surface name.
         """
         GmshSegmentSurface.__init__(self, tag=tag, nbr_segments=nbr_segments, name=name)
-        self.part_id: str = part_id
-        self.material: Material = material
-        self.nbr_segments: int = nbr_segments
+        self.part_id = part_id
+        self.material = material
+        self.nbr_segments = nbr_segments
         self._segment_number = 0
 
     # pylint: disable=arguments-differ, too-many-arguments, too-many-positional-arguments
@@ -101,13 +109,23 @@ class MachineSegmentSurface(GmshSegmentSurface):
         material: Material,
         name: str = "",
     ) -> MachineSegmentSurface:
-        """create a surface from a given tag
+        """Create a object of MachineSegmentSurface from a Gmsh curve loop (list of
+        GmshLine objects forming the boundary of the segment surface).
+        The method creates an
 
         Args:
-            tag (int): GMSH tag of the surface
+            curve_loop (list[GmshLine]): list of GmshLine objects forming the boundary
+                of the segment surface
+            nbr_segments (int): Number of segment to form the whole machine
+            part_id (str): Identifier for the type of machine part. Definitions can be
+                found in the :mod:`pyemmo.api.json` module. If the specified part does
+                not match any of the definitions the value is arbitrary (the value
+                doesn't matter because it does not need to be individually recognized).
+            material (Material): Material of the machine part for the simulation.
+            name (str, optional): Surface name. Defaults to "".
 
         Returns:
-            MachineSegmentSurface: MachineSegmentSurface object
+            MachineSegmentSurface
         """
         gmsh_surf = GmshSegmentSurface.from_curve_loop(
             curve_loop=curve_loop, nbr_segments=nbr_segments, name=name
@@ -125,7 +143,9 @@ class MachineSegmentSurface(GmshSegmentSurface):
 
     @property
     def part_id(self) -> str:
-        """get the abbriviation of the surface name (literal Surface ID)
+        """Name to specify the machine part thats represented by the
+        MachineSegmentSurface, like "rotor lamination", "rotor airgap" or "stator slot".
+        All relevant identifiers can be found under :mod:`~pyemmo.api.json`.
 
         Returns:
             str: abbriviation of surface name (short name)
@@ -149,19 +169,19 @@ class MachineSegmentSurface(GmshSegmentSurface):
 
     @property
     def material(self) -> Material:
-        """get the material of the GmshSegmentSurface surface
+        """get the material property of the MachineSegmentSurface surface
 
         Returns:
-            Material: surface material
+            Material: PyEMMO material object.
         """
         return self._material
 
     @material.setter
     def material(self, material: Material) -> None:
-        """set the material of the API surface
+        """set the material of the MachineSegmentSurface.
 
         Args:
-            material (Material): surface material
+            material (Material): PyEMMO material object.
 
         Returns:
             None
@@ -176,7 +196,7 @@ class MachineSegmentSurface(GmshSegmentSurface):
 
         Args:
             name (str, optional): New name for copied surface.
-                Defaults to previous surface name + "_dup" for duplicate.
+                Defaults to *previous surface name* + "_dup" for duplicate.
 
         Returns:
             MachineSegmentSurface: Duplicate of MachineSegmentSurface object.
@@ -197,10 +217,10 @@ class MachineSegmentSurface(GmshSegmentSurface):
             dup_mss.setTool()
         return dup_mss
 
-    def rotate_duplicate(self, segment: int) -> GmshSegmentSurface:
+    def rotate_duplicate(self, segment: int) -> MachineSegmentSurface:
         """
         Create a copy of the give surface and its tools surfaces + rotate it by
-        :attr:`angle`.
+        :math:`\\frac{2 \\pi}{\\mathrm{self.nbr\\_segments}}\\cdot\\mathrm{segment}`.
         This also sets the property :attr:`segment_nbr` to the given segment value.
 
         Args:
@@ -209,8 +229,26 @@ class MachineSegmentSurface(GmshSegmentSurface):
         Returns:
             MachineSegmentSurface: Copied and rotated MachineSegmentSurface object.
         """
-        # FIXME: This should return a MSS object!
-        return GmshSegmentSurface.rotate_duplicate(self, segment=segment)
+        # rotate duplicate to create new surface
+        dup_gss = GmshSegmentSurface.rotate_duplicate(self, segment=segment)
+        # init new MSS to return correct type
+        dup_mss = MachineSegmentSurface(
+            name=dup_gss.name,
+            part_id=self.part_id,
+            tag=dup_gss.id,
+            material=self.material,
+            nbr_segments=self.nbr_segments,
+        )
+        # pylint: disable=protected-access
+        dup_mss._segment_number = dup_gss.segment_nbr
+        # its ok to access the protected attribute here, because we are in the same
+        # class. rotate_duplicate() is the only method that sets the segment number!
+
+        # copy the tools from the GmshSurface
+        dup_mss._cut = dup_gss.tools  # pylint: disable=protected-access
+        if dup_gss.isTool():
+            dup_mss.setTool()
+        return dup_mss
 
     def cutOut(self, tool: MachineSegmentSurface, keepTool: bool = True) -> None:
         """
@@ -232,12 +270,14 @@ class MachineSegmentSurface(GmshSegmentSurface):
             ValueError: If `tool` does not represent the first segment
                 (i.e., `tool.segment_nbr != 0`).
 
-        Notes:
-            - If the number of segments in the tool and the parent surface differ,
-              the method computes the greatest common divisor (GCD) of the segment
-              counts to determine the symmetry, duplicates and rotates surfaces as
-              necessary, and updates segment properties accordingly.
+        .. Note::
+
+            If the number of segments in the tool and the parent surface differ,
+            the method computes the greatest common divisor (GCD) of the segment
+            counts to determine the symmetry, duplicates and rotates surfaces as
+            necessary, and updates segment properties accordingly.
         """
+        logger = logging.getLogger(__name__)
         if not isinstance(tool, MachineSegmentSurface):
             raise TypeError(
                 f"Tool surface is not a MachineSegmentSurface object! "
@@ -250,7 +290,7 @@ class MachineSegmentSurface(GmshSegmentSurface):
                 "first segment!"
             )
 
-        logging.debug(
+        logger.debug(
             "Cutting out tool (%s) with %i segments from surface (%s) with %i segments!",
             tool.name,
             tool.nbr_segments,
@@ -261,14 +301,14 @@ class MachineSegmentSurface(GmshSegmentSurface):
         if tool.nbr_segments != self.nbr_segments:
             # calculate total number of segments
             symmetry = np.gcd(tool.nbr_segments, self.nbr_segments)
-            logging.debug(
+            logger.debug(
                 "New symmetry for GmshSegmentSurface (%s): %i", self.name, symmetry
             )
             if (self.nbr_segments / symmetry) > 1:
                 # create nbrSegments/symmetry copies
                 parent_name = self.name  # save name to update it later
                 dup_surfs: list[GmshSegmentSurface] = []  # list of duplicate surfaces
-                logging.debug(
+                logger.debug(
                     "Rotating and duplicating %s %i times",
                     self.name,
                     int(self.nbr_segments / symmetry),
@@ -281,7 +321,7 @@ class MachineSegmentSurface(GmshSegmentSurface):
                 self._id = comb_surf.id
                 self._cut = comb_surf.tools  # update tools
                 self.nbr_segments = symmetry  # update number of segments
-                logging.debug(
+                logger.debug(
                     "New number of segments for GmshSegmentSurface (%s): %i",
                     parent_name,
                     self.nbr_segments,
@@ -370,6 +410,8 @@ class MachineSegmentSurface(GmshSegmentSurface):
         if len(out_dim_tags) == 2:
             # the number of surfaces did not change (still one object and one tool)
             # check if one of the surface ids changed:
+            # FIXME: new parent surface must not be first item in out_dim_tags! We need
+            # to check out_dim_tags_map[0] for parent and tool id!
             if out_dim_tags[0][1] != self.id:
                 # the parent surface id changed -> set new id
                 old_id = self.id  # get old id

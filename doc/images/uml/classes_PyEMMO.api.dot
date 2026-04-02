@@ -1,0 +1,6 @@
+digraph "classes_PyEMMO.api" {
+rankdir=BT
+charset="utf-8"
+"pyemmo.api.json.importJSON.InvalidSheetThicknessError" [color="black", fontcolor="red", label=<{InvalidSheetThicknessError|input_value<br ALIGN="LEFT"/>message : str<br ALIGN="LEFT"/>|}>, shape="record", style="solid"];
+"pyemmo.api.machine_segment_surface.MachineSegmentSurface" [color="black", fontcolor="black", label=<{MachineSegmentSurface|material : Material<br ALIGN="LEFT"/>name<br ALIGN="LEFT"/>nbr_segments : int<br ALIGN="LEFT"/>part_id : str<br ALIGN="LEFT"/>|cutOut(tool: MachineSegmentSurface, keepTool: bool): None<br ALIGN="LEFT"/>duplicate(name): MachineSegmentSurface<br ALIGN="LEFT"/>from_curve_loop(curve_loop: list[GmshLine], nbr_segments: int, part_id: str, material: Material, name: str): MachineSegmentSurface<br ALIGN="LEFT"/>rotate_duplicate(segment: int): MachineSegmentSurface<br ALIGN="LEFT"/>}>, shape="record", style="solid"];
+}

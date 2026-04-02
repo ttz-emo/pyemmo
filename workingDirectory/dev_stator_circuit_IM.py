@@ -71,10 +71,10 @@ class SimulationSetup:
         model_json_file = join(cls.model_dir, "im.json")
         info_json_file = join(cls.model_dir, "simu_info.json")
         cls.script = main(model_json_file, info_json_file, cls.model_dir)
-        if not isfile(cls.script.proFilePath):
+        if not isfile(cls.script.pro_file_path):
             raise FileExistsError(
                 f"Model directory {model_dir} already exists but does not "
-                f"contain the expected files ({cls.script.proFilePath})."
+                f"contain the expected files ({cls.script.pro_file_path})."
             )
 
 
@@ -110,7 +110,7 @@ def run_sim(resid: str, setup: SimulationSetup, clear_results: bool):
     f_r = f_s - n / 60 * 2  # 2.601763700396361 Hz
     s = f_r / f_s  # slip
     nbr_stator_periods = 24
-    t_end = 24 / f_s  # seconds -> 3 stator period
+    t_end = nbr_stator_periods / f_s  # seconds -> 3 stator period
     t_step = 1 / f_s / 16  #  steps per stator period
     nbr_time_steps = np.rint(t_end / t_step).astype(int) + 1
     initial_offset = 0  # degrees mech.
