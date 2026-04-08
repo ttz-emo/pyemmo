@@ -716,6 +716,9 @@ def main(
                 os.path.join(simulation_res_dir, res_file_name)
             )
             dat_files.remove(res_file_name)
+        else:
+            # Error because we need to import time here!
+            logger.warning("Could not find result file for input Voltage U%s", index)
         # In case of Voltage_Source
         res_file_name = f"U{index}_w.dat"
         if res_file_name in dat_files:
@@ -723,6 +726,11 @@ def main(
                 os.path.join(simulation_res_dir, res_file_name)
             )
             dat_files.remove(res_file_name)
+        else:
+            # Error because we need to import time here!
+            logger.warning(
+                "Could not find result file for winding voltage U%s_w", index
+            )
 
     if not results_dict["current"]:
         # Error because we need to import time here!
@@ -841,27 +849,4 @@ def main(
             f"{'Summe:':<14} {np.mean(core_loss_dict['rotor']['exc']+core_loss_dict['rotor']['eddy']+core_loss_dict['rotor']['hyst']) : 8.3f} W {np.mean(core_loss_dict['stator']['exc']+core_loss_dict['stator']['eddy']+core_loss_dict['stator']['hyst']) : 9.3f} W {np.mean(core_loss_dict['rotor']['exc']+core_loss_dict['rotor']['eddy']+core_loss_dict['rotor']['hyst']+core_loss_dict['stator']['exc']+core_loss_dict['stator']['eddy']+core_loss_dict['stator']['hyst']) : 9.3f} W"
         )
 
-    # 7. Input Voltage
-    results_dict["voltage"] = {}
-    for index in "abc":
-        res_file_name = f"U{index}.dat"  # input voltage
-        if res_file_name in dat_files:
-            results_dict["time"], results_dict["voltage"][index] = read_timetable_dat(
-                os.path.join(simulation_res_dir, res_file_name)
-            )
-            dat_files.remove(res_file_name)
-        else:
-            # Error because we need to import time here!
-            logger.warning("Could not find result file for input Voltage U%s", index)
-        res_file_name = f"U{index}_w.dat"
-        if res_file_name in dat_files:
-            results_dict["time"], results_dict["voltage"][index + "w"] = (
-                read_timetable_dat(os.path.join(simulation_res_dir, res_file_name))
-            )
-            dat_files.remove(res_file_name)
-        else:
-            # Error because we need to import time here!
-            logger.warning(
-                "Could not find result file for winding voltage U%s_w", index
-            )
     return results_dict
