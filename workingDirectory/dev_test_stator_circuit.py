@@ -33,14 +33,15 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 
+from pyemmo.definitions import TEST_DIR
 from pyemmo.functions.import_results import (
     read_RegionValue_dat,
     read_timetable_dat,
 )
 from pyemmo.functions.run_onelab import run_simulation
 
-MODEL_NAME = "IPMSM_Muster_1"
-MODEL_DIR = r"D:\pyemmo\Results\pyleecanAPI\prius_debug"
+MODEL_NAME = "Toyota_Prius.json"
+MODEL_DIR = os.path.join(TEST_DIR, "data", "api", "pyleecan")
 
 
 class NumpyEncoder(json.JSONEncoder):
@@ -77,8 +78,8 @@ f_s = p * n / 60
 T_s = 1 / f_s
 nbr_stator_periods = 3
 nbr_sect = 2048 / 2  # Bandsegmentierung
-multi = 2  # Default=4 number of Segments per timestep
-timestep = T_s / 40
+multi = 4  # Default=4 number of Segments per timestep
+timestep = T_s / 16
 winkelschritt = n / 60 * 360 * timestep  # Default: 0.703125
 nbr_steps = T_s / timestep * nbr_stator_periods
 logging.info("Simulation should execute %i time steps.", int(nbr_steps) + 1)
@@ -113,12 +114,11 @@ paramDict = {
         # "Flag_Calculate_VW": 1,
         "msh": os.path.join(MODEL_DIR, "default.msh"),
         # "Flag_SecondOrder": 0,
+        "exe": r"getdp.exe",
+        "res": os.path.join(MODEL_DIR, f"res_{MODEL_NAME}"),
     },
-    "ResId": resId,
     "pro": os.path.join(MODEL_DIR, MODEL_NAME + ".pro"),
-    "res": os.path.join(MODEL_DIR, f"res_{MODEL_NAME}"),
-    "exe": r"getdp.exe",
-    "gmsh": r"gmsh.exe",
+    "gmsh": {"exe": "gmsh.exe"},
     # TODO: Extend gmsh element to dict with parameters, like:
     # "gmsh": {
     #     "exe": "gmsh.exe",
