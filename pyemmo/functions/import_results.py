@@ -690,14 +690,28 @@ def main(
     )
     dat_files, _ = get_result_files(simulation_res_dir)
 
-    # 1. Phase currents and voltages
+    # 1. Rotor position
+    # import rotor position first because its always evaluated and we can be sure to
+    # get time
+    res_file = os.path.join(simulation_res_dir, "RotorPos_deg.dat")
+    if os.path.isfile(res_file):
+        # get first char in machine side to index rotor and stator results
+        results_dict["time"], results_dict["rotorPos"] = read_timetable_dat(res_file)
+    else:
+        logger.warning(
+            "Could not find result file for rotor position 'RotorPos_deg.dat' in %s. "
+            "Did not import time vector for other results!",
+            simulation_res_dir,
+        )
+
+    # 2. Phase currents and voltages
     results_dict["current"] = {}
     results_dict["voltage"] = {}
     for index in "abc":
         # For case Current_Source OR Voltage_Source & Stator Circuit -> I_{a,b,c}
         res_file_name = f"I{index}.dat"
         if res_file_name in dat_files:
-            results_dict["time"], results_dict["current"][index] = read_timetable_dat(
+            _, results_dict["current"][index] = read_timetable_dat(
                 os.path.join(simulation_res_dir, res_file_name)
             )
             dat_files.remove(res_file_name)
@@ -751,7 +765,7 @@ def main(
             res_file
         )
 
-    # 2. Torque Results
+    # 3. Torque Results
     results_dict["torque"] = {}
     results_dict["torque_vw"] = {}
     for side in ["rotor", "stator"]:
@@ -790,7 +804,7 @@ def main(
                 "Check results carefully!"
             )
 
-    # 3. Flux results
+    # 4. Flux results
     results_dict["flux"] = {}
     for index in "abcdq0":
         res_file = os.path.join(simulation_res_dir, f"Flux_{index}.dat")
@@ -798,7 +812,7 @@ def main(
             # get first char in machine side to index rotor and stator results
             _, results_dict["flux"][index] = read_timetable_dat(res_file)
 
-    # 4. Induced voltage
+    # 5. Induced voltage
     results_dict["inducedVoltage"] = {}
     for index in "ABC":
         res_file = os.path.join(simulation_res_dir, f"InducedVoltage{index}.dat")
@@ -807,12 +821,6 @@ def main(
             _, results_dict["inducedVoltage"][index.lower()] = read_timetable_dat(
                 res_file
             )
-
-    # 5. Rotor position
-    res_file = os.path.join(simulation_res_dir, "RotorPos_deg.dat")
-    if os.path.isfile(res_file):
-        # get first char in machine side to index rotor and stator results
-        _, results_dict["rotorPos"] = read_timetable_dat(res_file)
 
     # 6. Core loss
     # Check if file hystLoss_rotor.dat allready exists -> loss calculated
