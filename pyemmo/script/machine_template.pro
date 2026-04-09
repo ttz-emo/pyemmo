@@ -1011,12 +1011,27 @@ Function{
     // electrical period in (s)
     Period = 1 / freq_stator;
 
-    NbTrelax = 2; // Number of periods while relaxation is applied, this is useful to decrease the transient times when simulating with voltages
+    DefineConstant[
+        Flag_Relaxation = {
+            1, Name StrCat[INPUT_ELEC_EXCITATION, "Use Voltage Relaxation"],
+            Choices {0,1},
+            Visible Flag_SrcType_Stator==VOLTAGE_SOURCE && Flag_ExpertMode,
+            Help "Control relaxation of voltage. This is useful to decrease the transient times when simulating with voltages."
+        },
+        NbTrelax = {
+            2, Name StrCat[INPUT_ELEC_EXCITATION, "Voltage Relaxation Periods"],
+            Min 0, Step 1,
+            Visible Flag_SrcType_Stator==VOLTAGE_SOURCE && Flag_ExpertMode,
+            Help "Number of periods while relaxation is applied. This is useful to decrease the transient times when simulating with voltages."
+        }
+    ];
 
     Trelax = NbTrelax * Period;
 
     // To apply relaxation such that when we use a voltage supply, we do not apply max voltage at t=0
-    Frelax[] = (!Flag_NL || Flag_AnalysisType == STATIC || $Time > Trelax) ? 1. : 0.5 * (1. - Cos[Pi * $Time / Trelax]);
+    Frelax[] = (!Flag_Relaxation || !Flag_NL || Flag_AnalysisType == STATIC || $Time > Trelax) ?
+        1.
+        : 0.5 * (1. - Cos[Pi * $Time / Trelax]);
 }
 
 FUNCTION_CODE
