@@ -575,7 +575,13 @@ DefineConstant[
     // circuit)
     Flag_ImposedCurrentDensity = (Flag_SrcType_Stator == CURRENT_SOURCE),
     // are the windings connected via an external circuit
-    Flag_Cir = (!Flag_ImposedCurrentDensity),
+    // Flag_Cir = (!Flag_ImposedCurrentDensity),
+    Flag_Cir = {
+        0, Name StrCat[INPUT_ELEC_EXCITATION, "02Use Stator Circuit"],
+        Choices {0,1},
+        Visible Flag_SrcType_Stator == VOLTAGE_SOURCE
+    },
+
 
     // Use the Park transformation
     Flag_ParkTransformation = {
