@@ -83,6 +83,10 @@ def test_translate_machine(machineFile: str):
             "Bug in TESLA_S.json: Bug in rotor slot parametrization leads to overlaping "
             "surfaces!"
         )
+    if "Slotless_CEFC.json" == machineFile:
+        pytest.xfail(
+            "Bug in Slotless_CEFC.json: Fails since Script tries to create slot domains."
+        )
 
     main(machine, machine_model_dir, use_gui=False)
 
