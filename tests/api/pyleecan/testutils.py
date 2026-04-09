@@ -113,6 +113,12 @@ def run_pyleecan_sim_voltage(
             50.0.
         phase (float, optional): Phase shift of input voltage in electrical degrees.
             Defaults to 0.0.
+
+            - 0 deg   -> Ud = U , Uq = 0
+            - 90 deg  -> Ud = 0 , Uq = U
+            - 180 deg -> Ud = -U, Uq = 0
+            - 270 deg -> Ud = 0 , Uq = -U
+
         nbr_periods (int, optional): Number of stator periods to simulate. Defaults to 1.
         nbr_steps_per_period (int, optional): Number of time steps per stator period.
             Defaults to 32.
