@@ -1634,113 +1634,97 @@ PostOperation Get_GlobalQuantities UsingPost MagStaDyn_a_2D {
     ];
   EndIf
 
-  // If(!Flag_Cir)
-  //   If(!Flag_ParkTransformation)
-  //     Print[ I, OnRegion PhaseA_pos, Format Table,
-	//      File > StrCat[ResDir,"Ia",ExtGnuplot], LastTimeStepOnly,
-  //      SendToServer StrCat[poI,"A"]{0}, Color "Pink" ];
+  If(Flag_SrcType_Stator == VOLTAGE_SOURCE)
+    If (Flag_Cir)
+      // Get the INPUT VOLTAGE AND CURRENT for phase ABC in the case we have an
+      // external circuit.
 
-  //     Print[ I, OnRegion PhaseB_pos, Format Table,
-  //       File > StrCat[ResDir,"Ib",ExtGnuplot], LastTimeStepOnly,
-  //       SendToServer StrCat[poI,"B"]{0}, Color "Yellow" ];
-
-  //     Print[ I, OnRegion PhaseC_pos, Format Table,
-  //       File > StrCat[ResDir,"Ic",ExtGnuplot], LastTimeStepOnly,
-  //       SendToServer StrCat[poI,"C"]{0}, Color "LightGreen" ];
-  //   EndIf
-  // EndIf
-
-  If(Flag_Cir)
-    // plot the quantities for phase A in the case we have an external circuit
-    // Phase A
-    //  Input Values
-    Print[ I, OnRegion Input1, Format Table,
-     File > StrCat[ResDir,"Ia",ExtGnuplot], LastTimeStepOnly,
-     SendToServer StrCat[poI,"Line/","A"]{0}, Color "Pink" ];
-     Print[ U, OnRegion Input1, Format Table,
-      File > StrCat[ResDir,"Ua",ExtGnuplot], LastTimeStepOnly,
-      SendToServer StrCat[poV,"Line/","A"]{0}, Color "Pink" ];
-    // Line Values
-    If (NbrRegions[PhaseA_pos] > 0)
-      Print[ I, OnRegion PhaseA_pos, Format Table,
-        File > StrCat[ResDir,"Ia_w",ExtGnuplot], LastTimeStepOnly,
-        SendToServer StrCat[poI,"Winding/","A"]{0}, Color "Pink"
-      ];
-      Print[ U, OnRegion PhaseA_pos, Format Table,
-        File > StrCat[ResDir,"Ua_w",ExtGnuplot], LastTimeStepOnly,
-        SendToServer StrCat[poV,"Winding/","A"]{0}, Color "Pink"
-      ];
+      Print[ I, OnRegion Input1, Format Table,
+        File > StrCat[ResDir,"Ia",ExtGnuplot], LastTimeStepOnly,
+        SendToServer StrCat[poI,"Line/","A"]{0}, Color "Pink" ];
+      Print[ U, OnRegion Input1, Format Table,
+        File > StrCat[ResDir,"Ua",ExtGnuplot], LastTimeStepOnly,
+        SendToServer StrCat[poV,"Line/","A"]{0}, Color "Pink" ];
+      Print[ I, OnRegion Input2, Format Table,
+        File > StrCat[ResDir,"Ib",ExtGnuplot], LastTimeStepOnly,
+        SendToServer StrCat[poI,"Line/","B"]{0}, Color "Yellow"];
+      Print[ U, OnRegion Input2, Format Table,
+        File > StrCat[ResDir,"Ub",ExtGnuplot], LastTimeStepOnly,
+        SendToServer StrCat[poV,"Line/","B"]{0}, Color "Yellow"];
+      Print[ I, OnRegion Input3, Format Table,
+        File > StrCat[ResDir,"Ic",ExtGnuplot], LastTimeStepOnly,
+        SendToServer StrCat[poI,"Line/","C"]{0}, Color "LightGreen" ];
+      Print[ U, OnRegion Input3, Format Table,
+        File > StrCat[ResDir,"Uc",ExtGnuplot], LastTimeStepOnly,
+        SendToServer StrCat[poV,"Line/","C"]{0}, Color "LightGreen" ];
     Else
+      // Get the input voltage for phase ABC in the case of voltage source without
+      // external circuit. In case without circuit, the winding voltage = input voltage
+      // (by Constraint Voltage_2D)
       Print[ I, OnRegion PhaseA, Format Table,
-        File > StrCat[ResDir,"Ia_w",ExtGnuplot], LastTimeStepOnly,
-        SendToServer StrCat[poI,"Winding/","A"]{0}, Color "Pink"
+        File > StrCat[ResDir,"Ia",ExtGnuplot], LastTimeStepOnly,
+        SendToServer StrCat[poI,"Line/","A"]{0}, Color "Pink"
       ];
       Print[ U, OnRegion PhaseA, Format Table,
-        File > StrCat[ResDir,"Ua_w",ExtGnuplot], LastTimeStepOnly,
-        SendToServer StrCat[poV,"Winding/","A"]{0}, Color "Pink"
+        File > StrCat[ResDir,"Ua",ExtGnuplot], LastTimeStepOnly,
+        SendToServer StrCat[poV,"Line/","A"]{0}, Color "Pink"
       ];
-    EndIf
-
-    // phase B
-    //  Input Values
-    Print[ I, OnRegion Input2, Format Table,
-      File > StrCat[ResDir,"Ib",ExtGnuplot], LastTimeStepOnly,
-      SendToServer StrCat[poI,"Line/","B"]{0}, Color "Yellow"
-    ];
-    Print[ U, OnRegion Input2, Format Table,
-      File > StrCat[ResDir,"Ub",ExtGnuplot], LastTimeStepOnly,
-      SendToServer StrCat[poV,"Line/","B"]{0}, Color "Yellow"
-    ];
-    // Line Values
-    If (NbrRegions[PhaseB_pos] > 0)
-      Print[ I, OnRegion PhaseB_pos, Format Table,
-        File > StrCat[ResDir,"Ib_w",ExtGnuplot], LastTimeStepOnly,
-        SendToServer StrCat[poI,"Winding/","B"]{0}, Color "Yellow"
-      ];
-      Print[ U, OnRegion PhaseB_pos, Format Table,
-        File > StrCat[ResDir,"Ub_w",ExtGnuplot], LastTimeStepOnly,
-        SendToServer StrCat[poV,"Winding/","B"]{0}, Color "Yellow"
-      ];
-    Else
+      // Line Values for Phase B.
       Print[ I, OnRegion PhaseB, Format Table,
-        File > StrCat[ResDir,"Ib_w",ExtGnuplot], LastTimeStepOnly,
-        SendToServer StrCat[poI,"Winding/","B"]{0}, Color "Yellow"
+        File > StrCat[ResDir,"Ib",ExtGnuplot], LastTimeStepOnly,
+        SendToServer StrCat[poI,"Line/","B"]{0}, Color "Yellow"
       ];
       Print[ U, OnRegion PhaseB, Format Table,
-        File > StrCat[ResDir,"Ub_w",ExtGnuplot], LastTimeStepOnly,
-        SendToServer StrCat[poV,"Winding/","B"]{0}, Color "Yellow"
+        File > StrCat[ResDir,"Ub",ExtGnuplot], LastTimeStepOnly,
+        SendToServer StrCat[poV,"Line/","B"]{0}, Color "Yellow"
       ];
-    EndIf
-
-    // phase C
-    //  Input Values
-    Print[ I, OnRegion Input3, Format Table,
-     File > StrCat[ResDir,"Ic",ExtGnuplot], LastTimeStepOnly,
-     SendToServer StrCat[poI,"Line/","C"]{0}, Color "LightGreen" ];
-    Print[ U, OnRegion Input3, Format Table,
-      File > StrCat[ResDir,"Uc",ExtGnuplot], LastTimeStepOnly,
-      SendToServer StrCat[poV,"Line/","C"]{0}, Color "LightGreen" ];
-    // Line Values
-    If (NbrRegions[PhaseC_pos] > 0)
-      Print[ I, OnRegion PhaseC_pos, Format Table,
-        File > StrCat[ResDir,"Ic_w",ExtGnuplot], LastTimeStepOnly,
-        SendToServer StrCat[poI,"Winding/","C"]{0}, Color "LightGreen"
-      ];
-      Print[ U, OnRegion PhaseC_pos, Format Table,
-        File > StrCat[ResDir,"Uc_w",ExtGnuplot], LastTimeStepOnly,
-        SendToServer StrCat[poV,"Winding/","C"]{0}, Color "LightGreen"
-      ];
-    Else
+      // Line Values for Phase C.
       Print[ I, OnRegion PhaseC, Format Table,
-        File > StrCat[ResDir,"Ic_w",ExtGnuplot], LastTimeStepOnly,
-        SendToServer StrCat[poI,"Winding/","C"]{0}, Color "LightGreen"
+        File > StrCat[ResDir,"Ic",ExtGnuplot], LastTimeStepOnly,
+        SendToServer StrCat[poI,"Line/","C"]{0}, Color "LightGreen"
       ];
       Print[ U, OnRegion PhaseC, Format Table,
-        File > StrCat[ResDir,"Uc_w",ExtGnuplot], LastTimeStepOnly,
-        SendToServer StrCat[poV,"Winding/","C"]{0}, Color "LightGreen"
+        File > StrCat[ResDir,"Uc",ExtGnuplot], LastTimeStepOnly,
+        SendToServer StrCat[poV,"Line/","C"]{0}, Color "LightGreen"
       ];
-    EndIf
-  Else
+    EndIf // Flag_Cir
+
+    // TODO: Add and check evalutaion of winding voltages in case of circuit depended
+    // on connection type!
+
+    // Additinally get values for winding voltage in case of voltage via circuit.
+    // In this case the winding voltage differs from the input voltage due to the
+    // voltage drop in the
+
+    // // Line Values for Phase A.
+    // Print[ I, OnRegion PhaseA, Format Table,
+    //   File > StrCat[ResDir,"Ia_w",ExtGnuplot], LastTimeStepOnly,
+    //   SendToServer StrCat[poI,"Winding/","A"]{0}, Color "Pink"
+    // ];
+    // Print[ U, OnRegion PhaseA, Format Table,
+    //   File > StrCat[ResDir,"Ua_w",ExtGnuplot], LastTimeStepOnly,
+    //   SendToServer StrCat[poV,"Winding/","A"]{0}, Color "Pink"
+    // ];
+    // // Line Values for Phase B.
+    // Print[ I, OnRegion PhaseB, Format Table,
+    //   File > StrCat[ResDir,"Ib_w",ExtGnuplot], LastTimeStepOnly,
+    //   SendToServer StrCat[poI,"Winding/","B"]{0}, Color "Yellow"
+    // ];
+    // Print[ U, OnRegion PhaseB, Format Table,
+    //   File > StrCat[ResDir,"Ub_w",ExtGnuplot], LastTimeStepOnly,
+    //   SendToServer StrCat[poV,"Winding/","B"]{0}, Color "Yellow"
+    // ];
+    // // Line Values for Phase C.
+    // Print[ I, OnRegion PhaseC, Format Table,
+    //   File > StrCat[ResDir,"Ic_w",ExtGnuplot], LastTimeStepOnly,
+    //   SendToServer StrCat[poI,"Winding/","C"]{0}, Color "LightGreen"
+    // ];
+    // Print[ U, OnRegion PhaseC, Format Table,
+    //   File > StrCat[ResDir,"Uc_w",ExtGnuplot], LastTimeStepOnly,
+    //   SendToServer StrCat[poV,"Winding/","C"]{0}, Color "LightGreen"
+    // ];
+
+  ElseIf (Flag_SrcType_Stator==CURRENT_SOURCE)
     // If there is no circuit the current is given by IA[], IB[], IC[]
     Print[
       IA, OnRegion DomainDummy, Format Table,
@@ -1757,9 +1741,10 @@ PostOperation Get_GlobalQuantities UsingPost MagStaDyn_a_2D {
       File>StrCat[ResDir,"Ic",ExtGnuplot], LastTimeStepOnly,
       SendToServer StrCat[poI,"C"]{0}, Color "LightGreen"
     ];
-  EndIf
+  EndIf // Flag_SrcType_Stator
+
   // Get global values for induction machine rotor circuit
-  If (Flag_Cir_RotorCage)
+  If (NbrRegions[Rotor_Bars] > 0)
     Print[
       I, OnRegion Rotor_Bars, Format Table, File > StrCat[ResDir,"I_bars",ExtGnuplot],
       LastTimeStepOnly
@@ -1783,24 +1768,9 @@ PostOperation Get_GlobalQuantities UsingPost MagStaDyn_a_2D {
         LastTimeStepOnly, SendToServer StrCat[poV,"ROTOR"]{0}, Color "LightYellow"
       ];
     EndFor
-    // Print[
-    //   I_S[PhaseA], OnGlobal, Format TimeTable, LastTimeStepOnly,
-    //   File>StrCat[ResDir,"Ia",ExtGnuplot],
-    //   SendToServer StrCat[poI,"A"]{0}, Color "Pink"
-    // ];
-    // Print[
-    //   I_S[PhaseB], OnRegion DomainDummy, Format Table, LastTimeStepOnly,
-    //   File>StrCat[ResDir,"Ib",ExtGnuplot],
-    //   SendToServer StrCat[poI,"B"]{0}, Color "Yellow"
-    // ];
-    // Print[
-    //   I_S[PhaseC], OnRegion DomainDummy, Format Table, LastTimeStepOnly,
-    //   File>StrCat[ResDir,"Ic",ExtGnuplot],
-    //   SendToServer StrCat[poI,"C"]{0}, Color "LightGreen"
-    // ];
   EndIf
 
-  // Calculate the Flux[Rotor_ars] linkage
+  // Calculate the Flux linkage
   // In this case we have an integration quantity. The Region over which we should integrate is given between the brackets.
   // We would read: Print the Flux integrated over Phase A (rememeber that the flux was defined for Inds, for which PhaseX is a subregion) as a global quantity to the file StrCat[ResDir,"Flux_a",ExtGnuplot] (in this case since we have File > ... the quantity is appended, without the ">" it would be erased) for the last timestep only, store the result in the runtime variable $Flux_a (since we need it to calculate the dq0 fluxes) and send the value to the onelab server (GUI) in and include it under StrCat[poF,"A"]{0} with a color "Pink".
   Print[ Flux[PhaseA], OnGlobal, Format TimeTable,
@@ -1891,17 +1861,6 @@ If (Flag_ParkTransformation)
     Print[ Theta_Park_deg, OnRegion DomainDummy, Format Table, LastTimeStepOnly,
     File>StrCat[ResDir, "ParkAngle_deg",ExtGnuplot],
     SendToServer StrCat[po,"11Theta park"]{0}, Color "LightYellow" ];
-
-    // ** Moved this to "GetGlobalQuantities" **
-    // Print[ IA, OnRegion DomainDummy, Format Table, LastTimeStepOnly,
-    // File>StrCat[ResDir,"Ia",ExtGnuplot],
-    // SendToServer StrCat[poI,"A"]{0}, Color "Pink" ];
-    // Print[ IB, OnRegion DomainDummy, Format Table, LastTimeStepOnly,
-    // File>StrCat[ResDir,"Ib",ExtGnuplot],
-    // SendToServer StrCat[poI,"B"]{0}, Color "Yellow" ];
-    // Print[ IC, OnRegion DomainDummy, Format Table, LastTimeStepOnly,
-    // File>StrCat[ResDir,"Ic",ExtGnuplot],
-    // SendToServer StrCat[poI,"C"]{0}, Color "LightGreen"  ];
   }
 EndIf
 
