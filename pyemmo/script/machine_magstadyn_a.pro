@@ -465,6 +465,11 @@ Constraint {
       If(!Flag_Cir_RotorCage)
         { Region RotorC  ; Value 0. ; }
       EndIf
+      If(!Flag_Cir && (Flag_SrcType_Stator == VOLTAGE_SOURCE))
+        { Region PhaseA  ; Value Va  ; TimeFunction IA[]*Frelax[]; }
+        { Region PhaseB  ; Value Vb  ; TimeFunction IB[]*Frelax[]; }
+        { Region PhaseC  ; Value Vc  ; TimeFunction IC[]*Frelax[]; }
+      EndIf
     }
   }
 
@@ -721,19 +726,21 @@ Formulation {
       // EndIf
 
       // Current Density j = - N / S_Coil * I / a
-      Galerkin { [ -NbWires[]/SurfCoil[] * Dof{ir} / NbrParallelPaths, {a} ] ;
+      Galerkin { [ -NbWires[]/SurfCoil[] * Idir[] * Dof{ir} / NbrParallelPaths, {a} ] ;
       In DomainB ; Jacobian Vol ; Integration I1 ; }
+
       // Induced Voltage =
       //   SymmetryFactor * axialLength[] * NbWires[] / SurfCoil[] / NbrParallelPaths * Dt[CompZ[{a}]]
-      Galerkin { DtDof [ axialLength[] * NbWires[]/SurfCoil[] / NbrParallelPaths * Dof{a} , {ir} ] ;
-        In DomainB ; Jacobian Vol ; Integration I1 ; }
-      GlobalTerm { [ Dof{Ub}/SymmetryFactor , {Ib} ] ; In DomainB ; }
+      Galerkin { DtDof [ - axialLength[] * Idir[] * NbWires[]/SurfCoil[] / NbrParallelPaths * Dof{a} , {ir} ] ;
+      In DomainB ; Jacobian Vol ; Integration I1 ; }
+      GlobalTerm { [ Dof{Ub}/SymmetryFactor , {Ib} ] ; In DomainB ; } // Input Voltage Term
+
       // Rb[] = Factor_R_3DEffects*axialLength[]*FillFactor_Winding*NbWires[]^2/SurfCoil[]/sigma[] ;
       // Rb = f_3D * l_ax * k_cu * N^2 / A_Coil / sigma_Cu
       // Galerkin { [ Rb[]/SurfCoil[]* Dof{ir} , {ir} ] ;
       //   In DomainB ; Jacobian Vol ; Integration I1 ; } // Resistance term
 
-      GlobalTerm { [ Resistance[] / SymmetryFactor  * Dof{Ib} , {Ib} ] ; In DomainB ; }
+      GlobalTerm { [ - Resistance[] / SymmetryFactor  * Dof{Ib} , {Ib} ] ; In DomainB ; }
       // The above term can replace the resistance term:
       // if we have an estimation of the resistance of DomainB, via e.g. measurements
       // which is better to account for the end windings...
