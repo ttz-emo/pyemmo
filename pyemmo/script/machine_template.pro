@@ -929,9 +929,10 @@ Function{
         }
         asm_finalrotor_pos = 360*(nbrStatorPeriods/freq_stator)*n
     ];
-    If (MachineType==ASYNCHRONOUS && n != 0)
+    If (MachineType==ASYNCHRONOUS && (n != 0))
         // Reset ONELAB parameters after calculating stator frequency
         // Reset final rotor position (we did not know fs before)
+        Printf("finalrotor_pos -> asm_finalrotor_pos: %.5f -> %.5f", finalrotor_pos , asm_finalrotor_pos);
         SetNumber[
             StrCat[INPUT_ANA_SETTINGS, "06Final rotor position"],
             asm_finalrotor_pos
@@ -940,9 +941,13 @@ Function{
             StrCat[INPUT_ANA_SETTINGS, "10Number of Time Steps"],
             Ceil[(asm_finalrotor_pos - initrotor_pos) / (d_theta) + 1]
         ];
+        // Update value to calculate correct parameters when loading script!
+        // NOTE: GetNumber somehow does not give 0 when running GetDP from the
+        // commandline, but workds in GUI... Resetting finalrotor_pos with asm variable.
+        // finalrotor_pos = GetNumber[StrCat[INPUT_ANA_SETTINGS, "06Final rotor position"]];
+        finalrotor_pos = asm_finalrotor_pos;
     EndIf
-    // Update value to calculate correct parameters when loading script!
-    finalrotor_pos = GetNumber[StrCat[INPUT_ANA_SETTINGS, "06Final rotor position"]];
+    Printf("Final rotor position is %.1f deg", finalrotor_pos);
     // electrical period
     T = 1 / freq_stator;
     // electrical pulsation
