@@ -59,6 +59,10 @@ EndIf
 
 // Some script constants which are currently unused:
 DefineConstant[
+    sigma_al = 3.72e7, // conductivity of aluminum [S/m]
+    sigma_cu = 5.8e7  // conductivity of copper [S/m]
+    sigma_fe = 1.0e7, // conductivity of iron [S/m]
+
     Flag_EW = 0,
     Flag_3D = 0,
     Flag_Fault = 0, // Calculate short circuit in phase A
@@ -460,6 +464,18 @@ DefineConstant[
         ReadOnly !Flag_ExpertMode,
         Help "Number of parallel paths per phase."
     },
+
+    R_S = {
+        2 * L_AX_S * 0.4 * (nbrTurns*nbrSlots/3)^2 / (0.25/3*(1.6^2+1)*r_AG^2*Pi) / sigma_cu,
+        Name StrCat[INPUT_ELEC_WINDINGS, "03Resistance"],
+        Units "Ohm",
+        Help StrCat(
+            "Stator winding phase resistance for voltage source simulation. ",
+            "Default value is calculated by a empirical formula based on the machine geometry and number of winding turns.",
+            "If possible, this should be defined by the user!"
+        ),
+        Visible (Flag_SrcType_Stator==VOLTAGE_SOURCE)
+    }
 
     FillFactor_Winding = {
         1, Name StrCat[

@@ -64,11 +64,6 @@ EndIf
 Printf("ResId is %s", ResId());
 
 DefineConstant[
-
-  sigma_al = 3.72e7, // conductivity of aluminum [S/m]
-  sigma_cu = 5.8e7  // conductivity of copper [S/m]
-  sigma_fe = 1.0e7, // conductivity of iron [S/m]
-
   Nb_max_iter = {30, Name "Nonlinear solver/Max. num. iterations", Visible 0},
   relaxation_factor = {1, Name "Nonlinear solver/Relaxation factor", Visible 0},
   stop_criterion = {1e-4, Name "Nonlinear solver/Stopping criterion", Visible 0},
@@ -249,14 +244,6 @@ Function {
   // Rb[] = Factor_R_3DEffects * axialLength[] * FillFactor_Winding * NbWires[]^2 / SurfCoil[] / sigma[] ;
   // Resistance[Region[{Stator_Inds}]] = Rb[] ;
   // Use pre-defined Resistance for stranded conductors in winding domains
-  DefineConstant[
-    R_S = {
-      2 * L_AX_S * 0.4 * (nbrTurns*nbrSlots/3)^2 / (0.25/3*(1.6^2+1)*r_AG^2*Pi) / sigma_cu,
-      Name StrCat[INPUT_ELEC_WINDINGS, "03Resistance"],
-      Units "Ohm",
-      Visible (Flag_SrcType_Stator==VOLTAGE_SOURCE)
-    }
-  ];
   Resistance[Region[{Stator_Inds}]] = R_S ;
 
   // definition of the current direction (1=positive z, -1=negative z)
