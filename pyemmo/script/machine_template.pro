@@ -371,15 +371,41 @@ DefineConstant[
 //             Choices{0 = "none", 1 = "Short Circuit A-B"}}
 //     ];
 // EndIf
+
+If (Flag_Debug)
+    Printf("==== ANALYSIS PARAMETERS ====");
+    Printf(StrCat["Machine type: ", StrChoice[(MachineType==SYNCHRONOUS), "Synchronous Machine", "Asynchronous Machine"]]);
+    Printf(StrCat["Analysis type: ", StrChoice[(Flag_AnalysisType==STATIC), "static", "transient"]]);
+    Printf(StrCat["Stator Source type: ", StrChoice[(Flag_SrcType_Stator==CURRENT_SOURCE), "current source", "voltage source"]]);
+
+    Printf("Start position [deg]: %.1f", initrotor_pos);
+    If (Flag_AnalysisType==TRANSIENT)
+        Printf("End position (synchronous) [deg]: %.1f", finalrotor_pos);
+        Printf("Step size [deg]: %.6f", d_theta);
+        Printf("Mech. speed [rpm]: %.3f", RPM);
+        If (MachineType==ASYNCHRONOUS)
+            Printf("Number of stator periods: %.2f", nbrStatorPeriods);
+            If (RPM==0)
+                Printf("Steps per stator period: %.1f", nbrStepsPerPeriod);
+            EndIf
+        EndIf
+        Printf("Total number of time steps: %.1f", NbSteps);
+        Printf("Symmetry Factor: %.0f", SymmetryFactor);
+        Printf("Flag Symmetry: %.0f", Flag_Symmetry);
+        Printf("Number of poles in Model: %.0f", NbrPolesInModel);
+    EndIf
+    Printf(StrCat["Results folder: ", res]);
+    Printf(StrCat["Results Id: ", ResId]);
+    Printf(StrCat["Clear Results: ", StrChoice[(Flag_ClearResults), "Yes", "No"]]);
+    Printf(StrCat["Save field results: ", StrChoice[(Flag_PrintFields), "Yes", "No"]]);
+    Printf("");
+
+EndIf
+
 //=============================================================================
 // ==================== END ANALYSIS AND SOLVER PARAMETERS ====================
 //=============================================================================
 
-Printf("Number of poles total (NbrPolesTot) = %.0f", NbrPolesTot);
-Printf("Number of poles in Model = %.0f", NbrPolesInModel);
-Printf("Symmetry Faktor = %.0f", SymmetryFactor);
-Printf("Flag Symmetry = %.0f", Flag_Symmetry);
-Printf("Airgap radius = %.5f", r_AG);
 
 //=============================================================================
 //============================ MACHINE PARAMETERS =============================
@@ -430,10 +456,16 @@ DefineConstant[
     NbrMbSegments = GetNumber[StrCat[INPUT_MESH, "Number of Rotor Movingband Segments"], 360],
     GlobalMeshsizeFactor = GetNumber[StrCat[INPUT_MESH, "00Mesh size factor"], 1.0]
 ];
-Printf("eccentricity_dynamic = %.6e mm", eccentricity_dynamic);
-Printf("eccentricity_static =  %.6e mm", eccentricity_static);
-Printf("Number of Movingband Segments (for PostProcessing) = %.0f", NbrMbSegments);
-Printf("Global mesh size factor (for PostProcessing) = %.0f", GlobalMeshsizeFactor);
+If (Flag_Debug)
+    Printf("==== MACHINE PARAMETERS ====");
+    Printf("Number of poles total (NbrPolesTot) = %.0f", NbrPolesTot);
+    Printf("Airgap radius = %.5f", r_AG);
+    Printf("eccentricity_dynamic = %.6e mm", eccentricity_dynamic);
+    Printf("eccentricity_static =  %.6e mm", eccentricity_static);
+    Printf("Number of Movingband Segments (for PostProcessing) = %.0f", NbrMbSegments);
+    Printf("Global mesh size factor (for PostProcessing) = %.0f", GlobalMeshsizeFactor);
+    Printf("");
+EndIf
 
 //=============================================================================
 //========================== END MACHINE PARAMETERS ===========================
@@ -481,16 +513,16 @@ DefineConstant[
         1, Name StrCat[
             INPUT_ELEC_WINDINGS, "03Fill factor"
         ],
-        Help "Winding fill factor from (0,1]",
+        Help "Winding fill factor from (0,1]. UNUSED FOR NOW!",
         Max 1,
-        Visible Flag_SrcType_Stator == VOLTAGE_SOURCE
+        Visible ((Flag_SrcType_Stator == VOLTAGE_SOURCE) && 0)
     },
     Factor_R_3DEffects = {
         1, Name StrCat[
             INPUT_ELEC_WINDINGS, "04End winding factor"
         ],
-        Help "Factor from [0, inf) to scale stator winding resistance due to end winding region",
-        Visible Flag_SrcType_Stator == VOLTAGE_SOURCE
+        Help "UNUSED FOR NOW! Factor from [0, inf) to scale stator winding resistance due to end winding region",
+        Visible ((Flag_SrcType_Stator == VOLTAGE_SOURCE) && 0)
     },
 
     //======================== EXCITATION PARAMETERS =========================
@@ -507,13 +539,13 @@ DefineConstant[
     ID_RMS = {
         Id_eff, Name StrCat[INPUT_ELEC_EXCITATION, "00ID_RMS"],
         Units "A",
-        Visible Flag_SrcType_Stator == 1 && MachineType==SYNCHRONOUS
+        Visible Flag_SrcType_Stator == CURRENT_SOURCE && MachineType==SYNCHRONOUS
     },
 
     ID = {
         ID_RMS * Sqrt[2], Name StrCat[INPUT_ELEC_EXCITATION, "02ID"],
         Units "A",
-        Visible Flag_Debug && Flag_SrcType_Stator == 1 && MachineType==SYNCHRONOUS,
+        Visible Flag_Debug && Flag_SrcType_Stator == CURRENT_SOURCE && MachineType==SYNCHRONOUS,
         ReadOnly 1,
         Highlight "LightGray"
     },
@@ -521,13 +553,13 @@ DefineConstant[
     IQ_RMS = {
         Iq_eff,Name StrCat[INPUT_ELEC_EXCITATION, "01IQ_RMS"],
         Units "A",
-        Visible Flag_SrcType_Stator == 1 && MachineType==SYNCHRONOUS
+        Visible Flag_SrcType_Stator == CURRENT_SOURCE && MachineType==SYNCHRONOUS
     },
 
     IQ = {
         IQ_RMS * Sqrt[2],Name StrCat[INPUT_ELEC_EXCITATION, "03IQ"],
         Units "A",
-        Visible Flag_Debug && Flag_SrcType_Stator == 1 && MachineType==SYNCHRONOUS,
+        Visible Flag_Debug && Flag_SrcType_Stator == CURRENT_SOURCE && MachineType==SYNCHRONOUS,
         ReadOnly 1,
         Highlight "LightGray"
     },
@@ -553,13 +585,13 @@ DefineConstant[
             INPUT_ELEC_EXCITATION, "00Stator Phase Current (RMS)"
         ],
         Units "A",
-        Visible Flag_SrcType_Stator == 1 && MachineType==ASYNCHRONOUS,
+        Visible Flag_SrcType_Stator == CURRENT_SOURCE && MachineType==ASYNCHRONOUS,
         Help "Stator phase current (rms)"
     },
 
     freq_rotor = {
         5, Name StrCat[
-            INPUT_ELEC_EXCITATION, "01Rotor Frquency"
+            INPUT_ELEC_EXCITATION, "02Rotor Frequency"
         ],
         Units "Hz",
         Visible MachineType==ASYNCHRONOUS,
@@ -586,7 +618,7 @@ DefineConstant[
     // Use the Park transformation
     Flag_ParkTransformation = {
         // current source and synchronous machine
-        Flag_SrcType_Stator == TRANSIENT && MachineType==SYNCHRONOUS,
+        Flag_SrcType_Stator == CURRENT_SOURCE && MachineType==SYNCHRONOUS,
         Name StrCat[INPUT_ELEC_EXCITATION, "Use Clark-Park-Transformation"],
         Choices {0,1},
         ReadOnly 1,
@@ -594,14 +626,14 @@ DefineConstant[
     },
 
     VV = {
-        12, Name StrCat[INPUT_ELEC_EXCITATION, "Input Voltage Amplitude"],
+        12, Name StrCat[INPUT_ELEC_EXCITATION, "00Input Voltage Amplitude"],
         Units "V",
         Visible Flag_SrcType_Stator == VOLTAGE_SOURCE,
         Help "Amplitude of the input voltage (in case of voltage input)"
     },
 
     R_wire = {
-        500e-3, Name StrCat[INPUT_ELEC_EXCITATION, "Connection (Wire-)Resistance"],
+        500e-3, Name StrCat[INPUT_ELEC_EXCITATION, "05Connection (Wire-)Resistance"],
         Units "Ohm",
         Visible Flag_Cir,
         Help StrCat("Connection resistance between voltage source and machine ",
@@ -610,7 +642,7 @@ DefineConstant[
 
     R_terminal = {
         1e12, // Default value is very high so its like open circuit if not set
-        Name StrCat[INPUT_ELEC_EXCITATION, "Terminal Connection Resistance"],
+        Name StrCat[INPUT_ELEC_EXCITATION, "06Terminal Connection Resistance"],
         Units "Ohm",
         Help StrCat[
             "Terminal connection resistance to account for in short circuit case. ",
@@ -620,7 +652,7 @@ DefineConstant[
     }
 
     CircuitConnection = {
-        0, Name StrCat[INPUT_ELEC_WINDINGS, "Winding Type"],
+        0, Name StrCat[INPUT_ELEC_WINDINGS, "03Winding Type"],
         Choices{
             STAR_CONNECTION = "Star Connection", // 0
             DELTA_CONNECTION = "Delta Connection" // 1
@@ -631,7 +663,7 @@ DefineConstant[
 
     // Phase angle of the voltage
     pA_deg = {
-        0, Name StrCat[INPUT_ELEC_EXCITATION, "Current System Offset"],
+        0, Name StrCat[INPUT_ELEC_EXCITATION, "01Current System Offset"],
         Units "deg",
         Help "Offset angle for (sinusoidal) stator phase currents/voltages",
         Visible !Flag_ParkTransformation
@@ -642,6 +674,7 @@ DefineConstant[
     Flag_ConstantSource = 0,
     pB = (Flag_invertRotDir) ? pA + 2 * Pi / 3 : pA - 2 * Pi / 3,
     pC = (Flag_invertRotDir) ? pA - 2 * Pi / 3 : pA + 2 * Pi / 3,
+    V_rms = VV / 1.414, // / Sqrt[2],
     Va = VV,
     Vb = VV,
     Vc = VV,
@@ -682,10 +715,34 @@ DefineConstant[
         Visible (nbrRotorBars>0)
     }
 ];
+
 //=============================================================================
 //========================= END EXCITATION PARAMETERS =========================
 //=============================================================================
+// Printing excitation information
+If (Flag_SrcType_Stator == VOLTAGE_SOURCE)
+    Printf("Voltage Source Excitation with parameters:");
+    Printf("    Input Voltage Amplitude: %.3f V", VV);
+    Printf("    Input Voltage RMS: %.3f V", V_rms);
+    Printf("    Input Voltage Phase Offset (Phase A): %.2f deg", pA*rad2deg);
+    Printf("    Input Voltage Phase Offset (Phase B): %.2f deg", pB*rad2deg);
+    Printf("    Input Voltage Phase Offset (Phase C): %.2f deg", pC*rad2deg);
+    If (Flag_Cir)
+        If (CircuitConnection == STAR_CONNECTION)
+            Printf("    Using stator circuit with STAR connection");
+        Else
+            Printf("    Using stator circuit with DELTA connection");
+        EndIf
+        Printf("    Connection cable resistance: %.3e Ohm", R_wire);
+    EndIf
+ElseIf (Flag_SrcType_Stator == CURRENT_SOURCE)
+    // TBD
+    Printf("Current Source Excitation with parameters...");
+EndIf
 
+Printf("Flag_Cir = %g", Flag_Cir);
+Printf("Flag_SrcType_Stator = %g", Flag_SrcType_Stator);
+Printf("Flag_ImposedCurrentDensity = %g", Flag_ImposedCurrentDensity);
 //=============================================================================
 //============================ MATERIAL PARAMETERS ============================
 //=============================================================================
@@ -702,10 +759,6 @@ DefineConstant[ //Material definitions
 //========================== END MATERIAL PARAMETERS ==========================
 //=============================================================================
 
-// Printing some messages for information
-Printf("Flag_Cir = %g", Flag_Cir);
-Printf("Flag_SrcType_Stator = %g", Flag_SrcType_Stator);
-Printf("Flag_ImposedCurrentDensity = %g", Flag_ImposedCurrentDensity);
 
 Group
 {
@@ -971,6 +1024,20 @@ Function{
         // time step
         delta_time = T / nbrStepsPerPeriod;
     EndIf
+    Printf("Simulation Setup:");
+    Printf("    Stop time = %.3e s", timemax);
+    Printf("    TimeStep = %.3e s", delta_time);
+    If(Flag_Debug==1)
+        Printf("    n: %.3f", n);
+        Printf("    freq_stator: %.3f", freq_stator);
+        Printf("    n_sync: %.3f", n_sync);
+        Printf("    slip: %.5f", slip);
+        Printf("    asm_finalrotor_pos: %.5f = 360 * (nbr_stator_per / f_s) * n =  (%.1f / %.5f) * %.5f", asm_finalrotor_pos,nbrStatorPeriods,freq_stator,n);
+        Printf("    finalrotor_pos: %.5f", finalrotor_pos);
+        Printf("    timemax: %.3f", timemax);
+        Printf("    delta_time: %.3f", delta_time);
+    EndIf
+
     // start time
     time0 = 0;
 
