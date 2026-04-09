@@ -789,6 +789,8 @@ Resolution {
       ElseIf (!Exists[SurfCoil[]])
         Error["Missing value for single coil surface (Function SurfCoil). Make sure Domain_SurfCoil is set correctly."];
       EndIf
+      // TODO: Calculate dq0 currents/voltages in case of non-dq inputs for current and
+      // voltage source simulations.
       Evaluate[$ID=ID]; // set the runtime variables
       Evaluate[$IQ=IQ];
       Evaluate[$I0=I0];
