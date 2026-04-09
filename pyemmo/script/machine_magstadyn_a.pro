@@ -282,9 +282,9 @@ Function {
     IC[] = CompZ[ Iabc[] ] ;
   Else // Standard sinusoidal current definition
     II = I_eff * Sqrt[2];
-    IA[] = ((Flag_Fault == 1) && ($Time>0.02)) ? 0*F_Sin_wt_p[]{2*Pi*freq_stator, rotDirChange*pA} : F_Sin_wt_p[]{2*Pi*freq_stator, rotDirChange*pA} ;
-    IB[] = F_Sin_wt_p[]{2*Pi*freq_stator, rotDirChange*pB};
-    IC[] = F_Sin_wt_p[]{2*Pi*freq_stator, rotDirChange*pC};
+    IA[] = ((Flag_Fault == 1) && ($Time>0.02)) ? 0*F_Sin_wt_p[]{2*Pi*freq_stator, pA} : F_Sin_wt_p[]{2*Pi*freq_stator, pA} ;
+    IB[] = F_Sin_wt_p[]{2*Pi*freq_stator, pB};
+    IC[] = F_Sin_wt_p[]{2*Pi*freq_stator, pC};
   EndIf
   Jz1A[] = NbWires[]/SurfCoil[] * Idir[] * Vector[0, 0, 1];
   // calculate the current density from the current and the surface of the coil

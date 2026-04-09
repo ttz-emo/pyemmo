@@ -640,8 +640,8 @@ DefineConstant[
     // conversion of the angles from deg to rad
     pA = pA_deg * deg2rad,
     Flag_ConstantSource = 0,
-    pB = pA - 2 * Pi / 3,
-    pC = pA + 2 * Pi / 3,
+    pB = (Flag_invertRotDir) ? pA + 2 * Pi / 3 : pA - 2 * Pi / 3,
+    pC = (Flag_invertRotDir) ? pA - 2 * Pi / 3 : pA + 2 * Pi / 3,
     Va = VV,
     Vb = VV,
     Vc = VV,
