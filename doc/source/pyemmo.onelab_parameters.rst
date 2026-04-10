@@ -47,10 +47,6 @@ ONELAB Model Constants
 		- pA_deg * deg2rad
 	*	- Flag_ConstantSource
 		- 0
-	*	- pB
-		- pA - 2 * Pi / 3
-	*	- pC
-		- pA + 2 * Pi / 3
 	*	- Va
 		- VV
 	*	- Vb
@@ -90,27 +86,27 @@ ONELAB Model Parameters
 	*	- Flag_Debug
 		- 0, Name "01View/Debug", Choices {0,1}
 	*	- MachineType
-		- (nbrRotorBars > 0), Name StrCat[INPUT_ANA_SETTINGS, "00Machine Type"],Choices {SYNCHRONOUS = "Synchronous", ASYNCHRONOUS = "Asynchronous"},Visible Flag_Debug,ReadOnly 1
+		- (nbrRotorBars > 0), Name StrCat[INPUT_ANA_SETTINGS, "00Machine Type"],Choices {SYNCHRONOUS = "Synchronous", ASYNCHRONOUS = "Asynchronous"},Visible Flag_Debug,ReadOnly 1,Highlight "LightGray"
 	*	- Flag_AnalysisType
-		- ANALYSIS_TYPE, Name StrCat[INPUT_ANA_SETTINGS, "01Analysis Type"],Choices{STATIC = "Static", TRANSIENT = "Transient"}
+		- ANALYSIS_TYPE, Name StrCat[INPUT_ANA_SETTINGS, "01Analysis Type"],Choices{ STATIC = "Static", TRANSIENT = "Transient" }
 	*	- Flag_SrcType_Stator
-		- 1, Name StrCat[INPUT_ANA_SETTINGS, "02Source Input Type"],Choices{1 = "Current Source"}, Visible Flag_ExpertMode
+		- CURRENT_SOURCE,Name StrCat[INPUT_ANA_SETTINGS, "02Source Input Type"],Choices{CURRENT_SOURCE = "Current Source",VOLTAGE_SOURCE = "Voltage Source"},Visible Flag_ExpertMode
 	*	- initrotor_pos
 		- INIT_ROTOR_POS, Name StrCat[INPUT_ANA_SETTINGS, "04Initial rotor position"],Visible Flag_ExpertMode,Units "deg mech"
 	*	- RPM
 		- SPEED_RPM, Name StrCat[INPUT_ANA_SETTINGS, "09Rotational Speed"],Visible Flag_ExpertMode && Flag_AnalysisType == TRANSIENT,Units "min^-1"
 	*	- d_theta
-		- (RPM!=0) ? ANGLE_INCREMENT : 0. ,Name StrCat[INPUT_ANA_SETTINGS, "05Angle Increment [mech deg]"],Visible Flag_ExpertMode && Flag_AnalysisType == TRANSIENT,ReadOnly RPM==0
+		- (RPM!=0) ? ANGLE_INCREMENT : 0. ,Name StrCat[INPUT_ANA_SETTINGS, "05Angle Increment"],Visible Flag_ExpertMode && Flag_AnalysisType == TRANSIENT,ReadOnly RPM==0,Units "deg mech"
 	*	- nbrStatorPeriods
 		- 10,Name StrCat[INPUT_ANA_SETTINGS, "07Number of Stator Periods"],Visible Flag_AnalysisType == TRANSIENT && (MachineType==ASYNCHRONOUS || RPM == 0),Help "Number of stator periods to determine simulation time"
 	*	- nbrStepsPerPeriod
 		- 90,Name StrCat[INPUT_ANA_SETTINGS, "08Time steps stator period"],Visible Flag_AnalysisType == TRANSIENT && RPM == 0,Help "Number of stator periods to determine simulation time"
 	*	- finalrotor_pos
-		- (RPM==0) ?initrotor_pos: (MachineType==SYNCHRONOUS) ?(FINAL_ROTOR_POS):(nbrStatorPeriods*360/NbrPolePairs+initrotor_pos),Name StrCat[INPUT_ANA_SETTINGS, "06Final rotor position"],Visible Flag_ExpertMode && Flag_AnalysisType == TRANSIENT,ReadOnly MachineType==ASYNCHRONOUS,Help "Final rotor position",Units "deg mech"
+		- (RPM==0) ?initrotor_pos: (MachineType==SYNCHRONOUS) ?(FINAL_ROTOR_POS):(nbrStatorPeriods*360/NbrPolePairs+initrotor_pos),Name StrCat[INPUT_ANA_SETTINGS, "06Final rotor position"],Visible Flag_ExpertMode && Flag_AnalysisType == TRANSIENT,ReadOnly MachineType==ASYNCHRONOUS,Highlight StrChoice[MachineType==ASYNCHRONOUS, "LightGray", "White"],Help "Final rotor position",Units "deg mech"
 	*	- NbSteps
-		- (RPM != 0) ?Ceil[(finalrotor_pos - initrotor_pos) / (d_theta) + 1]: (nbrStatorPeriods*nbrStepsPerPeriod + 1),Name StrCat[INPUT_ANA_SETTINGS, "10Number of Time Steps"],Visible Flag_ExpertMode && Flag_AnalysisType == TRANSIENT,ReadOnly 1
+		- (RPM != 0) ?Ceil[(finalrotor_pos - initrotor_pos) / (d_theta) + 1]: (nbrStatorPeriods*nbrStepsPerPeriod + 1),Name StrCat[INPUT_ANA_SETTINGS, "10Number of Time Steps"],Visible Flag_ExpertMode && Flag_AnalysisType == TRANSIENT,ReadOnly 1,Highlight "LightGray"
 	*	- SymmetryFactor
-		- SYMMETRY_FACTOR, Name StrCat[INPUT_ANA_SETTINGS, "Symmetry Factor"],ReadOnly 1,Visible Flag_Debug
+		- SYMMETRY_FACTOR, Name StrCat[INPUT_ANA_SETTINGS, "Symmetry Factor"],ReadOnly 1,Highlight "LightGray",Visible Flag_Debug
 	*	- Flag_SaveAllSteps
 		- 0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "01Save all time steps"],Help "Save each field results (pos) in a separate file with time step index",Choices {0,1},Visible Flag_ExpertMode && Flag_AnalysisType == TRANSIENT
 	*	- res
@@ -133,10 +129,6 @@ ONELAB Model Parameters
 		- 1, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "10Inductance Computation Type"],Choices{0 = "Apparent", 1 = "Incremental"},Visible Flag_Inductance
 	*	- Flag_SaveSolution
 		- 0, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "11Save Solution"],Choices{0, 1},Visible Flag_ExpertMode,Help StrCat["If Save Solution is active, the vector potential solution for each time ","step will be saved to a .res file. This is time consuming! For faster ","calculation, it is recommended to deactivate."]
-	*	- r_rotor_airgap
-		- R_ROTOR_AIRGAP, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "/Airgap Field/Rotor Radius"],Min 0,Visible Flag_PrintFields,Help "Define the radius of the rotor airgap for the post-processing of B_rad and B_tan."
-	*	- r_stator_airgap
-		- R_STATOR_AIRGAP, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT, "/Airgap Field/Stator Radius"],Min 0,Visible Flag_PrintFields,Help "Define the radius of the stator airgap for the post-processing of B_rad and B_tan."
 	*	- Flag_EC_Magnets
 		- CALC_MAGNET_LOSSES, Name StrCat[INPUT_ANA_SETTINGS_OUTPUT_LOSS,"02Calculate Eddy Current in Magnets (2D)"],Choices{0, 1},Visible (Flag_ExpertMode && nbrMagnets > 0),Help "Consider Eddy-Current in the PMs"
 	*	- Flag_SecondOrder
@@ -161,34 +153,44 @@ ONELAB Model Parameters
 		- NBR_TURNS_IN_FACE,Name StrCat[INPUT_ELEC_WINDINGS, "01Number of wires per slot surface"],Help StrCat("Number of wires in a single slot surface.","If the slot is divided in several surfaces, the value needs to match the ","number of wires in each surface.")
 	*	- NbrParallelPaths
 		- NBR_PARALLEL_PATHS, Name StrCat[INPUT_ELEC_WINDINGS, "02Number of parallel paths per phase"],ReadOnly !Flag_ExpertMode,Help "Number of parallel paths per phase."
+	*	- R_S
+		- 2 * L_AX_S * 0.4 * (nbrTurns*nbrSlots/3)^2 / (0.25/3*(1.6^2+1)*r_AG^2*Pi) / sigma_cu,Name StrCat[INPUT_ELEC_WINDINGS, "03Resistance"],Units "Ohm",Help StrCat("Stator winding phase resistance for voltage source simulation. ","Default value is calculated by a empirical formula based on the machine geometry and number of winding turns.","If possible, this should be defined by the user!"),Visible (Flag_SrcType_Stator==VOLTAGE_SOURCE)
+	*	- FillFactor_Winding
+		- 1, Name StrCat[INPUT_ELEC_WINDINGS, "03Fill factor"],Help "Winding fill factor from (0,1]. UNUSED FOR NOW!",Max 1,Visible ((Flag_SrcType_Stator == VOLTAGE_SOURCE) && 0)
+	*	- Factor_R_3DEffects
+		- 1, Name StrCat[INPUT_ELEC_WINDINGS, "04End winding factor"],Help "UNUSED FOR NOW! Factor from [0, inf) to scale stator winding resistance due to end winding region",Visible ((Flag_SrcType_Stator == VOLTAGE_SOURCE) && 0)
 	*	- Flag_invertRotDir
 		- FLAG_CHANGE_ROT_DIR, Name StrCat[INPUT_ELEC_EXCITATION, "05Invert rotation Direction"],Choices{0, 1},Visible Flag_ExpertMode,Help "Invert the stator field rotation direction by changing phase offset in source definition."
 	*	- ID_RMS
-		- Id_eff, Name StrCat[INPUT_ELEC_EXCITATION, "00ID_RMS"],Units "A",Visible Flag_SrcType_Stator == 1 && MachineType==SYNCHRONOUS
+		- Id_eff, Name StrCat[INPUT_ELEC_EXCITATION, "00ID_RMS"],Units "A",Visible Flag_SrcType_Stator == CURRENT_SOURCE && MachineType==SYNCHRONOUS
 	*	- ID
-		- ID_RMS * Sqrt[2], Name StrCat[INPUT_ELEC_EXCITATION, "02ID"],Units "A",Visible Flag_Debug && Flag_SrcType_Stator == 1 && MachineType==SYNCHRONOUS,ReadOnly 1
+		- ID_RMS * Sqrt[2], Name StrCat[INPUT_ELEC_EXCITATION, "02ID"],Units "A",Visible Flag_Debug && Flag_SrcType_Stator == CURRENT_SOURCE && MachineType==SYNCHRONOUS,ReadOnly 1,Highlight "LightGray"
 	*	- IQ_RMS
-		- Iq_eff,Name StrCat[INPUT_ELEC_EXCITATION, "01IQ_RMS"],Units "A",Visible Flag_SrcType_Stator == 1 && MachineType==SYNCHRONOUS
+		- Iq_eff,Name StrCat[INPUT_ELEC_EXCITATION, "01IQ_RMS"],Units "A",Visible Flag_SrcType_Stator == CURRENT_SOURCE && MachineType==SYNCHRONOUS
 	*	- IQ
-		- IQ_RMS * Sqrt[2],Name StrCat[INPUT_ELEC_EXCITATION, "03IQ"],Units "A",Visible Flag_Debug && Flag_SrcType_Stator == 1 && MachineType==SYNCHRONOUS,ReadOnly 1
+		- IQ_RMS * Sqrt[2],Name StrCat[INPUT_ELEC_EXCITATION, "03IQ"],Units "A",Visible Flag_Debug && Flag_SrcType_Stator == CURRENT_SOURCE && MachineType==SYNCHRONOUS,ReadOnly 1,Highlight "LightGray"
 	*	- I0
 		- 0, Name StrCat[INPUT_ELEC_EXCITATION, "04I0"],Units "A",Visible Flag_ExpertMode && Flag_SrcType_Stator==1 && MachineType==SYNCHRONOUS
 	*	- ParkOffset
 		- ParkAngOffset, Name StrCat[INPUT_ELEC_EXCITATION, "06Stator dq-System Offset [deg elec]"],Min -360, Max 360, Step 10,Visible Flag_ExpertMode && MachineType==SYNCHRONOUS,Help "Stator dq0 offset angle to align with rotor dq0 axis."
 	*	- I_eff
-		- Sqrt[ID_RMS^2 + IQ_RMS^2], Name StrCat[INPUT_ELEC_EXCITATION, "00Stator Phase Current (RMS)"],Units "A",Visible Flag_SrcType_Stator == 1 && MachineType==ASYNCHRONOUS,Help "Stator phase current (rms)"
+		- Sqrt[ID_RMS^2 + IQ_RMS^2], Name StrCat[INPUT_ELEC_EXCITATION, "00Stator Phase Current (RMS)"],Units "A",Visible Flag_SrcType_Stator == CURRENT_SOURCE && MachineType==ASYNCHRONOUS,Help "Stator phase current (rms)"
 	*	- freq_rotor
-		- 5, Name StrCat[INPUT_ELEC_EXCITATION, "01Rotor Frquency"],Units "Hz",Visible Flag_SrcType_Stator == 1 && MachineType==ASYNCHRONOUS,Help "Electrical rotor frequency for induction machine."
+		- 5, Name StrCat[INPUT_ELEC_EXCITATION, "02Rotor Frequency"],Units "Hz",Visible MachineType==ASYNCHRONOUS,Help "Electrical rotor frequency for induction machine."
+	*	- Flag_Cir
+		- 0, Name StrCat[INPUT_ELEC_EXCITATION, "02Use Stator Circuit"],Choices {0,1},Visible Flag_SrcType_Stator == VOLTAGE_SOURCE
 	*	- Flag_ParkTransformation
-		- Flag_SrcType_Stator == TRANSIENT && MachineType==SYNCHRONOUS,Name StrCat[INPUT_ELEC_EXCITATION, "Use Clark-Park-Transformation"],Choices {0,1},ReadOnly 1
+		- Flag_SrcType_Stator == CURRENT_SOURCE && MachineType==SYNCHRONOUS,Name StrCat[INPUT_ELEC_EXCITATION, "Use Clark-Park-Transformation"],Choices {0,1},ReadOnly 1,Highlight "LightGray"
 	*	- VV
-		- 12, Name StrCat[INPUT_ELEC, "V [V]"],Units "V",Visible Flag_SrcType_Stator == 2,Help "Amplitude of the phase source voltage"
+		- 12, Name StrCat[INPUT_ELEC_EXCITATION, "00Input Voltage Amplitude"],Units "V",Visible Flag_SrcType_Stator == VOLTAGE_SOURCE,Help "Amplitude of the input voltage (in case of voltage input)"
 	*	- R_wire
-		- 0, Name StrCat[INPUT_ELEC, "Connection Resistance [Ohm]"],Visible Flag_Cir,Help StrCat("Connection resistance between voltage source and machine ","(cable and connection resistance).")
+		- 500e-3, Name StrCat[INPUT_ELEC_EXCITATION, "05Connection (Wire-)Resistance"],Units "Ohm",Visible Flag_Cir,Help StrCat("Connection resistance between voltage source and machine ","(cable and connection resistance).")
+	*	- R_terminal
+		- 1e12, Name StrCat[INPUT_ELEC_EXCITATION, "06Terminal Connection Resistance"],Units "Ohm",Help StrCat["Terminal connection resistance to account for in short circuit case. ","Only used when source is CEMF in circuit!"],Visible Flag_SrcType_Stator == CEMF_SOURCE
 	*	- CircuitConnection
-		- 0, Name StrCat[INPUT_ELEC, "Winding Type"],Choices{0 = "Star Connection", 1 = "Delta Connection"},Visible Flag_Cir,Help "Voltage source circuit connection type"
+		- 0, Name StrCat[INPUT_ELEC_WINDINGS, "03Winding Type"],Choices{STAR_CONNECTION = "Star Connection", DELTA_CONNECTION = "Delta Connection" },Visible Flag_Cir,Help "Voltage source circuit connection type"
 	*	- pA_deg
-		- 0, Name StrCat[INPUT_ELEC, "Current System Offset"],Units "deg",Help "Offset angle for (sinusoidal) stator phase currents",Visible !Flag_ParkTransformation
+		- 0, Name StrCat[INPUT_ELEC_EXCITATION, "01Current System Offset"],Units "deg",Help "Offset angle for (sinusoidal) stator phase currents/voltages",Visible !Flag_ParkTransformation
 	*	- Flag_Cir_RotorCage
 		- (nbrRotorBars > 0) , Choices{0,1},Name StrCat(INPUT_ELEC_CIRCUIT_ROTOR,"Circuit/10Use circuit in rotor cage"),Visible (nbrRotorBars > 0),Help StrCat("Use circuit to connect rotor bars with endring resistance and inductance. ","Otherwise the bars will be ideally connected (without any reactance).")
 	*	- R_endring_segment
@@ -198,11 +200,15 @@ ONELAB Model Parameters
 	*	- tempMag
 		- TEMP_MAG,Name StrCat[INPUT_MAT_PROPERTIES_MAGNET, "Magnet temperature [degrees C]"],Visible Flag_ExpertMode && NbrRegions[Rotor_Magnets] > 0
 	*	- freq_stator
-		- (MachineType==SYNCHRONOUS)?(n * NbrPolePairs):freq_rotor + NbrPolePairs * n,Name StrCat[INPUT_ELEC_EXCITATION, "Stator Frequency"],Units "Hz",ReadOnly 1
+		- (MachineType==SYNCHRONOUS)?(n * NbrPolePairs):freq_rotor + NbrPolePairs * n,Name StrCat[INPUT_ELEC_EXCITATION, "Stator Frequency"],Units "Hz",ReadOnly 1,Highlight "LightGray"
 	*	- n_sync
-		- freq_stator / NbrPolePairs,Name StrCat[INPUT_ELEC_EXCITATION, "Synchronous Speed"],Units "Hz",ReadOnly 1,Visible MachineType == ASYNCHRONOUS
+		- freq_stator / NbrPolePairs,Name StrCat[INPUT_ELEC_EXCITATION, "Synchronous Speed"],Units "Hz",ReadOnly 1,Highlight "LightGray",Visible MachineType == ASYNCHRONOUS
 	*	- slip
-		- 1 - n/n_sync,Name StrCat[INPUT_ELEC_EXCITATION, "Slip"],ReadOnly 1,Visible MachineType == ASYNCHRONOUS
+		- 1 - n/n_sync,Name StrCat[INPUT_ELEC_EXCITATION, "Slip"],ReadOnly 1,Highlight "LightGray",Visible MachineType == ASYNCHRONOUS
+	*	- Flag_Relaxation
+		- 1, Name StrCat[INPUT_ELEC_EXCITATION, "Use Voltage Relaxation"],Choices {0,1},Visible Flag_SrcType_Stator==VOLTAGE_SOURCE && Flag_ExpertMode,Help "Control relaxation of voltage. This is useful to decrease the transient times when simulating with voltages."
+	*	- NbTrelax
+		- 2, Name StrCat[INPUT_ELEC_EXCITATION, "Voltage Relaxation Periods"],Min 0, Step 1,Visible Flag_SrcType_Stator==VOLTAGE_SOURCE && Flag_ExpertMode,Help "Number of periods while relaxation is applied. This is useful to decrease the transient times when simulating with voltages."
 	*	- R_
 		- "Analysis", Name "GetDP/1ResolutionChoices", Visible Flag_Debug
 	*	- C_
