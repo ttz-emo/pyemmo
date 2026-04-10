@@ -21,6 +21,7 @@
 #
 from __future__ import annotations
 
+import logging
 import os
 import subprocess
 import sys
@@ -35,8 +36,10 @@ if not MAIN_DIR in sys.path:
 
 # call jupyter nbconvert on tutorials
 from os.path import abspath, join
+
 try:
     from nbconvert import RSTExporter
+
     HAVE_NBCONVERT = True
 
 except ImportError:
@@ -174,23 +177,28 @@ if create_param_file:
 
 def convert_tutorials(app):
     """Convert ipynb tutorial files to rst to include them in doc"""
-    
+    logger = logging.getLogger(__name__)
     tutorial_folder = abspath(os.path.join(ROOT_DIR, "tutorials"))
     for infile in os.listdir(tutorial_folder):
         if infile.endswith(".ipynb"):
-            filename = infile.removesuffix(".ipynb")
-            tutorial_file = abspath(
-                os.path.join(ROOT_DIR, "tutorials", filename+".ipynb")
+            try:
+                logger.info("Creating rst file from tutorial: %s", infile)
+                filename = infile.removesuffix(".ipynb")
+                tutorial_file = abspath(
+                    os.path.join(tutorial_folder, filename + ".ipynb")
                 )
-            # jake_notebook = nbformat.reads(tutorial_file, as_version=4)
-            rst_exporter = RSTExporter()
-            # Convert the notebook to RST format
-            (body, resources) = rst_exporter.from_file(tutorial_file)
-            out_file = abspath(
-                os.path.join(app.srcdir, "source","tutorials",filename+".rst")
-            )
-            with open(out_file, "w", encoding="utf-8") as rstFile:
-                rstFile.write(body)
+                # jake_notebook = nbformat.reads(tutorial_file, as_version=4)
+                rst_exporter = RSTExporter()
+                # Convert the notebook to RST format
+                (body, resources) = rst_exporter.from_file(tutorial_file)
+                out_file = abspath(
+                    os.path.join(app.srcdir, "source", "tutorials", filename + ".rst")
+                )
+                logger.info("Writing converted tutorial to %s", out_file)
+                with open(out_file, "w", encoding="utf-8") as rstFile:
+                    rstFile.write(body)
+            except Exception as e:
+                logger.warning("Failed to convert tutorials...", exc_info=e)
 
 
 def run_apidoc(app):
@@ -199,6 +207,7 @@ def run_apidoc(app):
     It runs the apidoc function to create new rst files for each module in
     PyEMMO. Note that existing files will not be overwritten!
     """
+    print(sys.path)
     apidoc_cmd = [
         "sphinx-apidoc",
         "--separate",  # create separate files for each module
@@ -211,6 +220,8 @@ def run_apidoc(app):
 
 
 def setup(app):
+    logger = logging.getLogger(__name__)
+
     app.connect("builder-inited", run_apidoc)
     if HAVE_NBCONVERT:
         app.connect("builder-inited", convert_tutorials)

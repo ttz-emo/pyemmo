@@ -81,4 +81,5 @@ The contents of those tutorials are included in the following:
     :maxdepth: 2
 
     tutorials/pyleecan_api.rst
+    tutorials/voltage_source_simulation.rst
     .. tutorials/core_loss.rst

@@ -21,11 +21,11 @@ details on how to use the pyleecan motor toolbox.
 
 There are two ways to get a Pyleecan machine:
 
--  Load a existing machine using the ``load`` function.
--  Create a machine with a python script by using the Pyleecan classes.
-   See the
-   `01_tuto_Machine.ipynb <https://pyleecan.org/01_tuto_Machine.html>`__
-   tutorial for that.
+- Load a existing machine using the ``load`` function.
+- Create a machine with a python script by using the Pyleecan classes.
+  See the
+  `01_tuto_Machine.ipynb <https://pyleecan.org/01_tuto_Machine.html>`__
+  tutorial for that.
 
 You can load an existing Pyleecan model using:
 
@@ -33,7 +33,7 @@ You can load an existing Pyleecan model using:
 
     # set log level to diable necessary matplotlib log messages
     import logging
-    
+
     logging.getLogger("matplotlib").setLevel(logging.ERROR)
 
 .. code:: ipython3
@@ -47,7 +47,7 @@ You can load an existing Pyleecan model using:
     from os.path import join
     from pyleecan.Functions.load import load
     from pyleecan.definitions import DATA_DIR
-    
+
     IPMSM_A = load(join(DATA_DIR, "Machine", "Toyota_Prius.json"))
     # In Jupyter notebook, we set is_show_fig=False to skip call to fig.show() to avoid a warning message
     # All plot methods return the corresponding matplotlib figure and axis to further edit the resulting plot
@@ -85,17 +85,17 @@ existing machine by using the method ``plot_schematics``.
 .. code:: ipython3
 
     from matplotlib import pyplot as plt
-    
+
     fig, axes = plt.subplots(1, 2)  # create subplot to show results side by side
     # plot inital config
     fig, ax = IPMSM_A.rotor.plot(sym=8, fig=fig, ax=axes[0], is_show_fig=False)
     _ = ax.set_ylim([-0.01, 0.065])
     _ = ax.set_xlim([0.04, 0.08])
     _ = ax.set_title(f"H2 = {IPMSM_A.rotor.hole[0].H2*1e3} mm")
-    
+
     # change parameter for magnet-lamination overlap
     IPMSM_A.rotor.hole[0].H2 = 3e-3
-    
+
     # plot rotor segment after parameter change
     fig, ax = IPMSM_A.rotor.plot(sym=8, fig=fig, ax=axes[1], is_show_fig=False)
     _ = ax.set_ylim([-0.01, 0.065])
@@ -121,7 +121,7 @@ GetDP executables to use for opening the GUI and run a simulation.
     import logging
     from pyemmo.api.pyleecan import main as pyleecan_api
     from pyemmo.definitions import RESULT_DIR
-    
+
     # you can set the output verbosity of the model creation using the pyemmo logger.
     # The logging module by default implements DEBUG, INFO, WARNING, ERROR, FATAL log
     # levels, which are simply constants for integer levels, e.g. logging.DEBUG == 10
@@ -129,7 +129,7 @@ GetDP executables to use for opening the GUI and run a simulation.
     # additional information in plots and opens the Gmsh GUI at different levels in the
     # model creation.
     logging.getLogger("pyemmo").setLevel(logging.INFO)
-    
+
     # Run the main function of the pyleecan api:
     pyemmo_script = pyleecan_api.main(
         pyleecan_machine=IPMSM_A,
@@ -143,25 +143,27 @@ GetDP executables to use for opening the GUI and run a simulation.
 The created geometry will be saved as a *.geo* file (Gmsh specific file
 format). The files used by GetDP to run a simulation will be saved as
 *.pro* files. If you now look at the contents of the newly created
-folder \*:raw-latex:`\Toyota`\_Prius_ONELAB*, you will find the
+folder \*:raw-latex:`\Toyota`\_Prius_ONELAB\*, you will find the
 following model files:
 
-+-------------------------+-------------------------------------------+
-| Model File              | Description                               |
-+=========================+===========================================+
-| Toyota_Prius.geo        | Geometry (CAD)                            |
-+-------------------------+-------------------------------------------+
-| Toyota_Prius.pro        | Main Simulation Setup                     |
-+-------------------------+-------------------------------------------+
-| Toyota_Prius_param.geo  | Global Machine and Simulation parameters  |
-+-------------------------+-------------------------------------------+
-| machine_magstadyn_a.pro | Problem Template for Electrical Machines  |
-+-------------------------+-------------------------------------------+
-| Circuit_SC_ASM.pro      | Optional Circuit Definition (for          |
-|                         | Induction Machines)                       |
-+-------------------------+-------------------------------------------+
-| pyemmo_jsonAPI.log      | PyEMMO Model Creation log-file            |
-+-------------------------+-------------------------------------------+
++-----------------------------------+-----------------------------------+
+| Model File                        | Description                       |
++===================================+===================================+
+| Toyota_Prius.geo                  | Geometry (CAD)                    |
++-----------------------------------+-----------------------------------+
+| Toyota_Prius.pro                  | Main Simulation Setup             |
++-----------------------------------+-----------------------------------+
+| Toyota_Prius_param.geo            | Global Machine and Simulation     |
+|                                   | parameters                        |
++-----------------------------------+-----------------------------------+
+| machine_magstadyn_a.pro           | Problem Template for Electrical   |
+|                                   | Machines                          |
++-----------------------------------+-----------------------------------+
+| Circuit_SC_ASM.pro                | Optional Circuit Definition (for  |
+|                                   | Induction Machines)               |
++-----------------------------------+-----------------------------------+
+| pyemmo_jsonAPI.log                | PyEMMO Model Creation log-file    |
++-----------------------------------+-----------------------------------+
 
 4. How to run a simple simulation in ONELAB
 -------------------------------------------
@@ -183,17 +185,17 @@ details.
 
     import os
     import time
-    
+
     import numpy as np
-    
+
     from pyemmo.functions.run_onelab import run_simulation, find_getdp
-    
+
     # Simulation parameters
     n = 1500
     id = -10
     iq = 50
     resId = "test_simulation"  # result identifier and result folder name
-    
+
     # create param dict for simulation
     param_dict = {
         # model .pro file path
@@ -254,7 +256,7 @@ Depended on the simulation parameters defined in
 .. code:: ipython3
 
     from pprint import pprint
-    
+
     pprint(results.keys())
     pprint(results["flux"].keys())
 
@@ -268,7 +270,7 @@ We can use ``matplotlib.pyplot`` to plot some time depended results:
     ax.set_ylabel("Torque in Nm")
     ax.set_xlabel("Time in s")
     ax.grid()
-    
+
     fig, ax = plt.subplots()
     ax.plot(results["time"], results["flux"]["d"], ".-", label="d-flux linkage")
     ax.plot(results["time"], results["flux"]["q"], ".-", label="q-flux linkage")
@@ -276,7 +278,7 @@ We can use ``matplotlib.pyplot`` to plot some time depended results:
     ax.set_xlabel("Time in s")
     ax.grid()
     ax.legend()
-    
+
     fig, ax = plt.subplots()
     ax.plot(results["time"][1:], results["inducedVoltage"]["a"], ".-", label="Phase A")
     ax.plot(results["time"][1:], results["inducedVoltage"]["b"], ".-", label="Phase B")
@@ -291,14 +293,14 @@ We can use ``matplotlib.pyplot`` to plot some time depended results:
 
 The following design and geometry limitations are known:
 
--  Multi-phase windings with :math:`m != 3`
--  Number of winding layers > 2 (not supported by SWAT-EM).
--  Wound rotor machines.
--  Multi-cage induction motors.
--  No multi-layered surface subtractions (you cannot cut out of tool
-   surfaces in api)
--  No overlaping surfaces, e.g. air box overlaping magnet (does not work
-   in pyleecan aswell).
+- Multi-phase windings with :math:`m != 3`
+- Number of winding layers > 2 (not supported by SWAT-EM).
+- Wound rotor machines.
+- Multi-cage induction motors.
+- No multi-layered surface subtractions (you cannot cut out of tool
+  surfaces in api)
+- No overlaping surfaces, e.g. air box overlaping magnet (does not work
+  in pyleecan aswell).
 
 6. User-defined results
 -----------------------
@@ -326,7 +328,7 @@ regenerate the .pro files for GetDP using
 .. code:: ipython3
 
     import gmsh
-    
+
     pyemmo_script.add_post_operation(
         quantity_name="Force_MST",
         post_operation="Airgap_Force",
@@ -367,7 +369,7 @@ previous simulation while only changing some specific parameters.
 .. code:: ipython3
 
     # run a new simulation and import + display the results for the force density
-    
+
     param_dict["getdp"]["Flag_AnalysisType"] = 0  # static simulation
     # unset currents for simple no-load simulation
     param_dict["getdp"]["ID_RMS"] = 0
@@ -378,7 +380,7 @@ previous simulation while only changing some specific parameters.
     param_dict["getdp"]["ResId"] = "Calc_ForceDensity_noLoad"
     # set post operation list to evaluate previously created PostOperation "Airgap_Force"
     param_dict["PostOp"] = ["Airgap_Force"]
-    
+
     # run simulation:
     results = run_simulation(param_dict)
 
@@ -396,17 +398,17 @@ rad-tan force density directly transformed in GetDP.
 
     # since the force density is not in the standard results import, we have to import it
     # manually:
-    
+
     # function to import GetDP "GmshParsed" formatted output files:
     from pyemmo.functions.import_results import import_pos_legacy
-    
+
     # function to transform cartesian to polar coordinates:
     from pyemmo.functions.transform_coords import cart2pol
-    
+
     # Arc patch to plot arcs
     from matplotlib.patches import Arc
-    
-    
+
+
     # First import force density in with xyz components:
     # Since we did print the vector based force density on points, we get the data
     # type "VP" for "vector value on points". Therefore we get the xyz coordinates
@@ -417,10 +419,10 @@ rad-tan force density directly transformed in GetDP.
     data_type, nodes, sigma_xyz = import_pos_legacy(
         join(param_dict["getdp"]["res"], param_dict["getdp"]["ResId"], "F_airgap.pos")
     )
-    
-    
+
+
     # Show evaluation points (mesh nodes) in scatter plot
-    
+
     fig, ax = plt.subplots()
     # scatter node coodrinates
     ax.scatter(nodes[:, 0], nodes[:, 1], marker=".", s=10, label="Data points")
@@ -448,39 +450,39 @@ rad-tan force density directly transformed in GetDP.
     # transform xy coordinates of the nodes to polar coorinates to then plot over the
     # airgap angle:
     r1, phi1 = cart2pol(nodes[:, 0], nodes[:, 1])
-    
+
     # create unit vectors to calculate radial and tangential components
     hat_e_rad = np.array([np.cos(phi1), np.sin(phi1)]).reshape(2, len(phi1))
     hat_e_tan = np.array([-np.sin(phi1), np.cos(phi1)]).reshape(2, len(phi1))
-    
+
     # radial component is scalar product of unit vector in radial direction
     # with force density vector
     sigma_xyz_rad = np.diag(np.dot(sigma_xyz[:, 0:2], hat_e_rad))
-    
+
     # same goes for the tangential component using the tangential unit vetor
     sigma_xyz_tan = np.diag(np.dot(sigma_xyz[:, 0:2], hat_e_tan))
-    
-    
+
+
     # Add plot of radial force density
     fig, ax = plt.subplots()
-    
+
     ax.plot(
         np.rad2deg(phi1),  # transform circumferential angle from rad to deg
         sigma_xyz_rad,  # radial force density calculated from xyz
         ".",
         label=r"$\sigma_\mathrm{rad}$ from $\sigma_\mathrm{xyz}$",
     )
-    
-    
+
+
     # Second import force density allready transformed in polar components in GetDP:
-    
+
     data_type, nodes, sigma_rphiz = import_pos_legacy(
         join(param_dict["getdp"]["res"], param_dict["getdp"]["ResId"], "F_airgap_cyl.pos")
     )
-    
+
     # convert xy coordinates to r-phi
     r2, phi2 = cart2pol(nodes[:, 0], nodes[:, 1])  # xy -> r-phi
-    
+
     # add plot of radial force density directly calculated from GetDP
     ax.plot(
         np.rad2deg(phi2),  # rad -> deg
@@ -504,7 +506,7 @@ rad-tan force density directly transformed in GetDP.
         ".",
         label=r"$\sigma_\mathrm{tan}$ from $\sigma_\mathrm{xyz}$",
     )
-    
+
     ax.plot(
         np.rad2deg(phi2),  # rad -> deg
         sigma_rphiz[:, 1],  # show tangentail comp (index 1)
@@ -520,7 +522,7 @@ rad-tan force density directly transformed in GetDP.
 .. code:: ipython3
 
     # We can futher check if the results are really equal:
-    
+
     # Check the amplitude
     try:
         assert np.allclose(
@@ -528,7 +530,7 @@ rad-tan force density directly transformed in GetDP.
             np.linalg.norm(sigma_rphiz, axis=1),
             atol=1e-9,
         )
-    
+
         # check radial component
         assert np.allclose(
             sigma_xyz_rad,
@@ -557,12 +559,12 @@ them in the Gmsh GUI:
         # unshow all other views if gmsh has been run before
         for tag in gmsh.view.getTags():
             gmsh.view.option.setNumber(tag, "Visible", 0)
-    
+
     # open result file with Gmsh
     gmsh.merge(
         join(param_dict["getdp"]["res"], param_dict["getdp"]["ResId"], "F_airgap.pos")
     )
-    
+
     # run GUI to show results:
     gmsh.fltk.run()
 

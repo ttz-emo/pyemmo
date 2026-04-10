@@ -9,7 +9,7 @@ tbd
 .. raw:: html
 
    <!-- Pyleecan has a lot of useful tutorials under [Pyleecan tutorials][pylcn_tutorials].
-   See those for futher details on how to use the pyleecan motor toolbox. 
+   See those for futher details on how to use the pyleecan motor toolbox.
 
    There are two ways to get a Pyleecan machine:
 
@@ -27,7 +27,7 @@ tbd
 
     # set log level to disable necessary matplotlib log messages
     import logging
-    
+
     logging.getLogger("matplotlib").setLevel(logging.ERROR)
 
 .. code:: ipython3
@@ -39,9 +39,9 @@ tbd
 
     # Load the machine
     from __future__ import annotations
-    
+
     from os.path import join
-    
+
     from pyleecan.definitions import DATA_DIR
     from pyleecan.Functions.load import load
     from pyemmo.api.pyleecan import main as pyleecan_api
@@ -52,27 +52,27 @@ tbd
     from pyemmo.api.pyleecan.create_param_dict import create_param_dict
     from pyemmo.api.pyleecan.create_pyleecan_simulation import create_simulation
     from pyemmo.api.pyleecan.translate_machine import translate_machine
-    
+
     pyleecan_machine = load(join(DATA_DIR, "Machine", "Toyota_Prius.json"))
     model_name = "Toyota_Prius"
-    
+
     if not gmsh_api.isInitialized():
         gmsh_api.initialize()
-    
+
     # suppress output of log messages to console.
     # See https://gitlab.onelab.info/gmsh/gmsh/-/issues/1901
     # Use gmsh.logger.start(), gmsh.logger.get(), gmsh.logger.stop() to catch logs.
     gmsh_api.option.setNumber("General.Terminal", 0)
-    
+
     # add new gmsh model in case api is called multiple times:
     gmsh_api.model.add(model_name)
-    
+
     # Create model parameter dict
     simulation = create_simulation(pyleecan_machine, i_d=0, i_q=0, speed=1000)
     paramDict = create_param_dict(pyleecan_machine, simulation, None)
     paramDict["flag_openGUI"] = True
     paramDict["calcIronLoss"] = True
-    
+
     geo_translation_dict = translate_machine(pyleecan_machine)
     pyemmo_script = json_api_main(
         geo=geo_translation_dict,
@@ -149,17 +149,17 @@ details.
 
     import os
     import time
-    
+
     import numpy as np
-    
+
     from pyemmo.functions.run_onelab import run_simulation, find_getdp
-    
+
     # Simulation parameters
     n = 5000
     id = -10
     iq = 50
     resId = "test_working_point"  # result identifier and result folder name
-    
+
     # create param dict for simulation
     param_dict = {
         # model .pro file path
@@ -223,7 +223,7 @@ details.
 .. code:: ipython3
 
     from pprint import pprint
-    
+
     pprint(results.keys())
     try:
         pprint(results["coreLoss"].keys())
@@ -243,7 +243,7 @@ details.
 
     # Plot core loss data
     from matplotlib import pyplot as plt
-    
+
     fig, axes = plt.subplots(1, 2)
     for i, side in enumerate(("rotor", "stator")):
         ax = axes[i]
@@ -297,7 +297,7 @@ details.
 
     # Trigger frequency domain core loss
     from pyemmo.functions.core_loss import calc_freq_domain_core_loss
-    
+
     freq_loss_dict = {}
     for i, side in enumerate(("rotor", "stator")):
         side_obj = getattr(pyemmo_script.machine, side)
@@ -328,7 +328,7 @@ details.
         ax.set_ylabel("Core loss portion in W")
         ax.grid()
     ax.set_xlabel("Frequency in Hz")
-    
+
     gmsh_api.fltk.run()
 
 
@@ -342,18 +342,18 @@ We can use ``matplotlib.pyplot`` to plot some time depended results:
 
     # Plot torque, flux and induced voltage results
     from matplotlib import pyplot as plt
-    
+
     fig, ax = plt.subplots()
     if isinstance(results["torque"], dict):
         ax.plot(results["time"], results["torque"]["rotor"], ".-")
     else:
         ax.plot(results["time"], results["torque"], ".-")
-    
+
     ax.set_ylabel("Torque in Nm")
     ax.set_ylabel("Torque in Nm")
     ax.set_xlabel("Time in s")
     ax.grid()
-    
+
     fig, ax = plt.subplots()
     ax.plot(results["time"], results["flux"]["d"], ".-", label="d-flux linkage")
     ax.plot(results["time"], results["flux"]["q"], ".-", label="q-flux linkage")
@@ -361,7 +361,7 @@ We can use ``matplotlib.pyplot`` to plot some time depended results:
     ax.set_xlabel("Time in s")
     ax.grid()
     ax.legend()
-    
+
     fig, ax = plt.subplots()
     ax.plot(results["time"][1:], results["inducedVoltage"]["a"], ".-", label="Phase A")
     ax.plot(results["time"][1:], results["inducedVoltage"]["b"], ".-", label="Phase B")
@@ -390,4 +390,3 @@ We can use ``matplotlib.pyplot`` to plot some time depended results:
 
 
 .. image:: output_17_3.png
-
