@@ -36,3 +36,4 @@ Modules
 from __future__ import annotations
 
 SETUP_FILE_NAME = "pyemmo_sim_setup.json"
+RES_FILE_NAME = "pyemmo_sim_results.json"

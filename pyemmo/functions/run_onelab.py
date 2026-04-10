@@ -62,7 +62,18 @@ from os.path import expanduser, isdir, isfile, join, normpath, splitext
 from shutil import which
 from subprocess import PIPE, STDOUT, Popen
 
-from . import SETUP_FILE_NAME, core_loss, import_results
+import numpy as np
+
+from . import RES_FILE_NAME, SETUP_FILE_NAME, core_loss, import_results
+
+
+class NumpyEncoder(json.JSONEncoder):
+    """Numpy Encoder class to read and write numpy arrays to json"""
+
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)
 
 
 def log_subprocess_output(pipe: BufferedReader, stderr: BufferedReader = None):
@@ -678,7 +689,16 @@ def run_simulation(param: dict) -> dict:
                     #     lossDataJSON = json.dumps(ironLossDictList, indent=3)
                     #     file.write(lossDataJSON)
                 # core_loss_dict[side] = lossDict
+    # import default results:
     results_dict = import_results.main(param)
+
+    try:  # to save results to json
+        res_file_path = join(simulation_res_dir, RES_FILE_NAME)
+        with open(res_file_path, "x", encoding="utf-8") as res_file:
+            json.dump(results_dict, res_file, cls=NumpyEncoder, indent=4)
+    except Exception as e:
+        logger.warning("Could not save results to json file!", exc_info=e)
+
     return results_dict
 
 
