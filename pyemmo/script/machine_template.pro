@@ -1027,7 +1027,7 @@ Function{
     Printf("Simulation Setup:");
     Printf("    Stop time = %.3e s", timemax);
     Printf("    TimeStep = %.3e s", delta_time);
-    If(Flag_Debug==1)
+    If(Flag_Debug)
         Printf("    n: %.3f", n);
         Printf("    freq_stator: %.3f", freq_stator);
         Printf("    n_sync: %.3f", n_sync);
