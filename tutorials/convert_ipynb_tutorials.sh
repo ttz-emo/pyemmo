@@ -6,3 +6,10 @@ python -m nbconvert --RegexRemovePreprocessor.patterns="['^%']" --to python ./tu
 python -m isort ./tutorials/pyleecan_api.py
 python -m black ./tutorials/pyleecan_api.py
 python -m pyupgrade ./tutorials/pyleecan_api.py
+
+
+python -m nbconvert --RegexRemovePreprocessor.patterns="['^%']" --to python ./tutorials/voltage_source_simulation.ipynb
+
+python -m isort ./tutorials/voltage_source_simulation.py
+python -m black ./tutorials/voltage_source_simulation.py
+python -m pyupgrade ./tutorials/voltage_source_simulation.py

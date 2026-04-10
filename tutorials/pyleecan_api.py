@@ -11,7 +11,11 @@ import logging
 # This tutorial has the following sections:
 # 1. Load or create a Pyleecan machine and how to modifiy its properties
 # 2. How to use use the PyEMMO pyleecan-api to create a ONELAB model
-# 3. How to run a simple simulation in ONELAB
+# 4. How to run a simple simulation in ONELAB
+# 5. What is possible, whats not?
+# 6. User-defined results
+#
+# The notebook related to this tutorial is available on [GitHub](https://github.com/ttz-emo/pyemmo/blob/master/tutorials/pyleecan_api.ipynb).
 # ## 1. Load or create a Pyleecan machine and how to modifiy its properties
 #
 # Pyleecan has a lot of useful tutorials under [Pyleecan tutorials][pylcn_tutorials].
@@ -21,7 +25,7 @@ import logging
 #
 # - Load a existing machine using the `load` function.
 # - Create a machine with a python script by using the Pyleecan classes.
-#   See the [`01_tuto_Machine.ipynb`][pylcn_tutorial_machine] tutorial for that.
+#   See the [01_tuto_Machine.ipynb][pylcn_tutorial_machine] tutorial for that.
 #
 #
 # You can load an existing Pyleecan model using:
