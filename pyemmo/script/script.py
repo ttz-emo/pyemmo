@@ -626,6 +626,7 @@ class Script:
         2. For each group with more than one slot:
            - Create a new physical element combining the geometrical elements of the slots.
         """
+        logger = logging.getLogger(__name__)
         all_slots = self.machine.stator.slots
         if not all_slots:
             raise ValueError(
@@ -650,7 +651,7 @@ class Script:
         # create a separate Domain called Stator_Ind_<phase><direction>
         slot_domains: list[Domain] = []  # init slot domain list
         for (phase, direction), slots in slot_dict.items():
-            logging.debug(
+            logger.debug(
                 "Creating new Physical for slots of phase %s",
                 angle2phase(phase),
             )
