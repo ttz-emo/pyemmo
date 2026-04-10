@@ -453,7 +453,12 @@ def addPostOperations(script: Script, extendedInfo: dict) -> None:
                 File=join("CAT_RESDIR", "Pv_eddy_Mag.dat"),
                 # Name='"p (stator)"',
             )
-            script.sim_params["SYM"]["CALC_MAGNET_LOSSES"] = 1
+            # FIXME: Set magnet eddy current calculation only if method is reliable!
+            # For now the eddy current formulation does not take into account the magnet
+            # length. This assumption is ok if the magnet axial length >> width/heigt.
+            # Since this is rarely true for machines, we only allow the calculation if
+            # the user sets it from the analysis parameters
+            script.sim_params["SYM"]["CALC_MAGNET_LOSSES"] = 0
 
 
 # ======================================== START MAIN FUNCTION =====================================
