@@ -8,6 +8,6 @@ splines
 ## Use updated version of PYLEECAN from dev branch, because it will not install otherwise.
 # Use my SciDataTool version for
 SciDataTool @ git+https://github.com/eomys/SciDataTool.git
-pyleecan @ git+https://github.com/eomys/pyleecan.git@upgrade-python-version
+pyleecan @ git+https://github.com/eomys/pyleecan.git
 
 ipykernel # to run tutorial IPython Notebook
