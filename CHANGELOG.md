@@ -4,7 +4,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-
 ## [unreleased] - 2026-xx-xx
 ### Added
 -
@@ -17,6 +16,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 -
+
+
+## [1.6.1] - 2026-04-13
+### Added
+- Executable creation for PyEMMO using `pyleecan_api_interactive.py` script.
+- Separate identifier `ROTOR_AIRAREA_IDEXT` and `STATOR_AIRAREA_IDEXT`  for airgap surface between actual airgap band and lamination in case of 5 segment airgap.
+- `run_onelab.run_simulation()` saves default results to json file with name `functions.RES_FILE_NAME`.
+- Added support for voltage source simulations with `Voltage_2D` boundary condition in template.pro file.
+- Added Circuit.pro with circuit boundary condition definition for stator voltage source and rotor squirrel cage circuit.
+- `Domain_SurfCoil` to evaluate stator slot surface for current density calculation.
+- ONELAB parameter `R_S` for stator winding phase resistance.
+- ONELAB parameter `Flag_Cir` for usage of stator circuit boundary condition.
+- ONELAB parameter `R_terminal` for terminal phase short circuit. Unused for now!
+- ONELAB parameter `Flag_Relaxation` to control voltage relaxation for model settling stability.
+- ONELAB parameter `NbTrelax` for to control number of stator relaxation periods.
+- Printf of most relevant ONELAB model parameters.
+- New method `Material.export_BH_tab`.
+- Core loss and voltage source simulation tutorials.
+
+### Changed
+- Updated `api.json.json.createMeshSizeGUICode()` function to account for part_ids in the correct order and without duplicate surface ids.
+- Unsetting magnet eddy current calculation since the current implementation is not reliable.
+- Create default copper material if Copper2 cannot be loaded from Pyleecan default location.
+- `import_results.main()` starts by importing rotor position results to make sure time is imported correctly.
+- Renamed module for `Movingband` class from `script.physicals.movingBand` to `script.physicals.movingband`.
+- Updated current and voltage export in `Get_GlobalQuantities` PostOperation.
+- If not exists, set `PATH_RES` ONELAB default value to `"CurrentDir\res"`.
+- Adapt winding domain creation in `Script._create_machine_domains()` to form single physical of slots for each winding phase for usage in circuit boundary.
+- Circuit pro file `Circuit_SC_ASM.pro` -> `Circuit.pro`.
+
+### Fixed
+- 3 phase sine wave generation for inverse rotation direction by changing the calculation of phase offset for B and C instead of just changing the phase sign.
+- Voltage source formulation in `machine_magstadyn_a.pro` with signs, winding direction `IDir[]` and number of parallel paths.
 
 ## [1.6.0] - 2026-03-19
 ### Added
