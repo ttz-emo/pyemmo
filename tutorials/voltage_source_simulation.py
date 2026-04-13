@@ -47,7 +47,7 @@ pyemmo_script = pyleecan_api.main(
 
 # ## 2. Setup and run a simple voltage source simulation in ONELAB
 #
-# After creating a machine model you can start a simulation in the GUI by adjusting the parameters and clicking the "Run" botton.
+# After creating a machine model you can start a simulation in the GUI by adjusting the parameters and clicking the "Run" button.
 # Or you can use the `run_simulation` function and start a simulation from Python as a subprocess.
 # Therefore you can specify the same parameters you find in GUI using a parameter dictionary like in the example below (``param_dict``).
 # You can find all adjustable constants and parameters in the [documentation](https://ttz-emo.thws.de/fileadmin/ttz-emo/pyemmo_doc/source/gen/pyemmo.script.script.html#onelab-model-constants) under **ONELAB Model Constants** and **ONELAB Model Parameters**.

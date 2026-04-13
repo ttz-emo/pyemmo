@@ -150,7 +150,7 @@ def create_param_dict(
 
                 mag_dict = hole.comp_magnetization_dict()
                 mag = mag_0 + np.rad2deg(mag_dict["magnet_" + str(T_id)])
-                # modifiy magnetisation of south poles
+                # modify magnetisation of south poles
                 # NOTE: No need to set north/south pole info here. This is done by
                 # `pyemmo.api.json.modelJSON.createMagnet`
                 # if (label_dict["S_id"] % 2) == 1:

@@ -37,7 +37,7 @@ But keep in mind that this will also uninstall and reinstall the libraries that 
 
     This is because pyleecan depends on various older packages including GUI package *PySide2*.
     Thats why the `latest version 1.5.2 <https://pypi.org/project/pyleecan/1.5.2/>`_ is only compatible with ``Python<3.11``.
-    While the process to update PYLEECAN to *PySide6* and upgrade futher dependencies is allready finished, these updates are currently not available in a new release. See `Issue 732 <https://github.com/Eomys/pyleecan/issues/732>`_ for the current state of the update process.
+    While the process to update PYLEECAN to *PySide6* and upgrade further dependencies is allready finished, these updates are currently not available in a new release. See `Issue 732 <https://github.com/Eomys/pyleecan/issues/732>`_ for the current state of the update process.
     To use PyEMMO with PYLEECAN you will currently need to install the PYLEECAN development version from Github:
 
     .. code-block:: console

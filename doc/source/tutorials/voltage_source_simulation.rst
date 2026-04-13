@@ -89,7 +89,7 @@ Frist we need to create a ONELAB Model using the PyEMMO-Pyleecan-API.
 -------------------------------------------------------------
 
 After creating a machine model you can start a simulation in the GUI by
-adjusting the parameters and clicking the “Run” botton. Or you can use
+adjusting the parameters and clicking the “Run” button. Or you can use
 the ``run_simulation`` function and start a simulation from Python as a
 subprocess. Therefore you can specify the same parameters you find in
 GUI using a parameter dictionary like in the example below
@@ -977,7 +977,7 @@ the voltage drop over the resistance:
     # PLOT VOLTAGES:
     fig, ax = plt.subplots()
 
-    for phase in "a":#bc":
+    for phase in "a":  # bc":
 
         # plot input voltage over winding phase
         U_in = results["voltage"][phase]
@@ -1000,7 +1000,6 @@ the voltage drop over the resistance:
     ax.set_ylabel("Voltage in V")
     ax.grid(True)
     _ = ax.legend()
-
 
 
 

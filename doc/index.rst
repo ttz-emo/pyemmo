@@ -25,7 +25,7 @@ Its goal is to create a **Open-Source alternative for the calculation of electri
 machines** and serve as a central memory for the methods developed in the
 `research group for electrical machines (AG-EM) <https://ttz-emo.thws.de/arbeitsgruppen/elektrische-maschinen/>`_
 at `TTZ-EMO <https://ttz-emo.thws.de/>`_.
-Futhermore it shall encourage to developed new calculation methods in the field of
+furthermore it shall encourage to developed new calculation methods in the field of
 electrical machines.
 
 

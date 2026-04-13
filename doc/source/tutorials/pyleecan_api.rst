@@ -5,18 +5,18 @@ This is a tutorial on how to create or load a Pyleecan machine and
 translate it to ONELAB using the PyEMMO pyleecan-api.
 
 This tutorial has the following sections: 1. Load or create a Pyleecan
-machine and how to modifiy its properties 2. How to use use the PyEMMO
+machine and how to modify its properties 2. How to use use the PyEMMO
 pyleecan-api to create a ONELAB model 4. How to run a simple simulation
 in ONELAB 5. What is possible, whats not? 6. User-defined results
 
 The notebook related to this tutorial is available on
 `GitHub <https://github.com/ttz-emo/pyemmo/blob/master/tutorials/pyleecan_api.ipynb>`__.
 
-1. Load or create a Pyleecan machine and how to modifiy its properties
+1. Load or create a Pyleecan machine and how to modify its properties
 ----------------------------------------------------------------------
 
 Pyleecan has a lot of useful tutorials under `Pyleecan
-tutorials <https://pyleecan.org/tutorials.html>`__. See those for futher
+tutorials <https://pyleecan.org/tutorials.html>`__. See those for further
 details on how to use the pyleecan motor toolbox.
 
 There are two ways to get a Pyleecan machine:
@@ -169,7 +169,7 @@ following model files:
 -------------------------------------------
 
 After creating a machine model you can start a simulation in the GUI by
-adjusting the parameters and clicking the “Run” botton. Or you can use
+adjusting the parameters and clicking the “Run” button. Or you can use
 the ``runCalcforCurrent`` function and start a simulation from Python as
 a subprocess. Therefore you can specify the same parameters you find in
 GUI using a parameter dictionary like in the example below
@@ -521,7 +521,7 @@ rad-tan force density directly transformed in GetDP.
 
 .. code:: ipython3
 
-    # We can futher check if the results are really equal:
+    # We can further check if the results are really equal:
 
     # Check the amplitude
     try:

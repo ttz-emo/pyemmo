@@ -9,7 +9,7 @@ tbd
 .. raw:: html
 
    <!-- Pyleecan has a lot of useful tutorials under [Pyleecan tutorials][pylcn_tutorials].
-   See those for futher details on how to use the pyleecan motor toolbox.
+   See those for further details on how to use the pyleecan motor toolbox.
 
    There are two ways to get a Pyleecan machine:
 
@@ -82,44 +82,6 @@ tbd
         getdp="",
     )
 
-
-.. parsed-literal::
-
-    WARNING - pyemmo.api.pyleecan.build_pyemmo_material - Material 'Copper1' used without magnetic properties. Replacing it with PYLEECAN default material 'Copper2'
-    INFO - pyemmo.api.json.json - PyEMMO API started on 2026-03-20 14:43:09
-    INFO - pyemmo.api.json.json - Creating complete model from segmented input...
-    INFO - pyemmo.api.json.create_airgaps - Stator airgap missing from surfaces. Starting airgap creation.
-    INFO - pyemmo.api.json.create_airgaps - Creating air closing surface for stator airgap interface.
-    INFO - pyemmo.api.json.create_airgaps - Creating airgap surface for stator
-    INFO - pyemmo.api.json.create_airgaps - Setting stator airgap mesh size to band height 0.000150 m
-    INFO - pyemmo.api.json.create_airgaps - Rotor airgap missing from surfaces. Starting airgap creation.
-    INFO - pyemmo.api.json.create_airgaps - Creating airgap surface for rotor
-    INFO - pyemmo.api.json.create_airgaps - Setting rotor airgap mesh size to band height 0.000300 m
-    INFO - pyemmo.api.json.json - Fixing mesh size for points without mesh size by searching for closest point and resetting to its mesh size.
-    INFO - pyemmo.api.json.json - Identifying boundary curves...
-    INFO - pyemmo.api.json.boundaryJSON - Identifying primary and secondary boundary lines on symmetry axes
-    INFO - pyemmo.api.json.boundaryJSON - Creating Movingband boundary...
-    INFO - pyemmo.api.json.boundaryJSON - Identifying outer limit curves...
-    INFO - pyemmo.api.json.json - Creating physicals from geometry...
-    INFO - pyemmo.api.json.modelJSON - Getting phase index of slot 1 for layer 0 from winding layout...
-    INFO - pyemmo.api.json.modelJSON - Getting phase index of slot 2 for layer 0 from winding layout...
-    INFO - pyemmo.api.json.modelJSON - Getting phase index of slot 3 for layer 0 from winding layout...
-    INFO - pyemmo.api.json.modelJSON - Getting phase index of slot 4 for layer 0 from winding layout...
-    INFO - pyemmo.api.json.modelJSON - Getting phase index of slot 5 for layer 0 from winding layout...
-    INFO - pyemmo.api.json.modelJSON - Getting phase index of slot 6 for layer 0 from winding layout...
-    INFO - pyemmo.api.json.json - Creating rotor object...
-    INFO - pyemmo.api.json.json - Creating stator object...
-    INFO - pyemmo.api.json.json - Creating Machine object for model Toyota_Prius...
-    INFO - pyemmo.api.json.json - Creating automatic, function based mesh sizes...
-    INFO - pyemmo.api.json.json - Generating the Script object in JSON API...
-    INFO - pyemmo.api.json.json - Creating Gmsh and GetDP input files...
-    WARNING - pyemmo.script.script - Creation of "Compound Mesh" for domain "rotor domainLam" failed, because "rotor lamination" has only one surface.
-    WARNING - pyemmo.script.script - Creation of "Compound Mesh" for domain "rotor airGap" failed, because "rotor airgap" has only one surface.
-    WARNING - pyemmo.script.script - Creation of "Compound Mesh" for domain "stator airGap" failed, because "stator airgap" has only one surface.
-    WARNING - pyemmo.functions.import_results - No result files found in 'd:/pyemmo/tutorials/core_loss_tutorial/res_Toyota_Prius'
-    WARNING - pyemmo.api.json.json - Iron loss calculation cannot be done for static or multi transient simulation!
-
-
 This can be a default machine from the Pyleecan ``DATA`` directory or
 you can create your own machine using the Pyleecan GUI. See `Pyleecan
 Webinar on how to use the GUI <https://pyleecan.org/webinar_1.html>`__
@@ -133,12 +95,12 @@ in the command line.
 -------------------------------------------
 
 After creating a machine model you can start a simulation in the GUI by
-adjusting the parameters and clicking the “Run” botton. Or you can use
-the ``runCalcforCurrent`` function and start a simulation from Python as
-a subprocess. Therefore you can specify the same parameters you find in
+adjusting the parameters and clicking the “Run” button. Or you can use
+the ``run_simulation`` function and start a simulation from Python as a
+subprocess. Therefore you can specify the same parameters you find in
 GUI using a parameter dictionary like in the example below
-(``paramDict``). You can find all adjustable constants and parameters in
-the documentation under **ONELAB Model Constants** and **ONELAB Model
+(``param_dict``). You can find all adjustable constants and parameters
+in the documentation under **ONELAB Model Constants** and **ONELAB Model
 Parameters**.
 
 For synchronous machines PyEMMO will try to calculate the dq-System
@@ -211,15 +173,6 @@ details.
     # run simulation:
     results = run_simulation(param_dict)
 
-
-.. parsed-literal::
-
-    WARNING - pyemmo.functions.run_onelab - Result directory d:/pyemmo/tutorials/res_Toyota_Prius\test_working_point allready exists! Importing results...
-    INFO - pyemmo.functions.import_results - Import results for result-ID 'test_working_point'
-    WARNING - pyemmo.functions.import_results - MST Torque for rotor and stator diviates more than 10%! Check results carefully!
-    INFO - pyemmo.functions.import_results - Importing core loss values for test_working_point...
-
-
 .. code:: ipython3
 
     from pprint import pprint
@@ -230,14 +183,6 @@ details.
         pprint(results["coreLoss"]["rotor"].keys())
     except:
         pass
-
-
-.. parsed-literal::
-
-    dict_keys(['current', 'voltage', 'time', 'torque', 'torque_vw', 'rotor torque', 'stator torque', 'flux', 'inducedVoltage', 'rotorPos', 'coreLoss'])
-    dict_keys(['rotor', 'stator'])
-    dict_keys(['hyst', 'eddy', 'exc'])
-
 
 .. code:: ipython3
 
@@ -258,28 +203,9 @@ details.
         ax.set_xlabel("Time in s")
     axes[0].set_ylabel("Core Loss in W")
 
-
-
-
-.. parsed-literal::
-
-    Text(0, 0.5, 'Core Loss in W')
-
-
-
-
-.. image:: output_11_1.png
-
-
 .. code:: ipython3
 
     print(param_dict["getdp"]["res"])
-
-
-.. parsed-literal::
-
-    d:/pyemmo/tutorials/res_Toyota_Prius
-
 
 .. code:: ipython3
 
@@ -331,11 +257,6 @@ details.
 
     gmsh_api.fltk.run()
 
-
-
-.. image:: output_15_0.png
-
-
 We can use ``matplotlib.pyplot`` to plot some time depended results:
 
 .. code:: ipython3
@@ -370,23 +291,3 @@ We can use ``matplotlib.pyplot`` to plot some time depended results:
     ax.set_xlabel("Time in s")
     ax.grid()
     ax.legend()
-
-
-
-
-.. parsed-literal::
-
-    <matplotlib.legend.Legend at 0x245447e7620>
-
-
-
-
-.. image:: output_17_1.png
-
-
-
-.. image:: output_17_2.png
-
-
-
-.. image:: output_17_3.png
