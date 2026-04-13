@@ -178,7 +178,7 @@ ONELAB Model Parameters
 	*	- freq_rotor
 		- 5, Name StrCat[INPUT_ELEC_EXCITATION, "02Rotor Frequency"],Units "Hz",Visible MachineType==ASYNCHRONOUS,Help "Electrical rotor frequency for induction machine."
 	*	- Flag_Cir
-		- 0, Name StrCat[INPUT_ELEC_EXCITATION, "02Use Stator Circuit"],Choices {0,1},Visible Flag_SrcType_Stator == VOLTAGE_SOURCE
+		- 0, Name StrCat[INPUT_ELEC_EXCITATION, "02Use Stator Circuit"],Choices {0,1},Visible Flag_SrcType_Stator == VOLTAGE_SOURCE,Help StrCat("EXPERIMENTAL: CKECK CIRCUIT BOUNDARY CONDITION BEFORE USAGE! ","Use voltage source with external circuit to connect phases in star or delta connection.",),ReadOnly !Flag_ExpertMode,Highlight StrChoice[Flag_ExpertMode, "White", "LightGray"]
 	*	- Flag_ParkTransformation
 		- Flag_SrcType_Stator == CURRENT_SOURCE && MachineType==SYNCHRONOUS,Name StrCat[INPUT_ELEC_EXCITATION, "Use Clark-Park-Transformation"],Choices {0,1},ReadOnly 1,Highlight "LightGray"
 	*	- VV
@@ -186,7 +186,7 @@ ONELAB Model Parameters
 	*	- R_wire
 		- 500e-3, Name StrCat[INPUT_ELEC_EXCITATION, "05Connection (Wire-)Resistance"],Units "Ohm",Visible Flag_Cir,Help StrCat("Connection resistance between voltage source and machine ","(cable and connection resistance).")
 	*	- R_terminal
-		- 1e12, Name StrCat[INPUT_ELEC_EXCITATION, "06Terminal Connection Resistance"],Units "Ohm",Help StrCat["Terminal connection resistance to account for in short circuit case. ","Only used when source is CEMF in circuit!"],Visible Flag_SrcType_Stator == CEMF_SOURCE 
+		- 1e12, Name StrCat[INPUT_ELEC_EXCITATION, "06Terminal Connection Resistance"],Units "Ohm",Help StrCat["Terminal connection resistance to account for in short circuit case. ","Only used when source is CEMF in circuit!"],Visible Flag_SrcType_Stator == CEMF_SOURCE
 	*	- CircuitConnection
 		- 0, Name StrCat[INPUT_ELEC_WINDINGS, "03Winding Type"],Choices{STAR_CONNECTION = "Star Connection", DELTA_CONNECTION = "Delta Connection" },Visible Flag_Cir,Help "Voltage source circuit connection type"
 	*	- pA_deg

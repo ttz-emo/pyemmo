@@ -13,11 +13,11 @@ The notebook related to this tutorial is available on
 `GitHub <https://github.com/ttz-emo/pyemmo/blob/master/tutorials/pyleecan_api.ipynb>`__.
 
 1. Load or create a Pyleecan machine and how to modify its properties
-----------------------------------------------------------------------
+---------------------------------------------------------------------
 
 Pyleecan has a lot of useful tutorials under `Pyleecan
-tutorials <https://pyleecan.org/tutorials.html>`__. See those for further
-details on how to use the pyleecan motor toolbox.
+tutorials <https://pyleecan.org/tutorials.html>`__. See those for
+further details on how to use the pyleecan motor toolbox.
 
 There are two ways to get a Pyleecan machine:
 

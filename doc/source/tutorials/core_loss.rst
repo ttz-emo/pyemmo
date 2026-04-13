@@ -9,7 +9,7 @@ tbd
 .. raw:: html
 
    <!-- Pyleecan has a lot of useful tutorials under [Pyleecan tutorials][pylcn_tutorials].
-   See those for further details on how to use the pyleecan motor toolbox.
+   See those for futher details on how to use the pyleecan motor toolbox.
 
    There are two ways to get a Pyleecan machine:
 

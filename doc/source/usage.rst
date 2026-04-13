@@ -82,4 +82,4 @@ The contents of those tutorials are included in the following:
 
     tutorials/pyleecan_api.rst
     tutorials/voltage_source_simulation.rst
-    .. tutorials/core_loss.rst
+    tutorials/core_loss.rst
