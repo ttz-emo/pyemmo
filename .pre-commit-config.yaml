@@ -28,7 +28,7 @@ repos:
   # ISORT: Sorts Python imports according to the defined style. The tool options are
   # controled by the pyproject.toml
   - repo: https://github.com/pycqa/isort
-    rev: 6.0.1
+    rev: 8.0.1
     hooks:
       - id: isort
         name: isort (python)
@@ -36,7 +36,7 @@ repos:
 
   # Run black as code formatter:
   - repo: https://github.com/psf/black
-    rev: 25.1.0
+    rev: 26.3.1
     hooks:
       # Removed black since black-jupyter runs on .py files aswell! See
       # https://github.com/psf/black/issues/3641#issuecomment-1501064536
@@ -46,7 +46,7 @@ repos:
         #   - --line-length=79
   # PRE-COMMIT
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       # guard rails
       - id: check-ast
@@ -64,7 +64,7 @@ repos:
 
   # Upgrades Python code to newer syntax versions. 3.6 or greater:
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.20.0
+    rev: v3.21.2
     hooks:
       - id: pyupgrade
         args: [--py39-plus]
@@ -87,7 +87,7 @@ repos:
 
   # This removes all unused import statements:
   - repo: https://github.com/hadialqattan/pycln
-    rev: v2.5.0
+    rev: v2.6.0
     hooks:
       - id: pycln
         args: [--all]
