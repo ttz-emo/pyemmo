@@ -142,7 +142,7 @@ if create_param_file:
         [
             join(MAIN_DIR, "script", "machine_template.pro"),
             join(MAIN_DIR, "script", "machine_magstadyn_a.pro"),
-            join(MAIN_DIR, "script", "Circuit_SC_ASM.pro"),
+            join(MAIN_DIR, "script", "Circuit.pro"),
         ]
     )
     with open(

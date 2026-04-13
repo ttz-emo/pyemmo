@@ -186,7 +186,7 @@ ONELAB Model Parameters
 	*	- R_wire
 		- 500e-3, Name StrCat[INPUT_ELEC_EXCITATION, "05Connection (Wire-)Resistance"],Units "Ohm",Visible Flag_Cir,Help StrCat("Connection resistance between voltage source and machine ","(cable and connection resistance).")
 	*	- R_terminal
-		- 1e12, Name StrCat[INPUT_ELEC_EXCITATION, "06Terminal Connection Resistance"],Units "Ohm",Help StrCat["Terminal connection resistance to account for in short circuit case. ","Only used when source is CEMF in circuit!"],Visible Flag_SrcType_Stator == CEMF_SOURCE
+		- 1e12, Name StrCat[INPUT_ELEC_EXCITATION, "06Terminal Connection Resistance"],Units "Ohm",Help StrCat["Terminal connection resistance to account for in short circuit case. ","Only used when source is CEMF in circuit!"],Visible Flag_SrcType_Stator == CEMF_SOURCE 
 	*	- CircuitConnection
 		- 0, Name StrCat[INPUT_ELEC_WINDINGS, "03Winding Type"],Choices{STAR_CONNECTION = "Star Connection", DELTA_CONNECTION = "Delta Connection" },Visible Flag_Cir,Help "Voltage source circuit connection type"
 	*	- pA_deg
