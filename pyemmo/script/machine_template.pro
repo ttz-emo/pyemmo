@@ -614,7 +614,7 @@ DefineConstant[
         Visible Flag_SrcType_Stator == VOLTAGE_SOURCE,
         Help StrCat(
             "EXPERIMENTAL: CKECK CIRCUIT BOUNDARY CONDITION BEFORE USAGE! ",
-            "Use voltage source with external circuit to connect phases in star or delta connection.",
+            "Use voltage source with external circuit to connect phases in star or delta connection."
         ),
         ReadOnly !Flag_ExpertMode,
         Highlight StrChoice[Flag_ExpertMode, "White", "LightGray"]
