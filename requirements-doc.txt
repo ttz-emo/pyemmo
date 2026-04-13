@@ -1,3 +1,4 @@
 # requirements for documentation
 Sphinx>=7.2.6
 sphinx-rtd-theme
+nbconvert
